@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Zinc grammar specification.
-# (C) 2015 VRT Systems
+# (C) 2016 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si: 
 

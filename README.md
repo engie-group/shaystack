@@ -10,6 +10,7 @@ REQUIREMENTS
 ============
 
 - [parsimonious](https://github.com/erikrose/parsimonious)
+- [pytz](http://pytz.sourceforge.net/)
 
 STATUS
 ======

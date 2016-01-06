@@ -70,6 +70,10 @@ class SortableDict(MutableMapping):
             if index is not None:
                 # We are re-locating.
                 del self[key]
+            else:
+                # We are updating
+                self._values[key] = value
+                return
 
         if index is not None:
             # Place at given position

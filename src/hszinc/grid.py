@@ -39,10 +39,15 @@ class Grid(MutableSequence):
             self.metadata.extend(metadata)
 
         if columns is not None:
-            if isinstance(columns, dict):
+            if isinstance(columns, dict) or isinstance(columns, SortableDict):
                 columns = columns.items()
 
-            map(self.column.add_item, *zip(*columns))
+            for col_id, col_meta in columns:
+                if not isinstance(col_meta, MetadataObject):
+                    mo = MetadataObject()
+                    mo.extend(col_meta)
+                    col_meta = mo
+                self.column.add_item(col_id, col_meta)
 
     def __getitem__(self, index):
         '''

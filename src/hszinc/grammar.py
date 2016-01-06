@@ -9,7 +9,6 @@ from parsimonious.grammar import Grammar
 
 # Grammar according to http://project-haystack.org/doc/Zinc
 zinc_grammar = Grammar(r'''
-        grids       =   grid ( nl grid )*
         grid        =   gridMeta cols row*
         nl          =   "\n" / "\r\n"
         gridMeta    =   ver meta? nl

@@ -27,7 +27,7 @@ class Grid(MutableSequence):
         self._version   = version
 
         # Metadata
-        self.metadata   = metadata
+        self.metadata   = MetadataObject()
 
         # The columns
         self.column     = SortableDict()

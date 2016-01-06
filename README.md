@@ -1,9 +1,10 @@
 HSZinc
 ======
 
-HSZinc is an implementation of the Zinc serialisation format used in Project
-Haystack.  The aim of this project is to provide a simple Python module that
-allows easy manipulation of Zinc-format data.
+HSZinc is an implementation of the [Zinc](http://project-haystack.org/doc/Zinc)
+serialisation format used in Project Haystack.  The aim of this project is to
+provide a simple Python module that allows easy manipulation of Zinc-format
+data.
 
 REQUIREMENTS
 ============

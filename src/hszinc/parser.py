@@ -216,6 +216,11 @@ def parse_decimal(decimal_node):
     assert decimal_node.expr_name == 'decimal'
     return float(decimal_node.text)
 
+def parse_bool(bool_node):
+    assert bool_node.expr_name == 'bool'
+    assert bool_node.text.upper() in 'TF'
+    return bool_node.text.upper() == 'T'
+
 def parse_coord(coordinate_node):
     assert coordinate_node.expr_name == 'coord'
     assert len(coordinate_node.children) == 7

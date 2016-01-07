@@ -240,6 +240,19 @@ def parse_coord(coordinate_node):
     lng = float(coordinate_node.children[4].text)
     return Coordinate(lat, lng)
 
+def parse_ref(ref_node):
+    assert ref_node.expr_name == 'ref'
+    assert len(ref_node.children) == 3
+    # We have an @ symbol, the reference name and in a child node,
+    # the value string.
+    ref = ref_node.children[1].text
+    has_value = bool(ref_node.children[2].children)
+    if has_value:
+        value = parse_str(ref_node.children[2].children[0].children[1])
+    else:
+        value = None
+    return Ref(ref, value, has_value)
+
 def parse_date(date_node):
     assert date_node.expr_name == 'date'
     # Date is in 3 parts, separated by hyphens.

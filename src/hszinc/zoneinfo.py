@@ -398,6 +398,7 @@ HAYSTACK_TIMEZONES_SET=set(HAYSTACK_TIMEZONES)
 
 # Mapping of pytz-recognised timezones to Haystack timezones.
 _TZ_MAP = None
+_TZ_RMAP = None
 
 def _map_timezones():
     '''
@@ -432,14 +433,26 @@ def _map_timezones():
 
     return tz_map
 
+def _gen_map():
+    global _TZ_MAP
+    global _TZ_RMAP
+    if (_TZ_MAP is None) or (_TZ_RMAP is None):
+        _TZ_MAP = _map_timezones()
+        _TZ_RMAP = dict([(z,n) for (n,z) in _TZ_MAP.items()])
+
 def get_tz_map():
     '''
     Return the timezone map, generating it if needed.
     '''
-    global _TZ_MAP
-    if _TZ_MAP is None:
-        _TZ_MAP = _map_timezones()
+    _gen_map()
     return _TZ_MAP
+
+def get_tz_rmap():
+    '''
+    Return the reverse timezone map, generating it if needed.
+    '''
+    _gen_map()
+    return _TZ_RMAP
 
 def timezone(haystack_tz):
     '''
@@ -452,3 +465,34 @@ def timezone(haystack_tz):
         raise ValueError('%s is not a recognised timezone on this host' \
                 % haystack_tz)
     return pytz.timezone(tz_name)
+
+def timezone_name(dt):
+    '''
+    Determine an appropriate timezone for the given date/time object
+    '''
+    tz_rmap = get_tz_rmap()
+    if dt.tzinfo is None:
+        raise ValueError('%r has no timezone' % dt)
+
+    # Easy case: pytz timezone.
+    try:
+        tz_name = dt.tzinfo.zone
+        return tz_rmap[tz_name]
+    except KeyError:
+        # Not in timezone map
+        pass
+    except AttributeError:
+        # Not a pytz-compatible tzinfo
+        pass
+
+    # Hard case, try to find one that's equivalent.  Hopefully we don't get
+    # many of these.  Start by getting the current timezone offset, and a
+    # timezone-naïve copy of the timestamp.
+    offset  = dt.utcoffset()
+    dt_notz = dt.replace(tzinfo=None)
+
+    for olson_name, haystack_name in tz_rmap.items():
+        if pytz.timezone(olson_name).utcoffset(dt_notz) == offset:
+            return haystack_name
+
+    raise ValueError('Unable to get timezone of %r' % dt)

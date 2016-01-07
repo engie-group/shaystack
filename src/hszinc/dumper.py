@@ -21,6 +21,8 @@ def dump(grids):
     '''
     Parse the given Zinc text and return the equivalent data.
     '''
+    if isinstance(grids, Grid):
+        return dump_grid(grids)
     return '\n'.join(map(dump_grid, grids))
 
 def dump_grid(grid):

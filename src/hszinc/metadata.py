@@ -13,6 +13,17 @@ class MetadataObject(SortableDict):
     base-class for grids and columns, both of which have metadata.
     '''
 
+    def __setitem__(self, key, value):
+        '''
+        Set a value in the metadata.
+        '''
+        if isinstance(value, Item):
+            if value.name != key:
+                raise ValueError('Item %r is not for key %r' % (item, key))
+        else:
+            value = ItemPair(key, value)
+        return super(MetadataObject, self).__setitem__(key, value)
+
     def insert(self, index, item, replace=True):
         '''
         Insert the metadata item at 'index'

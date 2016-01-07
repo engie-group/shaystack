@@ -13,6 +13,7 @@ from datatypes import Quantity, Coordinate, Ref, Bin, Uri, MARKER, STR_SUB
 from zoneinfo import timezone
 import datetime
 import iso8601
+import re
 
 URI_META = re.compile(r'\\([:/\?#\[\]@\\&=;"$])')
 STR_META = re.compile(r'\\([\\"$])')

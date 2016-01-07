@@ -9,7 +9,9 @@ from grid import Grid
 from metadata import Item, ItemPair
 from grammar import zinc_grammar
 from sortabledict import SortableDict
-from datatypes import Quantity
+from datatypes import Quantity, Coordinate
+from zoneinfo import timezone
+import iso8601
 
 def parse(zinc_str):
     '''
@@ -90,12 +92,13 @@ def parse_columns(cols):
     columns[col_name] = col
 
     if bool(cols.children[1]):
-        for node in cols.children[1].children[0].children:
-            if node.expr_name == 'valueSep':
-                continue
-            else:
-                (col_name, col) = parse_column(node)
-                columns[col_name] = col
+        for node in cols.children[1].children:
+            for nchild in node.children:
+                if nchild.expr_name == 'valueSep':
+                    continue
+                else:
+                    (col_name, col) = parse_column(nchild)
+                    columns[col_name] = col
     return columns
 
 def parse_column(col):
@@ -128,12 +131,13 @@ def parse_row(grid, row):
 
     # Remaining cells
     if bool(row.children[1].children):
-        for node in row.children[1].children[0]:
-            if node.expr_name == 'valueSep':
-                continue
-            cell_id = columns.pop(0)
-            cell_value = parse_cell(node)
-            data[cell_id] = cell_value
+        for node in row.children[1].children:
+            for nchild in node.children:
+                if nchild.expr_name == 'valueSep':
+                    continue
+                cell_id = columns.pop(0)
+                cell_value = parse_cell(nchild)
+                data[cell_id] = cell_value
 
     grid.append(data)
 
@@ -211,3 +215,30 @@ def parse_quantity(quantity_node):
 def parse_decimal(decimal_node):
     assert decimal_node.expr_name == 'decimal'
     return float(decimal_node.text)
+
+def parse_coord(coordinate_node):
+    assert coordinate_node.expr_name == 'coord'
+    assert len(coordinate_node.children) == 7
+    # Co-ordinates are in child nodes 2 and 4.
+    lat = float(coordinate_node.children[2].text)
+    lng = float(coordinate_node.children[4].text)
+    return Coordinate(lat, lng)
+
+def parse_date_time(date_time_node):
+    assert date_time_node.expr_name == 'dateTime'
+    assert len(date_time_node.children) == 2
+    # Made up of parts: ISO8601 Date/Time, time zone label
+    # (with proceeding space)
+    isodt = iso8601.parse_date(date_time_node.children[0].text)
+    tzname = date_time_node.children[1].text[1:]
+
+    if (isodt.tzinfo is None) and bool(tzname):
+        return timezone(tzname).localise(isodt)
+    elif bool(tzname):
+        try:
+            tz = timezone(tzname)
+            return isodt.astimezone(tz)
+        except:
+            return isodt    # Failed, leave alone
+    else:
+        return isodt

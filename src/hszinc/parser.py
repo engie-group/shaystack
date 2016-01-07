@@ -6,7 +6,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 from grid import Grid
-from metadata import Item, ItemPair
+from metadata import Item, ItemPair, MetadataObject
 from grammar import zinc_grammar
 from sortabledict import SortableDict
 from datatypes import Quantity, Coordinate, Ref, Bin, Uri, MARKER, STR_SUB
@@ -61,7 +61,7 @@ def parse_grid(grid_str):
 
 def parse_meta(meta):
     assert meta.expr_name == 'meta'
-    items = []
+    items = MetadataObject()
 
     for item_parent in meta.children:
         # There'll probably be a space beforehand
@@ -115,7 +115,7 @@ def parse_column(col):
     if bool(col.children[1].children):
         col_meta = parse_meta(col.children[1].children[0])
     else:
-        col_meta = []
+        col_meta = MetadataObject()
     return (col_id, col_meta)
 
 def parse_rows(grid, rows):

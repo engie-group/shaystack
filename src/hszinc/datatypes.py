@@ -65,7 +65,7 @@ class MarkerType(object):
     '''
     pass
 
-marker = MarkerType()
+MARKER = MarkerType()
 
 
 class Ref(object):

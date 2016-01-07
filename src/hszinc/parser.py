@@ -51,7 +51,8 @@ def parse_grid(grid_str):
     grid = Grid(version=version, metadata=meta_items, columns=columns)
 
     # Now to parse the rows
-    parse_rows(grid, parsed.children[2])
+    if bool(columns):
+        parse_rows(grid, parsed.children[2])
     return grid
 
 def parse_meta(meta):
@@ -131,12 +132,16 @@ def parse_row(grid, row):
     data = {cell_id: cell_value}
 
     # Remaining cells
-    if bool(row.children[1].children):
+    if bool(row.children[1].children) and bool(columns):
         for node in row.children[1].children:
             for nchild in node.children:
                 if nchild.expr_name == 'valueSep':
                     continue
-                cell_id = columns.pop(0)
+                try:
+                    cell_id = columns.pop(0)
+                except IndexError:
+                    break
+
                 cell_value = parse_cell(nchild)
                 data[cell_id] = cell_value
 

@@ -3,7 +3,15 @@
 # Zinc data types
 # (C) 2016 VRT Systems
 #
-# vim: set ts=4 sts=4 et tw=78 sw=4 si: 
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
+
+STR_SUB  = [
+    ('\b',  '\\b'),
+    ('\f',  '\\f'),
+    ('\n',  '\\n'),
+    ('\r',  '\\r'),
+    ('\t',  '\\t'),
+]
 
 class Quantity(object):
     '''

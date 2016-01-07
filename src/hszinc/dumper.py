@@ -8,7 +8,7 @@
 from grid import Grid
 from metadata import Item, ItemPair
 from sortabledict import SortableDict
-from datatypes import Quantity, Coordinate, Ref, Bin, Uri, MARKER
+from datatypes import Quantity, Coordinate, Ref, Bin, Uri, MARKER, STR_SUB
 from zoneinfo import timezone_name
 import datetime
 import iso8601
@@ -16,13 +16,6 @@ import re
 
 URI_META = re.compile(r'([:/\?#\[\]@\\&=;"$])')
 STR_META = re.compile(r'([\\"$])')
-STR_SUB  = [
-    ('\b',  '\\b'),
-    ('\f',  '\\f'),
-    ('\n',  '\\n'),
-    ('\r',  '\\r'),
-    ('\t',  '\\t'),
-]
 
 def dump(grids):
     '''

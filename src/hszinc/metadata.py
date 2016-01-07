@@ -47,8 +47,8 @@ class MetadataObject(SortableDict):
         '''
         Append the items to the metadata.
         '''
-        map(lambda i : self.append(i, replace=replace),
-                map(Item.make_item, items))
+        for item in map(Item.make_item, items):
+            self.append(item, replace=replace)
 
 
 class Item(object):
@@ -70,7 +70,7 @@ class Item(object):
         if isinstance(item, dict):
             if len(item) != 1:
                 raise ValueError('dict must have exactly one item')
-            return ItemPair(*(item.items()[0]))
+            return ItemPair(*(list(item.items())[0]))
 
 
 class ItemPair(Item):

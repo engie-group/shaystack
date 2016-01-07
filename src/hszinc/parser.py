@@ -25,7 +25,7 @@ def parse(zinc_str):
     # Split the separate grids up, the grammar definition has trouble splitting
     # them up normally.  This will truncate the newline off the end of the last
     # row.
-    return map(parse_grid, zinc_str.split('\n\n'))
+    return list(map(parse_grid, zinc_str.split('\n\n')))
 
 def parse_grid(grid_str):
     if not grid_str.endswith('\n'):
@@ -119,13 +119,13 @@ def parse_column(col):
     return (col_id, col_meta)
 
 def parse_rows(grid, rows):
-    map(lambda r : parse_row(grid, r),
-            filter(lambda r : r.expr_name == 'row', rows.children))
+    for row in [r for r in rows.children if r.expr_name == 'row']:
+        parse_row(grid, row)
 
 def parse_row(grid, row):
     assert row.expr_name == 'row'
     # Cell names
-    columns = grid.column.keys()
+    columns = list(grid.column.keys())
     if not bool(row.children):
         # Empty row?  Shouldn't happen, but just in case.
         return {}

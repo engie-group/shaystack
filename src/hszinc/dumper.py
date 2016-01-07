@@ -34,7 +34,7 @@ def dump_grid(grid):
     return '\n'.join([header, columns] + rows)
 
 def dump_meta(meta):
-    return ' '.join(map(dump_meta_item, meta.values()))
+    return ' '.join(map(dump_meta_item, list(meta.values())))
 
 def dump_meta_item(item):
     if isinstance(item, ItemPair):
@@ -45,7 +45,7 @@ def dump_meta_item(item):
         raise NotImplementedError('Cannot dump %r' % item)
 
 def dump_columns(cols):
-    return ','.join(map(dump_column, *zip(*cols.items())))
+    return ','.join(map(dump_column, *list(zip(*list(cols.items())))))
 
 def dump_column(col, col_meta):
     if bool(col_meta):
@@ -54,11 +54,10 @@ def dump_column(col, col_meta):
         return dump_id(col)
 
 def dump_rows(grid):
-    return map(lambda r : dump_row(grid, r), grid)
+    return [dump_row(grid, r) for r in grid]
 
 def dump_row(grid, row):
-    return ','.join(map(lambda c : dump_scalar(row.get(c)),
-            grid.column.keys()))
+    return ','.join([dump_scalar(row.get(c)) for c in list(grid.column.keys())])
 
 def dump_scalar(scalar):
     if scalar is None:
@@ -87,7 +86,7 @@ def dump_scalar(scalar):
         return dump_quantity(scalar)
     elif isinstance(scalar, float) or \
             isinstance(scalar, int) or \
-            isinstance(scalar, long):
+            isinstance(scalar, int):
         return dump_decimal(scalar)
     else:
         raise NotImplementedError('Unhandled case: %r' % scalar)

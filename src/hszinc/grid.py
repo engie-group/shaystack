@@ -40,7 +40,7 @@ class Grid(MutableSequence):
 
         if columns is not None:
             if isinstance(columns, dict) or isinstance(columns, SortableDict):
-                columns = columns.items()
+                columns = list(columns.items())
 
             for col_id, col_meta in columns:
                 if not isinstance(col_meta, MetadataObject):

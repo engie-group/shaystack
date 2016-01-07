@@ -20,7 +20,7 @@ class SortableDict(MutableMapping):
     def __repr__(self):
         return '%s{%s}' % (self.__class__.__name__,
                 ', '.join([
-                    '%r=%r' % (k,v) for k,v in self.items()
+                    '%r=%r' % (k,v) for k,v in list(self.items())
                 ]))
 
     def __getitem__(self, key):

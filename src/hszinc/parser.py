@@ -9,10 +9,13 @@ from grid import Grid
 from metadata import Item, ItemPair
 from grammar import zinc_grammar
 from sortabledict import SortableDict
-from datatypes import Quantity, Coordinate, Ref, Bin, Uri, MARKER
+from datatypes import Quantity, Coordinate, Ref, Bin, Uri, MARKER, STR_SUB
 from zoneinfo import timezone
 import datetime
 import iso8601
+
+URI_META = re.compile(r'\\([:/\?#\[\]@\\&=;"$])')
+STR_META = re.compile(r'\\([\\"$])')
 
 def parse(zinc_str):
     '''
@@ -195,12 +198,24 @@ def parse_id(id_node):
 def parse_str(str_node):
     assert str_node.expr_name == 'str'
     assert len(str_node.children) == 3
-    return str_node.children[1].text
+
+    str_value = str_node.children[1].text
+
+    # Replace escapes.
+    for orig, esc in STR_SUB:
+        str_value = str_value.replace(esc, orig)
+    return STR_META.sub(r'\1', str_value)
 
 def parse_uri(uri_node):
     assert uri_node.expr_name == 'uri'
     assert len(uri_node.children) == 3
-    return Uri(uri_node.children[1].text)
+
+    uri_value = uri_node.children[1].text
+
+    # Replace escapes.
+    for orig, esc in STR_SUB:
+        uri_value = uri_value.replace(esc, orig)
+    return Uri(URI_META.sub(r'\1', uri_value))
 
 def parse_bin(bin_node):
     assert bin_node.expr_name == 'bin'

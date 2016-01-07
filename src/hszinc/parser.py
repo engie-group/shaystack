@@ -11,6 +11,7 @@ from grammar import zinc_grammar
 from sortabledict import SortableDict
 from datatypes import Quantity, Coordinate, Ref, Bin, Uri, MARKER
 from zoneinfo import timezone
+import datetime
 import iso8601
 
 def parse(zinc_str):
@@ -194,12 +195,12 @@ def parse_str(str_node):
 def parse_uri(uri_node):
     assert uri_node.expr_name == 'uri'
     assert len(uri_node.children) == 3
-    return uri_node.children[1].text
+    return Uri(uri_node.children[1].text)
 
 def parse_bin(bin_node):
     assert bin_node.expr_name == 'bin'
     assert len(bin_node.children) == 3
-    return bin_node.children[1].text
+    return Bin(bin_node.children[1].text)
 
 def parse_number(num_node):
     assert num_node.expr_name == 'number'
@@ -238,6 +239,27 @@ def parse_coord(coordinate_node):
     lat = float(coordinate_node.children[2].text)
     lng = float(coordinate_node.children[4].text)
     return Coordinate(lat, lng)
+
+def parse_date(date_node):
+    assert date_node.expr_name == 'date'
+    # Date is in 3 parts, separated by hyphens.
+    (ys, ms, ds) = date_node.text.split('-',3)
+    return datetime.date(year=int(ys),
+                        month=int(ms),
+                        day=int(ds))
+
+def parse_time(time_node):
+    assert time_node.expr_name == 'time'
+    # Date is in 3 parts, separated by hyphens.
+    (hs, ms, ss) = time_node.text.split(':',3)
+    # Split seconds into whole and fractional parts
+    sf = float(ss)
+    si = int(sf)
+    sf -= si
+    return datetime.time(hour=int(hs),
+                        minute=int(ms),
+                        second=si,
+                        microseconds=int(sf*1e6))
 
 def parse_date_time(date_time_node):
     assert date_time_node.expr_name == 'dateTime'

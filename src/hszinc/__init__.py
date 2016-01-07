@@ -4,11 +4,11 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
-from grid import Grid
-from dumper import dump
-from parser import parse
-from metadata import Item, ItemPair, MetadataObject
-from datatypes import Quantity, Coordinate, Uri, Bin, MARKER, Ref
+from .grid import Grid
+from .dumper import dump
+from .parser import parse
+from .metadata import Item, ItemPair, MetadataObject
+from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, Ref
 
 __all__ = ['Grid', 'dump', 'parse', 'Item', 'ItemPair', 'MetadataObject',
         'Quantity', 'Coordinate', 'Uri', 'Bin', 'MARKER', 'Ref']

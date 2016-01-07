@@ -5,8 +5,8 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
-from metadata import MetadataObject
-from sortabledict import SortableDict
+from .metadata import MetadataObject
+from .sortabledict import SortableDict
 from collections import MutableSequence
 
 class Grid(MutableSequence):

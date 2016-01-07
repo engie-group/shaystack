@@ -5,12 +5,12 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
-from grid import Grid
-from metadata import Item, ItemPair, MetadataObject
-from grammar import zinc_grammar
-from sortabledict import SortableDict
-from datatypes import Quantity, Coordinate, Ref, Bin, Uri, MARKER, STR_SUB
-from zoneinfo import timezone
+from .grid import Grid
+from .metadata import Item, ItemPair, MetadataObject
+from .grammar import zinc_grammar
+from .sortabledict import SortableDict
+from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, MARKER, STR_SUB
+from .zoneinfo import timezone
 import datetime
 import iso8601
 import re

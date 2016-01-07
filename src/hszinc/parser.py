@@ -9,7 +9,7 @@ from grid import Grid
 from metadata import Item, ItemPair
 from grammar import zinc_grammar
 from sortabledict import SortableDict
-from datatypes import Quantity, Coordinate
+from datatypes import Quantity, Coordinate, Ref, Bin, Uri, MARKER
 from zoneinfo import timezone
 import iso8601
 
@@ -190,6 +190,16 @@ def parse_str(str_node):
     assert str_node.expr_name == 'str'
     assert len(str_node.children) == 3
     return str_node.children[1].text
+
+def parse_uri(uri_node):
+    assert uri_node.expr_name == 'uri'
+    assert len(uri_node.children) == 3
+    return uri_node.children[1].text
+
+def parse_bin(bin_node):
+    assert bin_node.expr_name == 'bin'
+    assert len(bin_node.children) == 3
+    return bin_node.children[1].text
 
 def parse_number(num_node):
     assert num_node.expr_name == 'number'

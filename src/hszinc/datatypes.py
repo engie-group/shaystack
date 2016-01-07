@@ -76,16 +76,20 @@ class Ref(object):
     # but the documentation does not specify what this string encodes.  This is
     # distinct from the reference name itself immediately following the @
     # symbol.  I'm guessing it's some kind of value.
-    def __init__(self, name, value):
-        self.name   = name
-        self.value  = value
+    def __init__(self, name, value=None, has_value=False):
+        self.name       = name
+        self.value      = value
+        self.has_value  = has_value
 
     def __repr__(self):
-        return '%s(%r, %r)' % (
-                self.__class__.__name__, self.name, self.value
+        return '%s(%r, %r, %r)' % (
+                self.__class__.__name__, self.name, self.value, self.has_value
         )
 
     def __str__(self):
-        return '@%s %r' % (
-                self.name, self.value
-        )
+        if self.has_value:
+            return '@%s %r' % (
+                    self.name, self.value
+            )
+        else:
+            return '@%s' % self.name

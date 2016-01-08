@@ -36,7 +36,7 @@ class Grid(MutableSequence):
         self._row       = []
 
         if metadata is not None:
-            self.metadata.extend(metadata)
+            self.metadata.update(metadata.items())
 
         if columns is not None:
             if isinstance(columns, dict) or isinstance(columns, SortableDict):

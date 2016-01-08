@@ -33,9 +33,8 @@ zinc_grammar = Grammar(r'''
         refChar     =   alpha / digit / "_" / ":" / "-" / "." / "~"
         str         =   "\"" strChar* "\""
         uri         =   "`" uriChar* "`"
-        strChar     =   ~r"([^\x00-\x1f\\\"$]|\\[bfnrt\\\"$])"
-        uriChar     =   ~r"([^\x00-\x1f\\\"$:/?#\[\]@&=;]|\\[bfnrt\\\"$:/?#\[\]@&=;])"
-        uEscChar    =   "\\u" hexDigit hexDigit hexDigit hexDigit
+        strChar     =   ~r"([^\x00-\x1f\\\"$]|\\[bfnrt\\\"$]|\\u[0-9a-fA-F]{4})"
+        uriChar     =   ~r"([^\x00-\x1f\\\"$`]|\\[bfnrt\\\"$:/?#\[\]@&=;`]|\\u[0-9a-fA-F]{4})"
         number      =   quantity / decimal / "INF" / "-INF" / "NaN"
         decimal     =   "-"? digits ( "." digits )? exp?
         quantity    =   decimal unit
@@ -61,5 +60,4 @@ zinc_grammar = Grammar(r'''
         alpha       =   alphaLo / alphaHi
         digit       =   ~r"[0-9]"
         digits      =   digit ( digit / "_" )*
-        hexDigit    =   ~r"[a-fA-F0-9]"
 ''')

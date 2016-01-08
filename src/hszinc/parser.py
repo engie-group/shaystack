@@ -171,7 +171,7 @@ def parse_scalar(scalar):
     if scalar_child.expr_name == 'null':
         return None
     elif scalar_child.expr_name == 'marker':
-        return parse_marker(scalar_child)
+        return MARKER
     elif scalar_child.expr_name == 'bool':
         return parse_bool(scalar_child)
     elif scalar_child.expr_name == 'ref':

@@ -43,7 +43,11 @@ def parse_grid(grid_str):
     version = parse_str(meta.children[0].children[1])
 
     # The metadata should be in a nameless node.  Parse the children.
-    meta_items = parse_meta(meta.children[1].children[0])
+    if bool(meta.children[1].children):
+        meta_items = parse_meta(meta.children[1].children[0])
+    else:
+        # No metadata
+        meta_items = MetadataObject()
 
     # The last thing in the list should be a newline
     assert meta.children[2].expr_name == 'nl'

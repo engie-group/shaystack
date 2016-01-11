@@ -6,81 +6,22 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 from .sortabledict import SortableDict
+from .datatypes import MARKER
 
 class MetadataObject(SortableDict):
     '''
     An object that contains some metadata fields.  Used as a convenience
     base-class for grids and columns, both of which have metadata.
     '''
-
-    def __setitem__(self, key, value):
-        '''
-        Set a value in the metadata.
-        '''
-        if isinstance(value, Item):
-            if value.name != key:
-                raise ValueError('Item %r is not for key %r' % (item, key))
-        else:
-            value = ItemPair(key, value)
-        return super(MetadataObject, self).__setitem__(key, value)
-
-    def insert(self, index, item, replace=True):
-        '''
-        Insert the metadata item at 'index'
-        '''
-        item = Item.make_item(item)
-        if isinstance(index, str):
-            return self.add_item(item.name, item,
-                    pos_key=index, replace=replace)
-        else:
-            return self.add_item(item.name, item,
-                    index=index, replace=replace)
-
-    def append(self, item, replace=True):
+    def append(self, key, value=MARKER, replace=True):
         '''
         Append the item to the metadata.
         '''
-        item = Item.make_item(item)
-        return self.add_item(item.name, item, replace=replace)
+        return self.add_item(key, value, replace=replace)
 
     def extend(self, items, replace=True):
         '''
         Append the items to the metadata.
         '''
-        for item in map(Item.make_item, items):
+        for item in items:
             self.append(item, replace=replace)
-
-
-class Item(object):
-    '''
-    Base class for metadata items.  This class also represents Markers.
-    '''
-    def __init__(self, name):
-        self.name = name
-
-    def __repr__(self):
-        return '<%s(%r)>' % (self.__class__.__name__, self.name)
-
-    @classmethod
-    def make_item(self, item):
-        if isinstance(item, Item):
-            return item
-        if isinstance(item, str):
-            return Item(item)
-        if isinstance(item, dict):
-            if len(item) != 1:
-                raise ValueError('dict must have exactly one item')
-            return ItemPair(*(list(item.items())[0]))
-
-
-class ItemPair(Item):
-    '''
-    A metadata item that has an associated value.
-    '''
-    def __init__(self, name, value):
-        self.value = value
-        super(ItemPair, self).__init__(name)
-
-    def __repr__(self):
-        return '<%s(%r = %r)>' % (self.__class__.__name__,
-                self.name, self.value)

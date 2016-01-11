@@ -6,7 +6,6 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 from .grid import Grid
-from .metadata import Item, ItemPair
 from .sortabledict import SortableDict
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, MARKER, STR_SUB
 from .zoneinfo import timezone_name
@@ -34,15 +33,14 @@ def dump_grid(grid):
     return '\n'.join([header, columns] + rows)
 
 def dump_meta(meta):
-    return ' '.join(map(dump_meta_item, list(meta.values())))
+    return ' '.join(map(dump_meta_item, list(meta.items())))
 
 def dump_meta_item(item):
-    if isinstance(item, ItemPair):
-        return '%s:%s' % (dump_id(item.name), dump_scalar(item.value))
-    elif isinstance(item, Item):
-        return dump_id(item.name)
+    (item_id, item_value) = item
+    if item is MARKER:
+        return dump_id(item_id)
     else:
-        raise NotImplementedError('Cannot dump %r' % item)
+        return '%s:%s' % (dump_id(item_id), dump_scalar(item_value))
 
 def dump_columns(cols):
     return ','.join(map(dump_column, *list(zip(*list(cols.items())))))

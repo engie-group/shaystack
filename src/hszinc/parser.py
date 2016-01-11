@@ -6,7 +6,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 from .grid import Grid
-from .metadata import Item, ItemPair, MetadataObject
+from .metadata import MetadataObject
 from .grammar import zinc_grammar
 from .sortabledict import SortableDict
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, MARKER, STR_SUB
@@ -71,7 +71,8 @@ def parse_meta(meta):
         # There'll probably be a space beforehand
         for node in item_parent.children:
             if node.expr_name == 'metaItem':
-                items.append(parse_meta_item(node))
+                (item_id, item_value) = parse_meta_item(node)
+                items[item_id] = item_value
                 break
     return items
 
@@ -81,13 +82,13 @@ def parse_meta_item(item):
     item_child = item.children[0]
     if item_child.expr_name == 'id':
         # This is a marker
-        return Item(parse_id(item_child))
+        return (parse_id(item_child), MARKER)
     elif item_child.expr_name == 'metaPair':
         # This is a metadata pair
         assert len(item_child.children) == 3
         item_id = parse_id(item_child.children[0])
         item_value = parse_scalar(item_child.children[2])
-        return ItemPair(item_id, item_value)
+        return (item_id, item_value)
     else:
         raise NotImplementedError('Unhandled case: %s' \
                 % item_child.prettily())

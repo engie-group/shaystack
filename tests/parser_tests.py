@@ -218,6 +218,31 @@ str,ref
     assert grid_list[0][1]['ref'].has_value
     assert grid_list[0][1]['ref'].value == 'With value'
 
+def test_date():
+    grid_list = hszinc.parse('''ver:"2.0"
+date
+2010-03-13
+''')
+
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 1
+    assert isinstance(grid_list[0][0]['date'], datetime.date)
+    assert grid_list[0][0]['date'] == datetime.date(2010,3,13)
+
+def test_time():
+    grid_list = hszinc.parse('''ver:"2.0"
+time
+08:12:05
+08:12:05.5
+''')
+
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 2
+    assert isinstance(grid_list[0][0]['time'], datetime.time)
+    assert grid_list[0][0]['time'] == datetime.time(8,12,05)
+    assert isinstance(grid_list[0][1]['time'], datetime.time)
+    assert grid_list[0][1]['time'] == datetime.time(8,12,05,500000)
+
 def test_bin():
     grid_list = hszinc.parse('''ver:"2.0"
 bin

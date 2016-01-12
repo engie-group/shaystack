@@ -201,6 +201,23 @@ uri
     assert isinstance(grid_list[0][0]['uri'], hszinc.Uri)
     assert grid_list[0][0]['uri'] == 'http://www.vrt.com.au'
 
+def test_ref():
+    grid_list = hszinc.parse('''ver:"2.0"
+str,ref
+"Basic",@a-basic-ref
+"With value",@reference "With value"
+''')
+
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 2
+    assert isinstance(grid_list[0][0]['ref'], hszinc.Ref)
+    assert grid_list[0][0]['ref'].name == 'a-basic-ref'
+    assert not grid_list[0][0]['ref'].has_value
+    assert isinstance(grid_list[0][1]['ref'], hszinc.Ref)
+    assert grid_list[0][1]['ref'].name == 'reference'
+    assert grid_list[0][1]['ref'].has_value
+    assert grid_list[0][1]['ref'].value == 'With value'
+
 def test_multi_grid():
     # Multiple grids are separated by newlines.
     grid_list = hszinc.parse('\n'.join([

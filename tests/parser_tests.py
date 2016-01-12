@@ -288,6 +288,18 @@ Bin(text/plain)
     assert isinstance(grid_list[0][0]['bin'], hszinc.Bin)
     assert grid_list[0][0]['bin'] == 'text/plain'
 
+def test_coord():
+    grid_list = hszinc.parse('''ver:"2.0"
+coord
+C(37.55,-77.45)
+''')
+
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 1
+    assert isinstance(grid_list[0][0]['coord'], hszinc.Coordinate)
+    assert grid_list[0][0]['coord'].latitude == 37.55
+    assert grid_list[0][0]['coord'].longitude == -77.45
+
 def test_multi_grid():
     # Multiple grids are separated by newlines.
     grid_list = hszinc.parse('\n'.join([

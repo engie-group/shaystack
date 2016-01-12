@@ -152,14 +152,14 @@ str,number
 "Units time",4min
 "Positive Infinity",INF
 "Negative Infinity",-INF
+"Not a Number",NaN
 ''')
 
     # TODO:
-    # "Not a Number",NaN -- parsimonious fails on this one
     # "Units temperature",74.2°F -- according to Haystack grammar, not allowed,
     # but they give it as an example anyway.
     assert len(grid_list) == 1
-    assert len(grid_list[0]) == 8 # 9
+    assert len(grid_list[0]) == 9
     assert grid_list[0][0]['number'] == 1.0
     assert grid_list[0][1]['number'] == -34.0
     assert grid_list[0][2]['number'] == 10000.0
@@ -174,7 +174,7 @@ str,number
     assert grid_list[0][6]['number'] > 0
     assert math.isinf(grid_list[0][7]['number'])
     assert grid_list[0][7]['number'] < 0
-    #assert math.isnan(grid_list[0][8]['number'])
+    assert math.isnan(grid_list[0][8]['number'])
 
 def test_multi_grid():
     # Multiple grids are separated by newlines.

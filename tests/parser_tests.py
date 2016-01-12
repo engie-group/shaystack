@@ -6,6 +6,7 @@
 
 import hszinc
 import datetime
+import math
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
 
@@ -88,7 +89,7 @@ def check_metadata(grid):
     assert val.value == 463.028
     assert val.unit == 'kW'
 
-# A test example used to test every data type defined in the Zinc standard.
+# Test examples used to test every data type defined in the Zinc standard.
 #    Null: N
 #    Marker: M
 #    Bool: T or F (for true, false)
@@ -103,9 +104,9 @@ def check_metadata(grid):
 #    Coord: C(37.55,-77.45)
 
 NULL_EXAMPLE='''ver:"2.0"
-null
-,
-N
+str,null
+"Implicit",
+"Explict",N
 '''
 
 def check_null(grid):
@@ -117,6 +118,63 @@ def test_null():
     grid_list = hszinc.parse(NULL_EXAMPLE)
     assert len(grid_list) == 1
     check_null(grid_list[0])
+
+def test_marker_in_row():
+    grid_list = hszinc.parse('''ver:"2.0"
+str,marker
+"No Marker",
+"Marker",M
+''')
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 2
+    assert grid_list[0][0]['marker'] is None
+    assert grid_list[0][1]['marker'] is hszinc.MARKER
+
+def test_bool():
+    grid_list = hszinc.parse('''ver:"2.0"
+str,bool
+"True",T
+"False",F
+''')
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 2
+    assert grid_list[0][0]['bool'] == True
+    assert grid_list[0][1]['bool'] == False
+
+def test_number():
+    grid_list = hszinc.parse('''ver:"2.0"
+str,number
+"Integer",1
+"Negative Integer",-34
+"With Separators",10_000
+"Scientific",5.4e-45
+"Units mass",9.23kg
+"Units time",4min
+"Positive Infinity",INF
+"Negative Infinity",-INF
+''')
+
+    # TODO:
+    # "Not a Number",NaN -- parsimonious fails on this one
+    # "Units temperature",74.2°F -- according to Haystack grammar, not allowed,
+    # but they give it as an example anyway.
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 8 # 9
+    assert grid_list[0][0]['number'] == 1.0
+    assert grid_list[0][1]['number'] == -34.0
+    assert grid_list[0][2]['number'] == 10000.0
+    assert grid_list[0][3]['number'] == 5.4e-45
+    assert isinstance(grid_list[0][4]['number'], hszinc.Quantity)
+    assert grid_list[0][4]['number'].value == 9.23
+    assert grid_list[0][4]['number'].unit == 'kg'
+    assert isinstance(grid_list[0][5]['number'], hszinc.Quantity)
+    assert grid_list[0][5]['number'].value == 4.0
+    assert grid_list[0][5]['number'].unit == 'min'
+    assert math.isinf(grid_list[0][6]['number'])
+    assert grid_list[0][6]['number'] > 0
+    assert math.isinf(grid_list[0][7]['number'])
+    assert grid_list[0][7]['number'] < 0
+    #assert math.isnan(grid_list[0][8]['number'])
 
 def test_multi_grid():
     # Multiple grids are separated by newlines.

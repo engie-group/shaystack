@@ -6,6 +6,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si: 
 
 import pytz
+import datetime
 
 # The official list of timezones as of 6th Jan 2016:
 # Yes, that's *without* the usual country prefix.
@@ -490,6 +491,10 @@ def timezone_name(dt):
     # timezone-naïve copy of the timestamp.
     offset  = dt.utcoffset()
     dt_notz = dt.replace(tzinfo=None)
+
+    if offset == datetime.timedelta(0):
+        # UTC?
+        return 'UTC'
 
     for olson_name, haystack_name in list(tz_rmap.items()):
         if pytz.timezone(olson_name).utcoffset(dt_notz) == offset:

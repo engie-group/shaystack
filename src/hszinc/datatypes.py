@@ -31,6 +31,9 @@ class Quantity(object):
                 self.value, self.unit
         )
 
+    def __float__(self):
+        return self.value
+
 
 class Coordinate(object):
     '''

@@ -251,7 +251,7 @@ def parse_quantity(quantity_node):
 
 def parse_decimal(decimal_node):
     assert decimal_node.expr_name == 'decimal'
-    return float(decimal_node.text)
+    return float(decimal_node.text.replace('_',''))
 
 def parse_bool(bool_node):
     assert bool_node.expr_name == 'bool'

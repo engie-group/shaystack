@@ -298,7 +298,7 @@ def parse_time(time_node):
     return datetime.time(hour=int(hs),
                         minute=int(ms),
                         second=si,
-                        microseconds=int(sf*1e6))
+                        microsecond=int(sf*1e6))
 
 def parse_date_time(date_time_node):
     assert date_time_node.expr_name == 'dateTime'

@@ -30,7 +30,7 @@ def dump_grid(grid):
         header += ' ' + dump_meta(grid.metadata)
     columns = dump_columns(grid.column)
     rows = dump_rows(grid)
-    return '\n'.join([header, columns] + rows)
+    return '\n'.join([header, columns] + rows + [''])
 
 def dump_meta(meta):
     return ' '.join(map(dump_meta_item, list(meta.items())))

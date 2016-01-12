@@ -7,6 +7,7 @@
 import hszinc
 import datetime
 import math
+import pytz
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
 
@@ -239,9 +240,42 @@ time
     assert len(grid_list) == 1
     assert len(grid_list[0]) == 2
     assert isinstance(grid_list[0][0]['time'], datetime.time)
-    assert grid_list[0][0]['time'] == datetime.time(8,12,05)
+    assert grid_list[0][0]['time'] == datetime.time(8,12,5)
     assert isinstance(grid_list[0][1]['time'], datetime.time)
-    assert grid_list[0][1]['time'] == datetime.time(8,12,05,500000)
+    assert grid_list[0][1]['time'] == datetime.time(8,12,5,500000)
+
+def test_datetime():
+    grid_list = hszinc.parse('''ver:"2.0"
+datetime
+2010-11-28T07:23:02.500-08:00 Los_Angeles
+2010-11-28T23:19:29.500+08:00 Taipei
+2010-11-28T18:21:58+03:00 GMT-3
+2010-11-28T12:22:27-03:00 GMT+3
+2010-01-08T05:00:00Z UTC
+2010-01-08T05:00:00Z
+''')
+
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 6
+    assert isinstance(grid_list[0][0]['datetime'], datetime.datetime)
+    assert grid_list[0][0]['datetime'] == \
+            pytz.timezone('America/Los_Angeles').localize(\
+            datetime.datetime(2010,11,28,7,23,2,500000))
+    assert grid_list[0][1]['datetime'] == \
+            pytz.timezone('Asia/Taipei').localize(\
+            datetime.datetime(2010,11,28,23,19,29,500000))
+    assert grid_list[0][2]['datetime'] == \
+            pytz.timezone('Etc/GMT-3').localize(\
+            datetime.datetime(2010,11,28,18,21,58,0))
+    assert grid_list[0][3]['datetime'] == \
+            pytz.timezone('Etc/GMT+3').localize(\
+            datetime.datetime(2010,11,28,12,22,27,0))
+    assert grid_list[0][4]['datetime'] == \
+            pytz.timezone('UTC').localize(\
+            datetime.datetime(2010,1,8,5,0,0,0))
+    assert grid_list[0][5]['datetime'] == \
+            pytz.timezone('UTC').localize(\
+            datetime.datetime(2010,1,8,5,0,0,0))
 
 def test_bin():
     grid_list = hszinc.parse('''ver:"2.0"

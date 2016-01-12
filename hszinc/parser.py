@@ -131,7 +131,7 @@ def parse_row(grid, row):
     assert row.expr_name == 'row'
     # Cell names
     columns = list(grid.column.keys())
-    if not bool(row.children):
+    if not bool(row.children): # pragma: no cover
         # Empty row?  Shouldn't happen, but just in case.
         return {}
 

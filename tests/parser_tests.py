@@ -190,6 +190,17 @@ str,strExample
     assert grid_list[0][1]['strExample'] == 'Simple string'
     assert grid_list[0][2]['strExample'] == 'This\tIs\nA\r"Test"\\'
 
+def test_uri():
+    grid_list = hszinc.parse('''ver:"2.0"
+uri
+`http://www.vrt.com.au`
+''')
+
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 1
+    assert isinstance(grid_list[0][0]['uri'], hszinc.Uri)
+    assert grid_list[0][0]['uri'] == 'http://www.vrt.com.au'
+
 def test_multi_grid():
     # Multiple grids are separated by newlines.
     grid_list = hszinc.parse('\n'.join([

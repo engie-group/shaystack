@@ -204,6 +204,14 @@ class Quantity(object):
             other = other.value
         return other | self.value
 
+    def __cmp__(self, other):
+        if isinstance(other, Quantity):
+            if other.unit != self.unit:
+                raise TypeError('Quantity units differ: %s vs %s' \
+                        % (self.unit, other.unit))
+            return cmp(self.value, other.value)
+        return cmp(self.value, other)
+
 
 class Coordinate(object):
     '''

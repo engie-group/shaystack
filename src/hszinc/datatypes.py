@@ -31,8 +31,178 @@ class Quantity(object):
                 self.value, self.unit
         )
 
+    def __index__(self):
+        return self.value.__index__()
+
+    def __oct__(self):
+        return oct(self.value)
+
+    def __hex__(self):
+        return hex(self.value)
+
+    def __int__(self):
+        return int(self.value)
+
+    def __long__(self):
+        return long(self.value)
+
+    def __complex__(self):
+        return complex(self.value)
+
     def __float__(self):
-        return self.value
+        return float(self.value)
+
+    def __neg__(self):
+        return -self.value
+
+    def __pos__(self):
+        return +self.value
+
+    def __abs__(self):
+        return abs(self.value)
+
+    def __invert__(self):
+        return ~self.value
+
+    def __add__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return self.value + other
+
+    def __sub__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return self.value - other
+
+    def __mul__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return self.value * other
+
+    def __div__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return self.value / other
+
+    def __truediv__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return self.value / other
+
+    def __floordiv__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return self.value // other
+
+    def __mod__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return self.value % other
+
+    def __divmod__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return divmod(self.value, other)
+
+    def __pow__(self, other, modulo=None):
+        if isinstance(other, Quantity):
+            other = other.value
+        return pow(self.value, other, modulo)
+
+    def __lshift__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return self.value << other
+
+    def __rshift__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return self.value >> other
+
+    def __and__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return self.value & other
+
+    def __xor__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return self.value ^ other
+
+    def __or__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return self.value | other
+
+    def __radd__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return other + self.value
+
+    def __rsub__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return other - self.value
+
+    def __rmul__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return other * self.value
+
+    def __rdiv__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return other / self.value
+
+    def __rtruediv__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return other / self.value
+
+    def __rfloordiv__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return other // self.value
+
+    def __rmod__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return other % self.value
+
+    def __rdivmod__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return divmod(other, self.value)
+
+    def __rpow__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return pow(other, self.value)
+
+    def __rlshift__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return other << self.value
+
+    def __rrshift__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return other >> self.value
+
+    def __rand__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return other & self.value
+
+    def __rxor__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return other ^ self.value
+
+    def __ror__(self, other):
+        if isinstance(other, Quantity):
+            other = other.value
+        return other | self.value
 
 
 class Coordinate(object):

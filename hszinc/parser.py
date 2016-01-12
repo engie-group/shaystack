@@ -89,7 +89,7 @@ def parse_meta_item(item):
         item_id = parse_id(item_child.children[0])
         item_value = parse_scalar(item_child.children[2])
         return (item_id, item_value)
-    else:
+    else: # pragma: no cover
         raise NotImplementedError('Unhandled case: %s' \
                 % item_child.prettily())
 
@@ -193,7 +193,7 @@ def parse_scalar(scalar):
         return parse_coord(scalar_child)
     elif scalar_child.expr_name == 'number':
         return parse_number(scalar_child)
-    else:
+    else: # pragma: no cover
         raise NotImplementedError('Unhandled case: %s' \
                 % scalar_child.prettily())
 
@@ -238,7 +238,9 @@ def parse_number(num_node):
         return parse_decimal(value)
     elif value.text in ('INF','-INF','NaN'):
         return float(value.text)
-    raise NotImplementedError('Unhandled case: %s' % value.prettily())
+    else: # pragma: no cover
+        raise NotImplementedError(\
+                'Unhandled case: %s' % value.prettily())
 
 def parse_quantity(quantity_node):
     assert quantity_node.expr_name == 'quantity'
@@ -308,13 +310,17 @@ def parse_date_time(date_time_node):
     isodt = iso8601.parse_date(date_time_node.children[0].text)
     tzname = date_time_node.children[1].text[1:]
 
-    if (isodt.tzinfo is None) and bool(tzname):
+    if (isodt.tzinfo is None) and bool(tzname): # pragma: no cover
+        # This technically shouldn't happen according to Zinc specs
         return timezone(tzname).localise(isodt)
     elif bool(tzname):
         try:
             tz = timezone(tzname)
             return isodt.astimezone(tz)
-        except:
+        except: # pragma: no cover
+            # Unlikely to occur, might do though if Project Haystack changes
+            # its timezone list or if a system doesn't recognise a particular
+            # timezone.
             return isodt    # Failed, leave alone
     else:
         return isodt

@@ -26,7 +26,7 @@ def check_row_keys(row, grid):
 
 def check_simple(grid):
     assert len(grid.metadata) == 0
-    assert grid.column.keys() == ['firstName', 'bday']
+    assert list(grid.column.keys()) == ['firstName', 'bday']
     # Neither column should have metadata
     assert all([len(c) == 0 for c in grid.column.values()])
 
@@ -55,17 +55,17 @@ def test_metadata():
 
 def check_metadata(grid):
     assert len(grid.metadata) == 2
-    assert grid.metadata.keys() == ['database', 'dis']
+    assert list(grid.metadata.keys()) == ['database', 'dis']
     assert grid.metadata['database'] == 'test'
     assert grid.metadata['dis'] == 'Site Energy Summary'
 
-    assert grid.column.keys() == ['siteName', 'val']
+    assert list(grid.column.keys()) == ['siteName', 'val']
     col = grid.column['siteName']
-    assert col.keys() == ['dis']
+    assert list(col.keys()) == ['dis']
     assert col['dis'] == 'Sites'
 
     col = grid.column['val']
-    assert col.keys() == ['dis', 'unit']
+    assert list(col.keys()) == ['dis', 'unit']
     assert col['dis'] == 'Value'
     assert col['unit'] == 'kW'
 

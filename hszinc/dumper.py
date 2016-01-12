@@ -13,7 +13,7 @@ import datetime
 import iso8601
 import re
 
-URI_META = re.compile(r'([:/\?#\[\]@\\&=;"$])')
+URI_META = re.compile(r'([\\`])')
 STR_META = re.compile(r'([\\"$])')
 
 def dump(grids):

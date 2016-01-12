@@ -277,7 +277,7 @@ class Ref(object):
     def __init__(self, name, value=None, has_value=False):
         self.name       = name
         self.value      = value
-        self.has_value  = has_value
+        self.has_value  = has_value or (value is not None)
 
     def __repr__(self):
         return '%s(%r, %r, %r)' % (

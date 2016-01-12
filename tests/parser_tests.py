@@ -176,6 +176,20 @@ str,number
     assert grid_list[0][7]['number'] < 0
     assert math.isnan(grid_list[0][8]['number'])
 
+def test_string():
+    grid_list = hszinc.parse('''ver:"2.0"
+str,strExample
+"Empty",""
+"Basic","Simple string"
+"Escaped","This\\tIs\\nA\\r\\"Test\\"\\\\"
+''')
+
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 3
+    assert grid_list[0][0]['strExample'] == ''
+    assert grid_list[0][1]['strExample'] == 'Simple string'
+    assert grid_list[0][2]['strExample'] == 'This\tIs\nA\r"Test"\\'
+
 def test_multi_grid():
     # Multiple grids are separated by newlines.
     grid_list = hszinc.parse('\n'.join([

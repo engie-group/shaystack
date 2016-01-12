@@ -372,3 +372,19 @@ aColumn aString:"aValue" aNumber:3.14159 aNull:N aMarker:M anotherMarker aQuanti
     assert isinstance(meta['aPlace'], hszinc.Coordinate)
     assert meta['aPlace'].latitude == -27.4725
     assert meta['aPlace'].longitude == 153.003
+
+def test_too_many_cells():
+    grid_list = hszinc.parse('''ver:"2.0"
+col1, col2, col3
+"Val1", "Val2", "Val3", "Val4", "Val5"
+''')
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 1
+    assert len(grid_list[0].metadata) == 0
+    assert list(grid_list[0].column.keys()) == ['col1','col2','col3']
+
+    row = grid_list[0][0]
+    assert set(row.keys()) == set(['col1','col2','col3'])
+    assert row['col1'] == 'Val1'
+    assert row['col2'] == 'Val2'
+    assert row['col3'] == 'Val3'

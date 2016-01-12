@@ -316,25 +316,59 @@ empty
 
     assert len(grid_list) == 1
     assert len(grid_list[0]) == 0
-    assert list(grid_list[0].metadata.keys()) == ['aString', 'aNumber', 'aNull',
+    meta = grid_list[0].metadata
+    assert list(meta.keys()) == ['aString', 'aNumber', 'aNull',
             'aMarker', 'anotherMarker', 'aQuantity', 'aDate', 'aTime',
             'aTimestamp', 'aPlace']
-    assert grid_list[0].metadata['aString'] == 'aValue'
-    assert grid_list[0].metadata['aNumber'] == 3.14159
-    assert grid_list[0].metadata['aNull'] is None
-    assert grid_list[0].metadata['aMarker'] is hszinc.MARKER
-    assert grid_list[0].metadata['anotherMarker'] is hszinc.MARKER
-    assert isinstance(grid_list[0].metadata['aQuantity'], hszinc.Quantity)
-    assert grid_list[0].metadata['aQuantity'].value == 123
-    assert grid_list[0].metadata['aQuantity'].unit == 'Hz'
-    assert isinstance(grid_list[0].metadata['aDate'], datetime.date)
-    assert grid_list[0].metadata['aDate'] == datetime.date(2016,1,13)
-    assert isinstance(grid_list[0].metadata['aTime'], datetime.time)
-    assert grid_list[0].metadata['aTime'] == datetime.time(6,44)
-    assert isinstance(grid_list[0].metadata['aTimestamp'], datetime.datetime)
-    assert grid_list[0].metadata['aTimestamp'] == \
+    assert meta['aString'] == 'aValue'
+    assert meta['aNumber'] == 3.14159
+    assert meta['aNull'] is None
+    assert meta['aMarker'] is hszinc.MARKER
+    assert meta['anotherMarker'] is hszinc.MARKER
+    assert isinstance(meta['aQuantity'], hszinc.Quantity)
+    assert meta['aQuantity'].value == 123
+    assert meta['aQuantity'].unit == 'Hz'
+    assert isinstance(meta['aDate'], datetime.date)
+    assert meta['aDate'] == datetime.date(2016,1,13)
+    assert isinstance(meta['aTime'], datetime.time)
+    assert meta['aTime'] == datetime.time(6,44)
+    assert isinstance(meta['aTimestamp'], datetime.datetime)
+    assert meta['aTimestamp'] == \
             pytz.timezone('Australia/Brisbane').localize(\
                 datetime.datetime(2016,1,13,6,44))
-    assert isinstance(grid_list[0].metadata['aPlace'], hszinc.Coordinate)
-    assert grid_list[0].metadata['aPlace'].latitude == -27.4725
-    assert grid_list[0].metadata['aPlace'].longitude == 153.003
+    assert isinstance(meta['aPlace'], hszinc.Coordinate)
+    assert meta['aPlace'].latitude == -27.4725
+    assert meta['aPlace'].longitude == 153.003
+
+def test_col_meta():
+    grid_list = hszinc.parse('''ver:"2.0"
+aColumn aString:"aValue" aNumber:3.14159 aNull:N aMarker:M anotherMarker aQuantity:123Hz aDate:2016-01-13 aTime:06:44:00 aTimestamp:2016-01-13T06:44:00+10:00 Brisbane aPlace:C(-27.4725,153.003)
+''')
+
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 0
+    assert len(grid_list[0].metadata) == 0
+    assert list(grid_list[0].column.keys()) == ['aColumn']
+    meta = grid_list[0].column['aColumn']
+    assert list(meta.keys()) == ['aString', 'aNumber', 'aNull',
+            'aMarker', 'anotherMarker', 'aQuantity', 'aDate', 'aTime',
+            'aTimestamp', 'aPlace']
+    assert meta['aString'] == 'aValue'
+    assert meta['aNumber'] == 3.14159
+    assert meta['aNull'] is None
+    assert meta['aMarker'] is hszinc.MARKER
+    assert meta['anotherMarker'] is hszinc.MARKER
+    assert isinstance(meta['aQuantity'], hszinc.Quantity)
+    assert meta['aQuantity'].value == 123
+    assert meta['aQuantity'].unit == 'Hz'
+    assert isinstance(meta['aDate'], datetime.date)
+    assert meta['aDate'] == datetime.date(2016,1,13)
+    assert isinstance(meta['aTime'], datetime.time)
+    assert meta['aTime'] == datetime.time(6,44)
+    assert isinstance(meta['aTimestamp'], datetime.datetime)
+    assert meta['aTimestamp'] == \
+            pytz.timezone('Australia/Brisbane').localize(\
+                datetime.datetime(2016,1,13,6,44))
+    assert isinstance(meta['aPlace'], hszinc.Coordinate)
+    assert meta['aPlace'].latitude == -27.4725
+    assert meta['aPlace'].longitude == 153.003

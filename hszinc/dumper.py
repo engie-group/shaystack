@@ -37,7 +37,7 @@ def dump_meta(meta):
 
 def dump_meta_item(item):
     (item_id, item_value) = item
-    if item is MARKER:
+    if item_value is MARKER:
         return dump_id(item_id)
     else:
         return '%s:%s' % (dump_id(item_id), dump_scalar(item_value))

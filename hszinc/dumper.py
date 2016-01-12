@@ -86,7 +86,7 @@ def dump_scalar(scalar):
             isinstance(scalar, int) or \
             isinstance(scalar, int):
         return dump_decimal(scalar)
-    else:
+    else: # pragma: no cover
         raise NotImplementedError('Unhandled case: %r' % scalar)
 
 def dump_id(id_str):

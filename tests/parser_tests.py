@@ -218,6 +218,17 @@ str,ref
     assert grid_list[0][1]['ref'].has_value
     assert grid_list[0][1]['ref'].value == 'With value'
 
+def test_bin():
+    grid_list = hszinc.parse('''ver:"2.0"
+bin
+Bin(text/plain)
+''')
+
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 1
+    assert isinstance(grid_list[0][0]['bin'], hszinc.Bin)
+    assert grid_list[0][0]['bin'] == 'text/plain'
+
 def test_multi_grid():
     # Multiple grids are separated by newlines.
     grid_list = hszinc.parse('\n'.join([

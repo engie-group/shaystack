@@ -1,3 +1,4 @@
 parsimonious
 pytz
+iso8601
 coveralls

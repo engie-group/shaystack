@@ -11,6 +11,7 @@ REQUIREMENTS
 
 - [parsimonious](https://github.com/erikrose/parsimonious)
 - [pytz](http://pytz.sourceforge.net/)
+- [iso8601](http://pyiso8601.readthedocs.org/en/latest/)
 
 STATUS
 ======

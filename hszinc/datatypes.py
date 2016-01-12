@@ -231,6 +231,15 @@ class Coordinate(object):
                 self.latitude, self.longitude
         )
 
+    def __eq__(self, other):
+        if not isinstance(other, Coordinate):
+            raise TypeError('%r is not a Coordinate or subclass' % other)
+        return (self.latitude == other.latitude) and \
+                (self.longitude == other.longitude)
+
+    def __neq__(self, other):
+        return not (self == other)
+
 
 class Uri(str):
     '''
@@ -282,3 +291,13 @@ class Ref(object):
             )
         else:
             return '@%s' % self.name
+
+    def __eq__(self, other):
+        if not isinstance(other, Ref):
+            raise TypeError('%r is not a Ref or subclass' % other)
+        return (self.name == other.name) and \
+                (self.has_value == other.has_value) and \
+                (self.value == other.value)
+
+    def __neq__(self, other):
+        return not (self == other)

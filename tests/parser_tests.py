@@ -45,7 +45,8 @@ def check_simple(grid):
 METADATA_EXAMPLE='''ver:"2.0" database:"test" dis:"Site Energy Summary"
 siteName dis:"Sites", val dis:"Value" unit:"kW"
 "Site 1", 356.214kW
-"Site 2", 463.028kW'''
+"Site 2", 463.028kW
+'''
 
 def test_metadata():
     grid_list = hszinc.parse(METADATA_EXAMPLE)
@@ -86,3 +87,42 @@ def check_metadata(grid):
     assert isinstance(val, hszinc.Quantity)
     assert val.value == 463.028
     assert val.unit == 'kW'
+
+# A test example used to test every data type defined in the Zinc standard.
+#    Null: N
+#    Marker: M
+#    Bool: T or F (for true, false)
+#    Number: 1, -34, 10_000, 5.4e-45, 9.23kg, 74.2°F, 4min, INF, -INF, NaN
+#    Str: "hello" "foo\nbar\" (uses all standard escape chars as C like languages)
+#    Uri: `http://project-haystack.com/`
+#    Ref: @17eb0f3a-ad607713
+#    Date: 2010-03-13 (YYYY-MM-DD)
+#    Time: 08:12:05 (hh:mm:ss.FFF)
+#    DateTime: 2010-03-11T23:55:00-05:00 New_York or 2009-11-09T15:39:00Z
+#    Bin: Bin(text/plain)
+#    Coord: C(37.55,-77.45)
+
+NULL_EXAMPLE='''ver:"2.0"
+null
+,
+N
+'''
+
+def check_null(grid):
+    assert len(grid) == 2
+    assert grid[0]['null'] is None
+    assert grid[1]['null'] is None
+
+def test_null():
+    grid_list = hszinc.parse(NULL_EXAMPLE)
+    assert len(grid_list) == 1
+    check_null(grid_list[0])
+
+def test_multi_grid():
+    # Multiple grids are separated by newlines.
+    grid_list = hszinc.parse('\n'.join([
+        SIMPLE_EXAMPLE, METADATA_EXAMPLE, NULL_EXAMPLE]))
+    assert len(grid_list) == 3
+    check_simple(grid_list[0])
+    check_metadata(grid_list[1])
+    check_null(grid_list[2])

@@ -9,7 +9,8 @@ from .grid import Grid
 from .metadata import MetadataObject
 from .grammar import zinc_grammar
 from .sortabledict import SortableDict
-from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, MARKER, STR_SUB
+from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
+        MARKER, REMOVE, STR_SUB
 from .zoneinfo import timezone
 import datetime
 import iso8601
@@ -173,6 +174,8 @@ def parse_scalar(scalar):
         return None
     elif scalar_child.expr_name == 'marker':
         return MARKER
+    elif scalar_child.expr_name == 'remove':
+        return REMOVE
     elif scalar_child.expr_name == 'bool':
         return parse_bool(scalar_child)
     elif scalar_child.expr_name == 'ref':

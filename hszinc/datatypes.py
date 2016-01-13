@@ -265,6 +265,14 @@ class MarkerType(object):
 
 MARKER = MarkerType()
 
+class RemoveType(object):
+    '''
+    A singleton class representing a Remove.
+    '''
+    pass
+
+REMOVE = RemoveType()
+
 
 class Ref(object):
     '''

@@ -7,7 +7,8 @@
 
 from .grid import Grid
 from .sortabledict import SortableDict
-from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, MARKER, STR_SUB
+from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
+        MARKER, REMOVE, STR_SUB
 from .zoneinfo import timezone_name
 import datetime
 import iso8601
@@ -62,6 +63,8 @@ def dump_scalar(scalar):
         return 'N'
     elif scalar is MARKER:
         return 'M'
+    elif scalar is REMOVE:
+        return 'R'
     elif isinstance(scalar, bool):
         return dump_bool(scalar)
     elif isinstance(scalar, Ref):

@@ -11,7 +11,7 @@ from .metadata import MetadataObject
 from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, Ref
 
 __all__ = ['Grid', 'dump', 'parse', 'MetadataObject', 'Quantity',
-        'Coordinate', 'Uri', 'Bin', 'MARKER', 'Ref']
+        'Coordinate', 'Uri', 'Bin', 'MARKER', 'REMOVE', 'Ref']
 
 __author__ = 'VRT Systems'
 __copyright__ = 'Copyright 2016, VRT Systems'

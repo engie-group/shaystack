@@ -224,7 +224,9 @@ def parse_uri(uri_node):
     # Replace escapes.
     for orig, esc in STR_SUB:
         uri_value = uri_value.replace(esc, orig)
-    return Uri(URI_META.sub(r'\1', uri_value))
+    return Uri(URI_META.sub(\
+            lambda m : m.group(0) if m.group(1) != '`' else '`',
+            uri_value))
 
 def parse_bin(bin_node):
     assert bin_node.expr_name == 'bin'

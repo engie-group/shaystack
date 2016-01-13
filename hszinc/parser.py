@@ -18,6 +18,7 @@ import re
 
 URI_META = re.compile(r'\\([:/\?#\[\]@\\&=;"$])')
 STR_META = re.compile(r'\\([\\"$])')
+GRID_SEP = re.compile(r'\n\n+')
 
 def parse(zinc_str):
     '''
@@ -26,7 +27,7 @@ def parse(zinc_str):
     # Split the separate grids up, the grammar definition has trouble splitting
     # them up normally.  This will truncate the newline off the end of the last
     # row.
-    return list(map(parse_grid, zinc_str.split('\n\n')))
+    return list(map(parse_grid, GRID_SEP.split(zinc_str.rstrip())))
 
 def parse_grid(grid_str):
     if not grid_str.endswith('\n'):

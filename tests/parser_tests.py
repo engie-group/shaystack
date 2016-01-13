@@ -468,7 +468,7 @@ C(12,-34),C(0.123,-.789),C(84.5,-77.45),C(-90,180)
     assert row['a'] == ''
     assert row['b'] == 'a'
     assert row['c'] == '\" \\ \t \n \r'
-    assert row['d'] == '\uabcd'
+    assert row['d'] == u'\uabcd'
     row = grid.pop(0)
     assert row['a'] == hszinc.Uri('path')
     assert row['b'] == hszinc.Ref('12cbb082-0c02ae73')

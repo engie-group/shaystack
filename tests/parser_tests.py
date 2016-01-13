@@ -388,3 +388,167 @@ col1, col2, col3
     assert row['col1'] == 'Val1'
     assert row['col2'] == 'Val2'
     assert row['col3'] == 'Val3'
+
+def test_nodehaystack_01():
+    grid_list = hszinc.parse('''ver:"2.0"
+fooBar33
+''')
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 0
+    assert len(grid_list[0].metadata) == 0
+    assert list(grid_list[0].column.keys()) == ['fooBar33']
+
+def test_nodehaystack_02():
+    grid_list = hszinc.parse('''ver:"2.0" tag foo:"bar"
+xyz
+"val"
+''')
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 1
+    assert list(grid_list[0].metadata.keys()) == ['tag', 'foo']
+    assert grid_list[0].metadata['tag'] is hszinc.MARKER
+    assert grid_list[0].metadata['foo'] == 'bar'
+    assert list(grid_list[0].column.keys()) == ['xyz']
+    assert grid_list[0][0]['xyz'] == 'val'
+
+def test_nodehaystack_03():
+    grid_list = hszinc.parse('''ver:"2.0"
+val
+N
+''')
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 1
+    assert len(grid_list[0].metadata) == 0
+    assert list(grid_list[0].column.keys()) == ['val']
+    assert grid_list[0][0]['val'] is None
+
+def test_nodehaystack_04():
+    grid_list = hszinc.parse('''ver:"2.0"
+a,b
+1,2
+3,4
+''')
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 2
+    assert len(grid_list[0].metadata) == 0
+    assert list(grid_list[0].column.keys()) == ['a','b']
+    assert grid_list[0][0]['a'] == 1
+    assert grid_list[0][0]['b'] == 2
+    assert grid_list[0][1]['a'] == 3
+    assert grid_list[0][1]['b'] == 4
+
+def test_nodehaystack_05():
+    grid_list = hszinc.parse('''ver:"2.0"
+a,    b,      c,      d
+T,    F,      N,   -99
+2.3,  -5e-10, 2.4e20, 123e-10
+"",   "a",   "\\" \\\\ \\t \\n \\r", "\\uabcd"
+`path`, @12cbb082-0c02ae73, 4s, -2.5min
+M,R,Bin(image/png),Bin(image/png)
+2009-12-31, 23:59:01, 01:02:03.123, 2009-02-03T04:05:06Z
+INF, -INF, "", NaN
+C(12,-34),C(0.123,-.789),C(84.5,-77.45),C(-90,180)
+''')
+    assert len(grid_list) == 1
+    grid = grid_list.pop(0)
+    assert len(grid) == 8
+    assert len(grid.metadata) == 0
+    assert list(grid.column.keys()) == ['a','b','c','d']
+    row = grid.pop(0)
+    assert row['a'] == True
+    assert row['b'] == False
+    assert row['c'] is None
+    assert row['d'] == -99.0
+    row = grid.pop(0)
+    assert row['a'] == 2.3
+    assert row['b'] == -5e-10
+    assert row['c'] == 2.4e20
+    assert row['d'] == 123e-10
+    row = grid.pop(0)
+    assert row['a'] == ''
+    assert row['b'] == 'a'
+    assert row['c'] == '\" \\ \t \n \r'
+    assert row['d'] == '\uabcd'
+    row = grid.pop(0)
+    assert row['a'] == hszinc.Uri('path')
+    assert row['b'] == hszinc.Ref('12cbb082-0c02ae73')
+    assert row['c'] == hszinc.Quantity(4, 's')
+    assert row['d'] == hszinc.Quantity(-2.5, 'min')
+    row = grid.pop(0)
+    assert row['a'] is hszinc.MARKER
+    assert row['b'] is hszinc.REMOVE
+    assert row['c'] == hszinc.Bin('image/png')
+    assert row['d'] == hszinc.Bin('image/png')
+    row = grid.pop(0)
+    assert row['a'] == datetime.date(2009,12,31)
+    assert row['b'] == datetime.time(23,59,1)
+    assert row['c'] == datetime.time(1,2,3,123000)
+    assert row['d'] == \
+            datetime.datetime(2009,2,3,4,5,6,tzinfo=pytz.utc)
+    row = grid.pop(0)
+    assert math.isinf(row['a']) and (row['a'] > 0)
+    assert math.isinf(row['b']) and (row['b'] < 0)
+    assert row['c'] == ''
+    assert math.isnan(row['d'])
+    row = grid.pop(0)
+    assert row['a'] == hszinc.Coordinate(12,-34)
+    assert row['b'] == hszinc.Coordinate(.123,-.789)
+    assert row['c'] == hszinc.Coordinate(84.5,-77.45)
+    assert row['d'] == hszinc.Coordinate(-90,180)
+
+def test_nodehaystack_06():
+    grid_list = hszinc.parse('''ver:"2.0"
+foo
+`foo$20bar`
+`foo\\`bar`
+`file \\#2`
+"$15"
+''')
+
+def test_nodehaystack_07():
+    grid_list = hszinc.parse('''ver:"2.0"
+a, b
+-3.1kg,4kg
+5%,3.2%
+5kWh/ft\u00b2,-15kWh/m\u00b2
+123e+12kJ/kg_dry,74\u0394\u00b0F
+''')
+
+def test_nodehaystack_08():
+    grid_list = hszinc.parse('''ver:"2.0"
+a,b
+2010-03-01T23:55:00.013-05:00 GMT+5,2010-03-01T23:55:00.013+10:00 GMT-10
+''')
+
+def test_nodehaystack_09():
+    grid_list = hszinc.parse('''ver:"2.0" a: 2009-02-03T04:05:06Z foo b: 2010-02-03T04:05:06Z UTC bar c: 2009-12-03T04:05:06Z London baz
+a
+3.814697265625E-6
+2010-12-18T14:11:30.924Z
+2010-12-18T14:11:30.925Z UTC
+2010-12-18T14:11:30.925Z London
+45$
+33\u00a3
+@12cbb08e-0c02ae73
+7.15625E-4kWh/ft\u00b2
+''')
+
+def test_nodehaystack_10():
+    grid_list = hszinc.parse('''ver:"2.0" bg: Bin(image/jpeg) mark
+file1 dis:"F1" icon: Bin(image/gif),file2 icon: Bin(image/jpg)
+Bin(text/plain),N
+4,Bin(image/png)
+Bin(text/html; a=foo; bar="sep"),Bin(text/html; charset=utf8)
+''')
+
+def test_nodehaystack_11():
+    grid_list = hszinc.parse('''ver:"2.0"
+a, b, c
+, 1, 2
+3, , 5
+6, 7_000,
+,,10
+,,
+14,,
+
+''')

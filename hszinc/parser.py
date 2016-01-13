@@ -85,9 +85,9 @@ def parse_meta_item(item):
         return (parse_id(item_child), MARKER)
     elif item_child.expr_name == 'metaPair':
         # This is a metadata pair
-        assert len(item_child.children) == 3
+        assert len(item_child.children) == 4
         item_id = parse_id(item_child.children[0])
-        item_value = parse_scalar(item_child.children[2])
+        item_value = parse_scalar(item_child.children[-1])
         return (item_id, item_value)
     else: # pragma: no cover
         raise NotImplementedError('Unhandled case: %s' \

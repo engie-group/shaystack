@@ -8,7 +8,7 @@ from .grid import Grid
 from .dumper import dump
 from .parser import parse
 from .metadata import MetadataObject
-from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, Ref
+from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, REMOVE, Ref
 
 __all__ = ['Grid', 'dump', 'parse', 'MetadataObject', 'Quantity',
         'Coordinate', 'Uri', 'Bin', 'MARKER', 'REMOVE', 'Ref']

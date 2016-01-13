@@ -17,7 +17,7 @@ import iso8601
 import re
 import six
 
-URI_META = re.compile(r'\\([:/\?#\[\]@\\&=;"$])')
+URI_META = re.compile(r'\\([:/\?#\[\]@\\&=;"$`])')
 GRID_SEP = re.compile(r'\n\n+')
 
 def parse(zinc_str):

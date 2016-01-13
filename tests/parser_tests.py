@@ -504,15 +504,46 @@ foo
 `file \\#2`
 "$15"
 ''')
+    assert len(grid_list) == 1
+    grid = grid_list.pop(0)
+    assert len(grid) == 4
+    assert len(grid.metadata) == 0
+    assert list(grid.column.keys()) == ['foo']
+    row = grid.pop(0)
+    assert row['foo'] == hszinc.Uri('foo$20bar')
+    row = grid.pop(0)
+    assert row['foo'] == hszinc.Uri('foo`bar')
+    row = grid.pop(0)
+    assert row['foo'] == hszinc.Uri('file \\#2')
+    row = grid.pop(0)
+    assert row['foo'] == '$15'
+
 
 def test_nodehaystack_07():
-    grid_list = hszinc.parse('''ver:"2.0"
+    grid_list = hszinc.parse(u'''ver:"2.0"
 a, b
 -3.1kg,4kg
 5%,3.2%
 5kWh/ft\u00b2,-15kWh/m\u00b2
 123e+12kJ/kg_dry,74\u0394\u00b0F
 ''')
+    assert len(grid_list) == 1
+    grid = grid_list.pop(0)
+    assert len(grid) == 4
+    assert len(grid.metadata) == 0
+    assert list(grid.column.keys()) == ['a','b']
+    row = grid.pop(0)
+    assert row['a'] == hszinc.Quantity(-3.1,'kg')
+    assert row['b'] == hszinc.Quantity(4,'kg')
+    row = grid.pop(0)
+    assert row['a'] == hszinc.Quantity(5,'%')
+    assert row['b'] == hszinc.Quantity(3.2,'%')
+    row = grid.pop(0)
+    assert row['a'] == hszinc.Quantity(5,u'kWh/ft\u00b2')
+    assert row['b'] == hszinc.Quantity(-15,u'kWh/m\u00b2')
+    row = grid.pop(0)
+    assert row['a'] == hszinc.Quantity(123e12,'kJ/kg_dry')
+    assert row['b'] == hszinc.Quantity(74,u'\u0394\u00b0F')
 
 def test_nodehaystack_08():
     grid_list = hszinc.parse('''ver:"2.0"
@@ -521,7 +552,7 @@ a,b
 ''')
 
 def test_nodehaystack_09():
-    grid_list = hszinc.parse('''ver:"2.0" a: 2009-02-03T04:05:06Z foo b: 2010-02-03T04:05:06Z UTC bar c: 2009-12-03T04:05:06Z London baz
+    grid_list = hszinc.parse(u'''ver:"2.0" a: 2009-02-03T04:05:06Z foo b: 2010-02-03T04:05:06Z UTC bar c: 2009-12-03T04:05:06Z London baz
 a
 3.814697265625E-6
 2010-12-18T14:11:30.924Z

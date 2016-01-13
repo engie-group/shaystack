@@ -15,9 +15,9 @@ from .zoneinfo import timezone
 import datetime
 import iso8601
 import re
+import six
 
 URI_META = re.compile(r'\\([:/\?#\[\]@\\&=;"$])')
-STR_META = re.compile(r'\\([\\"$])')
 GRID_SEP = re.compile(r'\n\n+')
 
 def parse(zinc_str):
@@ -209,12 +209,11 @@ def parse_str(str_node):
     assert str_node.expr_name == 'str'
     assert len(str_node.children) == 3
 
-    str_value = str_node.children[1].text
-
-    # Replace escapes.
-    for orig, esc in STR_SUB:
-        str_value = str_value.replace(esc, orig)
-    return STR_META.sub(r'\1', str_value)
+    if six.PY2:
+        str_value = six.text_type(str_node.children[1].text)
+    else:
+        str_value = six.binary_type(str_node.children[1].text,'ascii')
+    return str_value.decode('unicode_escape')
 
 def parse_uri(uri_node):
     assert uri_node.expr_name == 'uri'

@@ -204,13 +204,39 @@ class Quantity(object):
             other = other.value
         return other | self.value
 
-    def __cmp__(self, other):
+    def _cmp_op(self, other, op):
         if isinstance(other, Quantity):
             if other.unit != self.unit:
                 raise TypeError('Quantity units differ: %s vs %s' \
                         % (self.unit, other.unit))
-            return cmp(self.value, other.value)
-        return cmp(self.value, other)
+            return op(self.value, other.value)
+        return op(self.value, other)
+
+    def __lt__(self, other):
+        return self._cmp_op(other, lambda x, y : x < y)
+
+    def __le__(self, other):
+        return self._cmp_op(other, lambda x, y : x <= y)
+
+    def __eq__(self, other):
+        return self._cmp_op(other, lambda x, y : x == y)
+
+    def __ge__(self, other):
+        return self._cmp_op(other, lambda x, y : x >= y)
+
+    def __gt__(self, other):
+        return self._cmp_op(other, lambda x, y : x > y)
+
+    def __ne__(self, other):
+        return self._cmp_op(other, lambda x, y : x != y)
+
+    def __cmp__(self, other):
+        if self == other:
+            return 0
+        elif self < other:
+            return -1
+        else:
+            return 1
 
 
 class Coordinate(object):

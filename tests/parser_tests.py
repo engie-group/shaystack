@@ -550,6 +550,16 @@ def test_nodehaystack_08():
 a,b
 2010-03-01T23:55:00.013-05:00 GMT+5,2010-03-01T23:55:00.013+10:00 GMT-10
 ''')
+    assert len(grid_list) == 1
+    grid = grid_list.pop(0)
+    assert len(grid) == 1
+    assert len(grid.metadata) == 0
+    assert list(grid.column.keys()) == ['a','b']
+    row = grid.pop(0)
+    assert row['a'] == hszinc.zoneinfo.timezone('GMT+5').localize(\
+            datetime.datetime(2010,3,1,23,55,0,13000))
+    assert row['b'] == hszinc.zoneinfo.timezone('GMT-10').localize(\
+            datetime.datetime(2010,3,1,23,55,0,13000))
 
 def test_nodehaystack_09():
     grid_list = hszinc.parse(u'''ver:"2.0" a: 2009-02-03T04:05:06Z foo b: 2010-02-03T04:05:06Z UTC bar c: 2009-12-03T04:05:06Z London baz
@@ -563,6 +573,31 @@ a
 @12cbb08e-0c02ae73
 7.15625E-4kWh/ft\u00b2
 ''')
+    assert len(grid_list) == 1
+    grid = grid_list.pop(0)
+    assert len(grid) == 8
+    assert list(grid.metadata.keys()) == ['a','foo','b','bar','c','baz']
+    assert grid.metadata['a'] == pytz.utc.localize(\
+            datetime.datetime(2009,2,3,4,5,6))
+    assert grid.metadata['b'] == pytz.utc.localize(\
+            datetime.datetime(2010,2,3,4,5,6))
+    assert grid.metadata['c'] == pytz.timezone('Europe/London').localize(\
+            datetime.datetime(2009,12,3,4,5,6))
+    assert grid.metadata['foo'] is hszinc.MARKER
+    assert grid.metadata['bar'] is hszinc.MARKER
+    assert grid.metadata['baz'] is hszinc.MARKER
+    assert list(grid.column.keys()) == ['a']
+    assert grid.pop(0)['a'] == 3.814697265625E-6
+    assert grid.pop(0)['a'] == pytz.utc.localize(\
+            datetime.datetime(2010,12,18,14,11,30,924000))
+    assert grid.pop(0)['a'] == pytz.utc.localize(\
+            datetime.datetime(2010,12,18,14,11,30,925000))
+    assert grid.pop(0)['a'] == pytz.timezone('Europe/London').localize(\
+            datetime.datetime(2010,12,18,14,11,30,925000))
+    assert grid.pop(0)['a'] == hszinc.Quantity(45,'$')
+    assert grid.pop(0)['a'] == hszinc.Quantity(33,u'\u00a3')
+    assert grid.pop(0)['a'] == hszinc.Ref('12cbb08e-0c02ae73')
+    assert grid.pop(0)['a'] == hszinc.Quantity(7.15625E-4,u'kWh/ft\u00b2')
 
 def test_nodehaystack_10():
     grid_list = hszinc.parse('''ver:"2.0" bg: Bin(image/jpeg) mark
@@ -571,6 +606,27 @@ Bin(text/plain),N
 4,Bin(image/png)
 Bin(text/html; a=foo; bar="sep"),Bin(text/html; charset=utf8)
 ''')
+    assert len(grid_list) == 1
+    grid = grid_list.pop(0)
+    assert len(grid) == 3
+    assert list(grid.metadata.keys()) == ['bg','mark']
+    assert grid.metadata['bg'] == hszinc.Bin('image/jpeg')
+    assert grid.metadata['mark'] is hszinc.MARKER
+    assert list(grid.column.keys()) == ['file1','file2']
+    assert list(grid.column['file1'].keys()) == ['dis','icon']
+    assert grid.column['file1']['dis'] == 'F1'
+    assert grid.column['file1']['icon'] == hszinc.Bin('image/gif')
+    assert list(grid.column['file2'].keys()) == ['icon']
+    assert grid.column['file2']['icon'] == hszinc.Bin('image/jpg')
+    row = grid.pop(0)
+    assert row['file1'] == hszinc.Bin('text/plain')
+    assert row['file2'] is None
+    row = grid.pop(0)
+    assert row['file1'] == 4
+    assert row['file2'] == hszinc.Bin('image/png')
+    row = grid.pop(0)
+    assert row['file1'] == hszinc.Bin('text/html; a=foo; bar="sep"')
+    assert row['file2'] == hszinc.Bin('text/html; charset=utf8')
 
 def test_nodehaystack_11():
     grid_list = hszinc.parse('''ver:"2.0"
@@ -583,3 +639,32 @@ a, b, c
 14,,
 
 ''')
+    assert len(grid_list) == 1
+    grid = grid_list.pop(0)
+    assert len(grid) == 6
+    assert len(grid.metadata) == 0
+    assert list(grid.column.keys()) == ['a','b','c']
+    row = grid.pop(0)
+    assert row['a'] is None
+    assert row['b'] == 1
+    assert row['c'] == 2
+    row = grid.pop(0)
+    assert row['a'] == 3
+    assert row['b'] is None
+    assert row['c'] == 5
+    row = grid.pop(0)
+    assert row['a'] == 6
+    assert row['b'] == 7000
+    assert row['c'] is None
+    row = grid.pop(0)
+    assert row['a'] is None
+    assert row['b'] is None
+    assert row['c'] == 10
+    row = grid.pop(0)
+    assert row['a'] is None
+    assert row['b'] is None
+    assert row['c'] is None
+    row = grid.pop(0)
+    assert row['a'] == 14
+    assert row['b'] is None
+    assert row['c'] is None

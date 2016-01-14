@@ -296,7 +296,7 @@ class Bin(str):
 
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__,
-                        super(Uri, self).__repr__())
+                        super(Bin, self).__repr__())
 
     def __eq__(self, other):
         if not isinstance(other, Bin):

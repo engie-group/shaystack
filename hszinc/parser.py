@@ -299,13 +299,17 @@ def parse_time(time_node):
     # Date is in 3 parts, separated by hyphens.
     (hs, ms, ss) = time_node.text.split(':',3)
     # Split seconds into whole and fractional parts
-    sf = float(ss)
-    si = int(sf)
-    sf -= si
+    if '.' in ss:
+        (whole_sec, frac_sec) = ss.split('.',1)
+        sec = int(whole_sec)
+        usec = int(frac_sec[:6].ljust(6,'0'))
+    else:
+        sec = int(ss)
+        usec = 0
     return datetime.time(hour=int(hs),
                         minute=int(ms),
-                        second=si,
-                        microsecond=int(sf*1e6))
+                        second=sec,
+                        microsecond=usec)
 
 def parse_date_time(date_time_node):
     assert date_time_node.expr_name == 'dateTime'

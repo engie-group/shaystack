@@ -272,7 +272,17 @@ class Uri(str):
     A convenience class to allow identification of a URI from other string
     types.
     '''
-    pass
+    def __str__(self):
+        return repr(self)
+
+    def __repr__(self):
+        return '%s(%s)' % (self.__class__.__name__,
+                        super(Uri, self).__repr__())
+
+    def __eq__(self, other):
+        if not isinstance(other, Uri):
+            raise TypeError('%r is not a Uri' % other)
+        return super(Uri, self).__eq__(other)
 
 
 class Bin(str):
@@ -281,13 +291,24 @@ class Bin(str):
     types.
     '''
     # TODO: This seems to be the MIME type, no idea where the data lives.
-    pass
+    def __str__(self):
+        return repr(self)
+
+    def __repr__(self):
+        return '%s(%s)' % (self.__class__.__name__,
+                        super(Uri, self).__repr__())
+
+    def __eq__(self, other):
+        if not isinstance(other, Bin):
+            raise TypeError('%r is not a Bin' % other)
+        return super(Bin, self).__eq__(other)
 
 class MarkerType(object):
     '''
     A singleton class representing a Marker.
     '''
-    pass
+    def __repr__(self):
+        return 'MARKER'
 
 MARKER = MarkerType()
 
@@ -295,7 +316,8 @@ class RemoveType(object):
     '''
     A singleton class representing a Remove.
     '''
-    pass
+    def __repr__(self):
+        return 'REMOVE'
 
 REMOVE = RemoveType()
 

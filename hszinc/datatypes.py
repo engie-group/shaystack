@@ -272,9 +272,6 @@ class Uri(str):
     A convenience class to allow identification of a URI from other string
     types.
     '''
-    def __str__(self):
-        return repr(self)
-
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__,
                         super(Uri, self).__repr__())
@@ -291,9 +288,6 @@ class Bin(str):
     types.
     '''
     # TODO: This seems to be the MIME type, no idea where the data lives.
-    def __str__(self):
-        return repr(self)
-
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__,
                         super(Bin, self).__repr__())

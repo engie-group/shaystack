@@ -111,6 +111,10 @@ def test_data_types():
             'value': hszinc.MARKER,
         },
         {
+            'comment': 'A "remove" object',
+            'value': hszinc.REMOVE,
+        },
+        {
             'comment': 'A boolean, indicating False',
             'value': False,
         },

@@ -14,8 +14,30 @@ import datetime
 import iso8601
 import re
 
-URI_META = re.compile(r'([\\`])')
-STR_META = re.compile(r'([\\"$])')
+URI_META = re.compile(r'([\\`\u0080-\uffff])')
+STR_META = re.compile(r'([\\"\u0080-\uffff])')
+
+def str_sub(match):
+    c = match.group(0)
+    o = ord(c)
+    if o >= 0x80:
+        # Unicode
+        return '\\u%04x' % o
+    elif c in '\\"':
+        return '\\%s' % c
+    else:
+        return c
+
+def uri_sub(match):
+    c = match.group(0)
+    o = ord(c)
+    if o >= 0x80:
+        # Unicode
+        return '\\u%04x' % o
+    elif c in '\\`':
+        return '\\%s' % c
+    else:
+        return c
 
 def dump(grids):
     '''
@@ -97,7 +119,7 @@ def dump_id(id_str):
 
 def dump_str(str_value):
     # Replace special characters.
-    str_value = STR_META.sub(r'\\\1', str_value)
+    str_value = STR_META.sub(str_sub, str_value)
     # Replace other escapes.
     for orig, esc in STR_SUB:
         str_value = str_value.replace(orig, esc)
@@ -105,7 +127,7 @@ def dump_str(str_value):
 
 def dump_uri(uri_value):
     # Replace special characters.
-    uri_value = URI_META.sub(r'\\\1', uri_value)
+    uri_value = URI_META.sub(uri_sub, uri_value)
     # Replace other escapes.
     for orig, esc in STR_SUB:
         uri_value = uri_value.replace(orig, esc)

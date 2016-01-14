@@ -180,6 +180,7 @@ def test_data_types():
 comment,value
 "A null value",N
 "A marker",M
+"A \\"remove\\" object",R
 "A boolean, indicating False",F
 "A boolean, indicating True",T
 "A reference, without value",@a-ref

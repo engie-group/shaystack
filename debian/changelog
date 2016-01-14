@@ -1,3 +1,9 @@
+hszinc (0.0.3) unstable; urgency=low
+  * More rigorous tests
+  * Support for (undocumented!) 'Remove' type
+  * Improvements to decoder robustness
+ -- Stuart Longland <stuartl@vrt.com.au>  Fri, 15 Jan 2016 06:35:11 +1000
+
 hszinc (0.0.2) unstable; urgency=low
   * Added tests, compatibility with Python 3.x, numerous bugfixes.
  -- Stuart Longland <stuartl@vrt.com.au>  Wed, 13 Jan 2016 08:30:59 +1000

@@ -199,8 +199,7 @@ uri
 
     assert len(grid_list) == 1
     assert len(grid_list[0]) == 1
-    assert isinstance(grid_list[0][0]['uri'], hszinc.Uri)
-    assert grid_list[0][0]['uri'] == 'http://www.vrt.com.au'
+    assert grid_list[0][0]['uri'] == hszinc.Uri('http://www.vrt.com.au')
 
 def test_ref():
     grid_list = hszinc.parse('''ver:"2.0"
@@ -285,8 +284,7 @@ Bin(text/plain)
 
     assert len(grid_list) == 1
     assert len(grid_list[0]) == 1
-    assert isinstance(grid_list[0][0]['bin'], hszinc.Bin)
-    assert grid_list[0][0]['bin'] == 'text/plain'
+    assert grid_list[0][0]['bin'] == hszinc.Bin('text/plain')
 
 def test_coord():
     grid_list = hszinc.parse('''ver:"2.0"

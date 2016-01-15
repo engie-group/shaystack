@@ -361,14 +361,10 @@ str,ref
 ''')
 
     assert len(grid_list) == 1
-    assert len(grid_list[0]) == 2
-    assert isinstance(grid_list[0][0]['ref'], hszinc.Ref)
-    assert grid_list[0][0]['ref'].name == 'a-basic-ref'
-    assert not grid_list[0][0]['ref'].has_value
-    assert isinstance(grid_list[0][1]['ref'], hszinc.Ref)
-    assert grid_list[0][1]['ref'].name == 'reference'
-    assert grid_list[0][1]['ref'].has_value
-    assert grid_list[0][1]['ref'].value == 'With value'
+    grid = grid_list.pop(0)
+    assert len(grid) == 2
+    assert grid[0]['ref'].name == hszinc.Ref('a-basic-ref')
+    assert grid[1]['ref'].name == hszinc.Ref('reference', 'With value')
 
 def test_ref_json():
     grid = hszinc.parse({

@@ -18,6 +18,7 @@ import re
 import six
 import functools
 import json
+import copy
 
 URI_META = re.compile(r'\\([:/\?#\[\]@\\&=;"$`])')
 GRID_SEP = re.compile(r'\n\n+')
@@ -99,7 +100,7 @@ def parse_grid(grid_str, mode=MODE_ZINC):
         if isinstance(grid_str, six.string_types):
             parsed = json.loads(grid_str)
         else:
-            parsed = grid_str
+            parsed = copy.deepcopy(grid_str)
         meta = parsed.pop('meta')
         version = meta.pop('ver')
 

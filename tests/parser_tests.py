@@ -339,6 +339,20 @@ uri
     assert len(grid_list[0]) == 1
     assert grid_list[0][0]['uri'] == hszinc.Uri('http://www.vrt.com.au')
 
+def test_uri_json():
+    grid = hszinc.parse({
+        'meta': {'ver':'2.0'},
+        'cols': [
+            {'name':'uri'},
+        ],
+        'rows': [
+            {'uri': 'u:http://www.vrt.com.au'},
+        ],
+    }, mode=hszinc.MODE_JSON)
+
+    assert len(grid) == 1
+    assert grid[0]['uri'] == hszinc.Uri('http://www.vrt.com.au')
+
 def test_ref():
     grid_list = hszinc.parse('''ver:"2.0"
 str,ref
@@ -355,6 +369,23 @@ str,ref
     assert grid_list[0][1]['ref'].name == 'reference'
     assert grid_list[0][1]['ref'].has_value
     assert grid_list[0][1]['ref'].value == 'With value'
+
+def test_ref_json():
+    grid = hszinc.parse({
+        'meta': {'ver':'2.0'},
+        'cols': [
+            {'name':'str'},
+            {'name':'ref'},
+        ],
+        'rows': [
+            {'str': 'Basic',        'ref': 'r:a-basic-ref'},
+            {'str': 'With value',   'ref': 'r:reference With value'},
+        ],
+    }, mode=hszinc.MODE_JSON)
+
+    assert len(grid) == 2
+    assert grid[0]['ref'] == hszinc.Ref('a-basic-ref')
+    assert grid[1]['ref'] == hszinc.Ref('reference', 'With value')
 
 def test_date():
     grid_list = hszinc.parse('''ver:"2.0"

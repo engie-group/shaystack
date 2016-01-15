@@ -373,14 +373,18 @@ def parse_id(id_node):
     assert id_node.expr_name == 'id'
     return id_node.text
 
+# These *should* have coverage, but unfortunately, there's no way to
+# say, "no cover on Python 2.x" or "no cover on Python 3.x"
+if six.PY2: # pragma: no cover
+    _str_to_bytes = lambda s : six.text_type(s)
+else: # pragma: no cover
+    _str_to_bytes = lambda s : six.binary_type(s,'ascii')
+
 def parse_str(str_node):
     assert str_node.expr_name == 'str'
     assert len(str_node.children) == 3
 
-    if six.PY2:
-        str_value = six.text_type(str_node.children[1].text)
-    else:
-        str_value = six.binary_type(str_node.children[1].text,'ascii')
+    str_value = _str_to_bytes(str_node.children[1].text)
     return str_value.decode('unicode_escape')
 
 def parse_uri(uri_node):

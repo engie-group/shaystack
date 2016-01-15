@@ -46,8 +46,15 @@ def parse(grid_str, mode=MODE_ZINC):
     # them up normally.  This will truncate the newline off the end of the last
     # row.
     _parse = functools.partial(parse_grid, mode=mode)
-    if (mode == MODE_JSON) and isinstance(grid_str, six.string_types):
-        return list(map(_parse, json.loads(grid_str)))
+    if mode == MODE_JSON:
+        if isinstance(grid_str, six.string_types):
+            grid_data = json.loads(grid_str)
+        else:
+            grid_data = grid_str
+        if isinstance(grid_data, dict):
+            return _parse(grid_data)
+        else:
+            return list(map(_parse, grid_data))
     else:
         return list(map(_parse, GRID_SEP.split(grid_str.rstrip())))
 

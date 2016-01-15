@@ -150,6 +150,18 @@ str,null
 "Implicit",
 "Explict",N
 '''
+NULL_EXAMPLE_JSON={
+        'meta': {'ver':'2.0'},
+        'cols': [
+            {'name':'str'},
+            {'name':'null'},
+        ],
+        'rows': [
+            {'str': 'Implicit', 'null':None},   # There's no "implicit" mode
+            {'str': 'Explicit', 'null':None},
+        ],
+}
+
 
 def check_null(grid):
     assert len(grid) == 2
@@ -160,6 +172,10 @@ def test_null():
     grid_list = hszinc.parse(NULL_EXAMPLE)
     assert len(grid_list) == 1
     check_null(grid_list[0])
+
+def test_null_json():
+    grid = hszinc.parse(NULL_EXAMPLE_JSON, mode=hszinc.MODE_JSON)
+    check_null(grid)
 
 def test_marker_in_row():
     grid_list = hszinc.parse('''ver:"2.0"
@@ -172,6 +188,21 @@ str,marker
     assert grid_list[0][0]['marker'] is None
     assert grid_list[0][1]['marker'] is hszinc.MARKER
 
+def test_marker_in_row_json():
+    grid = hszinc.parse({
+        'meta': {'ver':'2.0'},
+        'cols': [
+            {'name':'str'},
+            {'name':'marker'},
+        ],
+        'rows': [
+            {'str': 'No Marker',    'marker':None},
+            {'str': 'Marker',       'marker':'m:'},
+        ],
+    }, mode=hszinc.MODE_JSON)
+    assert grid[0]['marker'] is None
+    assert grid[1]['marker'] is hszinc.MARKER
+
 def test_bool():
     grid_list = hszinc.parse('''ver:"2.0"
 str,bool
@@ -182,6 +213,21 @@ str,bool
     assert len(grid_list[0]) == 2
     assert grid_list[0][0]['bool'] == True
     assert grid_list[0][1]['bool'] == False
+
+def test_bool_json():
+    grid = hszinc.parse({
+        'meta': {'ver':'2.0'},
+        'cols': [
+            {'name':'str'},
+            {'name':'bool'},
+        ],
+        'rows': [
+            {'str': 'True', 'bool':True},
+            {'str': 'False','bool':False},
+        ],
+    }, mode=hszinc.MODE_JSON)
+    assert grid[0]['bool'] == True
+    assert grid[1]['bool'] == False
 
 def test_number():
     grid_list = hszinc.parse('''ver:"2.0"

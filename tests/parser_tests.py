@@ -8,6 +8,7 @@ import hszinc
 import datetime
 import math
 import pytz
+import json
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
 
@@ -17,10 +18,27 @@ firstName,bday
 "Jill",1975-11-15
 '''
 
+SIMPLE_EXAMPLE_JSON={
+        'meta': {'ver':'2.0'},
+        'cols': [
+            {'name':'firstName'},
+            {'name':'bday'},
+        ],
+        'rows': [
+            {'firstName': 'Jack', 'bday':'d:1973-07-23'},
+            {'firstName': 'Jill', 'bday':'d:1975-11-15'},
+        ],
+}
+
 def test_simple():
     grid_list = hszinc.parse(SIMPLE_EXAMPLE)
     assert len(grid_list) == 1
     grid = grid_list[0]
+    check_simple(grid)
+
+def test_simple_json_str():
+    grid = hszinc.parse(json.dumps(SIMPLE_EXAMPLE_JSON),
+            mode=hszinc.MODE_JSON)
     check_simple(grid)
 
 def check_row_keys(row, grid):

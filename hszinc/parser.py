@@ -37,7 +37,7 @@ DATETIME_RE = re.compile(r'^t:(\d{4}-\d{2}-\d{2}T'\
         r'(:?[zZ]|[+\-]\d+:?\d*))(:? ([A-Za-z\-+_0-9]+))?$')
 URI_RE      = re.compile(r'u:(.+)$')
 BIN_RE      = re.compile(r'b:(.+)$')
-COORD_RE    = re.compile(r'c:(\d+\.?\d*),(\d+\.?\d*)$')
+COORD_RE    = re.compile(r'c:(-?\d*\.?\d*),(-?\d*\.?\d*)$')
 
 def parse(grid_str, mode=MODE_ZINC):
     '''
@@ -362,7 +362,7 @@ def parse_scalar(scalar, mode=MODE_ZINC):
         match = COORD_RE.match(scalar)
         if match:
             (lat,lng) = match.groups()
-            return Coord(float(lat),float(lng))
+            return Coordinate(float(lat),float(lng))
         return scalar
     else:
         raise NotImplementedError('Format not implemented: %s' % mode)

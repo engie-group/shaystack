@@ -271,6 +271,8 @@ def parse_scalar(scalar, mode=MODE_ZINC):
             return None
         elif scalar == MARKER_STR:
             return MARKER
+        elif isinstance(scalar, bool):
+            return scalar
 
         # Is it a number?
         match = NUMBER_RE.match(scalar)

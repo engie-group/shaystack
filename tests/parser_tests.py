@@ -430,12 +430,16 @@ def test_time_json():
             {'name':'time'},
         ],
         'rows': [
+            {'time': 'h:08:12'},
             {'time': 'h:08:12:05'},
             {'time': 'h:08:12:05.5'},
         ],
     }, mode=hszinc.MODE_JSON)
 
-    assert len(grid) == 2
+    assert len(grid) == 3
+    row = grid.pop(0)
+    assert isinstance(row['time'], datetime.time)
+    assert row['time'] == datetime.time(8,12)
     row = grid.pop(0)
     assert isinstance(row['time'], datetime.time)
     assert row['time'] == datetime.time(8,12,5)

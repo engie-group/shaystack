@@ -125,7 +125,7 @@ def parse_grid(grid_str, mode=MODE_ZINC):
             for col, value in row.items():
                 parsed_row[col] = parse_scalar(value, mode=mode)
             grid.append(parsed_row)
-    else:
+    else: # pragma: no cover
         raise NotImplementedError('Format not implemented: %s' % mode)
 
     return grid
@@ -365,7 +365,7 @@ def parse_scalar(scalar, mode=MODE_ZINC):
             (lat,lng) = match.groups()
             return Coordinate(float(lat),float(lng))
         return scalar
-    else:
+    else: # pragma: no cover
         raise NotImplementedError('Format not implemented: %s' % mode)
 
 def parse_id(id_node):

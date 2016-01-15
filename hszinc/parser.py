@@ -27,7 +27,7 @@ MODE_JSON = 'json'
 
 # Type regular expressions
 MARKER_STR  = 'm:'
-NUMBER_RE   = re.compile(r'^n:(\d+(:?\.\d+)?(:?[eE][+\-]?\d+)?)(:? (.*))?$')
+NUMBER_RE   = re.compile(r'^n:(-?\d+(:?\.\d+)?(:?[eE][+\-]?\d+)?)(:? (.*))?$')
 REF_RE      = re.compile(r'^r:([a-zA-Z0-9_:\-.~]+)(:? (.*))?$')
 STR_RE      = re.compile(r'^s:(.*)$')
 DATE_RE     = re.compile(r'^d:(\d{4})-(\d{2})-(\d{2})$')

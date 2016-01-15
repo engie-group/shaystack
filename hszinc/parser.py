@@ -17,6 +17,7 @@ import iso8601
 import re
 import six
 import functools
+import json
 
 URI_META = re.compile(r'\\([:/\?#\[\]@\\&=;"$`])')
 GRID_SEP = re.compile(r'\n\n+')
@@ -115,7 +116,7 @@ def parse_grid(grid_str, mode=MODE_ZINC):
             meta = {}
             for key, value in col.items():
                 meta[key] = parse_scalar(value, mode=mode)
-            grid.column[col] = meta
+            grid.column[name] = meta
 
         # Parse the rows
         for row in (parsed.pop('rows',[]) or []):

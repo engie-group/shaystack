@@ -346,7 +346,8 @@ def parse_scalar(scalar, mode=MODE_ZINC):
                 try:
                     tz = timezone(tzname)
                     return isodate.astimezone(tz)
-                except:
+                except: # pragma: no cover
+                    # Unlikely code path.
                     return isodate
 
         # Is it a URI?

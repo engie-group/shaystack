@@ -363,8 +363,8 @@ str,ref
     assert len(grid_list) == 1
     grid = grid_list.pop(0)
     assert len(grid) == 2
-    assert grid[0]['ref'].name == hszinc.Ref('a-basic-ref')
-    assert grid[1]['ref'].name == hszinc.Ref('reference', 'With value')
+    assert grid[0]['ref'] == hszinc.Ref('a-basic-ref')
+    assert grid[1]['ref'] == hszinc.Ref('reference', 'With value')
 
 def test_ref_json():
     grid = hszinc.parse({
@@ -394,6 +394,21 @@ date
     assert isinstance(grid_list[0][0]['date'], datetime.date)
     assert grid_list[0][0]['date'] == datetime.date(2010,3,13)
 
+def test_date_json():
+    grid = hszinc.parse({
+        'meta': {'ver':'2.0'},
+        'cols': [
+            {'name':'date'},
+        ],
+        'rows': [
+            {'date': 'd:2010-03-13'},
+        ],
+    }, mode=hszinc.MODE_JSON)
+
+    assert len(grid) == 1
+    assert isinstance(grid[0]['date'], datetime.date)
+    assert grid[0]['date'] == datetime.date(2010,3,13)
+
 def test_time():
     grid_list = hszinc.parse('''ver:"2.0"
 time
@@ -408,6 +423,26 @@ time
     assert isinstance(grid_list[0][1]['time'], datetime.time)
     assert grid_list[0][1]['time'] == datetime.time(8,12,5,500000)
 
+def test_time_json():
+    grid = hszinc.parse({
+        'meta': {'ver':'2.0'},
+        'cols': [
+            {'name':'time'},
+        ],
+        'rows': [
+            {'time': 'h:08:12:05'},
+            {'time': 'h:08:12:05.5'},
+        ],
+    }, mode=hszinc.MODE_JSON)
+
+    assert len(grid) == 2
+    row = grid.pop(0)
+    assert isinstance(row['time'], datetime.time)
+    assert row['time'] == datetime.time(8,12,5)
+    row = grid.pop(0)
+    assert isinstance(row['time'], datetime.time)
+    assert row['time'] == datetime.time(8,12,5,500000)
+
 def test_datetime():
     grid_list = hszinc.parse('''ver:"2.0"
 datetime
@@ -420,26 +455,52 @@ datetime
 ''')
 
     assert len(grid_list) == 1
-    assert len(grid_list[0]) == 6
-    assert isinstance(grid_list[0][0]['datetime'], datetime.datetime)
-    assert grid_list[0][0]['datetime'] == \
+    check_datetime(grid_list.pop(0))
+
+def check_datetime(grid):
+    assert len(grid) == 6
+    row = grid.pop(0)
+    assert isinstance(row['datetime'], datetime.datetime)
+    assert row['datetime'] == \
             pytz.timezone('America/Los_Angeles').localize(\
             datetime.datetime(2010,11,28,7,23,2,500000))
-    assert grid_list[0][1]['datetime'] == \
+    row = grid.pop(0)
+    assert row['datetime'] == \
             pytz.timezone('Asia/Taipei').localize(\
             datetime.datetime(2010,11,28,23,19,29,500000))
-    assert grid_list[0][2]['datetime'] == \
+    row = grid.pop(0)
+    assert row['datetime'] == \
             pytz.timezone('Etc/GMT-3').localize(\
             datetime.datetime(2010,11,28,18,21,58,0))
-    assert grid_list[0][3]['datetime'] == \
+    row = grid.pop(0)
+    assert row['datetime'] == \
             pytz.timezone('Etc/GMT+3').localize(\
             datetime.datetime(2010,11,28,12,22,27,0))
-    assert grid_list[0][4]['datetime'] == \
+    row = grid.pop(0)
+    assert row['datetime'] == \
             pytz.timezone('UTC').localize(\
             datetime.datetime(2010,1,8,5,0,0,0))
-    assert grid_list[0][5]['datetime'] == \
+    row = grid.pop(0)
+    assert row['datetime'] == \
             pytz.timezone('UTC').localize(\
             datetime.datetime(2010,1,8,5,0,0,0))
+
+def test_datetime_json():
+    grid = hszinc.parse({
+        'meta': {'ver':'2.0'},
+        'cols': [
+            {'name':'datetime'},
+        ],
+        'rows': [
+            {'datetime': 't:2010-11-28T07:23:02.500-08:00 Los_Angeles'},
+            {'datetime': 't:2010-11-28T23:19:29.500+08:00 Taipei'},
+            {'datetime': 't:2010-11-28T18:21:58+03:00 GMT-3'},
+            {'datetime': 't:2010-11-28T12:22:27-03:00 GMT+3'},
+            {'datetime': 't:2010-01-08T05:00:00Z UTC'},
+            {'datetime': 't:2010-01-08T05:00:00Z'},
+        ],
+    }, mode=hszinc.MODE_JSON)
+    check_datetime(grid)
 
 def test_bin():
     grid_list = hszinc.parse('''ver:"2.0"
@@ -451,6 +512,20 @@ Bin(text/plain)
     assert len(grid_list[0]) == 1
     assert grid_list[0][0]['bin'] == hszinc.Bin('text/plain')
 
+def test_bin_json():
+    grid = hszinc.parse({
+        'meta': {'ver':'2.0'},
+        'cols': [
+            {'name':'bin'},
+        ],
+        'rows': [
+            {'bin': 'b:text/plain'},
+        ],
+    }, mode=hszinc.MODE_JSON)
+
+    assert len(grid) == 1
+    assert grid[0]['bin'] == hszinc.Bin('text/plain')
+
 def test_coord():
     grid_list = hszinc.parse('''ver:"2.0"
 coord
@@ -459,9 +534,21 @@ C(37.55,-77.45)
 
     assert len(grid_list) == 1
     assert len(grid_list[0]) == 1
-    assert isinstance(grid_list[0][0]['coord'], hszinc.Coordinate)
-    assert grid_list[0][0]['coord'].latitude == 37.55
-    assert grid_list[0][0]['coord'].longitude == -77.45
+    assert grid_list[0][0]['coord'] == hszinc.Coordinate(37.55,-77.45)
+
+def test_coord_json():
+    grid = hszinc.parse({
+        'meta': {'ver':'2.0'},
+        'cols': [
+            {'name':'coord'},
+        ],
+        'rows': [
+            {'coord': 'c:37.55,-77.45'},
+        ],
+    }, mode=hszinc.MODE_JSON)
+
+    assert len(grid) == 1
+    assert grid[0]['coord'] == hszinc.Coordinate(37.55,-77.45)
 
 def test_multi_grid():
     # Multiple grids are separated by newlines.
@@ -470,6 +557,15 @@ def test_multi_grid():
     assert len(grid_list) == 3
     check_simple(grid_list[0])
     check_metadata(grid_list[1])
+    check_null(grid_list[2])
+
+def test_multi_grid_json():
+    # Multiple grids are separated by newlines.
+    grid_list = hszinc.parse([SIMPLE_EXAMPLE_JSON,
+        METADATA_EXAMPLE_JSON, NULL_EXAMPLE_JSON], mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 3
+    check_simple(grid_list[0])
+    check_metadata(grid_list[1], force_metadata_order=False)
     check_null(grid_list[2])
 
 def test_grid_meta():

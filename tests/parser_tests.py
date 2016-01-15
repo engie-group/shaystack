@@ -68,15 +68,35 @@ siteName dis:"Sites", val dis:"Value" unit:"kW"
 "Site 2", 463.028kW
 '''
 
+METADATA_EXAMPLE_JSON={
+        'meta': {'ver':'2.0', 'database':'test', 'dis':'Site Energy Summary'},
+        'cols': [
+            {'name':'siteName', 'dis':'Sites'},
+            {'name':'val', 'dis':'Value', 'unit':'kW'},
+        ],
+        'rows': [
+            {'siteName': 'Site 1', 'val': 'n:356.214 kW'},
+            {'siteName': 'Site 2', 'val': 'n:463.028 kW'},
+        ],
+}
+
 def test_metadata():
     grid_list = hszinc.parse(METADATA_EXAMPLE)
     assert len(grid_list) == 1
     grid = grid_list[0]
     check_metadata(grid)
 
-def check_metadata(grid):
+def test_metadata_json():
+    grid = hszinc.parse(METADATA_EXAMPLE_JSON, mode=hszinc.MODE_JSON)
+    check_metadata(grid, force_metadata_order=False)
+
+def check_metadata(grid,force_metadata_order=True):
     assert len(grid.metadata) == 2
-    assert list(grid.metadata.keys()) == ['database', 'dis']
+    if force_metadata_order:
+        assert list(grid.metadata.keys()) == ['database', 'dis']
+    else:
+        assert set(grid.metadata.keys()) == set(['database', 'dis'])
+
     assert grid.metadata['database'] == 'test'
     assert grid.metadata['dis'] == 'Site Energy Summary'
 
@@ -86,7 +106,10 @@ def check_metadata(grid):
     assert col['dis'] == 'Sites'
 
     col = grid.column['val']
-    assert list(col.keys()) == ['dis', 'unit']
+    if force_metadata_order:
+        assert list(col.keys()) == ['dis', 'unit']
+    else:
+        assert set(col.keys()) == set(['dis', 'unit'])
     assert col['dis'] == 'Value'
     assert col['unit'] == 'kW'
 

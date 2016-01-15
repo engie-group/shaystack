@@ -568,6 +568,15 @@ def test_multi_grid_json():
     check_metadata(grid_list[1], force_metadata_order=False)
     check_null(grid_list[2])
 
+def test_multi_grid_json_str():
+    # Multiple grids are separated by newlines.
+    grid_list = hszinc.parse(list(map(json.dumps, [SIMPLE_EXAMPLE_JSON,
+        METADATA_EXAMPLE_JSON, NULL_EXAMPLE_JSON])), mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 3
+    check_simple(grid_list[0])
+    check_metadata(grid_list[1], force_metadata_order=False)
+    check_null(grid_list[2])
+
 def test_grid_meta():
     grid_list = hszinc.parse('''ver:"2.0" aString:"aValue" aNumber:3.14159 aNull:N aMarker:M anotherMarker aQuantity:123Hz aDate:2016-01-13 aTime:06:44:00 aTimestamp:2016-01-13T06:44:00+10:00 Brisbane aPlace:C(-27.4725,153.003)
 empty

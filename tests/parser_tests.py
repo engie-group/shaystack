@@ -308,6 +308,27 @@ str,strExample
     assert grid_list[0][1]['strExample'] == 'Simple string'
     assert grid_list[0][2]['strExample'] == 'This\tIs\nA\r"Test"\\'
 
+def test_string_json():
+    grid = hszinc.parse({
+        'meta': {'ver':'2.0'},
+        'cols': [
+            {'name':'str'},
+            {'name':'strExample'},
+        ],
+        'rows': [
+            {'str': "Empty",            'strExample': ''},
+            {'str': "Implicit",         'strExample': 'a string'},
+            {'str': "Literal",          'strExample': 's:an explicit string'},
+            {'str': "With colons",      'strExample': 's:string:with:colons'},
+        ],
+    }, mode=hszinc.MODE_JSON)
+
+    assert len(grid) == 4
+    assert grid.pop(0)['strExample'] == ''
+    assert grid.pop(0)['strExample'] == 'a string'
+    assert grid.pop(0)['strExample'] == 'an explicit string'
+    assert grid.pop(0)['strExample'] == 'string:with:colons'
+
 def test_uri():
     grid_list = hszinc.parse('''ver:"2.0"
 uri

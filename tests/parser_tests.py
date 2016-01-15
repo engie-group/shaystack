@@ -230,7 +230,7 @@ def test_bool_json():
     assert grid[1]['bool'] == False
 
 def test_number():
-    grid_list = hszinc.parse('''ver:"2.0"
+    grid_list = hszinc.parse(u'''ver:"2.0"
 str,number
 "Integer",1
 "Negative Integer",-34
@@ -238,31 +238,61 @@ str,number
 "Scientific",5.4e-45
 "Units mass",9.23kg
 "Units time",4min
+"Units temperature",74.2°F
 "Positive Infinity",INF
 "Negative Infinity",-INF
 "Not a Number",NaN
 ''')
-
-    # TODO:
-    # "Units temperature",74.2°F -- according to Haystack grammar, not allowed,
-    # but they give it as an example anyway.
     assert len(grid_list) == 1
-    assert len(grid_list[0]) == 9
-    assert grid_list[0][0]['number'] == 1.0
-    assert grid_list[0][1]['number'] == -34.0
-    assert grid_list[0][2]['number'] == 10000.0
-    assert grid_list[0][3]['number'] == 5.4e-45
-    assert isinstance(grid_list[0][4]['number'], hszinc.Quantity)
-    assert grid_list[0][4]['number'].value == 9.23
-    assert grid_list[0][4]['number'].unit == 'kg'
-    assert isinstance(grid_list[0][5]['number'], hszinc.Quantity)
-    assert grid_list[0][5]['number'].value == 4.0
-    assert grid_list[0][5]['number'].unit == 'min'
-    assert math.isinf(grid_list[0][6]['number'])
-    assert grid_list[0][6]['number'] > 0
-    assert math.isinf(grid_list[0][7]['number'])
-    assert grid_list[0][7]['number'] < 0
-    assert math.isnan(grid_list[0][8]['number'])
+    grid = grid_list.pop(0)
+    check_number(grid)
+
+def check_number(grid):
+    assert len(grid) == 10
+    row = grid.pop(0)
+    assert row['number'] == 1.0
+    row = grid.pop(0)
+    assert row['number'] == -34.0
+    row = grid.pop(0)
+    assert row['number'] == 10000.0
+    row = grid.pop(0)
+    assert row['number'] == 5.4e-45
+    row = grid.pop(0)
+    assert row['number'] == hszinc.Quantity(9.23, 'kg')
+    row = grid.pop(0)
+    assert row['number'] == hszinc.Quantity(4.0, 'min')
+    row = grid.pop(0)
+    assert row['number'] == hszinc.Quantity(74.2, u'°F')
+    row = grid.pop(0)
+    assert math.isinf(row['number'])
+    assert row['number'] > 0
+    row = grid.pop(0)
+    assert math.isinf(row['number'])
+    assert row['number'] < 0
+    row = grid.pop(0)
+    assert math.isnan(row['number'])
+
+def test_number_json():
+    grid = hszinc.parse({
+        'meta': {'ver':'2.0'},
+        'cols': [
+            {'name':'str'},
+            {'name':'number'},
+        ],
+        'rows': [
+            {'str': "Integer",              'number': u'n:1'},
+            {'str': "Negative Integer",     'number': u'n:-34'},
+            {'str': "With Separators",      'number': u'n:10000'},
+            {'str': "Scientific",           'number': u'n:5.4e-45'},
+            {'str': "Units mass",           'number': u'n:9.23 kg'},
+            {'str': "Units time",           'number': u'n:4 min'},
+            {'str': "Units temperature",    'number': u'n:74.2 °F'},
+            {'str': "Positive Infinity",    'number': u'n:INF'},
+            {'str': "Negative Infinity",    'number': u'n:-INF'},
+            {'str': "Not a Number",         'number': u'n:NaN'},
+        ],
+    }, mode=hszinc.MODE_JSON)
+    check_number(grid)
 
 def test_string():
     grid_list = hszinc.parse('''ver:"2.0"

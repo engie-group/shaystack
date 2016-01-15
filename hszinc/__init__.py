@@ -6,12 +6,13 @@
 
 from .grid import Grid
 from .dumper import dump
-from .parser import parse
+from .parser import parse, MODE_JSON, MODE_ZINC
 from .metadata import MetadataObject
 from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, REMOVE, Ref
 
 __all__ = ['Grid', 'dump', 'parse', 'MetadataObject', 'Quantity',
-        'Coordinate', 'Uri', 'Bin', 'MARKER', 'REMOVE', 'Ref']
+        'Coordinate', 'Uri', 'Bin', 'MARKER', 'REMOVE', 'Ref',
+        'MODE_JSON', 'MODE_ZINC']
 
 __author__ = 'VRT Systems'
 __copyright__ = 'Copyright 2016, VRT Systems'

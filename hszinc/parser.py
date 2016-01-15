@@ -273,6 +273,12 @@ def parse_scalar(scalar, mode=MODE_ZINC):
             return MARKER
         elif isinstance(scalar, bool):
             return scalar
+        elif scalar == 'n:INF':
+            return float('INF')
+        elif scalar == 'n:-INF':
+            return -float('INF')
+        elif scalar == 'n:NaN':
+            return float('nan')
 
         # Is it a number?
         match = NUMBER_RE.match(scalar)

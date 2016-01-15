@@ -32,7 +32,7 @@ NUMBER_RE   = re.compile(r'^n:(-?\d+(:?\.\d+)?(:?[eE][+\-]?\d+)?)(:? (.*))?$')
 REF_RE      = re.compile(r'^r:([a-zA-Z0-9_:\-.~]+)(:? (.*))?$')
 STR_RE      = re.compile(r'^s:(.*)$')
 DATE_RE     = re.compile(r'^d:(\d{4})-(\d{2})-(\d{2})$')
-TIME_RE     = re.compile(r'^h:(\d{2}):(\d{2})(:?:(\d{2}(:?\.\d+)?))$')
+TIME_RE     = re.compile(r'^h:(\d{2}):(\d{2})(:?:(\d{2}(:?\.\d+)?))?$')
 DATETIME_RE = re.compile(r'^t:(\d{4}-\d{2}-\d{2}T'\
         r'\d{2}:\d{2}(:?:\d{2}(:?\.\d+)?)'\
         r'(:?[zZ]|[+\-]\d+:?\d*))(:? ([A-Za-z\-+_0-9]+))?$')

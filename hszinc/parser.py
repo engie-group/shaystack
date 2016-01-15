@@ -34,7 +34,7 @@ DATE_RE     = re.compile(r'^d:(\d{4})-(\d{2})-(\d{2})$')
 TIME_RE     = re.compile(r'^h:(\d{2}):(\d{2})(:?:(\d{2}(:?\.\d+)?))$')
 DATETIME_RE = re.compile(r'^t:(\d{4}-\d{2}-\d{2}T'\
         r'\d{2}:\d{2}(:?:\d{2}(:?\.\d+)?)'\
-        r'(:?[zZ]|[+\-]\d+:?\d*))(:? ([A-Za-z\-_0-9]+))?$')
+        r'(:?[zZ]|[+\-]\d+:?\d*))(:? ([A-Za-z\-+_0-9]+))?$')
 URI_RE      = re.compile(r'u:(.+)$')
 BIN_RE      = re.compile(r'b:(.+)$')
 COORD_RE    = re.compile(r'c:(\d+\.?\d*),(\d+\.?\d*)$')
@@ -316,9 +316,12 @@ def parse_scalar(scalar, mode=MODE_ZINC):
         # Is it a time?
         match = TIME_RE.match(scalar)
         if match:
-            (hour, minute, second) = match.groups()
+            (hour, minute, _, second, _) = match.groups()
             # Convert second to seconds and microseconds
-            if '.' in second:
+            if second is None:
+                sec = 0
+                usec = 0
+            elif '.' in second:
                 (whole_sec, frac_sec) = second.split('.',1)
                 sec = int(whole_sec)
                 usec = int(frac_sec[:6].ljust(6,'0'))
@@ -326,7 +329,7 @@ def parse_scalar(scalar, mode=MODE_ZINC):
                 sec = int(second)
                 usec = 0
             return datetime.time(hour=int(hour), minute=int(minute),
-                    second=sec, microseconds=usec)
+                    second=sec, microsecond=usec)
 
         # Is it a date/time?
         match = DATETIME_RE.match(scalar)

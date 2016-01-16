@@ -210,7 +210,7 @@ def test_data_types():
         },
         {
             'comment': 'A URI',
-            'value': hszinc.Uri('http://www.example.com'),
+            'value': hszinc.Uri(u'http://www.example.com#`unicode:\u1234\u5678`'),
         },
         {
             'comment': 'A string',
@@ -252,7 +252,7 @@ comment,value
 "A quantity",500miles
 "A quantity without unit",500
 "A coordinate",C(-27.472500,153.003000)
-"A URI",`http://www.example.com`
+"A URI",`http://www.example.com#\\`unicode:\\u1234\\u5678\\``
 "A string","This is a test\\nLine two of test\\n\\tIndented with \\"quotes\\", \\\\backslashes\\\\ and Unicode characters: \\u1234\\u5678"
 "A date",2016-01-13
 "A time",07:51:43.012345

@@ -5,6 +5,8 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
+import six
+
 STR_SUB  = [
     ('\b',  '\\b'),
     ('\f',  '\\f'),
@@ -267,7 +269,7 @@ class Coordinate(object):
         return not (self == other)
 
 
-class Uri(str):
+class Uri(six.text_type):
     '''
     A convenience class to allow identification of a URI from other string
     types.
@@ -282,7 +284,7 @@ class Uri(str):
         return super(Uri, self).__eq__(other)
 
 
-class Bin(str):
+class Bin(six.text_type):
     '''
     A convenience class to allow identification of a Bin from other string
     types.

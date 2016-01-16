@@ -18,8 +18,8 @@ import functools
 import json
 import six
 
-URI_META = re.compile(ur'([\\`\u0080-\uffff])')
-STR_META = re.compile(ur'([\\"\u0080-\uffff])')
+URI_META = re.compile(six.u(r'([\\`\u0080-\uffff])'))
+STR_META = re.compile(six.u(r'([\\"\u0080-\uffff])'))
 
 def str_sub(match):
     c = match.group(0)
@@ -29,8 +29,6 @@ def str_sub(match):
         return '\\u%04x' % o
     elif c in '\\"':
         return '\\%s' % c
-    else:
-        return c
 
 def uri_sub(match):
     c = match.group(0)

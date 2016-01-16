@@ -16,14 +16,15 @@ import iso8601
 import re
 import functools
 import json
+import six
 
-URI_META = re.compile(r'([\\`\u0080-\uffff])')
-STR_META = re.compile(r'([\\"\u0080-\uffff])')
+URI_META = re.compile(ur'([\\`\u0080-\uffff])')
+STR_META = re.compile(ur'([\\"\u0080-\uffff])')
 
 def str_sub(match):
     c = match.group(0)
     o = ord(c)
-    if o >= 0x80:
+    if o >= 0x0080:
         # Unicode
         return '\\u%04x' % o
     elif c in '\\"':
@@ -159,7 +160,7 @@ def dump_scalar(scalar, mode=MODE_ZINC):
         return dump_bin(scalar, mode=mode)
     elif isinstance(scalar, Uri):
         return dump_uri(scalar, mode=mode)
-    elif isinstance(scalar, str):
+    elif isinstance(scalar, six.string_types):
         return dump_str(scalar, mode=mode)
     elif isinstance(scalar, datetime.datetime):
         return dump_date_time(scalar, mode=mode)

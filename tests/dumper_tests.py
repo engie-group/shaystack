@@ -214,9 +214,10 @@ def test_data_types():
         },
         {
             'comment': 'A string',
-            'value':    'This is a test\n'\
-                        'Line two of test\n'\
-                        '\tIndented with "quotes" and \\backslashes\\',
+            'value':    u'This is a test\n'\
+                        u'Line two of test\n'\
+                        u'\tIndented with "quotes", \\backslashes\\ and '\
+                        u'Unicode characters: \u1234\u5678',
         },
         {
             'comment': 'A date',
@@ -252,7 +253,7 @@ comment,value
 "A quantity without unit",500
 "A coordinate",C(-27.472500,153.003000)
 "A URI",`http://www.example.com`
-"A string","This is a test\\nLine two of test\\n\\tIndented with \\"quotes\\" and \\\\backslashes\\\\"
+"A string","This is a test\\nLine two of test\\n\\tIndented with \\"quotes\\", \\\\backslashes\\\\ and Unicode characters: \\u1234\\u5678"
 "A date",2016-01-13
 "A time",07:51:43.012345
 "A timestamp (non-UTC)",2016-01-13T07:51:42.012345+01:00 Berlin

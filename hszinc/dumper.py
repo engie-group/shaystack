@@ -38,8 +38,6 @@ def uri_sub(match):
         return '\\u%04x' % o
     elif c in '\\`':
         return '\\%s' % c
-    else:
-        return c
 
 def dump(grids, mode=MODE_ZINC):
     '''

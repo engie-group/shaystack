@@ -25,8 +25,8 @@ SIMPLE_EXAMPLE_JSON={
             {'name':'bday'},
         ],
         'rows': [
-            {'firstName': 'Jack', 'bday':'d:1973-07-23'},
-            {'firstName': 'Jill', 'bday':'d:1975-11-15'},
+            {'firstName': 's:Jack', 'bday':'d:1973-07-23'},
+            {'firstName': 's:Jill', 'bday':'d:1975-11-15'},
         ],
 }
 
@@ -69,14 +69,15 @@ siteName dis:"Sites", val dis:"Value" unit:"kW"
 '''
 
 METADATA_EXAMPLE_JSON={
-        'meta': {'ver':'2.0', 'database':'test', 'dis':'Site Energy Summary'},
+        'meta': {'ver':'2.0', 'database':'s:test',
+                'dis':'s:Site Energy Summary'},
         'cols': [
-            {'name':'siteName', 'dis':'Sites'},
-            {'name':'val', 'dis':'Value', 'unit':'kW'},
+            {'name':'siteName', 'dis':'s:Sites'},
+            {'name':'val', 'dis':'s:Value', 'unit':'s:kW'},
         ],
         'rows': [
-            {'siteName': 'Site 1', 'val': 'n:356.214 kW'},
-            {'siteName': 'Site 2', 'val': 'n:463.028 kW'},
+            {'siteName': 's:Site 1', 'val': 'n:356.214000 kW'},
+            {'siteName': 's:Site 2', 'val': 'n:463.028000 kW'},
         ],
 }
 

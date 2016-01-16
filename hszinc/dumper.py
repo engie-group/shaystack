@@ -10,9 +10,12 @@ from .sortabledict import SortableDict
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
         MARKER, REMOVE, STR_SUB
 from .zoneinfo import timezone_name
+from .parser import MODE_ZINC, MODE_JSON, MARKER_STR
 import datetime
 import iso8601
 import re
+import functools
+import json
 
 URI_META = re.compile(r'([\\`\u0080-\uffff])')
 STR_META = re.compile(r'([\\"\u0080-\uffff])')
@@ -39,130 +42,226 @@ def uri_sub(match):
     else:
         return c
 
-def dump(grids):
+def dump(grids, mode=MODE_ZINC):
     '''
     Parse the given Zinc text and return the equivalent data.
     '''
     if isinstance(grids, Grid):
-        return dump_grid(grids)
-    return '\n'.join(map(dump_grid, grids))
+        return dump_grid(grids, mode=mode)
+    _dump = functools.partial(dump_grid, mode=mode)
+    if mode == MODE_ZINC:
+        return '\n'.join(map(_dump, grids))
+    elif mode == MODE_JSON:
+        return '[%s]' % ','.join(map(_dump, grids))
+    else: # pragma: no cover
+        raise NotImplementedError('Format not implemented: %s' % mode)
 
-def dump_grid(grid):
-    header = 'ver:%s' % dump_str(grid._version)
-    if bool(grid.metadata):
-        header += ' ' + dump_meta(grid.metadata)
-    columns = dump_columns(grid.column)
-    rows = dump_rows(grid)
-    return '\n'.join([header, columns] + rows + [''])
+def dump_grid(grid, mode=MODE_ZINC):
+    if mode == MODE_ZINC:
+        header = 'ver:%s' % dump_str(grid._version)
+        if bool(grid.metadata):
+            header += ' ' + dump_meta(grid.metadata)
+        columns = dump_columns(grid.column)
+        rows = dump_rows(grid)
+        return '\n'.join([header, columns] + rows + [''])
+    elif mode == MODE_JSON:
+        return json.dumps({
+            'meta': dump_meta(grid.metadata, version=grid._version,
+                mode=mode),
+            'cols': dump_columns(grid.column, mode=mode),
+            'rows': dump_rows(grid, mode=mode),
+        })
+    else: # pragma: no cover
+        raise NotImplementedError('Format not implemented: %s' % mode)
 
-def dump_meta(meta):
-    return ' '.join(map(dump_meta_item, list(meta.items())))
+def dump_meta(meta, version=None, mode=MODE_ZINC):
+    _dump = functools.partial(dump_meta_item, mode=mode)
+    if mode == MODE_ZINC:
+        return ' '.join(map(_dump, list(meta.items())))
+    else:
+        _meta = dict(map(_dump, list(meta.items())))
+        if version is not None:
+            _meta['ver'] = version
+        return _meta
 
-def dump_meta_item(item):
+def dump_meta_item(item, mode=MODE_ZINC):
     (item_id, item_value) = item
-    if item_value is MARKER:
-        return dump_id(item_id)
-    else:
-        return '%s:%s' % (dump_id(item_id), dump_scalar(item_value))
+    if mode == MODE_ZINC:
+        if item_value is MARKER:
+            return dump_id(item_id, mode=mode)
+        else:
+            return '%s:%s' % (dump_id(item_id, mode=mode), \
+                    dump_scalar(item_value, mode=mode))
+    elif mode == MODE_JSON:
+        return (dump_id(item_id, mode=mode), \
+                dump_scalar(item_value, mode=mode))
 
-def dump_columns(cols):
-    return ','.join(map(dump_column, *list(zip(*list(cols.items())))))
+def dump_columns(cols, mode=MODE_ZINC):
+    _dump = functools.partial(dump_column, mode=mode)
+    _cols = list(zip(*list(cols.items())))
+    if mode == MODE_ZINC:
+        return ','.join(map(_dump, *_cols))
+    elif mode == MODE_JSON:
+        return list(map(_dump, *_cols))
 
-def dump_column(col, col_meta):
-    if bool(col_meta):
-        return '%s %s' % (dump_id(col), dump_meta(col_meta))
-    else:
-        return dump_id(col)
+def dump_column(col, col_meta, mode=MODE_ZINC):
+    if mode == MODE_ZINC:
+        if bool(col_meta):
+            return '%s %s' % (dump_id(col, mode=mode), \
+                    dump_meta(col_meta, mode=mode))
+        else:
+            return dump_id(col, mode=mode)
+    elif mode == MODE_JSON:
+        if bool(col_meta):
+            _meta = dump_meta(col_meta, mode=mode)
+        else:
+            _meta = {}
+        _meta['name'] = col
+        return _meta
 
-def dump_rows(grid):
-    return [dump_row(grid, r) for r in grid]
+def dump_rows(grid, mode=MODE_ZINC):
+    return [dump_row(grid, r, mode=mode) for r in grid]
 
-def dump_row(grid, row):
-    return ','.join([dump_scalar(row.get(c)) for c in list(grid.column.keys())])
+def dump_row(grid, row, mode=MODE_ZINC):
+    if mode == MODE_ZINC:
+        return ','.join([dump_scalar(row.get(c), mode=mode) for \
+                c in list(grid.column.keys())])
+    elif mode == MODE_JSON:
+        return dict([
+            (c, dump_scalar(row.get(c), mode=mode))
+            for c in list(grid.column.keys())])
 
-def dump_scalar(scalar):
+def dump_scalar(scalar, mode=MODE_ZINC):
     if scalar is None:
-        return 'N'
+        if mode == MODE_ZINC:
+            return 'N'
+        elif mode == MODE_JSON:
+            return None
+        else: # pragma: no cover
+            raise NotImplementedError('Unhandled case: %r' % scalar)
     elif scalar is MARKER:
-        return 'M'
+        if mode == MODE_ZINC:
+            return 'M'
+        elif mode == MODE_JSON:
+            return MARKER_STR
+        else: # pragma: no cover
+            raise NotImplementedError('Unhandled case: %r' % scalar)
     elif scalar is REMOVE:
-        return 'R'
+        if mode == MODE_ZINC:
+            return 'R'
+        else: # pragma: no cover
+            raise NotImplementedError('Unhandled case: %r' % scalar)
     elif isinstance(scalar, bool):
-        return dump_bool(scalar)
+        return dump_bool(scalar, mode=mode)
     elif isinstance(scalar, Ref):
-        return dump_ref(scalar)
+        return dump_ref(scalar, mode=mode)
     elif isinstance(scalar, Bin):
-        return dump_bin(scalar)
+        return dump_bin(scalar, mode=mode)
     elif isinstance(scalar, Uri):
-        return dump_uri(scalar)
+        return dump_uri(scalar, mode=mode)
     elif isinstance(scalar, str):
-        return dump_str(scalar)
+        return dump_str(scalar, mode=mode)
     elif isinstance(scalar, datetime.datetime):
-        return dump_date_time(scalar)
+        return dump_date_time(scalar, mode=mode)
     elif isinstance(scalar, datetime.time):
-        return dump_time(scalar)
+        return dump_time(scalar, mode=mode)
     elif isinstance(scalar, datetime.date):
-        return dump_date(scalar)
+        return dump_date(scalar, mode=mode)
     elif isinstance(scalar, Coordinate):
-        return dump_coord(scalar)
+        return dump_coord(scalar, mode=mode)
     elif isinstance(scalar, Quantity):
-        return dump_quantity(scalar)
+        return dump_quantity(scalar, mode=mode)
     elif isinstance(scalar, float) or \
             isinstance(scalar, int) or \
             isinstance(scalar, int):
-        return dump_decimal(scalar)
+        return dump_decimal(scalar, mode=mode)
     else: # pragma: no cover
         raise NotImplementedError('Unhandled case: %r' % scalar)
 
-def dump_id(id_str):
+def dump_id(id_str, mode=MODE_ZINC):
     return id_str
 
-def dump_str(str_value):
-    # Replace special characters.
-    str_value = STR_META.sub(str_sub, str_value)
-    # Replace other escapes.
-    for orig, esc in STR_SUB:
-        str_value = str_value.replace(orig, esc)
-    return '"%s"' % str_value
+def dump_str(str_value, mode=MODE_ZINC):
+    if mode == MODE_JSON:
+        return u's:%s' % str_value
+    elif mode == MODE_ZINC:
+        # Replace special characters.
+        str_value = STR_META.sub(str_sub, str_value)
+        # Replace other escapes.
+        for orig, esc in STR_SUB:
+            str_value = str_value.replace(orig, esc)
+        return '"%s"' % str_value
 
-def dump_uri(uri_value):
-    # Replace special characters.
-    uri_value = URI_META.sub(uri_sub, uri_value)
-    # Replace other escapes.
-    for orig, esc in STR_SUB:
-        uri_value = uri_value.replace(orig, esc)
-    return '`%s`' % uri_value
+def dump_uri(uri_value, mode=MODE_ZINC):
+    if mode == MODE_JSON:
+        return u'u:%s' % uri_value
+    elif mode == MODE_ZINC:
+        # Replace special characters.
+        uri_value = URI_META.sub(uri_sub, uri_value)
+        # Replace other escapes.
+        for orig, esc in STR_SUB:
+            uri_value = uri_value.replace(orig, esc)
+        return '`%s`' % uri_value
 
-def dump_bin(bin_value):
-    return 'Bin(%s)' % bin_value
+def dump_bin(bin_value, mode=MODE_ZINC):
+    if mode == MODE_JSON:
+        return u'b:%s' % bin_value
+    elif mode == MODE_ZINC:
+        return 'Bin(%s)' % bin_value
 
-def dump_quantity(quantity):
+def dump_quantity(quantity, mode=MODE_ZINC):
     if quantity.unit is None:
-        return dump_decimal(quantity.value)
-    else:
+        return dump_decimal(quantity.value, mode=mode)
+    elif mode == MODE_ZINC:
         return '%s%s' % (dump_decimal(quantity.value), quantity.unit)
+    elif mode == MODE_JSON:
+        return 'n:%f %s' % (quantity.value, quantity.unit)
 
-def dump_decimal(decimal):
-    return str(decimal)
+def dump_decimal(decimal, mode=MODE_ZINC):
+    if mode == MODE_ZINC:
+        return str(decimal)
+    elif mode == MODE_JSON:
+        return 'n:%f' % decimal
 
-def dump_bool(bool_value):
-    return 'T' if bool(bool_value) else 'F'
+def dump_bool(bool_value, mode=MODE_ZINC):
+    if mode == MODE_JSON:
+        return bool_value
+    elif mode == MODE_ZINC:
+        return 'T' if bool(bool_value) else 'F'
 
-def dump_coord(coordinate):
-    return 'C(%f,%f)' % (coordinate.latitude, coordinate.longitude)
+def dump_coord(coordinate, mode=MODE_ZINC):
+    if mode == MODE_ZINC:
+        return 'C(%f,%f)' % (coordinate.latitude, coordinate.longitude)
+    elif mode == MODE_JSON:
+        return 'c:%f,%f' % (coordinate.latitude, coordinate.longitude)
 
-def dump_ref(ref):
-    if ref.has_value:
-        return '@%s %s' % (ref.name, dump_str(ref.value))
-    else:
-        return '@%s' % ref.name
+def dump_ref(ref, mode=MODE_ZINC):
+    if mode == MODE_ZINC:
+        if ref.has_value:
+            return '@%s %s' % (ref.name, dump_str(ref.value))
+        else:
+            return '@%s' % ref.name
+    elif mode == MODE_JSON:
+        if ref.has_value:
+            return u'r:%s %s' % (ref.name, ref.value)
+        else:
+            return u'r:%s' % ref.name
 
-def dump_date(date):
-    return date.isoformat()
+def dump_date(date, mode=MODE_ZINC):
+    if mode == MODE_ZINC:
+        return date.isoformat()
+    elif mode == MODE_JSON:
+        return 'd:%s' % date.isoformat()
 
-def dump_time(time):
-    return time.isoformat()
+def dump_time(time, mode=MODE_ZINC):
+    if mode == MODE_ZINC:
+        return time.isoformat()
+    elif mode == MODE_JSON:
+        return 'h:%s' % time.isoformat()
 
-def dump_date_time(date_time):
+def dump_date_time(date_time, mode=MODE_ZINC):
     tz_name = timezone_name(date_time)
-    return '%s %s' % (date_time.isoformat(), tz_name)
+    if mode == MODE_ZINC:
+        return '%s %s' % (date_time.isoformat(), tz_name)
+    elif mode == MODE_JSON:
+        return 't:%s %s' % (date_time.isoformat(), tz_name)

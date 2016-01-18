@@ -5,7 +5,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 from .grid import Grid
-from .dumper import dump
+from .dumper import dump, dump_scalar
 from .parser import parse, MODE_JSON, MODE_ZINC
 from .metadata import MetadataObject
 from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, REMOVE, Ref

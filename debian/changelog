@@ -1,3 +1,8 @@
+hszinc (0.0.4) unstable; urgency=low
+  * Add support for grids in JSON format.
+  * Add documentation in README
+ -- Stuart Longland <stuartl@vrt.com.au>  Mon, 18 Jan 2016 13:51:33 +1000
+
 hszinc (0.0.3) unstable; urgency=low
   * More rigorous tests
   * Support for (undocumented!) 'Remove' type

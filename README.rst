@@ -3,7 +3,8 @@ HSZinc
 
 .. image:: https://travis-ci.org/vrtsystems/hszinc.svg?branch=master
     :target: https://travis-ci.org/vrtsystems/hszinc
-.. image:: https://coveralls.io/repos/vrtsystems/hszinc/badge.svg?branch=master&service=github :target: https://coveralls.io/github/vrtsystems/hszinc?branch=master
+.. image:: https://coveralls.io/repos/vrtsystems/hszinc/badge.svg?branch=master&service=github
+    :target: https://coveralls.io/github/vrtsystems/hszinc?branch=master
 
 HSZinc is an implementation of the `ZINC`_ grid serialisation format used in
 `Project Haystack`_.  Additionally, the module implements code for parsing and

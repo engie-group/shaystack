@@ -231,7 +231,7 @@ def parse_cell(cell):
     else:
         return None
 
-def parse_scalar(scalar, mode=MODE_ZINC):
+def parse_scalar(scalar, mode=MODE_ZINC, charset='utf-8'):
     if mode == MODE_ZINC:
         # Should have a child which is the type of scalar.
         assert scalar.expr_name == 'scalar'
@@ -246,11 +246,11 @@ def parse_scalar(scalar, mode=MODE_ZINC):
         elif scalar_child.expr_name == 'bool':
             return parse_bool(scalar_child)
         elif scalar_child.expr_name == 'ref':
-            return parse_ref(scalar_child)
+            return parse_ref(scalar_child, charset)
         elif scalar_child.expr_name == 'bin':
             return parse_bin(scalar_child)
         elif scalar_child.expr_name == 'str':
-            return parse_str(scalar_child)
+            return parse_str(scalar_child, charset)
         elif scalar_child.expr_name == 'uri':
             return parse_uri(scalar_child)
         elif scalar_child.expr_name == 'date':
@@ -280,6 +280,10 @@ def parse_scalar(scalar, mode=MODE_ZINC):
             return -float('INF')
         elif scalar == 'n:NaN':
             return float('nan')
+        # Conversion to dict of float value turn them into float 
+        # so regex won't work... better just return them
+        elif isinstance(scalar, float):
+            return scalar
 
         # Is it a number?
         match = NUMBER_RE.match(scalar)
@@ -376,15 +380,18 @@ def parse_id(id_node):
 # These *should* have coverage, but unfortunately, there's no way to
 # say, "no cover on Python 2.x" or "no cover on Python 3.x"
 if six.PY2: # pragma: no cover
-    _str_to_bytes = lambda s : six.text_type(s)
+    _str_to_bytes = lambda s, charset : six.text_type(s)
 else: # pragma: no cover
-    _str_to_bytes = lambda s : six.binary_type(s,'ascii')
+    # This will probably need investigation... using nHastack, 
+    # we need to use utf-8 instead of ascii... 
+    # charset should be defined somewhere
+    _str_to_bytes = lambda s, charset : six.binary_type(s, charset)
 
-def parse_str(str_node):
+def parse_str(str_node, charset = 'utf-8'):
     assert str_node.expr_name == 'str'
     assert len(str_node.children) == 3
 
-    str_value = _str_to_bytes(str_node.children[1].text)
+    str_value = _str_to_bytes(str_node.children[1].text, charset)
     return str_value.decode('unicode_escape')
 
 def parse_uri(uri_node):
@@ -445,7 +452,7 @@ def parse_coord(coordinate_node):
     lng = float(coordinate_node.children[4].text)
     return Coordinate(lat, lng)
 
-def parse_ref(ref_node):
+def parse_ref(ref_node, charset = 'utf-8'):
     assert ref_node.expr_name == 'ref'
     assert len(ref_node.children) == 3
     # We have an @ symbol, the reference name and in a child node,
@@ -453,7 +460,7 @@ def parse_ref(ref_node):
     ref = ref_node.children[1].text
     has_value = bool(ref_node.children[2].children)
     if has_value:
-        value = parse_str(ref_node.children[2].children[0].children[1])
+        value = parse_str(ref_node.children[2].children[0].children[1], charset)
     else:
         value = None
     return Ref(ref, value, has_value)

@@ -299,7 +299,14 @@ class Bin(six.text_type):
             raise TypeError('%r is not a Bin' % other)
         return super(Bin, self).__eq__(other)
 
-class MarkerType(object):
+class Singleton(object):
+    def __copy__(self):
+        return self
+
+    def __deepcopy__(self, memo):
+        return self
+
+class MarkerType(Singleton):
     '''
     A singleton class representing a Marker.
     '''
@@ -308,7 +315,7 @@ class MarkerType(object):
 
 MARKER = MarkerType()
 
-class RemoveType(object):
+class RemoveType(Singleton):
     '''
     A singleton class representing a Remove.
     '''

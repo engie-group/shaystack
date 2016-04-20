@@ -49,6 +49,43 @@ class Grid(MutableSequence):
                     col_meta = mo
                 self.column.add_item(col_id, col_meta)
 
+    def __repr__(self):
+        '''
+        Return a representation of this grid.
+        '''
+        parts = []
+        if bool(self.metadata):
+            parts.append(u'\tMetadata: %s' % self.metadata)
+
+        column_meta = []
+        for col, col_meta in self.column.items():
+            if bool(col_meta):
+                column_meta.append(u'\t\t%s: %s' % (col, col_meta))
+
+        if bool(column_meta):
+            parts.append(u'\tColumns:\n%s' % '\n'.join(column_meta))
+        elif len(self.column):
+            parts.append(u'\tColumns: %s' % ', '.join(self.column.keys()))
+        else:
+            parts.append(u'\tNo columns')
+
+        if bool(self):
+            parts.extend([
+                u'\tRow %4d: %s' % (row, u', '.join([
+                    ((u'%s=%r' % (col, data[col])) \
+                            if col in data else \
+                    (u'%s absent' % col)) for col \
+                    in self.column.keys()]))
+                for (row, data) in enumerate(self)
+            ])
+        else:
+            parts.append(u'\tNo rows')
+        # Represent as pseudo-XML
+        class_name = self.__class__.__name__
+        return u'<%s>\n%s\n</%s>' % (
+                class_name, u'\n'.join(parts), class_name
+        )
+
     def __getitem__(self, index):
         '''
         Retrieve the row at index.

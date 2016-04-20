@@ -8,4 +8,10 @@ setup (name = 'hszinc',
 	packages = [
             'hszinc',
         ],
+        requires=[
+            'parsimonious',
+            'pytz',
+            'iso8601',
+            'six',
+        ]
 )

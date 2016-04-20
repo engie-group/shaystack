@@ -61,6 +61,8 @@ class Grid(MutableSequence):
         for col, col_meta in self.column.items():
             if bool(col_meta):
                 column_meta.append(u'\t\t%s: %s' % (col, col_meta))
+            else:
+                column_meta.append(u'\t\t%s' % col)
 
         if bool(column_meta):
             parts.append(u'\tColumns:\n%s' % '\n'.join(column_meta))

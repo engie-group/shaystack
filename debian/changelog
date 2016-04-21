@@ -1,3 +1,8 @@
+hszinc (0.0.5) unstable; urgency=low
+  * Encoding bugfixes
+  * __repr__ for grids
+ -- Stuart Longland <stuartl@vrt.com.au>  Thu, 21 Apr 2016 14:19:47 +1000
+
 hszinc (0.0.4) unstable; urgency=low
   * Add support for grids in JSON format.
   * Add documentation in README

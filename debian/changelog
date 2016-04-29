@@ -1,3 +1,8 @@
+hszinc (0.0.7) unstable; urgency=low
+  * Tweak package metadata, fix ImportError on running setup.py without
+    dependencies installed.
+ -- Stuart Longland <stuartl@vrt.com.au>  Sat, 30 Apr 2016 08:38:00 +1000
+
 hszinc (0.0.6) unstable; urgency=low
   * Handle mixed raw UTF-8 and Unicode escape sequences.
  -- Stuart Longland <stuartl@vrt.com.au>  Fri, 29 Apr 2016 16:57:05 +1000

@@ -379,13 +379,13 @@ def parse_id(id_node):
 
 # These *should* have coverage, but unfortunately, there's no way to
 # say, "no cover on Python 2.x" or "no cover on Python 3.x"
-if six.PY2: # pragma: no cover
-    _str_to_bytes = lambda s, charset : six.text_type(s)
-else: # pragma: no cover
+if six.PY3: # pragma: no cover
     # This will probably need investigation... using nHastack, 
     # we need to use utf-8 instead of ascii... 
     # charset should be defined somewhere
     _str_to_bytes = lambda s, charset : six.binary_type(s, charset)
+else: # pragma: no cover
+    _str_to_bytes = lambda s, charset : six.text_type(s)
 
 def parse_str(str_node, charset = 'utf-8'):
     assert str_node.expr_name == 'str'

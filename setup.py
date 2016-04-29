@@ -8,7 +8,13 @@ setup (name = 'hszinc',
         packages = [
             'hszinc',
         ],
-        install_requires =[
+        requires = [
+            'parsimonious',
+            'pytz',
+            'iso8601',
+            'six',
+        ],
+        install_requires = [
             'parsimonious',
             'pytz',
             'iso8601',

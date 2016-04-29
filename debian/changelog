@@ -1,3 +1,7 @@
+hszinc (0.0.6) unstable; urgency=low
+  * Handle mixed raw UTF-8 and Unicode escape sequences.
+ -- Stuart Longland <stuartl@vrt.com.au>  Fri, 29 Apr 2016 16:57:05 +1000
+
 hszinc (0.0.5) unstable; urgency=low
   * Encoding bugfixes
   * __repr__ for grids

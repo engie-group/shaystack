@@ -40,6 +40,8 @@ URI_RE      = re.compile(r'u:(.+)$')
 BIN_RE      = re.compile(r'b:(.+)$')
 COORD_RE    = re.compile(r'c:(-?\d*\.?\d*),(-?\d*\.?\d*)$')
 
+STR_ESC_RE  = re.compile(r'\\([bfnrt"\\$]|u[0-9a-fA-F]{4})')
+
 def parse(grid_str, mode=MODE_ZINC):
     '''
     Parse the given Zinc text and return the equivalent data.
@@ -387,12 +389,36 @@ if six.PY3: # pragma: no cover
 else: # pragma: no cover
     _str_to_bytes = lambda s, charset : six.text_type(s)
 
+def _decode_escape(esc):
+    esc = esc.group(1)
+    if esc[0] in 'uU':
+        return six.unichr(int(esc[1:], 16))
+    elif esc == '"':
+        return '\"'
+    elif esc == 'b':
+        return '\b'
+    elif esc == 'f':
+        return '\f'
+    elif esc == 'n':
+        return '\n'
+    elif esc == 'r':
+        return '\r'
+    elif esc == 't':
+        return '\t'
+    else:
+        return esc
+
+def _sub_escape(str_value):
+    (str_value, replacements) = STR_ESC_RE.subn(_decode_escape, str_value)
+    while replacements > 0:
+        (str_value, replacements) = STR_ESC_RE.subn(_decode_escape, str_value)
+    return str_value
+
+
 def parse_str(str_node, charset = 'utf-8'):
     assert str_node.expr_name == 'str'
     assert len(str_node.children) == 3
-
-    str_value = _str_to_bytes(str_node.children[1].text, charset)
-    return str_value.decode('unicode_escape')
+    return _sub_escape(str_node.children[1].text)
 
 def parse_uri(uri_node):
     assert uri_node.expr_name == 'uri'

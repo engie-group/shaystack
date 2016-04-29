@@ -5,10 +5,10 @@ from hszinc import __version__
 
 setup (name = 'hszinc',
         version = __version__,
-	packages = [
+        packages = [
             'hszinc',
         ],
-        requires=[
+        install_requires =[
             'parsimonious',
             'pytz',
             'iso8601',

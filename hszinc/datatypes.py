@@ -240,6 +240,9 @@ class Quantity(object):
         else:
             return 1
 
+    def __hash__(self):
+        return hash((self.value, self.unit))
+
 
 class Coordinate(object):
     '''

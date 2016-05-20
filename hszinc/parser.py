@@ -295,7 +295,7 @@ def parse_scalar(scalar, mode=MODE_ZINC, charset='utf-8'):
             value = float(matched[0])
             if matched[-1] is not None:
                 # It's a quantity
-                return Quantity(value, matched[-1])
+                return Quantity(value, matched[-1].replace('Δ','delta_').replace('°','deg'))
             else:
                 # It's a raw value
                 return value
@@ -459,7 +459,7 @@ def parse_quantity(quantity_node):
     value = parse_decimal(quantity_node.children[0])
     # Second is the unit.
     unit = quantity_node.children[1].text
-    return Quantity(value, unit)
+    return Quantity(value, unit.replace('Δ','delta_').replace('°','deg'))
 
 def parse_decimal(decimal_node):
     assert decimal_node.expr_name == 'decimal'

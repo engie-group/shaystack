@@ -11,6 +11,7 @@ from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
         MARKER, REMOVE, STR_SUB
 from .zoneinfo import timezone_name
 from .parser import MODE_ZINC, MODE_JSON, MARKER_STR
+
 import datetime
 import iso8601
 import re

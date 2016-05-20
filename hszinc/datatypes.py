@@ -6,7 +6,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 import six
-from pint import UnitRegistry
+from . import ureg
 
 STR_SUB  = [
     ('\b',  '\\b'),
@@ -15,8 +15,9 @@ STR_SUB  = [
     ('\r',  '\\r'),
     ('\t',  '\\t'),
 ]
-
-class Quantity(UnitRegistry().Quantity):
+#class Quantity():
+#    pass
+class Quantity(ureg.Quantity):
     '''
     A quantity is a scalar value (floating point) with a unit.
     '''

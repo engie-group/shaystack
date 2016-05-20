@@ -5,13 +5,17 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 try:
+    from pint import UnitRegistry
+    ureg = UnitRegistry()
     from .grid import Grid
     from .dumper import dump, dump_scalar
     from .parser import parse, MODE_JSON, MODE_ZINC
     from .metadata import MetadataObject
     from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, REMOVE, Ref
 
-    __all__ = ['Grid', 'dump', 'parse', 'MetadataObject', 'Quantity',
+
+    
+    __all__ = ['Grid', 'dump', 'parse', 'MetadataObject', 'Quantity', 'ureg',
             'Coordinate', 'Uri', 'Bin', 'MARKER', 'REMOVE', 'Ref',
             'MODE_JSON', 'MODE_ZINC']
 except ImportError: # pragma: no cover

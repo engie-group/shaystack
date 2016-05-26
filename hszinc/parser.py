@@ -12,6 +12,7 @@ from .sortabledict import SortableDict
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
         MARKER, REMOVE, STR_SUB
 from .zoneinfo import timezone
+from .pint import to_pint
 import datetime
 import iso8601
 import re
@@ -295,7 +296,7 @@ def parse_scalar(scalar, mode=MODE_ZINC, charset='utf-8'):
             value = float(matched[0])
             if matched[-1] is not None:
                 # It's a quantity
-                return Quantity(value, matched[-1].replace('Δ','delta_').replace('°','deg'))
+                return Quantity(value, to_pint(matched[-1]))
             else:
                 # It's a raw value
                 return value
@@ -459,7 +460,7 @@ def parse_quantity(quantity_node):
     value = parse_decimal(quantity_node.children[0])
     # Second is the unit.
     unit = quantity_node.children[1].text
-    return Quantity(value, unit.replace('Δ','delta_').replace('°','deg'))
+    return Quantity(value, to_pint(unit))
 
 def parse_decimal(decimal_node):
     assert decimal_node.expr_name == 'decimal'
@@ -538,3 +539,4 @@ def parse_date_time(date_time_node):
             return isodt    # Failed, leave alone
     else:
         return isodt
+

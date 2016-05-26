@@ -47,10 +47,11 @@ ampere = [current] = A = amp
 candela = [luminosity] = cd = candle
 gram = [mass] = g
 mole = [substance] = mol
-kelvin = [temperature]; offset: 0 = K = degK
+kelvin = [temperature]; offset: 0 = K = degK = kelvin_degrees
 radian = [] = rad
 bit = []
 count = []
+% = [ratio] = percent
 
 @import constants_en.txt
 
@@ -73,9 +74,9 @@ darcy = 9.869233e-13 * m ** 2
 hectare = 100 * are = ha
 
 # Temperature
-degC = kelvin; offset: 273.15 = celsius = °C
+degC = kelvin; offset: 273.15 = celsius = °C = celsius_degrees
 degR = 5 / 9 * kelvin; offset: 0 = rankine = °R
-degF = 5 / 9 * kelvin; offset: 255.372222 = fahrenheit = °F
+degF = 5 / 9 * kelvin; offset: 255.372222 = fahrenheit = °F = fahrenheit_degrees
 
 # EM
 esu = 1 * erg**0.5 * centimeter**0.5 = statcoulombs = statC = franklin = Fr
@@ -122,8 +123,9 @@ hartree = 4.35974394e-18 * joule = E_h = hartree_energy
 
 # Torque
 [torque] = [force] * [length]
-newton_meter = newton * meter = Nm
+newton_meter = newton * meter = Nm = newtons_per_meter
 pound_inch = force_pound * inch = in_lbf
+pound_foot = force_pound * foot
 
 # Force
 [force] = [mass] * [acceleration]
@@ -202,9 +204,9 @@ torr = atm / 760
 pound_force_per_square_inch = pound * gravity / inch ** 2 = psi
 kip_per_square_inch = kip / inch ** 2 = ksi
 barye = 0.1 * newton / meter ** 2 = barie = barad = barrie = baryd = Ba
-mm_Hg = millimeter * Hg = mmHg = millimeter_Hg = millimeter_Hg_0C
-cm_Hg = centimeter * Hg = cmHg = centimeter_Hg
-in_Hg = inch * Hg = inHg = inch_Hg = inch_Hg_32F
+mm_Hg = millimeter * Hg = mmHg = millimeter_Hg = millimeter_Hg_0C = millimeters_of_mercury
+cm_Hg = centimeter * Hg = cmHg = centimeter_Hg = centimeters_of_mercury
+in_Hg = inch * Hg = inHg = inch_Hg = inch_Hg_32F = inches_of_mercury
 inch_Hg_60F = inch * mercury_60F
 inch_H2O_39F = inch * water_39F
 inch_H2O_60F = inch * water_60F
@@ -228,10 +230,10 @@ roentgen = 2.58e-4 * coulomb / kilogram
 minute = 60 * second = min
 hour = 60 * minute = hr
 day = 24 * hour
-week = 7 * day
+week = 7 * day = wk
 fortnight = 2 * week
-year = 31556925.9747 * second
-month = year / 12
+year = 31556925.9747 * second = yr
+month = year / 12 = julian_month = mo
 shake = 1e-8 * second
 sidereal_day = day / 1.00273790935079524
 sidereal_hour = sidereal_day / 24
@@ -254,8 +256,14 @@ work_month = work_year / 12
 [speed] = [length] / [time]
 nautical_mile = 1852 m = nmi # exact
 knot = nautical_mile / hour = kt = knot_international = international_knot = nautical_miles_per_hour
-mph = mile / hour = MPH
+mph = mile / hour = MPH = miles_per_hour
 kph = kilometer / hour = KPH
+feet_per_second = ft / second
+feet_per_minute = ft / minute
+millimeters_per_second = mm / second
+millimeters_per_minute = mm / mint
+meters_per_minute
+meters_per_hour
 
 # Viscosity
 [viscosity] = [pressure] * [time]
@@ -268,6 +276,9 @@ rhe = 10 / (Pa * s)
 liter = 1e-3 * m ** 3 = l = L = litre
 cc = centimeter ** 3 = cubic_centimeter
 stere = meter ** 3
+
+# Volumetric flow
+cfm = sq_ft * minute = cubic_feet_per_minute
 	
 
 @context(n=1) spectroscopy = sp

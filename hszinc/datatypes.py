@@ -6,6 +6,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 import six
+from .pint import to_pint
 from . import ureg
 
 STR_SUB  = [
@@ -17,6 +18,10 @@ STR_SUB  = [
 ]
 #class Quantity():
 #    pass
+def Q_(value, unit):
+    #print(to_pint(unit))
+    return Quantity(value, to_pint(unit))        
+    
 class Quantity(ureg.Quantity):
     '''
     A quantity is a scalar value (floating point) with a unit.

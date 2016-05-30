@@ -15,7 +15,8 @@ def to_pint(unit):
         unit == 'per_second' or \
         unit == '/s' or \
         unit == 'per_hour' or \
-        unit == '/h':
+        unit == '/h' or \
+        unit == None:
         return ''
         # Those units are not units... they are impossible to fit anywhere in Pint
         
@@ -114,6 +115,13 @@ def to_pint(unit):
                 .replace('delta degK', 'delta_degC') \
                 .replace('delta degC', 'delta_degC') \
                 .replace('delta degF', 'delta_degF') \
+                .replace('$', 'USD') \
+                .replace('£', 'GBP') \
+                .replace('元', 'CNY') \
+                .replace('€', 'EUR') \
+                .replace('₹', 'INR') \
+                .replace('¥', 'JPY') \
+                .replace('₩', 'KRW') \
                 .replace('of','')
                 
 def define_haystack_units():

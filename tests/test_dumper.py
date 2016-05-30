@@ -9,7 +9,7 @@ import datetime
 import pytz
 import json
 
-from .parser_tests import SIMPLE_EXAMPLE, SIMPLE_EXAMPLE_JSON, \
+from .test_parser import SIMPLE_EXAMPLE, SIMPLE_EXAMPLE_JSON, \
         METADATA_EXAMPLE_JSON
 
 # The metadata example is a little different, as we generate the grid without
@@ -57,11 +57,11 @@ def make_metadata_grid():
     grid.extend([
         {
             'siteName': 'Site 1',
-            'val': hszinc.Quantity(356.214,'kW'),
+            'val': hszinc.Q_(356.214,'kilowatt'),
         },
         {
             'siteName': 'Site 2',
-            'val': hszinc.Quantity(463.028,'kW'),
+            'val': hszinc.Q_(463.028,'kilowatt'),
         },
     ])
     return grid
@@ -95,7 +95,7 @@ def make_grid_meta():
     grid.metadata['aNumber'] = 3.14159
     grid.metadata['aNull'] = None
     grid.metadata['aMarker'] = hszinc.MARKER
-    grid.metadata['aQuantity'] = hszinc.Quantity(123,'Hz')
+    grid.metadata['aQuantity'] = hszinc.Q_(123,'hertz')
     grid.column['empty'] = {}
     return grid
 
@@ -130,7 +130,7 @@ def make_col_meta():
     col_meta['aNumber'] = 3.14159
     col_meta['aNull'] = None
     col_meta['aMarker'] = hszinc.MARKER
-    col_meta['aQuantity'] = hszinc.Quantity(123,'Hz')
+    col_meta['aQuantity'] = hszinc.Q_(123,'hertz')
     grid.column['empty'] = col_meta
     return grid
 
@@ -198,11 +198,11 @@ def test_data_types():
         },
         {
             'comment': 'A quantity',
-            'value': hszinc.Quantity(500,'miles'),
+            'value': hszinc.Q_(500,'miles'),
         },
         {
             'comment': 'A quantity without unit',
-            'value': hszinc.Quantity(500,None),
+            'value': hszinc.Q_(500,None),
         },
         {
             'comment': 'A coordinate',
@@ -296,11 +296,11 @@ def test_data_types_json():
         },
         {
             'comment': 'A quantity',
-            'value': hszinc.Quantity(500,'miles'),
+            'value': hszinc.Q_(500,'miles'),
         },
         {
             'comment': 'A quantity without unit',
-            'value': hszinc.Quantity(500,None),
+            'value': hszinc.Q_(500,None),
         },
         {
             'comment': 'A coordinate',

@@ -4,21 +4,8 @@
 # (C) 2016 VRT Systems
 #
 
-import pkg_resources, os
 from pint import UnitRegistry
 
-def define_registry():
-    """
-    This doesn't work.... not been able to import file into ureg...
-    I'll try defining units manually...
-    """
-    resource_package = __name__
-    main_unit_path = os.path.join('units', 'pyhaystack_pint.txt')
-    add_on_path = os.path.join('', 'pyhaystack_addons.txt')
-    addons = pkg_resources.resource_string(resource_package, add_on_path)
-    units = pkg_resources.resource_string(resource_package, main_unit_path)
-    #print(addons)    
-    
 def to_pint(unit):
     """
     Some parsing tweaks to fit pint units / handling of edge cases.

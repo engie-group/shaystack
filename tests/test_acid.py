@@ -5,6 +5,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 import hszinc
+from hszinc.pint import to_pint
 import datetime
 import pytz
 import random
@@ -78,8 +79,7 @@ def gen_random_num(scale=1000,digits=2):
 
 def gen_random_quantity():
     return hszinc.Quantity(gen_random_num(),
-            gen_random_str(max_length=8,
-                charset=string.ascii_letters))
+            to_pint('percent'))
 
 RANDOM_TYPES = [
     gen_random_const, gen_random_ref, gen_random_bin, gen_random_uri,

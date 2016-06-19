@@ -25,7 +25,7 @@ def test_all_units():
         try:   
             q = hszinc.Q_(1,each)
             defined.append(each)
-            #print(each, q)
+            print(each, q)
         except Exception as error:
             not_defined.append(each)
             print(error, each)

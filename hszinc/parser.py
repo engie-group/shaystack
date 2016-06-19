@@ -26,6 +26,7 @@ GRID_SEP = re.compile(r'\n\n+')
 
 MODE_ZINC = 'zinc'
 MODE_JSON = 'json'
+QUANTITY = 'pint'
 
 # Type regular expressions
 MARKER_STR  = 'm:'

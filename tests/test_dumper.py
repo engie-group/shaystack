@@ -53,7 +53,7 @@ def make_metadata_grid():
     grid.column['siteName'] = {'dis': 'Sites'}
     grid.column['val'] = hszinc.MetadataObject()
     grid.column['val']['dis'] = 'Value'
-    grid.column['val']['unit'] = 'kW'
+    grid.column['val']['unit'] = 'kilowatt'
     grid.extend([
         {
             'siteName': 'Site 1',
@@ -101,7 +101,7 @@ def make_grid_meta():
 
 def test_grid_meta():
     grid_str = hszinc.dump(make_grid_meta())
-    assert grid_str == '''ver:"2.0" aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123Hz
+    assert grid_str == '''ver:"2.0" aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123hertz
 empty
 '''
 
@@ -115,7 +115,7 @@ def test_grid_meta_json():
                 'aNumber': 'n:3.141590',
                 'aNull': None,
                 'aMarker': 'm:',
-                'aQuantity': 'n:123.000000 Hz',
+                'aQuantity': 'n:123.000000 hertz',
             },
             'cols': [
                 {'name': 'empty'},
@@ -137,7 +137,7 @@ def make_col_meta():
 def test_col_meta():
     grid_str = hszinc.dump(make_col_meta())
     assert grid_str == '''ver:"2.0"
-empty aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123Hz
+empty aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123hertz
 '''
 
 def test_col_meta_json():
@@ -153,7 +153,7 @@ def test_col_meta_json():
                     'aNumber': 'n:3.141590',
                     'aNull': None,
                     'aMarker': 'm:',
-                    'aQuantity': 'n:123.000000 Hz',
+                    'aQuantity': 'n:123.000000 hertz',
                 },
             ],
             'rows': [],
@@ -358,7 +358,7 @@ def test_data_types_json():
                 {   'comment': 's:A binary blob',
                     'value': 'b:text/plain'},
                 {   'comment': 's:A quantity',
-                    'value': 'n:500.000000 miles'},
+                    'value': 'n:500.000000 mile'},
                 {   'comment': 's:A quantity without unit',
                     'value': 'n:500.000000'},
                 {   'comment': 's:A coordinate',

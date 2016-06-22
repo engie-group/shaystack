@@ -3,6 +3,8 @@ import pkg_resources, os
 
 units = []
 
+hszinc.use_pint()
+
 def get_units():
 
     file_path = os.path.join('', 'project_haystack_units.txt')

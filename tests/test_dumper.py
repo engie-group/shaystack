@@ -53,15 +53,15 @@ def make_metadata_grid():
     grid.column['siteName'] = {'dis': 'Sites'}
     grid.column['val'] = hszinc.MetadataObject()
     grid.column['val']['dis'] = 'Value'
-    grid.column['val']['unit'] = 'kilowatt'
+    grid.column['val']['unit'] = 'kW'
     grid.extend([
         {
             'siteName': 'Site 1',
-            'val': hszinc.Q_(356.214,'kilowatt'),
+            'val': hszinc.Quantity(356.214,'kW'),
         },
         {
             'siteName': 'Site 2',
-            'val': hszinc.Q_(463.028,'kilowatt'),
+            'val': hszinc.Quantity(463.028,'kW'),
         },
     ])
     return grid
@@ -95,13 +95,13 @@ def make_grid_meta():
     grid.metadata['aNumber'] = 3.14159
     grid.metadata['aNull'] = None
     grid.metadata['aMarker'] = hszinc.MARKER
-    grid.metadata['aQuantity'] = hszinc.Q_(123,'hertz')
+    grid.metadata['aQuantity'] = hszinc.Quantity(123,'Hz')
     grid.column['empty'] = {}
     return grid
 
 def test_grid_meta():
     grid_str = hszinc.dump(make_grid_meta())
-    assert grid_str == '''ver:"2.0" aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123hertz
+    assert grid_str == '''ver:"2.0" aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123Hz
 empty
 '''
 
@@ -115,7 +115,7 @@ def test_grid_meta_json():
                 'aNumber': 'n:3.141590',
                 'aNull': None,
                 'aMarker': 'm:',
-                'aQuantity': 'n:123.000000 hertz',
+                'aQuantity': 'n:123.000000 Hz',
             },
             'cols': [
                 {'name': 'empty'},
@@ -130,14 +130,14 @@ def make_col_meta():
     col_meta['aNumber'] = 3.14159
     col_meta['aNull'] = None
     col_meta['aMarker'] = hszinc.MARKER
-    col_meta['aQuantity'] = hszinc.Q_(123,'hertz')
+    col_meta['aQuantity'] = hszinc.Quantity(123,'Hz')
     grid.column['empty'] = col_meta
     return grid
 
 def test_col_meta():
     grid_str = hszinc.dump(make_col_meta())
     assert grid_str == '''ver:"2.0"
-empty aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123hertz
+empty aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123Hz
 '''
 
 def test_col_meta_json():
@@ -153,7 +153,7 @@ def test_col_meta_json():
                     'aNumber': 'n:3.141590',
                     'aNull': None,
                     'aMarker': 'm:',
-                    'aQuantity': 'n:123.000000 hertz',
+                    'aQuantity': 'n:123.000000 Hz',
                 },
             ],
             'rows': [],
@@ -198,11 +198,11 @@ def test_data_types():
         },
         {
             'comment': 'A quantity',
-            'value': hszinc.Q_(500,'miles'),
+            'value': hszinc.Quantity(500,'miles'),
         },
         {
             'comment': 'A quantity without unit',
-            'value': hszinc.Q_(500,None),
+            'value': hszinc.Quantity(500,None),
         },
         {
             'comment': 'A coordinate',
@@ -296,11 +296,11 @@ def test_data_types_json():
         },
         {
             'comment': 'A quantity',
-            'value': hszinc.Q_(500,'miles'),
+            'value': hszinc.Quantity(500,'miles'),
         },
         {
             'comment': 'A quantity without unit',
-            'value': hszinc.Q_(500,None),
+            'value': hszinc.Quantity(500,None),
         },
         {
             'comment': 'A coordinate',
@@ -358,7 +358,7 @@ def test_data_types_json():
                 {   'comment': 's:A binary blob',
                     'value': 'b:text/plain'},
                 {   'comment': 's:A quantity',
-                    'value': 'n:500.000000 mile'},
+                    'value': 'n:500.000000 miles'},
                 {   'comment': 's:A quantity without unit',
                     'value': 'n:500.000000'},
                 {   'comment': 's:A coordinate',

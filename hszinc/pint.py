@@ -5,6 +5,7 @@
 #
 
 from pint import UnitRegistry
+
 HAYSTACK_CONVERSION = [
                     ('_', ' '),
                     ('°','deg'),
@@ -164,109 +165,7 @@ def to_pint(unit):
     for haystack_value, pint_value in HAYSTACK_CONVERSION:
         unit = unit.replace(haystack_value, pint_value)
     return unit
-#    return unit.replace('_', ' ') \
-#                .replace('°','deg') \
-#                .replace('per ', '/ ') \
-#                .replace('Δ','delta_') \
-#                .replace('meters','meter') \
-#                .replace('liters','liter') \
-#                .replace('gallons','gallon') \
-#                .replace('millimeters','millimeter') \
-#                .replace('centimeters','centimeter') \
-#                .replace('H₂O', 'H2O') \
-#                .replace('Volt', 'volt') \
-#                .replace('grams', 'gram') \
-#                .replace('tons refrigeration', 'refrigeration_ton') \
-#                .replace('%', 'percent') \
-#                .replace('degree kelvin','degK') \
-#                .replace('degree celsius','degC') \
-#                .replace('degree farenheit','degF') \
-#                .replace('pound force', 'pound_force') \
-#                .replace('metric ton', 'metric_ton') \
-#                .replace('fluid ounce', 'fluid_ounce') \
-#                .replace('imperial gallon','imperial_gallon') \
-#                .replace('galUK','UK_gallon') \
-#                .replace('kgdegK','(kg degK)') \
-#                .replace('tonrefh','refrigeration_ton * hour') \
-#                .replace('tonref','refrigeration_ton') \
-#                .replace('Nm ', 'newton meter') \
-#                .replace('Ns', 'newton second') \
-#                .replace('Js', 'joule second') \
-#                .replace('short ton', 'short_ton') \
-#                .replace('degrees angular', 'deg') \
-#                .replace('degrees phase', 'deg') \
-#                .replace('degPh', 'deg') \
-#                .replace('yr','year ') \
-#                .replace('atmosphere', 'atm') \
-#                .replace('mo','month ') \
-#                .replace('wk','week ') \
-#                .replace('parts / unit','ppu') \
-#                .replace('parts / million','ppm') \
-#                .replace('parts / billion','ppb') \
-#                .replace('kcfm','kilocfm') \
-#                .replace('kilohm','kiloohm') \
-#                .replace('megohm','megaohm') \
-#                .replace('volt ampere reactive', 'VAR') \
-#                .replace('kilovolt ampere reactive', 'kVAR') \
-#                .replace('megavolt ampere reactive', 'MVAR') \
-#                .replace('VAh', 'volt * ampere * hour') \
-#                .replace('kVAh', 'kilovolt * ampere * hour') \
-#                .replace('MVAh', 'megavolt * ampere * hour') \
-#                .replace('VARh', 'VAR * hour') \
-#                .replace('kVARh', 'kVAR * hour') \
-#                .replace('MVARh', 'MVAR * hour') \
-#                .replace('hph', 'horsepower * hour') \
-#                .replace('energy efficiency ratio', 'EER') \
-#                .replace('coefficient of performance', 'COP') \
-#                .replace('data center infrastructure efficiency', 'DCIE') \
-#                .replace('power usage effectiveness', 'PUE') \
-#                .replace('formazin nephelometric unit', 'fnu') \
-#                .replace('nephelometric turbidity units', 'ntu') \
-#                .replace('dBµV', 'dB microvolt') \
-#                .replace('dBmV', 'dB millivolt') \
-#                .replace('Am', 'A * m') \
-#                .replace('percent relative humidity', 'percentRH') \
-#                .replace('pf', 'PF') \
-#                .replace('power factor', 'PF') \
-#                .replace('gH2O','g H2O') \
-#                .replace('irradiance','') \
-#                .replace('irr','') \
-#                .replace('dry air', 'dry') \
-#                .replace('dry', 'dry_air') \
-#                .replace('kgAir','kg dry_air') \
-#                .replace('percent obscuration', 'percentobsc') \
-#                .replace('natural gas', '') \
-#                .replace('Ωm', 'ohm meter') \
-#                .replace('hecto cubic foot', 'hecto_cubic_foot') \
-#                .replace('julian month','month') \
-#                .replace('tenths second', 'tenths_second') \
-#                .replace('hundredths second', 'hundredths_second') \
-#                .replace('australian dollar','australian_dollar') \
-#                .replace('british pound','british_pound') \
-#                .replace('canadian dollar','canadian_dollar') \
-#                .replace('chinese yuan','chinese_yuan') \
-#                .replace('emerati dirham','emerati_dirham') \
-#                .replace('indian rupee','indian_rupee') \
-#                .replace('japanese yen','japanese_yen') \
-#                .replace('russian ruble','russian_ruble') \
-#                .replace('south korean won','south_korean_won') \
-#                .replace('swedish krona','swedish_krona') \
-#                .replace('swiss franc','swiss_franc') \
-#                .replace('taiwan dollar','taiwan_dollar') \
-#                .replace('us dollar','us_dollar') \
-#                .replace('new israeli shekel','new_israeli_shekel') \
-#                .replace('delta_K', 'delta_degC') \
-#                .replace('delta degK', 'delta_degC') \
-#                .replace('delta degC', 'delta_degC') \
-#                .replace('delta degF', 'delta_degF') \
-#                .replace('$', 'USD') \
-#                .replace('£', 'GBP') \
-#                .replace('元', 'CNY') \
-#                .replace('€', 'EUR') \
-#                .replace('₹', 'INR') \
-#                .replace('¥', 'JPY') \
-#                .replace('₩', 'KRW') \
-#                .replace('of','')
+
                 
 def define_haystack_units():
     """

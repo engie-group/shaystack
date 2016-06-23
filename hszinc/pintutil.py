@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Zinc data types
+# Pint integration helpers
 # (C) 2016 VRT Systems
 #
 
+from __future__ import unicode_literals
 from pint import UnitRegistry
 
 HAYSTACK_CONVERSION = [

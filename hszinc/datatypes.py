@@ -32,18 +32,21 @@ def use_pint(val = True):
         if PINT_AVAILABLE:
             MODE_PINT = True
         else:
-            raise ImportError('Pint not installed. Use pip install pint if needed')
+            raise ImportError(
+                    'Pint not installed. Use pip install pint if needed')
     else:
         #print('Back to default Quantity')
         MODE_PINT = False
 
+
 class Quantity(metaclass=ABCMeta):
-    def __new__(self, value, unit = None):
+    def __new__(self, value, unit=None):
         if MODE_PINT:
-            return Quantity_Pint(value, to_pint(unit))
+            return PintQuantity(value, to_pint(unit))
         else:
-            return Quantity_Default(value, unit)
-            
+            return BasicQuantity(value, unit)
+
+
 class Qty(object):
     '''
     A quantity is a scalar value (floating point) with a unit.
@@ -52,13 +55,13 @@ class Qty(object):
         self.value = value
         self.unit = unit     
 
-class Quantity_Default(Qty):
+class BasicQuantity(Qty):
     '''
     Default class to be used to define Quantity.
     
     '''
     def __init__(self, value, unit):
-        super(Quantity_Default, self).__init__(value, unit)
+        super(BasicQuantity, self).__init__(value, unit)
         
 
     def __repr__(self):
@@ -145,7 +148,7 @@ class Quantity_Default(Qty):
         return divmod(self.value, other)
 
     def __pow__(self, other, modulo=None):
-        if isinstance(other, Quantity_Default):
+        if isinstance(other, BasicQuantity):
             other = other.value
         return pow(self.value, other, modulo)
 
@@ -281,10 +284,10 @@ class Quantity_Default(Qty):
     def __hash__(self):
         return hash((self.value, self.unit))
 
-Quantity.register(Quantity_Default)
+Quantity.register(BasicQuantity)
 
 if PINT_AVAILABLE:        
-    class Quantity_Pint(Qty, ureg.Quantity):
+    class PintQuantity(Qty, ureg.Quantity):
         '''
         A quantity is a scalar value (floating point) with a unit.
         This object uses Pint feature allowing conversion between units
@@ -294,34 +297,12 @@ if PINT_AVAILABLE:
         See https://pint.readthedocs.io for details
         '''
         def __init__(self, value, unit):
-            super(Quantity_Pint, self).__init__(value, unit)
-    Quantity.register(Quantity_Pint)
+            super(PintQuantity, self).__init__(value, unit)
+    Quantity.register(PintQuantity)
 else:
     # If things turn really bad...just in case.
-    Quantity_Pint = Quantity_Default
+    PintQuantity = BasicQuantity
     to_pint = lambda unit: unit
-
-
-
-            
-#def quantity(value, unit = None):
-#    """
-#    Factory to create Quantity object depending on MODE_PINT
-#    value can be a Quantity itself, allowing conversion between Pint and Default
-#    """
-#    if isinstance(value, Quantity) and MODE_PINT:
-#        return Quantity_Pint(value.value, to_pint(value.unit))
-#    elif isinstance(value, Quantity) and not MODE_PINT:
-#        return Quantity_Default(value.value, to_pint(value.unit))
-#    
-#    if float(value) and MODE_PINT:
-#        return Quantity_Pint(value, to_pint(unit))
-#    elif float(value) and not MODE_PINT:
-#        return Quantity_Default(value, unit)
-#
-#    else:
-#        raise ValueError('Provide value, unit or quantity as argument')
-
 
         
 class Coordinate(object):

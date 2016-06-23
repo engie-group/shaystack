@@ -21,8 +21,8 @@ try:
     from .dumper import dump, dump_scalar 
     from .parser import parse, MODE_JSON, MODE_ZINC   
     from .metadata import MetadataObject 
-    from .datatypes import Quantity, quantity, Coordinate, Uri, Bin, MARKER, REMOVE, Ref, use_pint   
-    Q_ = quantity  
+    from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, REMOVE, Ref, use_pint   
+    Q_ = Quantity  
     __all__ = ['Grid', 'dump', 'parse', 'MetadataObject', 'ureg',
             'Coordinate', 'Uri', 'Bin', 'MARKER', 'REMOVE', 'Ref',
             'MODE_JSON', 'MODE_ZINC']

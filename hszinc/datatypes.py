@@ -40,7 +40,7 @@ def use_pint(val = True):
 class Quantity(metaclass=ABCMeta):
     def __new__(self, value, unit = None):
         if MODE_PINT:
-            return Quantity_Pint(value, unit)
+            return Quantity_Pint(value, to_pint(unit))
         else:
             return Quantity_Default(value, unit)
             
@@ -304,23 +304,23 @@ else:
 
 
             
-def quantity(value, unit = None):
-    """
-    Factory to create Quantity object depending on MODE_PINT
-    value can be a Quantity itself, allowing conversion between Pint and Default
-    """
-    if isinstance(value, Quantity) and MODE_PINT:
-        return Quantity_Pint(value.value, to_pint(value.unit))
-    elif isinstance(value, Quantity) and not MODE_PINT:
-        return Quantity_Default(value.value, to_pint(value.unit))
-    
-    if float(value) and MODE_PINT:
-        return Quantity_Pint(value, to_pint(unit))
-    elif float(value) and not MODE_PINT:
-        return Quantity_Default(value, unit)
-
-    else:
-        raise ValueError('Provide value, unit or quantity as argument')
+#def quantity(value, unit = None):
+#    """
+#    Factory to create Quantity object depending on MODE_PINT
+#    value can be a Quantity itself, allowing conversion between Pint and Default
+#    """
+#    if isinstance(value, Quantity) and MODE_PINT:
+#        return Quantity_Pint(value.value, to_pint(value.unit))
+#    elif isinstance(value, Quantity) and not MODE_PINT:
+#        return Quantity_Default(value.value, to_pint(value.unit))
+#    
+#    if float(value) and MODE_PINT:
+#        return Quantity_Pint(value, to_pint(unit))
+#    elif float(value) and not MODE_PINT:
+#        return Quantity_Default(value, unit)
+#
+#    else:
+#        raise ValueError('Provide value, unit or quantity as argument')
 
 
         

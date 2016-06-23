@@ -123,7 +123,7 @@ def check_metadata(grid,force_metadata_order=True):
     val = row['val']
     assert isinstance(val, hszinc.Quantity)
     assert val.value == 356.214
-    assert val.unit == 'kilowatt'
+    assert val.unit == 'kW'
 
     # Second row:
     row = grid[1]
@@ -132,7 +132,7 @@ def check_metadata(grid,force_metadata_order=True):
     val = row['val']
     assert isinstance(val, hszinc.Quantity)
     assert val.value == 463.028
-    assert val.unit == 'kilowatt'
+    assert val.unit == 'kW'
 
 # Test examples used to test every data type defined in the Zinc standard.
 #    Null: N
@@ -261,11 +261,11 @@ def check_number(grid):
     row = grid.pop(0)
     assert row['number'] == 5.4e-45
     row = grid.pop(0)
-    assert row['number'] == hszinc.Quantity(9.23, 'kilogram')
+    assert row['number'] == hszinc.Quantity(9.23, 'kg')
     row = grid.pop(0)
-    assert row['number'] == hszinc.Quantity(4.0, 'minute')
+    assert row['number'] == hszinc.Quantity(4.0, 'min')
     row = grid.pop(0)
-    assert row['number'] == hszinc.Quantity(74.2, 'degF')
+    assert row['number'] == hszinc.Quantity(74.2, u'°F')
     row = grid.pop(0)
     assert math.isinf(row['number'])
     assert row['number'] > 0
@@ -602,7 +602,7 @@ empty
     assert meta['anotherMarker'] is hszinc.MARKER
     assert isinstance(meta['aQuantity'], hszinc.Quantity)
     assert meta['aQuantity'].value == 123
-    assert meta['aQuantity'].unit == 'hertz'
+    assert meta['aQuantity'].unit == 'Hz'
     assert isinstance(meta['aDate'], datetime.date)
     assert meta['aDate'] == datetime.date(2016,1,13)
     assert isinstance(meta['aTime'], datetime.time)
@@ -635,7 +635,7 @@ aColumn aString:"aValue" aNumber:3.14159 aNull:N aMarker:M anotherMarker aQuanti
     assert meta['anotherMarker'] is hszinc.MARKER
     assert isinstance(meta['aQuantity'], hszinc.Quantity)
     assert meta['aQuantity'].value == 123
-    assert meta['aQuantity'].unit == 'hertz'
+    assert meta['aQuantity'].unit == 'Hz'
     assert isinstance(meta['aDate'], datetime.date)
     assert meta['aDate'] == datetime.date(2016,1,13)
     assert isinstance(meta['aTime'], datetime.time)
@@ -811,14 +811,14 @@ a, b
     assert row['a'] == hszinc.Quantity(-3.1,'kg')
     assert row['b'] == hszinc.Quantity(4,'kg')
     row = grid.pop(0)
-    assert row['a'] == hszinc.Quantity(5,'percent')
-    assert row['b'] == hszinc.Quantity(3.2,'percent')
+    assert row['a'] == hszinc.Quantity(5,'%')
+    assert row['b'] == hszinc.Quantity(3.2,'%')
     row = grid.pop(0)
     assert row['a'] == hszinc.Quantity(5,u'kWh/ft\u00b2')
     assert row['b'] == hszinc.Quantity(-15,u'kWh/m\u00b2')
     row = grid.pop(0)
-    assert row['a'] == hszinc.Q_(123e12,'kJ/kg_dry')
-    assert row['b'] == hszinc.Q_(74,u'\u0394\u00b0F')
+    assert row['a'] == hszinc.Quantity(123e12,'kJ/kg_dry')
+    assert row['b'] == hszinc.Quantity(74,u'\u0394\u00b0F')
 
 def test_nodehaystack_08():
     grid_list = hszinc.parse('''ver:"2.0"
@@ -869,10 +869,10 @@ a
             datetime.datetime(2010,12,18,14,11,30,925000))
     assert grid.pop(0)['a'] == pytz.timezone('Europe/London').localize(\
             datetime.datetime(2010,12,18,14,11,30,925000))
-    assert grid.pop(0)['a'] == hszinc.Q_(45,'$')
-    assert grid.pop(0)['a'] == hszinc.Q_(33,u'\u00a3')
+    assert grid.pop(0)['a'] == hszinc.Quantity(45,'$')
+    assert grid.pop(0)['a'] == hszinc.Quantity(33,u'\u00a3')
     assert grid.pop(0)['a'] == hszinc.Ref('12cbb08e-0c02ae73')
-    assert grid.pop(0)['a'] == hszinc.Q_(7.15625E-4,u'kWh/ft\u00b2')
+    assert grid.pop(0)['a'] == hszinc.Quantity(7.15625E-4,u'kWh/ft\u00b2')
 
 def test_nodehaystack_10():
     grid_list = hszinc.parse('''ver:"2.0" bg: Bin(image/jpeg) mark

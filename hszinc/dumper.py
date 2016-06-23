@@ -208,7 +208,7 @@ def dump_bin(bin_value, mode=MODE_ZINC):
         return 'Bin(%s)' % bin_value
 
 def dump_quantity(quantity, mode=MODE_ZINC):
-    if quantity.unit is None:
+    if (quantity.unit is None) or (quantity.unit == ''):
         return dump_decimal(quantity.value, mode=mode)
     elif mode == MODE_ZINC:
         return '%s%s' % (dump_decimal(quantity.value), quantity.unit)

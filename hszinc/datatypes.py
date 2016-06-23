@@ -11,7 +11,7 @@ from . import PINT_AVAILABLE
 
 if PINT_AVAILABLE:
     from . import ureg
-    from .pint import to_pint
+    from .pintutil import to_pint
 
 from abc import ABCMeta
 

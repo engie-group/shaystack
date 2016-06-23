@@ -5,7 +5,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 import hszinc
-from hszinc.pint import to_pint
+from hszinc.pintutil import to_pint
 import datetime
 import pytz
 import random

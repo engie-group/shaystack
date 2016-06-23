@@ -39,7 +39,7 @@ def use_pint(val = True):
         MODE_PINT = False
 
 
-class Quantity(metaclass=ABCMeta):
+class Quantity(six.with_metaclass(ABCMeta, object)):
     def __new__(self, value, unit=None):
         if MODE_PINT:
             return PintQuantity(value, to_pint(unit))

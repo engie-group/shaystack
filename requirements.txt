@@ -3,3 +3,4 @@ pytz
 iso8601
 six
 coveralls
+pint

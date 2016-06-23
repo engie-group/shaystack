@@ -9,7 +9,7 @@ import datetime
 import pytz
 import json
 
-from .parser_tests import SIMPLE_EXAMPLE, SIMPLE_EXAMPLE_JSON, \
+from .test_parser import SIMPLE_EXAMPLE, SIMPLE_EXAMPLE_JSON, \
         METADATA_EXAMPLE_JSON
 
 # The metadata example is a little different, as we generate the grid without

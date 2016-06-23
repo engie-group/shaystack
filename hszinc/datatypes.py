@@ -7,6 +7,14 @@
 
 import six
 
+from . import PINT_AVAILABLE
+
+if PINT_AVAILABLE:
+    from . import ureg
+    from .pintutil import to_pint
+
+from abc import ABCMeta
+
 STR_SUB  = [
     ('\b',  '\\b'),
     ('\f',  '\\f'),
@@ -15,13 +23,46 @@ STR_SUB  = [
     ('\t',  '\\t'),
 ]
 
-class Quantity(object):
+# Will keep in memory the way we want Quantity being created
+MODE_PINT = False
+def use_pint(val = True):
+    global MODE_PINT
+    if val:
+        #print('Switching to Pint')
+        if PINT_AVAILABLE:
+            MODE_PINT = True
+        else:
+            raise ImportError(
+                    'Pint not installed. Use pip install pint if needed')
+    else:
+        #print('Back to default Quantity')
+        MODE_PINT = False
+
+
+class Quantity(six.with_metaclass(ABCMeta, object)):
+    def __new__(self, value, unit=None):
+        if MODE_PINT:
+            return PintQuantity(value, to_pint(unit))
+        else:
+            return BasicQuantity(value, unit)
+
+
+class Qty(object):
     '''
     A quantity is a scalar value (floating point) with a unit.
     '''
     def __init__(self, value, unit):
         self.value = value
-        self.unit = unit
+        self.unit = unit     
+
+class BasicQuantity(Qty):
+    '''
+    Default class to be used to define Quantity.
+    
+    '''
+    def __init__(self, value, unit):
+        super(BasicQuantity, self).__init__(value, unit)
+        
 
     def __repr__(self):
         return '%s(%r, %r)' % (
@@ -67,147 +108,147 @@ class Quantity(object):
         return ~self.value
 
     def __add__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return self.value + other
 
     def __sub__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return self.value - other
 
     def __mul__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return self.value * other
 
     def __div__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return self.value / other
 
     def __truediv__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return self.value / other
 
     def __floordiv__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return self.value // other
 
     def __mod__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return self.value % other
 
     def __divmod__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return divmod(self.value, other)
 
     def __pow__(self, other, modulo=None):
-        if isinstance(other, Quantity):
+        if isinstance(other, BasicQuantity):
             other = other.value
         return pow(self.value, other, modulo)
 
     def __lshift__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return self.value << other
 
     def __rshift__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return self.value >> other
 
     def __and__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return self.value & other
 
     def __xor__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return self.value ^ other
 
     def __or__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return self.value | other
 
     def __radd__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return other + self.value
 
     def __rsub__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return other - self.value
 
     def __rmul__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return other * self.value
 
     def __rdiv__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return other / self.value
 
     def __rtruediv__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return other / self.value
 
     def __rfloordiv__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return other // self.value
 
     def __rmod__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return other % self.value
 
     def __rdivmod__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return divmod(other, self.value)
 
     def __rpow__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return pow(other, self.value)
 
     def __rlshift__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return other << self.value
 
     def __rrshift__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return other >> self.value
 
     def __rand__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return other & self.value
 
     def __rxor__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return other ^ self.value
 
     def __ror__(self, other):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             other = other.value
         return other | self.value
 
     def _cmp_op(self, other, op):
-        if isinstance(other, Quantity):
+        if isinstance(other, Qty):
             if other.unit != self.unit:
                 raise TypeError('Quantity units differ: %s vs %s' \
                         % (self.unit, other.unit))
@@ -243,7 +284,27 @@ class Quantity(object):
     def __hash__(self):
         return hash((self.value, self.unit))
 
+Quantity.register(BasicQuantity)
 
+if PINT_AVAILABLE:        
+    class PintQuantity(Qty, ureg.Quantity):
+        '''
+        A quantity is a scalar value (floating point) with a unit.
+        This object uses Pint feature allowing conversion between units
+        for example : 
+            a = hszinc.Q_(19, 'degC')
+            a.to('degF')
+        See https://pint.readthedocs.io for details
+        '''
+        def __init__(self, value, unit):
+            super(PintQuantity, self).__init__(value, unit)
+    Quantity.register(PintQuantity)
+else:
+    # If things turn really bad...just in case.
+    PintQuantity = BasicQuantity
+    to_pint = lambda unit: unit
+
+        
 class Coordinate(object):
     '''
     A 2D co-ordinate in degrees latitude and longitude.

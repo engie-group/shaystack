@@ -20,7 +20,7 @@ import json
 import six
 
 URI_META = re.compile(six.u(r'([\\`\u0080-\uffff])'))
-STR_META = re.compile(six.u(r'([\\"\u0080-\uffff])'))
+STR_META = re.compile(six.u(r'([\\"\$\u0080-\uffff])'))
 
 def str_sub(match):
     c = match.group(0)
@@ -28,7 +28,7 @@ def str_sub(match):
     if o >= 0x0080:
         # Unicode
         return '\\u%04x' % o
-    elif c in '\\"':
+    elif c in '\\"$':
         return '\\%s' % c
 
 def uri_sub(match):

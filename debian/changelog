@@ -1,3 +1,8 @@
+hszinc (0.1.0) unstable; urgency=low
+  * Add support for `pint` (thanks to Christian Tremblay)
+  * Fix handling of "\$" escape sequence (issue 7)
+ -- Stuart Longland <stuartl@vrt.com.au>  Wed, 29 Jun 2016 11:26:38 +1000
+
 hszinc (0.0.8) unstable; urgency=low
   * Added __hash__ function to Quantity (Credit: Christian Tremblay)
  -- Stuart Longland <stuartl@vrt.com.au>  Tue, 03 May 2016 20:16:27 +1000

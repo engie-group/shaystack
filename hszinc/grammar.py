@@ -34,7 +34,7 @@ zinc_grammar = Grammar(r'''
         refChar     =   alpha / digit / "_" / ":" / "-" / "." / "~"
         str         =   "\"" strChar* "\""
         uri         =   "`" uriChar* "`"
-        strChar     =   ~r"([^\x00-\x1f\\\"]|\\[bfnrt\\\"]|\\u[0-9a-fA-F]{4})"
+        strChar     =   ~r"([^\x00-\x1f\\\"]|\\[bfnrt\\\"$]|\\u[0-9a-fA-F]{4})"
         uriChar     =   ~r"([^\x00-\x1f\\`]|\\[bfnrt\\:/?#\[\]@&=;`]|\\u[0-9a-fA-F]{4})"
         number      =   quantity / decimal / "INF" / "-INF" / "NaN"
         decimal     =   "-"? digits ( "." digits )? exp?

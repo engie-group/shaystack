@@ -300,14 +300,14 @@ def test_string():
 str,strExample
 "Empty",""
 "Basic","Simple string"
-"Escaped","This\\tIs\\nA\\r\\"Test\\"\\\\"
+"Escaped","This\\tIs\\nA\\r\\"Test\\"\\\\\\$"
 ''')
 
     assert len(grid_list) == 1
     assert len(grid_list[0]) == 3
     assert grid_list[0][0]['strExample'] == ''
     assert grid_list[0][1]['strExample'] == 'Simple string'
-    assert grid_list[0][2]['strExample'] == 'This\tIs\nA\r"Test"\\'
+    assert grid_list[0][2]['strExample'] == 'This\tIs\nA\r"Test"$'
 
 def test_string_json():
     grid = hszinc.parse({

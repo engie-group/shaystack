@@ -11,6 +11,7 @@ from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
         MARKER, REMOVE, STR_SUB
 from .zoneinfo import timezone_name
 from .parser import MODE_ZINC, MODE_JSON, MARKER_STR
+
 import datetime
 import iso8601
 import re
@@ -19,7 +20,7 @@ import json
 import six
 
 URI_META = re.compile(six.u(r'([\\`\u0080-\uffff])'))
-STR_META = re.compile(six.u(r'([\\"\u0080-\uffff])'))
+STR_META = re.compile(six.u(r'([\\"\$\u0080-\uffff])'))
 
 def str_sub(match):
     c = match.group(0)
@@ -27,7 +28,7 @@ def str_sub(match):
     if o >= 0x0080:
         # Unicode
         return '\\u%04x' % o
-    elif c in '\\"':
+    elif c in '\\"$':
         return '\\%s' % c
 
 def uri_sub(match):
@@ -207,7 +208,7 @@ def dump_bin(bin_value, mode=MODE_ZINC):
         return 'Bin(%s)' % bin_value
 
 def dump_quantity(quantity, mode=MODE_ZINC):
-    if quantity.unit is None:
+    if (quantity.unit is None) or (quantity.unit == ''):
         return dump_decimal(quantity.value, mode=mode)
     elif mode == MODE_ZINC:
         return '%s%s' % (dump_decimal(quantity.value), quantity.unit)

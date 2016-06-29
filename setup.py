@@ -8,6 +8,7 @@ requirements = [
             'pytz',
             'iso8601',
             'six',
+            'pint',
 ]
 
 setup(name='hszinc',

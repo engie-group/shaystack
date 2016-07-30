@@ -4,6 +4,9 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
+# Assume unicode literals as per Python 3
+from __future__ import unicode_literals
+
 import hszinc
 from copy import copy, deepcopy
 
@@ -26,3 +29,15 @@ def test_marker_copy():
 
 def test_remove_copy():
     check_singleton_copy(hszinc.REMOVE)
+
+def test_ref_simple_eq():
+    r1 = hszinc.Ref(name='a.ref')
+    r2 = hszinc.Ref(name='a.ref')
+    assert r1 is not r2
+    assert r1 == r2
+
+def test_ref_simple_neq():
+    r1 = hszinc.Ref(name='a.ref')
+    r2 = hszinc.Ref(name='another.ref')
+    assert r1 is not r2
+    assert r1 != r2

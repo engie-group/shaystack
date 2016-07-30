@@ -329,7 +329,7 @@ class Coordinate(object):
         return (self.latitude == other.latitude) and \
                 (self.longitude == other.longitude)
 
-    def __neq__(self, other):
+    def __ne__(self, other):
         return not (self == other)
 
 
@@ -422,5 +422,5 @@ class Ref(object):
                 (self.has_value == other.has_value) and \
                 (self.value == other.value)
 
-    def __neq__(self, other):
+    def __ne__(self, other):
         return not (self == other)

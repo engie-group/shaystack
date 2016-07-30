@@ -53,16 +53,16 @@ class Qty(object):
     '''
     def __init__(self, value, unit):
         self.value = value
-        self.unit = unit     
+        self.unit = unit
 
 class BasicQuantity(Qty):
     '''
     Default class to be used to define Quantity.
-    
+
     '''
     def __init__(self, value, unit):
         super(BasicQuantity, self).__init__(value, unit)
-        
+
 
     def __repr__(self):
         return '%s(%r, %r)' % (
@@ -286,12 +286,12 @@ class BasicQuantity(Qty):
 
 Quantity.register(BasicQuantity)
 
-if PINT_AVAILABLE:        
+if PINT_AVAILABLE:
     class PintQuantity(Qty, ureg.Quantity):
         '''
         A quantity is a scalar value (floating point) with a unit.
         This object uses Pint feature allowing conversion between units
-        for example : 
+        for example :
             a = hszinc.Q_(19, 'degC')
             a.to('degF')
         See https://pint.readthedocs.io for details
@@ -304,7 +304,7 @@ else:
     PintQuantity = BasicQuantity
     to_pint = lambda unit: unit
 
-        
+
 class Coordinate(object):
     '''
     A 2D co-ordinate in degrees latitude and longitude.

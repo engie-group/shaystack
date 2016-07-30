@@ -1,3 +1,7 @@
+hszinc (0.1.1) unstable; urgency=low
+  * Bugfix to != operators on ZINC types.
+ -- Stuart Longland <stuartl@vrt.com.au>  Sat, 30 Jul 2016 13:18:19 +1000
+
 hszinc (0.1.0) unstable; urgency=low
   * Add support for `pint` (thanks to Christian Tremblay)
   * Fix handling of "\$" escape sequence (issue 7)

@@ -28,17 +28,22 @@ MODE_JSON = 'json'
 
 # Type regular expressions
 MARKER_STR  = 'm:'
-NUMBER_RE   = re.compile(r'^n:(-?\d+(:?\.\d+)?(:?[eE][+\-]?\d+)?)(:? (.*))?$')
-REF_RE      = re.compile(r'^r:([a-zA-Z0-9_:\-.~]+)(:? (.*))?$')
-STR_RE      = re.compile(r'^s:(.*)$')
-DATE_RE     = re.compile(r'^d:(\d{4})-(\d{2})-(\d{2})$')
-TIME_RE     = re.compile(r'^h:(\d{2}):(\d{2})(:?:(\d{2}(:?\.\d+)?))?$')
+NUMBER_RE   = re.compile(r'^n:(-?\d+(:?\.\d+)?(:?[eE][+\-]?\d+)?)(:? (.*))?$',
+        flags=re.MULTILINE)
+REF_RE      = re.compile(r'^r:([a-zA-Z0-9_:\-.~]+)(:? (.*))?$',
+        flags=re.MULTILINE)
+STR_RE      = re.compile(r'^s:(.*)$', flags=re.MULTILINE)
+DATE_RE     = re.compile(r'^d:(\d{4})-(\d{2})-(\d{2})$', flags=re.MULTILINE)
+TIME_RE     = re.compile(r'^h:(\d{2}):(\d{2})(:?:(\d{2}(:?\.\d+)?))?$',
+        flags=re.MULTILINE)
 DATETIME_RE = re.compile(r'^t:(\d{4}-\d{2}-\d{2}T'\
         r'\d{2}:\d{2}(:?:\d{2}(:?\.\d+)?)'\
-        r'(:?[zZ]|[+\-]\d+:?\d*))(:? ([A-Za-z\-+_0-9]+))?$')
-URI_RE      = re.compile(r'u:(.+)$')
-BIN_RE      = re.compile(r'b:(.+)$')
-COORD_RE    = re.compile(r'c:(-?\d*\.?\d*),(-?\d*\.?\d*)$')
+        r'(:?[zZ]|[+\-]\d+:?\d*))(:? ([A-Za-z\-+_0-9]+))?$',
+        flags=re.MULTILINE)
+URI_RE      = re.compile(r'u:(.+)$', flags=re.MULTILINE)
+BIN_RE      = re.compile(r'b:(.+)$', flags=re.MULTILINE)
+COORD_RE    = re.compile(r'c:(-?\d*\.?\d*),(-?\d*\.?\d*)$',
+        flags=re.MULTILINE)
 
 STR_ESC_RE  = re.compile(r'\\([bfnrt"\\$]|u[0-9a-fA-F]{4})')
 

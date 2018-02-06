@@ -16,7 +16,7 @@ manipulation of Project Haystack grids in both ZINC and JSON formats.
 REQUIREMENTS
 ============
 
-- `parsimonious`_
+- `pyparsing`_
 - `pytz`_
 - `iso8601`_
 - `six`_
@@ -207,7 +207,7 @@ This is early days, absolutely nothing is guaranteed.
 
 .. _`Project Haystack`: http://www.project-haystack.org/
 .. _`ZINC`: http://project-haystack.org/doc/Zinc
-.. _`parsimonious`: https://github.com/erikrose/parsimonious
+.. _`pyparsing`: https://pypi.python.org/pypi/pyparsing/
 .. _`pytz`: http://pytz.sourceforge.net/
 .. _`iso8601`: http://pyiso8601.readthedocs.org/en/latest/
 .. _`six`: https://pythonhosted.org/six/

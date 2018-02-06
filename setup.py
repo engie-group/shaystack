@@ -4,7 +4,7 @@ import sys
 from hszinc import __version__
 
 requirements = [
-            'parsimonious',
+            'pyparsing',
             'pytz',
             'iso8601',
             'six',

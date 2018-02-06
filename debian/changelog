@@ -1,3 +1,8 @@
+hszinc (1.2.0) unstable; urgency=low
+  * Re-worked on hszinc's parser to support Haystack v3 data structures.
+  * Added support for Haystack list.
+ -- Samuel Toh <samuelt@vrt.com.au>  Tue, 6 Feb 2018 11:31:21 +1000
+
 hszinc (1.1.2) unstable; urgency=low
   * Bugfix to handling of multi-line strings in JSON serialisation.
  -- Stuart Longland <stuartl@vrt.com.au>  Tue, 15 Aug 2017 15:11:20 +1000

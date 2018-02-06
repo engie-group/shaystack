@@ -23,5 +23,8 @@ class MetadataObject(SortableDict):
         '''
         Append the items to the metadata.
         '''
-        for item in items:
-            self.append(item, replace=replace)
+        if isinstance(items, dict) or isinstance(items, SortableDict):
+            items = list(items.items())
+
+        for (key, value) in items:
+            self.append(key, value, replace=replace)

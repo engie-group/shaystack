@@ -8,14 +8,23 @@
 from collections import MutableMapping
 
 class SortableDict(MutableMapping):
-    '''
+    """
     A dict-like object that permits value ordering/re-ordering.
-    '''
+    """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, initial=None):
         self._values = {}
         self._order = []
-        super(SortableDict, self).__init__(*args, **kwargs)
+        super(SortableDict, self).__init__()
+
+        # Copy initial values into dict.
+        if initial is not None:
+            # If we're given a dict; make it a list of items
+            if isinstance(initial, dict):
+                initial = list(initial.items())
+
+            for (key, val) in initial:
+                self[key] = val
 
     def __repr__(self):
         return '%s{%s}' % (self.__class__.__name__,
@@ -41,7 +50,7 @@ class SortableDict(MutableMapping):
 
     def add_item(self, key, value, after=False, index=None, pos_key=None,
             replace=True):
-        '''
+        """
         Add an item at a specific location, possibly replacing the
         existing item.
 
@@ -55,7 +64,7 @@ class SortableDict(MutableMapping):
 
         When replacing, the position will be left un-changed unless a location
         is specified explicitly.
-        '''
+        """
 
         if (index is not None) and (pos_key is not None):
             raise ValueError('Either specify index or pos_key, not both.')
@@ -90,15 +99,15 @@ class SortableDict(MutableMapping):
         self._values[key] = value
 
     def at(self, index):
-        '''
+        """
         Return the key at the given index.
-        '''
+        """
         return self._order[index]
 
     def value_at(self, index):
-        '''
+        """
         Return the value at the given index.
-        '''
+        """
         return self[self.at(index)]
 
     def index(self, *args, **kwargs):
@@ -107,14 +116,11 @@ class SortableDict(MutableMapping):
     def reverse(self, *args, **kwargs):
         return self._order.reverse(*args, **kwargs)
 
-    def rindex(self, *args, **kwargs):
-        return self._order.rindex(*args, **kwargs)
-
     def sort(self, *args, **kwargs):
         return self._order.sort(*args, **kwargs)
 
     def pop_at(self, index):
-        '''
+        """
         Remove the key at the given index and return its value.
-        '''
+        """
         return self.pop(self.at(index))

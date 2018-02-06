@@ -4,11 +4,17 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
+from __future__ import unicode_literals
+
+from pyparsing import ParseException
+import warnings
 import hszinc
 import datetime
 import math
 import pytz
 import json
+import six
+import re
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
 
@@ -36,10 +42,110 @@ def test_simple():
     grid = grid_list[0]
     check_simple(grid)
 
+def test_simple_encoded():
+    grid_list = hszinc.parse(SIMPLE_EXAMPLE.encode('us-ascii'),
+            charset='us-ascii')
+    assert len(grid_list) == 1
+    grid = grid_list[0]
+    check_simple(grid)
+
 def test_simple_json_str():
     grid = hszinc.parse(json.dumps(SIMPLE_EXAMPLE_JSON),
             mode=hszinc.MODE_JSON)
     check_simple(grid)
+
+_WARNING_RE = re.compile(
+            r'This version of hszinc does not yet support version ([\d\.]+), '\
+            r'please seek a newer version or file a bug.  Closest '\
+            r'\((older|newer)\) version supported is ([\d\.]+).')
+
+def _check_warning(w):
+    assert issubclass(w.category, UserWarning)
+
+    warning_match = _WARNING_RE.match(str(w.message))
+    assert warning_match is not None
+    (detect_ver_str, older_newer, used_ver_str) = warning_match.groups()
+
+    return (older_newer, hszinc.Version(detect_ver_str),
+            hszinc.Version(used_ver_str))
+
+def test_unsupported_old():
+    with warnings.catch_warnings(record=True) as w:
+        grid_list = hszinc.parse('''ver:"1.0"
+comment
+"Testing that we can handle an \\"old\\" version."
+"We pretend it is compatible with v2.0"
+''', mode=hszinc.MODE_ZINC)
+        assert len(grid_list) == 1
+        assert grid_list[0]._version == hszinc.Version('1.0')
+
+        # Check we got a warning for that old crusty version.
+        assert len(w) == 1
+        (older_newer, detect_ver, used_ver) = _check_warning(w[-1])
+        assert older_newer == 'newer'
+        assert used_ver == hszinc.VER_2_0
+
+def test_unsupported_newer():
+    with warnings.catch_warnings(record=True) as w:
+        grid_list = hszinc.parse('''ver:"2.5"
+comment
+"Testing that we can handle a version between official versions."
+["We pretend it is compatible with v3.0"]
+''', mode=hszinc.MODE_ZINC)
+        assert len(grid_list) == 1
+        assert grid_list[0]._version == hszinc.Version('2.5')
+
+        # Check we got a warning for that oddball newer version.
+        assert len(w) == 1
+        (older_newer, detect_ver, used_ver) = _check_warning(w[-1])
+        assert older_newer == 'newer'
+        assert used_ver == hszinc.VER_3_0
+
+def test_oddball_version():
+    with warnings.catch_warnings(record=True) as w:
+        grid_list = hszinc.parse('''ver:"3"
+comment
+"Testing that we can handle a version expressed slightly differently to normal."
+["We pretend it is compatible with v3.0"]
+''', mode=hszinc.MODE_ZINC)
+        assert len(grid_list) == 1
+        assert grid_list[0]._version == hszinc.Version('3')
+
+        # This should not have raised a warning
+        assert len(w) == 0
+
+def test_unsupported_bleedingedge():
+    with warnings.catch_warnings(record=True) as w:
+        grid_list = hszinc.parse('''ver:"9999.9999"
+comment
+"Testing that we can handle a version that's newer than we support."
+["We pretend it is compatible with v3.0"]
+''', mode=hszinc.MODE_ZINC)
+        assert len(grid_list) == 1
+        assert grid_list[0]._version == hszinc.Version('9999.9999')
+
+        # Check we got a warning for that bleeding edge version.
+        assert len(w) == 1
+        (older_newer, detect_ver, used_ver) = _check_warning(w[-1])
+        assert older_newer == 'older'
+        assert used_ver == hszinc.VER_3_0
+
+def test_malformed_grid():
+    try:
+        hszinc.parse('''ver:2.0 comment:"This grid has no columns!"
+''')
+        assert False, 'Parsed a malformed grid.'
+    except ValueError:
+        pass
+
+def test_malformed_version():
+    try:
+        hszinc.parse('''ver:TwoPointOh comment:"This grid has an invalid version!"
+empty
+''')
+        assert False, 'Parsed a malformed version string.'
+    except ValueError:
+        pass
 
 def check_row_keys(row, grid):
     assert set(row.keys()) == set(grid.column.keys())
@@ -307,7 +413,7 @@ str,strExample
     assert len(grid_list[0]) == 3
     assert grid_list[0][0]['strExample'] == ''
     assert grid_list[0][1]['strExample'] == 'Simple string'
-    assert grid_list[0][2]['strExample'] == 'This\tIs\nA\r"Test"$'
+    assert grid_list[0][2]['strExample'] == 'This\tIs\nA\r"Test"\\$'
 
 def test_string_json():
     grid = hszinc.parse({
@@ -506,6 +612,107 @@ def test_datetime_json():
         ],
     }, mode=hszinc.MODE_JSON)
     check_datetime(grid)
+
+def test_list():
+    grid_list = hszinc.parse('''ver:"3.0"
+ix,list,                                                       dis
+00,[],                                                         "An empty list"
+01,[N],                                                        "A list with a NULL"
+02,[T,F],                                                      "Booleans in a list"
+03,[1,2,3],                                                    "Integers"
+04,[1.1,2.2,3.3],                                              "Floats"
+05,[1.1e3,2.2e6,3.3e9],                                        "Exponential floats"
+06,[3.14rad,180°],                                             "Quantities"
+07,["a","b","c"],                                              "Strings"
+08,[1970-01-01,2000-01-01,2030-01-01],                         "Dates"
+09,[06:00:00,12:00:00,18:00:00],                               "Times"
+10,[1970-01-01T00:00:00Z,1970-01-01T10:00:00+10:00 Brisbane],  "Date/Times"
+11,[N,T,1,1.1,1.1e3,3.14rad,"a"],                              "Mixed data"
+12,[  1,  2  ,  3 ,4  ],                                       "Whitespace"
+13,[1,2,3,4,],                                                 "Trailing comma"
+14,[[1,2,3],["a","b","c"]],                                    "Nested lists"
+''')
+    assert len(grid_list) == 1
+    grid = grid_list.pop(0)
+
+    # There should be 15 rows
+    assert len(grid) == 15
+    for row in grid:
+        assert isinstance(row['list'], list)
+    assert grid[ 0]['list'] == []
+    assert grid[ 1]['list'] == [None]
+    assert grid[ 2]['list'] == [True, False]
+    assert grid[ 3]['list'] == [1.0, 2.0, 3.0]
+    assert grid[ 4]['list'] == [1.1, 2.2, 3.3]
+    assert grid[ 5]['list'] == [1.1e3, 2.2e6, 3.3e9]
+    assert grid[ 6]['list'] == [hszinc.Quantity(3.14, unit='rad'),
+                                hszinc.Quantity(180, unit='°')]
+    assert grid[ 7]['list'] == ["a", "b", "c"]
+    assert grid[ 8]['list'] == [datetime.date(1970,1,1),
+                                datetime.date(2000,1,1),
+                                datetime.date(2030,1,1)]
+    assert grid[ 9]['list'] == [datetime.time(6,0,0),
+                                datetime.time(12,0,0),
+                                datetime.time(18,0,0)]
+    assert grid[10]['list'] == [pytz.utc.localize(
+                                    datetime.datetime(1970,1,1,0,0)),
+                                pytz.timezone('Australia/Brisbane').localize(
+                                    datetime.datetime(1970,1,1,10,0))]
+    assert grid[11]['list'] == [None, True, 1.0, 1.1, 1.1e3,
+                                hszinc.Quantity(3.14, unit='rad'),
+                                "a"]
+    assert grid[12]['list'] == [1.0, 2.0, 3.0, 4.0]
+    assert grid[13]['list'] == [1.0, 2.0, 3.0, 4.0]
+    assert grid[14]['list'] == [[1.0,2.0,3.0], ["a","b","c"]]
+
+def test_list_v2():
+    try:
+        grid_list = hszinc.parse('''ver:"2.0"
+ix,list,                                                       dis
+00,[],                                                         "An empty list"
+01,[N],                                                        "A list with a NULL"
+''')
+        assert False, 'Project Haystack 2.0 does not support lists'
+    except ParseException:
+        pass
+
+def test_list_json():
+    # Simpler test case than the ZINC one, since the Python JSON parser
+    # will take care of the elements for us.
+    grid = hszinc.parse({
+        'meta': {'ver':'3.0'},
+        'cols': [
+            {'name': 'list'},
+        ],
+        'rows': [
+            {'list': ['s:my list', None, True, 'n:1234']}
+        ]
+    }, mode=hszinc.MODE_JSON)
+    assert len(grid) == 1
+
+    lst = grid[0]['list']
+    assert isinstance(lst, list)
+    assert len(lst) == 4
+    assert lst[0] == 'my list'
+    assert lst[1] is None
+    assert lst[2] is True
+    assert lst[3] == 1234.0
+
+def test_list_json_v2():
+    # Version 2.0 does not support lists
+    try:
+        grid = hszinc.parse({
+            'meta': {'ver':'2.0'},
+            'cols': [
+                {'name': 'list'},
+            ],
+            'rows': [
+                {'list': ['s:my list', None, True, 'n:1234']}
+            ]
+        }, mode=hszinc.MODE_JSON)
+        assert False, 'Project Haystack 2.0 does not support lists'
+    except ValueError:
+        pass
 
 def test_bin():
     grid_list = hszinc.parse('''ver:"2.0"
@@ -941,3 +1148,71 @@ a, b, c
     assert row['a'] == 14
     assert row['b'] is None
     assert row['c'] is None
+
+
+# Scalar parsing tests… no need to be exhaustive here because the grid tests
+# cover the underlying cases.  This is basically checking that bytestring decoding
+# works and versions are passed through.
+
+def test_scalar_simple_zinc():
+    assert hszinc.parse_scalar('"Testing"', mode=hszinc.MODE_ZINC) \
+            == "Testing"
+    assert hszinc.parse_scalar('50Hz', mode=hszinc.MODE_ZINC) \
+            == hszinc.Quantity(50, unit='Hz')
+
+def test_scalar_bytestring_zinc():
+    assert hszinc.parse_scalar(b'"Testing"',
+            mode=hszinc.MODE_ZINC, charset='us-ascii') \
+                    == "Testing"
+    assert hszinc.parse_scalar(b'50Hz',
+            mode=hszinc.MODE_ZINC, charset='us-ascii') \
+                    == hszinc.Quantity(50, unit='Hz')
+
+def test_scalar_version_zinc():
+    # This should forbid us trying to parse a list.
+    try:
+        hszinc.parse_scalar('[1,2,3]', mode=hszinc.MODE_ZINC,
+                version=hszinc.VER_2_0)
+        assert False, 'Version was ignored'
+    except ParseException:
+        pass
+
+def test_scalar_simple_json():
+    assert hszinc.parse_scalar('"s:Testing"', mode=hszinc.MODE_JSON) \
+            == "Testing"
+    assert hszinc.parse_scalar('"n:50 Hz"', mode=hszinc.MODE_JSON) \
+            == hszinc.Quantity(50, unit='Hz')
+
+def test_scalar_preparsed_json():
+    assert hszinc.parse_scalar('s:Testing', mode=hszinc.MODE_JSON) \
+            == "Testing"
+    assert hszinc.parse_scalar('n:50 Hz', mode=hszinc.MODE_JSON) \
+            == hszinc.Quantity(50, unit='Hz')
+
+def test_scalar_bytestring_json():
+    assert hszinc.parse_scalar(b'"s:Testing"',
+            mode=hszinc.MODE_JSON, charset='us-ascii') \
+                    == "Testing"
+    assert hszinc.parse_scalar(b'"n:50 Hz"',
+            mode=hszinc.MODE_JSON, charset='us-ascii') \
+                    == hszinc.Quantity(50, unit='Hz')
+
+def test_scalar_version_json():
+    # This should forbid us trying to parse a list.
+    try:
+        res = hszinc.parse_scalar('[ "n:1","n:2","n:3" ]',
+                mode=hszinc.MODE_JSON, version=hszinc.VER_2_0)
+        assert False, 'Version was ignored; got %r' % res
+    except ValueError:
+        pass
+
+def test_scalar_json_rawnum():
+    # Test handling of raw numbers
+    assert hszinc.parse_scalar(123, mode=hszinc.MODE_JSON) == 123
+    assert hszinc.parse_scalar(123.45, mode=hszinc.MODE_JSON) == 123.45
+
+def test_str_version():
+    # This should assume v3.0, and parse successfully.
+    val = hszinc.parse_scalar('[1,2,3]', mode=hszinc.MODE_ZINC,
+            version='2.5')
+    assert val == [1.0, 2.0, 3.0]

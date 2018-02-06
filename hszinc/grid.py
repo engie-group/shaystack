@@ -8,6 +8,7 @@
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
 from collections import MutableSequence
+from .version import Version, LATEST_VER
 
 class Grid(MutableSequence):
     '''
@@ -17,14 +18,14 @@ class Grid(MutableSequence):
     '''
 
     # Grid version number
-    DEFAULT_VERSION = "2.0"
+    DEFAULT_VERSION = LATEST_VER
 
     def __init__(self, version=DEFAULT_VERSION, metadata=None, columns=None):
         '''
         Create a new Grid.
         '''
         # Version
-        self._version   = version
+        self._version   = Version(version)
 
         # Metadata
         self.metadata   = MetadataObject()
@@ -44,16 +45,32 @@ class Grid(MutableSequence):
 
             for col_id, col_meta in columns:
                 if not isinstance(col_meta, MetadataObject):
+                    # Convert sorted lists and dicts back to a list of items.
+                    if isinstance(col_meta, dict) or \
+                            isinstance(col_meta, SortableDict):
+                        col_meta = list(col_meta.items())
+
                     mo = MetadataObject()
                     mo.extend(col_meta)
                     col_meta = mo
                 self.column.add_item(col_id, col_meta)
 
-    def __repr__(self):
+    @property
+    def version(self): # pragma: no cover
+        # Trivial function
+        return self._version
+
+    @property
+    def ver_str(self): # pragma: no cover
+        # Trivial function
+        return str(self.version)
+
+    def __repr__(self): # pragma: no cover
+        # Not critical to the operation of the library.
         '''
         Return a representation of this grid.
         '''
-        parts = []
+        parts = [u'\tVersion: %s' % self.ver_str]
         if bool(self.metadata):
             parts.append(u'\tMetadata: %s' % self.metadata)
 
@@ -73,7 +90,7 @@ class Grid(MutableSequence):
 
         if bool(self):
             parts.extend([
-                u'\tRow %4d: %s' % (row, u', '.join([
+                u'\tRow %4d:\n\t%s' % (row, u'\n\t'.join([
                     ((u'%s=%r' % (col, data[col])) \
                             if col in data else \
                     (u'%s absent' % col)) for col \

@@ -20,8 +20,8 @@ siteName dis:"Sites",val dis:"Value" unit:"kW"
 "Site 2",463.028kW
 '''
 
-def make_simple_grid():
-    grid = hszinc.Grid()
+def make_simple_grid(version=hszinc.VER_2_0):
+    grid = hszinc.Grid(version=version)
     grid.column['firstName'] = {}
     grid.column['bday'] = {}
     grid.extend([
@@ -46,8 +46,8 @@ def test_simple_json():
     grid_json = json.loads(hszinc.dump(grid, mode=hszinc.MODE_JSON))
     assert grid_json == SIMPLE_EXAMPLE_JSON
 
-def make_metadata_grid():
-    grid = hszinc.Grid()
+def make_metadata_grid(version=hszinc.VER_2_0):
+    grid = hszinc.Grid(version=version)
     grid.metadata['database'] = 'test'
     grid.metadata['dis'] = 'Site Energy Summary'
     grid.column['siteName'] = {'dis': 'Sites'}
@@ -89,8 +89,8 @@ def test_multi_grid_json():
     assert grid_json[0] == SIMPLE_EXAMPLE_JSON
     assert grid_json[1] == METADATA_EXAMPLE_JSON
 
-def make_grid_meta():
-    grid = hszinc.Grid()
+def make_grid_meta(version=hszinc.VER_2_0):
+    grid = hszinc.Grid(version=version)
     grid.metadata['aString'] = 'aValue'
     grid.metadata['aNumber'] = 3.14159
     grid.metadata['aNull'] = None
@@ -123,8 +123,8 @@ def test_grid_meta_json():
             'rows': [],
     }
 
-def make_col_meta():
-    grid = hszinc.Grid()
+def make_col_meta(version=hszinc.VER_2_0):
+    grid = hszinc.Grid(version=version)
     col_meta = hszinc.MetadataObject()
     col_meta['aString'] = 'aValue'
     col_meta['aNumber'] = 3.14159
@@ -159,8 +159,8 @@ def test_col_meta_json():
             'rows': [],
     }
 
-def test_data_types():
-    grid = hszinc.Grid()
+def test_data_types_v2():
+    grid = hszinc.Grid(version=hszinc.VER_2_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
     grid.extend([
@@ -261,8 +261,50 @@ comment,value
 '''
     assert grid_str == ref_str
 
+def test_data_types_v3():
+    grid = hszinc.Grid(version=hszinc.VER_3_0)
+    grid.column['comment'] = {}
+    grid.column['value'] = {}
+    grid.extend([
+        {
+            'comment': 'An empty list',
+            'value': [],
+        },
+        {
+            'comment': 'A null value in a list',
+            'value': [None],
+        },
+        {
+            'comment': 'A marker in a list',
+            'value': [hszinc.MARKER],
+        },
+        {
+            'comment': 'Booleans',
+            'value': [True, False],
+        },
+        {
+            'comment': 'References',
+            'value': [hszinc.Ref('a-ref'), hszinc.Ref('a-ref', 'a value')],
+        },
+        {
+            'comment': 'A quantity',
+            'value': [hszinc.Quantity(500,'miles')],
+        },
+    ])
+    grid_str = hszinc.dump(grid)
+    ref_str = '''ver:"3.0"
+comment,value
+"An empty list",[]
+"A null value in a list",[N]
+"A marker in a list",[M]
+"Booleans",[T,F]
+"References",[@a-ref,@a-ref "a value"]
+"A quantity",[500miles]
+'''
+    assert grid_str == ref_str
+
 def test_data_types_json():
-    grid = hszinc.Grid()
+    grid = hszinc.Grid(version=hszinc.VER_2_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
     grid.extend([
@@ -380,3 +422,133 @@ def test_data_types_json():
                     'value': 't:2016-01-13T07:51:42.012345+00:00 UTC'},
             ],
     }
+
+def test_data_types_json_v3():
+    grid = hszinc.Grid(version=hszinc.VER_3_0)
+    grid.column['comment'] = {}
+    grid.column['value'] = {}
+    grid.extend([
+        {
+            'comment': 'An empty list',
+            'value': [],
+        },
+        {
+            'comment': 'A null value in a list',
+            'value': [None],
+        },
+        {
+            'comment': 'A marker in a list',
+            'value': [hszinc.MARKER],
+        },
+        {
+            'comment': 'Booleans',
+            'value': [True, False],
+        },
+        {
+            'comment': 'References',
+            'value': [hszinc.Ref('a-ref'), hszinc.Ref('a-ref', 'a value')],
+        },
+        {
+            'comment': 'A quantity',
+            'value': [hszinc.Quantity(500,'miles')],
+        },
+    ])
+    grid_json = json.loads(hszinc.dump(grid, mode=hszinc.MODE_JSON))
+    assert grid_json == {
+            'meta': {
+                'ver': '3.0'
+            },
+            'cols': [
+                {'name': 'comment'},
+                {'name': 'value'},
+            ],
+            'rows': [
+                {
+                    'comment':"s:An empty list",
+                    'value':[]
+                },
+                {
+                    'comment':"s:A null value in a list",
+                    'value': [None]
+                },
+                {
+                    'comment':"s:A marker in a list",
+                    'value': ['m:']
+                },
+                {
+                    'comment':"s:Booleans",
+                    'value': [True, False]
+                },
+                {
+                    'comment':"s:References",
+                    'value': ['r:a-ref' , 'r:a-ref a value']
+                },
+                {
+                    'comment':"s:A quantity",
+                    'value': ['n:500.000000 miles'] # Python is more precise
+                                                    # than The Proclaimers
+                }
+            ]
+    }
+
+def test_list_zinc_v2():
+    try:
+        grid = hszinc.Grid(version=hszinc.VER_2_0)
+        grid.column['comment'] = {}
+        grid.column['value'] = {}
+        grid.extend([
+            {
+                'comment': 'An empty list',
+                'value': [],
+            }
+        ])
+        hszinc.dump(grid, mode=hszinc.MODE_ZINC)
+        assert False, 'Project Haystack 2.0 doesn\'t support lists'
+    except ValueError:
+        pass
+
+def test_list_json_v2():
+    try:
+        grid = hszinc.Grid(version=hszinc.VER_2_0)
+        grid.column['comment'] = {}
+        grid.column['value'] = {}
+        grid.extend([
+            {
+                'comment': 'An empty list',
+                'value': [],
+            }
+        ])
+        hszinc.dump(grid, mode=hszinc.MODE_JSON)
+        assert False, 'Project Haystack 2.0 doesn\'t support lists'
+    except ValueError:
+        pass
+
+def test_scalar_zinc():
+    # No need to be exhaustive, the underlying function is tested heavily by
+    # the grid dump tests.
+    assert hszinc.dump_scalar(hszinc.Ref('areference', 'a display name'),
+            mode=hszinc.MODE_ZINC) == '@areference "a display name"'
+
+def test_scalar_zinc_ver():
+    # Test that versions are respected.
+    try:
+        hszinc.dump_scalar(["a list is not allowed in v2.0"],
+                mode=hszinc.MODE_ZINC, version=hszinc.VER_2_0)
+        assert False, 'Serialised a list in Haystack v2.0'
+    except ValueError:
+        pass
+
+def test_scalar_json():
+    # No need to be exhaustive, the underlying function is tested heavily by
+    # the grid dump tests.
+    assert hszinc.dump_scalar(hszinc.Ref('areference', 'a display name'),
+            mode=hszinc.MODE_JSON) == 'r:areference a display name'
+
+def test_scalar_json_ver():
+    # Test that versions are respected.
+    try:
+        hszinc.dump_scalar(["a list is not allowed in v2.0"],
+                mode=hszinc.MODE_JSON, version=hszinc.VER_2_0)
+        assert False, 'Serialised a list in Haystack v2.0'
+    except ValueError:
+        pass

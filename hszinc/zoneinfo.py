@@ -8,9 +8,11 @@
 import pytz
 import datetime
 
+from .version import LATEST_VER
+
 # The official list of timezones as of 6th Jan 2016:
 # Yes, that's *without* the usual country prefix.
-HAYSTACK_TIMEZONES='''Abidjan
+HAYSTACK_TIMEZONES="""Abidjan
 Accra
 Adak
 Addis_Ababa
@@ -394,7 +396,7 @@ Yekaterinburg
 Yellowknife
 Yerevan
 Zaporozhye
-Zurich'''.split('\n')
+Zurich""".split('\n')
 HAYSTACK_TIMEZONES_SET=set(HAYSTACK_TIMEZONES)
 
 # Mapping of pytz-recognised timezones to Haystack timezones.
@@ -402,14 +404,15 @@ _TZ_MAP = None
 _TZ_RMAP = None
 
 def _map_timezones():
-    '''
+    """
     Map the official Haystack timezone list to those recognised by pytz.
-    '''
+    """
     tz_map = {}
     todo = HAYSTACK_TIMEZONES_SET.copy()
     for full_tz in pytz.all_timezones:
         # Finished case:
-        if not bool(todo):
+        if not bool(todo): # pragma: no cover
+            # This is nearly impossible for us to cover, and an unlikely case.
             break
 
         # Case 1: exact match
@@ -441,25 +444,25 @@ def _gen_map():
         _TZ_MAP = _map_timezones()
         _TZ_RMAP = dict([(z,n) for (n,z) in list(_TZ_MAP.items())])
 
-def get_tz_map():
-    '''
+def get_tz_map(version=LATEST_VER):
+    """
     Return the timezone map, generating it if needed.
-    '''
+    """
     _gen_map()
     return _TZ_MAP
 
-def get_tz_rmap():
-    '''
+def get_tz_rmap(version=LATEST_VER):
+    """
     Return the reverse timezone map, generating it if needed.
-    '''
+    """
     _gen_map()
     return _TZ_RMAP
 
-def timezone(haystack_tz):
-    '''
+def timezone(haystack_tz, version=LATEST_VER):
+    """
     Retrieve the Haystack timezone
-    '''
-    tz_map = get_tz_map()
+    """
+    tz_map = get_tz_map(version=version)
     try:
         tz_name = tz_map[haystack_tz]
     except KeyError:
@@ -467,11 +470,11 @@ def timezone(haystack_tz):
                 % haystack_tz)
     return pytz.timezone(tz_name)
 
-def timezone_name(dt):
-    '''
+def timezone_name(dt, version=LATEST_VER):
+    """
     Determine an appropriate timezone for the given date/time object
-    '''
-    tz_rmap = get_tz_rmap()
+    """
+    tz_rmap = get_tz_rmap(version=version)
     if dt.tzinfo is None:
         raise ValueError('%r has no timezone' % dt)
 

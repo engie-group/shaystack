@@ -181,6 +181,11 @@ def test_qty_binary_ops():
                 if a == b:
                     continue
 
+                # Python2 won't allow raising negative numbers
+                # to a fractional power
+                if a < 0:
+                    continue
+
                 yield _check_qty_op, lambda a, b: a ** b, a, b
 
         # Try some integer values

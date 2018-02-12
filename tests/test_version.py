@@ -8,6 +8,8 @@
 from __future__ import unicode_literals
 
 from hszinc import Version
+import warnings
+import re
 
 def test_malformed():
     try:
@@ -50,3 +52,48 @@ def test_version_gt():
     assert Version('1.0') > Version('0.9')
     assert Version('1.0a') > Version('1.0')
     assert Version('1.0b') > Version('1.0a')
+
+_WARNING_RE = re.compile(
+            r'This version of hszinc does not yet support version ([\d\.]+), '\
+            r'please seek a newer version or file a bug.  Closest '\
+            r'\((older|newer)\) version supported is ([\d\.]+).')
+
+def _check_warning(w):
+    assert issubclass(w.category, UserWarning)
+
+    warning_match = _WARNING_RE.match(str(w.message))
+    assert warning_match is not None
+    (detect_ver_str, older_newer, used_ver_str) = warning_match.groups()
+
+    return (older_newer, Version(detect_ver_str),
+            Version(used_ver_str))
+
+def test_unsupported_old():
+    with warnings.catch_warnings(record=True) as w:
+        assert Version.nearest("1.0") == Version("2.0")
+
+        # Check we got a warning for that old crusty version.
+        assert len(w) == 1
+        (older_newer, detect_ver, used_ver) = _check_warning(w[-1])
+        assert older_newer == 'newer'
+        assert used_ver == Version('2.0')
+
+def test_unsupported_newer():
+    with warnings.catch_warnings(record=True) as w:
+        assert Version.nearest("2.5") == Version("3.0")
+
+        # Check we got a warning for that oddball newer version.
+        assert len(w) == 1
+        (older_newer, detect_ver, used_ver) = _check_warning(w[-1])
+        assert older_newer == 'newer'
+        assert used_ver == Version('3.0')
+
+def test_unsupported_bleedingedge():
+    with warnings.catch_warnings(record=True) as w:
+        assert Version.nearest("9999.9999") == Version("3.0")
+
+        # Check we got a warning for that bleeding edge version.
+        assert len(w) == 1
+        (older_newer, detect_ver, used_ver) = _check_warning(w[-1])
+        assert older_newer == 'older'
+        assert used_ver == Version('3.0')

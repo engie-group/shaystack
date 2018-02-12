@@ -64,7 +64,20 @@ def test_grid_setitem():
     g[0] = row_2
     assert g[0] is row_2
 
-def test_grid_setitem_v2_list_fail():
+def test_grid_append_notdict():
+    g = Grid()
+    g.column['test'] = {}
+
+    row_1 = {'test': 'This is a test'}
+    row_2 = 'This is not a dict'
+    g.append(row_1)
+    try:
+        g.append(row_2)
+        assert False
+    except TypeError as e:
+        assert str(e) == 'value must be a dict'
+
+def test_grid_append_v2_list_fail():
     g = Grid(version='2.0')
     g.column['test'] = {}
 
@@ -77,7 +90,7 @@ def test_grid_setitem_v2_list_fail():
     except ValueError as e:
         assert str(e) == 'Data type requires version 3.0'
 
-def test_grid_setitem_nover_list():
+def test_grid_append_nover_list():
     g = Grid()
     assert g.version == Version('2.0')
     g.column['test'] = {}

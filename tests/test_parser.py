@@ -55,6 +55,7 @@ def test_simple_json_str():
 
 def test_unsupported_old():
     with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
         grid_list = hszinc.parse('''ver:"1.0"
 comment
 "Testing that we can handle an \\"old\\" version."
@@ -65,6 +66,7 @@ comment
 
 def test_unsupported_newer():
     with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
         grid_list = hszinc.parse('''ver:"2.5"
 comment
 "Testing that we can handle a version between official versions."
@@ -75,6 +77,7 @@ comment
 
 def test_oddball_version():
     with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
         grid_list = hszinc.parse('''ver:"3"
 comment
 "Testing that we can handle a version expressed slightly differently to normal."
@@ -88,6 +91,7 @@ comment
 
 def test_unsupported_bleedingedge():
     with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
         grid_list = hszinc.parse('''ver:"9999.9999"
 comment
 "Testing that we can handle a version that's newer than we support."

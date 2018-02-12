@@ -70,6 +70,7 @@ def _check_warning(w):
 
 def test_unsupported_old():
     with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
         assert Version.nearest("1.0") == Version("2.0")
 
         # Check we got a warning for that old crusty version.
@@ -80,6 +81,7 @@ def test_unsupported_old():
 
 def test_unsupported_newer():
     with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
         assert Version.nearest("2.5") == Version("3.0")
 
         # Check we got a warning for that oddball newer version.
@@ -90,6 +92,7 @@ def test_unsupported_newer():
 
 def test_unsupported_bleedingedge():
     with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
         assert Version.nearest("9999.9999") == Version("3.0")
 
         # Check we got a warning for that bleeding edge version.

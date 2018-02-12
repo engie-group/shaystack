@@ -76,6 +76,7 @@ def test_grid_append_notdict():
         assert False
     except TypeError as e:
         assert str(e) == 'value must be a dict'
+        assert len(g) == 1
 
 def test_grid_append_v2_list_fail():
     g = Grid(version='2.0')
@@ -110,11 +111,12 @@ def test_grid_setitem_notdict():
     g.append(row)
 
     try:
-        g.append('This is not a dict')
+        g[0] = 'This is not a dict'
         assert False, 'Accepted a string'
     except TypeError:
         pass
     assert len(g) == 1
+    assert g[0]['test'] == 'This is a test'
 
 def test_grid_del():
     g = Grid()

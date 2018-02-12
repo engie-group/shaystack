@@ -108,6 +108,7 @@ def gen_random_meta():
     return meta
 
 def dump_grid(g):
+    print ('Version: %s' % g.version)
     print ('Metadata:')
     for k, v in g.metadata.items():
         print ('   %s = %r' % (k, v))

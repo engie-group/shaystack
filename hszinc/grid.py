@@ -25,6 +25,8 @@ class Grid(MutableSequence):
         version_given = version is not None
         if version_given:
             version = Version(version)
+        else:
+            version = VER_2_0
         self._version   = version
         self._version_given = version_given
 
@@ -57,7 +59,12 @@ class Grid(MutableSequence):
     @property
     def version(self): # pragma: no cover
         # Trivial function
-        return self._version or VER_2_0
+        return self._version
+
+    @property
+    def nearest_version(self): # pragma: no cover
+        # Trivial function
+        return Version.nearest(self._version)
 
     @property
     def ver_str(self): # pragma: no cover
@@ -159,9 +166,10 @@ class Grid(MutableSequence):
         Assert that the grid version is equal to or above the given value.
         If no version is set, set the version.
         '''
-        if self._version < version:
+        if self.nearest_version < version:
             if self._version_given:
-                raise ValueError('Data type %s requires version %s',
-                        version)
+                raise ValueError(
+                        'Data type requires version %s' \
+                        % version)
             else:
                 self._version = version

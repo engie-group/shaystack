@@ -14,7 +14,6 @@ import math
 import pytz
 import json
 import six
-import re
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
 
@@ -54,21 +53,6 @@ def test_simple_json_str():
             mode=hszinc.MODE_JSON)
     check_simple(grid)
 
-_WARNING_RE = re.compile(
-            r'This version of hszinc does not yet support version ([\d\.]+), '\
-            r'please seek a newer version or file a bug.  Closest '\
-            r'\((older|newer)\) version supported is ([\d\.]+).')
-
-def _check_warning(w):
-    assert issubclass(w.category, UserWarning)
-
-    warning_match = _WARNING_RE.match(str(w.message))
-    assert warning_match is not None
-    (detect_ver_str, older_newer, used_ver_str) = warning_match.groups()
-
-    return (older_newer, hszinc.Version(detect_ver_str),
-            hszinc.Version(used_ver_str))
-
 def test_unsupported_old():
     with warnings.catch_warnings(record=True) as w:
         grid_list = hszinc.parse('''ver:"1.0"
@@ -79,12 +63,6 @@ comment
         assert len(grid_list) == 1
         assert grid_list[0]._version == hszinc.Version('1.0')
 
-        # Check we got a warning for that old crusty version.
-        assert len(w) == 1
-        (older_newer, detect_ver, used_ver) = _check_warning(w[-1])
-        assert older_newer == 'newer'
-        assert used_ver == hszinc.VER_2_0
-
 def test_unsupported_newer():
     with warnings.catch_warnings(record=True) as w:
         grid_list = hszinc.parse('''ver:"2.5"
@@ -94,12 +72,6 @@ comment
 ''', mode=hszinc.MODE_ZINC)
         assert len(grid_list) == 1
         assert grid_list[0]._version == hszinc.Version('2.5')
-
-        # Check we got a warning for that oddball newer version.
-        assert len(w) == 1
-        (older_newer, detect_ver, used_ver) = _check_warning(w[-1])
-        assert older_newer == 'newer'
-        assert used_ver == hszinc.VER_3_0
 
 def test_oddball_version():
     with warnings.catch_warnings(record=True) as w:
@@ -123,12 +95,6 @@ comment
 ''', mode=hszinc.MODE_ZINC)
         assert len(grid_list) == 1
         assert grid_list[0]._version == hszinc.Version('9999.9999')
-
-        # Check we got a warning for that bleeding edge version.
-        assert len(w) == 1
-        (older_newer, detect_ver, used_ver) = _check_warning(w[-1])
-        assert older_newer == 'older'
-        assert used_ver == hszinc.VER_3_0
 
 def test_malformed_grid():
     try:

@@ -8,7 +8,7 @@
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
 from collections import MutableSequence
-from .version import Version, VER_3_0
+from .version import Version, VER_3_0, VER_2_0
 
 class Grid(MutableSequence):
     '''

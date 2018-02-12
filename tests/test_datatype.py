@@ -238,10 +238,21 @@ def test_qty_cmp():
 
         a = hszinc.Quantity(-3)
         b = hszinc.Quantity(432)
+        c = hszinc.Quantity(4, unit='A')
+        d = hszinc.Quantity(10, unit='A')
+        e = hszinc.Quantity(12, unit='V')
 
         assert cmp(a, b) < 0
         assert cmp(b, a) > 0
         assert cmp(a, hszinc.Quantity(-3)) == 0
+        assert cmp(c, d) < 0
+        assert cmp(d, c) > 0
+        assert cmp(c, hszinc.Quantity(4, unit='A')) == 0
+
+        try:
+            cmp(c, e)
+        except TypeError as ex:
+            assert str(ex) == 'Quantity units differ: A vs V'
 
 
 class MyCoordinate(object):

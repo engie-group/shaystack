@@ -1,3 +1,10 @@
+hszinc (1.2.1) unstable; urgency=low
+  * Add auto-upgrade of grid version; grids now default to v2.0 and
+    move to v3.0 if a v3.0 type is encountered.
+  * Add grid version type enforcement; if a version is specified for
+    a grid, raise an error if an unsupported type is used.
+ -- Samuel Toh <samuelt@vrt.com.au>  Tue, 13 Feb 2018 17:05:40 +1000
+
 hszinc (1.2.0) unstable; urgency=low
   * Re-worked on hszinc's parser to support Haystack v3 data structures.
   * Added support for Haystack list.

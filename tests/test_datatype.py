@@ -173,6 +173,21 @@ def test_qty_binary_ops():
                             lambda a, b : a > b):
                     yield _check_qty_op, fn, a, b
 
+        # Exponentiation, we can't use all the values above
+        # as some go out of range.
+        small_floats = tuple(filter(lambda f : abs(f) < 10, floats))
+        for a in small_floats:
+            for b in small_floats:
+                if a == b:
+                    continue
+
+                # Python2 won't allow raising negative numbers
+                # to a fractional power
+                if a < 0:
+                    continue
+
+                yield _check_qty_op, lambda a, b: a ** b, a, b
+
         # Try some integer values
         ints = (1, 2, -4, 141, -399, 0x10, 0xff, 0x55)
         for a in ints:
@@ -203,6 +218,16 @@ def test_qty_binary_ops():
                                 lambda a, b : a >> b):
                         yield _check_qty_op, fn, a, b
 
+        # Exponentiation, we can't use all the values above
+        # as some go out of range.
+        small_ints = tuple(filter(lambda f : abs(f) < 10, ints))
+        for a in small_ints:
+            for b in small_ints:
+                if a == b:
+                    continue
+
+                yield _check_qty_op, lambda a, b: a ** b, a, b
+
 def test_qty_cmp():
     if 'cmp' not in set(locals().keys()):
         def cmp(a, b):
@@ -213,10 +238,21 @@ def test_qty_cmp():
 
         a = hszinc.Quantity(-3)
         b = hszinc.Quantity(432)
+        c = hszinc.Quantity(4, unit='A')
+        d = hszinc.Quantity(10, unit='A')
+        e = hszinc.Quantity(12, unit='V')
 
         assert cmp(a, b) < 0
         assert cmp(b, a) > 0
         assert cmp(a, hszinc.Quantity(-3)) == 0
+        assert cmp(c, d) < 0
+        assert cmp(d, c) > 0
+        assert cmp(c, hszinc.Quantity(4, unit='A')) == 0
+
+        try:
+            cmp(c, e)
+        except TypeError as ex:
+            assert str(ex) == 'Quantity units differ: A vs V'
 
 
 class MyCoordinate(object):

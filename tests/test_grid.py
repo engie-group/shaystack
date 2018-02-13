@@ -7,7 +7,7 @@
 # Assume unicode literals as per Python 3
 from __future__ import unicode_literals
 
-from hszinc import Grid, MARKER
+from hszinc import Grid, MARKER, Version
 from hszinc.sortabledict import SortableDict
 
 def test_grid_given_metadata():
@@ -64,6 +64,45 @@ def test_grid_setitem():
     g[0] = row_2
     assert g[0] is row_2
 
+def test_grid_append_notdict():
+    g = Grid()
+    g.column['test'] = {}
+
+    row_1 = {'test': 'This is a test'}
+    row_2 = 'This is not a dict'
+    g.append(row_1)
+    try:
+        g.append(row_2)
+        assert False
+    except TypeError as e:
+        assert str(e) == 'value must be a dict'
+        assert len(g) == 1
+
+def test_grid_append_v2_list_fail():
+    g = Grid(version='2.0')
+    g.column['test'] = {}
+
+    row_1 = {'test': 'This is a test'}
+    row_2 = {'test': ['This should fail']}
+    g.append(row_1)
+    try:
+        g.append(row_2)
+        assert False, 'Appended invalid data type'
+    except ValueError as e:
+        assert str(e) == 'Data type requires version 3.0'
+
+def test_grid_append_nover_list():
+    g = Grid()
+    assert g.version == Version('2.0')
+    g.column['test'] = {}
+
+    row_1 = {'test': 'This is a test'}
+    row_2 = {'test': ['This should fail']}
+    g.append(row_1)
+    assert g.version == Version('2.0')
+    g.append(row_2)
+    assert g.version == Version('3.0')
+
 def test_grid_setitem_notdict():
     g = Grid()
     g.column['test'] = {}
@@ -72,11 +111,12 @@ def test_grid_setitem_notdict():
     g.append(row)
 
     try:
-        g.append('This is not a dict')
+        g[0] = 'This is not a dict'
         assert False, 'Accepted a string'
     except TypeError:
         pass
     assert len(g) == 1
+    assert g[0]['test'] == 'This is a test'
 
 def test_grid_del():
     g = Grid()
@@ -110,4 +150,3 @@ def test_grid_insert():
     assert g[1] is new_row
     assert g[2] is rows[1]
     assert g[3] is rows[2]
-

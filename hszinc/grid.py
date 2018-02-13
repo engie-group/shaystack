@@ -8,7 +8,7 @@
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
 from collections import MutableSequence
-from .version import Version, LATEST_VER
+from .version import Version, VER_3_0, VER_2_0
 
 class Grid(MutableSequence):
     '''
@@ -17,18 +17,21 @@ class Grid(MutableSequence):
     followed by zero or more rows.
     '''
 
-    # Grid version number
-    DEFAULT_VERSION = LATEST_VER
-
-    def __init__(self, version=DEFAULT_VERSION, metadata=None, columns=None):
+    def __init__(self, version=None, metadata=None, columns=None):
         '''
         Create a new Grid.
         '''
         # Version
-        self._version   = Version(version)
+        version_given = version is not None
+        if version_given:
+            version = Version(version)
+        else:
+            version = VER_2_0
+        self._version   = version
+        self._version_given = version_given
 
         # Metadata
-        self.metadata   = MetadataObject()
+        self.metadata   = MetadataObject(validate_fn=self._detect_or_validate)
 
         # The columns
         self.column     = SortableDict()
@@ -44,21 +47,24 @@ class Grid(MutableSequence):
                 columns = list(columns.items())
 
             for col_id, col_meta in columns:
-                if not isinstance(col_meta, MetadataObject):
-                    # Convert sorted lists and dicts back to a list of items.
-                    if isinstance(col_meta, dict) or \
-                            isinstance(col_meta, SortableDict):
-                        col_meta = list(col_meta.items())
+                # Convert sorted lists and dicts back to a list of items.
+                if isinstance(col_meta, dict) or \
+                        isinstance(col_meta, SortableDict):
+                    col_meta = list(col_meta.items())
 
-                    mo = MetadataObject()
-                    mo.extend(col_meta)
-                    col_meta = mo
-                self.column.add_item(col_id, col_meta)
+                mo = MetadataObject(validate_fn=self._detect_or_validate)
+                mo.extend(col_meta)
+                self.column.add_item(col_id, mo)
 
     @property
     def version(self): # pragma: no cover
         # Trivial function
         return self._version
+
+    @property
+    def nearest_version(self): # pragma: no cover
+        # Trivial function
+        return Version.nearest(self._version)
 
     @property
     def ver_str(self): # pragma: no cover
@@ -123,6 +129,8 @@ class Grid(MutableSequence):
         '''
         if not isinstance(value, dict):
             raise TypeError('value must be a dict')
+        for val in value.values():
+            self._detect_or_validate(val)
         self._row[index] = value
 
     def __delitem__(self, index):
@@ -137,4 +145,31 @@ class Grid(MutableSequence):
         '''
         if not isinstance(value, dict):
             raise TypeError('value must be a dict')
+        for val in value.values():
+            self._detect_or_validate(val)
         self._row.insert(index, value)
+
+    def _detect_or_validate(self, val):
+        '''
+        Detect the version used from the row content, or validate against
+        the version if given.
+        '''
+        if isinstance(val, list) \
+                or isinstance(val, dict) \
+                or isinstance(val, SortableDict) \
+                or isinstance(val, Grid):
+            # Project Haystack 3.0 type.
+            self._assert_version(VER_3_0)
+
+    def _assert_version(self, version):
+        '''
+        Assert that the grid version is equal to or above the given value.
+        If no version is set, set the version.
+        '''
+        if self.nearest_version < version:
+            if self._version_given:
+                raise ValueError(
+                        'Data type requires version %s' \
+                        % version)
+            else:
+                self._version = version

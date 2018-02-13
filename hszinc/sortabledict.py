@@ -12,9 +12,10 @@ class SortableDict(MutableMapping):
     A dict-like object that permits value ordering/re-ordering.
     """
 
-    def __init__(self, initial=None):
+    def __init__(self, initial=None, validate_fn=None):
         self._values = {}
         self._order = []
+        self._validate_fn = validate_fn
         super(SortableDict, self).__init__()
 
         # Copy initial values into dict.
@@ -65,6 +66,8 @@ class SortableDict(MutableMapping):
         When replacing, the position will be left un-changed unless a location
         is specified explicitly.
         """
+        if self._validate_fn:
+            self._validate_fn(value)
 
         if (index is not None) and (pos_key is not None):
             raise ValueError('Either specify index or pos_key, not both.')

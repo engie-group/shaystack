@@ -6,7 +6,6 @@
 
 from __future__ import unicode_literals
 
-from pyparsing import ParseException
 import warnings
 import hszinc
 import datetime
@@ -14,6 +13,7 @@ import math
 import pytz
 import json
 import six
+import os
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
 
@@ -22,6 +22,8 @@ firstName,bday
 "Jack",1973-07-23
 "Jill",1975-11-15
 '''
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SIMPLE_EXAMPLE_JSON={
         'meta': {'ver':'2.0'},
@@ -52,6 +54,24 @@ def test_simple_json_str():
     grid = hszinc.parse(json.dumps(SIMPLE_EXAMPLE_JSON),
             mode=hszinc.MODE_JSON)
     check_simple(grid)
+
+def test_wc1382_unicode_str():
+    # Don't use pint for this, we wish to see the actual quantity value.
+    hszinc.use_pint(False)
+
+    grid_list = hszinc.parse(
+            open(os.path.join(THIS_DIR,
+                'data', 'wc1382-unicode-grid.txt'),'rb').read(),
+            mode=hszinc.MODE_ZINC)
+    assert len(grid_list) == 1
+
+    grid = grid_list[0]
+    assert len(grid) == 3
+
+    # The values of all the 'temperature' points should have degree symbols.
+    assert grid[0]['v1'].unit == u'\u00b0C'
+    assert grid[1]['v6'].unit == u'\u00b0C'
+
 
 def test_unsupported_old():
     with warnings.catch_warnings(record=True) as w:
@@ -643,7 +663,7 @@ ix,list,                                                       dis
 01,[N],                                                        "A list with a NULL"
 ''')
         assert False, 'Project Haystack 2.0 does not support lists'
-    except ParseException:
+    except hszinc.zincparser.ZincParseException:
         pass
 
 def test_list_json():
@@ -1144,7 +1164,7 @@ def test_scalar_version_zinc():
         hszinc.parse_scalar('[1,2,3]', mode=hszinc.MODE_ZINC,
                 version=hszinc.VER_2_0)
         assert False, 'Version was ignored'
-    except ParseException:
+    except hszinc.zincparser.ZincParseException:
         pass
 
 def test_scalar_simple_json():
@@ -1186,3 +1206,39 @@ def test_str_version():
     val = hszinc.parse_scalar('[1,2,3]', mode=hszinc.MODE_ZINC,
             version='2.5')
     assert val == [1.0, 2.0, 3.0]
+
+def test_malformed_grid_meta():
+    try:
+        grid_list = hszinc.parse('''ver:"2.0" ThisIsNotATag
+empty
+
+''')
+        assert False, 'Parsed a clearly invalid grid'
+    except hszinc.zincparser.ZincParseException as zpe:
+        assert zpe.line == 1
+        assert zpe.col == 11
+
+def test_malformed_col_meta():
+    try:
+        grid_list = hszinc.parse('''ver:"2.0"
+c1 goodSoFar, c2 WHOOPSIE
+,
+''')
+        assert False, 'Parsed a clearly invalid grid'
+    except hszinc.zincparser.ZincParseException as zpe:
+        assert zpe.line == 2
+        assert zpe.col == 18
+
+def test_malformed_row():
+    try:
+        grid_list = hszinc.parse('''ver:"2.0"
+c1, c2
+1, "No problems here"
+2, We should fail here
+3, "No issue, but we won't get this far"
+4, We won't see this error
+''')
+        assert False, 'Parsed a clearly invalid grid'
+    except hszinc.zincparser.ZincParseException as zpe:
+        assert zpe.line == 4
+        assert zpe.col == 4

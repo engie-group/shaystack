@@ -33,6 +33,18 @@ LOG = logging.getLogger(__name__)
 VERSION_RE = re.compile(r'^ver:"(([^"\\]|\\[\\"bfnrt$])+)"')
 NEWLINE_RE = re.compile(r'\r?\n')
 
+# Character number regex; for exceptions
+CHAR_NUM_RE = re.compile(' *\(at char \d+\),')
+
+def reformat_exception(ex_msg, line_num=None):
+    print (ex_msg)
+    msg = CHAR_NUM_RE.sub(u'', six.text_type(ex_msg))
+    print (msg)
+    if line_num is not None:
+        return msg.replace(u'line:1', u'line:%d' % line_num)
+    else:
+        return msg
+
 # Convenience function, we want whitespace left alone.
 def _leave_ws(cls, *args, **kwargs):
     return cls(*args, **kwargs).leaveWhitespace()
@@ -53,6 +65,52 @@ OneOrMore       = lambda *a, **kwa : _leave_ws(pp.OneOrMore, *a, **kwa)
 Group           = lambda *a, **kwa : _leave_ws(pp.Group, *a, **kwa)
 DelimitedList   = lambda *a, **kwa : _leave_ws(pp.delimitedList, *a, **kwa)
 Forward         = lambda *a, **kwa : _leave_ws(pp.Forward, *a, **kwa)
+
+
+class ZincParseException(ValueError):
+    """
+    Exception thrown when a grid cannot be parsed successfully.  If known,
+    the line and column for the grid are given.
+    """
+    def __init__(self, message, grid_str, line, col):
+        self.grid_str = grid_str
+        self.line = line
+        self.col = col
+
+        try:
+            # If we know the line and column, point it out in the message.
+            grid_str_lines = grid_str.split('\n')
+            width = max([len(l) for l in grid_str_lines])
+            linefmt = u'%%-%ds' % width
+            rowfmt = u'%4d%s' + linefmt + u'%s'
+
+            formatted_lines = [
+                    rowfmt % (
+                        num,
+                        ' >' if (line == num) else '| ',
+                        line_str,
+                        '< ' if (line == num) else ' |'
+                    )
+                    for (num, line_str)
+                    in enumerate(grid_str.split('\n'), 1)
+            ]
+            formatted_lines.insert(line,
+                    (u'    | ' + linefmt + u' |') \
+                            % (((col-2) * u' ') + '.^.')
+            )
+
+            # Border it for readability
+            formatted_lines.insert(0, u'    .' + (u'-' * (2 + width)) + u'.')
+            formatted_lines.append(u'    \'' + (u'-' * (2 + width)) + u'\'')
+
+            # Append to message
+            message += u'\n%s' % u'\n'.join(formatted_lines)
+        except: # pragma: no cover
+            # We should not get here.
+            LOG.exception('Exception encountered formatting log message')
+            pass
+
+        super(ZincParseException, self).__init__(message)
 
 
 class NearestMatch(object):
@@ -442,7 +500,8 @@ def parse_grid(grid_data):
     # Split the grid up.
     grid_parts = NEWLINE_RE.split(grid_data)
     if len(grid_parts) < 2:
-        raise ValueError('Malformed grid received')
+        raise ZincParseException('Malformed grid received',
+                grid_data, 1, 1)
 
     # Grid and column metadata are the first two lines.
     grid_meta_str = grid_parts.pop(0)
@@ -451,12 +510,19 @@ def parse_grid(grid_data):
     # First element is the grid metadata
     ver_match = VERSION_RE.match(grid_meta_str)
     if ver_match is None:
-        raise ValueError('Could not determine version from %r' % grid_meta_str)
+        raise ZincParseException(
+                'Could not determine version from %r' % grid_meta_str,
+                grid_data, 1, 1)
     version = Version(ver_match.group(1))
 
     # Now parse the rest of the grid accordingly
     try:
         grid_meta = hs_gridMeta[version].parseString(grid_meta_str, parseAll=True)[0]
+    except pp.ParseException as pe:
+        # Raise a new exception with the appropriate line number.
+        raise ZincParseException(
+                'Failed to parse grid metadata: %s' % pe,
+                grid_data, 1, pe.col)
     except: # pragma: no cover
         # Report an error to the log if we fail to parse something.
         LOG.debug('Failed to parse grid meta: %r', grid_meta_str)
@@ -464,16 +530,31 @@ def parse_grid(grid_data):
 
     try:
         col_meta = hs_cols[version].parseString(col_meta_str, parseAll=True)[0]
+    except pp.ParseException as pe:
+        # Raise a new exception with the appropriate line number.
+        raise ZincParseException(
+                'Failed to parse column metadata: %s' \
+                        % reformat_exception(pe, 2),
+                grid_data, 2, pe.col)
     except: # pragma: no cover
         # Report an error to the log if we fail to parse something.
         LOG.debug('Failed to parse column meta: %r', col_meta_str)
         raise
 
     row_grammar = hs_row[version]
-    def _parse_row(row):
+    def _parse_row(row_num_and_data):
+        (row_num, row) = row_num_and_data
+        line_num = row_num + 3
+
         try:
             return dict(zip(col_meta.keys(),
                 row_grammar.parseString(row, parseAll=True)[0].asList()))
+        except pp.ParseException as pe:
+            # Raise a new exception with the appropriate line number.
+            raise ZincParseException(
+                    'Failed to parse row: %s' \
+                        % reformat_exception(pe, line_num),
+                    grid_data, line_num, pe.col)
         except: # pragma: no cover
             # Report an error to the log if we fail to parse something.
             LOG.debug('Failed to parse row: %r', row)
@@ -482,7 +563,7 @@ def parse_grid(grid_data):
     g = Grid(version=grid_meta.pop('ver'),
             metadata=grid_meta,
             columns=list(col_meta.items()))
-    g.extend(map(_parse_row, filter(lambda gp : bool(gp), grid_parts)))
+    g.extend(map(_parse_row, filter(lambda gp : bool(gp[1]), enumerate(grid_parts))))
     return g
 
 
@@ -490,4 +571,10 @@ def parse_scalar(scalar_data, version):
     """
     Parse a Project Haystack scalar in ZINC format.
     """
-    return hs_scalar[version].parseString(scalar_data, parseAll=True)[0]
+    try:
+        return hs_scalar[version].parseString(scalar_data, parseAll=True)[0]
+    except pp.ParseException as pe:
+        # Raise a new exception with the appropriate line number.
+        raise ZincParseException(
+                'Failed to parse scalar: %s' % reformat_exception(pe),
+                scalar_data, 1, pe.col)

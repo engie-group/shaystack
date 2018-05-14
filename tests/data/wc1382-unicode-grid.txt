@@ -1,0 +1,5 @@
+ver:"2.0" hisEnd:M hisStart:M
+ts,v0 id:@vrt.pdxmsm002.motion_state,v1 id:@vrt.pdxmsm002.temperature,v2 id:@vrt.pdxmsm018.humidity,v3 id:@vrt.pdxmsm018.illuminance,v4 id:@vrt.pdxmsm018.motion_count,v5 id:@vrt.pdxmsm018.motion_state,v6 id:@vrt.pdxmsm018.temperature,v7 id:@vrt.pdxmsm019.humidity,v8 id:@vrt.pdxmsm019.illuminance,v9 id:@vrt.pdxmsm019.motion_count
+2018-03-21T15:45:00+10:00 GMT-10,F,25.5586°C,,,,,,,,
+2018-03-21T14:30:00+10:00 GMT-10,,,62.3369,927,1,T,26.1035°C,,,
+2018-03-21T14:45:00+10:00 GMT-10,,,,,,,,63.5195,945,11

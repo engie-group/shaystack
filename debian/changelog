@@ -1,3 +1,9 @@
+hszinc (1.2.2) unstable; urgency=low
+  * Improvements to error reporting in ZINC mode.  The exception now
+    reports the correct row and column, along with a depiction of the
+    raw data returned and a pointer to the suspected error.
+ -- Samuel Toh <samuelt@vrt.com.au>  Mon, 14 May 2018 09:58:37 +1000
+
 hszinc (1.2.1) unstable; urgency=low
   * Add auto-upgrade of grid version; grids now default to v2.0 and
     move to v3.0 if a v3.0 type is encountered.

@@ -7,6 +7,22 @@
 # Assume unicode literals as per Python 3
 from __future__ import unicode_literals
 
+# If `pint` is not installed or available, skip the relevant tests.
+try:
+    import pint
+    def _enable_pint(pint_en):
+        hszinc.use_pint(pint_en)
+
+except ImportError:
+    import logging
+    logging.warning(
+        '`pint` was not available for import.  Tests requiring `pint` will '
+        'be skipped.', exc_info=1)
+
+    from nose import SkipTest
+    def _enable_pint(pint_en):
+        raise SkipTest('pint not available')
+
 import six
 import hszinc
 from copy import copy, deepcopy
@@ -80,18 +96,18 @@ def test_ref_withdis_neq_dis():
     assert r1 != r2
 
 def test_qty_unary_ops():
+    # How to run the test: check the result
+    # applied to the Quantity object matches what
+    # would be returned for the same operation applied
+    # to the raw value.
+    def _check_qty_op(pint_en, fn, *vals):
+        _enable_pint(pint_en)
+        for v in vals:
+            q = hszinc.Quantity(v)
+            assert fn(q) == fn(q.value)
+
     # Try this both without, and with, pint enabled
     for pint_en in (False, True):
-        hszinc.use_pint(pint_en)
-        # How to run the test: check the result
-        # applied to the Quantity object matches what
-        # would be returned for the same operation applied
-        # to the raw value.
-        def _check_qty_op(fn, *vals):
-            for v in vals:
-                q = hszinc.Quantity(v)
-                assert fn(q) == fn(q.value)
-
         # These work for floats
         for fn in ( lambda v : int(v),
                     lambda v : complex(v),
@@ -99,7 +115,7 @@ def test_qty_unary_ops():
                     lambda v : -v,
                     lambda v : +v,
                     lambda v : abs(v)):
-            yield _check_qty_op, fn, 123.45, -123.45
+            yield _check_qty_op, pint_en, fn, 123.45, -123.45
 
         # These work for integers
         for fn in ( lambda v : oct(v),
@@ -112,24 +128,23 @@ def test_qty_unary_ops():
                     lambda v : +v,
                     lambda v : abs(v),
                     lambda v : ~v):
-            yield _check_qty_op, fn, 123, -123
+            yield _check_qty_op, pint_en, fn, 123, -123
 
         # This only works with Python 2.
         if six.PY2:
-            yield _check_qty_op, lambda v : long(v), 123.45, -123.45
+            yield _check_qty_op, pint_en, lambda v : long(v), 123.45, -123.45
 
 def test_qty_hash():
-    # Test that independent copies hash to the same value
-    def _check_hash(val, unit=None):
-        a = hszinc.Quantity(val, unit=unit)
-        b = hszinc.Quantity(val, unit=unit)
+    def _check_qty_hash(pint_en):
+        # Test that independent copies hash to the same value
+        def _check_hash(val, unit=None):
+            a = hszinc.Quantity(val, unit=unit)
+            b = hszinc.Quantity(val, unit=unit)
 
-        assert a is not b
-        assert hash(a) == hash(b)
+            assert a is not b
+            assert hash(a) == hash(b)
 
-    # Try this both without, and with, pint enabled
-    for pint_en in (False, True):
-        hszinc.use_pint(pint_en)
+        _enable_pint(pint_en)
 
         _check_hash(123.45)
         _check_hash(-123.45)
@@ -137,8 +152,12 @@ def test_qty_hash():
         _check_hash(-12345)
         _check_hash(50, 'Hz')
 
+    for pint_en in (False, True):
+        yield _check_qty_hash, pint_en
+
 def test_qty_binary_ops():
-    def _check_qty_op(fn, a, b):
+    def _check_qty_op(pint_en, fn, a, b):
+        _enable_pint(pint_en)
         qa = hszinc.Quantity(a)
         qb = hszinc.Quantity(b)
 
@@ -150,7 +169,6 @@ def test_qty_binary_ops():
         assert fn(a, qb) == ref
 
     for pint_en in (False, True):
-        hszinc.use_pint(pint_en)
         # Try some float values
         floats = (1.12, 2.23, -4.56, 141.2, -399.5)
         for a in floats:
@@ -171,7 +189,7 @@ def test_qty_binary_ops():
                             lambda a, b : a != b,
                             lambda a, b : a >= b,
                             lambda a, b : a > b):
-                    yield _check_qty_op, fn, a, b
+                    yield _check_qty_op, pint_en, fn, a, b
 
         # Exponentiation, we can't use all the values above
         # as some go out of range.
@@ -186,7 +204,7 @@ def test_qty_binary_ops():
                 if a < 0:
                     continue
 
-                yield _check_qty_op, lambda a, b: a ** b, a, b
+                yield _check_qty_op, pint_en, lambda a, b: a ** b, a, b
 
         # Try some integer values
         ints = (1, 2, -4, 141, -399, 0x10, 0xff, 0x55)
@@ -211,12 +229,12 @@ def test_qty_binary_ops():
                             lambda a, b : a != b,
                             lambda a, b : a >= b,
                             lambda a, b : a > b):
-                    yield _check_qty_op, fn, a, b
+                    yield _check_qty_op, pint_en, fn, a, b
 
                 if b >= 0:
                     for fn in ( lambda a, b : a << b,
                                 lambda a, b : a >> b):
-                        yield _check_qty_op, fn, a, b
+                        yield _check_qty_op, pint_en, fn, a, b
 
         # Exponentiation, we can't use all the values above
         # as some go out of range.
@@ -226,15 +244,15 @@ def test_qty_binary_ops():
                 if a == b:
                     continue
 
-                yield _check_qty_op, lambda a, b: a ** b, a, b
+                yield _check_qty_op, pint_en, lambda a, b: a ** b, a, b
 
 def test_qty_cmp():
-    if 'cmp' not in set(locals().keys()):
-        def cmp(a, b):
-            return a.__cmp__(b)
+    def _check_qty_cmp(pint_en):
+        if 'cmp' not in set(locals().keys()):
+            def cmp(a, b):
+                return a.__cmp__(b)
 
-    for pint_en in (False, True):
-        hszinc.use_pint(pint_en)
+        _enable_pint(pint_en)
 
         a = hszinc.Quantity(-3)
         b = hszinc.Quantity(432)
@@ -253,6 +271,9 @@ def test_qty_cmp():
             cmp(c, e)
         except TypeError as ex:
             assert str(ex) == 'Quantity units differ: A vs V'
+
+    for pint_en in (False, True):
+        yield _check_qty_cmp, pint_en
 
 
 class MyCoordinate(object):

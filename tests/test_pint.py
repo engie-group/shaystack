@@ -1,18 +1,4 @@
-try:
-    import pint
-    def _enable_pint(pint_en):
-        hszinc.use_pint(pint_en)
-
-except ImportError:
-    import logging
-    logging.warning(
-        '`pint` was not available for import.  Tests requiring `pint` will '
-        'be skipped.', exc_info=1)
-
-    from nose import SkipTest
-    def _enable_pint(pint_en):
-        raise SkipTest('pint not available')
-
+from .pint_enable import _enable_pint
 import hszinc
 import pkg_resources, os
 

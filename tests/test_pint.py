@@ -1,12 +1,25 @@
+try:
+    import pint
+    def _enable_pint(pint_en):
+        hszinc.use_pint(pint_en)
+
+except ImportError:
+    import logging
+    logging.warning(
+        '`pint` was not available for import.  Tests requiring `pint` will '
+        'be skipped.', exc_info=1)
+
+    from nose import SkipTest
+    def _enable_pint(pint_en):
+        raise SkipTest('pint not available')
+
 import hszinc
 import pkg_resources, os
 
 units = []
 
-hszinc.use_pint()
-
 def get_units():
-
+    _enable_pint(True)
     file_path = os.path.join('', 'project_haystack_units.txt')
     units_file = pkg_resources.resource_string(__name__, file_path)
     global units
@@ -21,6 +34,7 @@ def get_units():
     assert len(units) > 0
 
 def test_all_units():
+    _enable_pint(True)
     not_defined = []
     defined = []
     for each in units:

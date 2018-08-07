@@ -20,6 +20,7 @@ except ImportError:
 
     from nose import SkipTest
     def _enable_pint(pint_en):
-        raise SkipTest('pint not available')
+        if pint_en:
+            raise SkipTest('pint not available')
     def to_pint(*a, **kwa):
         raise SkipTest('pint not available')

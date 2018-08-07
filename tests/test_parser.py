@@ -5,6 +5,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 from __future__ import unicode_literals
+from .pint_enable import _enable_pint
 
 import warnings
 import hszinc
@@ -38,12 +39,22 @@ SIMPLE_EXAMPLE_JSON={
 }
 
 def test_simple():
+    yield _check_simple, False # without pint
+    yield _check_simple, True # with pint
+
+def _check_simple(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse(SIMPLE_EXAMPLE)
     assert len(grid_list) == 1
     grid = grid_list[0]
     check_simple(grid)
 
 def test_simple_encoded():
+    yield _check_simple_encoded, False # without pint
+    yield _check_simple_encoded, True # with pint
+
+def _check_simple_encoded(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse(SIMPLE_EXAMPLE.encode('us-ascii'),
             charset='us-ascii')
     assert len(grid_list) == 1
@@ -51,11 +62,21 @@ def test_simple_encoded():
     check_simple(grid)
 
 def test_simple_json_str():
+    yield _check_simple_json_str, False # without pint
+    yield _check_simple_json_str, True # with pint
+
+def _check_simple_json_str(pint_en):
+    _enable_pint(pint_en)
     grid = hszinc.parse(json.dumps(SIMPLE_EXAMPLE_JSON),
             mode=hszinc.MODE_JSON)
     check_simple(grid)
 
 def test_wc1382_unicode_str():
+    yield _check_wc1382_unicode_str, False # without pint
+    yield _check_wc1382_unicode_str, True # with pint
+
+def _check_wc1382_unicode_str(pint_en):
+    _enable_pint(pint_en)
     # Don't use pint for this, we wish to see the actual quantity value.
     hszinc.use_pint(False)
 
@@ -74,6 +95,11 @@ def test_wc1382_unicode_str():
 
 
 def test_unsupported_old():
+    yield _check_unsupported_old, False # without pint
+    yield _check_unsupported_old, True # with pint
+
+def _check_unsupported_old(pint_en):
+    _enable_pint(pint_en)
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         grid_list = hszinc.parse('''ver:"1.0"
@@ -85,6 +111,11 @@ comment
         assert grid_list[0]._version == hszinc.Version('1.0')
 
 def test_unsupported_newer():
+    yield _check_unsupported_newer, False # without pint
+    yield _check_unsupported_newer, True # with pint
+
+def _check_unsupported_newer(pint_en):
+    _enable_pint(pint_en)
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         grid_list = hszinc.parse('''ver:"2.5"
@@ -96,6 +127,11 @@ comment
         assert grid_list[0]._version == hszinc.Version('2.5')
 
 def test_oddball_version():
+    yield _check_oddball_version, False # without pint
+    yield _check_oddball_version, True # with pint
+
+def _check_oddball_version(pint_en):
+    _enable_pint(pint_en)
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         grid_list = hszinc.parse('''ver:"3"
@@ -110,6 +146,11 @@ comment
         assert len(w) == 0
 
 def test_unsupported_bleedingedge():
+    yield _check_unsupported_bleedingedge, False # without pint
+    yield _check_unsupported_bleedingedge, True # with pint
+
+def _check_unsupported_bleedingedge(pint_en):
+    _enable_pint(pint_en)
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         grid_list = hszinc.parse('''ver:"9999.9999"
@@ -121,6 +162,11 @@ comment
         assert grid_list[0]._version == hszinc.Version('9999.9999')
 
 def test_malformed_grid():
+    yield _check_malformed_grid, False # without pint
+    yield _check_malformed_grid, True # with pint
+
+def _check_malformed_grid(pint_en):
+    _enable_pint(pint_en)
     try:
         hszinc.parse('''ver:2.0 comment:"This grid has no columns!"
 ''')
@@ -129,6 +175,11 @@ def test_malformed_grid():
         pass
 
 def test_malformed_version():
+    yield _check_malformed_version, False # without pint
+    yield _check_malformed_version, True # with pint
+
+def _check_malformed_version(pint_en):
+    _enable_pint(pint_en)
     try:
         hszinc.parse('''ver:TwoPointOh comment:"This grid has an invalid version!"
 empty
@@ -178,12 +229,22 @@ METADATA_EXAMPLE_JSON={
 }
 
 def test_metadata():
+    yield _check_metadata, False # without pint
+    yield _check_metadata, True # with pint
+
+def _check_metadata(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse(METADATA_EXAMPLE)
     assert len(grid_list) == 1
     grid = grid_list[0]
     check_metadata(grid)
 
 def test_metadata_json():
+    yield _check_metadata_json, False # without pint
+    yield _check_metadata_json, True # with pint
+
+def _check_metadata_json(pint_en):
+    _enable_pint(pint_en)
     grid = hszinc.parse(METADATA_EXAMPLE_JSON, mode=hszinc.MODE_JSON)
     check_metadata(grid, force_metadata_order=False)
 
@@ -266,15 +327,30 @@ def check_null(grid):
     assert grid[1]['null'] is None
 
 def test_null():
+    yield _check_null, False # without pint
+    yield _check_null, True # with pint
+
+def _check_null(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse(NULL_EXAMPLE)
     assert len(grid_list) == 1
     check_null(grid_list[0])
 
 def test_null_json():
+    yield _check_null_json, False # without pint
+    yield _check_null_json, True # with pint
+
+def _check_null_json(pint_en):
+    _enable_pint(pint_en)
     grid = hszinc.parse(NULL_EXAMPLE_JSON, mode=hszinc.MODE_JSON)
     check_null(grid)
 
 def test_marker_in_row():
+    yield _check_marker_in_row, False # without pint
+    yield _check_marker_in_row, True # with pint
+
+def _check_marker_in_row(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 str,marker
 "No Marker",
@@ -286,6 +362,11 @@ str,marker
     assert grid_list[0][1]['marker'] is hszinc.MARKER
 
 def test_marker_in_row_json():
+    yield _check_marker_in_row_json, False # without pint
+    yield _check_marker_in_row_json, True # with pint
+
+def _check_marker_in_row_json(pint_en):
+    _enable_pint(pint_en)
     grid = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
@@ -301,6 +382,11 @@ def test_marker_in_row_json():
     assert grid[1]['marker'] is hszinc.MARKER
 
 def test_bool():
+    yield _check_bool, False # without pint
+    yield _check_bool, True # with pint
+
+def _check_bool(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 str,bool
 "True",T
@@ -312,6 +398,11 @@ str,bool
     assert grid_list[0][1]['bool'] == False
 
 def test_bool_json():
+    yield _check_bool_json, False # without pint
+    yield _check_bool_json, True # with pint
+
+def _check_bool_json(pint_en):
+    _enable_pint(pint_en)
     grid = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
@@ -327,6 +418,11 @@ def test_bool_json():
     assert grid[1]['bool'] == False
 
 def test_number():
+    yield _check_number, False # without pint
+    yield _check_number, True # with pint
+
+def _check_number(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse(u'''ver:"2.0"
 str,number
 "Integer",1
@@ -370,6 +466,11 @@ def check_number(grid):
     assert math.isnan(row['number'])
 
 def test_number_json():
+    yield _check_number_json, False # without pint
+    yield _check_number_json, True # with pint
+
+def _check_number_json(pint_en):
+    _enable_pint(pint_en)
     grid = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
@@ -392,6 +493,11 @@ def test_number_json():
     check_number(grid)
 
 def test_string():
+    yield _check_string, False # without pint
+    yield _check_string, True # with pint
+
+def _check_string(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 str,strExample
 "Empty",""
@@ -406,6 +512,11 @@ str,strExample
     assert grid_list[0][2]['strExample'] == 'This\tIs\nA\r"Test"\\$'
 
 def test_string_json():
+    yield _check_string_json, False # without pint
+    yield _check_string_json, True # with pint
+
+def _check_string_json(pint_en):
+    _enable_pint(pint_en)
     grid = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
@@ -427,6 +538,11 @@ def test_string_json():
     assert grid.pop(0)['strExample'] == 'string:with:colons'
 
 def test_uri():
+    yield _check_uri, False # without pint
+    yield _check_uri, True # with pint
+
+def _check_uri(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 uri
 `http://www.vrt.com.au`
@@ -437,6 +553,11 @@ uri
     assert grid_list[0][0]['uri'] == hszinc.Uri('http://www.vrt.com.au')
 
 def test_uri_json():
+    yield _check_uri_json, False # without pint
+    yield _check_uri_json, True # with pint
+
+def _check_uri_json(pint_en):
+    _enable_pint(pint_en)
     grid = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
@@ -451,6 +572,11 @@ def test_uri_json():
     assert grid[0]['uri'] == hszinc.Uri('http://www.vrt.com.au')
 
 def test_ref():
+    yield _check_ref, False # without pint
+    yield _check_ref, True # with pint
+
+def _check_ref(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 str,ref
 "Basic",@a-basic-ref
@@ -464,6 +590,11 @@ str,ref
     assert grid[1]['ref'] == hszinc.Ref('reference', 'With value')
 
 def test_ref_json():
+    yield _check_ref_json, False # without pint
+    yield _check_ref_json, True # with pint
+
+def _check_ref_json(pint_en):
+    _enable_pint(pint_en)
     grid = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
@@ -481,6 +612,11 @@ def test_ref_json():
     assert grid[1]['ref'] == hszinc.Ref('reference', 'With value')
 
 def test_date():
+    yield _check_date, False # without pint
+    yield _check_date, True # with pint
+
+def _check_date(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 date
 2010-03-13
@@ -492,6 +628,11 @@ date
     assert grid_list[0][0]['date'] == datetime.date(2010,3,13)
 
 def test_date_json():
+    yield _check_date_json, False # without pint
+    yield _check_date_json, True # with pint
+
+def _check_date_json(pint_en):
+    _enable_pint(pint_en)
     grid = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
@@ -507,6 +648,11 @@ def test_date_json():
     assert grid[0]['date'] == datetime.date(2010,3,13)
 
 def test_time():
+    yield _check_time, False # without pint
+    yield _check_time, True # with pint
+
+def _check_time(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 time
 08:12:05
@@ -521,6 +667,11 @@ time
     assert grid_list[0][1]['time'] == datetime.time(8,12,5,500000)
 
 def test_time_json():
+    yield _check_time_json, False # without pint
+    yield _check_time_json, True # with pint
+
+def _check_time_json(pint_en):
+    _enable_pint(pint_en)
     grid = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
@@ -545,6 +696,11 @@ def test_time_json():
     assert row['time'] == datetime.time(8,12,5,500000)
 
 def test_datetime():
+    yield _check_datetime, False # without pint
+    yield _check_datetime, True # with pint
+
+def _check_datetime(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 datetime
 2010-11-28T07:23:02.500-08:00 Los_Angeles
@@ -587,6 +743,11 @@ def check_datetime(grid):
             datetime.datetime(2010,1,8,5,0,0,0))
 
 def test_datetime_json():
+    yield _check_datetime_json, False # without pint
+    yield _check_datetime_json, True # with pint
+
+def _check_datetime_json(pint_en):
+    _enable_pint(pint_en)
     grid = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
@@ -604,6 +765,11 @@ def test_datetime_json():
     check_datetime(grid)
 
 def test_list():
+    yield _check_list, False # without pint
+    yield _check_list, True # with pint
+
+def _check_list(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"3.0"
 ix,list,                                                       dis
 00,[],                                                         "An empty list"
@@ -656,6 +822,11 @@ ix,list,                                                       dis
     assert grid[14]['list'] == [[1.0,2.0,3.0], ["a","b","c"]]
 
 def test_list_v2():
+    yield _check_list_v2, False # without pint
+    yield _check_list_v2, True # with pint
+
+def _check_list_v2(pint_en):
+    _enable_pint(pint_en)
     try:
         grid_list = hszinc.parse('''ver:"2.0"
 ix,list,                                                       dis
@@ -667,6 +838,11 @@ ix,list,                                                       dis
         pass
 
 def test_list_json():
+    yield _check_list_json, False # without pint
+    yield _check_list_json, True # with pint
+
+def _check_list_json(pint_en):
+    _enable_pint(pint_en)
     # Simpler test case than the ZINC one, since the Python JSON parser
     # will take care of the elements for us.
     grid = hszinc.parse({
@@ -689,6 +865,11 @@ def test_list_json():
     assert lst[3] == 1234.0
 
 def test_list_json_v2():
+    yield _check_list_json_v2, False # without pint
+    yield _check_list_json_v2, True # with pint
+
+def _check_list_json_v2(pint_en):
+    _enable_pint(pint_en)
     # Version 2.0 does not support lists
     try:
         grid = hszinc.parse({
@@ -705,6 +886,11 @@ def test_list_json_v2():
         pass
 
 def test_bin():
+    yield _check_bin, False # without pint
+    yield _check_bin, True # with pint
+
+def _check_bin(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 bin
 Bin(text/plain)
@@ -715,6 +901,11 @@ Bin(text/plain)
     assert grid_list[0][0]['bin'] == hszinc.Bin('text/plain')
 
 def test_bin_json():
+    yield _check_bin_json, False # without pint
+    yield _check_bin_json, True # with pint
+
+def _check_bin_json(pint_en):
+    _enable_pint(pint_en)
     grid = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
@@ -729,6 +920,11 @@ def test_bin_json():
     assert grid[0]['bin'] == hszinc.Bin('text/plain')
 
 def test_coord():
+    yield _check_coord, False # without pint
+    yield _check_coord, True # with pint
+
+def _check_coord(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 coord
 C(37.55,-77.45)
@@ -739,6 +935,11 @@ C(37.55,-77.45)
     assert grid_list[0][0]['coord'] == hszinc.Coordinate(37.55,-77.45)
 
 def test_coord_json():
+    yield _check_coord_json, False # without pint
+    yield _check_coord_json, True # with pint
+
+def _check_coord_json(pint_en):
+    _enable_pint(pint_en)
     grid = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
@@ -753,6 +954,11 @@ def test_coord_json():
     assert grid[0]['coord'] == hszinc.Coordinate(37.55,-77.45)
 
 def test_multi_grid():
+    yield _check_multi_grid, False # without pint
+    yield _check_multi_grid, True # with pint
+
+def _check_multi_grid(pint_en):
+    _enable_pint(pint_en)
     # Multiple grids are separated by newlines.
     grid_list = hszinc.parse('\n'.join([
         SIMPLE_EXAMPLE, METADATA_EXAMPLE, NULL_EXAMPLE]))
@@ -762,6 +968,11 @@ def test_multi_grid():
     check_null(grid_list[2])
 
 def test_multi_grid_json():
+    yield _check_multi_grid_json, False # without pint
+    yield _check_multi_grid_json, True # with pint
+
+def _check_multi_grid_json(pint_en):
+    _enable_pint(pint_en)
     # Multiple grids are separated by newlines.
     grid_list = hszinc.parse([SIMPLE_EXAMPLE_JSON,
         METADATA_EXAMPLE_JSON, NULL_EXAMPLE_JSON], mode=hszinc.MODE_JSON)
@@ -771,6 +982,11 @@ def test_multi_grid_json():
     check_null(grid_list[2])
 
 def test_multi_grid_json_str():
+    yield _check_multi_grid_json_str, False # without pint
+    yield _check_multi_grid_json_str, True # with pint
+
+def _check_multi_grid_json_str(pint_en):
+    _enable_pint(pint_en)
     # Multiple grids are separated by newlines.
     grid_list = hszinc.parse(list(map(json.dumps, [SIMPLE_EXAMPLE_JSON,
         METADATA_EXAMPLE_JSON, NULL_EXAMPLE_JSON])), mode=hszinc.MODE_JSON)
@@ -780,6 +996,11 @@ def test_multi_grid_json_str():
     check_null(grid_list[2])
 
 def test_grid_meta():
+    yield _check_grid_meta, False # without pint
+    yield _check_grid_meta, True # with pint
+
+def _check_grid_meta(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0" aString:"aValue" aNumber:3.14159 aNull:N aMarker:M anotherMarker aQuantity:123Hz aDate:2016-01-13 aTime:06:44:00 aTimestamp:2016-01-13T06:44:00+10:00 Brisbane aPlace:C(-27.4725,153.003)
 empty
 ''')
@@ -811,6 +1032,11 @@ empty
     assert meta['aPlace'].longitude == 153.003
 
 def test_col_meta():
+    yield _check_col_meta, False # without pint
+    yield _check_col_meta, True # with pint
+
+def _check_col_meta(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 aColumn aString:"aValue" aNumber:3.14159 aNull:N aMarker:M anotherMarker aQuantity:123Hz aDate:2016-01-13 aTime:06:44:00 aTimestamp:2016-01-13T06:44:00+10:00 Brisbane aPlace:C(-27.4725,153.003)
 ''')
@@ -844,6 +1070,11 @@ aColumn aString:"aValue" aNumber:3.14159 aNull:N aMarker:M anotherMarker aQuanti
     assert meta['aPlace'].longitude == 153.003
 
 def test_too_many_cells():
+    yield _check_too_many_cells, False # without pint
+    yield _check_too_many_cells, True # with pint
+
+def _check_too_many_cells(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 col1, col2, col3
 "Val1", "Val2", "Val3", "Val4", "Val5"
@@ -860,6 +1091,11 @@ col1, col2, col3
     assert row['col3'] == 'Val3'
 
 def test_nodehaystack_01():
+    yield _check_nodehaystack_01, False # without pint
+    yield _check_nodehaystack_01, True # with pint
+
+def _check_nodehaystack_01(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 fooBar33
 ''')
@@ -869,6 +1105,11 @@ fooBar33
     assert list(grid_list[0].column.keys()) == ['fooBar33']
 
 def test_nodehaystack_02():
+    yield _check_nodehaystack_02, False # without pint
+    yield _check_nodehaystack_02, True # with pint
+
+def _check_nodehaystack_02(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0" tag foo:"bar"
 xyz
 "val"
@@ -882,6 +1123,11 @@ xyz
     assert grid_list[0][0]['xyz'] == 'val'
 
 def test_nodehaystack_03():
+    yield _check_nodehaystack_03, False # without pint
+    yield _check_nodehaystack_03, True # with pint
+
+def _check_nodehaystack_03(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 val
 N
@@ -893,6 +1139,11 @@ N
     assert grid_list[0][0]['val'] is None
 
 def test_nodehaystack_04():
+    yield _check_nodehaystack_04, False # without pint
+    yield _check_nodehaystack_04, True # with pint
+
+def _check_nodehaystack_04(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 a,b
 1,2
@@ -908,6 +1159,11 @@ a,b
     assert grid_list[0][1]['b'] == 4
 
 def test_nodehaystack_05():
+    yield _check_nodehaystack_05, False # without pint
+    yield _check_nodehaystack_05, True # with pint
+
+def _check_nodehaystack_05(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 a,    b,      c,      d
 T,    F,      N,   -99
@@ -967,6 +1223,11 @@ C(12,-34),C(0.123,-.789),C(84.5,-77.45),C(-90,180)
     assert row['d'] == hszinc.Coordinate(-90,180)
 
 def test_nodehaystack_06():
+    yield _check_nodehaystack_06, False # without pint
+    yield _check_nodehaystack_06, True # with pint
+
+def _check_nodehaystack_06(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 foo
 `foo$20bar`
@@ -990,6 +1251,11 @@ foo
 
 
 def test_nodehaystack_07():
+    yield _check_nodehaystack_07, False # without pint
+    yield _check_nodehaystack_07, True # with pint
+
+def _check_nodehaystack_07(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse(u'''ver:"2.0"
 a, b
 -3.1kg,4kg
@@ -1016,6 +1282,11 @@ a, b
     assert row['b'] == hszinc.Quantity(74,u'\u0394\u00b0F')
 
 def test_nodehaystack_08():
+    yield _check_nodehaystack_08, False # without pint
+    yield _check_nodehaystack_08, True # with pint
+
+def _check_nodehaystack_08(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 a,b
 2010-03-01T23:55:00.013-05:00 GMT+5,2010-03-01T23:55:00.013+10:00 GMT-10
@@ -1032,6 +1303,11 @@ a,b
             datetime.datetime(2010,3,1,23,55,0,13000))
 
 def test_nodehaystack_09():
+    yield _check_nodehaystack_09, False # without pint
+    yield _check_nodehaystack_09, True # with pint
+
+def _check_nodehaystack_09(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse(u'''ver:"2.0" a: 2009-02-03T04:05:06Z foo b: 2010-02-03T04:05:06Z UTC bar c: 2009-12-03T04:05:06Z London baz
 a
 3.814697265625E-6
@@ -1070,6 +1346,11 @@ a
     assert grid.pop(0)['a'] == hszinc.Quantity(7.15625E-4,u'kWh/ft\u00b2')
 
 def test_nodehaystack_10():
+    yield _check_nodehaystack_10, False # without pint
+    yield _check_nodehaystack_10, True # with pint
+
+def _check_nodehaystack_10(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0" bg: Bin(image/jpeg) mark
 file1 dis:"F1" icon: Bin(image/gif),file2 icon: Bin(image/jpg)
 Bin(text/plain),N
@@ -1099,6 +1380,11 @@ Bin(text/html; a=foo; bar="sep"),Bin(text/html; charset=utf8)
     assert row['file2'] == hszinc.Bin('text/html; charset=utf8')
 
 def test_nodehaystack_11():
+    yield _check_nodehaystack_11, False # without pint
+    yield _check_nodehaystack_11, True # with pint
+
+def _check_nodehaystack_11(pint_en):
+    _enable_pint(pint_en)
     grid_list = hszinc.parse('''ver:"2.0"
 a, b, c
 , 1, 2
@@ -1145,12 +1431,22 @@ a, b, c
 # works and versions are passed through.
 
 def test_scalar_simple_zinc():
+    yield _check_scalar_simple_zinc, False # without pint
+    yield _check_scalar_simple_zinc, True # with pint
+
+def _check_scalar_simple_zinc(pint_en):
+    _enable_pint(pint_en)
     assert hszinc.parse_scalar('"Testing"', mode=hszinc.MODE_ZINC) \
             == "Testing"
     assert hszinc.parse_scalar('50Hz', mode=hszinc.MODE_ZINC) \
             == hszinc.Quantity(50, unit='Hz')
 
 def test_scalar_bytestring_zinc():
+    yield _check_scalar_bytestring_zinc, False # without pint
+    yield _check_scalar_bytestring_zinc, True # with pint
+
+def _check_scalar_bytestring_zinc(pint_en):
+    _enable_pint(pint_en)
     assert hszinc.parse_scalar(b'"Testing"',
             mode=hszinc.MODE_ZINC, charset='us-ascii') \
                     == "Testing"
@@ -1159,6 +1455,11 @@ def test_scalar_bytestring_zinc():
                     == hszinc.Quantity(50, unit='Hz')
 
 def test_scalar_version_zinc():
+    yield _check_scalar_version_zinc, False # without pint
+    yield _check_scalar_version_zinc, True # with pint
+
+def _check_scalar_version_zinc(pint_en):
+    _enable_pint(pint_en)
     # This should forbid us trying to parse a list.
     try:
         hszinc.parse_scalar('[1,2,3]', mode=hszinc.MODE_ZINC,
@@ -1168,18 +1469,33 @@ def test_scalar_version_zinc():
         pass
 
 def test_scalar_simple_json():
+    yield _check_scalar_simple_json, False # without pint
+    yield _check_scalar_simple_json, True # with pint
+
+def _check_scalar_simple_json(pint_en):
+    _enable_pint(pint_en)
     assert hszinc.parse_scalar('"s:Testing"', mode=hszinc.MODE_JSON) \
             == "Testing"
     assert hszinc.parse_scalar('"n:50 Hz"', mode=hszinc.MODE_JSON) \
             == hszinc.Quantity(50, unit='Hz')
 
 def test_scalar_preparsed_json():
+    yield _check_scalar_preparsed_json, False # without pint
+    yield _check_scalar_preparsed_json, True # with pint
+
+def _check_scalar_preparsed_json(pint_en):
+    _enable_pint(pint_en)
     assert hszinc.parse_scalar('s:Testing', mode=hszinc.MODE_JSON) \
             == "Testing"
     assert hszinc.parse_scalar('n:50 Hz', mode=hszinc.MODE_JSON) \
             == hszinc.Quantity(50, unit='Hz')
 
 def test_scalar_bytestring_json():
+    yield _check_scalar_bytestring_json, False # without pint
+    yield _check_scalar_bytestring_json, True # with pint
+
+def _check_scalar_bytestring_json(pint_en):
+    _enable_pint(pint_en)
     assert hszinc.parse_scalar(b'"s:Testing"',
             mode=hszinc.MODE_JSON, charset='us-ascii') \
                     == "Testing"
@@ -1188,6 +1504,11 @@ def test_scalar_bytestring_json():
                     == hszinc.Quantity(50, unit='Hz')
 
 def test_scalar_version_json():
+    yield _check_scalar_version_json, False # without pint
+    yield _check_scalar_version_json, True # with pint
+
+def _check_scalar_version_json(pint_en):
+    _enable_pint(pint_en)
     # This should forbid us trying to parse a list.
     try:
         res = hszinc.parse_scalar('[ "n:1","n:2","n:3" ]',
@@ -1197,17 +1518,32 @@ def test_scalar_version_json():
         pass
 
 def test_scalar_json_rawnum():
+    yield _check_scalar_json_rawnum, False # without pint
+    yield _check_scalar_json_rawnum, True # with pint
+
+def _check_scalar_json_rawnum(pint_en):
+    _enable_pint(pint_en)
     # Test handling of raw numbers
     assert hszinc.parse_scalar(123, mode=hszinc.MODE_JSON) == 123
     assert hszinc.parse_scalar(123.45, mode=hszinc.MODE_JSON) == 123.45
 
 def test_str_version():
+    yield _check_str_version, False # without pint
+    yield _check_str_version, True # with pint
+
+def _check_str_version(pint_en):
+    _enable_pint(pint_en)
     # This should assume v3.0, and parse successfully.
     val = hszinc.parse_scalar('[1,2,3]', mode=hszinc.MODE_ZINC,
             version='2.5')
     assert val == [1.0, 2.0, 3.0]
 
 def test_malformed_grid_meta():
+    yield _check_malformed_grid_meta, False # without pint
+    yield _check_malformed_grid_meta, True # with pint
+
+def _check_malformed_grid_meta(pint_en):
+    _enable_pint(pint_en)
     try:
         grid_list = hszinc.parse('''ver:"2.0" ThisIsNotATag
 empty
@@ -1219,6 +1555,11 @@ empty
         assert zpe.col == 11
 
 def test_malformed_col_meta():
+    yield _check_malformed_col_meta, False # without pint
+    yield _check_malformed_col_meta, True # with pint
+
+def _check_malformed_col_meta(pint_en):
+    _enable_pint(pint_en)
     try:
         grid_list = hszinc.parse('''ver:"2.0"
 c1 goodSoFar, c2 WHOOPSIE
@@ -1230,6 +1571,11 @@ c1 goodSoFar, c2 WHOOPSIE
         assert zpe.col == 18
 
 def test_malformed_row():
+    yield _check_malformed_row, False # without pint
+    yield _check_malformed_row, True # with pint
+
+def _check_malformed_row(pint_en):
+    _enable_pint(pint_en)
     try:
         grid_list = hszinc.parse('''ver:"2.0"
 c1, c2

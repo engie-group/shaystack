@@ -420,7 +420,7 @@ hs_scalar_2_0 <<= Or([hs_ref, hs_bin, hs_str, hs_uri, hs_dateTime,
             hs_date, hs_time, hs_coord, hs_number, hs_null, hs_marker,
             hs_remove, hs_bool]).setName('scalar')
 hs_scalar_3_0 <<= Or([hs_ref, hs_bin, hs_str, hs_uri, hs_dateTime,
-            hs_date, hs_time, hs_coord, hs_number, hs_null,hs_na, hs_marker,
+            hs_date, hs_time, hs_coord, hs_number, hs_null, hs_na, hs_marker,
             hs_remove, hs_bool, hs_list[VER_3_0]]).setName('scalar')
 
 # Tag IDs

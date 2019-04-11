@@ -109,7 +109,8 @@ See the git change-log.
 
  -- Stuart Longland <stuartl@vrt.com.au>  Thu, 07 Jan 2016 13:57:00 +1000
 
-[Unreleased]: https://github.com/vrtsystems/hszinc/compare/HEAD..1.2.2
+[Unreleased]: https://github.com/vrtsystems/hszinc/compare/HEAD..1.2.3
+[1.2.3]: https://github.com/vrtsystems/hszinc/compare/v1.2.2..1.2.3
 [1.2.2]: https://github.com/vrtsystems/hszinc/compare/v1.2.1..v1.2.2
 [1.2.1]: https://github.com/vrtsystems/hszinc/compare/v1.2.0..v1.2.1
 [1.2.0]: https://github.com/vrtsystems/hszinc/compare/v1.1.2..v1.2.0

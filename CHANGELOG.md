@@ -2,6 +2,17 @@
 
 See the git change-log.
 
+# [1.2.3]
+
+  * Support for the Haystack 3.0 `NA` singleton (thanks to @joyfun, GitHub PR#12)
+  * Fixes to the JSON parser to properly handle multi-line strings
+  * Wrap the zinc parser functions in a try-except so that the raw grid is always
+    emitted to the log so we can pick up on the more esoteric bugs.
+  * Replace Debian package build system with a `mkdeb.sh` script built on `stdeb`
+    (so we can build Python 3 packages as well).
+    
+ -- Stuart Longland <stuartl@vrt.com.au> Thu, 11 Apr 2019 10:05:24 +1000
+
 # [1.2.2]
 
   * Improvements to error reporting in ZINC mode.  The exception now
@@ -98,7 +109,8 @@ See the git change-log.
 
  -- Stuart Longland <stuartl@vrt.com.au>  Thu, 07 Jan 2016 13:57:00 +1000
 
-[Unreleased]: https://github.com/vrtsystems/hszinc/compare/HEAD..1.2.2
+[Unreleased]: https://github.com/vrtsystems/hszinc/compare/HEAD..1.2.3
+[1.2.3]: https://github.com/vrtsystems/hszinc/compare/v1.2.2..1.2.3
 [1.2.2]: https://github.com/vrtsystems/hszinc/compare/v1.2.1..v1.2.2
 [1.2.1]: https://github.com/vrtsystems/hszinc/compare/v1.2.0..v1.2.1
 [1.2.0]: https://github.com/vrtsystems/hszinc/compare/v1.1.2..v1.2.0

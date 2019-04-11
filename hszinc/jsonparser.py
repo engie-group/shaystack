@@ -28,7 +28,6 @@ NUMBER_RE   = re.compile(r'^n:(-?\d+(:?\.\d+)?(:?[eE][+\-]?\d+)?)(:? (.*))?$',
         flags=re.MULTILINE)
 REF_RE      = re.compile(r'^r:([a-zA-Z0-9_:\-.~]+)(:? (.*))?$',
         flags=re.MULTILINE)
-STR_RE      = re.compile(r'^s:(.*)$', flags=re.MULTILINE)
 DATE_RE     = re.compile(r'^d:(\d{4})-(\d{2})-(\d{2})$', flags=re.MULTILINE)
 TIME_RE     = re.compile(r'^h:(\d{2}):(\d{2})(:?:(\d{2}(:?\.\d+)?))?$',
         flags=re.MULTILINE)
@@ -125,9 +124,8 @@ def parse_scalar(scalar, version=LATEST_VER):
             return value
 
     # Is it a string?
-    match = STR_RE.match(scalar)
-    if match:
-        return match.group(1)
+    if scalar.startswith('s:'):
+        return scalar[2:]
 
     # Is it a reference?
     match = REF_RE.match(scalar)

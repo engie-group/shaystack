@@ -1,12 +1,11 @@
+from .pint_enable import _enable_pint
 import hszinc
 import pkg_resources, os
 
 units = []
 
-hszinc.use_pint()
-
 def get_units():
-
+    _enable_pint(True)
     file_path = os.path.join('', 'project_haystack_units.txt')
     units_file = pkg_resources.resource_string(__name__, file_path)
     global units
@@ -21,6 +20,7 @@ def get_units():
     assert len(units) > 0
 
 def test_all_units():
+    _enable_pint(True)
     not_defined = []
     defined = []
     for each in units:

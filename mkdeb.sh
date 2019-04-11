@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build a Debian package of pyat.
+# Build a Debian package of hszinc.
 set -e
 
 : ${MY_DIR:=$( dirname "$0" )}

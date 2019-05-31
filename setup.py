@@ -8,7 +8,6 @@ requirements = [
             'pytz',
             'iso8601',
             'six',
-            'pint',
 ]
 
 setup(name='hszinc',
@@ -36,6 +35,11 @@ setup(name='hszinc',
             'Topic :: Scientific/Engineering :: Information Analysis',
             'Topic :: Software Development :: Libraries :: Python Modules',
         ],
+        extras_require={
+            'unitconversion': [
+                'pint'
+            ]
+        },
         requires=requirements,
         install_requires=requirements
 )

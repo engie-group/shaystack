@@ -21,6 +21,7 @@ cd "${MY_DIR}"
 "${PYTHON}" setup.py \
 	--command-package stdeb.command sdist_dsc \
 	--with-python2=${BUILD_PY2} --with-python3=${BUILD_PY3} \
+	--suggests=python-pint --suggests3=python3-pint \
 	${DEBIAN_VERSION:+--debian-version=}${DEBIAN_VERSION} \
 	bdist_deb
 

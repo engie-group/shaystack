@@ -5,9 +5,12 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
-from collections import MutableMapping
+try:
+    import collections.abc as col
+except ImportError:
+    import collections as col
 
-class SortableDict(MutableMapping):
+class SortableDict(col.MutableMapping):
     """
     A dict-like object that permits value ordering/re-ordering.
     """

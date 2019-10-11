@@ -7,10 +7,13 @@
 
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
-from collections import MutableSequence
+try:
+    import collections.abc as col
+except ImportError:
+    import collections as col
 from .version import Version, VER_3_0, VER_2_0
 
-class Grid(MutableSequence):
+class Grid(col.MutableSequence):
     '''
     A grid is basically a series of tabular records.  The grid has a header
     which describes some metadata about the grid and its columns.  This is

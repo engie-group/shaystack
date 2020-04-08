@@ -267,6 +267,10 @@ def test_data_types_v3():
     grid.column['value'] = {}
     grid.extend([
         {
+            'comment': 'A NA',
+            'value': hszinc.NA,
+        },
+        {
             'comment': 'An empty list',
             'value': [],
         },
@@ -294,6 +298,7 @@ def test_data_types_v3():
     grid_str = hszinc.dump(grid)
     ref_str = '''ver:"3.0"
 comment,value
+"A NA",NA
 "An empty list",[]
 "A null value in a list",[N]
 "A marker in a list",[M]
@@ -429,6 +434,14 @@ def test_data_types_json_v3():
     grid.column['value'] = {}
     grid.extend([
         {
+            'comment': 'A Remove (3.0 version)',
+            'value': hszinc.REMOVE,
+        },
+        {
+            'comment': 'A NA',
+            'value': hszinc.NA,
+        },
+        {
             'comment': 'An empty list',
             'value': [],
         },
@@ -463,6 +476,14 @@ def test_data_types_json_v3():
                 {'name': 'value'},
             ],
             'rows': [
+                {
+                    'comment': 's:A Remove (3.0 version)',
+                    'value': '-:'
+                },
+                {
+                    'comment': 's:A NA',
+                    'value': 'z:'
+                },
                 {
                     'comment':"s:An empty list",
                     'value':[]

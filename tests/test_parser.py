@@ -1689,3 +1689,13 @@ c1, c2
     except hszinc.zincparser.ZincParseException as zpe:
         assert zpe.line == 4
         assert zpe.col == 4
+
+def test_malformed_zinc_scalar():
+    # This should always raise an error after logging
+    try:
+        hszinc.parse_scalar(12341234, mode=hszinc.MODE_ZINC)
+        assert False, 'Should have failed'
+    except AssertionError:
+        raise
+    except:
+        pass

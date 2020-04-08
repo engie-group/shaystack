@@ -550,12 +550,21 @@ def test_scalar_zinc():
     assert hszinc.dump_scalar(hszinc.Ref('areference', 'a display name'),
             mode=hszinc.MODE_ZINC) == '@areference "a display name"'
 
-def test_scalar_zinc_ver():
+def test_scalar_list_zinc_ver():
     # Test that versions are respected.
     try:
         hszinc.dump_scalar(["a list is not allowed in v2.0"],
                 mode=hszinc.MODE_ZINC, version=hszinc.VER_2_0)
         assert False, 'Serialised a list in Haystack v2.0'
+    except ValueError:
+        pass
+
+def test_scalar_list_na_ver():
+    # Test that versions are respected.
+    try:
+        hszinc.dump_scalar(hszinc.NA,
+                mode=hszinc.MODE_ZINC, version=hszinc.VER_2_0)
+        assert False, 'Serialised a NA in Haystack v2.0'
     except ValueError:
         pass
 
@@ -565,11 +574,20 @@ def test_scalar_json():
     assert hszinc.dump_scalar(hszinc.Ref('areference', 'a display name'),
             mode=hszinc.MODE_JSON) == 'r:areference a display name'
 
-def test_scalar_json_ver():
+def test_scalar_list_json_ver():
     # Test that versions are respected.
     try:
         hszinc.dump_scalar(["a list is not allowed in v2.0"],
                 mode=hszinc.MODE_JSON, version=hszinc.VER_2_0)
         assert False, 'Serialised a list in Haystack v2.0'
+    except ValueError:
+        pass
+
+def test_scalar_na_json_ver():
+    # Test that versions are respected.
+    try:
+        hszinc.dump_scalar(hszinc.NA,
+                mode=hszinc.MODE_JSON, version=hszinc.VER_2_0)
+        assert False, 'Serialised a NA in Haystack v2.0'
     except ValueError:
         pass

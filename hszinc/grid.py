@@ -5,6 +5,7 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
+from .datatypes import NA
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
 try:
@@ -157,7 +158,8 @@ class Grid(col.MutableSequence):
         Detect the version used from the row content, or validate against
         the version if given.
         '''
-        if isinstance(val, list) \
+        if (val is NA) \
+                or isinstance(val, list) \
                 or isinstance(val, dict) \
                 or isinstance(val, SortableDict) \
                 or isinstance(val, Grid):

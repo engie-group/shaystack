@@ -322,6 +322,10 @@ def test_data_types_json():
             'value': hszinc.MARKER,
         },
         {
+            'comment': 'A remove (2.0 version)',
+            'value': hszinc.REMOVE,
+        },
+        {
             'comment': 'A boolean, indicating False',
             'value': False,
         },
@@ -394,6 +398,8 @@ def test_data_types_json():
                     'value': None},
                 {   'comment': 's:A marker',
                     'value': 'm:'},
+                {   'comment': 's:A remove (2.0 version)',
+                    'value': 'x:'},
                 {   'comment': 's:A boolean, indicating False',
                     'value': False},
                 {   'comment': 's:A boolean, indicating True',

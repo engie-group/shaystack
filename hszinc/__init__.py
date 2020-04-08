@@ -23,12 +23,13 @@ try:
     from .dumper import dump, dump_scalar
     from .parser import parse, parse_scalar, MODE_JSON, MODE_ZINC
     from .metadata import MetadataObject
-    from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, REMOVE, Ref, use_pint
+    from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, NA, \
+            REMOVE, Ref, use_pint
     from .version import Version, VER_2_0, VER_3_0, LATEST_VER
     Q_ = Quantity
     __all__ = ['Grid', 'dump', 'parse', 'dump_scalar', 'parse_scalar',
             'MetadataObject', 'ureg',
-            'Coordinate', 'Uri', 'Bin', 'MARKER', 'REMOVE', 'Ref',
+            'Coordinate', 'Uri', 'Bin', 'MARKER', 'NA', 'REMOVE', 'Ref',
             'MODE_JSON', 'MODE_ZINC',
             'VER_2_0', 'VER_3_0', 'LATEST_VER', 'Version']
 except ImportError as e: # pragma: no cover

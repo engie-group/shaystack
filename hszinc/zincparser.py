@@ -586,3 +586,4 @@ def parse_scalar(scalar_data, version):
     except:
         LOG.debug('Failing scalar data: %r (version %r)',
                 scalar_data, version)
+        raise

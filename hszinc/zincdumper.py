@@ -8,7 +8,7 @@
 from __future__ import unicode_literals
 
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
-        MARKER, REMOVE, STR_SUB
+        MARKER, NA, REMOVE, STR_SUB
 from .zoneinfo import timezone_name
 from .version import LATEST_VER, VER_3_0
 
@@ -83,6 +83,12 @@ def dump_row(grid, row):
 def dump_scalar(scalar, version=LATEST_VER):
     if scalar is None:
         return 'N'
+    elif scalar is NA:
+        if version < VER_3_0:
+            raise ValueError('Project Haystack version %s '\
+                            'does not support NA'\
+                            % version)
+        return 'NA'
     elif scalar is MARKER:
         return 'M'
     elif scalar is REMOVE:

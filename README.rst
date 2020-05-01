@@ -1,10 +1,10 @@
 HSZinc
 ======
 
-.. image:: https://travis-ci.org/vrtsystems/hszinc.svg?branch=master
-    :target: https://travis-ci.org/vrtsystems/hszinc
-.. image:: https://coveralls.io/repos/vrtsystems/hszinc/badge.svg?branch=master&service=github
-    :target: https://coveralls.io/github/vrtsystems/hszinc?branch=master
+.. image:: https://travis-ci.org/widesky/hszinc.svg?branch=master
+    :target: https://travis-ci.org/widesky/hszinc
+.. image:: https://coveralls.io/repos/widesky/hszinc/badge.svg?branch=master&service=github
+    :target: https://coveralls.io/github/widesky/hszinc?branch=master
 
 HSZinc is an implementation of the `ZINC`_ grid serialisation format used in
 `Project Haystack`_.  Additionally, the module implements code for parsing and
@@ -182,11 +182,12 @@ Null, Boolean, Date, Time, Date/Time and strings.
 Numbers
   Numbers without a unit are represented as `float` objects.
   Numbers with a unit are represented by the `hszinc.Quantity` custom type which
-  has two attributes: `value` and `unit`.
+  has two attributes: `value` and `unit`.  If `pint` is installed, support exists
+  for its unit conversion features.
 
-Marker and Remove
-  These are singletons, represented by `hszinc.MARKER` and `hszinc.REMOVE`.
-  They behave and are intended to be used like the `None` object.
+NA, Marker and Remove
+  These are singletons, represented by `hszinc.NA`, `hszinc.MARKER` and
+  `hszinc.REMOVE`.  They behave and are intended to be used like the `None` object.
 
 URI and Bin
   These are represented as subclasses of `unicode` type (Python 2.7; `str` in
@@ -200,10 +201,17 @@ Coord
   Represented by the custom type `hszinc.Coordinate`, which has `latitude` and
   `longitude` types (both `float`)
 
+Lists
+  Represented using standard Python `list` objects.
+
 STATUS
 ======
 
-This is early days, absolutely nothing is guaranteed.
+`hszinc` has been used to implement the core grid parsing logic in `pyhaystack`
+and used in production for some time now.  Project Haystack 2.0 compatibility
+is pretty good at this time, with 3.0 being a work-in-progress.  (At the moment
+we support lists, the NA singleton, and both variants of the Remove singleton
+when using JSON serialisation.)
 
 .. _`Project Haystack`: http://www.project-haystack.org/
 .. _`ZINC`: http://project-haystack.org/doc/Zinc

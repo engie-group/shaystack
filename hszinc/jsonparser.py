@@ -7,7 +7,7 @@
 
 from .grid import Grid
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
-        MARKER, REMOVE, STR_SUB
+        MARKER, NA, REMOVE, STR_SUB
 from .zoneinfo import timezone
 from .version import LATEST_VER, Version, VER_3_0
 
@@ -24,6 +24,9 @@ GRID_SEP = re.compile(r'\n\n+')
 
 # Type regular expressions
 MARKER_STR  = 'm:'
+NA_STR      = 'z:'
+REMOVE2_STR = 'x:'
+REMOVE3_STR = '-:'
 NUMBER_RE   = re.compile(r'^n:(-?\d+(:?\.\d+)?(:?[eE][+\-]?\d+)?)(:? (.*))?$',
         flags=re.MULTILINE)
 REF_RE      = re.compile(r'^r:([a-zA-Z0-9_:\-.~]+)(:? (.*))?$',
@@ -97,6 +100,12 @@ def parse_scalar(scalar, version=LATEST_VER):
             scalar))
     elif scalar == MARKER_STR:
         return MARKER
+    elif scalar == NA_STR:
+        return NA
+    elif (scalar == REMOVE2_STR) or (scalar == REMOVE3_STR):
+        # Strictly speaking: x: is a HS 2.0 Remove, and -: is a 3.0 Remove
+        # but we'll treat both the same.
+        return REMOVE
     elif isinstance(scalar, bool):
         return scalar
     elif scalar == 'n:INF':

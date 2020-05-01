@@ -6,6 +6,7 @@
 
 from __future__ import unicode_literals
 from .pint_enable import _enable_pint
+from nose.tools import assert_is
 
 import warnings
 import hszinc
@@ -13,7 +14,6 @@ import datetime
 import math
 import pytz
 import json
-import six
 import os
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
@@ -100,7 +100,7 @@ def test_unsupported_old():
 
 def _check_unsupported_old(pint_en):
     _enable_pint(pint_en)
-    with warnings.catch_warnings(record=True) as w:
+    with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
         grid_list = hszinc.parse('''ver:"1.0"
 comment
@@ -116,7 +116,7 @@ def test_unsupported_newer():
 
 def _check_unsupported_newer(pint_en):
     _enable_pint(pint_en)
-    with warnings.catch_warnings(record=True) as w:
+    with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
         grid_list = hszinc.parse('''ver:"2.5"
 comment
@@ -151,7 +151,7 @@ def test_unsupported_bleedingedge():
 
 def _check_unsupported_bleedingedge(pint_en):
     _enable_pint(pint_en)
-    with warnings.catch_warnings(record=True) as w:
+    with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
         grid_list = hszinc.parse('''ver:"9999.9999"
 comment
@@ -291,7 +291,9 @@ def check_metadata(grid,force_metadata_order=True):
 
 # Test examples used to test every data type defined in the Zinc standard.
 #    Null: N
+#    NA: NA
 #    Marker: M
+#    Remove: R
 #    Bool: T or F (for true, false)
 #    Number: 1, -34, 10_000, 5.4e-45, 9.23kg, 74.2°F, 4min, INF, -INF, NaN
 #    Str: "hello" "foo\nbar\" (uses all standard escape chars as C like languages)
@@ -323,8 +325,8 @@ NULL_EXAMPLE_JSON={
 
 def check_null(grid):
     assert len(grid) == 2
-    assert grid[0]['null'] is None
-    assert grid[1]['null'] is None
+    assert_is(grid[0]['null'], None)
+    assert_is(grid[1]['null'], None)
 
 def test_null():
     yield _check_null, False # without pint
@@ -345,6 +347,105 @@ def _check_null_json(pint_en):
     grid = hszinc.parse(NULL_EXAMPLE_JSON, mode=hszinc.MODE_JSON)
     check_null(grid)
 
+NA_EXAMPLE='''ver:"3.0"
+str,na
+"NA value",NA
+'''
+NA_EXAMPLE_JSON={
+        'meta': {'ver':'3.0'},
+        'cols': [
+            {'name':'str'},
+            {'name':'na'},
+        ],
+        'rows': [
+            {'str': 'NA value', 'na': 'z:'},
+        ],
+}
+
+def check_na(grid):
+    assert len(grid) == 1
+    assert_is(grid[0]['na'], hszinc.NA)
+
+def test_na():
+    yield _check_na, False # without pint
+    yield _check_na, True # with pint
+
+def _check_na(pint_en):
+    _enable_pint(pint_en)
+    grid_list = hszinc.parse(NA_EXAMPLE)
+    assert len(grid_list) == 1
+    check_na(grid_list[0])
+
+def test_na_json():
+    yield _check_na_json, False # without pint
+    yield _check_na_json, True # with pint
+
+def _check_na_json(pint_en):
+    _enable_pint(pint_en)
+    grid = hszinc.parse(NA_EXAMPLE_JSON, mode=hszinc.MODE_JSON)
+    check_na(grid)
+
+REMOVE_EXAMPLE='''ver:"3.0"
+str,remove
+"v2 REMOVE value",R
+"v3 REMOVE value",R
+'''
+REMOVE_EXAMPLE_JSON_V2={
+        'meta': {'ver':'2.0'},
+        'cols': [
+            {'name':'str'},
+            {'name':'remove'},
+        ],
+        'rows': [
+            {'str': 'v2 REMOVE value', 'remove': 'x:'},
+            {'str': 'v3 REMOVE value', 'remove': '-:'},
+        ],
+}
+REMOVE_EXAMPLE_JSON_V3={
+        'meta': {'ver':'3.0'},
+        'cols': [
+            {'name':'str'},
+            {'name':'remove'},
+        ],
+        'rows': [
+            {'str': 'v2 REMOVE value', 'remove': 'x:'},
+            {'str': 'v3 REMOVE value', 'remove': '-:'},
+        ],
+}
+
+def check_remove(grid):
+    assert len(grid) == 2
+    assert_is(grid[0]['remove'], hszinc.REMOVE)
+    assert_is(grid[1]['remove'], hszinc.REMOVE)
+
+def test_remove():
+    yield _check_remove, False # without pint
+    yield _check_remove, True # with pint
+
+def _check_remove(pint_en):
+    _enable_pint(pint_en)
+    grid_list = hszinc.parse(REMOVE_EXAMPLE)
+    assert len(grid_list) == 1
+    check_remove(grid_list[0])
+
+def test_remove_json_v2():
+    yield _check_remove_json_v2, False # without pint
+    yield _check_remove_json_v2, True # with pint
+
+def test_remove_json_v3():
+    yield _check_remove_json_v3, False # without pint
+    yield _check_remove_json_v3, True # with pint
+
+def _check_remove_json_v2(pint_en):
+    _enable_pint(pint_en)
+    grid = hszinc.parse(REMOVE_EXAMPLE_JSON_V2, mode=hszinc.MODE_JSON)
+    check_remove(grid)
+
+def _check_remove_json_v3(pint_en):
+    _enable_pint(pint_en)
+    grid = hszinc.parse(REMOVE_EXAMPLE_JSON_V3, mode=hszinc.MODE_JSON)
+    check_remove(grid)
+
 def test_marker_in_row():
     yield _check_marker_in_row, False # without pint
     yield _check_marker_in_row, True # with pint
@@ -358,8 +459,8 @@ str,marker
 ''')
     assert len(grid_list) == 1
     assert len(grid_list[0]) == 2
-    assert grid_list[0][0]['marker'] is None
-    assert grid_list[0][1]['marker'] is hszinc.MARKER
+    assert_is(grid_list[0][0]['marker'], None)
+    assert_is(grid_list[0][1]['marker'], hszinc.MARKER)
 
 def test_marker_in_row_json():
     yield _check_marker_in_row_json, False # without pint
@@ -378,8 +479,8 @@ def _check_marker_in_row_json(pint_en):
             {'str': 'Marker',       'marker':'m:'},
         ],
     }, mode=hszinc.MODE_JSON)
-    assert grid[0]['marker'] is None
-    assert grid[1]['marker'] is hszinc.MARKER
+    assert_is(grid[0]['marker'], None)
+    assert_is(grid[1]['marker'], hszinc.MARKER)
 
 def test_bool():
     yield _check_bool, False # without pint
@@ -828,7 +929,7 @@ def test_list_v2():
 def _check_list_v2(pint_en):
     _enable_pint(pint_en)
     try:
-        grid_list = hszinc.parse('''ver:"2.0"
+        hszinc.parse('''ver:"2.0"
 ix,list,                                                       dis
 00,[],                                                         "An empty list"
 01,[N],                                                        "A list with a NULL"
@@ -860,8 +961,8 @@ def _check_list_json(pint_en):
     assert isinstance(lst, list)
     assert len(lst) == 4
     assert lst[0] == 'my list'
-    assert lst[1] is None
-    assert lst[2] is True
+    assert_is(lst[1], None)
+    assert_is(lst[2], True)
     assert lst[3] == 1234.0
 
 def test_list_json_v2():
@@ -872,7 +973,7 @@ def _check_list_json_v2(pint_en):
     _enable_pint(pint_en)
     # Version 2.0 does not support lists
     try:
-        grid = hszinc.parse({
+        hszinc.parse({
             'meta': {'ver':'2.0'},
             'cols': [
                 {'name': 'list'},
@@ -1013,9 +1114,9 @@ empty
             'aTimestamp', 'aPlace']
     assert meta['aString'] == 'aValue'
     assert meta['aNumber'] == 3.14159
-    assert meta['aNull'] is None
-    assert meta['aMarker'] is hszinc.MARKER
-    assert meta['anotherMarker'] is hszinc.MARKER
+    assert_is(meta['aNull'], None)
+    assert_is(meta['aMarker'], hszinc.MARKER)
+    assert_is(meta['anotherMarker'], hszinc.MARKER)
     assert isinstance(meta['aQuantity'], hszinc.Quantity)
     assert meta['aQuantity'].value == 123
     assert meta['aQuantity'].unit == 'Hz'
@@ -1051,9 +1152,9 @@ aColumn aString:"aValue" aNumber:3.14159 aNull:N aMarker:M anotherMarker aQuanti
             'aTimestamp', 'aPlace']
     assert meta['aString'] == 'aValue'
     assert meta['aNumber'] == 3.14159
-    assert meta['aNull'] is None
-    assert meta['aMarker'] is hszinc.MARKER
-    assert meta['anotherMarker'] is hszinc.MARKER
+    assert_is(meta['aNull'], None)
+    assert_is(meta['aMarker'], hszinc.MARKER)
+    assert_is(meta['anotherMarker'], hszinc.MARKER)
     assert isinstance(meta['aQuantity'], hszinc.Quantity)
     assert meta['aQuantity'].value == 123
     assert meta['aQuantity'].unit == 'Hz'
@@ -1117,7 +1218,7 @@ xyz
     assert len(grid_list) == 1
     assert len(grid_list[0]) == 1
     assert list(grid_list[0].metadata.keys()) == ['tag', 'foo']
-    assert grid_list[0].metadata['tag'] is hszinc.MARKER
+    assert_is(grid_list[0].metadata['tag'], hszinc.MARKER)
     assert grid_list[0].metadata['foo'] == 'bar'
     assert list(grid_list[0].column.keys()) == ['xyz']
     assert grid_list[0][0]['xyz'] == 'val'
@@ -1136,7 +1237,7 @@ N
     assert len(grid_list[0]) == 1
     assert len(grid_list[0].metadata) == 0
     assert list(grid_list[0].column.keys()) == ['val']
-    assert grid_list[0][0]['val'] is None
+    assert_is(grid_list[0][0]['val'], None)
 
 def test_nodehaystack_04():
     yield _check_nodehaystack_04, False # without pint
@@ -1183,7 +1284,7 @@ C(12,-34),C(0.123,-.789),C(84.5,-77.45),C(-90,180)
     row = grid.pop(0)
     assert row['a'] == True
     assert row['b'] == False
-    assert row['c'] is None
+    assert_is(row['c'], None)
     assert row['d'] == -99.0
     row = grid.pop(0)
     assert row['a'] == 2.3
@@ -1201,8 +1302,8 @@ C(12,-34),C(0.123,-.789),C(84.5,-77.45),C(-90,180)
     assert row['c'] == hszinc.Quantity(4, 's')
     assert row['d'] == hszinc.Quantity(-2.5, 'min')
     row = grid.pop(0)
-    assert row['a'] is hszinc.MARKER
-    assert row['b'] is hszinc.REMOVE
+    assert_is(row['a'], hszinc.MARKER)
+    assert_is(row['b'], hszinc.REMOVE)
     assert row['c'] == hszinc.Bin('image/png')
     assert row['d'] == hszinc.Bin('image/png')
     row = grid.pop(0)
@@ -1329,9 +1430,9 @@ a
             datetime.datetime(2010,2,3,4,5,6))
     assert grid.metadata['c'] == pytz.timezone('Europe/London').localize(\
             datetime.datetime(2009,12,3,4,5,6))
-    assert grid.metadata['foo'] is hszinc.MARKER
-    assert grid.metadata['bar'] is hszinc.MARKER
-    assert grid.metadata['baz'] is hszinc.MARKER
+    assert_is(grid.metadata['foo'], hszinc.MARKER)
+    assert_is(grid.metadata['bar'], hszinc.MARKER)
+    assert_is(grid.metadata['baz'], hszinc.MARKER)
     assert list(grid.column.keys()) == ['a']
     assert grid.pop(0)['a'] == 3.814697265625E-6
     assert grid.pop(0)['a'] == pytz.utc.localize(\
@@ -1362,7 +1463,7 @@ Bin(text/html; a=foo; bar="sep"),Bin(text/html; charset=utf8)
     assert len(grid) == 3
     assert list(grid.metadata.keys()) == ['bg','mark']
     assert grid.metadata['bg'] == hszinc.Bin('image/jpeg')
-    assert grid.metadata['mark'] is hszinc.MARKER
+    assert_is(grid.metadata['mark'], hszinc.MARKER)
     assert list(grid.column.keys()) == ['file1','file2']
     assert list(grid.column['file1'].keys()) == ['dis','icon']
     assert grid.column['file1']['dis'] == 'F1'
@@ -1371,7 +1472,7 @@ Bin(text/html; a=foo; bar="sep"),Bin(text/html; charset=utf8)
     assert grid.column['file2']['icon'] == hszinc.Bin('image/jpg')
     row = grid.pop(0)
     assert row['file1'] == hszinc.Bin('text/plain')
-    assert row['file2'] is None
+    assert_is(row['file2'], None)
     row = grid.pop(0)
     assert row['file1'] == 4
     assert row['file2'] == hszinc.Bin('image/png')
@@ -1401,29 +1502,29 @@ a, b, c
     assert len(grid.metadata) == 0
     assert list(grid.column.keys()) == ['a','b','c']
     row = grid.pop(0)
-    assert row['a'] is None
+    assert_is(row['a'], None)
     assert row['b'] == 1
     assert row['c'] == 2
     row = grid.pop(0)
     assert row['a'] == 3
-    assert row['b'] is None
+    assert_is(row['b'], None)
     assert row['c'] == 5
     row = grid.pop(0)
     assert row['a'] == 6
     assert row['b'] == 7000
-    assert row['c'] is None
+    assert_is(row['c'], None)
     row = grid.pop(0)
-    assert row['a'] is None
-    assert row['b'] is None
+    assert_is(row['a'], None)
+    assert_is(row['b'], None)
     assert row['c'] == 10
     row = grid.pop(0)
-    assert row['a'] is None
-    assert row['b'] is None
-    assert row['c'] is None
+    assert_is(row['a'], None)
+    assert_is(row['b'], None)
+    assert_is(row['c'], None)
     row = grid.pop(0)
     assert row['a'] == 14
-    assert row['b'] is None
-    assert row['c'] is None
+    assert_is(row['b'], None)
+    assert_is(row['c'], None)
 
 
 # Scalar parsing tests… no need to be exhaustive here because the grid tests
@@ -1545,7 +1646,7 @@ def test_malformed_grid_meta():
 def _check_malformed_grid_meta(pint_en):
     _enable_pint(pint_en)
     try:
-        grid_list = hszinc.parse('''ver:"2.0" ThisIsNotATag
+        hszinc.parse('''ver:"2.0" ThisIsNotATag
 empty
 
 ''')
@@ -1561,7 +1662,7 @@ def test_malformed_col_meta():
 def _check_malformed_col_meta(pint_en):
     _enable_pint(pint_en)
     try:
-        grid_list = hszinc.parse('''ver:"2.0"
+        hszinc.parse('''ver:"2.0"
 c1 goodSoFar, c2 WHOOPSIE
 ,
 ''')
@@ -1577,7 +1678,7 @@ def test_malformed_row():
 def _check_malformed_row(pint_en):
     _enable_pint(pint_en)
     try:
-        grid_list = hszinc.parse('''ver:"2.0"
+        hszinc.parse('''ver:"2.0"
 c1, c2
 1, "No problems here"
 2, We should fail here
@@ -1588,3 +1689,13 @@ c1, c2
     except hszinc.zincparser.ZincParseException as zpe:
         assert zpe.line == 4
         assert zpe.col == 4
+
+def test_malformed_zinc_scalar():
+    # This should always raise an error after logging
+    try:
+        hszinc.parse_scalar(12341234, mode=hszinc.MODE_ZINC)
+        assert False, 'Should have failed'
+    except AssertionError:
+        raise
+    except:
+        pass

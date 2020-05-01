@@ -16,7 +16,7 @@ import logging
 import re
 
 # Bring in special Project Haystack types and time zones
-from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, REMOVE, Ref
+from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, NA, REMOVE, Ref
 from .grid import Grid
 from .zoneinfo import timezone
 
@@ -391,8 +391,8 @@ hs_marker       = Literal('M').setParseAction(\
         lambda toks : [MARKER]).setName('marker')
 hs_null         = Literal('N').setParseAction(\
         lambda toks : [None]).setName('null')
-hs_na         = Literal('NA').setParseAction(\
-        lambda toks : [None]).setName('null')
+hs_na           = Literal('NA').setParseAction(\
+        lambda toks : [NA]).setName('na')
 # Lists, these will probably be in Haystack 4.0, so let's not
 # assume a version.  There are three cases:
 # - Empty list: [ {optional whitespace} ]
@@ -586,3 +586,4 @@ def parse_scalar(scalar_data, version):
     except:
         LOG.debug('Failing scalar data: %r (version %r)',
                 scalar_data, version)
+        raise

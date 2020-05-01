@@ -8,9 +8,9 @@
 from __future__ import unicode_literals
 
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
-        MARKER
+        MARKER, NA, REMOVE
 from .zoneinfo import timezone_name
-from .jsonparser import MARKER_STR
+from .jsonparser import MARKER_STR, NA_STR, REMOVE2_STR, REMOVE3_STR
 from .version import LATEST_VER, VER_3_0
 
 import datetime
@@ -63,6 +63,16 @@ def dump_scalar(scalar, version=LATEST_VER):
         return None
     elif scalar is MARKER:
         return MARKER_STR
+    elif scalar is NA:
+        if version < VER_3_0:
+            raise ValueError('Project Haystack %s '\
+                    'does not support NA' % version)
+        return NA_STR
+    elif scalar is REMOVE:
+        if version < VER_3_0:
+            return REMOVE2_STR
+        else:
+            return REMOVE3_STR
     elif isinstance(scalar, list):
         return dump_list(scalar, version=version)
     elif isinstance(scalar, bool):

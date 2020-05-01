@@ -378,12 +378,14 @@ class Bin(six.text_type):
             return NotImplemented
         return super(Bin, self).__eq__(other)
 
+
 class Singleton(object):
     def __copy__(self):
         return self
 
     def __deepcopy__(self, memo):
         return self
+
 
 class MarkerType(Singleton):
     """
@@ -393,6 +395,17 @@ class MarkerType(Singleton):
         return 'MARKER'
 
 MARKER = MarkerType()
+
+
+class NAType(Singleton):
+    """
+    A singleton class representing a NA.
+    """
+    def __repr__(self):
+        return 'NA'
+
+NA = NAType()
+
 
 class RemoveType(Singleton):
     """

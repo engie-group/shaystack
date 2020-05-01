@@ -267,6 +267,10 @@ def test_data_types_v3():
     grid.column['value'] = {}
     grid.extend([
         {
+            'comment': 'A NA',
+            'value': hszinc.NA,
+        },
+        {
             'comment': 'An empty list',
             'value': [],
         },
@@ -294,6 +298,7 @@ def test_data_types_v3():
     grid_str = hszinc.dump(grid)
     ref_str = '''ver:"3.0"
 comment,value
+"A NA",NA
 "An empty list",[]
 "A null value in a list",[N]
 "A marker in a list",[M]
@@ -315,6 +320,10 @@ def test_data_types_json():
         {
             'comment': 'A marker',
             'value': hszinc.MARKER,
+        },
+        {
+            'comment': 'A remove (2.0 version)',
+            'value': hszinc.REMOVE,
         },
         {
             'comment': 'A boolean, indicating False',
@@ -389,6 +398,8 @@ def test_data_types_json():
                     'value': None},
                 {   'comment': 's:A marker',
                     'value': 'm:'},
+                {   'comment': 's:A remove (2.0 version)',
+                    'value': 'x:'},
                 {   'comment': 's:A boolean, indicating False',
                     'value': False},
                 {   'comment': 's:A boolean, indicating True',
@@ -429,6 +440,14 @@ def test_data_types_json_v3():
     grid.column['value'] = {}
     grid.extend([
         {
+            'comment': 'A Remove (3.0 version)',
+            'value': hszinc.REMOVE,
+        },
+        {
+            'comment': 'A NA',
+            'value': hszinc.NA,
+        },
+        {
             'comment': 'An empty list',
             'value': [],
         },
@@ -463,6 +482,14 @@ def test_data_types_json_v3():
                 {'name': 'value'},
             ],
             'rows': [
+                {
+                    'comment': 's:A Remove (3.0 version)',
+                    'value': '-:'
+                },
+                {
+                    'comment': 's:A NA',
+                    'value': 'z:'
+                },
                 {
                     'comment':"s:An empty list",
                     'value':[]
@@ -529,12 +556,21 @@ def test_scalar_zinc():
     assert hszinc.dump_scalar(hszinc.Ref('areference', 'a display name'),
             mode=hszinc.MODE_ZINC) == '@areference "a display name"'
 
-def test_scalar_zinc_ver():
+def test_scalar_list_zinc_ver():
     # Test that versions are respected.
     try:
         hszinc.dump_scalar(["a list is not allowed in v2.0"],
                 mode=hszinc.MODE_ZINC, version=hszinc.VER_2_0)
         assert False, 'Serialised a list in Haystack v2.0'
+    except ValueError:
+        pass
+
+def test_scalar_list_na_ver():
+    # Test that versions are respected.
+    try:
+        hszinc.dump_scalar(hszinc.NA,
+                mode=hszinc.MODE_ZINC, version=hszinc.VER_2_0)
+        assert False, 'Serialised a NA in Haystack v2.0'
     except ValueError:
         pass
 
@@ -544,11 +580,20 @@ def test_scalar_json():
     assert hszinc.dump_scalar(hszinc.Ref('areference', 'a display name'),
             mode=hszinc.MODE_JSON) == 'r:areference a display name'
 
-def test_scalar_json_ver():
+def test_scalar_list_json_ver():
     # Test that versions are respected.
     try:
         hszinc.dump_scalar(["a list is not allowed in v2.0"],
                 mode=hszinc.MODE_JSON, version=hszinc.VER_2_0)
         assert False, 'Serialised a list in Haystack v2.0'
+    except ValueError:
+        pass
+
+def test_scalar_na_json_ver():
+    # Test that versions are respected.
+    try:
+        hszinc.dump_scalar(hszinc.NA,
+                mode=hszinc.MODE_JSON, version=hszinc.VER_2_0)
+        assert False, 'Serialised a NA in Haystack v2.0'
     except ValueError:
         pass

@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  alpha-carbon-api
+
+  Sample SAM Template for alpha-carbon-api
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Runtime: python3.8
+    Timeout: 30
+    Environment:
+      Variables:
+        LOGLEVEL: WARNING
+        DEBUGGING: false
+
+Resources:
+  CarbonAPILayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: carbonapi
+      CompatibleRuntimes:
+        - python3.8
+    Metadata:
+      BuildMethod: python3.8
+
+  About:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: carbonapi/
+      Handler: haystackapi.about
+      Events:
+        HaystackAbout:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /about
+            Method: get
+
+  ExtendWithCO2e:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: carbonapi/
+      Handler: haystackapi.extend_with_co2e
+      Events:
+        ExtendWithCO2e:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /extend_with_co2e
+            Method: get
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  About:
+    Description: "Haystack about api"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/"
+  AboutFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt AboutFunction.Arn
+  AboutFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt AboutFunctionRole.Arn
+
+  ExtendWithCO2e:
+    Description: "Haystack about api"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/"
+  ExtendWithCO2eFunction:
+    Description: "Extend with CO2e haystack ops"
+    Value: !GetAtt AboutFunction.Arn
+  ExtendWithCO2eFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt AboutFunctionRole.Arn

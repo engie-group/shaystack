@@ -1,10 +1,8 @@
 import json
 import logging
-import sys
 
 import boto3
 import botocore
-
 import pytest
 
 log = logging.getLogger("carnonapi")

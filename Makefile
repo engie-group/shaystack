@@ -176,10 +176,10 @@ build: .aws-sam/build
 
 # -------------------------------------- Invoke
 .PHONY: invoke-*
-## Build and invoke lamda function in local (ie. invoke-About)
+## Build and invoke lamda function in local with associated events (ie. invoke-About)
 invoke-%: envs.json
 	$(MAKE) build-$*
-	sam local invoke --env-vars envs.json $*
+	sam local invoke --env-vars envs.json $* -e events/$*_event.json
 
 ## Build and invoke lamda function via aws cli (ie. invoke-About)
 aws-invoke-%: envs.json

@@ -1,12 +1,12 @@
 import inspect
-import json
 
+import hszinc
 import pytest
 
 from carbonapi import haystackapi
 from lambda_types import LambdaProxyEvent, LambdaContext
 
-
+# FIXME: mutualiser et/ou récup de events
 @pytest.fixture()
 def apigw_event():
     """ Generates API GW Event"""
@@ -64,17 +64,24 @@ def apigw_event():
     }
 
 
-def test_about(apigw_event: LambdaProxyEvent):
+
+def test_ops_with_zinc(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
-    context.function_name = "Alpha"
+    context.function_name = "Ops"
     context.aws_request_id = inspect.currentframe().f_code.co_name
+    grid = hszinc.Grid()
+    mime_type = "text/zinc"
+    apigw_event["headers"]["Content-Type"] = mime_type
+    apigw_event["headers"]["Accept"] = mime_type
+    # apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
 
     # WHEN
-    response = haystackapi.about(apigw_event, context)
+    response = haystackapi.ops(apigw_event, context)
 
     # THEN
-    data = json.loads(response["body"])
     assert response["statusCode"] == 200
-    assert "message" in response["body"]
-    assert data["message"] == "about"
+    assert response.headers["Content-Type"].startswith(mime_type)
+    ops_grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
+    assert ops_grid[0]["name"] == "about"
+    assert ops_grid[1]["name"] == "ops"

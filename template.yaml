@@ -37,6 +37,30 @@ Resources:
             Path: /about
             Method: get
 
+  Ops:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: carbonapi/
+      Handler: haystackapi.ops
+      Events:
+        HaystackAbout:
+          Type: Api
+          Properties:
+            Path: /ops
+            Method: get
+
+  Formats:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: carbonapi/
+      Handler: haystackapi.formats
+      Events:
+        HaystackAbout:
+          Type: Api
+          Properties:
+            Path: /formats
+            Method: get
+
   ExtendWithCO2e:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:

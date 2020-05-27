@@ -81,8 +81,13 @@ class LambdaProxyEvent(object):
 
 
 class LambdaProxyResponse(AttrDict):
+    def __init__(self):
+        self["statusCode"] = 200
+        self["headers"] = dict()
+        self["cookies"] = list()
+        self["isBase64Encoded"] = False
+
     def _asdict(self):
-        print("call _asdict")
         return self
 
     statusCode: int

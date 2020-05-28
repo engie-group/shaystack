@@ -1,5 +1,22 @@
 # alpha-carbon-api
 
+CarbonAPI is an API to add CO2e in a [Haystack Grid](https://project-haystack.org/doc/Grids).
+Theses API can negotiate:
+- Request format (zinc or json)
+- Response format (Accept: zinc, json)
+- Compressed format (Accept-Encoding: gzip)
+
+implements theses Haystack [operations](https://project-haystack.org/doc/Rest):
+- [About](https://project-haystack.org/doc/Ops#about)
+- [Ops](https://project-haystack.org/doc/Ops#ops)
+- [Formats](https://project-haystack.org/doc/Ops#formats)
+
+and add one operation
+- extend_with_co2e
+
+This new operation receive a grid, and extend this grid with CO2e when it's possible. Then, return this extended grid.
+
+## Summary
 This project contains source code and supporting files for a CarbonAPI application 
 that you can deploy with the SAM CLI. It includes the following files and folders.
 
@@ -47,13 +64,14 @@ You can find your API Gateway Endpoint URL in the output values displayed after 
 Build your application with the `make build` command.
 
 ```bash
-alpha-carbon-api$ make build
+$ make build
 ```
 
 To build a specific lambda, use `make build-<name>` command.
 
 ```bash
-alpha-carbon-api$ make build-ExtendWithCO2e
+$ make build-ExtendWithCO2e
+$ make build-CarbonAPILayer
 ```
 
 The SAM CLI installs dependencies defined in `carnonapi/requirements.txt`, creates a deployment package, 
@@ -66,17 +84,16 @@ Test events are included in the `events` folder in this project.
 Run functions locally and invoke them with the `make invoke-<name>` command.
 
 ```bash
-$ # Same as
-$ # sam local invoke --env-vars envs.json About -e events/About_event.json
+$ # Same as `sam local invoke --env-vars envs.json About -e events/About_event.json`
 $ make invoke-About 
 ```
 
 The SAM CLI can also emulate your application's API. Use the `make start-api` to run the API locally on port 3000.
-You can start API server in background with `make async-start-api` and close with `make async-stop-api`.
+TODO: util ? refresh ? You can start API server in background with `make async-start-api` and close with `make async-stop-api`.
 
 ```bash
-alpha-carbon-api$ make async-start-api
-alpha-carbon-api$ curl http://localhost:3000/
+$ make async-start-api
+$ curl http://localhost:3000/
 ```
 
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. 
@@ -88,14 +105,13 @@ The `Events` property on each function's definition includes the route and metho
           Type: Api
           Properties:
             Path: /extend_with_co2e
-            Method: get
+            Method: post
 ```
 
 ## Add a resource to the application
 Extend the `carbonapi/requirement.txt` and run `make build`.
 
 ## Fetch, tail, and filter Lambda function logs
-TODO: to test
 To simplify troubleshooting, SAM CLI has a command called `sam logs`. `sam logs` lets you fetch logs generated 
 by your deployed Lambda function from the command line. In addition to printing the logs on the terminal, 
 this command has several nifty features to help you quickly find the bug.
@@ -103,7 +119,7 @@ this command has several nifty features to help you quickly find the bug.
 `NOTE`: This command works for all AWS Lambda functions; not just the ones you deploy using SAM.
 
 ```bash
-alpha-carbon-api$ sam logs -n ExtendWithCO2e --stack-name alpha-carbon-api --tail
+$ sam logs -n ExtendWithCO2e --stack-name alpha-carbon-api --tail
 ```
 
 You can find more information and examples about filtering Lambda function logs in the 
@@ -113,10 +129,11 @@ You can find more information and examples about filtering Lambda function logs 
 
 Tests are defined in the `tests` folder in this project. 
 To run all tests, use `make test`. You can select unit or functional test with `make unit-test` 
-or `make functional-test`. The functional-test call the API via lambda emulator (`sam local start-lambda`).
+or `make functional-test`. The functional-test call the API via a local lambda emulator, 
+after starting lamnda server in background (`make async-start-lambda`).
 
 ```bash
-alpha-carbon-api$ make test
+$ make test
 ```
 
 ## Cleanup

@@ -144,8 +144,8 @@ clean-$(VENV): remove-venv
 clean-venv : clean-$(VENV)
 
 # Clean project
-clean: async-stop-api async-stop-lambda
-	@rm -rf bin/* .aws-sam .mypy_cache .pytest_cache .run build nohup.out dist .make-*
+clean: async-stop
+	@rm -rf bin/* .aws-sam .mypy_cache .pytest_cache .run build nohup.out dist .make-* .pytype
 
 .PHONY: clean-all
 # Clean all environments
@@ -194,17 +194,17 @@ start-api: envs.json build
 
 # Start local api emulator in background
 async-start-api: envs.json $(PYTHON_SRC)
-	@[ -e .run/start-api.pid ] && echo "Local API was allready started" && exit
+	@[ -e .run/start-api.pid ] && echo -e "$(orange)Local API was allready started$(normal)" && exit
 	mkdir -p .run
 	nohup sam local start-api >.run/start-api.log 2>&1 &
 	echo $$! >.run/start-api.pid
 	sleep 0.5
 	tail .run/start-api.log
-	echo "Local API started"
+	echo -e "$(orange)Local API started$(normal)"
 
 # Stop local api emulator in background
 async-stop-api:
-	@[ -e .run/start-api.pid ] && kill `cat .run/start-api.pid` && echo "API stopped"
+	@[ -e .run/start-api.pid ] && kill `cat .run/start-api.pid` && echo -e "$(green)API stopped$(normal)"
 	rm -f .run/start-api.pid
 
 .PHONY: start-lambda async-start-lambda async-stop-lambda
@@ -215,18 +215,21 @@ start-lambda: envs.json build
 
 # Start lambda local emulator in background
 async-start-lambda: envs.json $(PYTHON_SRC)
-	@[ -e .run/start-lambda.pid ] && echo "Local Lambda was allready started" && exit
+	@[ -e .run/start-lambda.pid ] && echo -e "$(orange)Local Lambda was allready started$(normal)" && exit
 	mkdir -p .run
 	nohup sam local start-lambda >.run/start-lambda.log 2>&1 &
 	echo $$! >.run/start-lambda.pid
 	sleep 0.5
 	tail .run/start-lambda.log
-	echo "Local Lambda was started"
+	echo -e "$(orange)Local Lambda was started$(normal)"
 
 # Stop lambda local emulator in background
 async-stop-lambda:
-	@[ -e .run/start-lambda.pid ] && kill `cat .run/start-lambda.pid` && echo "Local Lambda stopped"
+	@[ -e .run/start-lambda.pid ] && kill `cat .run/start-lambda.pid` && echo -e "$(green)Local Lambda stopped$(normal)"
 	rm -f .run/start-lambda.pid
+
+## Stop all async server
+async-stop: async-stop-api async-stop-lambda
 
 # -------------------------------------- Tests
 .PHONY: unit-test

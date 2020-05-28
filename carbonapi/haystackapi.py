@@ -31,7 +31,7 @@ _DEFAULT_MIME_TYPE = "text/zinc"
 
 # TODO: ajouter Content-Encoding: gzip si négociable https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding
 def _dump_response(accept: str, grid: hszinc.Grid, default: Optional[str] = None) -> Tuple[str, str]:
-    type = get_best_match(accept, ['_/_', 'text/zinc', 'text/json'])
+    type = get_best_match(accept, ['*/*', 'text/zinc', 'text/json'])
     if type == "text/zinc" or type == "*/*":
         return ("text/zinc; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_ZINC))
     elif type == "text/json":
@@ -42,15 +42,17 @@ def _dump_response(accept: str, grid: hszinc.Grid, default: Optional[str] = None
     raise ValueError(f"Accept:{accept} not supported")
 
 
-def _compress_response(content_encoding: str, response: LambdaProxyResponse) -> LambdaProxyResponse:
+def _compress_response(content_encoding: Optional[str], response: LambdaProxyResponse) -> LambdaProxyResponse:
+    if not content_encoding:
+        return response
     encoding = get_best_encoding_match(content_encoding, ['gzip'])
     if not encoding:
         return response
     # TODO: accept other encoding format ?
-    # TODO: encoding gzip
-    # if encoding == "gzip":
-    #     response.body = base64.b64encode(gzip.compress(response.body))
-    #     response.isBase64Encoded = True
+    if encoding == "gzip":
+        response.body = base64.b64encode(gzip.compress(response.body.encode("utf-8")))
+        response.headers["Content-Encoding"] = "gzip"
+        response.isBase64Encoded = True
     return response
 
 
@@ -71,10 +73,10 @@ def about(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:
     grid.append(
         {
             "haystackVersion": "3.0",
-            "tz": None,
+            "tz": None,  # FIXME: set the tz
             "serverName": "localhost",  # FIXME: set the server name
-            "serverTime": None,
-            "serverBootTime": None,
+            "serverTime": None,  # FIXME: set the serverTime
+            "serverBootTime": None,  # FIXME: set the serverBootTime
             "productName": "carbonapi",
             "productUri": Uri("http://localhost:1234"),  # FIXME indiquer le port ?
             "productVersion": None,  # FIXME: set the product version

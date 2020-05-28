@@ -3,7 +3,7 @@ import gzip
 import logging
 import os
 import traceback
-from datetime import datetime
+from io import BytesIO
 from typing import cast, Tuple, Optional
 
 import hszinc  # type: ignore
@@ -12,6 +12,10 @@ from hszinc import Uri
 
 from http_tools import get_best_encoding_match
 from lambda_types import LambdaProxyEvent, LambdaProxyResponse, AttrDict, LambdaEvent, LambdaContext
+
+
+NO_COMPRESS = os.environ.get("NO_COMPRESS", "false").lower() == "true"
+NO_COMPRESS = True  # FIXME : Gestion de la compression en API locale
 
 if os.environ.get("DEBUGGING", "false").lower() == "true":
     # TODO: validate the attachement of debugger
@@ -31,11 +35,11 @@ _DEFAULT_MIME_TYPE = "text/zinc"
 
 # TODO: ajouter Content-Encoding: gzip si négociable https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding
 def _dump_response(accept: str, grid: hszinc.Grid, default: Optional[str] = None) -> Tuple[str, str]:
-    type = get_best_match(accept, ['*/*', 'text/zinc', 'text/json'])
+    type = get_best_match(accept, ['*/*', 'text/zinc', 'application/json'])
     if type == "text/zinc" or type == "*/*":
         return ("text/zinc; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_ZINC))
-    elif type == "text/json":
-        return ("text/json; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_JSON))
+    elif type == "application/json":
+        return ("application/json; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_JSON))
     if default:
         return ("text/zinc; charset=utf-8", hszinc.dump(grid, mode=default))
 
@@ -43,21 +47,24 @@ def _dump_response(accept: str, grid: hszinc.Grid, default: Optional[str] = None
 
 
 def _compress_response(content_encoding: Optional[str], response: LambdaProxyResponse) -> LambdaProxyResponse:
-    if not content_encoding:
+    if not content_encoding or NO_COMPRESS:
         return response
     encoding = get_best_encoding_match(content_encoding, ['gzip'])
     if not encoding:
         return response
     # TODO: accept other encoding format ?
     if encoding == "gzip":
-        response.body = base64.b64encode(gzip.compress(response.body.encode("utf-8")))
+        # FIXME gzip_body= base64.b64encode("hello".encode('utf-8'))
+        gzip_body = base64.b64encode(gzip.compress(response.body.encode("utf-8")))
+        response.body = gzip_body
         response.headers["Content-Encoding"] = "gzip"
-        response.isBase64Encoded = True
+        response["isBase64Encoded"] = True
     return response
 
 
 def about(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:
     event = cast(LambdaProxyEvent, AttrDict(_event))
+    print("ABOUT")  # FIXME
     grid = hszinc.Grid(columns={
         "haystackVersion": {},  # Str version of REST implementation
         "tz": {},  # Str of server's default timezone
@@ -120,7 +127,7 @@ def formats(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:
     })
     grid.extend([
         {"mime": "text/zinc", "receive": hszinc.MARKER, "send": hszinc.MARKER},
-        {"mime": "text/json", "receive": hszinc.MARKER, "send": hszinc.MARKER},
+        {"mime": "application/json", "receive": hszinc.MARKER, "send": hszinc.MARKER},
     ])
     response = LambdaProxyResponse()
     response.statusCode = 200
@@ -136,11 +143,20 @@ def extend_with_co2e(_event: LambdaEvent, context: LambdaContext) -> LambdaProxy
         if "Content-Type" not in event.headers:
             raise ValueError("Content-Type must be set")
 
+        if "Content-Encoding" in event.headers and event.isBase64Encoded:
+            content_encoding = event.headers["Content-Encoding"]
+            if content_encoding != "gzip":
+                raise ValueError(f"Content-Encoding '{content_encoding}' not supported")
+            event.body = gzip.decompress(base64.b64decode(event.body)).decode("utf-8")
+            event.isBase64Encoded = False
+
         content_type = event.headers["Content-Type"]
         if content_type.startswith("text/zinc"):
             grid = hszinc.parse(event.body, mode=hszinc.MODE_ZINC)
-        elif content_type.startswith("text/json"):
+        elif content_type.startswith("application/json"):
             grid = hszinc.parse(event.body, mode=hszinc.MODE_JSON)
+        else:
+            raise ValueError(f"Content-Type '{content_type}' not supported")
 
         log.info("----> Call Carbon core calculation to update Haystack Grid")
 

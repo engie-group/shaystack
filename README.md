@@ -3,8 +3,9 @@
 CarbonAPI is an API to add CO2e in a [Haystack Grid](https://project-haystack.org/doc/Grids).
 Theses API can negotiate:
 - Request format (zinc or json)
-- Response format (Accept: zinc, json)
-- Compressed format (Accept-Encoding: gzip)
+- Request encoding (`Content-Encoding: gzip`)
+- Response format (`Accept: zinc, json`)
+- Compressed format (`Accept-Encoding: gzip`)
 
 implements theses Haystack [operations](https://project-haystack.org/doc/Rest):
 - [About](https://project-haystack.org/doc/Ops#about)

@@ -42,7 +42,7 @@ def test_formats_with_zinc(apigw_event: LambdaProxyEvent):
     assert format_grid[0]["mime"] == "text/zinc"
     assert format_grid[0]["receive"] == hszinc.MARKER
     assert format_grid[0]["send"] == hszinc.MARKER
-    assert format_grid[1]["mime"] == "text/json"
+    assert format_grid[1]["mime"] == "application/json"
     assert format_grid[1]["receive"] == hszinc.MARKER
     assert format_grid[1]["send"] == hszinc.MARKER
 
@@ -70,6 +70,6 @@ def test_formats(apigw_event: LambdaEvent, lambda_client: BaseClient) -> None:
     assert format_grid[0]["mime"] == "text/zinc"
     assert format_grid[0]["receive"] == hszinc.MARKER
     assert format_grid[0]["send"] == hszinc.MARKER
-    assert format_grid[1]["mime"] == "text/json"
+    assert format_grid[1]["mime"] == "application/json"
     assert format_grid[1]["receive"] == hszinc.MARKER
     assert format_grid[1]["send"] == hszinc.MARKER

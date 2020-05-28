@@ -84,7 +84,6 @@ class LambdaProxyResponse(AttrDict):
     def __init__(self):
         self["statusCode"] = 200
         self["headers"] = dict()
-        self["cookies"] = list()
         self["isBase64Encoded"] = False
 
     def _asdict(self):
@@ -93,10 +92,6 @@ class LambdaProxyResponse(AttrDict):
     statusCode: int
     isBase64Encoded: bool
     headers: Dict[str, str]
-    cookies: List[str]
-    # Only for version 1.0
-    # See https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
-    # multiValueHeaders: Dict[str, List[str]]
 
 
 class LambdaCognitoIdentity(object):

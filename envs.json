@@ -1,6 +1,7 @@
 {
   "Parameters": {
     "LOGLEVEL": "DEBUG",
-    "DEBUGGING": "false"
+    "DEBUGGING": "false",
+    "NO_COMPRESS": "true"
   }
 }

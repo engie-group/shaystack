@@ -9,6 +9,7 @@ from botocore.client import BaseClient
 from hszinc import Grid
 
 from carbonapi import haystackapi
+from haystackapi import NO_COMPRESS
 from lambda_types import LambdaProxyEvent, LambdaContext, LambdaEvent
 from tests.test_tools import boto_client
 
@@ -51,7 +52,7 @@ def test_extend_with_co2e_with_json(apigw_event: LambdaProxyEvent):
     context.aws_request_id = inspect.currentframe().f_code.co_name
     grid:Grid = hszinc.Grid(columns={'id': {}, "val": {}})
     grid.append({"id": "@me", "val": "sample"})
-    mime_type = "text/json"
+    mime_type = "application/json"
     apigw_event["headers"]["Content-Type"] = mime_type
     apigw_event["headers"]["Accept"] = mime_type
     apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_JSON)
@@ -93,7 +94,7 @@ def test_extend_with_co2e_json_without_content_type(apigw_event: LambdaProxyEven
     context.function_name = "ExtendWithCO2e"
     context.aws_request_id = inspect.currentframe().f_code.co_name
     grid:Grid = hszinc.Grid(columns={'id': {}})
-    mime_type = "text/json"
+    mime_type = "application/json"
     apigw_event["headers"]["Accept"] = mime_type
     apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_JSON)
 
@@ -104,6 +105,27 @@ def test_extend_with_co2e_json_without_content_type(apigw_event: LambdaProxyEven
     assert response["statusCode"] == 400
     assert response.headers["Content-Type"].startswith(mime_type)
     error_grid:Grid = hszinc.parse(response["body"], hszinc.MODE_JSON)
+    assert "err" in error_grid.metadata
+
+
+def test_extend_with_co2e_json_with_unknown_content_type(apigw_event: LambdaProxyEvent):
+    # GIVEN
+    context = LambdaContext()
+    context.function_name = "ExtendWithCO2e"
+    context.aws_request_id = inspect.currentframe().f_code.co_name
+    grid:Grid = hszinc.Grid(columns={'id': {}})
+    mime_type = "text/zinc"
+    apigw_event["headers"]["Accept"] = mime_type
+    apigw_event["headers"]["Content-Type"] = "text/html"
+    apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_JSON)
+
+    # WHEN
+    response = haystackapi.extend_with_co2e(apigw_event, context)
+
+    # THEN
+    assert response["statusCode"] == 400
+    assert response.headers["Content-Type"].startswith(mime_type)
+    error_grid:Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
     assert "err" in error_grid.metadata
 
 
@@ -185,7 +207,26 @@ def test_extend_with_co2e_with_complex_accept(apigw_event: LambdaProxyEvent):
     assert response["statusCode"] == 200
     assert response.headers["Content-Type"].startswith(mime_type)
 
-def test_extend_with_gzip_encoding(apigw_event: LambdaProxyEvent):
+def test_extend_with_co2e_with_zinc_to_json(apigw_event: LambdaProxyEvent):
+    # GIVEN
+    context = LambdaContext()
+    context.function_name = "ExtendWithCO2e"
+    context.aws_request_id = inspect.currentframe().f_code.co_name
+    grid:Grid = hszinc.Grid(columns={'id': {}})
+    apigw_event["headers"]["Accept"] = "application/json"
+    apigw_event["headers"]["Content-Type"] = "text/zinc"
+    apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
+
+    # WHEN
+    response = haystackapi.extend_with_co2e(apigw_event, context)
+
+    # THEN
+    assert response["statusCode"] == 200
+    assert response.headers["Content-Type"].startswith("application/json")
+    hszinc.parse(response["body"], hszinc.MODE_JSON)
+
+
+def test_extend_with_gzip_encoding_for_result(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
     context.function_name = "ExtendWithCO2e"
@@ -203,10 +244,58 @@ def test_extend_with_gzip_encoding(apigw_event: LambdaProxyEvent):
     # THEN
     assert response["statusCode"] == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    assert response.headers["Content-Encoding"] == "gzip"
-    assert response.isBase64Encoded
-    body = gzip.decompress(base64.b64decode(response["body"])).decode("utf-8")
+    if not NO_COMPRESS:
+        assert response.headers["Content-Encoding"] == "gzip"
+        assert response.isBase64Encoded
+        body = gzip.decompress(base64.b64decode(response["body"])).decode("utf-8")
+    else:
+        body = response["body"]
     hszinc.parse(body, hszinc.MODE_ZINC)
+
+def test_extend_with_gzip_encoding_for_request(apigw_event: LambdaProxyEvent):
+    # GIVEN
+    context = LambdaContext()
+    context.function_name = "ExtendWithCO2e"
+    context.aws_request_id = inspect.currentframe().f_code.co_name
+    grid:Grid = hszinc.Grid(columns={'id': {}})
+    mime_type = "text/zinc"
+    apigw_event["headers"]["Accept"] = "text/zinc"
+    apigw_event["headers"]["Content-Type"] = mime_type
+    apigw_event["headers"]["Content-Encoding"] = "gzip"
+    body = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
+    apigw_event["body"] = base64.b64encode(gzip.compress(body.encode("utf-8")))
+    apigw_event["isBase64Encoded"] = True
+
+    # WHEN
+    response = haystackapi.extend_with_co2e(apigw_event, context)
+
+    # THEN
+    assert response["statusCode"] == 200
+    assert response.headers["Content-Type"].startswith(mime_type)
+    hszinc.parse(response["body"], hszinc.MODE_ZINC)
+
+def test_extend_with_xxx_encoding_for_request(apigw_event: LambdaProxyEvent):
+    # GIVEN
+    context = LambdaContext()
+    context.function_name = "ExtendWithCO2e"
+    context.aws_request_id = inspect.currentframe().f_code.co_name
+    grid:Grid = hszinc.Grid(columns={'id': {}})
+    mime_type = "text/zinc"
+    apigw_event["headers"]["Accept"] = "text/zinc"
+    apigw_event["headers"]["Content-Type"] = mime_type
+    apigw_event["headers"]["Content-Encoding"] = "xxx"
+    body = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
+    apigw_event["body"] = base64.b64encode(gzip.compress(body.encode("utf-8")))
+    apigw_event["isBase64Encoded"] = True
+
+    # WHEN
+    response = haystackapi.extend_with_co2e(apigw_event, context)
+
+    # THEN
+    assert response["statusCode"] == 400
+    assert response.headers["Content-Type"].startswith(mime_type)
+    error_grid:Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
+    assert "err" in error_grid[0].metadata
 
 # ------------------------------------------
 
@@ -230,7 +319,11 @@ def test_extend_with_co2e(apigw_event: LambdaEvent, lambda_client: BaseClient) -
     assert 'errorType' not in response, response["errorMessage"]
     assert response["statusCode"] == 200
     assert response["headers"]["Content-Type"].startswith("text/zinc")
-    assert response["isBase64Encoded"]
-    body = gzip.decompress(base64.b64decode(response["body"])).decode("utf-8")
+    if not NO_COMPRESS:
+        assert response["isBase64Encoded"]
+        body = gzip.decompress(base64.b64decode(response["body"])).decode("utf-8")
+    else:
+        body = response["body"]
+
     hszinc.parse(body, hszinc.MODE_ZINC)
     assert body == apigw_event["body"]

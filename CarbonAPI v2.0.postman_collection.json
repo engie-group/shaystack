@@ -1,0 +1,448 @@
+{
+	"info": {
+		"_postman_id": "1ac9fce0-2e81-4f38-9b35-ed4748bc2f11",
+		"name": "CarbonAPI v2.0",
+		"description": "Test all Haystack Carbon API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "About (Zinc result)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "1127ca36-c926-4d3b-91d9-779985b7a503",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"ver:\\\"2.0\\\"\");",
+							"});",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.be.header(\"Content-Type\", \"text/zinc; charset=utf-8\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{home}}/about",
+					"protocol": "http",
+					"host": [
+						"{{home}}"
+					],
+					"path": [
+						"about"
+					]
+				},
+				"description": "Haystack operation about with zinc result"
+			},
+			"response": []
+		},
+		{
+			"name": "About (Json result)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "1f442ffa-6aa8-4da0-9c7f-1ddea6e3e2d7",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"\\\"meta\\\":\");",
+							"});",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://{{home}}/about",
+					"protocol": "http",
+					"host": [
+						"{{home}}"
+					],
+					"path": [
+						"about"
+					]
+				},
+				"description": "Haystack operation about with json result"
+			},
+			"response": []
+		},
+		{
+			"name": "Ops (Zinc result)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ab92f97e-3bb3-44a0-8bcc-ac7129c6d885",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"ver:\\\"2.0\\\"\");",
+							"});",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.be.header(\"Content-Type\", \"text/zinc; charset=utf-8\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{home}}/ops",
+					"protocol": "http",
+					"host": [
+						"{{home}}"
+					],
+					"path": [
+						"ops"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ops (Json result)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "6fc77593-b6df-4633-aaf3-d98f7badd470",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"\\\"meta\\\":\");",
+							"});",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://{{home}}/ops",
+					"protocol": "http",
+					"host": [
+						"{{home}}"
+					],
+					"path": [
+						"ops"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Formats (Zinc result)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "15a4f10a-3c59-4d8e-89b8-71b193a3dc44",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"ver:\\\"2.0\\\"\");",
+							"});",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.be.header(\"Content-Type\", \"text/zinc; charset=utf-8\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{home}}/formats",
+					"protocol": "http",
+					"host": [
+						"{{home}}"
+					],
+					"path": [
+						"formats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Formats (Json result)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "173eb821-a079-4052-9ffb-c849723000f0",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"\\\"meta\\\":\");",
+							"});",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://{{home}}/formats",
+					"protocol": "http",
+					"host": [
+						"{{home}}"
+					],
+					"path": [
+						"formats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "extend_with_co2e (Zinc request & Zinc result)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2e2d9fbb-3b5f-4651-b237-98a642695f76",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"ver:\\\"2.0\\\"\");",
+							"});",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.be.header(\"Content-Type\", \"text/zinc; charset=utf-8\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/zinc",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "text/zinc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "ver:\"2.0\"\nid,val\n\"@me\",\"sample\"\n"
+				},
+				"url": {
+					"raw": "http://{{home}}/extend_with_co2e",
+					"protocol": "http",
+					"host": [
+						"{{home}}"
+					],
+					"path": [
+						"extend_with_co2e"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "extend_with_co2e (Zinc request & JSon result)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "d7195db4-1ef7-4876-b339-d65aaedeca27",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"\\\"meta\\\":\");",
+							"});",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/zinc",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "ver:\"2.0\"\nid,val\n\"@me\",\"sample\"\n"
+				},
+				"url": {
+					"raw": "http://{{home}}/extend_with_co2e",
+					"protocol": "http",
+					"host": [
+						"{{home}}"
+					],
+					"path": [
+						"extend_with_co2e"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "extend_with_co2e (JSon request & JSon result)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "60fb07c9-2152-4761-9689-8e2178464910",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"\\\"meta\\\":\");",
+							"});",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"meta\": {\"ver\": \"2.0\"}, \n  \"cols\": [\n    {\"name\": \"id\"}, \n    {\"name\": \"val\"}\n  ], \n  \"rows\": [\n     {\"id\": \"s:@me\", \"val\": \"s:sample\"}\n  ]\n}"
+				},
+				"url": {
+					"raw": "http://{{home}}/extend_with_co2e",
+					"protocol": "http",
+					"host": [
+						"{{home}}"
+					],
+					"path": [
+						"extend_with_co2e"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "a30ad58f-212a-47df-9ea6-85d1b600d147",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "eae7fc6f-6e2c-4874-bb1c-07d260a97b82",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "f07ea4b1-42fb-42e1-8068-3a59c6c087a8",
+			"key": "home",
+			"value": "localhost:3000",
+			"type": "string"
+		}
+	],
+	"protocolProfileBehavior": {}
+}

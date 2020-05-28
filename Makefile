@@ -2,6 +2,10 @@ SHELL=/bin/bash
 .SHELLFLAGS = -e -c
 .ONESHELL:
 
+ifeq ($(shell echo "$(shell echo $(MAKE_VERSION) | sed 's@^[^0-9]*\([0-9]\+\).*@\1@' ) >= 4" | bc -l),0)
+$(error Bad make version, please install make >= 4)
+endif
+
 PRJ=carbonapi
 PYTHON_SRC=$(PRJ)/*.py
 PRJ_PACKAGE:=$(PRJ)
@@ -13,6 +17,9 @@ CONDA_PYTHON:=$(CONDA_PREFIX)/bin/python
 CONDA_ARGS?=
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 PIP_ARGS?=
+ENVS_JSON?=envs.json
+ENVS_TEST?=
+# FIXME
 
 CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using 'make'$(normal)"; exit 1 ) ; fi
@@ -162,12 +169,12 @@ clean-all: clean remove-venv
 #	rm -rf $(ARTIFACTS_DIR)/bin
 
 ## build specific lambda function (ie. build-About)
-build-%: template.yaml carbonapi/haystackapi.py carbonapi/lambda_types.py
+build-%: template.yaml $(PYTHON_SRC) template.yaml
 	@sam build $*
 	chmod -R o+rwx .aws-sam
 
 .PHONY: dist build
-.aws-sam/build: carbonapi/haystackapi.py
+.aws-sam/build: $(PYTHON_SRC) template.yaml
 	@sam build
 	chmod -R o+rwx .aws-sam
 
@@ -177,26 +184,26 @@ build: .aws-sam/build
 # -------------------------------------- Invoke
 .PHONY: invoke-*
 ## Build and invoke lamda function in local with associated events (ie. invoke-About)
-invoke-%: envs.json
+invoke-%: $(ENVS_JSON)
 	$(MAKE) build-$*
-	sam local invoke --env-vars envs.json $* -e events/$*_event.json
+	sam local invoke --env-vars $(ENVS_JSON) $* -e events/$*_event.json
 
 ## Build and invoke lamda function via aws cli (ie. invoke-About)
-aws-invoke-%: envs.json
+aws-invoke-%:
 	$(MAKE) build-$*
 	aws lambda invoke --function-name %* out.json --log-type Tail --query 'LogResult' --output text |  base64 -d
 
 .PHONY: start-api async-start-api async-stop-api
 ## Start api
-start-api: envs.json build
+start-api: $(ENVS_JSON) build
 	@[ -e .run/start-api.pid ] && $(MAKE) async-stop-api || true
-	sam local start-api
+	$(ENVS_TEST) sam local start-api --env-vars $(ENVS_JSON)
 
 # Start local api emulator in background
-async-start-api: envs.json $(PYTHON_SRC)
+async-start-api: $(ENVS_JSON) $(PYTHON_SRC)
 	@[ -e .run/start-api.pid ] && echo -e "$(orange)Local API was allready started$(normal)" && exit
 	mkdir -p .run
-	nohup sam local start-api >.run/start-api.log 2>&1 &
+	$(ENVS_TEST) nohup sam local start-api --env-vars $(ENVS_JSON) >.run/start-api.log 2>&1 &
 	echo $$! >.run/start-api.pid
 	sleep 0.5
 	tail .run/start-api.log
@@ -209,15 +216,15 @@ async-stop-api:
 
 .PHONY: start-lambda async-start-lambda async-stop-lambda
 ## Start lambda local emulator in background
-start-lambda: envs.json build
+start-lambda: $(ENVS_JSON) build
 	[ -e .run/start-lambda.pid ] && $(MAKE) async-stop-lambda || true
-	sam local start-lambda
+	$(ENVS_TEST) sam local start-lambda --env-vars $(ENVS_JSON)
 
 # Start lambda local emulator in background
-async-start-lambda: envs.json $(PYTHON_SRC)
+async-start-lambda: $(ENVS_JSON) $(PYTHON_SRC)
 	@[ -e .run/start-lambda.pid ] && echo -e "$(orange)Local Lambda was allready started$(normal)" && exit
 	mkdir -p .run
-	nohup sam local start-lambda >.run/start-lambda.log 2>&1 &
+	$(ENVS_TEST) nohup sam local start-lambda --env-vars $(ENVS_JSON) >.run/start-lambda.log 2>&1 &
 	echo $$! >.run/start-lambda.pid
 	sleep 0.5
 	tail .run/start-lambda.log
@@ -233,19 +240,19 @@ async-stop: async-stop-api async-stop-lambda
 
 # -------------------------------------- Tests
 .PHONY: unit-test
-.make-unit-test: $(PYTHON_SRC) .aws-sam/build
-	@$(VALIDATE_VENV)
-	@PYTHONPATH=./carbonapi python -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
-	@date >.make-unit-test
+.make-unit-test: $(PYTHON_SRC) .aws-sam/build Makefile envs.json
+	$(VALIDATE_VENV)
+	PYTHONPATH=./carbonapi $(ENVS_TEST) python -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
+	date >.make-unit-test
 ## Run unit test
 unit-test: .make-unit-test
 
 .PHONY: functional-test
-.make-functional-test: $(PYTHON_SRC) .aws-sam/build
+.make-functional-test: $(PYTHON_SRC) .aws-sam/build Makefile envs.json
 	@$(VALIDATE_VENV)
 	$(MAKE) async-start-lambda
-	@PYTHONPATH=./carbonapi python -m pytest -m "functional" -s tests $(PYTEST_ARGS)
-	@date >.make-functional-test
+	PYTHONPATH=./carbonapi $(ENVS_TEST) python -m pytest -m "functional" -s tests $(PYTEST_ARGS)
+	date >.make-functional-test
 ## Run functional test
 functional-test: .make-functional-test
 

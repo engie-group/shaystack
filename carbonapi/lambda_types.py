@@ -1,13 +1,14 @@
-# This code is to use with static checker and to have a typed AWS lambda parameters
-# In lambda API, use api_event = cast(LambdaAPIEvent, AttrDict(event))
-from typing import Dict, Any, List
+"""This code add a static checker and to have a typed AWS lambda parameters
+In lambda API, use api_event = cast(LambdaAPIEvent, AttrDict(event))
+"""
+from typing import Dict, Any
 
 
 class AttrDict(dict):
     """A dictionary with attribute-style access. It maps attribute access to
     the real dictionary.  """
 
-    def __init__(self, init={}):
+    def __init__(self, init=None):
         dict.__init__(self, init)
 
     def __getstate__(self):
@@ -20,13 +21,13 @@ class AttrDict(dict):
     def __repr__(self):
         return "%s(%s)" % (self.__class__.__name__, dict.__repr__(self))
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value):  # pylint: disable=useless-super-delegation
         return super(AttrDict, self).__setitem__(key, value)
 
-    def __getitem__(self, name):
+    def __getitem__(self, name):  # pylint: disable=useless-super-delegation
         return super(AttrDict, self).__getitem__(name)
 
-    def __delitem__(self, name):
+    def __delitem__(self, name):  # pylint: disable=useless-super-delegation
         return super(AttrDict, self).__delitem__(name)
 
     __getattr__ = __getitem__
@@ -38,7 +39,10 @@ LambdaEvent = Dict[str, Any]
 LambdaResponse = Dict[str, Any]
 
 
-class LambdaRequestCognitoIdentity(object):
+class LambdaRequestCognitoIdentity:
+    """
+    Lambda request cognito wrapper
+    """
     cognitoIdentityPoolId: str
     accountId: str
     cognitoIdentityId: str
@@ -52,7 +56,10 @@ class LambdaRequestCognitoIdentity(object):
     user: str
 
 
-class LambdaRequestContext(object):
+class LambdaRequestContext:
+    """
+    Lambda request context wrapper
+    """
     accountId: str
     resourceId: str
     stage: str
@@ -67,7 +74,10 @@ class LambdaRequestContext(object):
     protocol: str
 
 
-class LambdaProxyEvent(object):
+class LambdaProxyEvent:
+    """
+    Lambda event from proxy wrapper
+    """
     body: Any
     ressource: Any
     path: str
@@ -81,7 +91,10 @@ class LambdaProxyEvent(object):
 
 
 class LambdaProxyResponse(AttrDict):
-    def __init__(self):
+    """
+    Lambda response to proxy wrapper
+    """
+    def __init__(self):  # pylint: disable=super-init-not-called
         self["statusCode"] = 200
         self["headers"] = dict()
         self["isBase64Encoded"] = False
@@ -94,12 +107,18 @@ class LambdaProxyResponse(AttrDict):
     headers: Dict[str, str]
 
 
-class LambdaCognitoIdentity(object):
+class LambdaCognitoIdentity:
+    """
+    Lambda cognito identity wrapper
+    """
     cognito_identity_id: str
     cognito_identity_pool_id: str
 
 
-class LambdaClientContextMobileClient(object):
+class LambdaClientContextMobileClient:
+    """
+    Lambda client context mobile wrapper
+    """
     installation_id: str
     app_title: str
     app_version_name: str
@@ -107,13 +126,19 @@ class LambdaClientContextMobileClient(object):
     app_package_name: str
 
 
-class LambdaClientContext(object):
+class LambdaClientContext:
+    """
+    Lambda client context wrapper
+    """
     client: LambdaClientContextMobileClient
     custom: LambdaDict
     env: LambdaDict
 
 
-class LambdaContext(object):
+class LambdaContext:
+    """
+    Lambda context wrapper
+    """
     function_name: str
     function_version: str
     invoked_function_arn: str
@@ -126,4 +151,5 @@ class LambdaContext(object):
 
     @staticmethod
     def get_remaining_time_in_millis() -> int:
+        """Return remaining time in millisecond """
         return 0

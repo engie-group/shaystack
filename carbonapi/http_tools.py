@@ -1,11 +1,13 @@
-from __future__ import absolute_import, print_function, unicode_literals
-
+"""Different tools to manage complex headers
+"""
 import re
 from decimal import Decimal
 
 # Matches 'gzip' or 'compress'
-_compress_type_str = r'[a-zA-Z0-9._-]+'
+from re import Match
+from typing import Optional, Any
 
+_COMPRESS_TYPE_STR = r'[a-zA-Z0-9._-]+'
 
 # Matches either '*', 'image/*', or 'image/png'
 _valid_encoding_type = re.compile(r'^(?:[a-zA-Z-]+)$')
@@ -27,14 +29,25 @@ class _AcceptableEncoding:
             raise ValueError(f'"{encoding_type}" is not a valid encoding type')
 
         tail = ''
-        if (len(bits) > 1):
+        if len(bits) > 1:
             tail = bits[1]
 
         self.encoding_type = encoding_type
         self.weight = _get_weight(tail)
         self.pattern = re.compile('^' + re.escape(encoding_type) + '$')
 
-    def matches(self, encoding_type):
+    def matches(self, encoding_type: str) -> Optional[Match]:
+        """
+        Check if the encoding type match the accepted encoding.
+
+        Parameters
+        ----------
+        encoding_type Current encoding type
+
+        Returns
+        -------
+        None of match
+        """
         return self.pattern.match(encoding_type)
 
     def __str__(self):
@@ -50,12 +63,12 @@ class _AcceptableEncoding:
     def __repr__(self):
         return '<AcceptableType {0}>'.format(self)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, _AcceptableEncoding):
             return NotImplemented
         return (self.encoding_type, self.weight) == (other.encoding_type, other.weight)
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
         if not isinstance(other, _AcceptableEncoding):
             return NotImplemented
         return self.weight < other.weight
@@ -124,6 +137,3 @@ def _get_weight(tail):
 
     # Default weight is 1
     return Decimal(1)
-
-
-

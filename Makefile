@@ -8,9 +8,9 @@ endif
 
 PRJ=carbonapi
 PYTHON_SRC=$(PRJ)/*.py
+PYTHON_VERSION:=3.7
 PRJ_PACKAGE:=$(PRJ)
 VENV ?= $(PRJ)
-REQUIREMENTS=
 CONDA_BASE:=$(shell conda info --base)
 CONDA_PACKAGE:=$(CONDA_PREFIX)/lib/python$(PYTHON_VERSION)/site-packages
 CONDA_PYTHON:=$(CONDA_PREFIX)/bin/python
@@ -19,7 +19,7 @@ PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 PIP_ARGS?=
 ENVS_JSON?=envs.json
 ENVS_TEST?=
-# FIXME
+# FIXME: check the bootstrap of the project
 
 CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using 'make'$(normal)"; exit 1 ) ; fi
@@ -100,23 +100,80 @@ dump-%:
 	fi
 
 
+# -------------------------------------- GIT
+.gitattributes: | .git .git/hooks/pre-push # Configure git
+	@git config --local core.autocrlf input
+	# Set tabulation to 4 when use 'git diff'
+	@git config --local core.page 'less -x4'
+
+
+# Rule to add a validation before pusing in master branch.
+# Use FORCE=y git push to override this validation.
+.git/hooks/pre-push: | .git
+	@# Add a hook to validate the project before a git push
+	cat >>.git/hooks/pre-push <<PRE-PUSH
+	#!/usr/bin/env sh
+	# Validate the project before a push
+	if test -t 1; then
+		ncolors=$$(tput colors)
+		if test -n "\$$ncolors" && test \$$ncolors -ge 8; then
+			normal="\$$(tput sgr0)"
+			red="\$$(tput setaf 1)"
+	        green="\$$(tput setaf 2)"
+			yellow="\$$(tput setaf 3)"
+		fi
+	fi
+	branch="\$$(git branch | grep \* | cut -d ' ' -f2)"
+	if [ "\$${branch}" = "master" ] && [ "\$${FORCE}" != y ] ; then
+		printf "\$${green}Validate the project before push the commit... (\$${yellow}make validate\$${green})\$${normal}\n"
+		make validate
+		ERR=\$$?
+		if [ \$${ERR} -ne 0 ] ; then
+			printf "\$${red}'\$${yellow}make validate\$${red}' failed before git push.\$${normal}\n"
+			printf "Use \$${yellow}FORCE=y git push\$${normal} to force.\n"
+			exit \$${ERR}
+		fi
+	fi
+	PRE-PUSH
+	chmod +x .git/hooks/pre-push
+
 # -------------------------------------- Conda venv
 .PHONY: configure
-## Prepare the work environment (conda venv, kernel, ...)
+## Prepare the work environment (conda venv, ...)
 configure:
-	@conda create --name "$(VENV)" python=$(PYTHON_VERSION) -y $(CONDA_ARGS)
-	@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
-	then echo -e "Use: $(cyan)conda activate $(VENV)$(normal) $(CONDA_ARGS)" ; fi
+	@if [[ "$(PRJ)" == "$(CONDA_DEFAULT_ENV)" ]] ; \
+  		then echo -e "$(red)Use $(cyan)conda deactivate$(red) before using 'make configure'$(normal)"; exit ; fi
+	@conda create --name "$(VENV)" \
+		python=$(PYTHON_VERSION) \
+		-y $(CONDA_ARGS)
+	echo -e "Use: $(cyan)conda activate $(VENV)$(normal) $(CONDA_ARGS)"
 
-dependencies:
-# TODO validate
+# All dependencies of the project must be here
+.PHONY: requirements dependencies
+REQUIREMENTS=$(PIP_PACKAGE) .gitattributes
+requirements: $(REQUIREMENTS)
+dependencies: requirements
+
+# Rule to update the current venv, with the dependencies describe in `setup.py`
+$(PIP_PACKAGE): $(CONDA_PYTHON) $(PRJ)/requirements.txt | .git # Install pip dependencies
 	@$(VALIDATE_VENV)
-	conda install -c conda-forge aws-sam-cli
-	conda install -c conda-forge awscli
-	pip install pylint pytype flake8
+	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"
+	conda install -c conda-forge -c anaconda -y \
+		awscli aws-sam-cli pytype flake8 pylint pytest
+	echo -e "$(cyan)Build dependencies updated$(normal)"
+	echo -e "$(cyan)Install project dependencies ...$(normal)"
+	pip install -r $(PRJ)/requirements.txt
+	echo -e "$(cyan)Project dependencies updated$(normal)"
+	@touch $(PIP_PACKAGE)
+
+# All dependencies of the project must be here
+.PHONY: requirements dependencies
+REQUIREMENTS=$(PIP_PACKAGE) \
+	.gitattributes
+requirements: $(REQUIREMENTS)
+dependencies: requirements
 
 remove-$(VENV):
-# TODO validate
 	@$(DEACTIVATE_VENV)
 	conda env remove --name "$(VENV)" -y 2>/dev/null
 	echo -e "Use: $(cyan)conda deactivate$(normal)"
@@ -124,7 +181,6 @@ remove-$(VENV):
 remove-venv : remove-$(VENV)
 
 upgrade-$(VENV):
-# TODO validate
 	@$(VALIDATE_VENV)
 	conda update --all $(CONDA_ARGS)
 	pip list --format freeze --outdated | sed 's/(.*//g' | xargs -r -n1 pip install $(EXTRA_INDEX) -U
@@ -137,14 +193,11 @@ upgrade-venv: upgrade-$(VENV)
 .PHONY: clean-pip
 ## Remove all the pip package
 clean-pip:
-# TODO validate
-	@$(VALIDATE_VENV)
-	pip freeze | grep -v "^-e" | xargs pip uninstall -y
+	@pip freeze | grep -v "^-e" | grep -v "@" | xargs pip uninstall -y
 	@echo -e "$(cyan)Virtual env cleaned$(normal)"
 
 .PHONY: clean-venv clean-$(VENV)
 clean-$(VENV): remove-venv
-# TODO validate
 	@conda create -y -q -n $(VENV) $(CONDA_ARGS)
 	@echo -e "$(yellow)Warning: Conda virtualenv $(VENV) is empty.$(normal)"
 # Set the current VENV empty
@@ -169,12 +222,16 @@ clean-all: clean remove-venv
 #	rm -rf $(ARTIFACTS_DIR)/bin
 
 ## build specific lambda function (ie. build-About)
-build-%: template.yaml $(PYTHON_SRC) template.yaml
+build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) template.yaml
+	@$(VALIDATE_VENV)
+	echo -e "$(green)Build Lambda $*$(normal)"
 	@sam build $*
 	chmod -R o+rwx .aws-sam
 
 .PHONY: dist build
-.aws-sam/build: $(PYTHON_SRC) template.yaml
+.aws-sam/build: $(REQUIREMENTS) $(PYTHON_SRC) template.yaml
+	@$(VALIDATE_VENV)
+	echo -e "$(green)Build Lambdas$(normal)"
 	@sam build
 	chmod -R o+rwx .aws-sam
 
@@ -185,22 +242,26 @@ build: .aws-sam/build
 .PHONY: invoke-*
 ## Build and invoke lamda function in local with associated events (ie. invoke-About)
 invoke-%: $(ENVS_JSON)
+	@$(VALIDATE_VENV)
 	$(MAKE) build-$*
 	sam local invoke --env-vars $(ENVS_JSON) $* -e events/$*_event.json
 
 ## Build and invoke lamda function via aws cli (ie. invoke-About)
 aws-invoke-%:
+	@$(VALIDATE_VENV)
 	$(MAKE) build-$*
 	aws lambda invoke --function-name %* out.json --log-type Tail --query 'LogResult' --output text |  base64 -d
 
 .PHONY: start-api async-start-api async-stop-api
 ## Start api
 start-api: $(ENVS_JSON) build
+	@$(VALIDATE_VENV)
 	@[ -e .run/start-api.pid ] && $(MAKE) async-stop-api || true
 	$(ENVS_TEST) sam local start-api --env-vars $(ENVS_JSON)
 
 # Start local api emulator in background
 async-start-api: $(ENVS_JSON) $(PYTHON_SRC)
+	@$(VALIDATE_VENV)
 	@[ -e .run/start-api.pid ] && echo -e "$(orange)Local API was allready started$(normal)" && exit
 	mkdir -p .run
 	$(ENVS_TEST) nohup sam local start-api --env-vars $(ENVS_JSON) >.run/start-api.log 2>&1 &
@@ -211,17 +272,21 @@ async-start-api: $(ENVS_JSON) $(PYTHON_SRC)
 
 # Stop local api emulator in background
 async-stop-api:
+	@$(VALIDATE_VENV)
 	@[ -e .run/start-api.pid ] && kill `cat .run/start-api.pid` && echo -e "$(green)API stopped$(normal)"
 	rm -f .run/start-api.pid
 
 .PHONY: start-lambda async-start-lambda async-stop-lambda
 ## Start lambda local emulator in background
 start-lambda: $(ENVS_JSON) build
+	@$(VALIDATE_VENV)
 	[ -e .run/start-lambda.pid ] && $(MAKE) async-stop-lambda || true
 	$(ENVS_TEST) sam local start-lambda --env-vars $(ENVS_JSON)
+	sleep 2
 
 # Start lambda local emulator in background
 async-start-lambda: $(ENVS_JSON) $(PYTHON_SRC)
+	@$(VALIDATE_VENV)
 	@[ -e .run/start-lambda.pid ] && echo -e "$(orange)Local Lambda was allready started$(normal)" && exit
 	mkdir -p .run
 	$(ENVS_TEST) nohup sam local start-lambda --env-vars $(ENVS_JSON) >.run/start-lambda.log 2>&1 &
@@ -232,6 +297,7 @@ async-start-lambda: $(ENVS_JSON) $(PYTHON_SRC)
 
 # Stop lambda local emulator in background
 async-stop-lambda:
+	@$(VALIDATE_VENV)
 	@[ -e .run/start-lambda.pid ] && kill `cat .run/start-lambda.pid` && echo -e "$(green)Local Lambda stopped$(normal)"
 	rm -f .run/start-lambda.pid
 
@@ -240,27 +306,27 @@ async-stop: async-stop-api async-stop-lambda
 
 # -------------------------------------- Tests
 .PHONY: unit-test
-.make-unit-test: $(PYTHON_SRC) .aws-sam/build Makefile envs.json
+.make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build Makefile envs.json
 	$(VALIDATE_VENV)
-	PYTHONPATH=./carbonapi $(ENVS_TEST) python -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
+	PYTHONPATH=./$(PRJ) $(ENVS_TEST) python -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
 	date >.make-unit-test
 ## Run unit test
 unit-test: .make-unit-test
 
 .PHONY: functional-test
-.make-functional-test: $(PYTHON_SRC) .aws-sam/build Makefile envs.json
+.make-functional-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build Makefile envs.json
 	@$(VALIDATE_VENV)
 	$(MAKE) async-start-lambda
-	PYTHONPATH=./carbonapi $(ENVS_TEST) python -m pytest -m "functional" -s tests $(PYTEST_ARGS)
+	PYTHONPATH=./$(PRJ) $(ENVS_TEST) python -m pytest -m "functional" -s tests $(PYTEST_ARGS)
 	date >.make-functional-test
 ## Run functional test
 functional-test: .make-functional-test
 
 .PHONY: test
-.make-test: $(PYTHON_SRC) .aws-sam/build
+.make-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build
 	@$(VALIDATE_VENV)
 	$(MAKE) async-start-lambda
-	@PYTHONPATH=./carbonapi python -m pytest -s tests $(PYTEST_ARGS)
+	@PYTHONPATH=./$(PRJ) python -m pytest -s tests $(PYTEST_ARGS)
 	@date >.make-unit-test
 	@date >.make-functional-test
 	@date >.make-test
@@ -273,6 +339,7 @@ test: .make-test
 # -------------------------------------- Typing
 # FIXME
 pytype.cfg: $(CONDA_PREFIX)/bin/pytype
+	@$(VALIDATE_VENV)
 	@[[ ! -f pytype.cfg ]] && pytype --generate-config pytype.cfg || true
 	touch pytype.cfg
 
@@ -291,6 +358,7 @@ typing: .make-typing
 # -------------------------------------- Lint
 .PHONY: lint
 .pylintrc:
+	@$(VALIDATE_VENV)
 	pylint --generate-rcfile > .pylintrc
 
 .make-lint: $(REQUIREMENTS) $(PYTHON_SRC) | .pylintrc
@@ -299,36 +367,40 @@ typing: .make-typing
 	@echo "---------------------- FLAKE"
 	@flake8 $(PRJ_PACKAGE)
 	@echo "---------------------- PYLINT"
-	@pylint $(PRJ_PACKAGE)
+	@PYTHONPATH=./$(PRJ) pylint $(PRJ_PACKAGE)
 	touch .make-lint
 
 ## Lint the code
 lint: .make-lint
 
 # -------------------------------------- Packages
-dist/carbonapi.zip: carbonapi/*
+dist/$(PRJ).zip: $(PRJ)/*
+	@$(VALIDATE_VENV)
 	@mkdir -p dist/package
 # TODO: Add package from TOUL ?
 	# pip install --target ./dist/package Pillow
 	cd dist/package
-	zip -r9 ../carbonapi.zip . -i .
+	zip -r9 ../$(PRJ).zip . -i .
 	cd ../..
-	zip -g dist/carbonapi.zip carbonapi/*.py
+	zip -g dist/$(PRJ).zip $(PRJ)/*.py
 
 .PHONY: dist
 ## Build distribution
-dist: dist/carbonapi.zip validate
+dist: dist/$(PRJ).zip validate
 
 .PHONY: deploy
 # TODO : valide see https://docs.aws.amazon.com/lambda/latest/dg/python-package.html
 ## Deploy lambda functions
-deploy: dist/carbonapi.zip
-	aws lambda update-function-code --function-name About --zip-file fileb://dist/carbonapi.zip
-	aws lambda update-function-code --function-name ExtendWithCO2e --zip-file fileb://dist/carbonapi.zip
+deploy: dist/$(PRJ).zip
+	@$(VALIDATE_VENV)
+	aws lambda update-function-code --function-name About --zip-file fileb://dist/$(PRJ).zip
+	aws lambda update-function-code --function-name ExtendWithCO2e --zip-file fileb://dist/$(PRJ).zip
 
 .PHONY: validate
+.make-validate: .make-test .make-lint dist/$(PRJ).zip
+	@date >.make-validate
 ## Validate the project
-validate: .make-test .make-lint dist/carbonapi.zip
+validate: .make-validate
 
 .PHONY: release
 ## Release the project
@@ -338,11 +410,12 @@ release: clean dist
 # TODO: Find how to use debugger
 # See https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-debugging-python.html
 debugging:
+	@$(VALIDATE_VENV)
 	# Install dependencies
-	pip install -r carbonapi/requirements.txt -t build/
+	pip install -r $(PRJ)/requirements.txt -t build/
 	# Install ptvsd library for step through debugging
 	pip install ptvsd -t build/
-	cp carbonapi/*.py build/
+	cp $(PRJ)/*.py build/
 
 # -------------------------------------- Source
-carbonapi/haystackapi.py: carbonapi/lambda_types.py
+$(PRJ)/haystackapi.py: $(PRJ)/lambda_types.py

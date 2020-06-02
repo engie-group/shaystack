@@ -138,7 +138,10 @@ disable=print-statement,
         xreadlines-attribute,
         deprecated-sys-function,
         exception-escape,
-        comprehension-escape
+        comprehension-escape,
+        no-else-return,
+        too-few-public-methods,
+        fixme # FIXME:
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -187,10 +190,7 @@ never-returning-functions=sys.exit
 [MISCELLANEOUS]
 
 # List of note tags to take in consideration, separated by a comma.
-notes=FIXME,
-      XXX,
-      TODO
-
+notes=FIXME, XXX, TODO
 
 [VARIABLES]
 

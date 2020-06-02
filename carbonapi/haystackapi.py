@@ -1,18 +1,19 @@
+"""Haystack API implemented with AWS Lambda.
+Implements: About, Ops, Formats and extend_with_co2e
+"""
 import base64
 import gzip
 import logging
 import os
 import traceback
-from io import BytesIO
 from typing import cast, Tuple, Optional
 
-import hszinc  # type: ignore
 from accept_types import get_best_match
+import hszinc  # type: ignore
 from hszinc import Uri
 
 from http_tools import get_best_encoding_match
 from lambda_types import LambdaProxyEvent, LambdaProxyResponse, AttrDict, LambdaEvent, LambdaContext
-
 
 NO_COMPRESS = os.environ.get("NO_COMPRESS", "false").lower() == "true"
 NO_COMPRESS = True  # FIXME : Gestion de la compression en API locale
@@ -33,12 +34,13 @@ log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
 _DEFAULT_MIME_TYPE = "text/zinc"
 
 
-# TODO: ajouter Content-Encoding: gzip si négociable https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding
+# TODO: ajouter Content-Encoding: gzip si négociable
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding
 def _dump_response(accept: str, grid: hszinc.Grid, default: Optional[str] = None) -> Tuple[str, str]:
-    type = get_best_match(accept, ['*/*', 'text/zinc', 'application/json'])
-    if type == "text/zinc" or type == "*/*":
+    accept_type = get_best_match(accept, ['*/*', 'text/zinc', 'application/json'])
+    if accept_type in ("text/zinc", "*/*"):
         return ("text/zinc; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_ZINC))
-    elif type == "application/json":
+    elif accept_type == "application/json":
         return ("application/json; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_JSON))
     if default:
         return ("text/zinc; charset=utf-8", hszinc.dump(grid, mode=default))
@@ -62,7 +64,8 @@ def _compress_response(content_encoding: Optional[str], response: LambdaProxyRes
     return response
 
 
-def about(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:
+def about(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
+    """Implement the haystack `about` operation"""
     event = cast(LambdaProxyEvent, AttrDict(_event))
     print("ABOUT")  # FIXME
     grid = hszinc.Grid(columns={
@@ -98,7 +101,8 @@ def about(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
-def ops(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:
+def ops(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
+    """Implement the haystack `ops` operation"""
     event = cast(LambdaProxyEvent, AttrDict(_event))
     grid = hszinc.Grid(columns={
         "name": {},
@@ -118,7 +122,8 @@ def ops(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
-def formats(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:
+def formats(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
+    """Implement the haystack `format` operation"""
     event = cast(LambdaProxyEvent, AttrDict(_event))
     grid = hszinc.Grid(columns={
         "mime": {},
@@ -137,7 +142,19 @@ def formats(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
-def extend_with_co2e(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:
+def extend_with_co2e(_event: LambdaEvent,
+                     context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
+    """
+    Read a haystack grid, inject CO2e, and return the same grid
+    Parameters
+    ----------
+    _event Proxy event
+    context AWS Lambda context
+
+    Returns Proxy response
+    -------
+
+    """
     event = cast(LambdaProxyEvent, AttrDict(_event))
     try:
         if "Content-Type" not in event.headers:
@@ -165,7 +182,7 @@ def extend_with_co2e(_event: LambdaEvent, context: LambdaContext) -> LambdaProxy
         hs_response = _dump_response(event.headers.get("Accept", _DEFAULT_MIME_TYPE), grid)
         response.headers["Content-Type"] = hs_response[0]
         response.body = hs_response[1]
-    except ValueError as e:
+    except ValueError:
         error_grid = hszinc.Grid(metadata={
             "err": hszinc.MARKER,
             "id": "badId",

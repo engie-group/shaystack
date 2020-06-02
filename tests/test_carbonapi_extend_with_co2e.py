@@ -11,7 +11,7 @@ from hszinc import Grid
 from carbonapi import haystackapi
 from haystackapi import NO_COMPRESS
 from lambda_types import LambdaProxyEvent, LambdaContext, LambdaEvent
-from tests.test_tools import boto_client
+from test_tools import boto_client
 
 
 @pytest.fixture()

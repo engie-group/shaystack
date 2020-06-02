@@ -2,7 +2,7 @@
 
 CarbonAPI is an API to add CO2e in a [Haystack Grid](https://project-haystack.org/doc/Grids).
 Theses API can negotiate:
-- Request format (zinc or json)
+- Request format (`Content-Type: zinc` or `json`)
 - Request encoding (`Content-Encoding: gzip`)
 - Response format (`Accept: zinc, json`)
 - Compressed format (`Accept-Encoding: gzip`)
@@ -30,6 +30,17 @@ that you can deploy with the SAM CLI. It includes the following files and folder
 The application uses several AWS resources, including Lambda functions and an API Gateway API. 
 These resources are defined in the `template.yaml` file in this project. 
 
+
+## Build the application
+This project use a `Makefile` for integrate all tools and [Conda](https://docs.conda.io/projects/conda/en/latest/index.html
+to manage dependencies and tools.
+To initialise the environment, use `make configure`. Then activate the conda environment.
+Then, it's possible to test, build, etc. See `make help`
+```bash
+$ make configure
+$ conda activate carbonapi
+$ make test
+```
 ## Deploy the application
 
 The Serverless Application Model Command Line Interface (SAM CLI) is an extension of the AWS CLI that 

@@ -13,13 +13,14 @@ import hszinc  # type: ignore
 from hszinc import Uri
 
 from http_tools import get_best_encoding_match
-from lambda_types import LambdaProxyEvent, LambdaProxyResponse, AttrDict, LambdaEvent, LambdaContext
+from lambda_types import LambdaProxyEvent, LambdaProxyResponse, AttrDict, LambdaEvent, LambdaContext, \
+    cast_lambda_proxy_event
 
-NO_COMPRESS = os.environ.get("NO_COMPRESS", "false").lower() == "true"
-NO_COMPRESS = True  # FIXME : Gestion de la compression en API locale
-
+# FIXME: With AWS: Runtime.MarshalError: Unable to marshal response
+NO_COMPRESS = os.environ.get("NOCOMPRESS", "false").lower() == "true"
+# See https://tinyurl.com/y8rgcw8p
 if os.environ.get("DEBUGGING", "false").lower() == "true":
-    # TODO: validate the attachement of debugger
+    # TOTRY: validate the attachement of debugger
     # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-debugging-python.html
     import ptvsd  # type: ignore
 
@@ -34,8 +35,6 @@ log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
 _DEFAULT_MIME_TYPE = "text/zinc"
 
 
-# TODO: ajouter Content-Encoding: gzip si négociable
-# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding
 def _dump_response(accept: str, grid: hszinc.Grid, default: Optional[str] = None) -> Tuple[str, str]:
     accept_type = get_best_match(accept, ['*/*', 'text/zinc', 'application/json'])
     if accept_type in ("text/zinc", "*/*"):
@@ -56,7 +55,6 @@ def _compress_response(content_encoding: Optional[str], response: LambdaProxyRes
         return response
     # TODO: accept other encoding format ?
     if encoding == "gzip":
-        # FIXME gzip_body= base64.b64encode("hello".encode('utf-8'))
         gzip_body = base64.b64encode(gzip.compress(response.body.encode("utf-8")))
         response.body = gzip_body
         response.headers["Content-Encoding"] = "gzip"
@@ -66,8 +64,10 @@ def _compress_response(content_encoding: Optional[str], response: LambdaProxyRes
 
 def about(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
     """Implement the haystack `about` operation"""
-    event = cast(LambdaProxyEvent, AttrDict(_event))
-    print("ABOUT")  # FIXME
+    event = cast_lambda_proxy_event(_event)
+    # event = cast(LambdaProxyEvent, AttrDict(_event))
+    log.info(event)
+    log.info(event["headers"])
     grid = hszinc.Grid(columns={
         "haystackVersion": {},  # Str version of REST implementation
         "tz": {},  # Str of server's default timezone
@@ -76,9 +76,9 @@ def about(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  
         "serverBootTime": {},  # TODO: type DateTime when server was booted up
         "productName": {},  # Str name of the server software product
         "productUri": {},  # TODO: type Uri of the product's web site
-        "productVersion": {},  # Str version of the server software product
-        "moduleName": {},  # module which implements Haystack server protocol if its a plug-in to the product
-        "moduleVersion": {}  # Str version of moduleName
+        "productVersion": {},  # TODO: from git label. version of the server software product
+        # "moduleName": {},  # module which implements Haystack server protocol if its a plug-in to the product
+        # "moduleVersion": {}  # Str version of moduleName
     })
     grid.append(
         {

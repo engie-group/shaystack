@@ -1,6 +1,1 @@
-requests
-attrdict
-ptvsd
-accept-types
-hszinc
-pint
+

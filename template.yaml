@@ -1,99 +1,183 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  alpha-carbon-api
-
-  Sample SAM Template for alpha-carbon-api
+Description: A partial implementation of Haystack protocol
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Runtime: python3.8
+    Runtime: python3.7
     Timeout: 30
     Environment:
       Variables:
         LOGLEVEL: WARNING
         DEBUGGING: false
-        NO_COMPRESS: true
+        NOCOMPRESS: false
+    Layers:
+      - !Ref BaseLayer
+      - !Ref HSZincLayer
 
 Resources:
-  CarbonAPILayer:
+  BaseLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      ContentUri: carbonapi
+      ContentUri: layer
       CompatibleRuntimes:
+        - python3.7
         - python3.8
+      Description: Custom Haystack Zinc libraries
+      LayerName: base
+      LicenseInfo: BSD 2
+      RetentionPolicy: Delete
     Metadata:
-      BuildMethod: python3.8
+      BuildMethod: python3.7
+
+  HSZincLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: .
+      CompatibleRuntimes:
+        - python3.7
+        - python3.8
+      Description: Custom Haystack Zinc libraries
+      LayerName: HSZinc
+      LicenseInfo: BSD 2
+      RetentionPolicy: Delete
+    Metadata:
+      BuildMethod: makefile
 
   About:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: carbonapi/
       Handler: haystackapi.about
+      Description: Implement the Haystack `About` api
+      # Function's execution role
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaReadOnlyAccess
+        - AWSXrayWriteOnlyAccess
+      Environment:
+        Variables:
+          LOGLEVEL: WARNING
+          DEBUGGING: false
+          NOCOMPRESS: true
+      Tracing: Active
       Events:
-        HaystackAbout:
+        HaystackAboutGET:
           Type: Api
           Properties:
             Path: /about
             Method: get
+        HaystackAboutPOST:
+          Type: Api
+          Properties:
+            Path: /about
+            Method: post
 
   Ops:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: carbonapi/
       Handler: haystackapi.ops
+      Description: Implement the Haystack `Ops` api
+      # Function's execution role
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaReadOnlyAccess
+        - AWSXrayWriteOnlyAccess
       Events:
-        HaystackAbout:
+        HaystackAboutGET:
           Type: Api
           Properties:
             Path: /ops
             Method: get
+        HaystackAboutPOST:
+          Type: Api
+          Properties:
+            Path: /ops
+            Method: post
 
   Formats:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: carbonapi/
       Handler: haystackapi.formats
+      Description: Implement the Haystack `Formats` api
+      # Function's execution role
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaReadOnlyAccess
+        - AWSXrayWriteOnlyAccess
       Events:
-        HaystackAbout:
+        HaystackAboutGET:
           Type: Api
           Properties:
             Path: /formats
             Method: get
+        HaystackAboutPOST:
+          Type: Api
+          Properties:
+            Path: /formats
+            Method: post
 
   ExtendWithCO2e:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: carbonapi/
       Handler: haystackapi.extend_with_co2e
+      Description: Extend a Haystack grid with CO2e
       Events:
-        ExtendWithCO2e:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        ExtendWithCO2ePOST:
+          Type: Api
           Properties:
             Path: /extend_with_co2e
             Method: post
+      # Function's execution role
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaReadOnlyAccess
+        - AWSXrayWriteOnlyAccess
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  About:
-    Description: "Haystack about api"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/"
+  AboutAPI:
+    Description: "Haystack `about` API"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/about"
   AboutFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt AboutFunction.Arn
-  AboutFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt AboutFunctionRole.Arn
+    Description: "Haystack `about` API"
+    Value: !GetAtt About.Arn
+  AboutIamRole:
+    Description: "Implicit IAM Role created for About function"
+    Value: !GetAtt AboutRole.Arn
 
-  ExtendWithCO2e:
-    Description: "Haystack about api"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/"
+  OpsAPI:
+    Description: "Haystack `ops` API"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/ops"
+  OpsFunction:
+    Description: "Haystack `ops` API"
+    Value: !GetAtt Ops.Arn
+  OpsIamRole:
+    Description: "Implicit IAM Role created for Ops function"
+    Value: !GetAtt Ops.Arn
+
+  FormatsAPI:
+    Description: "Haystack `formats` API"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/formats"
+  FormatsFunction:
+    Description: "Haystack `formats` API"
+    Value: !GetAtt Ops.Arn
+  FormatsIamRole:
+    Description: "Implicit IAM Role created for Format function"
+    Value: !GetAtt Ops.Arn
+
+  ExtendWithCO2eAPI:
+    Description: "Haystack 'extend_with_co2e' api"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/extend_with_co2e"
   ExtendWithCO2eFunction:
     Description: "Extend with CO2e haystack ops"
-    Value: !GetAtt AboutFunction.Arn
-  ExtendWithCO2eFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt AboutFunctionRole.Arn
+    Value: !GetAtt ExtendWithCO2e.Arn
+  ExtendWithCO2eIamRole:
+    Description: "Implicit IAM Role created for ExtendWithCO2eAPI function"
+    Value: !GetAtt ExtendWithCO2eRole.Arn

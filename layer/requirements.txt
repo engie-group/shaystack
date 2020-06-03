@@ -1,0 +1,10 @@
+requests
+attrdict
+ptvsd
+accept-types
+pint
+pyparsing
+pytz
+iso8601
+six
+pint

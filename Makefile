@@ -1,3 +1,4 @@
+#!/usr/bin/env make -f
 SHELL=/bin/bash
 .SHELLFLAGS = -e -c
 .ONESHELL:
@@ -18,11 +19,16 @@ CONDA_ARGS?=
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 PIP_ARGS?=
 ENVS_JSON?=envs.json
-ENVS_TEST?=
-# FIXME: check the bootstrap of the project
+
+AWS_REGION?=eu-west-3
+AWS_STACK=CarbonAPI
+AWS_API_HOME=https://$(shell aws apigateway get-rest-apis --output text --query 'items[?name==`$(AWS_STACK)`].id').execute-api.$(AWS_REGION).amazonaws.com/Prod
+ENVS_TEST?=NOCOMPRESS=True
+# FIXME: remove local default profile ?
+#export AWS_DEFAULT_PROFILE=engie
 
 CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
-  then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using 'make'$(normal)"; exit 1 ) ; fi
+  then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
 
 ACTIVATE_VENV=source $(CONDA_BASE)/etc/profile.d/conda.sh && conda activate $(VENV) $(CONDA_ARGS)
 DEACTIVATE_VENV=source $(CONDA_BASE)/etc/profile.d/conda.sh && conda deactivate
@@ -101,7 +107,7 @@ dump-%:
 
 
 # -------------------------------------- GIT
-.gitattributes: | .git .git/hooks/pre-push # Configure git
+.git/config: | .git .git/hooks/pre-push # Configure git
 	@git config --local core.autocrlf input
 	# Set tabulation to 4 when use 'git diff'
 	@git config --local core.page 'less -x4'
@@ -142,7 +148,7 @@ dump-%:
 ## Prepare the work environment (conda venv, ...)
 configure:
 	@if [[ "$(PRJ)" == "$(CONDA_DEFAULT_ENV)" ]] ; \
-  		then echo -e "$(red)Use $(cyan)conda deactivate$(red) before using 'make configure'$(normal)"; exit ; fi
+  		then echo -e "$(red)Use $(cyan)conda deactivate$(red) before using $(cyan)make configure$(normal)"; exit ; fi
 	@conda create --name "$(VENV)" \
 		python=$(PYTHON_VERSION) \
 		-y $(CONDA_ARGS)
@@ -150,26 +156,26 @@ configure:
 
 # All dependencies of the project must be here
 .PHONY: requirements dependencies
-REQUIREMENTS=$(PIP_PACKAGE) .gitattributes
+REQUIREMENTS=$(PIP_PACKAGE) .git/config
 requirements: $(REQUIREMENTS)
 dependencies: requirements
 
 # Rule to update the current venv, with the dependencies describe in `setup.py`
-$(PIP_PACKAGE): $(CONDA_PYTHON) $(PRJ)/requirements.txt | .git # Install pip dependencies
+$(PIP_PACKAGE): $(CONDA_PYTHON) $(PRJ)/requirements.txt layer/requirements.txt | .git # Install pip dependencies
 	@$(VALIDATE_VENV)
 	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"
 	conda install -c conda-forge -c anaconda -y \
-		awscli aws-sam-cli pytype flake8 pylint pytest
+		awscli aws-sam-cli make \
+		pytype ninja flake8 pylint pytest jq
 	echo -e "$(cyan)Build dependencies updated$(normal)"
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	pip install -r $(PRJ)/requirements.txt
+	pip install -r layer/requirements.txt
 	echo -e "$(cyan)Project dependencies updated$(normal)"
 	@touch $(PIP_PACKAGE)
 
 # All dependencies of the project must be here
 .PHONY: requirements dependencies
-REQUIREMENTS=$(PIP_PACKAGE) \
-	.gitattributes
 requirements: $(REQUIREMENTS)
 dependencies: requirements
 
@@ -200,12 +206,12 @@ clean-pip:
 clean-$(VENV): remove-venv
 	@conda create -y -q -n $(VENV) $(CONDA_ARGS)
 	@echo -e "$(yellow)Warning: Conda virtualenv $(VENV) is empty.$(normal)"
-# Set the current VENV empty
+## Set the current VENV empty
 clean-venv : clean-$(VENV)
 
-# Clean project
+## Clean project
 clean: async-stop
-	@rm -rf bin/* .aws-sam .mypy_cache .pytest_cache .run build nohup.out dist .make-* .pytype
+	@rm -rf bin/* .aws-sam .mypy_cache .pytest_cache .start build nohup.out dist .make-* .pytype out.json
 
 .PHONY: clean-all
 # Clean all environments
@@ -215,25 +221,35 @@ clean-all: clean remove-venv
 # -------------------------------------- Build
 # Template to build custom runtime.
 # See https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-custom-runtimes.html
-#build-custom-runtime:
-#	cp carbonapi/*.py $(ARTIFACTS_DIR)
-#	cp carbonapi/requirements.txt $(ARTIFACTS_DIR)
-#	python -m pip install -r carbonapi/requirements.txt -t $(ARTIFACTS_DIR)
-#	rm -rf $(ARTIFACTS_DIR)/bin
+# See https://github.com/awslabs/aws-sam-cli/blob/de8ad8e78491ebfa884c02c3439c6bcecd08516b/designs/build_for_layers.md
+build-HSZincLayer:
+	@if [[ -z "$(ARTIFACTS_DIR)" ]]
+	then
+		@$(VALIDATE_VENV)
+		echo -e "$(green)Build Lambda HSZincLayer$(normal)"
+		umask 0
+		@sam build HSZincLayer
+	else
+		# executed inside `sam build`
+		# The variable OLDPWD is set to the project home directory
+		umask 0
+		mkdir -p "$(ARTIFACTS_DIR)/python"
+		python -m pip install $(OLDPWD)/hszinc/dist/hszinc-*.whl -t "$(ARTIFACTS_DIR)/python"
+	fi
 
 ## build specific lambda function (ie. build-About)
 build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) template.yaml
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Build Lambda $*$(normal)"
+	umask 0
 	@sam build $*
-	chmod -R o+rwx .aws-sam
 
 .PHONY: dist build
 .aws-sam/build: $(REQUIREMENTS) $(PYTHON_SRC) template.yaml
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Build Lambdas$(normal)"
+	umask 0
 	@sam build
-	chmod -R o+rwx .aws-sam
 
 ## build all lambda function
 build: .aws-sam/build
@@ -241,68 +257,105 @@ build: .aws-sam/build
 # -------------------------------------- Invoke
 .PHONY: invoke-*
 ## Build and invoke lamda function in local with associated events (ie. invoke-About)
-invoke-%: $(ENVS_JSON)
+invoke-%: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
-	$(MAKE) build-$*
-	sam local invoke --env-vars $(ENVS_JSON) $* -e events/$*_event.json
-
-## Build and invoke lamda function via aws cli (ie. invoke-About)
-aws-invoke-%:
-	@$(VALIDATE_VENV)
-	$(MAKE) build-$*
-	aws lambda invoke --function-name %* out.json --log-type Tail --query 'LogResult' --output text |  base64 -d
+	sam local invoke --env-vars $(ENVS_JSON) $* -e events/$*_event.json >out.json
+	jq -r <out.json
+	echo -e "\n$(green)Body:$(normal)"
+	jq -r '.body' <out.json
 
 .PHONY: start-api async-start-api async-stop-api
 ## Start api
-start-api: $(ENVS_JSON) build
+start-api: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
-	@[ -e .run/start-api.pid ] && $(MAKE) async-stop-api || true
+	@[ -e .start/start-api.pid ] && $(MAKE) async-stop-api || true
 	$(ENVS_TEST) sam local start-api --env-vars $(ENVS_JSON)
 
 # Start local api emulator in background
-async-start-api: $(ENVS_JSON) $(PYTHON_SRC)
+async-start-api: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
-	@[ -e .run/start-api.pid ] && echo -e "$(orange)Local API was allready started$(normal)" && exit
-	mkdir -p .run
-	$(ENVS_TEST) nohup sam local start-api --env-vars $(ENVS_JSON) >.run/start-api.log 2>&1 &
-	echo $$! >.run/start-api.pid
+	@[ -e .start/start-api.pid ] && echo -e "$(orange)Local API was allready started$(normal)" && exit
+	mkdir -p .start
+	$(ENVS_TEST) nohup sam local start-api --env-vars $(ENVS_JSON) >.start/start-api.log 2>&1 &
+	echo $$! >.start/start-api.pid
 	sleep 0.5
-	tail .run/start-api.log
+	tail .start/start-api.log
 	echo -e "$(orange)Local API started$(normal)"
 
 # Stop local api emulator in background
 async-stop-api:
 	@$(VALIDATE_VENV)
-	@[ -e .run/start-api.pid ] && kill `cat .run/start-api.pid` && echo -e "$(green)API stopped$(normal)"
-	rm -f .run/start-api.pid
+	@[ -e .start/start-api.pid ] && kill `cat .start/start-api.pid` && echo -e "$(green)Local API stopped$(normal)"
+	rm -f .start/start-api.pid
+
+.PHONY: api
+## Print API URL
+api:
+	@grep -oh 'https://$${ServerlessRestApi}[^"]*' template.yaml | \
+	sed 's/https:..$${ServerlessRestApi}.*\//http:\/\/locahost:3000\//g'
+
+## Invoke local API (eg. make api-about)
+api-%:
+	curl -H "Accept: text/zinc" \
+		"http://localhost:3000/$*"
+
 
 .PHONY: start-lambda async-start-lambda async-stop-lambda
 ## Start lambda local emulator in background
-start-lambda: $(ENVS_JSON) build
+start-lambda: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
-	[ -e .run/start-lambda.pid ] && $(MAKE) async-stop-lambda || true
+	[ -e .start/start-lambda.pid ] && $(MAKE) async-stop-lambda || true
 	$(ENVS_TEST) sam local start-lambda --env-vars $(ENVS_JSON)
 	sleep 2
 
 # Start lambda local emulator in background
-async-start-lambda: $(ENVS_JSON) $(PYTHON_SRC)
+async-start-lambda: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
-	@[ -e .run/start-lambda.pid ] && echo -e "$(orange)Local Lambda was allready started$(normal)" && exit
-	mkdir -p .run
-	$(ENVS_TEST) nohup sam local start-lambda --env-vars $(ENVS_JSON) >.run/start-lambda.log 2>&1 &
-	echo $$! >.run/start-lambda.pid
+	@[ -e .start/start-lambda.pid ] && echo -e "$(orange)Local Lambda was allready started$(normal)" && exit
+	mkdir -p .start
+	$(ENVS_TEST) nohup sam local start-lambda --env-vars $(ENVS_JSON) >.start/start-lambda.log 2>&1 &
+	echo $$! >.start/start-lambda.pid
 	sleep 0.5
-	tail .run/start-lambda.log
+	tail .start/start-lambda.log
 	echo -e "$(orange)Local Lambda was started$(normal)"
 
 # Stop lambda local emulator in background
 async-stop-lambda:
 	@$(VALIDATE_VENV)
-	@[ -e .run/start-lambda.pid ] && kill `cat .run/start-lambda.pid` && echo -e "$(green)Local Lambda stopped$(normal)"
-	rm -f .run/start-lambda.pid
+	@[ -e .start/start-lambda.pid ] && kill `cat .start/start-lambda.pid` && echo -e "$(green)Local Lambda stopped$(normal)"
+	rm -f .start/start-lambda.pid
 
 ## Stop all async server
 async-stop: async-stop-api async-stop-lambda
+
+# -------------------------------------- AWS
+.PHONY: aws-clean-stack
+## Remove AWS Stack
+aws-clean-stack:
+	aws cloudformation delete-stack --stack-name $(AWS_STACK) --region $(AWS_REGION)
+
+##  Invoke lamda function via aws cli (ie. aws-invoke-About)
+aws-invoke-%: .aws-sam/build
+	$(VALIDATE_VENV)
+	FUNCTION=$$(aws cloudformation describe-stack-resource --stack-name $(AWS_STACK) --logical-resource-id About --query 'StackResourceDetail.PhysicalResourceId' --output text)
+	aws lambda invoke --function-name $$FUNCTION \
+		--payload file://events/$*_event.json \
+		out.json \
+		--log-type Tail --query 'LogResult' --output text |  base64 -d
+	jq -r <out.json
+	echo -e "\n$(green)Body:$(normal)"
+	jq -r '.body' <out.json
+
+.PHONY: aws-api
+## Print AWS API URL
+aws-api:
+	@grep -oh 'https://$${ServerlessRestApi}[^"]*' template.yaml | \
+	sed 's/https:..$${ServerlessRestApi}.*\//$(subst  /,\/,$(AWS_API_HOME))\//g'
+
+## Invoke API via AWS (eg. make aws-api-about)
+aws-api-%:
+	curl -H "Accept: text/zinc" \
+		"$(AWS_API_HOME)/$*"
 
 # -------------------------------------- Tests
 .PHONY: unit-test
@@ -326,7 +379,7 @@ functional-test: .make-functional-test
 .make-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build
 	@$(VALIDATE_VENV)
 	$(MAKE) async-start-lambda
-	@PYTHONPATH=./$(PRJ) python -m pytest -s tests $(PYTEST_ARGS)
+	@PYTHONPATH=./$(PRJ) $(ENVS_TEST) python -m pytest -s tests $(PYTEST_ARGS)
 	@date >.make-unit-test
 	@date >.make-functional-test
 	@date >.make-test
@@ -336,8 +389,12 @@ test: .make-test
 	@date >.make-test
 
 
+# -------------------------------------- hszinc
+hszinc/dist: hszinc/hszinc/*.py
+	cd hszinc
+	python setup.py bdist_wheel
+
 # -------------------------------------- Typing
-# FIXME
 pytype.cfg: $(CONDA_PREFIX)/bin/pytype
 	@$(VALIDATE_VENV)
 	@[[ ! -f pytype.cfg ]] && pytype --generate-config pytype.cfg || true
@@ -373,49 +430,46 @@ typing: .make-typing
 ## Lint the code
 lint: .make-lint
 
-# -------------------------------------- Packages
-dist/$(PRJ).zip: $(PRJ)/*
-	@$(VALIDATE_VENV)
-	@mkdir -p dist/package
-# TODO: Add package from TOUL ?
-	# pip install --target ./dist/package Pillow
-	cd dist/package
-	zip -r9 ../$(PRJ).zip . -i .
-	cd ../..
-	zip -g dist/$(PRJ).zip $(PRJ)/*.py
-
-.PHONY: dist
-## Build distribution
-dist: dist/$(PRJ).zip validate
 
 .PHONY: deploy
-# TODO : valide see https://docs.aws.amazon.com/lambda/latest/dg/python-package.html
 ## Deploy lambda functions
-deploy: dist/$(PRJ).zip
+deploy: .aws-sam/build
 	@$(VALIDATE_VENV)
-	aws lambda update-function-code --function-name About --zip-file fileb://dist/$(PRJ).zip
-	aws lambda update-function-code --function-name ExtendWithCO2e --zip-file fileb://dist/$(PRJ).zip
+	sam deploy --region $(AWS_REGION) --parameter-overrides NOCOMPRESS=PPR
+	echo -e "$(green)Lambdas are deployed$(normal)"
 
 .PHONY: validate
-.make-validate: .make-test .make-lint dist/$(PRJ).zip
+.make-validate: .make-test .make-lint .aws-sam/build
+	sam validate
 	@date >.make-validate
 ## Validate the project
 validate: .make-validate
 
 .PHONY: release
 ## Release the project
-release: clean dist
+release: clean .make-validate
 
-# -------------------------------------- TODO
+# -------------------------------------- Submodule
+submodule-update:
+	git submodule update --remote --rebase
+
+submodule-push:
+	git push --recurse-submodules=on-demand
+
+submodule-stash:
+	git submodule foreach 'git stash'
+# -------------------------------------- DEBUG
+## Print logs of specific Lambda function
+logs-%:
+	sam logs -n $* --stack-name $(AWS_STACK) --tail
+
 # TODO: Find how to use debugger
 # See https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-debugging-python.html
 debugging:
 	@$(VALIDATE_VENV)
 	# Install dependencies
 	pip install -r $(PRJ)/requirements.txt -t build/
+	pip install -r layer/requirements.txt -t build/
 	# Install ptvsd library for step through debugging
 	pip install ptvsd -t build/
 	cp $(PRJ)/*.py build/
-
-# -------------------------------------- Source
-$(PRJ)/haystackapi.py: $(PRJ)/lambda_types.py

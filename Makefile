@@ -237,7 +237,7 @@ build-HSZincLayer:
 		python -m pip install $(OLDPWD)/hszinc/dist/hszinc-*.whl -t "$(ARTIFACTS_DIR)/python"
 	fi
 
-## build specific lambda function (ie. build-About)
+## Build specific lambda function (ie. build-About)
 build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) template.yaml
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Build Lambda $*$(normal)"
@@ -251,7 +251,7 @@ build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) template.yaml
 	umask 0
 	@sam build
 
-## build all lambda function
+## Build all lambda function
 build: .aws-sam/build
 
 # -------------------------------------- Invoke
@@ -301,7 +301,7 @@ api-%:
 
 
 .PHONY: start-lambda async-start-lambda async-stop-lambda
-## Start lambda local emulator in background
+## Start lambda local emulator
 start-lambda: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
 	[ -e .start/start-lambda.pid ] && $(MAKE) async-stop-lambda || true

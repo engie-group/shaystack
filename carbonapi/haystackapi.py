@@ -17,6 +17,7 @@ from lambda_types import LambdaProxyEvent, LambdaProxyResponse, AttrDict, Lambda
     cast_lambda_proxy_event
 
 # FIXME: With AWS: Runtime.MarshalError: Unable to marshal response
+# TOTRY: https://github.com/awslabs/aws-sam-cli/issues/1163
 NO_COMPRESS = os.environ.get("NOCOMPRESS", "false").lower() == "true"
 # See https://tinyurl.com/y8rgcw8p
 if os.environ.get("DEBUGGING", "false").lower() == "true":
@@ -171,7 +172,7 @@ def extend_with_co2e(_event: LambdaEvent,
         if content_type.startswith("text/zinc"):
             grid = hszinc.parse(event.body, mode=hszinc.MODE_ZINC)
         elif content_type.startswith("application/json"):
-            grid = hszinc.parse(event.body, mode=hszinc.MODE_JSON)
+            grid = hszinc.parse(event.body, mode=hszinc.MODE_JSON)[0]
         else:
             raise ValueError(f"Content-Type '{content_type}' not supported")
 

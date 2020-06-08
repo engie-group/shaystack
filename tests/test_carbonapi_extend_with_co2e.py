@@ -41,7 +41,7 @@ def test_extend_with_co2e_with_zinc(apigw_event: LambdaProxyEvent):
     # THEN
     assert response["statusCode"] == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    hszinc.parse(response["body"], hszinc.MODE_ZINC)
+    hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
     assert response["body"] == apigw_event["body"]
 
 
@@ -104,7 +104,7 @@ def test_extend_with_co2e_json_without_content_type(apigw_event: LambdaProxyEven
     # THEN
     assert response["statusCode"] == 400
     assert response.headers["Content-Type"].startswith(mime_type)
-    error_grid:Grid = hszinc.parse(response["body"], hszinc.MODE_JSON)
+    error_grid:Grid = hszinc.parse(response["body"], hszinc.MODE_JSON)[0]
     assert "err" in error_grid.metadata
 
 

@@ -67,8 +67,10 @@ def test_simple_json_str():
 
 def _check_simple_json_str(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse(json.dumps(SIMPLE_EXAMPLE_JSON),
+    grid_list = hszinc.parse(json.dumps(SIMPLE_EXAMPLE_JSON),
             mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
     check_simple(grid)
 
 def test_wc1382_unicode_str():
@@ -245,7 +247,9 @@ def test_metadata_json():
 
 def _check_metadata_json(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse(METADATA_EXAMPLE_JSON, mode=hszinc.MODE_JSON)
+    grid_list = hszinc.parse(METADATA_EXAMPLE_JSON, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
     check_metadata(grid, force_metadata_order=False)
 
 def check_metadata(grid,force_metadata_order=True):
@@ -344,7 +348,9 @@ def test_null_json():
 
 def _check_null_json(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse(NULL_EXAMPLE_JSON, mode=hszinc.MODE_JSON)
+    grid_list = hszinc.parse(NULL_EXAMPLE_JSON, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
     check_null(grid)
 
 NA_EXAMPLE='''ver:"3.0"
@@ -382,7 +388,9 @@ def test_na_json():
 
 def _check_na_json(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse(NA_EXAMPLE_JSON, mode=hszinc.MODE_JSON)
+    grid_list = hszinc.parse(NA_EXAMPLE_JSON, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
     check_na(grid)
 
 REMOVE_EXAMPLE='''ver:"3.0"
@@ -438,12 +446,16 @@ def test_remove_json_v3():
 
 def _check_remove_json_v2(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse(REMOVE_EXAMPLE_JSON_V2, mode=hszinc.MODE_JSON)
+    grid_list = hszinc.parse(REMOVE_EXAMPLE_JSON_V2, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
     check_remove(grid)
 
 def _check_remove_json_v3(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse(REMOVE_EXAMPLE_JSON_V3, mode=hszinc.MODE_JSON)
+    grid_list = hszinc.parse(REMOVE_EXAMPLE_JSON_V3, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
     check_remove(grid)
 
 def test_marker_in_row():
@@ -468,7 +480,7 @@ def test_marker_in_row_json():
 
 def _check_marker_in_row_json(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse({
+    grid_list = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
             {'name':'str'},
@@ -479,8 +491,10 @@ def _check_marker_in_row_json(pint_en):
             {'str': 'Marker',       'marker':'m:'},
         ],
     }, mode=hszinc.MODE_JSON)
-    assert_is(grid[0]['marker'], None)
-    assert_is(grid[1]['marker'], hszinc.MARKER)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
+    assert grid[0]['marker'] is None
+    assert grid[1]['marker'] is hszinc.MARKER
 
 def test_bool():
     yield _check_bool, False # without pint
@@ -504,7 +518,7 @@ def test_bool_json():
 
 def _check_bool_json(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse({
+    grid_list = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
             {'name':'str'},
@@ -515,6 +529,8 @@ def _check_bool_json(pint_en):
             {'str': 'False','bool':False},
         ],
     }, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
     assert grid[0]['bool'] == True
     assert grid[1]['bool'] == False
 
@@ -572,7 +588,7 @@ def test_number_json():
 
 def _check_number_json(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse({
+    grid_list = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
             {'name':'str'},
@@ -591,6 +607,8 @@ def _check_number_json(pint_en):
             {'str': "Not a Number",         'number': u'n:NaN'},
         ],
     }, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
     check_number(grid)
 
 def test_string():
@@ -618,7 +636,7 @@ def test_string_json():
 
 def _check_string_json(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse({
+    grid_list = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
             {'name':'str'},
@@ -631,6 +649,8 @@ def _check_string_json(pint_en):
             {'str': "With colons",      'strExample': 's:string:with:colons'},
         ],
     }, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
 
     assert len(grid) == 4
     assert grid.pop(0)['strExample'] == ''
@@ -659,7 +679,7 @@ def test_uri_json():
 
 def _check_uri_json(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse({
+    grid_list = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
             {'name':'uri'},
@@ -668,6 +688,8 @@ def _check_uri_json(pint_en):
             {'uri': 'u:http://www.vrt.com.au'},
         ],
     }, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
 
     assert len(grid) == 1
     assert grid[0]['uri'] == hszinc.Uri('http://www.vrt.com.au')
@@ -696,7 +718,7 @@ def test_ref_json():
 
 def _check_ref_json(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse({
+    grid_list = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
             {'name':'str'},
@@ -707,6 +729,8 @@ def _check_ref_json(pint_en):
             {'str': 'With value',   'ref': 'r:reference With value'},
         ],
     }, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
 
     assert len(grid) == 2
     assert grid[0]['ref'] == hszinc.Ref('a-basic-ref')
@@ -734,7 +758,7 @@ def test_date_json():
 
 def _check_date_json(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse({
+    grid_list = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
             {'name':'date'},
@@ -743,6 +767,8 @@ def _check_date_json(pint_en):
             {'date': 'd:2010-03-13'},
         ],
     }, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
 
     assert len(grid) == 1
     assert isinstance(grid[0]['date'], datetime.date)
@@ -773,7 +799,7 @@ def test_time_json():
 
 def _check_time_json(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse({
+    grid_list = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
             {'name':'time'},
@@ -784,6 +810,8 @@ def _check_time_json(pint_en):
             {'time': 'h:08:12:05.5'},
         ],
     }, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
 
     assert len(grid) == 3
     row = grid.pop(0)
@@ -849,7 +877,7 @@ def test_datetime_json():
 
 def _check_datetime_json(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse({
+    grid_list = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
             {'name':'datetime'},
@@ -863,6 +891,8 @@ def _check_datetime_json(pint_en):
             {'datetime': 't:2010-01-08T05:00:00Z'},
         ],
     }, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
     check_datetime(grid)
 
 def test_list():
@@ -946,7 +976,7 @@ def _check_list_json(pint_en):
     _enable_pint(pint_en)
     # Simpler test case than the ZINC one, since the Python JSON parser
     # will take care of the elements for us.
-    grid = hszinc.parse({
+    grid_list = hszinc.parse({
         'meta': {'ver':'3.0'},
         'cols': [
             {'name': 'list'},
@@ -955,8 +985,10 @@ def _check_list_json(pint_en):
             {'list': ['s:my list', None, True, 'n:1234']}
         ]
     }, mode=hszinc.MODE_JSON)
-    assert len(grid) == 1
+    assert len(grid_list) == 1
+    grid = grid_list[0]
 
+    assert len(grid) == 1
     lst = grid[0]['list']
     assert isinstance(lst, list)
     assert len(lst) == 4
@@ -1007,7 +1039,7 @@ def test_bin_json():
 
 def _check_bin_json(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse({
+    grid_list = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
             {'name':'bin'},
@@ -1016,6 +1048,8 @@ def _check_bin_json(pint_en):
             {'bin': 'b:text/plain'},
         ],
     }, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
 
     assert len(grid) == 1
     assert grid[0]['bin'] == hszinc.Bin('text/plain')
@@ -1041,7 +1075,7 @@ def test_coord_json():
 
 def _check_coord_json(pint_en):
     _enable_pint(pint_en)
-    grid = hszinc.parse({
+    grid_list = hszinc.parse({
         'meta': {'ver':'2.0'},
         'cols': [
             {'name':'coord'},
@@ -1050,6 +1084,8 @@ def _check_coord_json(pint_en):
             {'coord': 'c:37.55,-77.45'},
         ],
     }, mode=hszinc.MODE_JSON)
+    assert len(grid_list) == 1
+    grid = grid_list[0]
 
     assert len(grid) == 1
     assert grid[0]['coord'] == hszinc.Coordinate(37.55,-77.45)

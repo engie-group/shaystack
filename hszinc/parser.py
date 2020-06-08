@@ -19,8 +19,8 @@ from .version import Version, LATEST_VER
 
 GRID_SEP = re.compile(r'\n\n+')
 
-MODE_ZINC = 'zinc'
-MODE_JSON = 'json'
+MODE_ZINC = 'text/zinc'
+MODE_JSON = 'application/json'
 
 def parse(grid_str, mode=MODE_ZINC, charset='utf-8'):
     '''

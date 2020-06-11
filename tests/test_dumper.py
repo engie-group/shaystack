@@ -4,12 +4,11 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
+import hszinc
 import datetime
+import pytz
 import json
 
-import pytz
-
-import hszinc
 from .test_parser import SIMPLE_EXAMPLE, SIMPLE_EXAMPLE_JSON, \
     METADATA_EXAMPLE_JSON
 
@@ -311,10 +310,6 @@ def test_data_types_v3():
             'comment': 'A quantity',
             'value': [hszinc.Quantity(500, 'miles')],
         },
-        {
-            'comment': 'A XStr',
-            'value': [hszinc.XStr("hex", 'deadbeef')],
-        },
     ])
     grid_str = hszinc.dump(grid)
     ref_str = '''ver:"3.0"
@@ -326,12 +321,11 @@ comment,value
 "Booleans",[T,F]
 "References",[@a-ref,@a-ref "a value"]
 "A quantity",[500miles]
-"A XStr",[hex("deadbeef")]
 '''
     assert grid_str == ref_str
 
 
-def test_data_types_json_v2():
+def test_data_types_json():
     grid = hszinc.Grid(version=hszinc.VER_2_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
@@ -411,54 +405,54 @@ def test_data_types_json_v2():
     ])
     grid_json = json.loads(hszinc.dump(grid, mode=hszinc.MODE_JSON))
     assert grid_json == {
-        'meta': {'ver': '2.0'},
-        'cols': [
-            {'name': 'comment'},
-            {'name': 'value'},
-        ],
-        'rows': [
-            {'comment': 's:A null value',
-             'value': None},
-            {'comment': 's:A marker',
-             'value': 'm:'},
-            {'comment': 's:A remove (2.0 version)',
-             'value': 'x:'},
-            {'comment': 's:A boolean, indicating False',
-             'value': False},
-            {'comment': 's:A boolean, indicating True',
-             'value': True},
-            {'comment': 's:A reference, without value',
-             'value': 'r:a-ref'},
-            {'comment': 's:A reference, with value',
-             'value': 'r:a-ref a value'},
-            {'comment': 's:A binary blob',
-             'value': 'b:text/plain'},
-            {'comment': 's:A quantity',
-             'value': 'n:500.000000 miles'},
-            {'comment': 's:A quantity without unit',
-             'value': 'n:500.000000'},
-            {'comment': 's:A coordinate',
-             'value': 'c:-27.472500,153.003000'},
-            {'comment': 's:A URI',
-             'value': 'u:http://www.example.com'},
-            {'comment': 's:A string',
-             'value': 's:This is a test\n' \
-                      'Line two of test\n' \
-                      '\tIndented with \"quotes\" ' \
-                      'and \\backslashes\\'},
-            {'comment': 's:A date',
-             'value': 'd:2016-01-13'},
-            {'comment': 's:A time',
-             'value': 'h:07:51:43.012345'},
-            {'comment': 's:A timestamp (non-UTC)',
-             'value': 't:2016-01-13T07:51:42.012345+01:00 Berlin'},
-            {'comment': 's:A timestamp (UTC)',
-             'value': 't:2016-01-13T07:51:42.012345+00:00 UTC'},
-        ],
+            'meta': {'ver':'2.0'},
+            'cols': [
+                {'name':'comment'},
+                {'name':'value'},
+            ],
+            'rows': [
+                {   'comment': 's:A null value',
+                    'value': None},
+                {   'comment': 's:A marker',
+                    'value': 'm:'},
+                {   'comment': 's:A remove (2.0 version)',
+                    'value': 'x:'},
+                {   'comment': 's:A boolean, indicating False',
+                    'value': False},
+                {   'comment': 's:A boolean, indicating True',
+                    'value': True},
+                {   'comment': 's:A reference, without value',
+                    'value': 'r:a-ref'},
+                {   'comment': 's:A reference, with value',
+                    'value': 'r:a-ref a value'},
+                {   'comment': 's:A binary blob',
+                    'value': 'b:text/plain'},
+                {   'comment': 's:A quantity',
+                    'value': 'n:500.000000 miles'},
+                {   'comment': 's:A quantity without unit',
+                    'value': 'n:500.000000'},
+                {   'comment': 's:A coordinate',
+                    'value': 'c:-27.472500,153.003000'},
+                {   'comment': 's:A URI',
+                    'value': 'u:http://www.example.com'},
+                {   'comment': 's:A string',
+                    'value': 's:This is a test\n'\
+                            'Line two of test\n'\
+                            '\tIndented with \"quotes\" '\
+                            'and \\backslashes\\'},
+                {   'comment': 's:A date',
+                    'value': 'd:2016-01-13'},
+                {   'comment': 's:A time',
+                    'value': 'h:07:51:43.012345'},
+                {   'comment': 's:A timestamp (non-UTC)',
+                    'value': 't:2016-01-13T07:51:42.012345+01:00 Berlin'},
+                {   'comment': 's:A timestamp (UTC)',
+                    'value': 't:2016-01-13T07:51:42.012345+00:00 UTC'},
+            ],
     }
 
 
-def test_data_types_json_v3():
+def test_list_types_json_v3():
     grid = hszinc.Grid(version=hszinc.VER_3_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
@@ -495,10 +489,6 @@ def test_data_types_json_v3():
             'comment': 'A quantity',
             'value': [hszinc.Quantity(500, 'miles')],
         },
-        {
-            'comment': 'A XStr',
-            'value': [hszinc.XStr("hex", 'deadbeef')],
-        },
     ])
     grid_json = json.loads(hszinc.dump(grid, mode=hszinc.MODE_JSON))
     assert grid_json == {
@@ -512,11 +502,11 @@ def test_data_types_json_v3():
         'rows': [
             {
                 'comment': 's:A Remove (3.0 version)',
-                'value': '-:'
+                'value': '-:',
             },
             {
                 'comment': 's:A NA',
-                'value': 'z:'
+                'value': 'z:',
             },
             {
                 'comment': "s:An empty list",
@@ -542,16 +532,12 @@ def test_data_types_json_v3():
                 'comment': "s:A quantity",
                 'value': ['n:500.000000 miles']  # Python is more precise
                 # than The Proclaimers
-            },
-            {
-                'comment': "s:A XStr",
-                'value': ['x:hex:deadbeef']
             }
         ]
     }
 
 
-def test_scalar_dict_json_v3():
+def test_dict_types_json_v3():
     grid = hszinc.Grid(version=hszinc.VER_3_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
@@ -603,7 +589,7 @@ def test_scalar_dict_json_v3():
     }
 
 
-def test_scalar_dict_zinc_v3():
+def test_dict_types_zinc_v3():
     grid = hszinc.Grid(version=hszinc.VER_3_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
@@ -627,32 +613,15 @@ def test_scalar_dict_zinc_v3():
     ])
     grid_str = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
     assert grid_str == ("ver:\"3.0\"\n"
-                        "comment,value\n"
-                        "\"An empty dict\",{}\n"
-                        "\"A marker in a dict\",{marker:M}\n"
-                        "\"A references in a dict\",{" +
-                        " ".join([str(k) + ":" + str(v) for k, v in {"ref": "@a-ref", "ref2": "@a-ref"}.items()]) \
-                        .replace("ref2:@a-ref", "ref2:@a-ref \"a value\"") + \
-                        "}\n"
-                        "\"A quantity in a dict\",{quantity:500miles}\n")
+        "comment,value\n"
+        "\"An empty dict\",{}\n"
+        "\"A marker in a dict\",{marker:M}\n"
+        "\"A references in a dict\",{"+
+                    " ".join([str(k)+":"+str(v) for k,v in { "ref":"@a-ref", "ref2":"@a-ref" }.items()])\
+                            .replace("ref2:@a-ref","ref2:@a-ref \"a value\"") +\
+                            "}\n"
+        "\"A quantity in a dict\",{quantity:500miles}\n")
 
-def test_scalar_dict_zinc_ver():
-    # Test that versions are respected.
-    try:
-        hszinc.dump_scalar({"a":"b"},
-                           mode=hszinc.MODE_ZINC, version=hszinc.VER_2_0)
-        assert False, 'Serialised a list in Haystack v2.0'
-    except ValueError:
-        pass
-
-
-def test_scalar_unknown():
-    try:
-        hszinc.dump_scalar(hszinc.VER_2_0,
-                           mode=hszinc.MODE_ZINC, version=hszinc.VER_2_0)
-        assert False, 'Serialised a list in Haystack v2.0'
-    except NotImplementedError:
-        pass
 
 def test_list_zinc_v2():
     try:
@@ -738,16 +707,14 @@ def test_scalar_list_zinc_ver():
     except ValueError:
         pass
 
-
 def test_scalar_list_na_ver():
     # Test that versions are respected.
     try:
         hszinc.dump_scalar(hszinc.NA,
-                           mode=hszinc.MODE_ZINC, version=hszinc.VER_2_0)
+                mode=hszinc.MODE_ZINC, version=hszinc.VER_2_0)
         assert False, 'Serialised a NA in Haystack v2.0'
     except ValueError:
         pass
-
 
 def test_scalar_json():
     # No need to be exhaustive, the underlying function is tested heavily by
@@ -765,72 +732,11 @@ def test_scalar_list_json_ver():
     except ValueError:
         pass
 
-
 def test_scalar_na_json_ver():
     # Test that versions are respected.
     try:
         hszinc.dump_scalar(hszinc.NA,
-                           mode=hszinc.MODE_JSON, version=hszinc.VER_2_0)
+                mode=hszinc.MODE_JSON, version=hszinc.VER_2_0)
         assert False, 'Serialised a NA in Haystack v2.0'
     except ValueError:
         pass
-
-
-def test_grid_types_zinc():
-    innergrid = hszinc.Grid(version=hszinc.VER_3_0)
-    innergrid.column['comment'] = {}
-    innergrid.extend([
-        {
-            'comment': 'A innergrid',
-        },
-    ])
-    grid = hszinc.Grid(version=hszinc.VER_3_0)
-    grid.column['inner'] = {}
-    grid.extend([
-        {
-            'inner': innergrid,
-        },
-    ])
-    grid_str = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
-    assert grid_str == ('ver:"3.0"\n'
-                        'inner\n'
-                        '<<ver:"3.0"\n'
-                        'comment\n'
-                        '"A innergrid"\n'
-                        '>>\n')
-
-
-def test_grid_types_json():
-    innergrid = hszinc.Grid(version=hszinc.VER_3_0)
-    innergrid.column['comment'] = {}
-    innergrid.extend([
-        {
-            'comment': 'A innergrid',
-        },
-    ])
-    grid = hszinc.Grid(version=hszinc.VER_3_0)
-    grid.column['inner'] = {}
-    grid.extend([
-        {
-            'inner': innergrid,
-        },
-    ])
-    grid_str = hszinc.dump(grid, mode=hszinc.MODE_JSON)
-    grid_json = json.loads(grid_str)
-    assert grid_json == {
-        'meta': {'ver': '3.0'},
-        'cols': [
-            {'name': 'inner'},
-        ],
-        'rows': [
-            {'inner': {
-                'meta': {'ver': '3.0'},
-                'cols': [
-                    {'name': 'comment'},
-                ],
-                'rows': [
-                    {'comment': 's:A innergrid'},
-                ],
-            }},
-        ],
-    }

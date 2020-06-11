@@ -43,6 +43,6 @@ __author__ = 'VRT Systems'
 __copyright__ = 'Copyright 2016, VRT Systems'
 __credits__ = ['VRT Systems']
 __license__ = 'BSD'
-__version__ = '1.2.3'
+__version__ = '1.3.0a1'
 __maintainer__ = 'VRT Systems'
 __email__ = 'support@vrt.com.au'

@@ -6,22 +6,32 @@
 
 # Assume unicode literals as per Python 3
 from __future__ import unicode_literals
-from .pint_enable import _enable_pint
+
+from copy import copy, deepcopy
 
 import six
+
 import hszinc
-from copy import copy, deepcopy
+from .pint_enable import _enable_pint
+
 
 def check_singleton_deepcopy(S):
     orig_dict = {'some_value': S}
     copy_dict = deepcopy(orig_dict)
     assert copy_dict['some_value'] is S
 
+
 def test_marker_deepcopy():
     check_singleton_deepcopy(hszinc.MARKER)
 
+def test_marker_hash():
+    assert hash(hszinc.MARKER) == hash(hszinc.MARKER.__class__)
+
 def test_remove_deepcopy():
     check_singleton_deepcopy(hszinc.REMOVE)
+
+def test_remove_hash():
+    assert hash(hszinc.REMOVE) == hash(hszinc.REMOVE.__class__)
 
 def check_singleton_copy(S):
     assert copy(S) is S
@@ -79,6 +89,10 @@ def test_ref_withdis_neq_dis():
     r2 = hszinc.Ref(name='a.ref', value='different display text')
     assert r1 is not r2
     assert r1 != r2
+
+def test_ref_hash():
+    assert hash(hszinc.Ref(name='a.ref', value='display text')) == \
+           hash('a.ref') ^ hash('display text') ^ hash(True)
 
 def test_qty_unary_ops():
     # How to run the test: check the result
@@ -177,7 +191,7 @@ def test_qty_binary_ops():
                     yield _check_qty_op, pint_en, fn, a, b
 
         # Exponentiation, we can't use all the values above
-        # as some go out of range.
+        # as some go out of dates_range.
         small_floats = tuple(filter(lambda f : abs(f) < 10, floats))
         for a in small_floats:
             for b in small_floats:
@@ -222,7 +236,7 @@ def test_qty_binary_ops():
                         yield _check_qty_op, pint_en, fn, a, b
 
         # Exponentiation, we can't use all the values above
-        # as some go out of range.
+        # as some go out of dates_range.
         small_ints = tuple(filter(lambda f : abs(f) < 10, ints))
         for a in small_ints:
             for b in small_ints:
@@ -309,3 +323,7 @@ def test_coord_ne_mycoord():
     mc = MyCoordinate(-33.77, 77.45)
     assert hsc != mc
     assert mc != hsc
+
+def test_coord_hash():
+    assert hash(hszinc.Coordinate(latitude=33.77, longitude=-77.45)) == \
+           hash(33.77) ^ hash(-77.45)

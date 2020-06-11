@@ -347,6 +347,8 @@ class Coordinate(object):
             return NotImplemented
         return not (self == other)
 
+    def __hash__(self):
+        return hash(self.latitude) ^ hash(self.longitude)
 
 class Uri(six.text_type):
     """
@@ -361,6 +363,7 @@ class Uri(six.text_type):
         if not isinstance(other, Uri):
             return NotImplemented
         return super(Uri, self).__eq__(other)
+
 
 
 class Bin(six.text_type):
@@ -385,6 +388,9 @@ class Singleton(object):
 
     def __deepcopy__(self, memo):
         return self
+
+    def __hash__(self):
+        return hash(self.__class__)
 
 
 class MarkerType(Singleton):
@@ -454,3 +460,6 @@ class Ref(object):
         if not isinstance(other, Ref):
             return NotImplemented
         return not (self == other)
+
+    def __hash__(self):
+        return hash(self.name) ^ hash(self.value) ^ hash(self.has_value)

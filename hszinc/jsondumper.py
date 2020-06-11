@@ -75,6 +75,8 @@ def dump_scalar(scalar, version=LATEST_VER):
             return REMOVE3_STR
     elif isinstance(scalar, list):
         return dump_list(scalar, version=version)
+    elif isinstance(scalar, dict):
+        return dump_dict(scalar, version=version)
     elif isinstance(scalar, bool):
         return dump_bool(scalar, version=version)
     elif isinstance(scalar, Ref):
@@ -150,3 +152,9 @@ def dump_list(lst, version=LATEST_VER):
         raise ValueError('Project Haystack %s '\
                 'does not support lists' % version)
     return list(map(functools.partial(dump_scalar, version=version), lst))
+
+def dump_dict(dic, version=LATEST_VER):
+    if version < VER_3_0:
+        raise ValueError('Project Haystack %s '\
+                'does not support dict' % version)
+    return { k:dump_scalar(v, version=version) for (k,v) in dic.items()}

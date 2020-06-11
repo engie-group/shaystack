@@ -11,10 +11,17 @@ from nose.tools import assert_is
 import warnings
 import hszinc
 import datetime
-import math
-import pytz
 import json
+import math
 import os
+import warnings
+
+import pytz
+
+import hszinc
+from hszinc import MARKER
+from hszinc.zincparser import hs_row
+from .pint_enable import _enable_pint
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
 
@@ -491,7 +498,7 @@ def _check_marker_in_row_json(pint_en):
             {'str': 'Marker',       'marker':'m:'},
         ],
     }, mode=hszinc.MODE_JSON)
-    assert len(grid_list) == 1
+    assert(len(grid_list) == 1)
     grid = grid_list[0]
     assert grid[0]['marker'] is None
     assert grid[1]['marker'] is hszinc.MARKER

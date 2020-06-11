@@ -102,6 +102,13 @@ def dump_scalar(scalar, version=LATEST_VER):
         return '[%s]' % ','.join(map(
                 functools.partial(dump_scalar, version=version),
                 scalar))
+    elif isinstance(scalar, dict):
+        # Forbid version 2.0 and earlier.
+        if version < VER_3_0:
+            raise ValueError('Project Haystack version %s ' \
+                             'does not support dicts' \
+                             % version)
+        return '{'+' '.join([k+':'+dump_scalar(v, version=version) for (k, v) in scalar.items()])+'}'
     elif isinstance(scalar, bool):
         return dump_bool(scalar, version=version)
     elif isinstance(scalar, Ref):

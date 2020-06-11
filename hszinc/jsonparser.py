@@ -87,11 +87,16 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
     elif isinstance(scalar, list):
         # We support this only in version 3.0 and up.
         if version < VER_3_0:
-            raise ValueError('Lists are not supported in Haystack version %s'\
-                    % version)
-        return list(map(
-            functools.partial(parse_embedded_scalar, version=version),
-            scalar))
+            raise ValueError('Lists are not supported in Haystack version %s' \
+                             % version)
+        return list(map(functools.partial(parse_scalar, version=version),
+                        scalar))
+    elif isinstance(scalar, dict):
+        # We support this only in version 3.0 and up.
+        if version < VER_3_0:
+            raise ValueError('Dicts are not supported in Haystack version %s' \
+                             % version)
+        return {k: parse_scalar(v, version=version) for (k, v) in scalar.items()}
     elif scalar == MARKER_STR:
         return MARKER
     elif scalar == NA_STR:
@@ -154,14 +159,14 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
             sec = 0
             usec = 0
         elif '.' in second:
-            (whole_sec, frac_sec) = second.split('.',1)
+            (whole_sec, frac_sec) = second.split('.', 1)
             sec = int(whole_sec)
-            usec = int(frac_sec[:6].ljust(6,'0'))
+            usec = int(frac_sec[:6].ljust(6, '0'))
         else:
             sec = int(second)
             usec = 0
         return datetime.time(hour=int(hour), minute=int(minute),
-                second=sec, microsecond=usec)
+                             second=sec, microsecond=usec)
 
     # Is it a date/time?
     match = DATETIME_RE.match(scalar)
@@ -170,14 +175,14 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
         # Parse ISO8601 component
         isodate = iso8601.parse_date(matches[0])
         # Parse timezone
-        tzname  = matches[-1]
+        tzname = matches[-1]
         if tzname is None:
             return isodate  # No timezone given
         else:
             try:
                 tz = timezone(tzname)
                 return isodate.astimezone(tz)
-            except: # pragma: no cover
+            except:  # pragma: no cover
                 # Unlikely code path.
                 return isodate
 
@@ -194,8 +199,8 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
     # Is it a co-ordinate?
     match = COORD_RE.match(scalar)
     if match:
-        (lat,lng) = match.groups()
-        return Coordinate(float(lat),float(lng))
+        (lat, lng) = match.groups()
+        return Coordinate(float(lat), float(lng))
     return scalar
 
 

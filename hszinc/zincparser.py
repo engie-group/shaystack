@@ -66,7 +66,6 @@ Group           = lambda *a, **kwa : _leave_ws(pp.Group, *a, **kwa)
 DelimitedList   = lambda *a, **kwa : _leave_ws(pp.delimitedList, *a, **kwa)
 Forward         = lambda *a, **kwa : _leave_ws(pp.Forward, *a, **kwa)
 
-
 class ZincParseException(ValueError):
     """
     Exception thrown when a grid cannot be parsed successfully.  If known,
@@ -414,15 +413,6 @@ hs_list         = GenerateMatch(                            \
                 Suppress(Regex(r' *\]'))                    \
             ])                                              \
         ])).setParseAction(lambda toks : toks.asList()))
-
-# All possible scalar values, by Haystack version
-hs_scalar_2_0 <<= Or([hs_ref, hs_bin, hs_str, hs_uri, hs_dateTime,
-            hs_date, hs_time, hs_coord, hs_number, hs_null, hs_marker,
-            hs_remove, hs_bool]).setName('scalar')
-hs_scalar_3_0 <<= Or([hs_ref, hs_bin, hs_str, hs_uri, hs_dateTime,
-            hs_date, hs_time, hs_coord, hs_number, hs_null, hs_na, hs_marker,
-            hs_remove, hs_bool, hs_list[VER_3_0]]).setName('scalar')
-
 # Tag IDs
 hs_id           = Regex(r'[a-z][a-zA-Z0-9_]*').setName('id')
 
@@ -430,6 +420,68 @@ hs_id           = Regex(r'[a-z][a-zA-Z0-9_]*').setName('id')
 hs_cell         = GenerateMatch(                                                \
         lambda ver : Or([Empty().copy().setParseAction(lambda toks : [None]),   \
                         hs_scalar[ver]]).setName('cell'))
+
+# Dict
+# There are three cases:
+# - Empty dict: { {optional whitespace} }
+# - map with marker: { m }
+# - dics: { k:1  ]
+#
+hs_tagmarker = hs_id
+
+
+hs_tagpair = GenerateMatch(
+    lambda ver: And([hs_id,
+                     Suppress(Regex(r': *')),
+                     hs_scalar[ver]
+                     ])
+        .setParseAction(lambda toks: tuple(toks[:2]))
+        .setName('tagPair'))
+
+
+hs_tag = GenerateMatch(
+    lambda ver: Or([hs_tagmarker, hs_tagpair[ver]])
+        .setName('tag'))
+
+
+hs_tags = GenerateMatch(
+    lambda ver: ZeroOrMore(Or([hs_tag[ver], \
+                               Suppress(Regex(r'[ *]'))])) \
+        .setName('tags'))
+
+
+def _to_dict(tokenlist):
+    result = {}
+    for i, tok in enumerate(tokenlist):
+        if isinstance(tok, str):
+            result[tok] = MARKER
+        else:
+            result[tok[0]] = tok[1]
+    return result
+
+
+hs_dict = GenerateMatch(
+    lambda ver: Or([
+        Suppress(Regex(r'[ *]')),
+        And([
+            Suppress(Regex(r'{ *')),
+            hs_tags[ver],
+            Suppress(Regex(r' *}'))
+        ])
+    ])
+        .setName("dict")
+        .setParseAction(_to_dict)
+)
+
+
+# All possible scalar values, by Haystack version
+hs_scalar_2_0 <<= Or([hs_ref, hs_bin, hs_str, hs_uri, hs_dateTime,
+            hs_date, hs_time, hs_coord, hs_number, hs_null, hs_marker,
+            hs_remove, hs_bool]).setName('scalar')
+hs_scalar_3_0 <<= Or([hs_ref, hs_bin, hs_str, hs_uri, hs_dateTime,
+            hs_date, hs_time, hs_coord, hs_number, hs_null, hs_na, hs_marker,
+            hs_remove, hs_bool, hs_list[VER_3_0], hs_dict[VER_3_0]]).setName('scalar')
+
 hs_nl           = Combine(And([Optional(Literal('\r')), Literal('\n')]))
 
 hs_row          = GenerateMatch(\

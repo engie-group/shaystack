@@ -171,6 +171,8 @@ $(PIP_PACKAGE): $(CONDA_PYTHON) $(PRJ)/requirements.txt layer/requirements.txt |
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	pip install -r $(PRJ)/requirements.txt
 	pip install -r layer/requirements.txt
+	# Install the fork of hszinc
+	pip install -e hszinc
 	echo -e "$(cyan)Project dependencies updated$(normal)"
 	@touch $(PIP_PACKAGE)
 

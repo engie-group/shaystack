@@ -19,13 +19,14 @@ CONDA_ARGS?=
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 PIP_ARGS?=
 ENVS_JSON?=envs.json
+HSZINC_VERSION=*
 
 AWS_REGION?=eu-west-3
 AWS_STACK=CarbonAPI
 AWS_API_HOME=https://$(shell aws apigateway get-rest-apis --output text --query 'items[?name==`$(AWS_STACK)`].id').execute-api.$(AWS_REGION).amazonaws.com/Prod
 ENVS_TEST?=NOCOMPRESS=True
-# FIXME: remove local default profile ?
-#export AWS_DEFAULT_PROFILE=engie
+export AWS_DEFAULT_PROFILE=CarbonAPI
+export ROOT_DIR=$$PWD
 
 CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
@@ -169,6 +170,7 @@ $(PIP_PACKAGE): $(CONDA_PYTHON) $(PRJ)/requirements.txt layer/requirements.txt |
 		pytype ninja flake8 pylint pytest jq
 	echo -e "$(cyan)Build dependencies updated$(normal)"
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
+	pip install gimme-aws-creds pytest
 	pip install -r $(PRJ)/requirements.txt
 	pip install -r layer/requirements.txt
 	# Install the fork of hszinc
@@ -224,7 +226,7 @@ clean-all: clean remove-venv
 # Template to build custom runtime.
 # See https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-custom-runtimes.html
 # See https://github.com/awslabs/aws-sam-cli/blob/de8ad8e78491ebfa884c02c3439c6bcecd08516b/designs/build_for_layers.md
-build-HSZincLayer:
+build-HSZincLayer: hszinc/dist/hszinc-*.whl
 	@if [[ -z "$(ARTIFACTS_DIR)" ]]
 	then
 		@$(VALIDATE_VENV)
@@ -236,7 +238,7 @@ build-HSZincLayer:
 		# The variable OLDPWD is set to the project home directory
 		umask 0
 		mkdir -p "$(ARTIFACTS_DIR)/python"
-		python -m pip install $(OLDPWD)/hszinc/dist/hszinc-*.whl -t "$(ARTIFACTS_DIR)/python"
+		python -m pip install $(ROOT_DIR)/hszinc/dist/hszinc-$(HSZINC_VERSION)-py3-none-any.whl -t "$(ARTIFACTS_DIR)/python"
 	fi
 
 ## Build specific lambda function (ie. build-About)
@@ -258,7 +260,7 @@ build: .aws-sam/build
 
 # -------------------------------------- Invoke
 .PHONY: invoke-*
-## Build and invoke lamda function in local with associated events (ie. invoke-About)
+## Build and invoke lambda function in local with associated events (ie. invoke-About)
 invoke-%: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
 	sam local invoke --env-vars $(ENVS_JSON) $* -e events/$*_event.json >out.json
@@ -287,7 +289,7 @@ async-start-api: $(ENVS_JSON) .aws-sam/build
 # Stop local api emulator in background
 async-stop-api:
 	@$(VALIDATE_VENV)
-	@[ -e .start/start-api.pid ] && kill `cat .start/start-api.pid` && echo -e "$(green)Local API stopped$(normal)"
+	@[ -e .start/start-api.pid ] && kill `cat .start/start-api.pid` || true && echo -e "$(green)Local API stopped$(normal)"
 	rm -f .start/start-api.pid
 
 .PHONY: api
@@ -324,19 +326,38 @@ async-start-lambda: $(ENVS_JSON) .aws-sam/build
 # Stop lambda local emulator in background
 async-stop-lambda:
 	@$(VALIDATE_VENV)
-	@[ -e .start/start-lambda.pid ] && kill `cat .start/start-lambda.pid` && echo -e "$(green)Local Lambda stopped$(normal)"
+	@[ -e .start/start-lambda.pid ] && kill `cat .start/start-lambda.pid` || true && echo -e "$(green)Local Lambda stopped$(normal)"
 	rm -f .start/start-lambda.pid
 
 ## Stop all async server
 async-stop: async-stop-api async-stop-lambda
 
 # -------------------------------------- AWS
+# Initialise okta with default values
+https://e6esmeduqa.execute-api.eu-west-3.amazonaws.com/Prod/about
+~/.okta_aws_login_config: .okta_aws_login_config
+	@touch ~/.okta_aws_login_config
+	grep -Fxq "[CarbonAPI]" ~/.okta_aws_login_config || cat .okta_aws_login_config >>~/.okta_aws_login_config
+	echo -e "$(green)Initialize ~/.okta_aws_login_config file$(normal)"
+
+.PHONY: aws-update-token
+# Update the AWS Token
+aws-update-token: ~/.okta_aws_login_config
+	@aws sts get-caller-identity >/dev/null || gimme-aws-creds --profile $(AWS_DEFAULT_PROFILE)
+
+.PHONY: aws-deploy
+## Deploy lambda functions
+aws-deploy: .aws-sam/build aws-update-token
+	@$(VALIDATE_VENV)
+	sam deploy --debug --region $(AWS_REGION) --parameter-overrides NOCOMPRESS=True
+	echo -e "$(green)Lambdas are deployed$(normal)"
+
 .PHONY: aws-clean-stack
 ## Remove AWS Stack
 aws-clean-stack:
 	aws cloudformation delete-stack --stack-name $(AWS_STACK) --region $(AWS_REGION)
 
-##  Invoke lamda function via aws cli (ie. aws-invoke-About)
+##  Invoke lambda function via aws cli (ie. aws-invoke-About)
 aws-invoke-%: .aws-sam/build
 	$(VALIDATE_VENV)
 	FUNCTION=$$(aws cloudformation describe-stack-resource --stack-name $(AWS_STACK) --logical-resource-id About --query 'StackResourceDetail.PhysicalResourceId' --output text)
@@ -355,7 +376,7 @@ aws-api:
 	sed 's/https:..$${ServerlessRestApi}.*\//$(subst  /,\/,$(AWS_API_HOME))\//g'
 
 ## Invoke API via AWS (eg. make aws-api-about)
-aws-api-%:
+aws-api-%: 
 	curl -H "Accept: text/zinc" \
 		"$(AWS_API_HOME)/$*"
 
@@ -392,7 +413,7 @@ test: .make-test
 
 
 # -------------------------------------- hszinc
-hszinc/dist: hszinc/hszinc/*.py
+hszinc/dist/hszinc-*.whl: hszinc/hszinc/*.py
 	cd hszinc
 	python setup.py bdist_wheel
 
@@ -432,13 +453,6 @@ typing: .make-typing
 ## Lint the code
 lint: .make-lint
 
-
-.PHONY: deploy
-## Deploy lambda functions
-deploy: .aws-sam/build
-	@$(VALIDATE_VENV)
-	sam deploy --region $(AWS_REGION) --parameter-overrides NOCOMPRESS=PPR
-	echo -e "$(green)Lambdas are deployed$(normal)"
 
 .PHONY: validate
 .make-validate: .make-test .make-lint .aws-sam/build

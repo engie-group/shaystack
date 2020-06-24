@@ -25,7 +25,7 @@ that you can deploy with the SAM CLI. It includes the following files and folder
 - events - Invocation events that you can use to invoke the function.
 - tests - Unit tests for the application code. 
 - hszinc - Git submodule to patch the hszinc project. 
-- layer - A lamda layer shared by other lambdas 
+- layer - A lamb    da layer shared by other lambdas 
 - template.yaml - A template that defines the application's AWS resources.
 - Makefile - All tools to manage the project (Use 'make help')
 
@@ -102,10 +102,23 @@ The `Events` property on each function's definition includes the route and metho
 
 ## Deploy the application
 
+Before deploying the application, you must have:
+- an admin account WITH password (Ask the support +33977401002 to activate the « Okta Sync Flag » to 1
+for your XXXX-A account)
+- a token created by Gimme aws cred
+
+For more information, read [this](https://confluence.tools.digital.engie.com/display/CDHA/AWS+CLI+installation+and+CDH+access+testing)
+
+With command line, select the correct aws profile with:
+```bash
+export AWS_DEFAULT_PROFILE=CarbonAPI
+```
+
 To build and deploy CarbonAPI run the following in your shell:
 ```bash
 make deploy
 ```
+If you receive an Expired Token error, retry. The token will be updated
 
 To deploy a specific lambda function
 ```bash

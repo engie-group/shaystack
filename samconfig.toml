@@ -3,9 +3,11 @@ version = 0.1
 [default.deploy]
 [default.deploy.parameters]
 stack_name = "CarbonAPI"
-s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-bxi1tc1eibko"
+#s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-nijufaae3xge"
+s3_bucket = "alpha-dev-sam-cli"
 s3_prefix = "CarbonAPI"
 region = "eu-west-3"
-confirm_changeset = false
+confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
+parameter_overrides = "NOCOMPRESS=\"True\""
 

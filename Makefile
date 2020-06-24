@@ -394,7 +394,7 @@ aws-api:
 	sed 's/https:..$${ServerlessRestApi}.*\//$(subst  /,\/,$(AWS_API_HOME))\//g'
 
 ## Invoke API via AWS (eg. make aws-api-about)
-aws-api-%: 
+aws-api-%:
 	curl -H "Accept: text/zinc" \
 		"$(AWS_API_HOME)/$*"
 

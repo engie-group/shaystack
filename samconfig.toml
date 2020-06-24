@@ -6,7 +6,7 @@ stack_name = "CarbonAPI"
 s3_bucket = "alpha-dev-sam-cli"
 s3_prefix = "CarbonAPI"
 region = "eu-west-3"
-confirm_changeset = true
+confirm_changeset = false
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "NOCOMPRESS=\"True\""
 

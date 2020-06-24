@@ -26,12 +26,12 @@ that you can deploy with the SAM CLI. It includes the following files and folder
 - events - Invocation events that you can use to invoke the function.
 - tests - Unit tests for the application code. 
 - hszinc - Git submodule to patch the hszinc project. 
-- layer - A lamb    da layer shared by other lambdas 
+- layer - A lamda layer shared by other lambdas 
 - template.yaml - A template that defines the application's AWS resources.
 - Makefile - All tools to manage the project (Use 'make help')
 
-The application uses several AWS resources, including Lambda functions and an API Gateway. 
-These resources are defined in the `template.yaml` file. 
+The application uses several AWS resources, including Lambda functions and an API Gateway API. 
+These resources are defined in the `template.yaml` file in this project. 
 
 
 ## Build the application
@@ -55,7 +55,6 @@ make build
 
 To build a specific lambda, use `make build-<name>` command.
 ```bash
-make build-Read
 make build-ExtendWithCO2e
 make build-BaseLayer
 ```

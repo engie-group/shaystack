@@ -1,5 +1,5 @@
 
-[CarbonAPI]
+[carbonapi]
 okta_org_url = https://engie.okta-emea.com
 okta_auth_server =
 client_id =
@@ -7,7 +7,7 @@ gimme_creds_server = appurl
 aws_appname =
 aws_rolename =
 write_aws_creds = True
-cred_profile = CarbonAPI
+cred_profile = carbonapi
 okta_username =
 app_url = https://engie.okta-emea.com/home/amazon_aws/0oani4u2hsqPvsK1V0i6/272
 resolve_aws_alias = False

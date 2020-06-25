@@ -4,7 +4,7 @@ SHELL=/bin/bash
 .ONESHELL:
 
 ifeq ($(shell echo "$(shell echo $(MAKE_VERSION) | sed 's@^[^0-9]*\([0-9]\+\).*@\1@' ) >= 4" | bc -l),0)
-$(error Bad make version, please install make >= 4)
+#$(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
 endif
 
 PRJ=carbonapi
@@ -12,7 +12,7 @@ PYTHON_SRC=$(PRJ)/*.py
 PYTHON_VERSION:=3.7
 PRJ_PACKAGE:=$(PRJ)
 VENV ?= $(PRJ)
-CONDA_BASE:=$(shell conda info --base)
+CONDA_BASE:=$(shell AWS_PROFILE=default conda info --base)
 CONDA_PACKAGE:=$(CONDA_PREFIX)/lib/python$(PYTHON_VERSION)/site-packages
 CONDA_PYTHON:=$(CONDA_PREFIX)/bin/python
 CONDA_ARGS?=
@@ -21,11 +21,11 @@ PIP_ARGS?=
 ENVS_JSON?=envs.json
 HSZINC_VERSION=*
 
-AWS_REGION?=eu-west-3
 AWS_STACK=CarbonAPI
 AWS_API_HOME=https://$(shell aws apigateway get-rest-apis --output text --query 'items[?name==`$(AWS_STACK)`].id').execute-api.$(AWS_REGION).amazonaws.com/Prod
 ENVS_TEST?=NOCOMPRESS=True
-export AWS_DEFAULT_PROFILE=CarbonAPI
+export AWS_PROFILE=carbonapi
+export AWS_REGION=eu-west-3
 export ROOT_DIR=$$PWD
 
 CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
@@ -165,14 +165,14 @@ dependencies: requirements
 $(PIP_PACKAGE): $(CONDA_PYTHON) $(PRJ)/requirements.txt layer/requirements.txt | .git # Install pip dependencies
 	@$(VALIDATE_VENV)
 	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"
+	pip install -r $(PRJ)/requirements.txt
+	pip install -r layer/requirements.txt
 	conda install -c conda-forge -c anaconda -y \
 		awscli aws-sam-cli make \
 		pytype ninja flake8 pylint pytest jq
 	echo -e "$(cyan)Build dependencies updated$(normal)"
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
-	pip install gimme-aws-creds pytest
-	pip install -r $(PRJ)/requirements.txt
-	pip install -r layer/requirements.txt
+	pip install gimme-aws-creds aws-sam-cli
 	# Install the fork of hszinc
 	pip install -e hszinc
 	echo -e "$(cyan)Project dependencies updated$(normal)"
@@ -253,7 +253,9 @@ build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) template.yaml
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Build Lambdas$(normal)"
 	umask 0
-	@sam build
+	sam build
+	find .aws-sam -type f -exec chmod 644 {} \;
+	find .aws-sam -type d -exec chmod 755 {} \;
 
 ## Build all lambda function
 build: .aws-sam/build
@@ -298,9 +300,16 @@ api:
 	@grep -oh 'https://$${ServerlessRestApi}[^"]*' template.yaml | \
 	sed 's/https:..$${ServerlessRestApi}.*\//http:\/\/locahost:3000\//g'
 
-## Invoke local API (eg. make api-about)
-api-%:
-	curl -H "Accept: text/zinc" \
+## Invoke local API (eg. make api-get-about)
+api-get-%:
+	@curl -H "Accept: text/zinc" \
+		"http://localhost:3000/$*"
+
+## Invoke local API (eg. make api-post-Read)
+api-post-%:
+	@curl -H "Accept: text/zinc" \
+		-H "Content-Type: application/json" \
+		-X POST \
 		"http://localhost:3000/$*"
 
 
@@ -337,19 +346,21 @@ async-stop: async-stop-api async-stop-lambda
 https://e6esmeduqa.execute-api.eu-west-3.amazonaws.com/Prod/about
 ~/.okta_aws_login_config: .okta_aws_login_config
 	@touch ~/.okta_aws_login_config
-	grep -Fxq "[CarbonAPI]" ~/.okta_aws_login_config || cat .okta_aws_login_config >>~/.okta_aws_login_config
+	grep -Fxq "[carbonapi]" ~/.aws/config || echo -e '[carbonapi]\nregion = $(AWS_REGION)' >>~/.aws/config
+	grep -Fxq "[carbonapi]" ~/.aws/credentials || echo '[carbonapi]' >>~/.aws/credentials
+	grep -Fxq "[carbonapi]" ~/.okta_aws_login_config || cat .okta_aws_login_config >>~/.okta_aws_login_config
 	echo -e "$(green)Initialize ~/.okta_aws_login_config file$(normal)"
 
 .PHONY: aws-update-token
 # Update the AWS Token
 aws-update-token: ~/.okta_aws_login_config
-	@aws sts get-caller-identity >/dev/null || gimme-aws-creds --profile $(AWS_DEFAULT_PROFILE)
+	@aws sts get-caller-identity >/dev/null 2>/dev/null || gimme-aws-creds --profile $(AWS_PROFILE)
 
 .PHONY: aws-deploy
 ## Deploy lambda functions
 aws-deploy: .aws-sam/build aws-update-token
-	@$(VALIDATE_VENV)
-	sam deploy --debug --region $(AWS_REGION) --parameter-overrides NOCOMPRESS=True
+	$(VALIDATE_VENV)
+	sam deploy --debug --profile $(AWS_PROFILE) --region $(AWS_REGION) --parameter-overrides NOCOMPRESS=True
 	echo -e "$(green)Lambdas are deployed$(normal)"
 
 .PHONY: aws-clean-stack
@@ -360,9 +371,16 @@ aws-clean-stack:
 ##  Invoke lambda function via aws cli (ie. aws-invoke-About)
 aws-invoke-%: .aws-sam/build
 	$(VALIDATE_VENV)
-	FUNCTION=$$(aws cloudformation describe-stack-resource --stack-name $(AWS_STACK) --logical-resource-id About --query 'StackResourceDetail.PhysicalResourceId' --output text)
+	FUNCTION=$$(aws cloudformation describe-stack-resource \
+		--stack-name $(AWS_STACK) \
+		--profile $(AWS_PROFILE) \
+		--region $(AWS_REGION) \
+		--logical-resource-id $* \
+		--query 'StackResourceDetail.PhysicalResourceId' --output text)
 	aws lambda invoke --function-name $$FUNCTION \
 		--payload file://events/$*_event.json \
+		--profile $(AWS_PROFILE) \
+		--region $(AWS_REGION) \
 		out.json \
 		--log-type Tail --query 'LogResult' --output text |  base64 -d
 	jq -r <out.json
@@ -380,6 +398,15 @@ aws-api-%:
 	curl -H "Accept: text/zinc" \
 		"$(AWS_API_HOME)/$*"
 
+# FIXME
+## Print logs
+aws-log-%:
+	sam logs -n $* --stack-name $(AWS_STACK) --tail
+
+
+## Print AWS stack info
+aws-info:
+	aws cloudformation describe-stacks --stack-name $(AWS_STACK)
 # -------------------------------------- Tests
 .PHONY: unit-test
 .make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build Makefile envs.json

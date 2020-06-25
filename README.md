@@ -11,6 +11,7 @@ The code implements theses Haystack [operations](https://project-haystack.org/do
 - [About](https://project-haystack.org/doc/Ops#about)
 - [Ops](https://project-haystack.org/doc/Ops#ops)
 - [Formats](https://project-haystack.org/doc/Ops#formats)
+- [Read](https://project-haystack.org/doc/Ops#read) to expose an haystack file referenced with the HAYSTACK_URL environment variable
 
 and add one specific operation
 - extend_with_co2e
@@ -29,15 +30,15 @@ that you can deploy with the SAM CLI. It includes the following files and folder
 - template.yaml - A template that defines the application's AWS resources.
 - Makefile - All tools to manage the project (Use 'make help')
 
-The application uses several AWS resources, including Lambda functions and an API Gateway API. 
-These resources are defined in the `template.yaml` file in this project. 
+The application uses several AWS resources, including Lambda functions and an API Gateway. 
+These resources are defined in the `template.yaml` file. 
 
 
 ## Build the application
 This project use a `Makefile` (>4.0) for integrate all tools and [Conda](https://docs.conda.io/projects/conda/en/latest/index.html
 to manage dependencies and tools.
 
-To initialise the Conda environment, use `make configure`. Then activate the conda environment.
+To initialise the Conda environment, use `make configure` and activate the conda environment.
 Then, it's possible to test, build, etc. See `make help` to print all major target.
 ```bash
 git clone --recurse-submodules http://github.tools.digital.engie.com/PR6075/alpha-carbon-api.git 
@@ -54,11 +55,12 @@ make build
 
 To build a specific lambda, use `make build-<name>` command.
 ```bash
+make build-Read
 make build-ExtendWithCO2e
 make build-BaseLayer
 ```
 
-The build process installs dependencies defined in `carnonapi/requirements.txt`
+The build process install dependencies defined in `carnonapi/requirements.txt`
 and `layout/requirements.txt`, creates some deployments packages 
 and saves it in the `.aws-sam/build` folder.
 
@@ -72,16 +74,16 @@ Run functions locally and invoke them with the `make invoke-<name>` command.
 make invoke-About 
 ```
 
-Run functions remotelly and invoke them with the `make aws-invoke-<name>` command.
+After deployed the lambda functions, run functions remotely and invoke them with the `make aws-invoke-<name>` command.
 ```bash
 make aws-invoke-About 
 ```
 
-The SAM CLI can also emulate your application's API. Use the `make start-api` to run the API locally on port 3000.
+The SAM CLI can also emulate the application's API. Use the `make start-api` to run the API locally on port 3000.
 You can use [Postman](https://www.postman.com/) and the file `CarbonAPI v2.0.postman_collection.json` to
 test and invoke the local API.
 
-TODO: util ? refresh ? You can start API server in background with `make async-start-api` and close with `make async-stop-api`.
+You can start API server in background with `make async-start-api` and close with `make async-stop-api`.
 
 ```bash
 make async-start-api
@@ -93,10 +95,10 @@ The `Events` property on each function's definition includes the route and metho
 
 ```yaml
   Events:
-    ExtendWithCO2e:
+    Read:
       Type: Api
       Properties:
-        Path: /extend_with_co2e
+        Path: /read
         Method: post
 ```
 
@@ -104,21 +106,21 @@ The `Events` property on each function's definition includes the route and metho
 
 Before deploying the application, you must have:
 - an admin account WITH password (Ask the support +33977401002 to activate the « Okta Sync Flag » to 1
-for your XXXX-A account)
-- a token created by Gimme aws cred
+for your XXXX-A engie account)
+- a token created by *Gimme aws cred*
 
 For more information, read [this](https://confluence.tools.digital.engie.com/display/CDHA/AWS+CLI+installation+and+CDH+access+testing)
 
 With command line, select the correct aws profile with:
 ```bash
-export AWS_DEFAULT_PROFILE=CarbonAPI
+export AWS_PROFILE=carbonapi
 ```
 
 To build and deploy CarbonAPI run the following in your shell:
 ```bash
-make deploy
+make aws-deploy
 ```
-If you receive an Expired Token error, retry. The token will be updated
+If you receive an Expired Token error, retry. The token will be updated (or use `make aws-update-token`)
 
 To deploy a specific lambda function
 ```bash
@@ -132,7 +134,7 @@ Extend the `events/requirement.txt` and run `make build`.
 To simplify troubleshooting, use `make log-<name>`
 
 ```bash
-make logs-About
+make aws-logs-About
 ```
 
 You can find more information and examples about filtering Lambda function logs in the 
@@ -143,7 +145,7 @@ You can find more information and examples about filtering Lambda function logs 
 Tests are defined in the `tests` folder in this project. 
 To run all tests, use `make test`. You can select unit or functional test with `make unit-test` 
 or `make functional-test`. The functional-test call the API via a local lambda emulator, 
-after starting lambda server in background (`make async-start-lambda`).
+after starting lambda server in background (`make async-start-lambda`) or download s3 files.
 ```bash
 make test
 make unit-test
@@ -151,10 +153,11 @@ make functional-test
 ```
 
 ### Invoke local API
-After started local api, to invoke api, use `make api-<path suffix>`
+After started local api, to invoke api, use `make api-get-<path suffix>` or `make api-post-<path suffix>`
 ```bash
 make async-start-api
-make api-about
+make api-get-about
+make api-post-read
 ```
 To print the local API URL:
 ```bash

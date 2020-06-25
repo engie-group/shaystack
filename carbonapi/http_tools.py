@@ -65,12 +65,12 @@ class _AcceptableEncoding:
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, _AcceptableEncoding):
-            return NotImplemented
+            return False
         return (self.encoding_type, self.weight) == (other.encoding_type, other.weight)
 
     def __lt__(self, other: Any) -> bool:
         if not isinstance(other, _AcceptableEncoding):
-            return NotImplemented
+            return ValueError()
         return self.weight < other.weight
 
 

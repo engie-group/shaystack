@@ -102,7 +102,8 @@ def cast_lambda_proxy_event(_event: LambdaEvent) -> LambdaProxyEvent:
 
     """
     event = AttrDict(_event)
-    event["headers"] = dict()
+    if not 'headers' in event:
+        event["headers"] = dict()
     if "multiValueHeaders" in event:
         mv: Dict[str, List[str]] = event["multiValueHeaders"]
         event.headers.update({k: ",".join(v) for (k, v) in mv.items()})

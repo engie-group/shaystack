@@ -30,8 +30,8 @@ that you can deploy with the SAM CLI. It includes the following files and folder
 - template.yaml - A template that defines the application's AWS resources.
 - Makefile - All tools to manage the project (Use 'make help')
 
-The application uses several AWS resources, including Lambda functions and an API Gateway API. 
-These resources are defined in the `template.yaml` file in this project. 
+The application uses several AWS resources, including Lambda functions and an API Gateway. 
+These resources are defined in the `template.yaml` file. 
 
 
 ## Build the application
@@ -55,6 +55,7 @@ make build
 
 To build a specific lambda, use `make build-<name>` command.
 ```bash
+make build-Read
 make build-ExtendWithCO2e
 make build-BaseLayer
 ```

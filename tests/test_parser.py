@@ -1699,3 +1699,59 @@ def test_malformed_zinc_scalar():
         raise
     except:
         pass
+
+def test_skyspark_status_zinc():
+    """
+    Test parsing a ZINC grid with a string like "{state}" does not fail.
+    """
+    # Reference: https://github.com/widesky/hszinc/issues/25
+    grid_str = '''ver:"2.0"
+test
+"{state}"
+'''
+    grids = hszinc.parse(grid_str, mode=hszinc.MODE_ZINC)
+    assert len(grids) == 1, 'Too many grids returned'
+    assert isinstance(grids[0], hszinc.Grid), 'Not returned a grid'
+    assert len(grids[0]) == 1, 'Too many rows returned'
+    assert set(grids[0][0].keys()) == set(['test'])
+    assert grids[0][0]['test'] == '{state}'
+
+def test_skyspark_status_json():
+    """
+    Test parsing a JSON grid with a string like "{state}" does not fail.
+    """
+    # Reference: https://github.com/widesky/hszinc/issues/25
+    grid_str = '''{
+    "meta": {"ver": "2.0"},
+    "cols": [
+        {"name": "test"}
+    ],
+    "rows": [
+        {"test": "{state}"}
+    ]
+}'''
+    grid = hszinc.parse(grid_str, mode=hszinc.MODE_JSON)
+    assert isinstance(grid, hszinc.Grid), 'Not returned a grid'
+    assert len(grid) == 1, 'Too many rows returned'
+    assert set(grid[0].keys()) == set(['test'])
+    assert grid[0]['test'] == '{state}'
+
+def test_skyspark_status_json_prefix():
+    """
+    Test parsing a JSON grid with a string like "s:{state}" does not fail.
+    """
+    # Reference: https://github.com/widesky/hszinc/issues/25
+    grid_str = '''{
+    "meta": {"ver": "2.0"},
+    "cols": [
+        {"name": "test"}
+    ],
+    "rows": [
+        {"test": "s:{state}"}
+    ]
+}'''
+    grid = hszinc.parse(grid_str, mode=hszinc.MODE_JSON)
+    assert isinstance(grid, hszinc.Grid), 'Not returned a grid'
+    assert len(grid) == 1, 'Too many rows returned'
+    assert set(grid[0].keys()) == set(['test'])
+    assert grid[0]['test'] == '{state}'

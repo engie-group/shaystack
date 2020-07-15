@@ -1,13 +1,14 @@
 import inspect
 import json
+from unittest.mock import patch
 
 import pytest
 from botocore.client import BaseClient
 
 import hszinc
-from carbonapi import haystackapi_lambda
 from hszinc import Grid
 from lambda_types import LambdaProxyEvent, LambdaContext, LambdaEvent
+from src import haystackapi_lambda
 from test_tools import boto_client
 
 
@@ -19,21 +20,15 @@ def apigw_event():
 
 @pytest.fixture()
 def lambda_client() -> BaseClient:
-    return boto3.client('lambda',
-                        endpoint_url="http://127.0.0.1:3001",
-                        use_ssl=False,
-                        verify=False,
-                        config=Config(signature_version=UNSIGNED,
-                                      read_timeout=10,
-                                      retries={'max_attempts': 0}))
+    return boto_client()
 
 
+@patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
 def test_formats_with_zinc(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
     context.function_name = "Formats"
     context.aws_request_id = inspect.currentframe().f_code.co_name
-    grid: Grid = hszinc.Grid()
     mime_type = "text/zinc"
     apigw_event["headers"]["Content-Type"] = mime_type
     apigw_event["headers"]["Accept"] = mime_type

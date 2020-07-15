@@ -2,17 +2,16 @@ import base64
 import gzip
 import inspect
 import json
-import os
-import unittest
+from unittest.mock import patch
 
 import pytest
 from botocore.client import BaseClient
 
 import hszinc
-from carbonapi import haystackapi_lambda
 from haystackapi_lambda import NO_COMPRESS
 from hszinc import Grid
 from lambda_types import LambdaProxyEvent, LambdaContext, LambdaEvent
+from src import haystackapi_lambda
 from test_tools import boto_client
 
 
@@ -27,7 +26,7 @@ def lambda_client() -> BaseClient:
     return boto_client()
 
 
-@unittest.mock.patch.dict('os.environ', {'provider': 's3_provider.S3Provider'})
+@patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
 def test_invokeAction_with_zinc(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
@@ -47,18 +46,18 @@ def test_invokeAction_with_zinc(apigw_event: LambdaProxyEvent):
     # THEN
     assert response["statusCode"] == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    read_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
+    read_grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
     assert not len(read_grid)
 
 
-@unittest.mock.patch.dict('os.environ', {'provider': 's3_provider.S3Provider'})
+@patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
 def test_invokeAction_without_params_with_zinc(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
     context.function_name = "InvokeAction"
     context.aws_request_id = inspect.currentframe().f_code.co_name
-    grid: Grid = hszinc.Grid(metadata={'id': '123', 'action': 'doIt'},
-                             columns={'key': {}, 'value': {}})
+    grid = hszinc.Grid(metadata={'id': '123', 'action': 'doIt'},
+                       columns={'key': {}, 'value': {}})
     mime_type = "text/zinc"
     apigw_event["headers"]["Content-Type"] = mime_type
     apigw_event["headers"]["Accept"] = mime_type
@@ -79,9 +78,16 @@ def test_invokeAction_without_params_with_zinc(apigw_event: LambdaProxyEvent):
 def test_invokeAction(apigw_event: LambdaEvent, lambda_client: BaseClient) -> None:
     # GIVEN
     apigw_event["headers"]["Accept-Encoding"] = "gzip, deflate, sdch"
+    grid = hszinc.Grid(metadata={'id': '123', 'action': 'doIt'},
+                       columns={'key': {}, 'value': {}})
+    mime_type = "text/zinc"
+    apigw_event["headers"]["Content-Type"] = mime_type
+    apigw_event["headers"]["Accept"] = mime_type
+    apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
+
     # WHEN
     boto_response = lambda_client.invoke(
-        FunctionName="invokeAction",
+        FunctionName="InvokeAction",
         InvocationType="RequestResponse",
         ClientContext="",
         Payload=json.dumps(apigw_event)
@@ -101,5 +107,4 @@ def test_invokeAction(apigw_event: LambdaEvent, lambda_client: BaseClient) -> No
     else:
         body = response["body"]
 
-    hszinc.parse(body, hszinc.MODE_ZINC)
-    assert body == apigw_event["body"]
+    assert hszinc.parse(body, hszinc.MODE_ZINC)

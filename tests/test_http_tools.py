@@ -1,5 +1,3 @@
-import pytest
-
 from http_tools import get_best_encoding_match
 
 

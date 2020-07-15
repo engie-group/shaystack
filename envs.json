@@ -2,6 +2,7 @@
   "Parameters": {
     "LOGLEVEL": "DEBUG",
     "DEBUGGING": "false",
-    "NOCOMPRESS": "true"
+    "NOCOMPRESS": "true",
+    "PROVIDER": "providers.ping.PingProvider"
   }
 }

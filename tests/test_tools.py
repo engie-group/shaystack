@@ -1,3 +1,5 @@
+import os
+
 import boto3
 import botocore
 from botocore.client import BaseClient
@@ -15,8 +17,9 @@ def boto_client() -> BaseClient:
                                      verify=False,
                                      config=botocore.client.Config(
                                          signature_version=botocore.UNSIGNED,
-                                         connect_timeout=30,
-                                         read_timeout=15,
+                                         region_name=os.environ["AWS_REGION"],
+                                         connect_timeout=10,
+                                         read_timeout=30,
                                          retries={'max_attempts': 0},
                                      )
                                      )

@@ -6,19 +6,17 @@ from typing import Any, Tuple, Dict
 import hszinc
 from hszinc import Grid
 
-
-class EmptyGrid(Grid):
-    class _EmptyGrid():
-        def __str__(self):
-            return "EmptyGrid()"
-
-    _empty = _EmptyGrid()
-
-    def __new__(cls):
-        return EmptyGrid._empty
-
-
-
+# FIXME: iteration
+# class EmptyGrid(Grid):
+#     class _EmptyGrid():
+#         def __str__(self):
+#             return "EmptyGrid()"
+#
+#     _empty = _EmptyGrid()
+#
+#     def __new__(cls):
+#         return EmptyGrid._empty
+EmptyGrid = Grid(columns={"empty": {}})
 
 
 class HaystackInterface(ABC):
@@ -51,10 +49,11 @@ class HaystackInterface(ABC):
         # Remove abstract method
         for x in self.__class__.__base__.__abstractmethods__:
             all_haystack_ops.pop(x, None)
-        grid.extend([{"name": name, "summary": summary} for name,summary in all_haystack_ops.items()])
+        grid.extend([{"name": name, "summary": summary} for name, summary in all_haystack_ops.items()])
         return grid
 
     """Implement this method, only if you want to limited the format negociation"""
+
     def formats(self) -> Grid:
         return None
 
@@ -63,7 +62,7 @@ class HaystackInterface(ABC):
         raise NotImplemented()
 
     @abstractmethod
-    def nav(self, navId:Grid) -> Any:  # FIXME Voir comment implementer
+    def nav(self, navId: Grid) -> Any:  # FIXME Voir comment implementer
         raise NotImplemented()
 
     @abstractmethod
@@ -105,9 +104,12 @@ class HaystackInterface(ABC):
 def get_provider(class_str) -> HaystackInterface:
     try:
         module_path, class_name = class_str.rsplit('.', 1)
+        print(f"import module {module_path}")  # FIXME
         module = import_module(module_path)
         # Get the abstract class name
         class_ = getattr(module, class_name)
+        print(f"class_= {class_}")
+
         # Implement all abstract method.
         # Then, it's possible to generate the Ops dynamically
         class FullInterface(class_):
@@ -124,7 +126,7 @@ def get_provider(class_str) -> HaystackInterface:
                 return super().watchSub(watchId)
 
             def watchUnsub(self, watchId: Grid) -> EmptyGrid:
-                return super().watchUnsub
+                return super().watchUnsub(watchId)
 
             def watchPoll(self, watchId: Grid) -> Grid:
                 return super().watchPoll(watchId)
@@ -139,9 +141,8 @@ def get_provider(class_str) -> HaystackInterface:
                 return super().hisWrite(id)
 
             def invokeAction(self, id: str, action: str, params: Dict[str, Any]) -> Grid:
-                return super().invokeAction()
+                return super().invokeAction(id, str, params)
 
         return FullInterface()
     except (ImportError, AttributeError) as e:
         raise ImportError(class_str)
-

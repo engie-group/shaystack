@@ -9,20 +9,23 @@ Globals:
     Timeout: 30
     Environment:
       Variables:
-        LOGLEVEL: WARNING
+        LOGLEVEL: DEBUG
         DEBUGGING: false
-        NOCOMPRESS: false
-#        HAYSTACK_URL: https://project-haystack.dev/download/defs.json
+        NOCOMPRESS: true
+        #PROVIDER: provider.url.URLProvider
+        PROVIDER: providers.ping.PingProvider
         HAYSTACK_URL: s3://cdh-poc1c3ntinel-325540/grid.json
+    #        HAYSTACK_URL: https://project-haystack.dev/download/defs.json
     Layers:
       - !Ref BaseLayer
       - !Ref HSZincLayer
+      - !Ref ParquetLayer
 
 Resources:
   BaseLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      ContentUri: layer
+      ContentUri: layers/base
       CompatibleRuntimes:
         - python3.7
         - python3.8
@@ -32,6 +35,22 @@ Resources:
       RetentionPolicy: Delete
     Metadata:
       BuildMethod: python3.7
+
+  # Because the snappy module never import the libsnappy.so.1,
+  # I must create a Makefile to do that
+  ParquetLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: .
+      CompatibleRuntimes:
+        - python3.7
+        - python3.8
+      Description: Parquet loader layers
+      LayerName: parquet
+      LicenseInfo: BSD 2
+      RetentionPolicy: Delete
+    Metadata:
+      BuildMethod: makefile
 
   HSZincLayer:
     Type: AWS::Serverless::LayerVersion
@@ -50,7 +69,7 @@ Resources:
   About:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: carbonapi/
+      CodeUri: src/
       Handler: haystackapi_lambda.about
       Description: Implement the Haystack `About` api
       # Function's execution role
@@ -79,10 +98,9 @@ Resources:
   Ops:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: carbonapi/
+      CodeUri: src/
       Handler: haystackapi_lambda.ops
       Description: Implement the Haystack `Ops` api
-      # Function's execution role
       Policies:
         - AWSLambdaBasicExecutionRole
         - AWSLambdaReadOnlyAccess
@@ -102,10 +120,9 @@ Resources:
   Formats:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: carbonapi/
+      CodeUri: src/
       Handler: haystackapi_lambda.formats
       Description: Implement the Haystack `Formats` api
-      # Function's execution role
       Policies:
         - AWSLambdaBasicExecutionRole
         - AWSLambdaReadOnlyAccess
@@ -125,9 +142,9 @@ Resources:
   Read:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: carbonapi/
+      CodeUri: src/
       Handler: haystackapi_lambda.read
-      Description: Implement the Haystack `Read` api
+      Description: Implement the Haystack `read` api
       Role: arn:aws:iam::695980681400:role/cdh_poc1paris_59238
       Policies:
         - AWSLambdaBasicExecutionRole
@@ -143,7 +160,7 @@ Resources:
   Nav:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: carbonapi/
+      CodeUri: src/
       Handler: haystackapi_lambda.nav
       Description: Implement the Haystack `nav` api
       # Function's execution role
@@ -166,7 +183,7 @@ Resources:
   WatchSub:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: carbonapi/
+      CodeUri: src/
       Handler: haystackapi_lambda.watchSub
       Description: Implement the Haystack `watchSub` api
       # Function's execution role
@@ -189,7 +206,7 @@ Resources:
   WatchUnsub:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: carbonapi/
+      CodeUri: src/
       Handler: haystackapi_lambda.watchUnsub
       Description: Implement the Haystack `watchUnsub` api
       # Function's execution role
@@ -212,7 +229,7 @@ Resources:
   WatchPoll:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: carbonapi/
+      CodeUri: src/
       Handler: haystackapi_lambda.watchPoll
       Description: Implement the Haystack `watchPoll` api
       # Function's execution role
@@ -235,7 +252,7 @@ Resources:
   PointWrite:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: carbonapi/
+      CodeUri: src/
       Handler: haystackapi_lambda.pointWrite
       Description: Implement the Haystack `pointWrite` api
       # Function's execution role
@@ -258,7 +275,7 @@ Resources:
   HisRead:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: carbonapi/
+      CodeUri: src/
       Handler: haystackapi_lambda.hisRead
       Description: Implement the Haystack `hisRead` api
       # Function's execution role
@@ -281,7 +298,7 @@ Resources:
   HisWrite:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: carbonapi/
+      CodeUri: src/
       Handler: haystackapi_lambda.hisWrite
       Description: Implement the Haystack `hisWrite` api
       # Function's execution role
@@ -304,7 +321,7 @@ Resources:
   InvokeAction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: carbonapi/
+      CodeUri: src/
       Handler: haystackapi_lambda.invokeAction
       Description: Implement the Haystack `invokeAction` api
       # Function's execution role
@@ -324,108 +341,83 @@ Resources:
             Path: /invokeAction
             Method: post
 
-  ExtendWithCO2e:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: carbonapi/
-      Handler: haystackapi_lambda.extend_with_co2e
-      Description: Extend a Haystack grid with CO2e
-      Events:
-        ExtendWithCO2ePOST:
-          Type: Api
-          Properties:
-            Path: /extend_with_co2e
-            Method: post
-      Role: arn:aws:iam::695980681400:role/cdh_poc1paris_59238
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaReadOnlyAccess
-        - AWSXrayWriteOnlyAccess
-
-Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  AboutAPI:
-    Description: "Haystack `about` API"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/about"
-  AboutFunction:
-    Description: "Haystack `about` API"
-    Value: !GetAtt About.Arn
-
-  OpsAPI:
-    Description: "Haystack `ops` API"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/ops"
-  OpsFunction:
-    Description: "Haystack `ops` API"
-    Value: !GetAtt Ops.Arn
-
-  FormatsAPI:
-    Description: "Haystack `formats` API"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/formats"
-  FormatsFunction:
-    Description: "Haystack `formats` API"
-    Value: !GetAtt Formats.Arn
-
-  HisWrite:
-    Description: "Haystack `hisWrite` API"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/hisWrite"
-  HisWriteFunction:
-    Description: "Haystack `hisWrite` API"
-    Value: !GetAtt HisWrite.Arn
-
-  InvokeAction:
-    Description: "Haystack `invokeAction` API"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/invokeAction"
-  InvokeActionFunction:
-    Description: "Haystack `invokeAction` API"
-    Value: !GetAtt InvokeAction.Arn
-
-  NavAction:
-    Description: "Haystack `nav` API"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/nav"
-  NavFunction:
-    Description: "Haystack `nav` API"
-    Value: !GetAtt Nav.Arn
-
-  PointWriteAction:
-    Description: "Haystack `pointWrite` API"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/pointWrite"
-  PointWriteFunction:
-    Description: "Haystack `pointWrite` API"
-    Value: !GetAtt Ops.Arn
-
-  ReadAction:
-    Description: "Haystack `read` API"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/read"
-  ReadFunction:
-    Description: "Haystack `read` API"
-    Value: !GetAtt Read.Arn
-
-  WatchPollAction:
-    Description: "Haystack `watchPoll` API"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/watchPoll"
-  WatchPollFunction:
-    Description: "Haystack `watchPoll` API"
-    Value: !GetAtt WatchPoll.Arn
-
-  WatchSubAction:
-    Description: "Haystack `watchSub` API"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/watchSub"
-  WatchSubFunction:
-    Description: "Haystack `watchSub` API"
-    Value: !GetAtt WatchSub.Arn
-
-  WatchUnsubAction:
-    Description: "Haystack `watchUnsub` API"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/watchUnsub"
-  WatchUnsubFunction:
-    Description: "Haystack `watchUnsub` API"
-    Value: !GetAtt WatchUnsub.Arn
-
-  ExtendWithCO2eAPI:
-    Description: "Haystack 'extend_with_co2e' api"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/carbonapi/extend_with_co2e"
-  ExtendWithCO2eFunction:
-    Description: "Extend with CO2e haystack ops"
-    Value: !GetAtt ExtendWithCO2e.Arn
+#Outputs:
+#  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+#  # Find out more about other implicit resources you can reference within SAM
+#  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+#  AboutAPI:
+#    Description: "Haystack `about` API"
+#    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/src/about"
+#  AboutFunction:
+#    Description: "Haystack `about` API"
+#    Value: !GetAtt About.Arn
+#
+#  OpsAPI:
+#    Description: "Haystack `ops` API"
+#    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/src/ops"
+#  OpsFunction:
+#    Description: "Haystack `ops` API"
+#    Value: !GetAtt Ops.Arn
+#
+#  FormatsAPI:
+#    Description: "Haystack `formats` API"
+#    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/src/formats"
+#  FormatsFunction:
+#    Description: "Haystack `formats` API"
+#    Value: !GetAtt Formats.Arn
+#
+#  HisWrite:
+#    Description: "Haystack `hisWrite` API"
+#    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/src/hisWrite"
+#  HisWriteFunction:
+#    Description: "Haystack `hisWrite` API"
+#    Value: !GetAtt HisWrite.Arn
+#
+#  InvokeAction:
+#    Description: "Haystack `invokeAction` API"
+#    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/src/invokeAction"
+#  InvokeActionFunction:
+#    Description: "Haystack `invokeAction` API"
+#    Value: !GetAtt InvokeAction.Arn
+#
+#  NavAction:
+#    Description: "Haystack `nav` API"
+#    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/src/nav"
+#  NavFunction:
+#    Description: "Haystack `nav` API"
+#    Value: !GetAtt Nav.Arn
+#
+#  PointWriteAction:
+#    Description: "Haystack `pointWrite` API"
+#    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/src/pointWrite"
+#  PointWriteFunction:
+#    Description: "Haystack `pointWrite` API"
+#    Value: !GetAtt Ops.Arn
+#
+#  ReadAction:
+#    Description: "Haystack `read` API"
+#    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/src/read"
+#  ReadFunction:
+#    Description: "Haystack `read` API"
+#    Value: !GetAtt Read.Arn
+#
+#  WatchPollAction:
+#    Description: "Haystack `watchPoll` API"
+#    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/src/watchPoll"
+#  WatchPollFunction:
+#    Description: "Haystack `watchPoll` API"
+#    Value: !GetAtt WatchPoll.Arn
+#
+#  WatchSubAction:
+#    Description: "Haystack `watchSub` API"
+#    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/src/watchSub"
+#  WatchSubFunction:
+#    Description: "Haystack `watchSub` API"
+#    Value: !GetAtt WatchSub.Arn
+#
+#  WatchUnsubAction:
+#    Description: "Haystack `watchUnsub` API"
+#    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/src/watchUnsub"
+#  WatchUnsubFunction:
+#    Description: "Haystack `watchUnsub` API"
+#    Value: !GetAtt WatchUnsub.Arn

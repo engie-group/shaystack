@@ -2,17 +2,16 @@ import base64
 import gzip
 import inspect
 import json
-import os
-import unittest
+from unittest.mock import patch
 
 import pytest
 from botocore.client import BaseClient
 
 import hszinc
-from carbonapi import haystackapi_lambda
 from haystackapi_lambda import NO_COMPRESS
 from hszinc import Grid
 from lambda_types import LambdaProxyEvent, LambdaContext, LambdaEvent
+from src import haystackapi_lambda
 from test_tools import boto_client
 
 
@@ -27,7 +26,7 @@ def lambda_client() -> BaseClient:
     return boto_client()
 
 
-@unittest.mock.patch.dict('os.environ', {'provider': 's3_provider.S3Provider'})
+@patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
 def test_watchPoll_with_zinc(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
@@ -56,7 +55,7 @@ def test_whatPoll(apigw_event: LambdaEvent, lambda_client: BaseClient) -> None:
     apigw_event["headers"]["Accept-Encoding"] = "gzip, deflate, sdch"
     # WHEN
     boto_response = lambda_client.invoke(
-        FunctionName="watchPoll",
+        FunctionName="WatchPoll",
         InvocationType="RequestResponse",
         ClientContext="",
         Payload=json.dumps(apigw_event)
@@ -76,5 +75,4 @@ def test_whatPoll(apigw_event: LambdaEvent, lambda_client: BaseClient) -> None:
     else:
         body = response["body"]
 
-    hszinc.parse(body, hszinc.MODE_ZINC)
-    assert body == apigw_event["body"]
+    assert hszinc.parse(body, hszinc.MODE_ZINC)

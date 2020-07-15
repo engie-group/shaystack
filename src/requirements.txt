@@ -1,0 +1,4 @@
+fastparquet
+cffi
+python-snappy
+

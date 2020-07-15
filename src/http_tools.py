@@ -4,8 +4,7 @@ import re
 from decimal import Decimal
 
 # Matches 'gzip' or 'compress'
-from re import Match
-from typing import Optional, Any
+from typing import Optional, Any, Match
 
 _COMPRESS_TYPE_STR = r'[a-zA-Z0-9._-]+'
 
@@ -36,7 +35,7 @@ class _AcceptableEncoding:
         self.weight = _get_weight(tail)
         self.pattern = re.compile('^' + re.escape(encoding_type) + '$')
 
-    def matches(self, encoding_type: str) -> Optional[Match]:
+    def matches(self, encoding_type: str) -> Optional[Match[Any]]:
         """
         Check if the encoding type match the accepted encoding.
 
@@ -70,7 +69,7 @@ class _AcceptableEncoding:
 
     def __lt__(self, other: Any) -> bool:
         if not isinstance(other, _AcceptableEncoding):
-            return ValueError()
+            raise ValueError("Parameter invalid")
         return self.weight < other.weight
 
 

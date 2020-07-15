@@ -3,12 +3,15 @@ SHELL=/bin/bash
 .SHELLFLAGS = -e -c
 .ONESHELL:
 
+ifeq ($(ARTIFACTS_DIR),)
 ifeq ($(shell echo "$(shell echo $(MAKE_VERSION) | sed 's@^[^0-9]*\([0-9]\+\).*@\1@' ) >= 4" | bc -l),0)
-#$(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
+$(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
+endif
 endif
 
+# FIXME: renommer le PRJ
 PRJ=carbonapi
-PYTHON_SRC=$(PRJ)/*.py
+PYTHON_SRC=src/*.py src/providers/*.py
 PYTHON_VERSION:=3.7
 PRJ_PACKAGE:=$(PRJ)
 VENV ?= $(PRJ)
@@ -19,14 +22,23 @@ CONDA_ARGS?=
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 PIP_ARGS?=
 ENVS_JSON?=envs.json
-HSZINC_VERSION=*
+HSZINC_VERSION:=*
+HAYSTACK_URL:=s3://cdh-poc1c3ntinel-325540/pfihospital/raw/grid.json
+PARQUET_URL:=s3://cdh-poc1c3ntinel-325540/pfihospital/raw/24389.parquet
 
 AWS_STACK=CarbonAPI
-AWS_API_HOME=https://$(shell aws apigateway get-rest-apis --output text --query 'items[?name==`$(AWS_STACK)`].id').execute-api.$(AWS_REGION).amazonaws.com/Prod
-ENVS_TEST?=NOCOMPRESS=True
-export AWS_PROFILE=carbonapi
-export AWS_REGION=eu-west-3
-export ROOT_DIR=$$PWD
+# poc1 environment must be updated with CDH interface
+ENVS_RUN?=\
+	NOCOMPRESS=True \
+	AWS_PROFILE=poc1 \
+	PROVIDER=providers.ping.PingProvider \
+	HAYSTACK_URL=file:///home/pprados/workspace.bda/alpha-carbon-api/tests/data/grid.json
+# FIXME	HAYSTACK_URL= s3://cdh-poc1c3ntinel-325540/pfihospital/raw/grid.json
+export AWS_PROFILE:=carbonapi
+export AWS_REGION:=eu-west-3
+export AWS_DEFAULT_REGION:=$(AWS_REGION)
+export ROOT_DIR:=$$PWD
+AWS_API_HOME:=https://$(shell aws apigateway get-rest-apis --output text --profile $(AWS_PROFILE) --region $(AWS_REGION) --query 'items[?name==`$(AWS_STACK)`].id').execute-api.$(AWS_REGION).amazonaws.com/Prod
 
 CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
@@ -114,7 +126,7 @@ dump-%:
 	@git config --local core.page 'less -x4'
 
 
-# Rule to add a validation before pusing in master branch.
+# Rule to add a validation before pushing in master branch.
 # Use FORCE=y git push to override this validation.
 .git/hooks/pre-push: | .git
 	@# Add a hook to validate the project before a git push
@@ -162,17 +174,24 @@ requirements: $(REQUIREMENTS)
 dependencies: requirements
 
 # Rule to update the current venv, with the dependencies describe in `setup.py`
-$(PIP_PACKAGE): $(CONDA_PYTHON) $(PRJ)/requirements.txt layer/requirements.txt | .git # Install pip dependencies
+$(PIP_PACKAGE): $(CONDA_PYTHON) \
+	src/requirements.txt \
+	layers/base/requirements.txt \
+	layers/parquet/requirements.txt | .git # Install pip dependencies
 	@$(VALIDATE_VENV)
 	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"
-	pip install -r $(PRJ)/requirements.txt
-	pip install -r layer/requirements.txt
+	pip install -r src/requirements.txt
+	pip install -r layers/base/requirements.txt
+	pip install -r layers/parquet/requirements.txt
 	conda install -c conda-forge -c anaconda -y \
 		awscli aws-sam-cli make \
 		pytype ninja flake8 pylint pytest jq
+	pip install gimme-aws-creds
 	echo -e "$(cyan)Build dependencies updated$(normal)"
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
-	pip install gimme-aws-creds aws-sam-cli
+	pip install -r src/requirements.txt
+	pip install -r layers/base/requirements.txt
+	pip install -r layers/parquet/requirements.txt
 	# Install the fork of hszinc
 	pip install -e hszinc
 	echo -e "$(cyan)Project dependencies updated$(normal)"
@@ -226,7 +245,7 @@ clean-all: clean remove-venv
 # Template to build custom runtime.
 # See https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-custom-runtimes.html
 # See https://github.com/awslabs/aws-sam-cli/blob/de8ad8e78491ebfa884c02c3439c6bcecd08516b/designs/build_for_layers.md
-build-HSZincLayer: hszinc/dist/hszinc-*.whl
+build-HSZincLayer: hszinc/dist/hszinc-*.whl template.yaml Makefile
 	@if [[ -z "$(ARTIFACTS_DIR)" ]]
 	then
 		@$(VALIDATE_VENV)
@@ -241,6 +260,69 @@ build-HSZincLayer: hszinc/dist/hszinc-*.whl
 		python -m pip install $(ROOT_DIR)/hszinc/dist/hszinc-$(HSZINC_VERSION)-py3-none-any.whl -t "$(ARTIFACTS_DIR)/python"
 	fi
 
+# TODO
+# docker run --rm -v $(pwd):/foo -w /foo lambci/lambda:build-python3.7 \\n    /bin/bash -c "yum install -y snappy-devel; pip install python-snappy -t pkg/python\nmv pkg/python/snappy/_snappy.cpython-37m-x86_64-linux-gnu.so \\n    pkg/python/snappy/_snappy_cffi.cpython-37m-x86_64-linux-gnu.so"
+
+## Run bash in an AWS lambda image
+docker-bash:
+	docker run -it lambci/lambda:build-python$(PYTHON_VERSION) bash
+
+tests/data/grid.json:
+	@AWS_DEFAULT_PROFILE=poc1 aws s3 cp $(HAYSTACK_URL) tests/data/grid.json
+
+tests/data/24389.parquet:
+	@AWS_DEFAULT_PROFILE=poc1 aws s3 cp $(PARQUET_URL) tests/data/24389.parquet
+
+tests/data: tests/data/grid.json tests/data/24389.parquet
+
+# Refresh the local copy of remote files (for function-tests)
+refresh-sample:
+	rm tests/data/tests/data/grid.json tests/data/24389.parquet
+	make tests/data
+
+# Download lambda version of compiled library
+libsnappy-$(PYTHON_VERSION).so:
+	@echo -e "$(green)Download lambda version of libsnappy-$(PYTHON_VERSION).so...$(normal)"
+	docker run --rm -v $$(pwd):/foo -w /foo lambci/lambda:build-python$(PYTHON_VERSION) \
+	/bin/bash -c "yum install -y snappy-devel ; cp /usr/lib64/libsnappy.so.1 /foo/libsnappy-$(PYTHON_VERSION).so"
+	sudo chown $(USER):$(USER) libsnappy-$(PYTHON_VERSION).so
+	chmod 600 libsnappy-$(PYTHON_VERSION).so
+
+build-ParquetLayer: layers/parquet/requirements.txt template.yaml Makefile libsnappy-$(PYTHON_VERSION).so
+	@if [[ -z "$(ARTIFACTS_DIR)" ]]
+	then
+		@$(VALIDATE_VENV)
+		echo -e "$(green)Build Lambda HSZincLayer$(normal)"
+		umask 0
+		@sam build HSZincLayer
+	else
+		# executed inside `sam build`
+		umask 0
+		mkdir -p "$(ARTIFACTS_DIR)/python"
+		python -m pip install -r layers/parquet/requirements.txt -t "$(ARTIFACTS_DIR)/python"
+		# See https://aws.amazon.com/fr/blogs/compute/working-with-aws-lambda-and-lambda-layers-in-aws-sam/
+		mkdir -p "$(ARTIFACTS_DIR)/lib"
+		cp libsnappy-$(PYTHON_VERSION).so "$(ARTIFACTS_DIR)/lib/libsnappy.so.1"
+	fi
+
+
+build-About: hszinc/dist/hszinc-*.whl
+	@if [[ -z "$(ARTIFACTS_DIR)" ]]
+	then
+		@$(VALIDATE_VENV)
+		echo -e "$(green)Build Lambda HSZincLayer$(normal)"
+		umask 0
+		@sam build HSZincLayer
+	else
+		# executed inside `sam build`
+		umask 0
+		mkdir -p "$(ARTIFACTS_DIR)/python"
+		python -m pip install -r src/requirements.txt -t "$(ARTIFACTS_DIR)/python"
+#		cp -R src "$(ARTIFACTS_DIR)"
+#		cp libsnappy.so "$(ARTIFACTS_DIR)"
+	fi
+
+
 ## Build specific lambda function (ie. build-About)
 build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) template.yaml
 	@$(VALIDATE_VENV)
@@ -249,7 +331,8 @@ build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) template.yaml
 	@sam build $*
 
 .PHONY: dist build
-.aws-sam/build: $(REQUIREMENTS) $(PYTHON_SRC) template.yaml
+.aws-sam/build: $(REQUIREMENTS) $(PYTHON_SRC) template.yaml src/requirements.txt \
+	layers/base/requirements.txt layers/parquet/requirements.txt Makefile
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Build Lambdas$(normal)"
 	umask 0
@@ -275,14 +358,14 @@ invoke-%: $(ENVS_JSON) .aws-sam/build
 start-api: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
 	@[ -e .start/start-api.pid ] && $(MAKE) async-stop-api || true
-	$(ENVS_TEST) sam local start-api --env-vars $(ENVS_JSON)
+	$(ENVS_RUN) sam local start-api --env-vars $(ENVS_JSON)
 
 # Start local api emulator in background
 async-start-api: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
 	@[ -e .start/start-api.pid ] && echo -e "$(orange)Local API was allready started$(normal)" && exit
 	mkdir -p .start
-	$(ENVS_TEST) nohup sam local start-api --env-vars $(ENVS_JSON) >.start/start-api.log 2>&1 &
+	$(ENVS_RUN) nohup sam local start-api --env-vars $(ENVS_JSON) >.start/start-api.log 2>&1 &
 	echo $$! >.start/start-api.pid
 	sleep 0.5
 	tail .start/start-api.log
@@ -318,7 +401,7 @@ api-post-%:
 start-lambda: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
 	[ -e .start/start-lambda.pid ] && $(MAKE) async-stop-lambda || true
-	$(ENVS_TEST) sam local start-lambda --env-vars $(ENVS_JSON)
+	AWS_DEFAULT_PROFILE=poc1 $(ENVS_RUN) sam local start-lambda --env-vars $(ENVS_JSON)
 	sleep 2
 
 # Start lambda local emulator in background
@@ -326,16 +409,16 @@ async-start-lambda: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
 	@[ -e .start/start-lambda.pid ] && echo -e "$(orange)Local Lambda was allready started$(normal)" && exit
 	mkdir -p .start
-	$(ENVS_TEST) nohup sam local start-lambda --env-vars $(ENVS_JSON) >.start/start-lambda.log 2>&1 &
+	$(ENVS_RUN) nohup sam local start-lambda --env-vars $(ENVS_JSON) >.start/start-lambda.log 2>&1 &
 	echo $$! >.start/start-lambda.pid
-	sleep 0.5
+	sleep 2
 	tail .start/start-lambda.log
 	echo -e "$(orange)Local Lambda was started$(normal)"
 
 # Stop lambda local emulator in background
 async-stop-lambda:
 	@$(VALIDATE_VENV)
-	@[ -e .start/start-lambda.pid ] && kill `cat .start/start-lambda.pid` || true && echo -e "$(green)Local Lambda stopped$(normal)"
+	@[ -e .start/start-lambda.pid ] && kill `cat .start/start-lambda.pid` >/dev/null || true && echo -e "$(green)Local Lambda stopped$(normal)"
 	rm -f .start/start-lambda.pid
 
 ## Stop all async server
@@ -358,9 +441,12 @@ aws-update-token: ~/.okta_aws_login_config
 
 .PHONY: aws-deploy
 ## Deploy lambda functions
-aws-deploy: .aws-sam/build aws-update-token
+aws-deploy: .aws-sam/build
 	$(VALIDATE_VENV)
-	sam deploy --debug --profile $(AWS_PROFILE) --region $(AWS_REGION) --parameter-overrides NOCOMPRESS=True
+	gimme-aws-creds --profile $(AWS_PROFILE)
+	sam deploy --debug --profile $(AWS_PROFILE) --region $(AWS_REGION) \
+	  --parameter-overrides NOCOMPRESS=True \
+	  --no-confirm-changeset
 	echo -e "$(green)Lambdas are deployed$(normal)"
 
 .PHONY: aws-clean-stack
@@ -398,29 +484,30 @@ aws-api-%:
 	curl -H "Accept: text/zinc" \
 		"$(AWS_API_HOME)/$*"
 
-# FIXME
-## Print logs
-aws-log-%:
-	sam logs -n $* --stack-name $(AWS_STACK) --tail
+## Print AWS logs
+aws-logs-%:
+	@$(VALIDATE_VENV)
+	sam logs --profile $(AWS_PROFILE) --region $(AWS_REGION) -n $* --stack-name $(AWS_STACK) --tail
 
 
 ## Print AWS stack info
 aws-info:
-	aws cloudformation describe-stacks --stack-name $(AWS_STACK)
+	@$(VALIDATE_VENV)
+	aws cloudformation describe-stacks --region $(AWS_REGION) --profile $(AWS_PROFILE) --stack-name $(AWS_STACK)
 # -------------------------------------- Tests
 .PHONY: unit-test
 .make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build Makefile envs.json
-	$(VALIDATE_VENV)
-	PYTHONPATH=./$(PRJ) $(ENVS_TEST) python -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
+	@$(VALIDATE_VENV)
+	PYTHONPATH=./$(PRJ) $(ENVS_RUN) python -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
 	date >.make-unit-test
 ## Run unit test
 unit-test: .make-unit-test
 
 .PHONY: functional-test
-.make-functional-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build Makefile envs.json
+.make-functional-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build Makefile envs.json tests/data
 	@$(VALIDATE_VENV)
 	$(MAKE) async-start-lambda
-	PYTHONPATH=./$(PRJ) $(ENVS_TEST) python -m pytest -m "functional" -s tests $(PYTEST_ARGS)
+	PYTHONPATH=./$(PRJ) $(ENVS_RUN) python -m pytest -m "functional" -s tests $(PYTEST_ARGS)
 	date >.make-functional-test
 ## Run functional test
 functional-test: .make-functional-test
@@ -429,7 +516,7 @@ functional-test: .make-functional-test
 .make-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build
 	@$(VALIDATE_VENV)
 	$(MAKE) async-start-lambda
-	@PYTHONPATH=./$(PRJ) $(ENVS_TEST) python -m pytest -s tests $(PYTEST_ARGS)
+	@PYTHONPATH=./$(PRJ) $(ENVS_RUN) python -m pytest -s tests $(PYTEST_ARGS)
 	@date >.make-unit-test
 	@date >.make-functional-test
 	@date >.make-test
@@ -455,7 +542,7 @@ pytype.cfg: $(CONDA_PREFIX)/bin/pytype
 	$(VALIDATE_VENV)
 	@echo -e "$(cyan)Check typing...$(normal)"
 	# pytype
-	pytype "$(PRJ)"
+	pytype -P $(PRJ) -V $(PYTHON_VERSION) $(PRJ)
 	touch ".pytype/pyi/$(PRJ)"
 	touch .make-typing
 
@@ -468,13 +555,13 @@ typing: .make-typing
 	@$(VALIDATE_VENV)
 	pylint --generate-rcfile > .pylintrc
 
-.make-lint: $(REQUIREMENTS) $(PYTHON_SRC) | .pylintrc
+.make-lint: $(REQUIREMENTS) $(PYTHON_SRC) tests/*.py | .pylintrc
 	$(VALIDATE_VENV)
 	@echo -e "$(cyan)Check lint...$(normal)"
 	@echo "---------------------- FLAKE"
-	@flake8 $(PRJ_PACKAGE)
+	@flake8 src
 	@echo "---------------------- PYLINT"
-	@PYTHONPATH=./$(PRJ) pylint $(PRJ_PACKAGE)
+	@PYTHONPATH=./$(PRJ) pylint src
 	touch .make-lint
 
 ## Lint the code
@@ -482,11 +569,12 @@ lint: .make-lint
 
 
 .PHONY: validate
-.make-validate: .make-test .make-lint .aws-sam/build
-	sam validate
+.make-validate: .make-typing .make-test .make-lint .aws-sam/build aws-update-token
+	@sam validate
 	@date >.make-validate
 ## Validate the project
-validate: .make-validate
+validate: .make-validate aws-update-token
+
 
 .PHONY: release
 ## Release the project
@@ -502,17 +590,15 @@ submodule-push:
 submodule-stash:
 	git submodule foreach 'git stash'
 # -------------------------------------- DEBUG
-## Print logs of specific Lambda function
-logs-%:
-	sam logs -n $* --stack-name $(AWS_STACK) --tail
 
 # TODO: Find how to use debugger
 # See https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-debugging-python.html
 debugging:
 	@$(VALIDATE_VENV)
 	# Install dependencies
-	pip install -r $(PRJ)/requirements.txt -t build/
-	pip install -r layer/requirements.txt -t build/
+	pip install -r src/requirements.txt -t build/
+	pip install -r layers/base/requirements.txt -t build/
+	pip install -r layers/parquet/requirements.txt -t build/
 	# Install ptvsd library for step through debugging
 	pip install ptvsd -t build/
 	cp $(PRJ)/*.py build/

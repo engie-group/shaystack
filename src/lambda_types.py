@@ -1,7 +1,7 @@
 """This code add a static checker and to have a typed AWS lambda parameters
 In lambda API, use api_event = cast(LambdaAPIEvent, AttrDict(event))
 """
-from typing import Dict, Any, List
+from typing import Dict, Any, List, cast
 
 
 class AttrDict(dict):
@@ -102,12 +102,12 @@ def cast_lambda_proxy_event(_event: LambdaEvent) -> LambdaProxyEvent:
 
     """
     event = AttrDict(_event)
-    if not 'headers' in event:
+    if 'headers' not in event:
         event["headers"] = dict()
     if "multiValueHeaders" in event:
         mv: Dict[str, List[str]] = event["multiValueHeaders"]
         event.headers.update({k: ",".join(v) for (k, v) in mv.items()})
-    return event
+    return cast(LambdaProxyEvent, event)
 
 
 class LambdaProxyResponse(AttrDict):

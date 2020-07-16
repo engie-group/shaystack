@@ -21,18 +21,19 @@ log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
 class PingProvider(HaystackInterface):
     def about(self) -> Grid:
         log.info("about()")
-        grid = hszinc.Grid(columns={
-            "haystackVersion": {},  # Str version of REST implementation
-            "tz": {},  # Str of server's default timezone
-            "serverName": {},  # Str name of the server or project database
-            "serverTime": {},
-            "serverBootTime": {},
-            "productName": {},  # Str name of the server software product
-            "productUri": {},
-            "productVersion": {},
-            # "moduleName": {},  # module which implements Haystack server protocol if its a plug-in to the product
-            # "moduleVersion": {}  # Str version of moduleName
-        })
+        grid = hszinc.Grid(version=VER_3_0,
+                           columns={
+                               "haystackVersion": {},  # Str version of REST implementation
+                               "tz": {},  # Str of server's default timezone
+                               "serverName": {},  # Str name of the server or project database
+                               "serverTime": {},
+                               "serverBootTime": {},
+                               "productName": {},  # Str name of the server software product
+                               "productUri": {},
+                               "productVersion": {},
+                               # "moduleName": {},  # module which implements Haystack server protocol if its a plug-in to the product
+                               # "moduleVersion": {}  # Str version of moduleName
+                           })
         grid.append(
             {
                 "haystackVersion": str(VER_3_0),

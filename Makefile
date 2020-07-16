@@ -9,8 +9,7 @@ $(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
 endif
 endif
 
-# FIXME: renommer le PRJ
-PRJ=carbonapi
+PRJ=haystackapi
 PYTHON_SRC=src/*.py src/providers/*.py
 PYTHON_VERSION:=3.7
 PRJ_PACKAGE:=$(PRJ)
@@ -260,8 +259,6 @@ build-HSZincLayer: hszinc/dist/hszinc-*.whl template.yaml Makefile
 		python -m pip install $(ROOT_DIR)/hszinc/dist/hszinc-$(HSZINC_VERSION)-py3-none-any.whl -t "$(ARTIFACTS_DIR)/python"
 	fi
 
-# TODO
-# docker run --rm -v $(pwd):/foo -w /foo lambci/lambda:build-python3.7 \\n    /bin/bash -c "yum install -y snappy-devel; pip install python-snappy -t pkg/python\nmv pkg/python/snappy/_snappy.cpython-37m-x86_64-linux-gnu.so \\n    pkg/python/snappy/_snappy_cffi.cpython-37m-x86_64-linux-gnu.so"
 
 ## Run bash in an AWS lambda image
 docker-bash:
@@ -383,17 +380,21 @@ api:
 	@grep -oh 'https://$${ServerlessRestApi}[^"]*' template.yaml | \
 	sed 's/https:..$${ServerlessRestApi}.*\//http:\/\/locahost:3000\//g'
 
-## Invoke local API (eg. make api-get-about)
-api-get-%:
-	@curl -H "Accept: text/zinc" \
-		"http://localhost:3000/$*"
-
-## Invoke local API (eg. make api-post-Read)
-api-post-%:
-	@curl -H "Accept: text/zinc" \
-		-H "Content-Type: application/json" \
-		-X POST \
-		"http://localhost:3000/$*"
+## Invoke local API (eg. make api-About)
+api-%:
+	@GET_POST=$$(jq -r '.httpMethod' events/$*_event.json)
+	ops=$*
+	if [[ $$GET_POST == "GET" ]]
+	then
+		curl -H "Accept: text/zinc" \
+			"http://localhost:3000/$${ops,}"
+	else
+		curl -H "Accept:text/zinc" \
+			-H "Content-Type:text/zinc" \
+			-X POST \
+			--data-binary @<(jq -r '.body' <events/$*_event.json) \
+			"http://localhost:3000/$${ops,}"
+	fi
 
 
 .PHONY: start-lambda async-start-lambda async-stop-lambda
@@ -479,10 +480,21 @@ aws-api:
 	@grep -oh 'https://$${ServerlessRestApi}[^"]*' template.yaml | \
 	sed 's/https:..$${ServerlessRestApi}.*\//$(subst  /,\/,$(AWS_API_HOME))\//g'
 
-## Invoke API via AWS (eg. make aws-api-about)
+## Invoke API via AWS (eg. make aws-api-About)
 aws-api-%:
-	curl -H "Accept: text/zinc" \
-		"$(AWS_API_HOME)/$*"
+	@GET_POST=$$(jq -r '.httpMethod' events/$*_event.json)
+	ops=$*
+	if [[ $$GET_POST == "GET" ]]
+	then
+		curl -H "Accept: text/zinc" \
+			"$(AWS_API_HOME)/$${ops,}"
+	else
+		curl -H "Accept:text/zinc" \
+			-H "Content-Type:text/zinc" \
+			-X POST \
+			--data-binary @<(jq -r '.body' <events/$*_event.json) \
+			"$(AWS_API_HOME)/$${ops,}"
+	fi
 
 ## Print AWS logs
 aws-logs-%:
@@ -496,9 +508,9 @@ aws-info:
 	aws cloudformation describe-stacks --region $(AWS_REGION) --profile $(AWS_PROFILE) --stack-name $(AWS_STACK)
 # -------------------------------------- Tests
 .PHONY: unit-test
-.make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build Makefile envs.json
+.make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile .env
 	@$(VALIDATE_VENV)
-	PYTHONPATH=./$(PRJ) $(ENVS_RUN) python -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
+	PYTHONPATH=./src $(ENVS_RUN) python -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
 	date >.make-unit-test
 ## Run unit test
 unit-test: .make-unit-test
@@ -507,7 +519,7 @@ unit-test: .make-unit-test
 .make-functional-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build Makefile envs.json tests/data
 	@$(VALIDATE_VENV)
 	$(MAKE) async-start-lambda
-	PYTHONPATH=./$(PRJ) $(ENVS_RUN) python -m pytest -m "functional" -s tests $(PYTEST_ARGS)
+	PYTHONPATH=./src $(ENVS_RUN) python -m pytest -m "functional" -s tests $(PYTEST_ARGS)
 	date >.make-functional-test
 ## Run functional test
 functional-test: .make-functional-test
@@ -516,7 +528,7 @@ functional-test: .make-functional-test
 .make-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build
 	@$(VALIDATE_VENV)
 	$(MAKE) async-start-lambda
-	@PYTHONPATH=./$(PRJ) $(ENVS_RUN) python -m pytest -s tests $(PYTEST_ARGS)
+	@PYTHONPATH=./src $(ENVS_RUN) python -m pytest -s tests $(PYTEST_ARGS)
 	@date >.make-unit-test
 	@date >.make-functional-test
 	@date >.make-test

@@ -8,9 +8,9 @@ The file must be referenced with the environment variable HAYSTACK_URL and may b
 - s3://.../ontology.zinc (the lambda functions must have the privilege to read this file)
 - ...
 
-The time series to manage history must be referenced in entity, with the hisURI tag.
+The time series to manage history must be referenced in entity, with the `hisURI` tag.
 This URI may be relative, and must be in parquet format.
-The hisRead implementation, download the parquet file in memory, and convert the result to negotiate
+The `hisRead` implementation, download the parquet file in memory, and convert the result to the negotiated
 haystack format.
 """
 import logging
@@ -55,18 +55,19 @@ decompressions['SNAPPY'] = snappy_decompress
 
 class URLProvider(HaystackInterface):
     def about(self) -> Grid:
-        grid = hszinc.Grid(columns={
-            "haystackVersion": {},  # Str version of REST implementation
-            "tz": {},  # Str of server's default timezone
-            "serverName": {},  # Str name of the server or project database
-            "serverTime": {},
-            "serverBootTime": {},
-            "productName": {},  # Str name of the server software product
-            "productUri": {},
-            "productVersion": {},
-            # "moduleName": {},  # module which implements Haystack server protocol if its a plug-in to the product
-            # "moduleVersion": {}  # Str version of moduleName
-        })
+        grid = hszinc.Grid(version=VER_3_0,
+                           columns={
+                               "haystackVersion": {},  # Str version of REST implementation
+                               "tz": {},  # Str of server's default timezone
+                               "serverName": {},  # Str name of the server or project database
+                               "serverTime": {},
+                               "serverBootTime": {},
+                               "productName": {},  # Str name of the server software product
+                               "productUri": {},
+                               "productVersion": {},
+                               # "moduleName": {},  # module which implements Haystack server protocol if its a plug-in to the product
+                               # "moduleVersion": {}  # Str version of moduleName
+                           })
         grid.append(
             {
                 "haystackVersion": str(VER_3_0),

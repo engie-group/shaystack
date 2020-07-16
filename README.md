@@ -1,51 +1,62 @@
 # alpha-carbon-api
 
-CarbonAPI is an API to add CO2e in a [Haystack Grid](https://project-haystack.org/doc/Grids).
+Haystackapi is a skeleton AWS Lambda API to implement [Haystack Rest API](https://project-haystack.org/doc/Rest).
 Theses API can negotiate:
-- Request format (`Content-Type: zinc` or `json`)
+- Request format (`Content-Type: text/zinc` or `application/json`)
 - Request encoding (`Content-Encoding: gzip`)
-- Response format (`Accept: zinc, json`)
+- Response format (`Accept: text/zinc, application/json`)
 - Response encoding (`Accept-Encoding: gzip`)
 
-The code implements theses Haystack [operations](https://project-haystack.org/doc/Rest):
-- [About](https://project-haystack.org/doc/Ops#about)
-- [Ops](https://project-haystack.org/doc/Ops#ops)
-- [Formats](https://project-haystack.org/doc/Ops#formats)
-- [Read](https://project-haystack.org/doc/Ops#read) to expose an haystack file referenced with the HAYSTACK_URL environment variable
-
-and add one specific operation
-- extend_with_co2e
-
-This new operation receive a grid, and extend this grid with CO2e when it's possible.
+The code implements all Haystack [operations](https://project-haystack.org/doc/Rest):
 
 ## Summary
-This project contains source code and supporting files for a CarbonAPI application 
-that you can deploy with the SAM CLI. It includes the following files and folders.
-
-- carbonapi - Code for the application's Lambda function.
+This project contains source code and supporting files for a Haystack application 
+that you can deploy with the [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html). 
+It includes the following files and folders:
+- src - Code for the application's Lambda function.
+- src/providers - Sample of providers.
 - events - Invocation events that you can use to invoke the function.
 - tests - Unit tests for the application code. 
 - hszinc - Git submodule to patch the hszinc project. 
-- layer - A lamda layer shared by other lambdas 
-- template.yaml - A template that defines the application's AWS resources.
-- Makefile - All tools to manage the project (Use 'make help')
+- layers - A lamdda layers shared with other lambdas 
+- `template.yaml` - A template that defines the application's AWS resources.
+- `Makefile` - All tools to manage the project (Use 'make help')
 
 The application uses several AWS resources, including Lambda functions and an API Gateway. 
 These resources are defined in the `template.yaml` file. 
 
+## Providers
+Differents sample of provider are proposed. You can add a new one with a subclass of `providers.HaystackInterface`.
+Then, you can implement only the method you want. The others methods are automatically exclude in 
+the `../ops` operation.
+
+To select a provider, add the environment variable `PROVIDER` in the lambda context.
+
+### PingProvider
+Use `PROVIDER=providers.ping.PingProvider` to use this provider.
+It's a very simple provider, with a implementation of all haystack operation.
+
+### URLProvider
+Use `PROVIDER=providers.url.URLProvider` to use this provider.
+Add the variable `HAYSTACK_URL=<url>` to expose an Haystack file via the Haystack protocol.
+The methods `/read` and `/hisRead` was implemented.
+The `<url>` may have the classic form (`http://...`, `ftp://...`) or can reference an S3 file (`s3://`).
+The time series to manage history must be referenced in the entity, with the `hisURI` tag.
+This URI may be relative and must be in parquet format.
 
 ## Build the application
 This project use a `Makefile` (>4.0) for integrate all tools and [Conda](https://docs.conda.io/projects/conda/en/latest/index.html
-to manage dependencies and tools.
+to manage dependencies and others tools.
 
 To initialise the Conda environment, use `make configure` and activate the conda environment.
 Then, it's possible to test, build, etc. See `make help` to print all major target.
 ```bash
 git clone --recurse-submodules http://github.tools.digital.engie.com/PR6075/alpha-carbon-api.git 
 make configure
-conda activate carbonapi
+conda activate haystackapi
 make test
 ```
+
 ## Use the Makefile to build and test locally
 
 Build your application with the `make build` command.
@@ -56,19 +67,24 @@ make build
 To build a specific lambda, use `make build-<name>` command.
 ```bash
 make build-Read
-make build-ExtendWithCO2e
 make build-BaseLayer
 ```
 
-The build process install dependencies defined in `carnonapi/requirements.txt`
-and `layout/requirements.txt`, creates some deployments packages 
-and saves it in the `.aws-sam/build` folder.
+The build process install dependencies defined in `src/requirements.txt`,
+`layouts/base/requirements.txt` and `layouts/parquet/requirements.txt` , 
+creates some deployments packages and saves them in the `.aws-sam/build` folder.
 
 Test a single function by invoking it directly with a test event. An event is a JSON document 
 that represents the input that the function receives from the event source. 
 Test events are included in the `events` folder in this project.
 
-Run functions locally and invoke them with the `make invoke-<name>` command.
+The SAM CLI can emulate the AWS Lambda API. Use the `make start-lambda` to run the Lamnda server locally on port 3001.
+```bash
+make start-lambda
+```
+You can start Lambda server in background with `make async-start-lambda` and close it with `make async-stop-lambda`.
+
+Run functions locally and invoke them with the `make invoke-<name>` command. The lambda server was started in background.
 ```bash
 # Same as `sam local invoke --env-vars envs.json About -e events/About_event.json`
 make invoke-About 
@@ -79,15 +95,17 @@ After deployed the lambda functions, run functions remotely and invoke them with
 make aws-invoke-About 
 ```
 
+
 The SAM CLI can also emulate the application's API. Use the `make start-api` to run the API locally on port 3000.
 You can use [Postman](https://www.postman.com/) and the file `CarbonAPI v2.0.postman_collection.json` to
 test and invoke the local API.
 
-You can start API server in background with `make async-start-api` and close with `make async-stop-api`.
+You can also start API server in background with `make async-start-api` and close it with `make async-stop-api`.
 
 ```bash
 make async-start-api
-curl http://localhost:3000/about
+# curl http://localhost:3000/about
+make api-About
 ```
 
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. 
@@ -113,7 +131,7 @@ For more information, read [this](https://confluence.tools.digital.engie.com/dis
 
 With command line, select the correct aws profile with:
 ```bash
-export AWS_PROFILE=carbonapi
+export AWS_PROFILE=haystackapi
 ```
 
 To build and deploy CarbonAPI run the following in your shell:
@@ -153,11 +171,11 @@ make functional-test
 ```
 
 ### Invoke local API
-After started local api, to invoke api, use `make api-get-<path suffix>` or `make api-post-<path suffix>`
+After started local api, to invoke api, use `make api-<Lambda name>`
 ```bash
 make async-start-api
-make api-get-about
-make api-post-read
+make api-About
+make api-Read
 ```
 To print the local API URL:
 ```bash
@@ -181,13 +199,9 @@ make aws-api
 ```
 
 
-
 ## Cleanup
 To cleanup the project, use `make clean`.
 
 ## Resources
 See the [AWS SAM developer guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) 
 for an introduction to SAM specification, the SAM CLI, and serverless application concepts.
-
-## TO TRY
-- Use only one lambda function with differents URL

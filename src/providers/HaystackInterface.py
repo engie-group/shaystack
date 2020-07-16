@@ -4,7 +4,7 @@ from importlib import import_module
 from typing import Any, Tuple, Dict
 
 import hszinc
-from hszinc import Grid
+from hszinc import Grid, VER_3_0
 
 # FIXME: iteration
 # class EmptyGrid(Grid):
@@ -16,7 +16,7 @@ from hszinc import Grid
 #
 #     def __new__(cls):
 #         return EmptyGrid._empty
-EmptyGrid = Grid(columns={"empty": {}})
+EmptyGrid = Grid(version=VER_3_0, columns={"empty": {}})
 
 
 class HaystackInterface(ABC):
@@ -27,7 +27,7 @@ class HaystackInterface(ABC):
     def ops(self) -> Grid:  # TODO: faire un TU de cela
         """Automatically calcule the implemented version.
         """
-        grid = hszinc.Grid(columns={
+        grid = hszinc.Grid(version=VER_3_0, columns={
             "name": {},
             "summary": {},
         })
@@ -104,11 +104,9 @@ class HaystackInterface(ABC):
 def get_provider(class_str) -> HaystackInterface:
     try:
         module_path, class_name = class_str.rsplit('.', 1)
-        print(f"import module {module_path}")  # FIXME
         module = import_module(module_path)
         # Get the abstract class name
         class_ = getattr(module, class_name)
-        print(f"class_= {class_}")
 
         # Implement all abstract method.
         # Then, it's possible to generate the Ops dynamically

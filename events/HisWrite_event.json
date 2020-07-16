@@ -1,15 +1,15 @@
 {
-  "body": "ver:\"2.0\"\nid,val\n\"@me\",\"sample\"\n",
+  "body": "ver:\"3.0\"\nid,val\n@me,\"sample\"\n",
   "resource": "/{proxy+}",
   "pathParameters": {
-    "proxy": "/extend_with_co2e"
+    "proxy": "/hisWrite"
   },
   "httpMethod": "POST",
   "isBase64Encoded": false,
   "stageVariables": {
     "baz": "qux"
   },
-  "path": "/extend_with_co2e",
+  "path": "/hisWrite",
   "requestContext": {
     "resourceId": "123456",
     "apiId": "1234567890",
@@ -33,10 +33,9 @@
     "stage": "prod"
   },
   "queryStringParameters": {
-    "foo": "bar"
   },
   "headers": {
-    "Accept": "text/zinc,text/json,*/*;q=0.8",
+    "Accept": "text/zinc,application/json,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.8",
     "Cache-Control": "max-age=0",
     "Content-Type": "text/zinc",

@@ -2,6 +2,7 @@
 Implements: About, Ops, Formats and extend_with_co2e
 """
 import base64
+import codecs
 import gzip
 import logging
 import os
@@ -13,7 +14,7 @@ from typing import cast, Tuple, Optional
 from accept_types import get_best_match
 
 import hszinc  # type: ignore
-from hszinc import Grid, MODE_ZINC
+from hszinc import Grid, MODE_ZINC, VER_3_0
 from http_tools import get_best_encoding_match
 from lambda_types import LambdaProxyEvent, LambdaProxyResponse, AttrDict, LambdaEvent, LambdaContext, \
     cast_lambda_proxy_event
@@ -21,6 +22,7 @@ from lambda_types import LambdaProxyEvent, LambdaProxyResponse, AttrDict, Lambda
 # TOTRY: https://github.com/awslabs/aws-sam-cli/issues/1163
 from providers.HaystackInterface import get_provider, HaystackInterface
 
+_DEFAULT_VERSION = VER_3_0
 NO_COMPRESS = os.environ.get("NOCOMPRESS", "true").lower() == "true"
 # See https://tinyurl.com/y8rgcw8p
 if os.environ.get("DEBUGGING", "false").lower() == "true":
@@ -40,13 +42,16 @@ _DEFAULT_MIME_TYPE = MODE_ZINC
 
 
 def _parse_request(event) -> Grid:
+    log.error(event)
     if "Content-Type" not in event.headers:
         raise ValueError("Content-Type must be set")
     if "Content-Encoding" in event.headers and event.isBase64Encoded:
         content_encoding = event.headers["Content-Encoding"]
         if content_encoding != "gzip":
             raise ValueError(f"Content-Encoding '{content_encoding}' not supported")
-        event.body = gzip.decompress(base64.b64decode(event.body)).decode("utf-8")
+        body = codecs.decode(event.body, 'unicode-escape')
+        log.error(f"decode body={body}")
+        event.body = gzip.decompress(base64.b64decode(body)).decode("utf-8")
         event.isBase64Encoded = False
     content_type = event.headers["Content-Type"]
     grid = hszinc.parse(event.body, mode=content_type)[0]
@@ -109,6 +114,8 @@ def about(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  
     """ Implement Haystack 'about' with AWS Lambda """
 
     event = cast_lambda_proxy_event(_event)
+    if event.body:
+        event.body = codecs.decode(event.body, 'unicode-escape')  # FIXME: pourquoi ?
     try:
         provider = _get_provider()
         # event = cast(LambdaProxyEvent, AttrDict(_event))
@@ -117,11 +124,13 @@ def about(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  
         response = _format_response(event, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
         log.error(traceback.format_exc())
-        error_grid = hszinc.Grid(metadata={
-            "err": hszinc.MARKER,
-            "id": "badId",
-            "errTrace": traceback.format_exc()
-        }, columns=[('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
+        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
+                                 metadata={
+                                     "err": hszinc.MARKER,
+                                     "id": "badId",
+                                     "errTrace": traceback.format_exc()
+                                 }, columns=[
+                ('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
         response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
@@ -129,6 +138,8 @@ def about(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  
 def ops(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
     """ Implement Haystack 'ops' with AWS Lambda """
     event = cast(LambdaProxyEvent, AttrDict(_event))
+    if event.body:
+        event.body = codecs.decode(event.body, 'unicode-escape')  # FIXME: pourquoi ?
     try:
         provider = _get_provider()
         grid_response = provider.ops()
@@ -136,11 +147,13 @@ def ops(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # 
         response = _format_response(event, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
         log.error(traceback.format_exc())
-        error_grid = hszinc.Grid(metadata={
-            "err": hszinc.MARKER,
-            "id": "badId",
-            "errTrace": traceback.format_exc()
-        }, columns=[('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
+        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
+                                 metadata={
+                                     "err": hszinc.MARKER,
+                                     "id": "badId",
+                                     "errTrace": traceback.format_exc()
+                                 }, columns=[
+                ('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
         response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
@@ -148,6 +161,8 @@ def ops(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # 
 def formats(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
     """ Implement Haystack 'formats' with AWS Lambda """
     event = cast(LambdaProxyEvent, AttrDict(_event))
+    if event.body:
+        event.body = codecs.decode(event.body, 'unicode-escape')  # FIXME: pourquoi ?
     try:
         provider = _get_provider()
         grid_response = provider.formats()
@@ -164,17 +179,21 @@ def formats(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:
         response = _format_response(event, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
         log.error(traceback.format_exc())
-        error_grid = hszinc.Grid(metadata={
-            "err": hszinc.MARKER,
-            "id": "badId",
-            "errTrace": traceback.format_exc()
-        }, columns=[('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
+        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
+                                 metadata={
+                                     "err": hszinc.MARKER,
+                                     "id": "badId",
+                                     "errTrace": traceback.format_exc()
+                                 }, columns=[
+                ('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
         response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
 def read(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
     event = cast(LambdaProxyEvent, AttrDict(_event))
+    if event.body:
+        event.body = codecs.decode(event.body, 'unicode-escape')  # FIXME: pourquoi ?
     try:
         """Implement the haystack `read` operation"""
         provider = _get_provider()
@@ -187,17 +206,21 @@ def read(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  #
         assert None != grid_response
         response = _format_response(event, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
-        error_grid = hszinc.Grid(metadata={
-            "err": hszinc.MARKER,
-            "id": "badId",
-            "errTrace": traceback.format_exc()
-        }, columns=[('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
+        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
+                                 metadata={
+                                     "err": hszinc.MARKER,
+                                     "id": "badId",
+                                     "errTrace": traceback.format_exc()
+                                 }, columns=[
+                ('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
         response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
 def nav(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
     event = cast(LambdaProxyEvent, AttrDict(_event))
+    if event.body:
+        event.body = codecs.decode(event.body, 'unicode-escape')  # FIXME: pourquoi ?
     try:
         """Implement the haystack `nav` operation"""
         provider = _get_provider()
@@ -206,17 +229,21 @@ def nav(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # 
         assert None != grid_response
         response = _format_response(event, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
-        error_grid = hszinc.Grid(metadata={
-            "err": hszinc.MARKER,
-            "id": "badId",
-            "errTrace": traceback.format_exc()
-        }, columns=[('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
+        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
+                                 metadata={
+                                     "err": hszinc.MARKER,
+                                     "id": "badId",
+                                     "errTrace": traceback.format_exc()
+                                 }, columns=[
+                ('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
         response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
 def watchSub(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
     event = cast(LambdaProxyEvent, AttrDict(_event))
+    if event.body:
+        event.body = codecs.decode(event.body, 'unicode-escape')  # FIXME: pourquoi ?
     try:
         """Implement the haystack `watchSub` operation"""
         provider = _get_provider()
@@ -226,17 +253,21 @@ def watchSub(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse
         response = _format_response(event, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
         log.error(traceback.format_exc())
-        error_grid = hszinc.Grid(metadata={
-            "err": hszinc.MARKER,
-            "id": "badId",
-            "errTrace": traceback.format_exc()
-        }, columns=[('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
+        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
+                                 metadata={
+                                     "err": hszinc.MARKER,
+                                     "id": "badId",
+                                     "errTrace": traceback.format_exc()
+                                 }, columns=[
+                ('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
         response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
 def watchUnsub(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
     event = cast(LambdaProxyEvent, AttrDict(_event))
+    if event.body:
+        event.body = codecs.decode(event.body, 'unicode-escape')  # FIXME: pourquoi ?
     try:
         """Implement the haystack `watchUnsub` operation"""
         provider = _get_provider()
@@ -245,17 +276,21 @@ def watchUnsub(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyRespon
         assert None != grid_response
         response = _format_response(event, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
-        error_grid = hszinc.Grid(metadata={
-            "err": hszinc.MARKER,
-            "id": "badId",
-            "errTrace": traceback.format_exc()
-        }, columns=[('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
+        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
+                                 metadata={
+                                     "err": hszinc.MARKER,
+                                     "id": "badId",
+                                     "errTrace": traceback.format_exc()
+                                 }, columns=[
+                ('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
         response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
 def watchPoll(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
     event = cast(LambdaProxyEvent, AttrDict(_event))
+    if event.body:
+        event.body = codecs.decode(event.body, 'unicode-escape')  # FIXME: pourquoi ?
     try:
         """Implement the haystack `watchPoll` operation"""
         provider = _get_provider()
@@ -264,17 +299,21 @@ def watchPoll(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyRespons
         assert None != grid_response
         response = _format_response(event, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
-        error_grid = hszinc.Grid(metadata={
-            "err": hszinc.MARKER,
-            "id": "badId",
-            "errTrace": traceback.format_exc()
-        }, columns=[('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
+        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
+                                 metadata={
+                                     "err": hszinc.MARKER,
+                                     "id": "badId",
+                                     "errTrace": traceback.format_exc()
+                                 }, columns=[
+                ('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
         response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
 def pointWrite(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
     event = cast(LambdaProxyEvent, AttrDict(_event))
+    if event.body:
+        event.body = codecs.decode(event.body, 'unicode-escape')  # FIXME: pourquoi ?
     try:
         """Implement the haystack `pointWrite` operation"""
         provider = _get_provider()
@@ -283,17 +322,21 @@ def pointWrite(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyRespon
         assert None != grid_response
         response = _format_response(event, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
-        error_grid = hszinc.Grid(metadata={
-            "err": hszinc.MARKER,
-            "id": "badId",
-            "errTrace": traceback.format_exc()
-        }, columns=[('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
+        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
+                                 metadata={
+                                     "err": hszinc.MARKER,
+                                     "id": "badId",
+                                     "errTrace": traceback.format_exc()
+                                 }, columns=[
+                ('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
         response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
 def hisRead(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
     event = cast(LambdaProxyEvent, AttrDict(_event))
+    if event.body:
+        event.body = codecs.decode(event.body, 'unicode-escape')  # FIXME: pourquoi ?
     try:
         """Implement the haystack `hisRead` operation"""
         provider = _get_provider()
@@ -302,17 +345,21 @@ def hisRead(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:
         assert None != grid_response
         response = _format_response(event, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
-        error_grid = hszinc.Grid(metadata={
-            "err": hszinc.MARKER,
-            "id": "badId",
-            "errTrace": traceback.format_exc()
-        }, columns=[('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
+        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
+                                 metadata={
+                                     "err": hszinc.MARKER,
+                                     "id": "badId",
+                                     "errTrace": traceback.format_exc()
+                                 }, columns=[
+                ('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
         response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
 def hisWrite(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
     event = cast(LambdaProxyEvent, AttrDict(_event))
+    if event.body:
+        event.body = codecs.decode(event.body, 'unicode-escape')  # FIXME: pourquoi ?
     try:
         """Implement the haystack `hisWrite` operation"""
         provider = _get_provider()
@@ -321,20 +368,25 @@ def hisWrite(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse
         assert None != grid_response
         response = _format_response(event, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
-        error_grid = hszinc.Grid(metadata={
-            "err": hszinc.MARKER,
-            "id": "badId",
-            "errTrace": traceback.format_exc()
-        }, columns=[('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
+        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
+                                 metadata={
+                                     "err": hszinc.MARKER,
+                                     "id": "badId",
+                                     "errTrace": traceback.format_exc()
+                                 }, columns=[
+                ('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
         response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
 def invokeAction(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
     event = cast(LambdaProxyEvent, AttrDict(_event))
+    if event.body:
+        event.body = codecs.decode(event.body, 'unicode-escape')  # FIXME: pourquoi ?
     try:
         """Implement the haystack `invokeAction` operation"""
         provider = _get_provider()
+        print(event.body)
         grid_request = _parse_request(event)
         id = grid_request.metadata["id"]
         action = grid_request.metadata["action"]
@@ -343,10 +395,12 @@ def invokeAction(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResp
         assert None != grid_response
         response = _format_response(event, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
-        error_grid = hszinc.Grid(metadata={
-            "err": hszinc.MARKER,
-            "id": "badId",
-            "errTrace": traceback.format_exc()
-        }, columns=[('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
+        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
+                                 metadata={
+                                     "err": hszinc.MARKER,
+                                     "id": "badId",
+                                     "errTrace": traceback.format_exc()
+                                 }, columns=[
+                ('id', [('meta', None)])])  # FIXME: pourquoi columns est nécessaire ? Devrait être None
         response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)

@@ -33,10 +33,9 @@
     "stage": "prod"
   },
   "queryStringParameters": {
-    "foo": "bar"
   },
   "headers": {
-    "Accept": "text/zinc,text/json,*/*;q=0.8",
+    "Accept": "text/zinc,application/json,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.8",
     "Cache-Control": "max-age=0",
     "Content-Type": "text/zinc",

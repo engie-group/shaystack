@@ -141,6 +141,7 @@ disable=print-statement,
         comprehension-escape,
         no-else-return,
         too-few-public-methods,
+        logging-fstring-interpolation,
         fixme
 
 # Enable the message, report, category or checker with the given id(s). You can

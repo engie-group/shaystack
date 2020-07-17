@@ -187,7 +187,7 @@ celerybeat-schedule.*
 *.sage.py
 
 # Environments
-.env
+.env.backup
 .venv
 env/
 venv/
@@ -251,3 +251,4 @@ out.json
 .start
 .make*
 PPR*
+.env

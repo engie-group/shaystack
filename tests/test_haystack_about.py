@@ -7,7 +7,7 @@ from botocore.client import BaseClient
 
 import hszinc
 from hszinc import Grid
-from lambda_types import LambdaContext, LambdaEvent
+from src.lambda_types import LambdaContext, LambdaEvent
 from src import haystackapi_lambda
 from test_tools import boto_client
 

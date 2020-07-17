@@ -26,12 +26,14 @@ The application uses several AWS resources, including Lambda functions and an AP
 These resources are defined in the `template.yaml` file. 
 
 ## Providers
-Differents sample of provider are proposed. You can add a new one with a subclass of `providers.HaystackInterface`.
+Different sample of provider are proposed. You can add a new one with a subclass of `providers.HaystackInterface`.
 Then, you can implement only the method you want. The others methods are automatically exclude in 
 the `../ops` operation.
 
 To select a provider, add the environment variable `PROVIDER` in the lambda context.
 
+To add a new provider, clone the project and add a provider in the `providers` directory. You can update others 
+parameters in Makefile (`AWS_PROFILE`, `AWS_REGION` `AWS_STACK`, ...)
 ### PingProvider
 Use `PROVIDER=providers.ping.PingProvider` to use this provider.
 It's a very simple provider, with a implementation of all haystack operation.
@@ -39,13 +41,14 @@ It's a very simple provider, with a implementation of all haystack operation.
 ### URLProvider
 Use `PROVIDER=providers.url.URLProvider` to use this provider.
 Add the variable `HAYSTACK_URL=<url>` to expose an Haystack file via the Haystack protocol.
-The methods `/read` and `/hisRead` was implemented.
+The methods `/read` and `/his_read` was implemented.
 The `<url>` may have the classic form (`http://...`, `ftp://...`) or can reference an S3 file (`s3://`).
 The time series to manage history must be referenced in the entity, with the `hisURI` tag.
 This URI may be relative and must be in parquet format.
 
 ## Build the application
-This project use a `Makefile` (>4.0) for integrate all tools and [Conda](https://docs.conda.io/projects/conda/en/latest/index.html
+This project use a `Makefile` (>4.0) for integrate all tools, docker
+and [Conda](https://docs.conda.io/projects/conda/en/latest/index.html
 to manage dependencies and others tools.
 
 To initialise the Conda environment, use `make configure` and activate the conda environment.

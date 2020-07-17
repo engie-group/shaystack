@@ -18,8 +18,8 @@ def boto_client() -> BaseClient:
                                      config=botocore.client.Config(
                                          signature_version=botocore.UNSIGNED,
                                          region_name=os.environ["AWS_REGION"],
-                                         connect_timeout=10,
-                                         read_timeout=30,
+                                         connect_timeout=20,
+                                         read_timeout=50,
                                          retries={'max_attempts': 0},
                                      )
                                      )

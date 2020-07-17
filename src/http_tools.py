@@ -2,9 +2,10 @@
 """
 import re
 from decimal import Decimal
-
 # Matches 'gzip' or 'compress'
-from typing import Optional, Any, Match
+from typing import Optional, Any, Match, List
+
+from accept_types import AcceptableType
 
 _COMPRESS_TYPE_STR = r'[a-zA-Z0-9._-]+'
 
@@ -73,7 +74,7 @@ class _AcceptableEncoding:
         return self.weight < other.weight
 
 
-def get_best_encoding_match(header, available_encoding):
+def get_best_encoding_match(header: str, available_encoding: List[str]) -> Optional[str]:
     """Find the best encoding type to respond to a request with,
     from an ``Accept-Encoding`` header and list of encoding types
     the application supports.
@@ -106,7 +107,7 @@ def get_best_encoding_match(header, available_encoding):
     return None
 
 
-def _parse_header(header):
+def _parse_header(header: str) -> List[AcceptableType]:
     """Parse an ``Accept`` header into a sorted list of :class:`AcceptableType`
     instances.
     """

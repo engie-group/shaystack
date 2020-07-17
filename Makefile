@@ -10,6 +10,12 @@ endif
 endif
 
 PRJ=haystackapi
+AWS_STACK=CarbonAPI
+export AWS_PROFILE:=haystackapi
+export AWS_REGION:=eu-west-3
+export HAYSTACK_URL:=s3://cdh-poc1c3ntinel-325540/pfihospital/raw/grid.json
+PARQUET_URL:=s3://cdh-poc1c3ntinel-325540/pfihospital/raw/24389.parquet
+
 PYTHON_SRC=src/*.py src/providers/*.py
 PYTHON_VERSION:=3.7
 PRJ_PACKAGE:=$(PRJ)
@@ -22,22 +28,15 @@ PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 PIP_ARGS?=
 ENVS_JSON?=envs.json
 HSZINC_VERSION:=*
-HAYSTACK_URL:=s3://cdh-poc1c3ntinel-325540/pfihospital/raw/grid.json
-PARQUET_URL:=s3://cdh-poc1c3ntinel-325540/pfihospital/raw/24389.parquet
+export ROOT_DIR:=$$PWD
+export AWS_DEFAULT_REGION:=$(AWS_REGION)
+AWS_API_HOME=https://$(shell aws apigateway get-rest-apis --output text --profile $(AWS_PROFILE) --region $(AWS_REGION) --query 'items[?name==`$(AWS_STACK)`].id').execute-api.$(AWS_REGION).amazonaws.com/Prod
 
-AWS_STACK=CarbonAPI
 # poc1 environment must be updated with CDH interface
 ENVS_RUN?=\
 	NOCOMPRESS=True \
 	AWS_PROFILE=poc1 \
-	PROVIDER=providers.ping.PingProvider \
-	HAYSTACK_URL=file:///home/pprados/workspace.bda/alpha-carbon-api/tests/data/grid.json
-# FIXME	HAYSTACK_URL= s3://cdh-poc1c3ntinel-325540/pfihospital/raw/grid.json
-export AWS_PROFILE:=carbonapi
-export AWS_REGION:=eu-west-3
-export AWS_DEFAULT_REGION:=$(AWS_REGION)
-export ROOT_DIR:=$$PWD
-AWS_API_HOME:=https://$(shell aws apigateway get-rest-apis --output text --profile $(AWS_PROFILE) --region $(AWS_REGION) --query 'items[?name==`$(AWS_STACK)`].id').execute-api.$(AWS_REGION).amazonaws.com/Prod
+	PROVIDER=providers.ping.PingProvider
 
 CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
@@ -238,9 +237,19 @@ clean: async-stop
 .PHONY: clean-all
 # Clean all environments
 clean-all: clean remove-venv
+	@rm libsnappy-$(PYTHON_VERSION).so
 
 
 # -------------------------------------- Build
+.env:
+	@cat >.env << EndOfMessage
+	AWS_REGION=eu-west-3
+	AWS_PROFILE=haystackapi
+	LOGLEVEL=DEBUG
+	HAYSTACK_URL=s3://cdh-poc1c3ntinel-325540/pfihospital/raw/grid.json
+	PROVIDER=providers.ping.PingProvider
+	EndOfMessage
+
 # Template to build custom runtime.
 # See https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-custom-runtimes.html
 # See https://github.com/awslabs/aws-sam-cli/blob/de8ad8e78491ebfa884c02c3439c6bcecd08516b/designs/build_for_layers.md
@@ -282,6 +291,7 @@ libsnappy-$(PYTHON_VERSION).so:
 	@echo -e "$(green)Download lambda version of libsnappy-$(PYTHON_VERSION).so...$(normal)"
 	docker run --rm -v $$(pwd):/foo -w /foo lambci/lambda:build-python$(PYTHON_VERSION) \
 	/bin/bash -c "yum install -y snappy-devel ; cp /usr/lib64/libsnappy.so.1 /foo/libsnappy-$(PYTHON_VERSION).so"
+	echo -e "$(green)To update the owner of libsnappy-$(PYTHON_VERSION).so we must have a root access$(normal)"
 	sudo chown $(USER):$(USER) libsnappy-$(PYTHON_VERSION).so
 	chmod 600 libsnappy-$(PYTHON_VERSION).so
 
@@ -328,7 +338,7 @@ build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) template.yaml
 	@sam build $*
 
 .PHONY: dist build
-.aws-sam/build: $(REQUIREMENTS) $(PYTHON_SRC) template.yaml src/requirements.txt \
+.aws-sam/build: $(REQUIREMENTS) $(PYTHON_SRC) hszinc template.yaml src/requirements.txt \
 	layers/base/requirements.txt layers/parquet/requirements.txt Makefile
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Build Lambdas$(normal)"
@@ -553,9 +563,7 @@ pytype.cfg: $(CONDA_PREFIX)/bin/pytype
 .make-typing: $(REQUIREMENTS) $(CONDA_PREFIX)/bin/pytype pytype.cfg $(PYTHON_SRC)
 	$(VALIDATE_VENV)
 	@echo -e "$(cyan)Check typing...$(normal)"
-	# pytype
-	pytype -P $(PRJ) -V $(PYTHON_VERSION) $(PRJ)
-	touch ".pytype/pyi/$(PRJ)"
+	pytype -P src -V $(PYTHON_VERSION) src
 	touch .make-typing
 
 ## Check python typing
@@ -573,19 +581,24 @@ typing: .make-typing
 	@echo "---------------------- FLAKE"
 	@flake8 src
 	@echo "---------------------- PYLINT"
-	@PYTHONPATH=./$(PRJ) pylint src
+	@PYTHONPATH=./src pylint src
 	touch .make-lint
 
 ## Lint the code
 lint: .make-lint
 
 
-.PHONY: validate
-.make-validate: .make-typing .make-test .make-lint .aws-sam/build aws-update-token
+.make-sam-validate:  aws-update-token template.yaml
+	@echo -e "$(cyan)Validate template.yaml...$(normal)"
 	@sam validate
+	@date >.make-sam-validate
+
+.PHONY: validate
+.make-validate: .make-typing .make-lint .make-test .make-sam-validate
 	@date >.make-validate
+
 ## Validate the project
-validate: .make-validate aws-update-token
+validate: .make-validate
 
 
 .PHONY: release

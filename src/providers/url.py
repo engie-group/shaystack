@@ -10,7 +10,7 @@ The file must be referenced with the environment variable HAYSTACK_URL and may b
 
 The time series to manage history must be referenced in entity, with the `hisURI` tag.
 This URI may be relative, and must be in parquet format.
-The `hisRead` implementation, download the parquet file in memory, and convert the result to the negotiated
+The `his_read` implementation, download the parquet file in memory, and convert the result to the negotiated
 haystack format.
 """
 import logging
@@ -27,15 +27,16 @@ import boto3
 from fastparquet import ParquetFile
 from fastparquet.compression import compressions, decompressions
 from fastparquet.util import default_open
-from pandas._libs.tslibs.timestamps import Timestamp
+from overrides import overrides
+from pandas import DataFrame
 from pandas.io.s3 import s3fs
 from snappy import snappy
-from tzlocal import get_localzone
 
 import hszinc
-from haystackapi_lambda import log
-from hszinc import Grid, Uri, MODE_ZINC, MODE_JSON, Ref, VER_3_0
-from providers.HaystackInterface import HaystackInterface
+from hszinc import Grid, Uri, MODE_ZINC, MODE_JSON
+from .haystack_interface import HaystackInterface, get_default_about
+
+Timestamp = datetime
 
 log = logging.getLogger("URLProvider")
 log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
@@ -54,36 +55,28 @@ decompressions['SNAPPY'] = snappy_decompress
 
 
 class URLProvider(HaystackInterface):
-    def about(self) -> Grid:
-        grid = hszinc.Grid(version=VER_3_0,
-                           columns={
-                               "haystackVersion": {},  # Str version of REST implementation
-                               "tz": {},  # Str of server's default timezone
-                               "serverName": {},  # Str name of the server or project database
-                               "serverTime": {},
-                               "serverBootTime": {},
-                               "productName": {},  # Str name of the server software product
-                               "productUri": {},
-                               "productVersion": {},
-                               # "moduleName": {},  # module which implements Haystack server protocol if its a plug-in to the product
-                               # "moduleVersion": {}  # Str version of moduleName
-                           })
-        grid.append(
-            {
-                "haystackVersion": str(VER_3_0),
-                "tz": str(get_localzone()),
-                "serverName": "haystack_" + os.environ["AWS_REGION"],  # FIXME: set the server name
-                "serverTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
-                "serverBootTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
-                "productName": "AWS Lamda Haystack Provider",
-                "productUri": Uri("http://localhost:80"),  # FIXME indiquer le port et trouver l'URL ?
-                "productVersion": None,  # FIXME: set the product version
-                "moduleName": "URLProvider",
-                "moduleVersion": None  # FIXME: set the module version
-            })
+    """
+    Expose an Haystack file via the Haystactk Rest API.
+    """
+
+    def _get_url(self):  # pylint: disable=no-self-use
+        """ Return the url to the file to expose. """
+        return os.environ.get("HAYSTACK_URL", "")
+
+    @overrides
+    def about(self) -> Grid:  # pylint: disable=no-self-use
+        """ Implement the Haystack 'about' operation """
+        grid = get_default_about()
+        grid[0].update({
+            "productUri": Uri("http://localhost:80"),  # FIXME indiquer le port et trouver l'URL ?
+            "productVersion": None,  # FIXME: set the product version
+            "moduleName": "URLProvider",
+            "moduleVersion": None  # FIXME: set the module version
+        })
         return grid
 
     @lru_cache(maxsize=LRU_SIZE)
+    @overrides
     def read(self, grid_filter: str, limit: Optional[int]) -> Grid:  # pylint: disable=unused-argument
         """ Implement Haystack 'read' """
         log.info("----> Call Read API")
@@ -99,8 +92,9 @@ class URLProvider(HaystackInterface):
             grid = result
         return grid
 
-    def his_read(self, entity_id: Ref,
-                 date_range: Union[str, Tuple[str, str]]) -> Grid:  # pylint: disable=unused-argument
+    @overrides
+    def his_read(self, entity_id: str,
+                 dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]]) -> Grid:
         """ Implement Haystack 'read' """
         log.info("----> Call his_read API")
         grid = URLProvider._download_grid(self._get_url())
@@ -116,7 +110,7 @@ class URLProvider(HaystackInterface):
                 if not parsed_relative.scheme:
                     his_uri = base[:base.rfind('/')] + "/" + his_uri
 
-                df = URLProvider._load_parquet(his_uri)
+                df = cast(DataFrame, URLProvider._load_parquet(his_uri))
                 history = []
                 unit = None
                 min_date = datetime(MAXYEAR, 12, 31, tzinfo=timezone.utc)  # FIXME: UTC ?

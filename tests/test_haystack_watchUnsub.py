@@ -39,7 +39,7 @@ def test_watchUnsub_with_zinc(apigw_event: LambdaProxyEvent):
     apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
 
     # WHEN
-    response = haystackapi_lambda.watchUnsub(apigw_event, context)
+    response = haystackapi_lambda.watch_unsub(apigw_event, context)
 
     # THEN
     assert response["statusCode"] == 200

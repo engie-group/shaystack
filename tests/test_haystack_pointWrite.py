@@ -39,7 +39,7 @@ def test_pointWrite_with_zinc(apigw_event: LambdaProxyEvent):
     apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
 
     # WHEN
-    response = haystackapi_lambda.pointWrite(apigw_event, context)
+    response = haystackapi_lambda.point_write(apigw_event, context)
 
     # THEN
     assert response["statusCode"] == 200

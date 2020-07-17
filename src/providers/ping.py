@@ -5,13 +5,12 @@ It's may be used to test.
 import logging
 import os
 from datetime import datetime
-from typing import Tuple, Any, Dict
+from typing import Tuple, Any, Dict, Union
 
-from tzlocal import get_localzone
+from overrides import overrides
 
-import hszinc
-from hszinc import Grid, Uri, VER_3_0
-from providers.HaystackInterface import HaystackInterface, EmptyGrid
+from hszinc import Grid, Uri
+from .haystack_interface import HaystackInterface, EmptyGrid, get_default_about
 
 log = logging.getLogger("PingProvider")
 log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
@@ -19,68 +18,73 @@ log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
 
 # FIXME: a déplacer dans un autre package ? CookieCutter ?
 class PingProvider(HaystackInterface):
-    def about(self) -> Grid:
+    """ Simple provider to implement all Haystack operation """
+
+    @overrides
+    def about(self) -> Grid:  # pylint: disable=no-self-use
+        """ Implement the Haystack 'about' ops """
         log.info("about()")
-        grid = hszinc.Grid(version=VER_3_0,
-                           columns={
-                               "haystackVersion": {},  # Str version of REST implementation
-                               "tz": {},  # Str of server's default timezone
-                               "serverName": {},  # Str name of the server or project database
-                               "serverTime": {},
-                               "serverBootTime": {},
-                               "productName": {},  # Str name of the server software product
-                               "productUri": {},
-                               "productVersion": {},
-                               # "moduleName": {},  # module which implements Haystack server protocol if its a plug-in to the product
-                               # "moduleVersion": {}  # Str version of moduleName
-                           })
-        grid.append(
-            {
-                "haystackVersion": str(VER_3_0),
-                "tz": str(get_localzone()),
-                "serverName": "haystack_" + os.environ["AWS_REGION"],  # FIXME: set the server name
-                "serverTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
-                "serverBootTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
-                "productName": "AWS Lamda Haystack Provider",
-                "productUri": Uri("http://localhost:80"),  # FIXME indiquer le port et trouver l'URL ?
-                "productVersion": None,  # FIXME: set the product version
-                "moduleName": "PingProvider",
-                "moduleVersion": None  # FIXME: set the module version
-            })
+        grid = get_default_about()
+        grid[0].update({
+            "productUri": Uri("http://localhost:80"),  # FIXME indiquer le port et trouver l'URL ?
+            "productVersion": None,  # FIXME: set the product version
+            "moduleName": "PingProvider",
+            "moduleVersion": None  # FIXME: set the module version
+        })
+
         return grid
 
-    def read(self, filter: str, limit: int) -> Grid:
-        log.info(f'read(filter="{filter}",limit={limit})')
+    @overrides
+    def read(self, grid_filter: str, limit: int) -> Grid:  # pylint: disable=no-self-use
+        """ Return EmptyGrid """
+        log.info(f'read(filter="{grid_filter}",limit={limit})')
         return EmptyGrid
 
-    def hisRead(self, id: str, range: Tuple[datetime, datetime]) -> Grid:
-        log.info(f'hisRead(id="{id}",range={range})')
+    @overrides
+    def his_read(self, entity_id: str,  # pylint: disable=no-self-use, unused-argument
+                 dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]]) -> Grid:
+        """ Return EmptyGrid """
+        log.info(f'his_read(id="{id}",range={dates_range})')
         return EmptyGrid  # FIXME
 
-    def hisWrite(self, id: str) -> EmptyGrid:
-        log.info(f'hisWrite(id="{id}")')
+    @overrides
+    def his_write(self, entity_id: str) -> Grid:  # pylint: disable=no-self-use
+        """ Return EmptyGrid """
+        log.info(f'his_write(id="{entity_id}")')
         return EmptyGrid
 
-    def nav(self, navId: Grid) -> Any:
-        log.info(f'nav(id="{navId}")')
+    @overrides
+    def nav(self, nav_id: Grid) -> Any:  # pylint: disable=no-self-use
+        """ Return EmptyGrid """
+        log.info(f'nav(id="{nav_id}")')
         return EmptyGrid
 
-    def watchSub(self, watchId: Grid) -> Grid:
-        log.info(f'watchSub(watchId="{watchId}")')
+    @overrides
+    def watch_sub(self, watch_id: Grid) -> Grid:  # pylint: disable=no-self-use
+        """ Return EmptyGrid """
+        log.info(f'watch_sub(watchId="{watch_id}")')
         return EmptyGrid
 
-    def watchUnsub(self, watchId: Grid) -> EmptyGrid:
-        log.info(f'watchUnsub(watchId="{watchId}")')
+    @overrides
+    def watch_unsub(self, watch_id: Grid) -> Grid:  # pylint: disable=no-self-use
+        """ Return EmptyGrid """
+        log.info(f'watch_unsub(watchId="{watch_id}")')
         return EmptyGrid
 
-    def watchPoll(self, watchId: Grid) -> Grid:
-        log.info(f'watchPoll(watchId="{watchId}")')
+    @overrides
+    def watch_poll(self, watch_id: Grid) -> Grid:  # pylint: disable=no-self-use
+        """ Return EmptyGrid """
+        log.info(f'watch_poll(watchId="{watch_id}")')
         return EmptyGrid
 
-    def pointWrite(self, id: str) -> Grid:
-        log.info(f'pointWrite(id="{id}")')
+    @overrides
+    def point_write(self, entity_id: str) -> Grid:  # pylint: disable=no-self-use
+        """ Return EmptyGrid """
+        log.info(f'point_write(id="{entity_id}")')
         return EmptyGrid
 
-    def invokeAction(self, id: str, action: str, params: Dict[str, Any]) -> Grid:
-        log.info(f'invokeAction(id="{id}",action="{action}",params={params})')
+    @overrides
+    def invoke_action(self, entity_id: str, action: str, params: Dict[str, Any]) -> Grid:  # pylint: disable=no-self-use
+        """ Return EmptyGrid """
+        log.info(f'invoke_action(id="{entity_id}",action="{action}",params={params})')
         return EmptyGrid

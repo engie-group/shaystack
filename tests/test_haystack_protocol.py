@@ -1,5 +1,3 @@
-import base64
-import gzip
 import inspect
 import json
 from unittest.mock import patch
@@ -8,7 +6,6 @@ import pytest
 from botocore.client import BaseClient
 
 import hszinc
-from haystackapi_lambda import NO_COMPRESS
 from hszinc import Grid
 from lambda_types import LambdaProxyEvent, LambdaContext
 from src import haystackapi_lambda
@@ -242,82 +239,81 @@ def test_negociation_with_zinc_to_json(apigw_event: LambdaProxyEvent):
     assert response.headers["Content-Type"].startswith("application/json")
     hszinc.parse(response["body"], hszinc.MODE_JSON)
 
-
-@patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
-def test_negociation_extend_with_gzip_encoding_for_result(apigw_event: LambdaProxyEvent):
-    # GIVEN
-    context = LambdaContext()
-    context.function_name = "Read"
-    context.aws_request_id = inspect.currentframe().f_code.co_name
-    grid = hszinc.Grid(columns={'filter': {}, 'limit': {}})
-    grid.append({'filter': '', 'limit': -1})
-    mime_type = "text/zinc"
-    apigw_event["headers"]["Accept"] = "text/zinc"
-    apigw_event["headers"]["Content-Type"] = mime_type
-    apigw_event["headers"]["Accept-Encoding"] = "gzip, deflate, sdch"
-    apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
-
-    # WHEN
-    response = haystackapi_lambda.read(apigw_event, context)
-
-    # THEN
-    assert response["statusCode"] == 200
-    assert response.headers["Content-Type"].startswith(mime_type)
-    if not NO_COMPRESS:
-        assert response.headers["Content-Encoding"] == "gzip"
-        assert response.isBase64Encoded
-        body = gzip.decompress(base64.b64decode(response["body"])).decode("utf-8")
-    else:
-        body = response["body"]
-    hszinc.parse(body, hszinc.MODE_ZINC)
-
-
-@patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
-def test_negociation_extend_with_gzip_encoding_for_request(apigw_event: LambdaProxyEvent):
-    # GIVEN
-    context = LambdaContext()
-    context.function_name = "Read"
-    context.aws_request_id = inspect.currentframe().f_code.co_name
-    grid = hszinc.Grid(columns={'filter': {}, 'limit': {}})
-    grid.append({'filter': '', 'limit': -1})
-    mime_type = "text/zinc"
-    apigw_event["headers"]["Accept"] = "text/zinc"
-    apigw_event["headers"]["Content-Type"] = mime_type
-    apigw_event["headers"]["Content-Encoding"] = "gzip"
-    body = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
-    apigw_event["body"] = base64.b64encode(gzip.compress(body.encode("utf-8")))
-    apigw_event["isBase64Encoded"] = True
-
-    # WHEN
-    response = haystackapi_lambda.read(apigw_event, context)
-
-    # THEN
-    assert response["statusCode"] == 200
-    assert response.headers["Content-Type"].startswith(mime_type)
-    hszinc.parse(response["body"], hszinc.MODE_ZINC)
+# @patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
+# def test_negociation_extend_with_gzip_encoding_for_result(apigw_event: LambdaProxyEvent):
+#     # GIVEN
+#     context = LambdaContext()
+#     context.function_name = "Read"
+#     context.aws_request_id = inspect.currentframe().f_code.co_name
+#     grid = hszinc.Grid(columns={'filter': {}, 'limit': {}})
+#     grid.append({'filter': '', 'limit': -1})
+#     mime_type = "text/zinc"
+#     apigw_event["headers"]["Accept"] = "text/zinc"
+#     apigw_event["headers"]["Content-Type"] = mime_type
+#     apigw_event["headers"]["Accept-Encoding"] = "gzip, deflate, sdch"
+#     apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
+#
+#     # WHEN
+#     response = haystackapi_lambda.read(apigw_event, context)
+#
+#     # THEN
+#     assert response["statusCode"] == 200
+#     assert response.headers["Content-Type"].startswith(mime_type)
+#     if not NO_COMPRESS:
+#         assert response.headers["Content-Encoding"] == "gzip"
+#         assert response.isBase64Encoded
+#         body = gzip.decompress(base64.b64decode(response["body"])).decode("utf-8")
+#     else:
+#         body = response["body"]
+#     hszinc.parse(body, hszinc.MODE_ZINC)
 
 
-@patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
-def test_negociation_extend_with_xxx_encoding_for_request(apigw_event: LambdaProxyEvent):
-    # GIVEN
-    context = LambdaContext()
-    context.function_name = "Read"
-    context.aws_request_id = inspect.currentframe().f_code.co_name
-    grid = hszinc.Grid(columns={'filter': {}, 'limit': {}})
-    grid.append({'filter': '', 'limit': -1})
-    mime_type = "text/zinc"
-    apigw_event["headers"]["Accept"] = "text/zinc"
-    apigw_event["headers"]["Content-Type"] = mime_type
-    apigw_event["headers"]["Content-Encoding"] = "xxx"
-    body = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
-    apigw_event["body"] = base64.b64encode(gzip.compress(body.encode("utf-8")))
-    apigw_event["isBase64Encoded"] = True
+# @patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
+# def test_negociation_extend_with_gzip_encoding_for_request(apigw_event: LambdaProxyEvent):
+#     # GIVEN
+#     context = LambdaContext()
+#     context.function_name = "Read"
+#     context.aws_request_id = inspect.currentframe().f_code.co_name
+#     grid = hszinc.Grid(columns={'filter': {}, 'limit': {}})
+#     grid.append({'filter': '', 'limit': -1})
+#     mime_type = "text/zinc"
+#     apigw_event["headers"]["Accept"] = "text/zinc"
+#     apigw_event["headers"]["Content-Type"] = mime_type
+#     apigw_event["headers"]["Content-Encoding"] = "gzip"
+#     body = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
+#     apigw_event["body"] = base64.b64encode(gzip.compress(body.encode("utf-8")))
+#     apigw_event["isBase64Encoded"] = True
+#
+#     # WHEN
+#     response = haystackapi_lambda.read(apigw_event, context)
+#
+#     # THEN
+#     assert response["statusCode"] == 200
+#     assert response.headers["Content-Type"].startswith(mime_type)
+#     hszinc.parse(response["body"], hszinc.MODE_ZINC)
 
-    # WHEN
-    response = haystackapi_lambda.read(apigw_event, context)
 
-    # THEN
-    assert response["statusCode"] == 400
-    assert response.headers["Content-Type"].startswith(mime_type)
-    error_grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
-    assert "err" in error_grid[0].metadata
+# @patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
+# def test_negociation_extend_with_xxx_encoding_for_request(apigw_event: LambdaProxyEvent):
+#     # GIVEN
+#     context = LambdaContext()
+#     context.function_name = "Read"
+#     context.aws_request_id = inspect.currentframe().f_code.co_name
+#     grid = hszinc.Grid(columns={'filter': {}, 'limit': {}})
+#     grid.append({'filter': '', 'limit': -1})
+#     mime_type = "text/zinc"
+#     apigw_event["headers"]["Accept"] = "text/zinc"
+#     apigw_event["headers"]["Content-Type"] = mime_type
+#     apigw_event["headers"]["Content-Encoding"] = "xxx"
+#     body = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
+#     apigw_event["body"] = base64.b64encode(gzip.compress(body.encode("utf-8")))
+#     apigw_event["isBase64Encoded"] = True
+#
+#     # WHEN
+#     response = haystackapi_lambda.read(apigw_event, context)
+#
+#     # THEN
+#     assert response["statusCode"] == 400
+#     assert response.headers["Content-Type"].startswith(mime_type)
+#     error_grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
+#     assert "err" in error_grid[0].metadata

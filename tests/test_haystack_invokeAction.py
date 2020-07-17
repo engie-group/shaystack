@@ -41,7 +41,7 @@ def test_invokeAction_with_zinc(apigw_event: LambdaProxyEvent):
     apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
 
     # WHEN
-    response = haystackapi_lambda.invokeAction(apigw_event, context)
+    response = haystackapi_lambda.invoke_action(apigw_event, context)
 
     # THEN
     assert response["statusCode"] == 200
@@ -64,7 +64,7 @@ def test_invokeAction_without_params_with_zinc(apigw_event: LambdaProxyEvent):
     apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
 
     # WHEN
-    response = haystackapi_lambda.invokeAction(apigw_event, context)
+    response = haystackapi_lambda.invoke_action(apigw_event, context)
 
     # THEN
     assert response["statusCode"] == 200

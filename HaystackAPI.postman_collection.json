@@ -7,7 +7,7 @@
   },
   "item": [
     {
-      "name": "About (Zinc result)",
+      "name": "About (Zinc)",
       "event": [
         {
           "listen": "test",
@@ -41,12 +41,12 @@
             "about"
           ]
         },
-        "description": "Haystack operation about with zinc result"
+        "description": "Haystack operation about with zinc result.\nSee https://project-haystack.org/doc/Ops#about"
       },
       "response": []
     },
     {
-      "name": "About (Json result)",
+      "name": "About (Json)",
       "event": [
         {
           "listen": "test",
@@ -86,12 +86,12 @@
             "about"
           ]
         },
-        "description": "Haystack operation about with json result"
+        "description": "Haystack operation about with json result.\nSee https://project-haystack.org/doc/Ops#about"
       },
       "response": []
     },
     {
-      "name": "Formats (Zinc result)",
+      "name": "Formats (Zinc)",
       "event": [
         {
           "listen": "test",
@@ -124,12 +124,13 @@
           "path": [
             "formats"
           ]
-        }
+        },
+        "description": "Haystack operation formats with zinc result.\nSee https://project-haystack.org/doc/Ops#formats"
       },
       "response": []
     },
     {
-      "name": "Formats (Json result)",
+      "name": "Formats (Json)",
       "event": [
         {
           "listen": "test",
@@ -168,12 +169,13 @@
           "path": [
             "formats"
           ]
-        }
+        },
+        "description": "Haystack operation formats with json result.\nSee https://project-haystack.org/doc/Ops#formats"
       },
       "response": []
     },
     {
-      "name": "hisRead (Zinc result)",
+      "name": "hisRead (Zinc)",
       "event": [
         {
           "listen": "test",
@@ -194,24 +196,44 @@
           }
         }
       ],
+      "protocolProfileBehavior": {
+        "disabledSystemHeaders": {
+          "accept": true
+        }
+      },
       "request": {
-        "method": "GET",
-        "header": [],
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "text/zinc",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "text/zinc",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "ver:\"2.0\"\nid,val\n\"@me\",\"sample\""
+        },
         "url": {
-          "raw": "http://{{home}}/formats",
-          "protocol": "http",
+          "raw": "{{home}}/hisRead",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "formats"
+            "hisRead"
           ]
-        }
+        },
+        "description": "Haystack operation hisRead with zinc result.\nSee https://project-haystack.org/doc/Ops#hisRead"
       },
       "response": []
     },
     {
-      "name": "hisRead (JSon result)",
+      "name": "hisRead (Json)",
       "event": [
         {
           "listen": "test",
@@ -232,24 +254,44 @@
           }
         }
       ],
+      "protocolProfileBehavior": {
+        "disabledSystemHeaders": {
+          "accept": true
+        }
+      },
       "request": {
-        "method": "GET",
-        "header": [],
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[{\"meta\": {\"ver\": \"2.0\"}, \"cols\": [{\"name\": \"id\"}, {\"name\": \"val\"}], \"rows\": [{\"id\": \"s:@me\", \"val\": \"s:sample\"}]}]"
+        },
         "url": {
-          "raw": "http://{{home}}/formats",
-          "protocol": "http",
+          "raw": "{{home}}/hisRead",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "formats"
+            "hisRead"
           ]
-        }
+        },
+        "description": "Haystack operation hisRead with json result.\nSee https://project-haystack.org/doc/Ops#hisRead"
       },
       "response": []
     },
     {
-      "name": "invokeAction (zinc result)",
+      "name": "invokeAction (zinc)",
       "event": [
         {
           "listen": "test",
@@ -271,29 +313,33 @@
         }
       ],
       "request": {
-        "method": "GET",
+        "method": "POST",
         "header": [
           {
             "key": "Accept",
-            "value": "application/json",
-            "type": "text"
+            "type": "text",
+            "value": "text/zinc"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "ver:\"3.0\"\nid,action\n\"@me\",\"sample\""
+        },
         "url": {
-          "raw": "http://{{home}}/formats",
-          "protocol": "http",
+          "raw": "{{home}}/invokeAction",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "formats"
+            "invokeAction"
           ]
-        }
+        },
+        "description": "Haystack operation invokeAction with zinc result.\nSee https://project-haystack.org/doc/Ops#invokeAction"
       },
       "response": []
     },
     {
-      "name": "invokeAction (json result)",
+      "name": "invokeAction (Json)",
       "event": [
         {
           "listen": "test",
@@ -315,7 +361,7 @@
         }
       ],
       "request": {
-        "method": "GET",
+        "method": "POST",
         "header": [
           {
             "key": "Accept",
@@ -324,20 +370,20 @@
           }
         ],
         "url": {
-          "raw": "http://{{home}}/formats",
-          "protocol": "http",
+          "raw": "{{home}}/invokeAction",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "formats"
+            "invokeAction"
           ]
-        }
+        },
+        "description": "Haystack operation invokeAction with json result.\nSee https://project-haystack.org/doc/Ops#invokeAction"
       },
       "response": []
     },
     {
-      "name": "nav (zin result)",
+      "name": "nav (Zinc)",
       "event": [
         {
           "listen": "test",
@@ -376,12 +422,13 @@
           "path": [
             "formats"
           ]
-        }
+        },
+        "description": "Haystack operation nav with zinc result.\nSee https://project-haystack.org/doc/Ops#nav"
       },
       "response": []
     },
     {
-      "name": "nav (json result)",
+      "name": "nav (Json)",
       "event": [
         {
           "listen": "test",
@@ -420,12 +467,13 @@
           "path": [
             "formats"
           ]
-        }
+        },
+        "description": "Haystack operation nav with json result.\nSee https://project-haystack.org/doc/Ops#nav"
       },
       "response": []
     },
     {
-      "name": "hisWrite (zinc result)",
+      "name": "hisWrite (Zinc)",
       "event": [
         {
           "listen": "test",
@@ -447,29 +495,38 @@
         }
       ],
       "request": {
-        "method": "GET",
+        "method": "POST",
         "header": [
           {
             "key": "Accept",
-            "value": "application/json",
+            "value": "text/zinc",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "text/zinc",
             "type": "text"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "ver:\"3.0\"\nid,val\n@me,\"sample\""
+        },
         "url": {
-          "raw": "http://{{home}}/formats",
-          "protocol": "http",
+          "raw": "{{home}}/hisWrite",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "formats"
+            "hisWrite"
           ]
-        }
+        },
+        "description": "Haystack operation hisWrite with zinc result.\nSee https://project-haystack.org/doc/Ops#hisWrite"
       },
       "response": []
     },
     {
-      "name": "hisWrite (json result)",
+      "name": "hisWrite (Json)",
       "event": [
         {
           "listen": "test",
@@ -491,29 +548,38 @@
         }
       ],
       "request": {
-        "method": "GET",
+        "method": "POST",
         "header": [
           {
             "key": "Accept",
+            "type": "text",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
             "value": "application/json",
             "type": "text"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"meta\": {\"ver\": \"3.0\"}, \"cols\": [{\"name\": \"id\"}, {\"name\": \"val\"}], \"rows\": [{\"id\": \"r:me\", \"val\": \"s:sample\"}]}"
+        },
         "url": {
-          "raw": "http://{{home}}/formats",
-          "protocol": "http",
+          "raw": "{{home}}/hisWrite",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "formats"
+            "hisWrite"
           ]
-        }
+        },
+        "description": "Haystack operation hisWrite with json result.\nSee https://project-haystack.org/doc/Ops#hisWrite"
       },
       "response": []
     },
     {
-      "name": "Ops (Zinc result)",
+      "name": "Ops (Zinc)",
       "event": [
         {
           "listen": "test",
@@ -536,22 +602,28 @@
       ],
       "request": {
         "method": "GET",
-        "header": [],
+        "header": [
+          {
+            "key": "Accept",
+            "value": "text/zinc",
+            "type": "text"
+          }
+        ],
         "url": {
-          "raw": "http://{{home}}/ops",
-          "protocol": "http",
+          "raw": "{{home}}/ops",
           "host": [
             "{{home}}"
           ],
           "path": [
             "ops"
           ]
-        }
+        },
+        "description": "Haystack operation ops with zinc result.\nSee https://project-haystack.org/doc/Ops#ops"
       },
       "response": []
     },
     {
-      "name": "Ops (Json result)",
+      "name": "Ops (Json)",
       "event": [
         {
           "listen": "test",
@@ -579,23 +651,28 @@
             "key": "Accept",
             "value": "application/json",
             "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
           }
         ],
         "url": {
-          "raw": "http://{{home}}/ops",
-          "protocol": "http",
+          "raw": "{{home}}/ops",
           "host": [
             "{{home}}"
           ],
           "path": [
             "ops"
           ]
-        }
+        },
+        "description": "Haystack operation ops with json result.\nSee https://project-haystack.org/doc/Ops#ops"
       },
       "response": []
     },
     {
-      "name": "pointWrite (zinc result)",
+      "name": "pointWrite (Zinc)",
       "event": [
         {
           "listen": "test",
@@ -617,29 +694,38 @@
         }
       ],
       "request": {
-        "method": "GET",
+        "method": "POST",
         "header": [
           {
             "key": "Accept",
-            "value": "application/json",
+            "type": "text",
+            "value": "text/zinc"
+          },
+          {
+            "key": "Content-type",
+            "value": "text/zinc",
             "type": "text"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "ver:\"3.0\"\nid,val\n\"@me\",\"sample\""
+        },
         "url": {
-          "raw": "http://{{home}}/ops",
-          "protocol": "http",
+          "raw": "{{home}}/pointWrite",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "ops"
+            "pointWrite"
           ]
-        }
+        },
+        "description": "Haystack operation pointWrite with zinc result.\nSee https://project-haystack.org/doc/Ops#pointWrite"
       },
       "response": []
     },
     {
-      "name": "pointWrite (Json result)",
+      "name": "pointWrite (Json)",
       "event": [
         {
           "listen": "test",
@@ -661,29 +747,38 @@
         }
       ],
       "request": {
-        "method": "GET",
+        "method": "POST",
         "header": [
           {
             "key": "Accept",
+            "type": "text",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
             "value": "application/json",
             "type": "text"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"meta\": {\"ver\": \"3.0\"}, \"cols\": [{\"name\": \"id\"}, {\"name\": \"val\"}], \"rows\": [{\"id\": \"s:@me\", \"val\": \"s:sample\"}]}"
+        },
         "url": {
-          "raw": "http://{{home}}/ops",
-          "protocol": "http",
+          "raw": "{{home}}/pointWrite",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "ops"
+            "pointWrite"
           ]
-        }
+        },
+        "description": "Haystack operation pointWrite with json result.\nSee https://project-haystack.org/doc/Ops#pointWrite"
       },
       "response": []
     },
     {
-      "name": "read (zinc result)",
+      "name": "read (Zinc)",
       "event": [
         {
           "listen": "test",
@@ -704,30 +799,42 @@
           }
         }
       ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
       "request": {
         "method": "GET",
         "header": [
           {
             "key": "Accept",
-            "value": "application/json",
+            "type": "text",
+            "value": "text/zinc"
+          },
+          {
+            "key": "Content-Type",
+            "value": "text/zinc",
             "type": "text"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "ver:\"3.0\"\nfilter\n\"\""
+        },
         "url": {
-          "raw": "http://{{home}}/ops",
-          "protocol": "http",
+          "raw": "{{home}}/read",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "ops"
+            "read"
           ]
-        }
+        },
+        "description": "Haystack operation read with zinc result.\nSee https://project-haystack.org/doc/Ops#read"
       },
       "response": []
     },
     {
-      "name": "read (json result)",
+      "name": "read (Json)",
       "event": [
         {
           "listen": "test",
@@ -753,25 +860,30 @@
         "header": [
           {
             "key": "Accept",
+            "type": "text",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
             "value": "application/json",
             "type": "text"
           }
         ],
         "url": {
-          "raw": "http://{{home}}/ops",
-          "protocol": "http",
+          "raw": "{{home}}/read",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "ops"
+            "read"
           ]
-        }
+        },
+        "description": "Haystack operation read with json result.\nSee https://project-haystack.org/doc/Ops#read"
       },
       "response": []
     },
     {
-      "name": "watchPoll (zinc result)",
+      "name": "watchPoll (Zinc)",
       "event": [
         {
           "listen": "test",
@@ -792,30 +904,42 @@
           }
         }
       ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
       "request": {
         "method": "GET",
         "header": [
           {
             "key": "Accept",
-            "value": "application/json",
+            "type": "text",
+            "value": "text/zinc"
+          },
+          {
+            "key": "Content-Type",
+            "value": "text/zinc",
             "type": "text"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "ver:\"3.0\"\nid,val\n\"@me\",\"sample\""
+        },
         "url": {
-          "raw": "http://{{home}}/ops",
-          "protocol": "http",
+          "raw": "{{home}}/watchPoll",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "ops"
+            "watchPoll"
           ]
-        }
+        },
+        "description": "Haystack operation watchPoll with zinc result.\nSee https://project-haystack.org/doc/Ops#watchPoll"
       },
       "response": []
     },
     {
-      "name": "watchPoll (json result)",
+      "name": "watchPoll (Json)",
       "event": [
         {
           "listen": "test",
@@ -836,6 +960,9 @@
           }
         }
       ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
       "request": {
         "method": "GET",
         "header": [
@@ -843,23 +970,32 @@
             "key": "Accept",
             "value": "application/json",
             "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"meta\": {\"ver\": \"3.0\"}, \"cols\": [{\"name\": \"id\"}, {\"name\": \"val\"}], \"rows\": [{\"id\": \"s:@me\", \"val\": \"s:sample\"}]}"
+        },
         "url": {
-          "raw": "http://{{home}}/ops",
-          "protocol": "http",
+          "raw": "{{home}}/watchPoll",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "ops"
+            "watchPoll"
           ]
-        }
+        },
+        "description": "Haystack operation watchPoll with json result.\nSee https://project-haystack.org/doc/Ops#watchPoll"
       },
       "response": []
     },
     {
-      "name": "watchSub (zinc result)",
+      "name": "watchSub (Zinc)",
       "event": [
         {
           "listen": "test",
@@ -881,29 +1017,38 @@
         }
       ],
       "request": {
-        "method": "GET",
+        "method": "POST",
         "header": [
           {
             "key": "Accept",
-            "value": "application/json",
+            "type": "text",
+            "value": "text/zinc"
+          },
+          {
+            "key": "Content-Type",
+            "value": "text/zinc",
             "type": "text"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "ver:\"3.0\"\nid,val\n\"@me\",\"sample\""
+        },
         "url": {
-          "raw": "http://{{home}}/ops",
-          "protocol": "http",
+          "raw": "{{home}}/watchSub",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "ops"
+            "watchSub"
           ]
-        }
+        },
+        "description": "Haystack operation watchSub with zinc result.\nSee https://project-haystack.org/doc/Ops#watchSub"
       },
       "response": []
     },
     {
-      "name": "watchSub (json result)",
+      "name": "watchSub (Json)",
       "event": [
         {
           "listen": "test",
@@ -925,29 +1070,38 @@
         }
       ],
       "request": {
-        "method": "GET",
+        "method": "POST",
         "header": [
           {
             "key": "Accept",
+            "type": "text",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
             "value": "application/json",
             "type": "text"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"meta\": {\"ver\": \"3.0\"}, \"cols\": [{\"name\": \"id\"}, {\"name\": \"val\"}], \"rows\": [{\"id\": \"s:@me\", \"val\": \"s:sample\"}]}"
+        },
         "url": {
-          "raw": "http://{{home}}/ops",
-          "protocol": "http",
+          "raw": "{{home}}/watchSub",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "ops"
+            "watchSub"
           ]
-        }
+        },
+        "description": "Haystack operation watchSub with json result.\nSee https://project-haystack.org/doc/Ops#watchSub"
       },
       "response": []
     },
     {
-      "name": "watchUnsub (zinc result)",
+      "name": "watchUnsub (Zinc)",
       "event": [
         {
           "listen": "test",
@@ -969,29 +1123,38 @@
         }
       ],
       "request": {
-        "method": "GET",
+        "method": "POST",
         "header": [
           {
             "key": "Accept",
-            "value": "application/json",
+            "type": "text",
+            "value": "text/zinc"
+          },
+          {
+            "key": "Content-Type",
+            "value": "text/zinc",
             "type": "text"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "ver:\"3.0\"\nid,val\n\"@me\",\"sample\""
+        },
         "url": {
-          "raw": "http://{{home}}/ops",
-          "protocol": "http",
+          "raw": "{{home}}/watchUnsub",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "ops"
+            "watchUnsub"
           ]
-        }
+        },
+        "description": "Haystack operation watchUnsub with zinc result.\nSee https://project-haystack.org/doc/Ops#watchUnsub"
       },
       "response": []
     },
     {
-      "name": "watchUnsub (json result)",
+      "name": "watchUnsub (Json)",
       "event": [
         {
           "listen": "test",
@@ -1013,24 +1176,33 @@
         }
       ],
       "request": {
-        "method": "GET",
+        "method": "POST",
         "header": [
           {
             "key": "Accept",
+            "type": "text",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
             "value": "application/json",
             "type": "text"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"meta\": {\"ver\": \"3.0\"}, \"cols\": [{\"name\": \"id\"}, {\"name\": \"val\"}], \"rows\": [{\"id\": \"s:@me\", \"val\": \"s:sample\"}]}"
+        },
         "url": {
-          "raw": "http://{{home}}/ops",
-          "protocol": "http",
+          "raw": "{{home}}/watchUnsub",
           "host": [
             "{{home}}"
           ],
           "path": [
-            "ops"
+            "watchUnsub"
           ]
-        }
+        },
+        "description": "Haystack operation watchUnsub with json result.\nSee https://project-haystack.org/doc/Ops#watchUnsub"
       },
       "response": []
     }
@@ -1059,7 +1231,7 @@
   ],
   "variable": [
     {
-      "id": "5bae953e-54b3-483d-b28e-f500d1032229",
+      "id": "f09cf331-5463-4383-909f-e04f9c119423",
       "key": "home",
       "value": "localhost:3000"
     }

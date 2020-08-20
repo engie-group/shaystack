@@ -1025,6 +1025,83 @@ def _check_list_json_v2(pint_en):
     except ValueError:
         pass
 
+def _check_bin(pint_en):
+    _enable_pint(pint_en)
+    grid_list = hszinc.parse('''ver:"2.0"
+bin
+Bin(text/plain)
+''')
+
+    assert len(grid_list) == 1
+    assert len(grid_list[0]) == 1
+    assert grid_list[0][0]['bin'] == hszinc.Bin('text/plain')
+
+
+def test_dict():
+    yield _check_dict, False
+    yield _check_dict, True
+
+def _check_dict(pint_en):
+    _enable_pint(pint_en)
+    grid_list = hszinc.parse('''ver:"3.0"
+ix,dict,                                                       dis
+00,{},                                                         "An empty dict"
+01,{marker},                                                   "A marker in a dict"
+02,{tag: 1},                                                   "A tag with number in a dict"
+03,{tag: [1,2]},                                               "A tag with list in a dict"
+04,{marker tag: [1,2]},                                        "A marker and tag with list in a dict"
+05,{tag: {marker}},                                            "A tag  with dict in a dict"
+''')
+    assert len(grid_list) == 1
+    grid = grid_list.pop(0)
+
+    # There should be 4 rows
+    assert len(grid) == 6
+    for row in grid:
+        assert isinstance(row['dict'], dict)
+    assert grid[0]['dict'] == {}
+    assert grid[1]['dict'] == {'marker': MARKER}
+    assert grid[2]['dict'] == {'tag': 1.0}
+    assert grid[3]['dict'] == {'tag': [1.0, 2.0]}
+    assert grid[4]['dict'] == {'marker': MARKER, 'tag': [1.0, 2.0]}
+    assert grid[5]['dict'] == {'tag': {'marker': MARKER}}
+
+
+def test_dict_json():
+    yield _check_dict_json, False
+    yield _check_dict_json, True
+
+def _check_dict_json(pint_en):
+    _enable_pint(pint_en)
+    grid_list = hszinc.parse({
+        'meta': {'ver': '3.0'},
+        'cols': [
+            {'name': 'dict'},
+        ],
+        'rows': [
+            {'dict': {}},
+            {'dict': {'marker': 'm:'}},
+            {'dict': {'tag': 1.0}},
+            {'dict': {'tag': [1, 2]}},
+            {'dict': {'marker': 'm:', 'tag': [1, 2]}},
+            {'dict': {'tag': {'marker': 'm:'}}},
+        ]
+    }, mode=hszinc.MODE_JSON)
+
+    assert len(grid_list) == 1
+    grid = grid_list.pop(0)
+
+    # There should be 4 rows
+    assert len(grid) == 6
+    for row in grid:
+        assert isinstance(row['dict'], dict)
+    assert grid[0]['dict'] == {}
+    assert grid[1]['dict'] == {'marker': MARKER}
+    assert grid[2]['dict'] == {'tag': 1.0}
+    assert grid[3]['dict'] == {'tag': [1.0, 2.0]}
+    assert grid[4]['dict'] == {'marker': MARKER, 'tag': [1.0, 2.0]}
+    assert grid[5]['dict'] == {'tag': {'marker': MARKER}}
+
 def test_bin():
     yield _check_bin, False # without pint
     yield _check_bin, True # with pint

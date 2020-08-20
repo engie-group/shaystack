@@ -453,7 +453,7 @@ hs_tags = GenerateMatch(
 def _to_dict(tokenlist):
     result = {}
     for i, tok in enumerate(tokenlist):
-        if isinstance(tok, str):
+        if isinstance(tok, six.string_types):
             result[tok] = MARKER
         else:
             result[tok[0]] = tok[1]

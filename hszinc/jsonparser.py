@@ -4,48 +4,47 @@
 # (C) 2018 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
-import copy
-import datetime
-import functools
-import json
-import re
 import sys
 
-import iso8601
-import six
-
-from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
-    MARKER, NA, REMOVE, XStr
 from .grid import Grid
-from .version import LATEST_VER, Version, VER_3_0
+from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
+        MARKER, NA, REMOVE, STR_SUB
 from .zoneinfo import timezone
+from .version import LATEST_VER, Version, VER_3_0
+
+import datetime
+import iso8601
+import re
+import six
+import functools
+import json
+import copy
 
 URI_META = re.compile(r'\\([:/\?#\[\]@\\&=;"$`])')
 GRID_SEP = re.compile(r'\n\n+')
 
 # Type regular expressions
-MARKER_STR = 'm:'
-NA_STR = 'z:'
+MARKER_STR  = 'm:'
+NA_STR      = 'z:'
 REMOVE2_STR = 'x:'
 REMOVE3_STR = '-:'
-NUMBER_RE = re.compile(r'^n:(-?\d+(:?\.\d+)?(:?[eE][+\-]?\d+)?)(:? (.*))?$',
-                       flags=re.MULTILINE)
-REF_RE = re.compile(r'^r:([a-zA-Z0-9_:\-.~]+)(:? (.*))?$',
-                    flags=re.MULTILINE)
-DATE_RE = re.compile(r'^d:(\d{4})-(\d{2})-(\d{2})$', flags=re.MULTILINE)
-TIME_RE = re.compile(r'^h:(\d{2}):(\d{2})(:?:(\d{2}(:?\.\d+)?))?$',
-                     flags=re.MULTILINE)
-DATETIME_RE = re.compile(r'^t:(\d{4}-\d{2}-\d{2}T' \
-                         r'\d{2}:\d{2}(:?:\d{2}(:?\.\d+)?)' \
-                         r'(:?[zZ]|[+\-]\d+:?\d*))(:? ([A-Za-z\-+_0-9]+))?$',
-                         flags=re.MULTILINE)
-URI_RE = re.compile(r'u:(.+)$', flags=re.MULTILINE)
-BIN_RE = re.compile(r'b:(.+)$', flags=re.MULTILINE)
-COORD_RE = re.compile(r'c:(-?\d*\.?\d*),(-?\d*\.?\d*)$',
-                      flags=re.MULTILINE)
+NUMBER_RE   = re.compile(r'^n:(-?\d+(:?\.\d+)?(:?[eE][+\-]?\d+)?)(:? (.*))?$',
+        flags=re.MULTILINE)
+REF_RE      = re.compile(r'^r:([a-zA-Z0-9_:\-.~]+)(:? (.*))?$',
+        flags=re.MULTILINE)
+DATE_RE     = re.compile(r'^d:(\d{4})-(\d{2})-(\d{2})$', flags=re.MULTILINE)
+TIME_RE     = re.compile(r'^h:(\d{2}):(\d{2})(:?:(\d{2}(:?\.\d+)?))?$',
+        flags=re.MULTILINE)
+DATETIME_RE = re.compile(r'^t:(\d{4}-\d{2}-\d{2}T'\
+        r'\d{2}:\d{2}(:?:\d{2}(:?\.\d+)?)'\
+        r'(:?[zZ]|[+\-]\d+:?\d*))(:? ([A-Za-z\-+_0-9]+))?$',
+        flags=re.MULTILINE)
+URI_RE      = re.compile(r'u:(.+)$', flags=re.MULTILINE)
+BIN_RE      = re.compile(r'b:(.+)$', flags=re.MULTILINE)
+COORD_RE    = re.compile(r'c:(-?\d*\.?\d*),(-?\d*\.?\d*)$',
+        flags=re.MULTILINE)
 
-STR_ESC_RE = re.compile(r'\\([bfnrt"\\$]|u[0-9a-fA-F]{4})')
-
+STR_ESC_RE  = re.compile(r'\\([bfnrt"\\$]|u[0-9a-fA-F]{4})')
 
 def parse_grid(grid_str):
     # Grab the metadata
@@ -60,7 +59,7 @@ def parse_grid(grid_str):
     # Parse the remaining elements
     metadata = {}
     for name, value in meta.items():
-        metadata[name] = parse_embedded_scalar(value, version=version)
+        metadata[name] = parse_scalar(value, version=version)
 
     grid = Grid(version=version, metadata=metadata)
 
@@ -69,20 +68,27 @@ def parse_grid(grid_str):
         name = col.pop('name')
         meta = {}
         for key, value in col.items():
-            meta[key] = parse_embedded_scalar(value, version=version)
+            meta[key] = parse_scalar(value, version=version)
         grid.column[name] = meta
 
     # Parse the rows
-    for row in (parsed.pop('rows', []) or []):
+    for row in (parsed.pop('rows',[]) or []):
         parsed_row = {}
         for col, value in row.items():
-            parsed_row[col] = parse_embedded_scalar(value, version=version)
+            parsed_row[col] = parse_scalar(value, version=version)
         grid.append(parsed_row)
 
     return grid
 
 
-def parse_embedded_scalar(scalar, version=LATEST_VER):
+def parse_scalar(scalar, version=LATEST_VER):
+    # If we're given a string, decode the JSON data.
+    if isinstance(scalar, six.text_type) and \
+            (len(scalar) >= 2) and \
+            (scalar[0] in ('"', '[', '{')) and \
+            (scalar[-1] in ('"', ']', '}')):
+        scalar = json.loads(scalar)
+
     # Simple cases
     if scalar is None:
         return None
@@ -98,7 +104,7 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
         if version < VER_3_0:
             raise ValueError('Dicts are not supported in Haystack version %s' \
                              % version)
-        if sys.version_info[0] < 3 and {"meta", "cols", "rows"} <= scalar.viewkeys() \
+        if sys.version_info < (3,) and {"meta", "cols", "rows"} <= scalar.viewkeys() \
                 or {"meta", "cols", "rows"} <= scalar.keys():  # Check if grid in grid
             return parse_grid(scalar)
         else:
@@ -140,10 +146,6 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
     # Is it a string?
     if scalar.startswith('s:'):
         return scalar[2:]
-
-    # Is it a xstr?
-    if scalar.startswith('x:'):
-        return XStr(*scalar[2:].split(':'))
 
     # Is it a reference?
     match = REF_RE.match(scalar)
@@ -212,14 +214,3 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
         (lat, lng) = match.groups()
         return Coordinate(float(lat), float(lng))
     return scalar
-
-
-def parse_scalar(scalar, version=LATEST_VER):
-    # If we're given a string, decode the JSON data.
-    if isinstance(scalar, six.text_type) and \
-            (len(scalar) >= 2) and \
-            (scalar[0] in ('"','[','{')) and \
-            (scalar[-1] in ('"',']','}')):
-        scalar = json.loads(scalar)
-
-    return parse_embedded_scalar(scalar, version=version)

@@ -8,9 +8,8 @@
 from __future__ import unicode_literals
 
 import copy
-import datetime
 
-from hszinc import Grid, Version, VER_3_0, Quantity, Coordinate
+from hszinc import Grid, Version, VER_3_0
 from hszinc.sortabledict import SortableDict
 
 
@@ -177,16 +176,16 @@ def test_grid_str():
     g.column['test'] = {}
     g.extend(rows)
     assert repr(g) == '<Grid>\n' \
-                      '\tVersion: 3.0\n' \
-                      '\tColumns:\n' \
-                      '\t\ttest\n' \
-                      '\tRow    0:\n' \
-                      '\ttest=1\n' \
-                      '\tRow    1:\n' \
-                      '\ttest=2\n' \
-                      '\tRow    2:\n' \
-                      '\ttest=3\n' \
-                      '</Grid>'
+    '\tVersion: 3.0\n' \
+    '\tColumns:\n' \
+    '\t\ttest\n' \
+    '\tRow    0:\n' \
+    '\ttest=1\n' \
+    '\tRow    1:\n' \
+    '\ttest=2\n' \
+    '\tRow    2:\n' \
+    '\ttest=3\n' \
+    '</Grid>'
 
 
 def test_grid_equal():
@@ -200,29 +199,8 @@ def test_grid_equal():
     assert ref == copy.deepcopy(ref)
 
 
-def test_grid_equal_with_complex_datas():
-    ref = Grid()
-    ref.column['test'] = {}
-    ref.extend([
-        {'test': datetime.datetime(2010, 11, 28, 7, 23, 2, 600000)},
-        {'test': Quantity(500, 'kg')},
-        {'test': Coordinate(100, 100)},
-        {'test': 1.0},
-    ])
-    similar = Grid()
-    similar.column['test'] = {}
-    similar.extend([
-        {'test': datetime.datetime(2010, 11, 28, 7, 23, 2, 500000)},
-        {'test': Quantity(500.000001, 'kg')},
-        {'test': Coordinate(100.000001, 100.000001)},
-        {'test': 1.000001},
-    ])
-
-    assert ref == similar
-
-
 def test_grid_not_equal_metadata():
-    ref = Grid(metadata={"x": {}})
+    ref = Grid()
     ref.column['test'] = {}
     ref.extend([
         {'test': 1},
@@ -231,10 +209,6 @@ def test_grid_not_equal_metadata():
     ])
     diff = copy.deepcopy(ref)
     diff.metadata.append('add')
-    assert ref != diff
-
-    diff = copy.deepcopy(ref)
-    diff.metadata["x"] = 1
     assert ref != diff
 
 
@@ -248,19 +222,6 @@ def test_grid_not_equal_col_with_new_metadata():
     ])
     diff = copy.deepcopy(ref)
     diff.column.add_item('test', 'add')
-    assert ref != diff
-
-
-def test_grid_not_equal__with_new_col():
-    ref = Grid()
-    ref.column['test'] = {}
-    ref.extend([
-        {'test': 1},
-        {'test': 2},
-        {'test': 3}
-    ])
-    diff = copy.deepcopy(ref)
-    diff.column["added"] = {}
     assert ref != diff
 
 
@@ -291,19 +252,6 @@ def test_grid_not_equal_col_with_updated_metadata():
     assert ref != diff
 
 
-def test_grid_not_equal_with_updated_value():
-    ref = Grid()
-    ref.column['test'] = {"a": 1}
-    ref.extend([
-        {'test': 1},
-        {'test': 2},
-        {'test': 3}
-    ])
-    diff = copy.deepcopy(ref)
-    diff.column['test'] = {"a": ""}
-    assert ref != diff
-
-
 def test_grid_new_row():
     ref = Grid()
     ref.column['test'] = {}
@@ -328,45 +276,3 @@ def test_grid_not_equal_row():
     diff = copy.deepcopy(ref)
     diff[0] = {'test': 4}
     assert ref != diff
-
-
-def test_grid_index():
-    grid = Grid()
-    grid.column['id'] = {}
-    grid.column['val'] = {}
-    grid.insert(0, {'id': 'idx1'})
-    assert 'idx1' in grid._index
-    assert grid['idx1']
-    assert grid.get('idx1')
-    grid.insert(1, {'id': 'idx2'})
-    assert 'idx1' in grid._index
-    assert 'idx2' in grid._index
-    assert grid.get('idx2')
-    grid[0] = {'id': 'idx3'}
-    assert not 'idx1' in grid._index
-    assert 'idx3' in grid._index
-    assert grid.get('idx3')
-    del grid[1]
-    assert not 'idx2' in grid._index
-    grid.extend([
-        {'id': 'idx5'},
-        {'id': 'idx6'},
-    ])
-    assert 'idx5' in grid._index
-    assert 'idx6' in grid._index
-    grid[0]['id'] = 'idx4'
-    grid.reindex()
-    assert 'idx4' in grid._index
-    assert grid.get('idx4')
-
-
-def test_slice():
-    grid = Grid(columns={'id': {}, 'site': {}})
-    grid.append({'id': 'id1', })
-    grid.append({'id': 'id2'})
-    grid.append({'id': 'id3'})
-
-    result = grid[0:2]
-    assert len(result) == 2
-    assert result['id1']
-    assert result['id2']

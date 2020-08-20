@@ -4,7 +4,11 @@
 # (C) 2016 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+import datetime
 
+import six
+
+import hszinc
 from .datatypes import NA
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
@@ -59,6 +63,59 @@ class Grid(col.MutableSequence):
                 mo = MetadataObject(validate_fn=self._detect_or_validate)
                 mo.extend(col_meta)
                 self.column.add_item(col_id, mo)
+
+    @staticmethod
+    def _approx_check(v1, v2):
+        # Check types match
+        if not (isinstance(v1, six.string_types) \
+                and isinstance(v2, six.string_types)):
+            return type(v1) == type(v2) and v1 == v2
+        if isinstance(v1, datetime.time):
+            return v1.replace(microsecond=0) == v2.replace(microsecond=0) and \
+                 Grid._approx_check(v1.microsecond, v2.microsecond)
+        elif isinstance(v1, datetime.datetime):
+            return v1.tzinfo == v2.tzinfo and \
+                     v1.date() == v2.date() and \
+                    Grid._approx_check(v1.time(), v2.time())
+        elif isinstance(v1, hszinc.Quantity):
+            return v1.unit == v2.unit and \
+                Grid._approx_check(v1.value, v2.value)
+        elif isinstance(v1, hszinc.Coordinate):
+            return Grid._approx_check(v1.latitude, v2.latitude) and \
+                Grid._approx_check(v1.longitude, v2.longitude)
+        elif isinstance(v1, float):
+            return abs(v1 - v2) < 0.000001
+        elif isinstance(v1, Grid):
+             return Grid._approx_check_grid(v1, v2)
+        else:
+            return v1 == v2
+
+    def __eq__(self, other):
+        if set(self.metadata.keys()) != set(other.metadata.keys()):
+            return False
+        for key in self.metadata.keys():
+            if not Grid._approx_check(self.metadata[key], other.metadata[key]):
+                return False
+        # Check column matches
+        if set(self.column.keys()) != set(other.column.keys()):
+            return False
+
+        for col in self.column.keys():
+            if not col in other.column or \
+                len(self.column[col]) != len(other.column[col]) :
+                return False
+            for key in self.column[col].keys():
+                if not Grid._approx_check(self.column[col][key], other.column[col][key]):
+                    return False
+        # Check row matches
+        if len(self) != len(other):
+            return False
+
+        for (ref_row, parsed_row) in zip(self, other):
+            for col in self.column.keys():
+                if not Grid._approx_check(ref_row.get(col), parsed_row.get(col)):
+                    return False
+        return True
 
     @property
     def version(self): # pragma: no cover

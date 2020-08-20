@@ -7,6 +7,7 @@
 
 from __future__ import unicode_literals
 
+from . import Grid
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
         MARKER, NA, REMOVE, STR_SUB
 from .zoneinfo import timezone_name
@@ -133,7 +134,9 @@ def dump_scalar(scalar, version=LATEST_VER):
             isinstance(scalar, int) or \
             isinstance(scalar, int):
         return dump_decimal(scalar, version=version)
-    else: # pragma: no cover
+    elif isinstance(scalar, Grid):
+        return "<<" + dump_grid(scalar) + ">>"
+    else:
         raise NotImplementedError('Unhandled case: %r' % scalar)
 
 def dump_id(id_str, version=LATEST_VER):

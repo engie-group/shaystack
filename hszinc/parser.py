@@ -17,7 +17,7 @@ import json
 # Bring in version handling
 from .version import Version, LATEST_VER
 
-GRID_SEP = re.compile(r'\n\n+')
+GRID_SEP = re.compile(r'(?<=\n)\n+')
 
 MODE_ZINC = 'text/zinc'
 MODE_JSON = 'application/json'
@@ -46,7 +46,8 @@ def parse(grid_str, mode=MODE_ZINC, charset='utf-8'):
         else:
             return list(map(_parse, grid_data))
     else:
-        return list(map(_parse, GRID_SEP.split(grid_str.rstrip())))
+        return list(map(_parse, GRID_SEP.split(grid_str)))
+
 
 
 def parse_grid(grid_str, mode=MODE_ZINC, charset='utf-8'):

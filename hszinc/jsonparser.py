@@ -4,6 +4,7 @@
 # (C) 2018 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+import sys
 
 from .grid import Grid
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
@@ -96,7 +97,11 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
         if version < VER_3_0:
             raise ValueError('Dicts are not supported in Haystack version %s' \
                              % version)
-        return {k: parse_scalar(v, version=version) for (k, v) in scalar.items()}
+        if sys.version_info < (3,) and {"meta", "cols", "rows"} <= scalar.viewkeys() \
+                or {"meta", "cols", "rows"} <= scalar.keys():  # Check if grid in grid
+            return parse_grid(scalar)
+        else:
+            return {k: parse_scalar(v, version=version) for (k, v) in scalar.items()}
     elif scalar == MARKER_STR:
         return MARKER
     elif scalar == NA_STR:

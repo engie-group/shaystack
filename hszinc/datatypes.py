@@ -333,7 +333,7 @@ class Coordinate(object):
 
     def __str__(self):
         return '%f° lat %f° long' % (
-                self.latitude, self.longitude
+                round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
         )
 
     def __eq__(self, other):

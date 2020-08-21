@@ -16,7 +16,7 @@ import pytz
 from nose.tools import assert_is
 
 import hszinc
-from hszinc import MARKER, Grid, MODE_JSON
+from hszinc import MARKER, Grid, MODE_JSON, XStr
 from hszinc.zincparser import hs_row, _unescape
 from .pint_enable import _enable_pint
 
@@ -1640,13 +1640,13 @@ def test_nodehaystack_05():
 
 def _check_nodehaystack_05(pint_en):
     _enable_pint(pint_en)
-    grid_list = hszinc.parse('''ver:"2.0"
+    grid_list = hszinc.parse('''ver:"3.0"
 a,    b,      c,      d
 T,    F,      N,   -99
 2.3,  -5e-10, 2.4e20, 123e-10
 "",   "a",   "\\" \\\\ \\t \\n \\r", "\\uabcd"
 `path`, @12cbb082-0c02ae73, 4s, -2.5min
-M,R,Bin(image/png),Bin(image/png)
+M,R,hex("010203"),hex("010203")
 2009-12-31, 23:59:01, 01:02:03.123, 2009-02-03T04:05:06Z
 INF, -INF, "", NaN
 C(12,-34),C(0.123,-.789),C(84.5,-77.45),C(-90,180)
@@ -1679,8 +1679,8 @@ C(12,-34),C(0.123,-.789),C(84.5,-77.45),C(-90,180)
     row = grid.pop(0)
     assert_is(row['a'], hszinc.MARKER)
     assert_is(row['b'], hszinc.REMOVE)
-    assert row['c'] == hszinc.Bin('image/png')
-    assert row['d'] == hszinc.Bin('image/png')
+    assert row['c'] == XStr('hex','010203')
+    assert row['d'] == XStr('hex','010203')
     row = grid.pop(0)
     assert row['a'] == datetime.date(2009, 12, 31)
     assert row['b'] == datetime.time(23, 59, 1)

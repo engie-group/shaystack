@@ -7,7 +7,6 @@
 import datetime
 import logging
 import re
-import sys
 
 import iso8601
 import pyparsing as pp
@@ -474,14 +473,33 @@ hs_tags = GenerateMatch(
         .setName('tags'))
 
 
-def _to_dict(tokenlist):
+def to_dict(tokenlist):
     result = {}
-    for i, tok in enumerate(tokenlist):
-        if isinstance(tok, six.string_types):
-            result[tok] = MARKER
+    i = 0
+    it = enumerate(tokenlist)
+    for i, tok in it:
+        if i < len(tokenlist) - 2 and tokenlist[i + 1] == ':':
+            result[tokenlist[i]] = tokenlist[i + 2]
+            next(it)
+            next(it)
         else:
-            result[tok[0]] = tok[1]
+            if isinstance(tok, six.string_types):
+                result[tok] = MARKER
+            elif isinstance(tok, tuple):
+                result[tok[0]] = tok[1]
+            else:
+                result[tok] = MARKER
+
     return result
+
+# def to_dict(tokenlist):
+#     result = {}
+#     for i, tok in enumerate(tokenlist):
+#         if isinstance(tok, six.string_types):
+#             result[tok] = MARKER
+#         else:
+#             result[tok[0]] = tok[1]
+#     return result
 
 
 hs_dict = GenerateMatch(
@@ -494,7 +512,7 @@ hs_dict = GenerateMatch(
         ])
     ])
         .setName("dict")
-        .setParseAction(_to_dict)
+        .setParseAction(to_dict)
 )
 
 hs_inner_grid = GenerateMatch( \
@@ -638,10 +656,11 @@ def parse_grid(grid_data, parseAll=True):
         raise ZincParseException(
             'Failed to parse: %s' % reformat_exception(pe, pe.lineno),
             grid_data, pe.lineno, pe.col)
-    except:
-        LOG.debug('Failing grid: %r', grid_data)
-        raise ZincParseException(
-            'Failed to parse: %s' % sys.exc_info()[0], grid_data, 0, 0)
+    # FIXME: PPR
+    # except:
+    #     LOG.debug('Failing grid: %r', grid_data)
+    #     raise ZincParseException(
+    #         'Failed to parse: %s' % sys.exc_info()[0], grid_data, 0, 0)
 
 
 def parse_scalar(scalar_data, version):

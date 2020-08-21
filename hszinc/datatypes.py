@@ -6,8 +6,8 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 import base64
 import binascii
-import re
 import sys
+from abc import ABCMeta
 
 import six
 
@@ -16,8 +16,6 @@ from . import PINT_AVAILABLE
 if PINT_AVAILABLE:
     from . import ureg
     from .pintutil import to_pint
-
-from abc import ABCMeta
 
 STR_SUB = [
     ('\b', '\\b'),

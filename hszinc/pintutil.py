@@ -172,7 +172,7 @@ def define_haystack_units():
     Missing units found in project-haystack
     Added to the registry
     """
-    ureg = UnitRegistry()
+    ureg = UnitRegistry(on_redefinition='ignore')
     ureg.define(u'% = [] = percent')
     ureg.define(u'pixel = [] = px = dot = picture_element = pel')
     ureg.define(u'decibel = [] = dB')

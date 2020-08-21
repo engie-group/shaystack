@@ -298,3 +298,33 @@ def test_grid_not_equal_row():
     diff = copy.deepcopy(ref)
     diff[0] = {'test': 4}
     assert ref != diff
+
+
+def test_grid_index():
+    grid = Grid()
+    grid.column['id'] = {}
+    grid.column['val'] = {}
+    grid.insert(0, {'id': 'idx1'})
+    assert 'idx1' in grid._index
+    assert grid['idx1']
+    assert grid.get('idx1')
+    grid.insert(1, {'id': 'idx2'})
+    assert 'idx1' in grid._index
+    assert 'idx2' in grid._index
+    assert grid.get('idx2')
+    grid[0] = {'id': 'idx3'}
+    assert not 'idx1' in grid._index
+    assert 'idx3' in grid._index
+    assert grid.get('idx3')
+    del grid[1]
+    assert not 'idx2' in grid._index
+    grid.extend([
+        {'id': 'idx5'},
+        {'id': 'idx6'},
+    ])
+    assert 'idx5' in grid._index
+    assert 'idx6' in grid._index
+    grid[0]['id'] = 'idx4'
+    grid.reindex()
+    assert 'idx4' in grid._index
+    assert grid.get('idx4')

@@ -3,21 +3,24 @@
 # (C) 2016 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
-
+import base64
+import binascii
 import datetime
 import random
 import string
+import sys
 import traceback
 
 import six
 
 import hszinc
-from hszinc import VER_3_0, Grid, MODE_ZINC, MODE_JSON
+from hszinc import VER_3_0, Grid, MODE_ZINC, MODE_JSON, XStr
 from .pint_enable import to_pint
 
 STR_CHARSET = string.ascii_letters + string.digits + '\n\r\t\f\b'
 
-PERCENT_RECURSIVE = 5
+GENERATION_NUMBER = 1 # FIXME
+PERCENT_RECURSIVE = 1
 
 
 def gen_random_const():
@@ -48,6 +51,17 @@ def gen_random_bin():
         'application/octet-stream',
         'image/png',
         'image/jpeg',
+    ]))
+
+
+def gen_random_xstr():
+    # Generate a randomized binary
+    barray = bytearray(random.getrandbits(8) for _ in range(5))
+    return XStr(*random.choice([
+        ('hex', binascii.hexlify(barray).decode('ascii')),
+        ('b64', binascii.b2a_base64(barray)[:-1] if sys.version_info[0] <= 2
+            else binascii.b2a_base64(barray).decode("ascii")
+         )
     ]))
 
 
@@ -109,9 +123,11 @@ def gen_random_map():
 
 
 RANDOM_TYPES = [
-    gen_random_const, gen_random_ref, gen_random_bin, gen_random_uri,
-    gen_random_str, gen_random_date, gen_random_time, gen_random_date_time,
-    gen_random_coordinate, gen_random_num, gen_random_quantity
+    # Only for v2.0 gen_random_bin,
+    gen_random_xstr,
+    # gen_random_const, gen_random_ref, gen_random_uri, gen_random_xstr,
+    # gen_random_str, gen_random_date, gen_random_time, gen_random_date_time,
+    # gen_random_coordinate, gen_random_num, gen_random_quantity
 ]
 
 
@@ -187,12 +203,11 @@ def dump_grid(g):
 
 def approx_check(v1, v2):
     # Check types match
-    if not (isinstance(v1, six.string_types) \
+    if (isinstance(v1, six.string_types) \
             and isinstance(v2, six.string_types)):
         assert type(v1) == type(v2), '%s != %s' % (type(v1), type(v2))
     if isinstance(v1, datetime.time):
         assert v1.replace(microsecond=0) == v2.replace(microsecond=0)
-        approx_check(v1.microsecond, v2.microsecond)
     elif isinstance(v1, datetime.datetime):
         assert v1.tzinfo == v2.tzinfo
         assert v1.date() == v2.date()
@@ -203,7 +218,7 @@ def approx_check(v1, v2):
     elif isinstance(v1, hszinc.Coordinate):
         approx_check(v1.latitude, v2.latitude)
         approx_check(v1.longitude, v2.longitude)
-    elif isinstance(v1, float):
+    elif isinstance(v1, float) or isinstance(v2, float):
         assert abs(v1 - v2) < 0.000001
     elif isinstance(v1, Grid):
         approx_check_grid(v1, v2)
@@ -314,10 +329,10 @@ def approx_check_grid(parsed_grid, ref_grid):
 
 
 def test_loopback_zinc():
-    for trial in range(0, 10):
+    for trial in range(0, GENERATION_NUMBER):
         try_dump_parse_zinc()
 
 
 def test_loopback_json():
-    for trial in range(0, 10):
+    for trial in range(0, GENERATION_NUMBER):
         try_dump_parse_json()

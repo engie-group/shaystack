@@ -16,8 +16,8 @@ import pytz
 from nose.tools import assert_is
 
 import hszinc
-from hszinc import MARKER, Grid
-from hszinc.zincparser import hs_row
+from hszinc import MARKER, Grid, MODE_JSON
+from hszinc.zincparser import hs_row, _unescape
 from .pint_enable import _enable_pint
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
@@ -1279,6 +1279,72 @@ Bin(text/plain)
     assert len(grid_list[0]) == 1
     assert grid_list[0][0]['bin'] == hszinc.Bin('text/plain')
 
+def test_xstr_hex():
+    def _check_xstr(pint_en):
+        _enable_pint(pint_en)
+        grid_list = hszinc.parse('''ver:"3.0"
+bin
+hex("deadbeef")
+''')
+        assert len(grid_list) == 1
+        assert len(grid_list[0]) == 1
+        assert grid_list[0][0]['bin'].data == b'\xde\xad\xbe\xef'
+    yield _check_xstr, False
+    yield _check_xstr, True
+
+
+def test_xstr_b64():
+    def _check_xstr(pint_en):
+        _enable_pint(pint_en)
+        grid_list = hszinc.parse('''ver:"3.0"
+bin
+b64("3q2+7w==")
+''')
+        assert len(grid_list) == 1
+        assert len(grid_list[0]) == 1
+        assert grid_list[0][0]['bin'].data == b'\xde\xad\xbe\xef'
+    yield _check_xstr, False
+    yield _check_xstr, True
+
+
+def test_xstr_hex_json():
+    def _check_xstr(pint_en):
+        _enable_pint(pint_en)
+        grid_list = hszinc.parse({
+        'meta': {'ver': '3.0'},
+        'cols': [
+            {'name': 'bin'},
+        ],
+        'rows': [
+            {'bin': 'x:hex:deadbeef'},
+        ],
+    }, mode=MODE_JSON)
+        assert len(grid_list) == 1
+        assert len(grid_list[0]) == 1
+        assert grid_list[0][0]['bin'].data == b'\xde\xad\xbe\xef'
+    yield _check_xstr, False
+    yield _check_xstr, True
+
+
+def test_xstr_b64_json():
+    def _check_xstr(pint_en):
+        _enable_pint(pint_en)
+        grid_list = hszinc.parse({
+        'meta': {'ver': '3.0'},
+        'cols': [
+            {'name': 'bin'},
+        ],
+        'rows': [
+            {'bin': 'x:b64:3q2+7w=='},
+        ],
+    }, mode=MODE_JSON)
+        assert len(grid_list) == 1
+        assert len(grid_list[0]) == 1
+        assert grid_list[0][0]['bin'].data == b'\xde\xad\xbe\xef'
+    yield _check_xstr, False
+    yield _check_xstr, True
+
+
 def test_bin_json():
     yield _check_bin_json, False  # without pint
     yield _check_bin_json, True  # with pint
@@ -2208,3 +2274,6 @@ def _check_grid_in_grid_in_grid_json(pint_en=True):
     assert len(inner) == 1
     assert isinstance(inner[0]['innerinner'], Grid)
     assert inner[0]['innerinner'][0]['comment'] == "A innerinnergrid"
+
+def test_unescape():
+    assert _unescape("a\\nb") == "a\nb"

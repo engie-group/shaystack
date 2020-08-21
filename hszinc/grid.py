@@ -67,12 +67,11 @@ class Grid(col.MutableSequence):
     @staticmethod
     def _approx_check(v1, v2):
         # Check types match
-        if not (isinstance(v1, six.string_types) \
+        if (isinstance(v1, six.string_types) \
                 and isinstance(v2, six.string_types)):
             return type(v1) == type(v2) and v1 == v2
         if isinstance(v1, datetime.time):
-            return v1.replace(microsecond=0) == v2.replace(microsecond=0) and \
-                 Grid._approx_check(v1.microsecond, v2.microsecond)
+            return v1.replace(microsecond=0) == v2.replace(microsecond=0)
         elif isinstance(v1, datetime.datetime):
             return v1.tzinfo == v2.tzinfo and \
                      v1.date() == v2.date() and \
@@ -83,10 +82,8 @@ class Grid(col.MutableSequence):
         elif isinstance(v1, hszinc.Coordinate):
             return Grid._approx_check(v1.latitude, v2.latitude) and \
                 Grid._approx_check(v1.longitude, v2.longitude)
-        elif isinstance(v1, float):
+        elif isinstance(v1, float) or isinstance(v2, float):
             return abs(v1 - v2) < 0.000001
-        elif isinstance(v1, Grid):
-             return Grid._approx_check_grid(v1, v2)
         else:
             return v1 == v2
 

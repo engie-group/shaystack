@@ -7,11 +7,16 @@
 # Assume unicode literals as per Python 3
 from __future__ import unicode_literals
 
+import base64
+import binascii
+import random
 from copy import copy, deepcopy
+
 
 import six
 
 import hszinc
+from hszinc.datatypes import XStr
 from .pint_enable import _enable_pint
 
 
@@ -24,23 +29,30 @@ def check_singleton_deepcopy(S):
 def test_marker_deepcopy():
     check_singleton_deepcopy(hszinc.MARKER)
 
+
 def test_marker_hash():
     assert hash(hszinc.MARKER) == hash(hszinc.MARKER.__class__)
+
 
 def test_remove_deepcopy():
     check_singleton_deepcopy(hszinc.REMOVE)
 
+
 def test_remove_hash():
     assert hash(hszinc.REMOVE) == hash(hszinc.REMOVE.__class__)
+
 
 def check_singleton_copy(S):
     assert copy(S) is S
 
+
 def test_marker_copy():
     check_singleton_copy(hszinc.MARKER)
 
+
 def test_remove_copy():
     check_singleton_copy(hszinc.REMOVE)
+
 
 def test_ref_notref_eq():
     r1 = hszinc.Ref(name='a.ref')
@@ -48,11 +60,13 @@ def test_ref_notref_eq():
     assert r1 is not r2
     assert not (r1 == r2)
 
+
 def test_ref_notref_ne():
     r1 = hszinc.Ref(name='a.ref')
     r2 = 'not.a.ref'
     assert r1 is not r2
     assert r1 != r2
+
 
 def test_ref_simple_eq():
     r1 = hszinc.Ref(name='a.ref')
@@ -60,11 +74,13 @@ def test_ref_simple_eq():
     assert r1 is not r2
     assert r1 == r2
 
+
 def test_ref_simple_neq_id():
     r1 = hszinc.Ref(name='a.ref')
     r2 = hszinc.Ref(name='another.ref')
     assert r1 is not r2
     assert r1 != r2
+
 
 def test_ref_mixed_neq():
     r1 = hszinc.Ref(name='a.ref')
@@ -72,11 +88,13 @@ def test_ref_mixed_neq():
     assert r1 is not r2
     assert r1 != r2
 
+
 def test_ref_withdis_eq():
     r1 = hszinc.Ref(name='a.ref', value='display text')
     r2 = hszinc.Ref(name='a.ref', value='display text')
     assert r1 is not r2
     assert r1 == r2
+
 
 def test_ref_withdis_neq_id():
     r1 = hszinc.Ref(name='a.ref', value='display text')
@@ -84,15 +102,18 @@ def test_ref_withdis_neq_id():
     assert r1 is not r2
     assert r1 != r2
 
+
 def test_ref_withdis_neq_dis():
     r1 = hszinc.Ref(name='a.ref', value='display text')
     r2 = hszinc.Ref(name='a.ref', value='different display text')
     assert r1 is not r2
     assert r1 != r2
 
+
 def test_ref_hash():
     assert hash(hszinc.Ref(name='a.ref', value='display text')) == \
            hash('a.ref') ^ hash('display text') ^ hash(True)
+
 
 def test_qty_unary_ops():
     # How to run the test: check the result
@@ -108,30 +129,31 @@ def test_qty_unary_ops():
     # Try this both without, and with, pint enabled
     for pint_en in (False, True):
         # These work for floats
-        for fn in ( lambda v : int(v),
-                    lambda v : complex(v),
-                    lambda v : float(v),
-                    lambda v : -v,
-                    lambda v : +v,
-                    lambda v : abs(v)):
+        for fn in (lambda v: int(v),
+                   lambda v: complex(v),
+                   lambda v: float(v),
+                   lambda v: -v,
+                   lambda v: +v,
+                   lambda v: abs(v)):
             yield _check_qty_op, pint_en, fn, 123.45, -123.45
 
         # These work for integers
-        for fn in ( lambda v : oct(v),
-                    lambda v : hex(v),
-                    lambda v : v.__index__(),
-                    lambda v : int(v),
-                    lambda v : complex(v),
-                    lambda v : float(v),
-                    lambda v : -v,
-                    lambda v : +v,
-                    lambda v : abs(v),
-                    lambda v : ~v):
+        for fn in (lambda v: oct(v),
+                   lambda v: hex(v),
+                   lambda v: v.__index__(),
+                   lambda v: int(v),
+                   lambda v: complex(v),
+                   lambda v: float(v),
+                   lambda v: -v,
+                   lambda v: +v,
+                   lambda v: abs(v),
+                   lambda v: ~v):
             yield _check_qty_op, pint_en, fn, 123, -123
 
         # This only works with Python 2.
         if six.PY2:
-            yield _check_qty_op, pint_en, lambda v : long(v), 123.45, -123.45
+            yield _check_qty_op, pint_en, lambda v: long(v), 123.45, -123.45
+
 
 def test_qty_hash():
     def _check_qty_hash(pint_en):
@@ -154,6 +176,7 @@ def test_qty_hash():
     for pint_en in (False, True):
         yield _check_qty_hash, pint_en
 
+
 def test_qty_binary_ops():
     def _check_qty_op(pint_en, fn, a, b):
         _enable_pint(pint_en)
@@ -175,24 +198,24 @@ def test_qty_binary_ops():
                 if a == b:
                     continue
 
-                for fn in ( lambda a, b : a + b,
-                            lambda a, b : a - b,
-                            lambda a, b : a * b,
-                            lambda a, b : a / b,
-                            lambda a, b : a // b,
-                            lambda a, b : a % b,
-                            lambda a, b : divmod(a, b),
-                            lambda a, b : a < b,
-                            lambda a, b : a <= b,
-                            lambda a, b : a == b,
-                            lambda a, b : a != b,
-                            lambda a, b : a >= b,
-                            lambda a, b : a > b):
+                for fn in (lambda a, b: a + b,
+                           lambda a, b: a - b,
+                           lambda a, b: a * b,
+                           lambda a, b: a / b,
+                           lambda a, b: a // b,
+                           lambda a, b: a % b,
+                           lambda a, b: divmod(a, b),
+                           lambda a, b: a < b,
+                           lambda a, b: a <= b,
+                           lambda a, b: a == b,
+                           lambda a, b: a != b,
+                           lambda a, b: a >= b,
+                           lambda a, b: a > b):
                     yield _check_qty_op, pint_en, fn, a, b
 
         # Exponentiation, we can't use all the values above
         # as some go out of dates_range.
-        small_floats = tuple(filter(lambda f : abs(f) < 10, floats))
+        small_floats = tuple(filter(lambda f: abs(f) < 10, floats))
         for a in small_floats:
             for b in small_floats:
                 if a == b:
@@ -212,38 +235,39 @@ def test_qty_binary_ops():
                 if a == b:
                     continue
 
-                for fn in ( lambda a, b : a + b,
-                            lambda a, b : a - b,
-                            lambda a, b : a * b,
-                            lambda a, b : a / b,
-                            lambda a, b : a // b,
-                            lambda a, b : a % b,
-                            lambda a, b : divmod(a, b),
-                            lambda a, b : a & b,
-                            lambda a, b : a ^ b,
-                            lambda a, b : a | b,
-                            lambda a, b : a < b,
-                            lambda a, b : a <= b,
-                            lambda a, b : a == b,
-                            lambda a, b : a != b,
-                            lambda a, b : a >= b,
-                            lambda a, b : a > b):
+                for fn in (lambda a, b: a + b,
+                           lambda a, b: a - b,
+                           lambda a, b: a * b,
+                           lambda a, b: a / b,
+                           lambda a, b: a // b,
+                           lambda a, b: a % b,
+                           lambda a, b: divmod(a, b),
+                           lambda a, b: a & b,
+                           lambda a, b: a ^ b,
+                           lambda a, b: a | b,
+                           lambda a, b: a < b,
+                           lambda a, b: a <= b,
+                           lambda a, b: a == b,
+                           lambda a, b: a != b,
+                           lambda a, b: a >= b,
+                           lambda a, b: a > b):
                     yield _check_qty_op, pint_en, fn, a, b
 
                 if b >= 0:
-                    for fn in ( lambda a, b : a << b,
-                                lambda a, b : a >> b):
+                    for fn in (lambda a, b: a << b,
+                               lambda a, b: a >> b):
                         yield _check_qty_op, pint_en, fn, a, b
 
         # Exponentiation, we can't use all the values above
         # as some go out of dates_range.
-        small_ints = tuple(filter(lambda f : abs(f) < 10, ints))
+        small_ints = tuple(filter(lambda f: abs(f) < 10, ints))
         for a in small_ints:
             for b in small_ints:
                 if a == b:
                     continue
 
                 yield _check_qty_op, pint_en, lambda a, b: a ** b, a, b
+
 
 def test_qty_cmp():
     def _check_qty_cmp(pint_en):
@@ -279,30 +303,33 @@ class MyCoordinate(object):
     """
     A dummy class that can compare itself to a Coordinate from hszinc.
     """
+
     def __init__(self, lat, lng):
         self.lat = lat
         self.lng = lng
 
     def __eq__(self, other):
         if isinstance(other, hszinc.Coordinate):
-            return (self.lat == other.latitude)\
-                    and (self.lng == other.longitude)
+            return (self.lat == other.latitude) \
+                   and (self.lng == other.longitude)
         return NotImplemented
 
     def __ne__(self, other):
         if isinstance(other, hszinc.Coordinate):
-            return (self.lat != other.latitude)\
-                    and (self.lng != other.longitude)
+            return (self.lat != other.latitude) \
+                   and (self.lng != other.longitude)
         return NotImplemented
 
 
 def test_coord_eq():
     assert hszinc.Coordinate(latitude=33.77, longitude=-77.45) \
-            == hszinc.Coordinate(latitude=33.77, longitude=-77.45)
+           == hszinc.Coordinate(latitude=33.77, longitude=-77.45)
+
 
 def test_coord_eq_notcoord():
     assert not (hszinc.Coordinate(latitude=33.77, longitude=-77.45) \
-            == (33.77, -77.45))
+                == (33.77, -77.45))
+
 
 def test_coord_eq_mycoord():
     hsc = hszinc.Coordinate(latitude=33.77, longitude=-77.45)
@@ -310,13 +337,16 @@ def test_coord_eq_mycoord():
     assert hsc == mc
     assert mc == hsc
 
+
 def test_coord_ne():
     assert hszinc.Coordinate(latitude=-33.77, longitude=77.45) \
-            != hszinc.Coordinate(latitude=33.77, longitude=-77.45)
+           != hszinc.Coordinate(latitude=33.77, longitude=-77.45)
+
 
 def test_coord_ne_notcoord():
     assert (hszinc.Coordinate(latitude=33.77, longitude=-77.45) \
             != (33.77, -77.45))
+
 
 def test_coord_ne_mycoord():
     hsc = hszinc.Coordinate(latitude=33.77, longitude=-77.45)
@@ -324,6 +354,27 @@ def test_coord_ne_mycoord():
     assert hsc != mc
     assert mc != hsc
 
+
 def test_coord_hash():
     assert hash(hszinc.Coordinate(latitude=33.77, longitude=-77.45)) == \
            hash(33.77) ^ hash(-77.45)
+
+
+def test_xstr_hex():
+    assert XStr("hex", "deadbeef").data == b'\xde\xad\xbe\xef'
+    barray = bytearray(random.getrandbits(8) for _ in range(10))
+    assert barray == hszinc.XStr("hex", binascii.hexlify(barray).decode("ascii")).data
+
+def test_xstr_other():
+    assert (XStr("other", "hello word").data == "hello word")
+    barray = bytearray(random.getrandbits(8) for _ in range(10))
+    assert barray == hszinc.XStr("other", barray).data
+
+def test_xstr_b64():
+    assert XStr("b64", '3q2+7w==').data == b'\xde\xad\xbe\xef'
+    barray = bytearray(random.getrandbits(8) for _ in range(10))
+    assert barray == hszinc.XStr("b64", binascii.b2a_base64(barray)).data
+
+
+def test_xstr_equal():
+    assert XStr("hex", "deadbeef") == XStr("b64", '3q2+7w==')

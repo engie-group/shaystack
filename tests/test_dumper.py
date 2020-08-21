@@ -311,6 +311,10 @@ def test_data_types_v3():
             'comment': 'A quantity',
             'value': [hszinc.Quantity(500, 'miles')],
         },
+        {
+            'comment': 'A XStr',
+            'value': [hszinc.XStr("hex", 'deadbeef')],
+        },
     ])
     grid_str = hszinc.dump(grid)
     ref_str = '''ver:"3.0"
@@ -322,11 +326,12 @@ comment,value
 "Booleans",[T,F]
 "References",[@a-ref,@a-ref "a value"]
 "A quantity",[500miles]
+"A XStr",[hex("deadbeef")]
 '''
     assert grid_str == ref_str
 
 
-def test_data_types_json():
+def test_data_types_json_v2():
     grid = hszinc.Grid(version=hszinc.VER_2_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
@@ -490,6 +495,10 @@ def test_data_types_json_v3():
             'comment': 'A quantity',
             'value': [hszinc.Quantity(500, 'miles')],
         },
+        {
+            'comment': 'A XStr',
+            'value': [hszinc.XStr("hex", 'deadbeef')],
+        },
     ])
     grid_json = json.loads(hszinc.dump(grid, mode=hszinc.MODE_JSON))
     assert grid_json == {
@@ -533,6 +542,10 @@ def test_data_types_json_v3():
                 'comment': "s:A quantity",
                 'value': ['n:500.000000 miles']  # Python is more precise
                 # than The Proclaimers
+            },
+            {
+                'comment': "s:A XStr",
+                'value': ['x:hex:deadbeef']
             }
         ]
     }

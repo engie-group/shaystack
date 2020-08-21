@@ -15,7 +15,7 @@ import six
 
 from . import Grid
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
-    MARKER, NA, REMOVE
+    MARKER, NA, REMOVE, XStr
 from .jsonparser import MARKER_STR, NA_STR, REMOVE2_STR, REMOVE3_STR
 from .version import LATEST_VER, VER_3_0
 from .zoneinfo import timezone_name
@@ -97,6 +97,8 @@ def dump_scalar(scalar, version=LATEST_VER):
         return dump_ref(scalar, version=version)
     elif isinstance(scalar, Bin):
         return dump_bin(scalar, version=version)
+    elif isinstance(scalar, XStr):
+        return dump_xstr(scalar, version=version)
     elif isinstance(scalar, Uri):
         return dump_uri(scalar, version=version)
     elif isinstance(scalar, six.string_types):
@@ -135,6 +137,10 @@ def dump_uri(uri_value, version=LATEST_VER):
 
 def dump_bin(bin_value, version=LATEST_VER):
     return u'b:%s' % bin_value
+
+
+def dump_xstr(xstr_value, version=LATEST_VER):
+    return u'x:%s:%s' % (xstr_value.encoding, xstr_value.data_to_string())
 
 
 def dump_quantity(quantity, version=LATEST_VER):

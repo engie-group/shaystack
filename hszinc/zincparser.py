@@ -14,7 +14,7 @@ import pyparsing as pp
 import six
 
 # Bring in special Project Haystack types and time zones
-from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, NA, REMOVE, Ref
+from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, NA, REMOVE, Ref, XStr
 from .grid import Grid
 # Bring in our sortable dict class to preserve order
 from .sortabledict import SortableDict
@@ -398,6 +398,14 @@ hs_bin = Combine(And([
     Suppress(Literal(')'))
 ])).setParseAction(lambda toks: [Bin(toks[0])])
 
+# Haystack 3.0 XStr(...)
+hs_xstr = And([
+    Regex(r"[a-zA-Z0-9_]+"),
+    Suppress(Literal('(')),
+    hs_str,
+    Suppress(Literal(')'))
+]).setParseAction(lambda toks: [XStr(toks[0], toks[1])])
+
 # Booleans
 hs_bool = Word('TF', min=1, max=1, exact=1).setParseAction( \
     lambda toks: [toks[0] == 'T'])
@@ -500,7 +508,7 @@ hs_inner_grid = GenerateMatch( \
 hs_scalar_2_0 <<= Or([hs_ref, hs_bin, hs_str, hs_uri, hs_dateTime,
                       hs_date, hs_time, hs_coord, hs_number, hs_null, hs_marker,
                       hs_remove, hs_bool]).setName('scalar')
-hs_scalar_3_0 <<= Or([hs_ref, hs_bin, hs_str, hs_uri, hs_dateTime,
+hs_scalar_3_0 <<= Or([hs_ref, hs_xstr, hs_str, hs_uri, hs_dateTime,
                       hs_date, hs_time, hs_coord, hs_number, hs_na, hs_null, hs_marker,
                       hs_remove, hs_bool, hs_list[VER_3_0], hs_dict[VER_3_0], hs_inner_grid[VER_3_0]]).setName('scalar')
 

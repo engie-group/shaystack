@@ -15,7 +15,7 @@ from .sortabledict import SortableDict
 
 try:
     import collections.abc as col
-except ImportError:
+except ImportError:  # pragma: no cover
     import collections as col
 from .version import Version, VER_3_0, VER_2_0
 
@@ -72,9 +72,6 @@ class Grid(col.MutableSequence):
     @staticmethod
     def _approx_check(v1, v2):
         # Check types match
-        if (isinstance(v1, six.string_types) \
-                and isinstance(v2, six.string_types)):
-            return type(v1) == type(v2) and v1 == v2
         if isinstance(v1, datetime.time):
             return v1.replace(microsecond=0) == v2.replace(microsecond=0)
         elif isinstance(v1, datetime.datetime):

@@ -1,7 +1,7 @@
 from datetime import datetime
 try:
     from functools import lru_cache
-except ImportError:
+except ImportError:  # pragma: no cover
     from backports.functools_lru_cache import lru_cache
 
 from iso8601 import iso8601
@@ -167,7 +167,6 @@ def _parse_datetime(toks):
 
 hs_dateTime = (hs_isoDateTime + \
                Optional(
-                   # FIXME Suppress(Literal(' ')) +
                    hs_timeZoneName
                )).setParseAction(_parse_datetime)
 
@@ -290,7 +289,7 @@ def _generate_filter_in_python(node, def_filter):
             def_filter.append('(id(')
             def_filter.extend(_generate_filter_in_python(node.right, []))
             def_filter.append(") == id(NOT_FOUND))")
-        else:
+        else:  # pragma: no cover
             assert 0
     else:
         def_filter.append(repr(node))
@@ -302,7 +301,7 @@ class _FnWrapper():
         self.fun_name = fun_name
         exec(function_template, globals(), globals())
 
-    def __del__(self):
+    def __del__(self):  # pragma: no cover
         del globals()[self.fun_name]  # Remove generated function if the LRU ask that
 
     def get(self):

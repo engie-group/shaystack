@@ -16,8 +16,8 @@ import pytz
 from nose.tools import assert_is
 
 import hszinc
-from hszinc import MARKER, Grid, MODE_JSON, XStr
-from hszinc.zincparser import hs_row, _unescape
+from hszinc import MARKER, Grid, MODE_JSON, XStr, dump_scalar
+from hszinc.zincparser import hs_row, _unescape, ZincParseException
 from .pint_enable import _enable_pint
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
@@ -1180,6 +1180,23 @@ def _check_dict_json(pint_en):
     assert grid[3]['dict'] == {'tag': [1.0, 2.0]}
     assert grid[4]['dict'] == {'marker': MARKER, 'tag': [1.0, 2.0]}
     assert grid[5]['dict'] == {'tag': {'marker': MARKER}}
+
+def test_dict_invalide_version():
+    def _check_dict_invalide_version(pint_en):
+        _enable_pint(pint_en)
+        try:
+            hszinc.parse('''ver:"2.0"
+            ix,dict,                                                       dis
+            00,{},                                                         "An empty dict"
+            ''')
+            assert False
+        except ZincParseException as e:
+            pass
+    yield _check_dict_invalide_version, False
+    yield _check_dict_invalide_version, True
+
+def test_dump_invalide_scalar():
+    assert dump_scalar(None)
 
 def test_bin():
     yield _check_bin, False  # without pint

@@ -6,6 +6,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 import base64
 import binascii
+import locale
 import sys
 from abc import ABCMeta
 
@@ -39,7 +40,7 @@ def use_pint(val=True):
             # Really difficult to test this case in CI
             raise ImportError(
                 'Pint not installed. Use pip install pint if needed')
-    else:
+    else:  # pragma: no cover
         # print('Back to default Quantity')
         MODE_PINT = False
 
@@ -74,13 +75,13 @@ class Qty(object):
     def __index__(self):
         return self.value.__index__()
 
-    def __oct__(self):
+    def __oct__(self):  # pragma: no cover
         return oct(self.value)
 
-    def __hex__(self):
+    def __hex__(self):  # pragma: no cover
         return hex(self.value)
 
-    def __int__(self):
+    def __int__(self):  # pragma: no cover
         return int(self.value)
 
     if six.PY2:  # pragma: no cover
@@ -121,7 +122,7 @@ class Qty(object):
             other = other.value
         return self.value * other
 
-    def __div__(self, other):
+    def __div__(self, other):  # pragma: no cover
         if isinstance(other, Qty):
             other = other.value
         return self.value / other
@@ -194,8 +195,8 @@ class Qty(object):
             other = other.value
         return other * self.value
 
-    def __rdiv__(self, other):
-        if isinstance(other, Qty):  # pragma: no cover
+    def __rdiv__(self, other):  # pragma: no cover
+        if isinstance(other, Qty):
             # Unlikely due to Qty supporting these ops directly
             other = other.value
         return other / self.value
@@ -344,9 +345,15 @@ class Coordinate(object):
         )
 
     def __str__(self):
-        return '%f° lat %f° long' % (
-            round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
-        )
+        if six.PY2:  # pragma: no cover
+            return u'%f\N{DEGREE SIGN} lat %f\N{DEGREE SIGN} long'.encode(
+                locale.getpreferredencoding()) % (
+                round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
+            )
+        else:
+            return (u'%f\N{DEGREE SIGN} lat %f\N{DEGREE SIGN} long' % (
+                round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
+            ))
 
     def __eq__(self, other):
         if not isinstance(other, Coordinate):
@@ -404,12 +411,12 @@ class XStr(object):
     def __init__(self, encoding, data):
         self.encoding = encoding
         if "hex" == encoding:
-            if sys.version_info[0] <= 2:
+            if six.PY2:  # pragma: no cover
                 self.data = binascii.a2b_hex(data)
             else:
                 self.data = bytearray.fromhex(data)
         elif "b64" == encoding:
-            if sys.version_info[0] <= 2:
+            if six.PY2:  # pragma: no cover
                 self.data = data.decode('base64')
             else:
                 self.data = base64.b64decode(data)
@@ -420,7 +427,7 @@ class XStr(object):
         if "hex" == self.encoding:
             return binascii.b2a_hex(self.data).decode("ascii")
         elif "b64" == self.encoding:
-            if sys.version_info[0] <= 2:
+            if six.PY2:  # pragma: no cover
                 return binascii.b2a_base64(self.data)[:-1]
             elif sys.version_info[0:2] <= (3, 6):
                 return binascii.b2a_base64(self.data).decode("ascii").replace('\n', '')

@@ -7,7 +7,7 @@
 
 try:
     import collections.abc as col
-except ImportError:
+except ImportError:  # pragma: no cover
     import collections as col
 
 class SortableDict(col.MutableMapping):

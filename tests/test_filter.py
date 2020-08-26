@@ -1,3 +1,6 @@
+# (C) 2020 Philippe PRADOS
+# -*- coding: utf-8 -*-
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
 import datetime
 import gc
 from datetime import time, date, datetime
@@ -5,10 +8,12 @@ from datetime import time, date, datetime
 from iso8601 import iso8601
 
 from hszinc import Grid, Uri, Ref, Coordinate, MARKER, XStr
-from hszinc.filter_ast import FilterUnary, FilterBinary, FilterPath
+from hszinc.filter_ast import FilterUnary, FilterBinary, FilterPath, FilterAST
 from hszinc.grid_filter import _filter_function, hs_filter, _FnWrapper, filter_function
 from hszinc.zoneinfo import timezone
 
+def test_filter_ast():
+    assert repr(FilterAST(None)) == 'AST:None'
 
 def test_filter_tag_only():
     result = hs_filter.parseString('geo', parseAll=True)[0]

@@ -7,6 +7,7 @@
 import datetime
 import logging
 import re
+import sys
 
 import iso8601
 import pyparsing as pp
@@ -656,11 +657,10 @@ def parse_grid(grid_data, parseAll=True):
         raise ZincParseException(
             'Failed to parse: %s' % reformat_exception(pe, pe.lineno),
             grid_data, pe.lineno, pe.col)
-    # FIXME: PPR
-    # except:
-    #     LOG.debug('Failing grid: %r', grid_data)
-    #     raise ZincParseException(
-    #         'Failed to parse: %s' % sys.exc_info()[0], grid_data, 0, 0)
+    except:
+        LOG.debug('Failing grid: %r', grid_data)
+        raise ZincParseException(
+            'Failed to parse: %s' % sys.exc_info()[0], grid_data, 0, 0)
 
 
 def parse_scalar(scalar_data, version):

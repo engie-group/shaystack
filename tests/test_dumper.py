@@ -551,7 +551,7 @@ def test_data_types_json_v3():
     }
 
 
-def test_dict_types_json_v3():
+def test_scalar_dict_json_v3():
     grid = hszinc.Grid(version=hszinc.VER_3_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
@@ -603,7 +603,7 @@ def test_dict_types_json_v3():
     }
 
 
-def test_dict_types_zinc_v3():
+def test_scalar_dict_zinc_v3():
     grid = hszinc.Grid(version=hszinc.VER_3_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
@@ -636,6 +636,23 @@ def test_dict_types_zinc_v3():
                         "}\n"
                         "\"A quantity in a dict\",{quantity:500miles}\n")
 
+def test_scalar_dict_zinc_ver():
+    # Test that versions are respected.
+    try:
+        hszinc.dump_scalar({"a":"b"},
+                           mode=hszinc.MODE_ZINC, version=hszinc.VER_2_0)
+        assert False, 'Serialised a list in Haystack v2.0'
+    except ValueError:
+        pass
+
+
+def test_scalar_unknown():
+    try:
+        hszinc.dump_scalar(hszinc.VER_2_0,
+                           mode=hszinc.MODE_ZINC, version=hszinc.VER_2_0)
+        assert False, 'Serialised a list in Haystack v2.0'
+    except NotImplementedError:
+        pass
 
 def test_list_zinc_v2():
     try:

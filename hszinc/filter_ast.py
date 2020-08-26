@@ -1,5 +1,5 @@
 # (C) 2020 Philippe PRADOS
-#
+# -*- coding: utf-8 -*-
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 class FilterPath:
@@ -35,18 +35,5 @@ class FilterAST:
 
     def __repr__(self):
         return "AST:" + repr(self._head)
-
-    # def _visit(self, visitor, node):
-    #     method = 'visit_' + node.__class__.__name__
-    #     if hasattr(visitor, method):
-    #         getattr(visitor, method)(node)
-    #     if isinstance(node, FilterUnary):
-    #         self._visit(visitor, node.right)
-    #     elif isinstance(node, FilterBinary):
-    #         self._visit(visitor, node.left)
-    #         self._visit(visitor, node.right)
-    #
-    # def visit(self, visitor):
-    #     self._visit(visitor, self._head)
 
 

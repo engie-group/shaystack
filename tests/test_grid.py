@@ -222,7 +222,7 @@ def test_grid_equal_with_complex_datas():
 
 
 def test_grid_not_equal_metadata():
-    ref = Grid()
+    ref = Grid(metadata={"x": {}})
     ref.column['test'] = {}
     ref.extend([
         {'test': 1},
@@ -231,6 +231,10 @@ def test_grid_not_equal_metadata():
     ])
     diff = copy.deepcopy(ref)
     diff.metadata.append('add')
+    assert ref != diff
+
+    diff = copy.deepcopy(ref)
+    diff.metadata["x"] = 1
     assert ref != diff
 
 
@@ -244,6 +248,19 @@ def test_grid_not_equal_col_with_new_metadata():
     ])
     diff = copy.deepcopy(ref)
     diff.column.add_item('test', 'add')
+    assert ref != diff
+
+
+def test_grid_not_equal__with_new_col():
+    ref = Grid()
+    ref.column['test'] = {}
+    ref.extend([
+        {'test': 1},
+        {'test': 2},
+        {'test': 3}
+    ])
+    diff = copy.deepcopy(ref)
+    diff.column["added"] = {}
     assert ref != diff
 
 
@@ -271,6 +288,19 @@ def test_grid_not_equal_col_with_updated_metadata():
     ])
     diff = copy.deepcopy(ref)
     diff.column['test']['test'] = None
+    assert ref != diff
+
+
+def test_grid_not_equal_with_updated_value():
+    ref = Grid()
+    ref.column['test'] = {"a":1}
+    ref.extend([
+        {'test': 1},
+        {'test': 2},
+        {'test': 3}
+    ])
+    diff = copy.deepcopy(ref)
+    diff.column['test'] = {"a":""}
     assert ref != diff
 
 

@@ -1,6 +1,8 @@
 import random
 from io import open
 
+from hszinc.pintutil import to_haystack
+
 _RAW_UNIT_DATA = None
 
 def get_units():

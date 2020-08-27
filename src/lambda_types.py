@@ -22,13 +22,13 @@ class AttrDict(dict):
         return "%s(%s)" % (self.__class__.__name__, dict.__repr__(self))
 
     def __setitem__(self, key, value):  # pylint: disable=useless-super-delegation
-        return super(AttrDict, self).__setitem__(key, value)
+        return super().__setitem__(key, value)
 
     def __getitem__(self, name):  # pylint: disable=useless-super-delegation
-        return super(AttrDict, self).__getitem__(name)
+        return super().__getitem__(name)
 
     def __delitem__(self, name):  # pylint: disable=useless-super-delegation
-        return super(AttrDict, self).__delitem__(name)
+        return super().__delitem__(name)
 
     __getattr__ = __getitem__
     __setattr__ = __setitem__

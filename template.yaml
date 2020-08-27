@@ -1,6 +1,11 @@
+# Note:
+# The variables {{HAYSTACK_PROVIDER}} and {{HAYSTACK_URL}} must be set via a sed
+# Use the `make build`.
+
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: A partial implementation of Haystack protocol
+Description: An implementation of Haystack protocol
+# See https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -12,10 +17,8 @@ Globals:
         LOGLEVEL: DEBUG
         DEBUGGING: false
         NOCOMPRESS: true
-        PROVIDER: providers.ping.PingProvider
-        # PROVIDER: provider.url.URLProvider
-        HAYSTACK_URL: s3://cdh-poc1c3ntinel-325540/grid.json
-        # HAYSTACK_URL: https://project-haystack.dev/download/defs.json
+        HAYSTACK_PROVIDER: {{HAYSTACK_PROVIDER}}
+        HAYSTACK_URL: {{HAYSTACK_URL}}
     Layers:
       - !Ref BaseLayer
       - !Ref HSZincLayer

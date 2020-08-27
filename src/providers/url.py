@@ -1,17 +1,16 @@
 """
-An Haystack API provider to expose an Haystack file via the Haystack API.
+An Haystack Read-Only API provider to expose an Haystack file via the Haystack API.
 The file must be referenced with the environment variable HAYSTACK_URL and may be the form:
 - http://.../ontology.json
 - http://.../ontology.zinc
 - file://.../ontology.zinc
-- ftp://.../ontology.zinc
+- ftp://.../ontology.json
 - s3://.../ontology.zinc (the lambda functions must have the privilege to read this file)
 - ...
 
 The time series to manage history must be referenced in entity, with the `hisURI` tag.
-This URI may be relative, and must be in parquet format.
-The `his_read` implementation, download the parquet file in memory, and convert the result to the negotiated
-haystack format.
+This URI may be relative and MUST be in parquet format. The `his_read` implementation,
+download the parquet file in memory and convert to the negotiated haystack format.
 """
 import logging
 import os
@@ -38,7 +37,7 @@ from .haystack_interface import HaystackInterface, get_default_about
 
 Timestamp = datetime
 
-log = logging.getLogger("URLProvider")
+log = logging.getLogger("url.Provider")
 log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
 
 LRU_SIZE = 32
@@ -54,7 +53,7 @@ compressions['SNAPPY'] = snappy.compress
 decompressions['SNAPPY'] = snappy_decompress
 
 
-class URLProvider(HaystackInterface):
+class Provider(HaystackInterface):
     """
     Expose an Haystack file via the Haystactk Rest API.
     """
@@ -67,7 +66,7 @@ class URLProvider(HaystackInterface):
     def about(self) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'about' operation """
         grid = get_default_about()
-        grid[0].update({
+        grid[0].update({  # pylint: disable=no-member
             "productUri": Uri("http://localhost:80"),  # FIXME indiquer le port et trouver l'URL ?
             "productVersion": None,  # FIXME: set the product version
             "moduleName": "URLProvider",
@@ -79,25 +78,15 @@ class URLProvider(HaystackInterface):
     @overrides
     def read(self, grid_filter: str, limit: Optional[int]) -> Grid:  # pylint: disable=unused-argument
         """ Implement Haystack 'read' """
-        log.info("----> Call Read API")
-        grid = URLProvider._download_grid(self._get_url())
-
-        # Very simple filter
-        if grid_filter:
-            (key, val) = grid_filter.split('==')
-            result = Grid(version=grid.version, metadata=grid.metadata, columns=grid.column)
-            for row in grid:
-                if key in row and row[key] == val:
-                    result.append(row)
-            grid = result
-        return grid
+        grid = Provider._download_grid(self._get_url())
+        return grid.filter(grid_filter, limit if limit else 0)
 
     @overrides
     def his_read(self, entity_id: str,
                  dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]]) -> Grid:
         """ Implement Haystack 'read' """
         log.info("----> Call his_read API")
-        grid = URLProvider._download_grid(self._get_url())
+        grid = Provider._download_grid(self._get_url())
 
         for row in grid:
             if "id" in row and row["id"] == entity_id:
@@ -110,10 +99,10 @@ class URLProvider(HaystackInterface):
                 if not parsed_relative.scheme:
                     his_uri = base[:base.rfind('/')] + "/" + his_uri
 
-                df = cast(DataFrame, URLProvider._load_parquet(his_uri))
+                df = cast(DataFrame, Provider._load_parquet(his_uri))
                 history = []
                 unit = None
-                min_date = datetime(MAXYEAR, 12, 31, tzinfo=timezone.utc)  # FIXME: UTC ?
+                min_date = datetime(MAXYEAR, 12, 31, tzinfo=timezone.utc)  # FIXME: Manage local or UTC ?
                 max_date = datetime(MINYEAR, 1, 1, tzinfo=timezone.utc)
 
                 for i in range(len(df)):
@@ -158,7 +147,7 @@ class URLProvider(HaystackInterface):
     @staticmethod
     @lru_cache(maxsize=LRU_SIZE)
     def _download_grid(uri: str) -> Grid:
-        body = URLProvider._download_uri(uri).decode("utf-8")
+        body = Provider._download_uri(uri).decode("utf-8")
         if body is None:
             raise ValueError("Empty body not supported")
         mode = MODE_JSON if (uri.endswith(".json")) else MODE_ZINC

@@ -23,7 +23,7 @@ def lambda_client() -> BaseClient:
     return boto_client()
 
 
-@patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
 def test_about_with_zinc(apigw_event: LambdaEvent) -> None:
     # GIVEN
     context = LambdaContext()
@@ -44,7 +44,7 @@ def test_about_with_zinc(apigw_event: LambdaEvent) -> None:
     assert about_grid[0]["haystackVersion"] == '3.0'
 
 
-@patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
 def test_about_without_headers(apigw_event: LambdaEvent) -> None:
     # GIVEN
     context = LambdaContext()
@@ -65,7 +65,7 @@ def test_about_without_headers(apigw_event: LambdaEvent) -> None:
     assert about_grid[0]["haystackVersion"] == '3.0'
 
 
-@patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
 def test_about_with_multivalues_headers(apigw_event: LambdaEvent) -> None:
     # GIVEN
     context = LambdaContext()
@@ -89,7 +89,7 @@ def test_about_with_multivalues_headers(apigw_event: LambdaEvent) -> None:
 
 # ------------------------------------------
 
-@patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
 @pytest.mark.functional
 def test_about(apigw_event: LambdaEvent, lambda_client: BaseClient) -> None:
     # GIVEN

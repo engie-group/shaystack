@@ -38,15 +38,15 @@
       "dis": "s:Electricity Meter Readings - Total Site LH",
       "elec": "m:",
       "equip": "m:",
-      "hisURI": "u:24389.parquet",
-      "id": "r:24389",
+      "hisURI": "u:id1234.parquet",
+      "id": "r:id1234",
       "siteRef": "r:7111"
     },
     {
       "dis": "s:Electricity Meter Readings - PFI Building",
       "elec": "m:",
       "equip": "m:",
-      "hisURI": "u:24390.parquet",
+      "hisURI": "u:id1234.parquet",
       "id": "r:24390",
       "siteRef": "r:7111"
     },
@@ -54,7 +54,7 @@
       "dis": "s:Electricity Meter Readings - Total Site RH",
       "elec": "m:",
       "equip": "m:",
-      "hisURI": "u:24391.parquet",
+      "hisURI": "u:id1234.parquet",
       "id": "r:24391",
       "siteRef": "r:7111"
     },
@@ -62,7 +62,7 @@
       "dis": "s:Gas Meter Readings - Total Site",
       "equip": "m:",
       "gas": "m:",
-      "hisURI": "u:24392.parquet",
+      "hisURI": "u:id1234.parquet",
       "id": "r:24392",
       "siteRef": "r:7111"
     },
@@ -70,7 +70,7 @@
       "dis": "s:Gas Meter Readings - PFI Building",
       "equip": "m:",
       "gas": "m:",
-      "hisURI": "u:24393.parquet",
+      "hisURI": "u:id1234.parquet",
       "id": "r:24393",
       "siteRef": "r:7111"
     },
@@ -78,7 +78,7 @@
       "dis": "s:Gas Meter Readings - Steam Boiler",
       "equip": "m:",
       "gas": "m:",
-      "hisURI": "u:24394.parquet",
+      "hisURI": "u:id1234.parquet",
       "id": "r:24394",
       "siteRef": "r:7111"
     },
@@ -86,7 +86,7 @@
       "dis": "s:Gas Meter Readings - Catering",
       "equip": "m:",
       "gas": "m:",
-      "hisURI": "u:24395.parquet",
+      "hisURI": "u:id1234.parquet",
       "id": "r:24395",
       "siteRef": "r:7111"
     },
@@ -99,7 +99,7 @@
     {
       "dis": "s:Water Meter Readings - PFI Building",
       "equip": "m:",
-      "hisURI": "u:24397.parquet",
+      "hisURI": "u:id1234.parquet",
       "id": "r:24397",
       "siteRef": "r:7111",
       "water": "m:"
@@ -108,7 +108,7 @@
       "dis": "s:2380001399586-AI",
       "elec": "m:",
       "equip": "m:",
-      "hisURI": "u:62717.parquet",
+      "hisURI": "u:id1234.parquet",
       "id": "r:62717",
       "siteRef": "r:7111"
     },
@@ -116,7 +116,7 @@
       "dis": "s:2380001591766-AI",
       "elec": "m:",
       "equip": "m:",
-      "hisURI": "u:62718.parquet",
+      "hisURI": "u:id1234.parquet",
       "id": "r:62718",
       "siteRef": "r:7111"
     },
@@ -124,7 +124,7 @@
       "dis": "s:2380001399586-RI",
       "elec": "m:",
       "equip": "m:",
-      "hisURI": "u:67680.parquet",
+      "hisURI": "u:id1234.parquet",
       "id": "r:67680",
       "siteRef": "r:7111"
     },
@@ -132,7 +132,7 @@
       "dis": "s:2380001591766-RI",
       "elec": "m:",
       "equip": "m:",
-      "hisURI": "u:67681.parquet",
+      "hisURI": "u:id1234.parquet",
       "id": "r:67681",
       "siteRef": "r:7111"
     },
@@ -140,7 +140,7 @@
       "dis": "s:2380001399586-RE",
       "elec": "m:",
       "equip": "m:",
-      "hisURI": "u:67682.parquet",
+      "hisURI": "u:id1234.parquet",
       "id": "r:67682",
       "siteRef": "r:7111"
     },
@@ -148,7 +148,7 @@
       "dis": "s:2380001591766-RE",
       "elec": "m:",
       "equip": "m:",
-      "hisURI": "u:67683.parquet",
+      "hisURI": "u:id1234.parquet",
       "id": "r:67683",
       "siteRef": "r:7111"
     },
@@ -156,7 +156,7 @@
       "dis": "s:51500202",
       "equip": "m:",
       "gas": "m:",
-      "hisURI": "u:104840.parquet",
+      "hisURI": "u:id1234.parquet",
       "id": "r:104840",
       "siteRef": "r:7111"
     }

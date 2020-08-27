@@ -9,12 +9,13 @@ $(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
 endif
 endif
 
-PRJ=haystackapi
-AWS_STACK=CarbonAPI
-export AWS_PROFILE:=haystackapi
-export AWS_REGION:=eu-west-3
-export HAYSTACK_URL:=s3://cdh-poc1c3ntinel-325540/pfihospital/raw/grid.json
-PARQUET_URL:=s3://cdh-poc1c3ntinel-325540/pfihospital/raw/24389.parquet
+include ./Project.variables
+
+# FIXME: PARQUET_URL
+PARQUET_URL=s3://cdh-poc1c3ntinel-325540/pfihospital/raw/id1234.parquet
+export AWS_REGION
+export AWS_PROFILE
+
 
 PYTHON_SRC=src/*.py src/providers/*.py
 PYTHON_VERSION:=3.7
@@ -32,11 +33,16 @@ export ROOT_DIR:=$$PWD
 export AWS_DEFAULT_REGION:=$(AWS_REGION)
 AWS_API_HOME=https://$(shell aws apigateway get-rest-apis --output text --profile $(AWS_PROFILE) --region $(AWS_REGION) --query 'items[?name==`$(AWS_STACK)`].id').execute-api.$(AWS_REGION).amazonaws.com/Prod
 
-# poc1 environment must be updated with CDH interface
+SAM_TEMPLATE=-t <(sed "s/{{HAYSTACK_URL}}/$$(sed 's/[\*\./]/\\&/g' <<<"$$HAYSTACK_URL")/g;s/{{HAYSTACK_PROVIDER}}/$$HAYSTACK_PROVIDER/g" <template.yaml)
+SAM_DEPLOY_PARAMETERS?=$(SAM_TEMPLATE)
+SAM_BUILD_PARAMETERS?=-s . $(SAM_TEMPLATE)
+#--parameter-overrides NOCOMPRESS=True
+
+# FIXME poc1 environment must be updated with CDH interface
 ENVS_RUN?=\
 	NOCOMPRESS=True \
 	AWS_PROFILE=poc1 \
-	PROVIDER=providers.ping.PingProvider
+	HAYSTACK_PROVIDER=providers.url.Provider
 
 CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
@@ -241,13 +247,14 @@ clean-all: clean remove-venv
 
 
 # -------------------------------------- Build
+# FIXME : Initialize .env
 .env:
 	@cat >.env << EndOfMessage
 	AWS_REGION=eu-west-3
 	AWS_PROFILE=haystackapi
 	LOGLEVEL=DEBUG
 	HAYSTACK_URL=s3://cdh-poc1c3ntinel-325540/pfihospital/raw/grid.json
-	PROVIDER=providers.ping.PingProvider
+	HAYSTACK_PROVIDER=providers.url.Provider
 	EndOfMessage
 
 # Template to build custom runtime.
@@ -259,7 +266,7 @@ build-HSZincLayer: hszinc/dist/hszinc-*.whl template.yaml Makefile
 		@$(VALIDATE_VENV)
 		echo -e "$(green)Build Lambda HSZincLayer$(normal)"
 		umask 0
-		@sam build HSZincLayer
+		@sam build $(SAM_BUILD_PARAMETERS) HSZincLayer
 	else
 		# executed inside `sam build`
 		# The variable OLDPWD is set to the project home directory
@@ -273,17 +280,11 @@ build-HSZincLayer: hszinc/dist/hszinc-*.whl template.yaml Makefile
 docker-bash:
 	docker run -it lambci/lambda:build-python$(PYTHON_VERSION) bash
 
-tests/data/grid.json:
-	@AWS_DEFAULT_PROFILE=poc1 aws s3 cp $(HAYSTACK_URL) tests/data/grid.json
-
-tests/data/24389.parquet:
-	@AWS_DEFAULT_PROFILE=poc1 aws s3 cp $(PARQUET_URL) tests/data/24389.parquet
-
-tests/data: tests/data/grid.json tests/data/24389.parquet
+tests/data: tests/data/grid.json tests/data/id1234.parquet
 
 # Refresh the local copy of remote files (for function-tests)
 refresh-sample:
-	rm tests/data/tests/data/grid.json tests/data/24389.parquet
+	rm tests/data/tests/data/grid.json tests/data/id1234.parquet
 	make tests/data
 
 # Download lambda version of compiled library
@@ -292,6 +293,7 @@ libsnappy-$(PYTHON_VERSION).so:
 	docker run --rm -v $$(pwd):/foo -w /foo lambci/lambda:build-python$(PYTHON_VERSION) \
 	/bin/bash -c "yum install -y snappy-devel ; cp /usr/lib64/libsnappy.so.1 /foo/libsnappy-$(PYTHON_VERSION).so"
 	echo -e "$(green)To update the owner of libsnappy-$(PYTHON_VERSION).so we must have a root access$(normal)"
+	echo -e "Ask the permission to change owner of libsnappy-$(PYTHON_VERSION).so..."
 	sudo chown $(USER):$(USER) libsnappy-$(PYTHON_VERSION).so
 	chmod 600 libsnappy-$(PYTHON_VERSION).so
 
@@ -301,7 +303,7 @@ build-ParquetLayer: layers/parquet/requirements.txt template.yaml Makefile libsn
 		@$(VALIDATE_VENV)
 		echo -e "$(green)Build Lambda HSZincLayer$(normal)"
 		umask 0
-		@sam build HSZincLayer
+		@sam build $(SAM_BUILD_PARAMETERS) HSZincLayer
 	else
 		# executed inside `sam build`
 		umask 0
@@ -319,7 +321,7 @@ build-About: hszinc/dist/hszinc-*.whl
 		@$(VALIDATE_VENV)
 		echo -e "$(green)Build Lambda HSZincLayer$(normal)"
 		umask 0
-		@sam build HSZincLayer
+		@sam build $(SAM_BUILD_PARAMETERS) HSZincLayer
 	else
 		# executed inside `sam build`
 		umask 0
@@ -335,7 +337,7 @@ build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) template.yaml
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Build Lambda $*$(normal)"
 	umask 0
-	@sam build $*
+	@sam build $(SAM_BUILD_PARAMETERS) $*
 
 .PHONY: dist build
 .aws-sam/build: $(REQUIREMENTS) $(PYTHON_SRC) hszinc template.yaml src/requirements.txt \
@@ -343,7 +345,7 @@ build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) template.yaml
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Build Lambdas$(normal)"
 	umask 0
-	sam build
+	sam build $(SAM_BUILD_PARAMETERS)
 	find .aws-sam -type f -exec chmod 644 {} \;
 	find .aws-sam -type d -exec chmod 755 {} \;
 
@@ -399,10 +401,12 @@ api-%:
 		curl -H "Accept: text/zinc" \
 			"http://localhost:3000/$${ops,}"
 	else
+		# Add trailing CR
+		BODY="$$(jq -r '.body' <events/Read_event.json)"$$'\n'
 		curl -H "Accept:text/zinc" \
 			-H "Content-Type:text/zinc" \
 			-X POST \
-			--data-binary @<(jq -r '.body' <events/$*_event.json) \
+			--data-binary "$${BODY}" \
 			"http://localhost:3000/$${ops,}"
 	fi
 
@@ -416,9 +420,10 @@ start-lambda: $(ENVS_JSON) .aws-sam/build
 	sleep 2
 
 # Start lambda local emulator in background
-async-start-lambda: $(ENVS_JSON) .aws-sam/build
+# FIXME async-start-lambda: $(ENVS_JSON) .aws-sam/build
+async-start-lambda: $(ENVS_JSON)
 	@$(VALIDATE_VENV)
-	@[ -e .start/start-lambda.pid ] && echo -e "$(orange)Local Lambda was allready started$(normal)" && exit
+	[ -e .start/start-lambda.pid ] && echo -e "$(orange)Local Lambda was allready started$(normal)" && exit
 	mkdir -p .start
 	$(ENVS_RUN) nohup sam local start-lambda --env-vars $(ENVS_JSON) >.start/start-lambda.log 2>&1 &
 	echo $$! >.start/start-lambda.pid
@@ -429,7 +434,7 @@ async-start-lambda: $(ENVS_JSON) .aws-sam/build
 # Stop lambda local emulator in background
 async-stop-lambda:
 	@$(VALIDATE_VENV)
-	@[ -e .start/start-lambda.pid ] && kill `cat .start/start-lambda.pid` >/dev/null || true && echo -e "$(green)Local Lambda stopped$(normal)"
+	[ -e .start/start-lambda.pid ] && kill `cat .start/start-lambda.pid` >/dev/null || true && echo -e "$(green)Local Lambda stopped$(normal)"
 	rm -f .start/start-lambda.pid
 
 ## Stop all async server
@@ -455,8 +460,8 @@ aws-update-token: ~/.okta_aws_login_config
 aws-deploy: .aws-sam/build
 	$(VALIDATE_VENV)
 	gimme-aws-creds --profile $(AWS_PROFILE)
-	sam deploy --debug --profile $(AWS_PROFILE) --region $(AWS_REGION) \
-	  --parameter-overrides NOCOMPRESS=True \
+	sam deploy $(SAM_DEPLOY_PARAMETERS) --debug --profile $(AWS_PROFILE) --region $(AWS_REGION) \
+	  $(SAM_BUILD_PARAMETERS)  \
 	  --no-confirm-changeset
 	echo -e "$(green)Lambdas are deployed$(normal)"
 
@@ -509,7 +514,7 @@ aws-api-%:
 ## Print AWS logs
 aws-logs-%:
 	@$(VALIDATE_VENV)
-	sam logs --profile $(AWS_PROFILE) --region $(AWS_REGION) -n $* --stack-name $(AWS_STACK) --tail
+	sam $(SAM_TEMPLATE) logs --profile $(AWS_PROFILE) --region $(AWS_REGION) -n $* --stack-name $(AWS_STACK) --tail
 
 
 ## Print AWS stack info
@@ -590,7 +595,7 @@ lint: .make-lint
 
 .make-sam-validate:  aws-update-token template.yaml
 	@echo -e "$(cyan)Validate template.yaml...$(normal)"
-	@sam validate
+	@sam $(SAM_TEMPLATE) validate
 	@date >.make-sam-validate
 
 .PHONY: validate

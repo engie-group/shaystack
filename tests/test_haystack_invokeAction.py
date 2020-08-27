@@ -26,7 +26,7 @@ def lambda_client() -> BaseClient:
     return boto_client()
 
 
-@patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
 def test_invokeAction_with_zinc(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
@@ -50,7 +50,7 @@ def test_invokeAction_with_zinc(apigw_event: LambdaProxyEvent):
     assert not len(read_grid)
 
 
-@patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
 def test_invokeAction_without_params_with_zinc(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()

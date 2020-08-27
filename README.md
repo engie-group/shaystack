@@ -8,16 +8,31 @@ Theses API can negotiate:
 - Response encoding (`Accept-Encoding: gzip`)
 
 The code implements all Haystack [operations](https://project-haystack.org/doc/Rest):
+- [about](https://project-haystack.org/doc/Ops#about)
+- [ops](https://project-haystack.org/doc/Ops#ops)
+- [formats](https://project-haystack.org/doc/Ops#formats)
+- [read](https://project-haystack.org/doc/Ops#read)
+- [nav](https://project-haystack.org/doc/Ops#nav)
+- [watchSub](https://project-haystack.org/doc/Ops#watchSub)
+- [watchUnsub](https://project-haystack.org/doc/Ops#watchUnsub)
+- [watchPoll](https://project-haystack.org/doc/Ops#watchPoll)
+- [pointWrite](https://project-haystack.org/doc/Ops#pointWrite)
+- [hisRead](https://project-haystack.org/doc/Ops#hisRead)
+- [hisWrite](https://project-haystack.org/doc/Ops#hisWrite)
+- [invokeAction](https://project-haystack.org/doc/Ops#invokeAction)
 
 ## Summary
 This project contains source code and supporting files for a Haystack application 
 that you can deploy with the [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html). 
-It includes the following files and folders:
+
+To create your custom Haystack API, fork this projet and update the file `Project.variables` and/or create a new provider.
+
+The project includes the following files and folders:
 - src - Code for the application's Lambda function.
 - src/providers - Sample of providers.
 - events - Invocation events that you can use to invoke the function.
 - tests - Unit tests for the application code. 
-- hszinc - Git submodule to patch the hszinc project. 
+- hszinc - Git submodule to extend the hszinc project. 
 - layers - A lamdda layers shared with other lambdas 
 - `template.yaml` - A template that defines the application's AWS resources.
 - `Makefile` - All tools to manage the project (Use 'make help')
@@ -28,18 +43,19 @@ These resources are defined in the `template.yaml` file.
 ## Providers
 Different sample of provider are proposed. You can add a new one with a subclass of `providers.HaystackInterface`.
 Then, you can implement only the method you want. The others methods are automatically exclude in 
-the `../ops` operation.
+the [`../ops`](https://project-haystack.org/doc/Ops#ops) operation.
 
-To select a provider, add the environment variable `PROVIDER` in the lambda context.
+To select a provider, add the environment variable `HAYSTACK_PROVIDER` in the lambda context.
 
-To add a new provider, clone the project and add a provider in the `providers` directory. You can update others 
-parameters in Makefile (`AWS_PROFILE`, `AWS_REGION` `AWS_STACK`, ...)
-### PingProvider
-Use `PROVIDER=providers.ping.PingProvider` to use this provider.
-It's a very simple provider, with a implementation of all haystack operation.
+To add a new provider, *fork the project* and add a provider in the `providers` directory. You can update others 
+parameters in `Project.variables` (`HAYSTACK_PROVIDER`, `AWS_STACK`, AWS_PROFILE`, `AWS_REGION` `AWS_STACK`, ...)
 
-### URLProvider
-Use `PROVIDER=providers.url.URLProvider` to use this provider.
+### Provider
+Use `HAYSTACK_PROVIDER=providers.ping.Provider` to use this provider.
+It's a very simple provider, with a tiny implementation of all haystack operation.
+
+### Provider
+Use `HAYSTACK_PROVIDER=providers.url.Provider` to use this provider.
 Add the variable `HAYSTACK_URL=<url>` to expose an Haystack file via the Haystack protocol.
 The methods `/read` and `/his_read` was implemented.
 The `<url>` may have the classic form (`http://...`, `ftp://...`) or can reference an S3 file (`s3://`).
@@ -52,9 +68,9 @@ and [Conda](https://docs.conda.io/projects/conda/en/latest/index.html
 to manage dependencies and others tools.
 
 To initialise the Conda environment, use `make configure` and activate the conda environment.
-Then, it's possible to test, build, etc. See `make help` to print all major target.
+Then, it's possible to `test`, `build`, etc. See `make help` to print all major target.
 ```bash
-git clone --recurse-submodules http://github.tools.digital.engie.com/PR6075/alpha-carbon-api.git 
+git clone --recurse-submodules http://github.com/pprados/haystackapi.git 
 make configure
 conda activate haystackapi
 make test
@@ -81,19 +97,19 @@ Test a single function by invoking it directly with a test event. An event is a 
 that represents the input that the function receives from the event source. 
 Test events are included in the `events` folder in this project.
 
-The SAM CLI can emulate the AWS Lambda API. Use the `make start-lambda` to run the Lamnda server locally on port 3001.
+The SAM CLI can emulate the AWS Lambda API. Use the `make start-lambda` to run the Lambda server locally on port 3001.
 ```bash
 make start-lambda
 ```
 You can start Lambda server in background with `make async-start-lambda` and close it with `make async-stop-lambda`.
 
-Run functions locally and invoke them with the `make invoke-<name>` command. The lambda server was started in background.
+Run functions locally and invoke them with the `make invoke-<name>` command. The lambda server is started in background.
 ```bash
 # Same as `sam local invoke --env-vars envs.json About -e events/About_event.json`
 make invoke-About 
 ```
 
-After deployed the lambda functions, run functions remotely and invoke them with the `make aws-invoke-<name>` command.
+After deployed the lambda functions invoke the remote lambda with the `make aws-invoke-<name>` command.
 ```bash
 make aws-invoke-About 
 ```
@@ -108,7 +124,7 @@ You can also start API server in background with `make async-start-api` and clos
 ```bash
 make async-start-api
 # curl http://localhost:3000/about
-make api-About
+make build api-About
 ```
 
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. 
@@ -126,7 +142,7 @@ The `Events` property on each function's definition includes the route and metho
 ## Deploy the application
 
 Before deploying the application, you must have:
-- an admin account WITH password (Ask the support +33977401002 to activate the « Okta Sync Flag » to 1
+- an admin account WITH password (Ask the Engie support +33977401002 to activate the « Okta Sync Flag » to 1
 for your XXXX-A engie account)
 - a token created by *Gimme aws cred*
 

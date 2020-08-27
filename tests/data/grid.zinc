@@ -1,0 +1,19 @@
+ver:"3.0" generationDate:"2020-07-08T14:35:37+02:00"
+site,dis,siteRef,equip,elec,hisURI,gas,water
+M,N,N,N,N,N,N,N
+N,"Electricity Meter Readings - Total Site LH",@7111,M,M,`id1234.parquet`,N,N
+N,"Electricity Meter Readings - PFI Building",@7111,M,M,`id1234.parquet`,N,N
+N,"Electricity Meter Readings - Total Site RH",@7111,M,M,`id1234.parquet`,N,N
+N,"Gas Meter Readings - Total Site",@7111,M,N,`id1234.parquet`,M,N
+N,"Gas Meter Readings - PFI Building",@7111,M,N,`id1234.parquet`,M,N
+N,"Gas Meter Readings - Steam Boiler",@7111,M,N,`id1234.parquet`,M,N
+N,"Gas Meter Readings - Catering",@7111,M,N,`id1234.parquet`,M,N
+N,"Oil Meter Readings",@7111,M,N,N,N,N
+N,"Water Meter Readings - PFI Building",@7111,M,N,`id1234.parquet`,N,M
+N,"2380001399586-AI",@7111,M,M,`id1234.parquet`,N,N
+N,"2380001591766-AI",@7111,M,M,`id1234.parquet`,N,N
+N,"2380001399586-RI",@7111,M,M,`id1234.parquet`,N,N
+N,"2380001591766-RI",@7111,M,M,`id1234.parquet`,N,N
+N,"2380001399586-RE",@7111,M,M,`id1234.parquet`,N,N
+N,"2380001591766-RE",@7111,M,M,`id1234.parquet`,N,N
+N,"51500202",@7111,M,N,`id1234.parquet`,M,N

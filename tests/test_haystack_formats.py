@@ -23,7 +23,7 @@ def lambda_client() -> BaseClient:
     return boto_client()
 
 
-@patch.dict('os.environ', {'PROVIDER': 'providers.ping.PingProvider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
 def test_formats_with_zinc(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()

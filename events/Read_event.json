@@ -1,5 +1,5 @@
 {
-  "body": "ver:\"3.0\"\nfilter\n\"\"\n",
+  "body": "ver:\"3.0\"\nfilter\n\"site\"\n",
   "resource": "/{proxy+}",
   "pathParameters": {
     "proxy": "/read"

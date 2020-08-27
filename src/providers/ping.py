@@ -12,12 +12,11 @@ from overrides import overrides
 from hszinc import Grid, Uri
 from .haystack_interface import HaystackInterface, EmptyGrid, get_default_about
 
-log = logging.getLogger("PingProvider")
+log = logging.getLogger("ping.Provider")
 log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
 
 
-# FIXME: a déplacer dans un autre package ? CookieCutter ?
-class PingProvider(HaystackInterface):
+class Provider(HaystackInterface):
     """ Simple provider to implement all Haystack operation """
 
     @overrides
@@ -25,7 +24,7 @@ class PingProvider(HaystackInterface):
         """ Implement the Haystack 'about' ops """
         log.info("about()")
         grid = get_default_about()
-        grid[0].update({
+        grid[0].update({  # pylint: disable=no-member
             "productUri": Uri("http://localhost:80"),  # FIXME indiquer le port et trouver l'URL ?
             "productVersion": None,  # FIXME: set the product version
             "moduleName": "PingProvider",
@@ -45,7 +44,7 @@ class PingProvider(HaystackInterface):
                  dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]]) -> Grid:
         """ Return EmptyGrid """
         log.info(f'his_read(id="{id}",range={dates_range})')
-        return EmptyGrid  # FIXME
+        return EmptyGrid
 
     @overrides
     def his_write(self, entity_id: str) -> Grid:  # pylint: disable=no-self-use

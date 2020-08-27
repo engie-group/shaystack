@@ -62,6 +62,12 @@ class HaystackInterface(ABC):
     the code detect that, and can calculate the set of implemented operations.
     """
 
+    def __repr__(self):
+        return repr(self.__class__.__subclasses__())
+
+    def __str__(self):
+        return self.__repr__()
+
     def ops(self) -> Grid:
         """ Implement the Haystack 'ops' ops """
         # Automatically calculate the implemented version.
@@ -220,4 +226,4 @@ def get_provider(class_str) -> HaystackInterface:
 
         return FullInterface()
     except (ImportError, AttributeError):
-        raise ImportError(class_str)
+        raise ImportError(class_str)  # pylint: disable=raise-missing-from

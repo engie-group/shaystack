@@ -39,7 +39,7 @@ _DEFAULT_MIME_TYPE = MODE_ZINC
 
 
 def _parse_request(event) -> Grid:
-    log.error(event)
+    # log.debug(event)
     if "Content-Type" not in event.headers:
         raise ValueError("Content-Type must be set")
     if "Content-Encoding" in event.headers and event.isBase64Encoded:
@@ -47,7 +47,7 @@ def _parse_request(event) -> Grid:
         if content_encoding != "gzip":
             raise ValueError(f"Content-Encoding '{content_encoding}' not supported")
         body = codecs.decode(str.encode(event.body), 'unicode-escape')
-        log.error(f"decode body={body}")
+        log.debug(f"decode body={body}")
         event.body = gzip.decompress(base64.b64decode(body)).decode("utf-8")
         event.isBase64Encoded = False
     content_type = event.headers["Content-Type"]
@@ -93,8 +93,8 @@ def _compress_response(content_encoding: Optional[str], response: LambdaProxyRes
 
 
 def _get_provider() -> HaystackInterface:
-    assert "PROVIDER" in os.environ, "Set 'PROVIDER' environment variable"
-    return get_provider(os.environ["PROVIDER"])
+    assert "HAYSTACK_PROVIDER" in os.environ, "Set 'HAYSTACK_PROVIDER' environment variable"
+    return get_provider(os.environ["HAYSTACK_PROVIDER"])
 
 
 _tcontext = [
@@ -204,8 +204,14 @@ def read(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  #
         # global _tcontext
         # FIXME _tcontext[0].context = context
         grid_request = _parse_request(event)
-        read_filter = grid_request[0]['filter']  # FIXME: peut être absent
-        limit = int(grid_request[0].get('limit', -1))
+        if 'filter' in grid_request[0]:
+            read_filter = grid_request[0]['filter']
+        else:
+            read_filter = ''
+        if 'limit' in grid_request[0]:
+            limit = int(grid_request[0].get('limit', 0))
+        else:
+            limit = 0
         grid_response = provider.read(read_filter, limit)
         assert grid_response is not None
         response = _format_response(event, grid_response, 200)

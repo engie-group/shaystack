@@ -3,6 +3,6 @@
     "LOGLEVEL": "DEBUG",
     "DEBUGGING": "false",
     "NOCOMPRESS": "true",
-    "PROVIDER": "providers.ping.PingProvider"
+    "HAYSTACK_PROVIDER": "providers.ping.Provider"
   }
 }

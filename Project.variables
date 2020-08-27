@@ -1,0 +1,6 @@
+PRJ=haystackapi
+HAYSTACK_PROVIDER=providers.url.Provider
+HAYSTACK_URL=s3://cdh-poc1c3ntinel-325540/pfihospital/raw/grid.json
+AWS_STACK=$(PRJ)
+AWS_PROFILE=haystackapi
+AWS_REGION=eu-west-3

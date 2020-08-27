@@ -16,7 +16,7 @@ import pytz
 from nose.tools import assert_is
 
 import hszinc
-from hszinc import MARKER, Grid, MODE_JSON, XStr, dump_scalar
+from hszinc import MARKER, Grid, MODE_JSON, XStr, dump_scalar, MODE_ZINC
 from hszinc.zincparser import hs_row, _unescape, ZincParseException
 from .pint_enable import _enable_pint
 
@@ -2294,3 +2294,8 @@ def _check_grid_in_grid_in_grid_json(pint_en=True):
 
 def test_unescape():
     assert _unescape("a\\nb") == "a\nb"
+
+def test_bidon():
+    hszinc.parse('''ver:"3.0"
+filter
+"a"\n''',mode=MODE_ZINC)

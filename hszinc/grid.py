@@ -50,7 +50,7 @@ class Grid(col.MutableSequence):
         self._row = []
 
         # Internal index
-        self._index = {}
+        self._index = None
 
         if metadata is not None:
             self.metadata.update(metadata.items())
@@ -171,16 +171,25 @@ class Grid(col.MutableSequence):
             class_name, u'\n'.join(parts), class_name
         )
 
-    def __getitem__(self, index):
+    def __getitem__(self, key):
         '''
         Retrieve the row at index.
         '''
-        if isinstance(index, numbers.Number):
-            return self._row[index]
+        if isinstance(key, slice):
+            result=Grid(version=self.version,metadata=self.metadata,columns=self.column)
+            result._row=self._row[key]
+            result._index=None
+            return result
+        elif isinstance(key, numbers.Number):
+            return self._row[key]
         else:
-            return self._index[str(index)]
+            if not self._index:
+                self.reindex()
+            return self._index[str(key)]
 
     def get(self, index, default=None):
+        if not self._index:
+            self.reindex()
         return self._index.get(str(index), default)
 
     def __len__(self):
@@ -221,13 +230,15 @@ class Grid(col.MutableSequence):
             self._detect_or_validate(val)
         self._row.insert(index, value)
         if "id" in value:
+            if not self._index:
+                self.reindex()
             self._index[str(value["id"])] = value
 
     def reindex(self):
         '''
         Reindex the grid if a user, update directly an id of a row
         '''
-        self.index = {}
+        self._index = {}
         for item in self._row:
             if "id" in item:
                 self._index[str(item["id"])] = item
@@ -240,17 +251,27 @@ class Grid(col.MutableSequence):
             if "id" in item:
                 self._index[str(item["id"])] = item
 
-    def filter(self, filter):
+    def filter(self, filter, limit=0):
         '''
         Return a filter version of this grid.
         Warning, use a grid.filter(...).deepcopy() if you not whant to share metadata, columns and rows)
         '''
         from .grid_filter import filter_function
+        if filter.strip() == '':
+            if not limit:
+                return self
+            else:
+                result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
+                result.extend(self.__getitem__(slice(0,limit)))
+                return result
+
         result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
         fn = filter_function(filter)
         for row in self._row:
             if fn(self, row):
                 result.append(row)
+            if limit and len(result)==limit:
+                break
         return result
 
     def _detect_or_validate(self, val):

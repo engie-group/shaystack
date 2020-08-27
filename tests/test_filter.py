@@ -9,11 +9,13 @@ from iso8601 import iso8601
 
 from hszinc import Grid, Uri, Ref, Coordinate, MARKER, XStr
 from hszinc.filter_ast import FilterUnary, FilterBinary, FilterPath, FilterAST
-from hszinc.grid_filter import _filter_function, hs_filter, _FnWrapper, filter_function
+from hszinc.grid_filter import hs_filter, _FnWrapper, filter_function
 from hszinc.zoneinfo import timezone
+
 
 def test_filter_ast():
     assert repr(FilterAST(None)) == 'AST:None'
+
 
 def test_filter_tag_only():
     result = hs_filter.parseString('geo', parseAll=True)[0]
@@ -176,7 +178,8 @@ def test_generated_filter_with_reference():
 
 
 def test_grid_filter():
-    grid = Grid(columns={'id': {}, 'site': {}})
+    grid = Grid(columns={'id': {}, 'site': {}, 'equip':{},'geoPostalCode':{},'ahu':{},
+                         'geoCity':{},'curVal':{},'hvac':{},'siteRef':{}})
     grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
     grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
@@ -196,7 +199,8 @@ def test_grid_filter():
 
 
 def test_grid_specification_filter_sample():
-    grid = Grid(columns={'id': {}, 'site': {}})
+    grid = Grid(columns={'id': {}, 'site': {}, 'equip':{},'geoPostalCode':{},'ahu':{},
+                         'geoCity':{},'curVal':{},'hvac':{},'siteRef':{}})
     grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
     grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
@@ -259,3 +263,45 @@ def test_if_generated_function_removed():
         assert False
     except AttributeError:
         pass
+
+
+def test_slide_get():
+    grid = Grid(columns={'id': {}, 'site': {}, 'equip':{},'geoPostalCode':{},'ahu':{},
+                         'geoCity':{},'curVal':{},'hvac':{},'siteRef':{}})
+    grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+                 'geoCity': 'Chicago', 'curVal': 76})
+    grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
+    grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
+    assert len(grid[0:1]) == 1
+    assert len(grid[1:]) == 2
+    assert len(grid[:]) == 3
+
+
+def test_empty_filter():
+    grid = Grid(columns={'id': {}, 'site': {}, 'equip':{},'geoPostalCode':{},'ahu':{},
+                         'geoCity':{},'curVal':{},'hvac':{},'siteRef':{}})
+    grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+                 'geoCity': 'Chicago', 'curVal': 76})
+    grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
+    grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
+    assert len(grid.filter('')) == 3
+
+
+def test_empty_filter_and_limit():
+    grid = Grid(columns={'id': {}, 'site': {}})
+    grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+                 'geoCity': 'Chicago', 'curVal': 76})
+    grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
+    grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
+    assert len(grid.filter('', limit=1)) == 1
+    assert len(grid.filter('', limit=2)) == 2
+
+
+def test_filter_and_limit():
+    grid = Grid(columns={'id': {}, 'site': {}})
+    grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+                 'geoCity': 'Chicago', 'curVal': 76})
+    grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
+    grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
+
+    assert len(grid.filter('not acme', limit=1)) == 1

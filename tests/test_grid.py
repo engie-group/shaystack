@@ -293,14 +293,14 @@ def test_grid_not_equal_col_with_updated_metadata():
 
 def test_grid_not_equal_with_updated_value():
     ref = Grid()
-    ref.column['test'] = {"a":1}
+    ref.column['test'] = {"a": 1}
     ref.extend([
         {'test': 1},
         {'test': 2},
         {'test': 3}
     ])
     diff = copy.deepcopy(ref)
-    diff.column['test'] = {"a":""}
+    diff.column['test'] = {"a": ""}
     assert ref != diff
 
 
@@ -358,3 +358,15 @@ def test_grid_index():
     grid.reindex()
     assert 'idx4' in grid._index
     assert grid.get('idx4')
+
+
+def test_slice():
+    grid = Grid(columns={'id': {}, 'site': {}})
+    grid.append({'id': 'id1', })
+    grid.append({'id': 'id2'})
+    grid.append({'id': 'id3'})
+
+    result = grid[0:2]
+    assert len(result) == 2
+    assert result['id1']
+    assert result['id2']

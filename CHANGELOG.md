@@ -2,6 +2,15 @@
 
 See the git change-log.
 
+# [1.3.0]
+
+  * *Change*: `hszinc.parse` now returns the first grid it encounters unless
+    `single=False` is provided in the arguments.  It may also return `None` if an
+    empty string or JSON array is passed in.  If `single=False`, the output is
+    always a `list` of `Grid` objects.
+  * *Added*: Haystack 3.0 data types (dicts, embedded grids, XStrs), with thanks
+    to [Philippe Prados](https://github.com/widesky/hszinc/pull/32).
+
 # [1.2.3]
 
   * Support for the Haystack 3.0 `NA` singleton (thanks to @joyfun, GitHub PR#12)

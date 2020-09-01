@@ -58,7 +58,7 @@ def parse_grid(grid_str):
     # Parse the remaining elements
     metadata = {}
     for name, value in meta.items():
-        metadata[name] = parse_scalar(value, version=version)
+        metadata[name] = parse_embedded_scalar(value, version=version)
 
     grid = Grid(version=version, metadata=metadata)
 
@@ -67,27 +67,20 @@ def parse_grid(grid_str):
         name = col.pop('name')
         meta = {}
         for key, value in col.items():
-            meta[key] = parse_scalar(value, version=version)
+            meta[key] = parse_embedded_scalar(value, version=version)
         grid.column[name] = meta
 
     # Parse the rows
     for row in (parsed.pop('rows',[]) or []):
         parsed_row = {}
         for col, value in row.items():
-            parsed_row[col] = parse_scalar(value, version=version)
+            parsed_row[col] = parse_embedded_scalar(value, version=version)
         grid.append(parsed_row)
 
     return grid
 
 
-def parse_scalar(scalar, version=LATEST_VER):
-    # If we're given a string, decode the JSON data.
-    if isinstance(scalar, six.text_type) and \
-            (len(scalar) >= 2) and \
-            (scalar[0] in ('"','[','{')) and \
-            (scalar[-1] in ('"',']','}')):
-        scalar = json.loads(scalar)
-
+def parse_embedded_scalar(scalar, version=LATEST_VER):
     # Simple cases
     if scalar is None:
         return None
@@ -96,7 +89,8 @@ def parse_scalar(scalar, version=LATEST_VER):
         if version < VER_3_0:
             raise ValueError('Lists are not supported in Haystack version %s'\
                     % version)
-        return list(map(functools.partial(parse_scalar, version=version),
+        return list(map(
+            functools.partial(parse_embedded_scalar, version=version),
             scalar))
     elif scalar == MARKER_STR:
         return MARKER
@@ -203,3 +197,14 @@ def parse_scalar(scalar, version=LATEST_VER):
         (lat,lng) = match.groups()
         return Coordinate(float(lat),float(lng))
     return scalar
+
+
+def parse_scalar(scalar, version=LATEST_VER):
+    # If we're given a string, decode the JSON data.
+    if isinstance(scalar, six.text_type) and \
+            (len(scalar) >= 2) and \
+            (scalar[0] in ('"','[','{')) and \
+            (scalar[-1] in ('"',']','}')):
+        scalar = json.loads(scalar)
+
+    return parse_embedded_scalar(scalar, version=version)

@@ -4,46 +4,48 @@
 # (C) 2018 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
-
-from .grid import Grid
-from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
-        MARKER, NA, REMOVE, STR_SUB
-from .zoneinfo import timezone
-from .version import LATEST_VER, Version, VER_3_0
-
+import copy
 import datetime
-import iso8601
-import re
-import six
 import functools
 import json
-import copy
+import re
+import sys
+
+import iso8601
+import six
+
+from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
+    MARKER, NA, REMOVE, XStr
+from .grid import Grid
+from .version import LATEST_VER, Version, VER_3_0
+from .zoneinfo import timezone
 
 URI_META = re.compile(r'\\([:/\?#\[\]@\\&=;"$`])')
 GRID_SEP = re.compile(r'\n\n+')
 
 # Type regular expressions
-MARKER_STR  = 'm:'
-NA_STR      = 'z:'
+MARKER_STR = 'm:'
+NA_STR = 'z:'
 REMOVE2_STR = 'x:'
 REMOVE3_STR = '-:'
-NUMBER_RE   = re.compile(r'^n:(-?\d+(:?\.\d+)?(:?[eE][+\-]?\d+)?)(:? (.*))?$',
-        flags=re.MULTILINE)
-REF_RE      = re.compile(r'^r:([a-zA-Z0-9_:\-.~]+)(:? (.*))?$',
-        flags=re.MULTILINE)
-DATE_RE     = re.compile(r'^d:(\d{4})-(\d{2})-(\d{2})$', flags=re.MULTILINE)
-TIME_RE     = re.compile(r'^h:(\d{2}):(\d{2})(:?:(\d{2}(:?\.\d+)?))?$',
-        flags=re.MULTILINE)
-DATETIME_RE = re.compile(r'^t:(\d{4}-\d{2}-\d{2}T'\
-        r'\d{2}:\d{2}(:?:\d{2}(:?\.\d+)?)'\
-        r'(:?[zZ]|[+\-]\d+:?\d*))(:? ([A-Za-z\-+_0-9]+))?$',
-        flags=re.MULTILINE)
-URI_RE      = re.compile(r'u:(.+)$', flags=re.MULTILINE)
-BIN_RE      = re.compile(r'b:(.+)$', flags=re.MULTILINE)
-COORD_RE    = re.compile(r'c:(-?\d*\.?\d*),(-?\d*\.?\d*)$',
-        flags=re.MULTILINE)
+NUMBER_RE = re.compile(r'^n:(-?\d+(:?\.\d+)?(:?[eE][+\-]?\d+)?)(:? (.*))?$',
+                       flags=re.MULTILINE)
+REF_RE = re.compile(r'^r:([a-zA-Z0-9_:\-.~]+)(:? (.*))?$',
+                    flags=re.MULTILINE)
+DATE_RE = re.compile(r'^d:(\d{4})-(\d{2})-(\d{2})$', flags=re.MULTILINE)
+TIME_RE = re.compile(r'^h:(\d{2}):(\d{2})(:?:(\d{2}(:?\.\d+)?))?$',
+                     flags=re.MULTILINE)
+DATETIME_RE = re.compile(r'^t:(\d{4}-\d{2}-\d{2}T' \
+                         r'\d{2}:\d{2}(:?:\d{2}(:?\.\d+)?)' \
+                         r'(:?[zZ]|[+\-]\d+:?\d*))(:? ([A-Za-z\-+_0-9]+))?$',
+                         flags=re.MULTILINE)
+URI_RE = re.compile(r'u:(.+)$', flags=re.MULTILINE)
+BIN_RE = re.compile(r'b:(.+)$', flags=re.MULTILINE)
+COORD_RE = re.compile(r'c:(-?\d*\.?\d*),(-?\d*\.?\d*)$',
+                      flags=re.MULTILINE)
 
-STR_ESC_RE  = re.compile(r'\\([bfnrt"\\$]|u[0-9a-fA-F]{4})')
+STR_ESC_RE = re.compile(r'\\([bfnrt"\\$]|u[0-9a-fA-F]{4})')
+
 
 def parse_grid(grid_str):
     # Grab the metadata
@@ -71,7 +73,7 @@ def parse_grid(grid_str):
         grid.column[name] = meta
 
     # Parse the rows
-    for row in (parsed.pop('rows',[]) or []):
+    for row in (parsed.pop('rows', []) or []):
         parsed_row = {}
         for col, value in row.items():
             parsed_row[col] = parse_embedded_scalar(value, version=version)
@@ -87,11 +89,20 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
     elif isinstance(scalar, list):
         # We support this only in version 3.0 and up.
         if version < VER_3_0:
-            raise ValueError('Lists are not supported in Haystack version %s'\
-                    % version)
-        return list(map(
-            functools.partial(parse_embedded_scalar, version=version),
-            scalar))
+            raise ValueError('Lists are not supported in Haystack version %s' \
+                             % version)
+        return list(map(functools.partial(parse_scalar, version=version),
+                        scalar))
+    elif isinstance(scalar, dict):
+        # We support this only in version 3.0 and up.
+        if version < VER_3_0:
+            raise ValueError('Dicts are not supported in Haystack version %s' \
+                             % version)
+        if sys.version_info[0] < 3 and {"meta", "cols", "rows"} <= scalar.viewkeys() \
+                or {"meta", "cols", "rows"} <= scalar.keys():  # Check if grid in grid
+            return parse_grid(scalar)
+        else:
+            return {k: parse_scalar(v, version=version) for (k, v) in scalar.items()}
     elif scalar == MARKER_STR:
         return MARKER
     elif scalar == NA_STR:
@@ -130,6 +141,10 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
     if scalar.startswith('s:'):
         return scalar[2:]
 
+    # Is it a xstr?
+    if scalar.startswith('x:'):
+        return XStr(*scalar[2:].split(':'))
+
     # Is it a reference?
     match = REF_RE.match(scalar)
     if match:
@@ -154,14 +169,14 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
             sec = 0
             usec = 0
         elif '.' in second:
-            (whole_sec, frac_sec) = second.split('.',1)
+            (whole_sec, frac_sec) = second.split('.', 1)
             sec = int(whole_sec)
-            usec = int(frac_sec[:6].ljust(6,'0'))
+            usec = int(frac_sec[:6].ljust(6, '0'))
         else:
             sec = int(second)
             usec = 0
         return datetime.time(hour=int(hour), minute=int(minute),
-                second=sec, microsecond=usec)
+                             second=sec, microsecond=usec)
 
     # Is it a date/time?
     match = DATETIME_RE.match(scalar)
@@ -170,14 +185,14 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
         # Parse ISO8601 component
         isodate = iso8601.parse_date(matches[0])
         # Parse timezone
-        tzname  = matches[-1]
+        tzname = matches[-1]
         if tzname is None:
             return isodate  # No timezone given
         else:
             try:
                 tz = timezone(tzname)
                 return isodate.astimezone(tz)
-            except: # pragma: no cover
+            except:  # pragma: no cover
                 # Unlikely code path.
                 return isodate
 
@@ -194,8 +209,8 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
     # Is it a co-ordinate?
     match = COORD_RE.match(scalar)
     if match:
-        (lat,lng) = match.groups()
-        return Coordinate(float(lat),float(lng))
+        (lat, lng) = match.groups()
+        return Coordinate(float(lat), float(lng))
     return scalar
 
 

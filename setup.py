@@ -9,6 +9,8 @@ requirements = [
             'iso8601',
             'six',
 ]
+if sys.version_info.major == 2:
+    requirements.append("backports.functools_lru_cache")
 
 setup(name='hszinc',
         url='https://github.com/vrtsystems/hszinc',
@@ -31,6 +33,8 @@ setup(name='hszinc',
             'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3.4',
             'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.7',
             'Topic :: Scientific/Engineering',
             'Topic :: Scientific/Engineering :: Information Analysis',
             'Topic :: Software Development :: Libraries :: Python Modules',

@@ -23,10 +23,10 @@ MODE_ZINC = 'text/zinc'
 MODE_JSON = 'application/json'
 
 
-def parse(grid_str, mode=MODE_ZINC, charset='utf-8'):
-    '''
+def parse(grid_str, mode=MODE_ZINC, charset='utf-8', single=True):
+    """
     Parse the given Zinc text and return the equivalent data.
-    '''
+    """
     # Decode incoming text (or python3 will whine!)
     if isinstance(grid_str, six.binary_type):
         grid_str = grid_str.decode(encoding=charset)
@@ -34,20 +34,30 @@ def parse(grid_str, mode=MODE_ZINC, charset='utf-8'):
     # Split the separate grids up, the grammar definition has trouble splitting
     # them up normally.  This will truncate the newline off the end of the last
     # row.
-    _parse = functools.partial(parse_grid, mode=mode,
-                               charset=charset)
+    _parse = functools.partial(parse_grid, mode=mode, charset=charset)
     if mode == MODE_JSON:
         if isinstance(grid_str, six.string_types):
             grid_data = json.loads(grid_str)
         else:
             grid_data = grid_str
-        if isinstance(grid_data, dict):
-            return [_parse(grid_data)]
-        else:
-            return list(map(_parse, grid_data))
-    else:
-        return list(map(_parse, GRID_SEP.split(grid_str)))
 
+        # Normally JSON only permits a single grid, but we'll support an
+        # extension where a JSON array of grid objects represents multiple.
+        # To simplify programming, we'll "normalise" to array-of-grids here.
+        if isinstance(grid_data, dict):
+            grid_data = [grid_data]
+    else:
+        grid_data = GRID_SEP.split(grid_str)
+
+    grids = list(map(_parse, grid_data))
+    if single:
+        # Most of the time, we will only want one grid.
+        if grids:
+            return grids[0]
+        else:
+            return None
+    else:
+        return grids
 
 
 def parse_grid(grid_str, mode=MODE_ZINC, charset='utf-8'):

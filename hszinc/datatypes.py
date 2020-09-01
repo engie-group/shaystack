@@ -6,7 +6,6 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 import base64
 import binascii
-import locale
 import sys
 from abc import ABCMeta
 
@@ -345,15 +344,14 @@ class Coordinate(object):
         )
 
     def __str__(self):
+        fmt = u'%f\N{DEGREE SIGN} lat %f\N{DEGREE SIGN} long'
+
         if six.PY2:  # pragma: no cover
-            return u'%f\N{DEGREE SIGN} lat %f\N{DEGREE SIGN} long'.encode(
-                locale.getpreferredencoding()) % (
-                round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
-            )
-        else:
-            return (u'%f\N{DEGREE SIGN} lat %f\N{DEGREE SIGN} long' % (
-                round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
-            ))
+            fmt = fmt.encode('utf-8')
+
+        return fmt % (
+            round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
+        )
 
     def __eq__(self, other):
         if not isinstance(other, Coordinate):

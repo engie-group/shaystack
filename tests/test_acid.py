@@ -238,16 +238,13 @@ def _try_dump_parse(ref_grid, mode):
 
     # Parse the grid string
     try:
-        grid_list = hszinc.parse(grid_str, mode=mode)
+        parsed_grid = hszinc.parse(grid_str, mode=mode, single=True)
     except:
         print('Failed to parse dumped grid')
         dump_grid(ref_grid)
         print('--- Parsed string ---')
         print(grid_str)
         raise
-
-    assert len(grid_list) == 1
-    parsed_grid = grid_list.pop(0)
 
     approx_check_grid(parsed_grid, ref_grid)
 

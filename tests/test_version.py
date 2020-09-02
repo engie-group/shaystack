@@ -7,9 +7,12 @@
 # Assume unicode literals as per Python 3
 from __future__ import unicode_literals
 
-from hszinc import Version
-import warnings
 import re
+import sys
+import warnings
+
+from hszinc import Version
+
 
 def test_malformed():
     try:
@@ -84,11 +87,13 @@ def test_unsupported_newer():
         warnings.simplefilter("always")
         assert Version.nearest("2.5") == Version("3.0")
 
-        # Check we got a warning for that oddball newer version.
-        assert len(w) == 1
-        (older_newer, detect_ver, used_ver) = _check_warning(w[-1])
-        assert older_newer == 'newer'
-        assert used_ver == Version('3.0')
+        # Work around Python 2.7 bug (https://stackoverflow.com/questions/56821539/warnings-simplefilteralways-is-not-forcing-warnings-to-be-made-in-python-2-7)
+        if sys.version_info[0:2] != (2, 7):
+            # Check we got a warning for that oddball newer version.
+            assert len(w) == 1
+            (older_newer, detect_ver, used_ver) = _check_warning(w[-1])
+            assert older_newer == 'newer'
+            assert used_ver == Version('3.0')
 
 def test_unsupported_bleedingedge():
     with warnings.catch_warnings(record=True) as w:

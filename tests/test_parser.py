@@ -22,13 +22,13 @@ from .pint_enable import _enable_pint
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
 
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
 SIMPLE_EXAMPLE = '''ver:"2.0"
 firstName,bday
 "Jack",1973-07-23
 "Jill",1975-11-15
 '''
-
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SIMPLE_EXAMPLE_JSON = {
     'meta': {'ver': '2.0'},

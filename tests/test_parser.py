@@ -54,6 +54,25 @@ def _check_simple(pint_en):
     check_simple(grid)
 
 
+# SkySpark sometimes appends extra newlines!
+SIMPLE_EXAMPLE_TRAILING_NLS = SIMPLE_EXAMPLE + '\n\n\n'
+
+def _check_simple_newlines(pint_en):
+    _enable_pint(pint_en)
+    grid = hszinc.parse(SIMPLE_EXAMPLE, single=True)
+    check_simple(grid)
+
+def test_simple_newlines():
+    yield _check_simple_newlines, False  # without pint
+    yield _check_simple_newlines, True  # with pint
+
+
+def _check_simple(pint_en):
+    _enable_pint(pint_en)
+    grid = hszinc.parse(SIMPLE_EXAMPLE, single=True)
+    check_simple(grid)
+
+
 def test_simple_encoded():
     yield _check_simple_encoded, False  # without pint
     yield _check_simple_encoded, True  # with pint

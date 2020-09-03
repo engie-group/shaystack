@@ -50,9 +50,6 @@ def parse(grid_str, mode=MODE_ZINC, charset='utf-8', single=True):
     # Sanitise mode
     mode = _parse_mode(mode)
 
-    # Sanitise grid string
-    grid_str = grid_str.strip('\n')+'\n'
-
     # Decode incoming text (or python3 will whine!)
     if isinstance(grid_str, six.binary_type):
         grid_str = grid_str.decode(encoding=charset)
@@ -73,7 +70,7 @@ def parse(grid_str, mode=MODE_ZINC, charset='utf-8', single=True):
         if isinstance(grid_data, dict):
             grid_data = [grid_data]
     else:
-        grid_data = GRID_SEP.split(grid_str)
+        grid_data = GRID_SEP.split(grid_str.strip('\n')+'\n')
 
     grids = list(map(_parse, grid_data))
     if single:

@@ -17,6 +17,9 @@ import json
 # Bring in version handling
 from .version import Version, LATEST_VER
 
+# Trailing newline sanitation
+TRAILING_NL_RE = re.compile(r'\n+$')
+
 GRID_SEP = re.compile(r'(?<=\n)\n+')
 
 MODE_ZINC = 'text/zinc'
@@ -70,7 +73,7 @@ def parse(grid_str, mode=MODE_ZINC, charset='utf-8', single=True):
         if isinstance(grid_data, dict):
             grid_data = [grid_data]
     else:
-        grid_data = GRID_SEP.split(grid_str)
+        grid_data = GRID_SEP.split(TRAILING_NL_RE.sub('\n', grid_str))
 
     grids = list(map(_parse, grid_data))
     if single:

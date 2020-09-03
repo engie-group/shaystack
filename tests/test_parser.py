@@ -22,13 +22,13 @@ from .pint_enable import _enable_pint
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
 
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
 SIMPLE_EXAMPLE = '''ver:"2.0"
 firstName,bday
 "Jack",1973-07-23
 "Jill",1975-11-15
 '''
-
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SIMPLE_EXAMPLE_JSON = {
     'meta': {'ver': '2.0'},
@@ -46,6 +46,25 @@ SIMPLE_EXAMPLE_JSON = {
 def test_simple():
     yield _check_simple, False  # without pint
     yield _check_simple, True  # with pint
+
+
+def _check_simple(pint_en):
+    _enable_pint(pint_en)
+    grid = hszinc.parse(SIMPLE_EXAMPLE, single=True)
+    check_simple(grid)
+
+
+# SkySpark sometimes appends extra newlines!
+SIMPLE_EXAMPLE_TRAILING_NLS = SIMPLE_EXAMPLE + '\n\n\n'
+
+def _check_simple_newlines(pint_en):
+    _enable_pint(pint_en)
+    grid = hszinc.parse(SIMPLE_EXAMPLE, single=True)
+    check_simple(grid)
+
+def test_simple_newlines():
+    yield _check_simple_newlines, False  # without pint
+    yield _check_simple_newlines, True  # with pint
 
 
 def _check_simple(pint_en):

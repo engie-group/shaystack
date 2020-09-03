@@ -50,6 +50,9 @@ def parse(grid_str, mode=MODE_ZINC, charset='utf-8', single=True):
     # Sanitise mode
     mode = _parse_mode(mode)
 
+    # Sanitise grid string
+    grid_str = grid_str.strip('\n')+'\n'
+
     # Decode incoming text (or python3 will whine!)
     if isinstance(grid_str, six.binary_type):
         grid_str = grid_str.decode(encoding=charset)

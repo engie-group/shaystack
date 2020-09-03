@@ -2,6 +2,13 @@
 
 See the git change-log.
 
+# [1.3.1]
+
+  * *Fixed*: Handle stray newline characters at the end of grids reported
+    by SkySpark.
+
+ -- Stuart Longland <stuartl@vrt.com.au> Fri, 4 Sep 2020 09:11:45 +1000
+
 # [1.3.0]
 
   * *Change*: `hszinc.parse` now returns the first grid it encounters unless
@@ -10,6 +17,8 @@ See the git change-log.
     always a `list` of `Grid` objects.
   * *Added*: Haystack 3.0 data types (dicts, embedded grids, XStrs), with thanks
     to [Philippe Prados](https://github.com/widesky/hszinc/pull/32).
+
+ -- Stuart Longland <stuartl@vrt.com.au> Thu, 3 Sep 2020 08:26:10 +1000
 
 # [1.2.3]
 
@@ -118,7 +127,9 @@ See the git change-log.
 
  -- Stuart Longland <stuartl@vrt.com.au>  Thu, 07 Jan 2016 13:57:00 +1000
 
-[Unreleased]: https://github.com/vrtsystems/hszinc/compare/HEAD..1.2.3
+[Unreleased]: https://github.com/vrtsystems/hszinc/compare/HEAD..1.3.1
+[1.3.1]: https://github.com/vrtsystems/hszinc/compare/v1.3.0..1.3.1
+[1.3.0]: https://github.com/vrtsystems/hszinc/compare/v1.2.3..1.3.0
 [1.2.3]: https://github.com/vrtsystems/hszinc/compare/v1.2.2..1.2.3
 [1.2.2]: https://github.com/vrtsystems/hszinc/compare/v1.2.1..v1.2.2
 [1.2.1]: https://github.com/vrtsystems/hszinc/compare/v1.2.0..v1.2.1

@@ -31,6 +31,7 @@ import warnings
 
 VERSION_RE = re.compile(r'^(\d[\d\.]*)([^\d].*)*$')
 
+
 class Version(object):
     """
     A Project Haystack version number
@@ -50,7 +51,7 @@ class Version(object):
             # by anything else not recognised.  Parse out the first bit.
             (version_nums, version_extra) = match.groups()
             self.version_nums = tuple([int(p or 0) \
-                    for p in version_nums.split('.')])
+                                       for p in version_nums.split('.')])
             self.version_extra = version_extra
 
     def __str__(self):
@@ -107,7 +108,7 @@ class Version(object):
 
     def __lt__(self, other):
         return self._cmp(other) < 0
-    
+
     def __le__(self, other):
         return self._cmp(other) < 1
 
@@ -150,10 +151,10 @@ class Version(object):
             # If we have not seen a better candidate, and this is older
             # then we may have to settle for that.
             if (best is None) and (candidate < ver):
-                warnings.warn('This version of hszinc does not yet '\
-                            'support version %s, please seek a newer version '\
-                            'or file a bug.  Closest (older) version supported is %s.'\
-                            % (ver, candidate))
+                warnings.warn('This version of hszinc does not yet ' \
+                              'support version %s, please seek a newer version ' \
+                              'or file a bug.  Closest (older) version supported is %s.' \
+                              % (ver, candidate))
                 return candidate
 
             # Probably the best so far, but see if we can go closer
@@ -162,10 +163,10 @@ class Version(object):
 
         # Unhappy path, no best option?  This should not happen.
         assert best is not None
-        warnings.warn('This version of hszinc does not yet '\
-                    'support version %s, please seek a newer version '\
-                    'or file a bug.  Closest (newer) version supported is %s.'\
-                    % (ver, best))
+        warnings.warn('This version of hszinc does not yet ' \
+                      'support version %s, please seek a newer version ' \
+                      'or file a bug.  Closest (newer) version supported is %s.' \
+                      % (ver, best))
         return best
 
 

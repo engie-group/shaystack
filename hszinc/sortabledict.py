@@ -10,6 +10,7 @@ try:
 except ImportError:  # pragma: no cover
     import collections as col
 
+
 class SortableDict(col.MutableMapping):
     """
     A dict-like object that permits value ordering/re-ordering.
@@ -32,9 +33,9 @@ class SortableDict(col.MutableMapping):
 
     def __repr__(self):
         return '%s{%s}' % (self.__class__.__name__,
-                ', '.join([
-                    '%r=%r' % (k,v) for k,v in list(self.items())
-                ]))
+                           ', '.join([
+                               '%r=%r' % (k, v) for k, v in list(self.items())
+                           ]))
 
     def __getitem__(self, key):
         return self._values[key]
@@ -53,7 +54,7 @@ class SortableDict(col.MutableMapping):
         return len(self._order)
 
     def add_item(self, key, value, after=False, index=None, pos_key=None,
-            replace=True):
+                 replace=True):
         """
         Add an item at a specific location, possibly replacing the
         existing item.

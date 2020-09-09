@@ -1,9 +1,8 @@
 import random
 from io import open
 
-from hszinc.pintutil import to_haystack
-
 _RAW_UNIT_DATA = None
+
 
 def get_units():
     global _RAW_UNIT_DATA
@@ -25,6 +24,7 @@ def get_units():
                 unit_data[row[0]] = row[1]
         _RAW_UNIT_DATA = unit_data
     return _RAW_UNIT_DATA.copy()
+
 
 def get_random_unit():
     return random.choice(list(get_units().values()))

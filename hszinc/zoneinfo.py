@@ -5,14 +5,15 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si: 
 
-import pytz
 import datetime
+
+import pytz
 
 from .version import LATEST_VER
 
 # The official list of timezones as of 6th Jan 2016:
 # Yes, that's *without* the usual country prefix.
-HAYSTACK_TIMEZONES="""Abidjan
+HAYSTACK_TIMEZONES = """Abidjan
 Accra
 Adak
 Addis_Ababa
@@ -397,11 +398,12 @@ Yellowknife
 Yerevan
 Zaporozhye
 Zurich""".split('\n')
-HAYSTACK_TIMEZONES_SET=set(HAYSTACK_TIMEZONES)
+HAYSTACK_TIMEZONES_SET = set(HAYSTACK_TIMEZONES)
 
 # Mapping of pytz-recognised timezones to Haystack timezones.
 _TZ_MAP = None
 _TZ_RMAP = None
+
 
 def _map_timezones():
     """
@@ -411,13 +413,13 @@ def _map_timezones():
     todo = HAYSTACK_TIMEZONES_SET.copy()
     for full_tz in pytz.all_timezones:
         # Finished case:
-        if not bool(todo): # pragma: no cover
+        if not bool(todo):  # pragma: no cover
             # This is nearly impossible for us to cover, and an unlikely case.
             break
 
         # Case 1: exact match
         if full_tz in todo:
-            tz_map[full_tz] = full_tz   # Exact match
+            tz_map[full_tz] = full_tz  # Exact match
             todo.discard(full_tz)
             continue
 
@@ -425,7 +427,7 @@ def _map_timezones():
         if '/' not in full_tz:
             continue
 
-        (prefix, suffix) = full_tz.split('/',1)
+        (prefix, suffix) = full_tz.split('/', 1)
         # Case 2 exception: full timezone contains more than one '/' -> ignore
         if '/' in suffix:
             continue
@@ -437,12 +439,14 @@ def _map_timezones():
 
     return tz_map
 
+
 def _gen_map():
     global _TZ_MAP
     global _TZ_RMAP
     if (_TZ_MAP is None) or (_TZ_RMAP is None):
         _TZ_MAP = _map_timezones()
-        _TZ_RMAP = dict([(z,n) for (n,z) in list(_TZ_MAP.items())])
+        _TZ_RMAP = dict([(z, n) for (n, z) in list(_TZ_MAP.items())])
+
 
 def get_tz_map(version=LATEST_VER):
     """
@@ -451,12 +455,14 @@ def get_tz_map(version=LATEST_VER):
     _gen_map()
     return _TZ_MAP
 
+
 def get_tz_rmap(version=LATEST_VER):
     """
     Return the reverse timezone map, generating it if needed.
     """
     _gen_map()
     return _TZ_RMAP
+
 
 def timezone(haystack_tz, version=LATEST_VER):
     """
@@ -467,8 +473,9 @@ def timezone(haystack_tz, version=LATEST_VER):
         tz_name = tz_map[haystack_tz]
     except KeyError:
         raise ValueError('%s is not a recognised timezone on this host' \
-                % haystack_tz)
+                         % haystack_tz)
     return pytz.timezone(tz_name)
+
 
 def timezone_name(dt, version=LATEST_VER):
     """
@@ -492,7 +499,7 @@ def timezone_name(dt, version=LATEST_VER):
     # Hard case, try to find one that's equivalent.  Hopefully we don't get
     # many of these.  Start by getting the current timezone offset, and a
     # timezone-naïve copy of the timestamp.
-    offset  = dt.utcoffset()
+    offset = dt.utcoffset()
     dt_notz = dt.replace(tzinfo=None)
 
     if offset == datetime.timedelta(0):

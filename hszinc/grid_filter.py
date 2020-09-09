@@ -1,4 +1,6 @@
+import logging
 from datetime import datetime
+
 try:
     from functools import lru_cache
 except ImportError:  # pragma: no cover
@@ -13,7 +15,7 @@ from .filter_ast import *
 from .zincparser import DelimitedList, to_dict
 from .zoneinfo import timezone
 
-# TODO: check escape char. Voir hs_str du parser
+log = logging.getLogger("grid.filter")
 
 hs_filter = Forward()
 hs_strChar = Regex(r"([^\x00-\x1f\\\"]|\\[bfnrt\\\"$]|\\[uU][0-9a-fA-F]{4})")
@@ -264,7 +266,7 @@ def _get_path(grid, obj, paths):
     try:
         for i, path in enumerate(paths):
             obj = obj[path]
-            if i != len(paths)-1 and isinstance(obj, Ref):
+            if i != len(paths) - 1 and isinstance(obj, Ref):
                 obj = grid[obj.name]  # Follow the reference
         return obj  # It's a value at this time
     except KeyError:
@@ -276,18 +278,18 @@ def _generate_filter_in_python(node, def_filter):
         def_filter.append("_get_path(_grid, _entity, %s)" % node.path)
     elif isinstance(node, FilterBinary):
         def_filter.append("(")
-        def_filter.extend(_generate_filter_in_python(node.left, []))
+        _generate_filter_in_python(node.left, def_filter)
         def_filter.append(" " + node.op + " ")
-        def_filter.extend(_generate_filter_in_python(node.right, []))
+        _generate_filter_in_python(node.right, def_filter)
         def_filter.append(")")
     elif isinstance(node, FilterUnary):
         if node.op == "has":
             def_filter.append('(id(')
-            def_filter.extend(_generate_filter_in_python(node.right, []))
+            _generate_filter_in_python(node.right, def_filter)
             def_filter.append(') !=  id(NOT_FOUND))')
         elif node.op == "not":
             def_filter.append('(id(')
-            def_filter.extend(_generate_filter_in_python(node.right, []))
+            _generate_filter_in_python(node.right, def_filter)
             def_filter.append(") == id(NOT_FOUND))")
         else:  # pragma: no cover
             assert 0
@@ -307,13 +309,14 @@ class _FnWrapper():
     def get(self):
         return globals()[self.fun_name]
 
+
 @lru_cache(maxsize=FILTER_CACHE_LRU_SIZE)
 def _filter_function(filter):
     global _id_function
     def_filter = _generate_filter_in_python(parse_filter(filter)._head, [])
     fun_name = "_gen_hsfilter_" + str(_id_function)
     function_template = "def %s(_grid, _entity):\n  return " % fun_name + "".join(def_filter)
-    print("\nGenerate:\n# " + filter + "\n" + function_template)  # FIXME: debug
+    log.debug("\nGenerate:\n# " + filter + "\n" + function_template)
     _id_function += 1
     return _FnWrapper(fun_name, function_template)
 

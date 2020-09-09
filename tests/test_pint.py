@@ -1,15 +1,18 @@
-from .pint_enable import _enable_pint
+import os
+import pkg_resources
+
 import hszinc
-import pkg_resources, os
+from .pint_enable import _enable_pint
 
 units = []
+
 
 def get_units():
     _enable_pint(True)
     file_path = os.path.join('', 'project_haystack_units.txt')
     units_file = pkg_resources.resource_string(__name__, file_path)
     global units
-    with open(units_file, 'r', encoding = 'UTF-8') as file:
+    with open(units_file, 'r', encoding='UTF-8') as file:
         for line in file:
             if '--' not in line and line != '':
                 res = line.rstrip().split(',')
@@ -19,13 +22,14 @@ def get_units():
                     units.append(res[1])
     assert len(units) > 0
 
+
 def test_all_units():
     _enable_pint(True)
     not_defined = []
     defined = []
     for each in units:
-        try:   
-            q = hszinc.Q_(1,each)
+        try:
+            q = hszinc.Q_(1, each)
             defined.append(each)
             print(each, q)
         except Exception as error:

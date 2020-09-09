@@ -13,7 +13,7 @@ import re
 
 import six
 
-from . import Grid
+from .grid import Grid
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
     MARKER, NA, REMOVE, STR_SUB, XStr
 from .version import LATEST_VER, VER_3_0
@@ -70,6 +70,8 @@ def dump_meta_item(item, version=LATEST_VER):
 
 
 def dump_columns(cols, version=LATEST_VER):
+    if not len(cols):
+        return ''
     _dump = functools.partial(dump_column, version=version)
     _cols = list(zip(*list(cols.items())))
     return ','.join(map(_dump, *_cols))

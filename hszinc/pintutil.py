@@ -7,121 +7,122 @@
 from pint import UnitRegistry
 
 HAYSTACK_CONVERSION = [
-                    (u'_', ' '),
-                    (u'°','deg'),
-                    (u'per ', '/ '),
-                    (u'per_h','per_hour'),
-                    (u'Δ','delta_'),
-                    (u'meters','meter'),
-                    (u'liters','liter'),
-                    (u'gallons','gallon'),
-                    (u'millimeters','millimeter'),
-                    (u'centimeters','centimeter'),
-                    (u'H₂O', 'H2O'),
-                    (u'Volt', 'volt'),
-                    (u'grams', 'gram'),
-                    (u'tons refrigeration', 'refrigeration_ton'),
-                    (u'%', 'percent'),
-                    (u'degree kelvin','degK'),
-                    (u'degree celsius','degC'),
-                    (u'degree farenheit','degF'),
-                    (u'pound force', 'pound_force'),
-                    (u'metric ton', 'metric_ton'),
-                    (u'fluid ounce', 'fluid_ounce'),
-                    (u'imperial gallon','imperial_gallon'),
-                    (u'galUK','UK_gallon'),
-                    (u'kgdegK','(kg degK)'),
-                    (u'tonrefh','refrigeration_ton * hour'),
-                    (u'tonref','refrigeration_ton'),
-                    (u'Nm ', 'newton meter'),
-                    (u'Ns', 'newton second'),
-                    (u'Js', 'joule second'),
-                    (u'short ton', 'short_ton'),
-                    (u'degrees angular', 'deg'),
-                    (u'degrees phase', 'deg'),
-                    (u'degPh', 'deg'),
-                    (u'yr','year '),
-                    (u'atmosphere', 'atm'),
-                    (u'mo','month '),
-                    (u'wk','week '),
-                    (u'parts / unit','ppu'),
-                    (u'parts / million','ppm'),
-                    (u'parts / billion','ppb'),
-                    (u'kcfm','kilocfm'),
-                    (u'kilohm','kiloohm'),
-                    (u'megohm','megaohm'),
-                    (u'volt ampere reactive', 'VAR'),
-                    (u'kilovolt ampere reactive', 'kVAR'),
-                    (u'megavolt ampere reactive', 'MVAR'),
-                    (u'VAh', 'volt * ampere * hour'),
-                    (u'kVAh', 'kilovolt * ampere * hour'),
-                    (u'MVAh', 'megavolt * ampere * hour'),
-                    (u'VARh', 'VAR * hour'),
-                    (u'kVARh', 'kVAR * hour'),
-                    (u'MVARh', 'MVAR * hour'),
-                    (u'hph', 'horsepower * hour'),
-                    (u'energy efficiency ratio', 'EER'),
-                    (u'coefficient of performance', 'COP'),
-                    (u'data center infrastructure efficiency', 'DCIE'),
-                    (u'power usage effectiveness', 'PUE'),
-                    (u'formazin nephelometric unit', 'fnu'),
-                    (u'nephelometric turbidity units', 'ntu'),
-                    (u'dBµV', 'dB microvolt'),
-                    (u'dBmV', 'dB millivolt'),
-                    (u'db','dB'),
-                    (u'Am', 'A * m'),
-                    (u'percent relative humidity', 'percentRH'),
-                    (u'pf', 'PF'),
-                    (u'power factor', 'PF'),
-                    (u'gH2O','g H2O'),
-                    (u'irradiance',''),
-                    (u'irr',''),
-                    (u'dry air', 'dry'),
-                    (u'dry', 'dry_air'),
-                    (u'kgAir','kg dry_air'),
-                    (u'percent obscuration', 'percentobsc'),
-                    (u'natural gas', ''),
-                    (u'Ωm', 'ohm meter'),
-                    (u'hecto cubic foot', 'hecto_cubic_foot'),
-                    (u'julian month','month'),
-                    (u'tenths second', 'tenths_second'),
-                    (u'hundredths second', 'hundredths_second'),
-                    (u'australian dollar','australian_dollar'),
-                    (u'british pound','british_pound'),
-                    (u'canadian dollar','canadian_dollar'),
-                    (u'chinese yuan','chinese_yuan'),
-                    (u'emerati dirham','emerati_dirham'),
-                    (u'indian rupee','indian_rupee'),
-                    (u'japanese yen','japanese_yen'),
-                    (u'russian ruble','russian_ruble'),
-                    (u'south korean won','south_korean_won'),
-                    (u'swedish krona','swedish_krona'),
-                    (u'swiss franc','swiss_franc'),
-                    (u'taiwan dollar','taiwan_dollar'),
-                    (u'us dollar','us_dollar'),
-                    (u'new israeli shekel','new_israeli_shekel'),
-                    (u'delta_K', 'delta_degC'),
-                    (u'delta degK', 'delta_degC'),
-                    (u'delta degC', 'delta_degC'),
-                    (u'delta degF', 'delta_degF'),
-                    (u'$', 'USD'),
-                    (u'£', 'GBP'),
-                    (u'元', 'CNY'),
-                    (u'€', 'EUR'),
-                    (u'₹', 'INR'),
-                    (u'¥', 'JPY'),
-                    (u'₩', 'KRW'),
-                    (u'of','')
-                    ]
-                    
-PINT_CONVERSION = [
-                    (u'foot ** 3', 'cubic_foot'),
-                    (u'/','per'),
-                    (u'hectofoot ** 3','hecto_cubic_foot'),
-                    (u'meter ** 3','cubic_meter'),
-                    (u'Volt_per','volts_per'),
-                    (u'°ree','degree')
+    (u'_', ' '),
+    (u'°', 'deg'),
+    (u'per ', '/ '),
+    (u'per_h', 'per_hour'),
+    (u'Δ', 'delta_'),
+    (u'meters', 'meter'),
+    (u'liters', 'liter'),
+    (u'gallons', 'gallon'),
+    (u'millimeters', 'millimeter'),
+    (u'centimeters', 'centimeter'),
+    (u'H₂O', 'H2O'),
+    (u'Volt', 'volt'),
+    (u'grams', 'gram'),
+    (u'tons refrigeration', 'refrigeration_ton'),
+    (u'%', 'percent'),
+    (u'degree kelvin', 'degK'),
+    (u'degree celsius', 'degC'),
+    (u'degree farenheit', 'degF'),
+    (u'pound force', 'pound_force'),
+    (u'metric ton', 'metric_ton'),
+    (u'fluid ounce', 'fluid_ounce'),
+    (u'imperial gallon', 'imperial_gallon'),
+    (u'galUK', 'UK_gallon'),
+    (u'kgdegK', '(kg degK)'),
+    (u'tonrefh', 'refrigeration_ton * hour'),
+    (u'tonref', 'refrigeration_ton'),
+    (u'Nm ', 'newton meter'),
+    (u'Ns', 'newton second'),
+    (u'Js', 'joule second'),
+    (u'short ton', 'short_ton'),
+    (u'degrees angular', 'deg'),
+    (u'degrees phase', 'deg'),
+    (u'degPh', 'deg'),
+    (u'yr', 'year '),
+    (u'atmosphere', 'atm'),
+    (u'mo', 'month '),
+    (u'wk', 'week '),
+    (u'parts / unit', 'ppu'),
+    (u'parts / million', 'ppm'),
+    (u'parts / billion', 'ppb'),
+    (u'kcfm', 'kilocfm'),
+    (u'kilohm', 'kiloohm'),
+    (u'megohm', 'megaohm'),
+    (u'volt ampere reactive', 'VAR'),
+    (u'kilovolt ampere reactive', 'kVAR'),
+    (u'megavolt ampere reactive', 'MVAR'),
+    (u'VAh', 'volt * ampere * hour'),
+    (u'kVAh', 'kilovolt * ampere * hour'),
+    (u'MVAh', 'megavolt * ampere * hour'),
+    (u'VARh', 'VAR * hour'),
+    (u'kVARh', 'kVAR * hour'),
+    (u'MVARh', 'MVAR * hour'),
+    (u'hph', 'horsepower * hour'),
+    (u'energy efficiency ratio', 'EER'),
+    (u'coefficient of performance', 'COP'),
+    (u'data center infrastructure efficiency', 'DCIE'),
+    (u'power usage effectiveness', 'PUE'),
+    (u'formazin nephelometric unit', 'fnu'),
+    (u'nephelometric turbidity units', 'ntu'),
+    (u'dBµV', 'dB microvolt'),
+    (u'dBmV', 'dB millivolt'),
+    (u'db', 'dB'),
+    (u'Am', 'A * m'),
+    (u'percent relative humidity', 'percentRH'),
+    (u'pf', 'PF'),
+    (u'power factor', 'PF'),
+    (u'gH2O', 'g H2O'),
+    (u'irradiance', ''),
+    (u'irr', ''),
+    (u'dry air', 'dry'),
+    (u'dry', 'dry_air'),
+    (u'kgAir', 'kg dry_air'),
+    (u'percent obscuration', 'percentobsc'),
+    (u'natural gas', ''),
+    (u'Ωm', 'ohm meter'),
+    (u'hecto cubic foot', 'hecto_cubic_foot'),
+    (u'julian month', 'month'),
+    (u'tenths second', 'tenths_second'),
+    (u'hundredths second', 'hundredths_second'),
+    (u'australian dollar', 'australian_dollar'),
+    (u'british pound', 'british_pound'),
+    (u'canadian dollar', 'canadian_dollar'),
+    (u'chinese yuan', 'chinese_yuan'),
+    (u'emerati dirham', 'emerati_dirham'),
+    (u'indian rupee', 'indian_rupee'),
+    (u'japanese yen', 'japanese_yen'),
+    (u'russian ruble', 'russian_ruble'),
+    (u'south korean won', 'south_korean_won'),
+    (u'swedish krona', 'swedish_krona'),
+    (u'swiss franc', 'swiss_franc'),
+    (u'taiwan dollar', 'taiwan_dollar'),
+    (u'us dollar', 'us_dollar'),
+    (u'new israeli shekel', 'new_israeli_shekel'),
+    (u'delta_K', 'delta_degC'),
+    (u'delta degK', 'delta_degC'),
+    (u'delta degC', 'delta_degC'),
+    (u'delta degF', 'delta_degF'),
+    (u'$', 'USD'),
+    (u'£', 'GBP'),
+    (u'元', 'CNY'),
+    (u'€', 'EUR'),
+    (u'₹', 'INR'),
+    (u'¥', 'JPY'),
+    (u'₩', 'KRW'),
+    (u'of', '')
 ]
+
+PINT_CONVERSION = [
+    (u'foot ** 3', 'cubic_foot'),
+    (u'/', 'per'),
+    (u'hectofoot ** 3', 'hecto_cubic_foot'),
+    (u'meter ** 3', 'cubic_meter'),
+    (u'Volt_per', 'volts_per'),
+    (u'°ree', 'degree')
+]
+
 
 def to_haystack(unit):
     """
@@ -130,15 +131,15 @@ def to_haystack(unit):
     global HAYSTACK_CONVERSION
     global PINT_CONVERSION
     if unit == u'per_minute' or \
-        unit == u'/min' or \
-        unit == u'per_second' or \
-        unit == u'/s' or \
-        unit == u'per_hour' or \
-        unit == u'/h' or \
-        unit == None:
+            unit == u'/min' or \
+            unit == u'per_second' or \
+            unit == u'/s' or \
+            unit == u'per_hour' or \
+            unit == u'/h' or \
+            unit == None:
         return u''
         # Those units are not units... they are impossible to fit anywhere in Pint
-    
+
     for pint_value, haystack_value in PINT_CONVERSION:
         unit = unit.replace(pint_value, haystack_value)
     for haystack_value, pint_value in HAYSTACK_CONVERSION:
@@ -147,25 +148,26 @@ def to_haystack(unit):
         unit = unit.replace(pint_value, haystack_value)
     return unit
 
+
 def to_pint(unit):
     """
     Some parsing tweaks to fit pint units / handling of edge cases.
     """
     global HAYSTACK_CONVERSION
     if unit == u'per_minute' or \
-        unit == u'/min' or \
-        unit == u'per_second' or \
-        unit == u'/s' or \
-        unit == u'per_hour' or \
-        unit == u'/h' or \
-        unit == None:
+            unit == u'/min' or \
+            unit == u'per_second' or \
+            unit == u'/s' or \
+            unit == u'per_hour' or \
+            unit == u'/h' or \
+            unit == None:
         return ''
         # Those units are not units... they are impossible to fit anywhere in Pint
     for haystack_value, pint_value in HAYSTACK_CONVERSION:
         unit = unit.replace(haystack_value, pint_value)
     return unit
 
-                
+
 def define_haystack_units():
     """
     Missing units found in project-haystack
@@ -209,10 +211,10 @@ def define_haystack_units():
     ureg.define(u'tenths_second = second / 10')
     ureg.define(u'hundredths_second = second / 100')
 
-    #ureg.define('irradiance = W / sq_meter = irr')
+    # ureg.define('irradiance = W / sq_meter = irr')
     # In the definition of project haystack, there's a redundancy as irr = W/m^2
     # no need to use : watts_per_square_meter_irradiance
-    
+
     # CURRENCY
     # I know...we won'T be able to convert right now !
     ureg.define(u'australian_dollar = [] = AUD')

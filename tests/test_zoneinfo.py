@@ -7,10 +7,13 @@
 # Assume unicode literals as per Python 3
 from __future__ import unicode_literals
 
-from hszinc import zoneinfo
-import iso8601
 import datetime
+
+import iso8601
 import pytz
+
+from hszinc import zoneinfo
+
 
 def test_get_tz_map():
     # This should return a mapping of all possible timezone names.
@@ -23,10 +26,11 @@ def test_get_tz_map():
     assert tz_map['Adelaide'] == 'Australia/Adelaide'
     assert tz_map['Detroit'] == 'America/Detroit'
     assert tz_map['GMT'] == 'Etc/GMT'
-    for etc_tz in   (('GMT',) + \
-                     tuple(['GMT-%d' % n for n in range(1,13)]) + \
-                     tuple(['GMT+%d' % n for n in range(1,13)])):
+    for etc_tz in (('GMT',) + \
+                   tuple(['GMT-%d' % n for n in range(1, 13)]) + \
+                   tuple(['GMT+%d' % n for n in range(1, 13)])):
         assert tz_map[etc_tz] == 'Etc/%s' % etc_tz
+
 
 def test_get_tz_rmap():
     # This should return a mapping of all possible timezone names.
@@ -37,8 +41,10 @@ def test_get_tz_rmap():
     for iana_tz, hs_tz in tz_rmap.items():
         assert tz_map[hs_tz] == iana_tz
 
+
 def test_valid_timezone():
     assert zoneinfo.timezone('Brisbane') is pytz.timezone('Australia/Brisbane')
+
 
 def test_invalid_timezone():
     try:
@@ -47,6 +53,7 @@ def test_invalid_timezone():
     except ValueError:
         pass
 
+
 def test_naive_datetime():
     try:
         zoneinfo.timezone_name(datetime.datetime.now())
@@ -54,10 +61,11 @@ def test_naive_datetime():
     except ValueError:
         pass
 
+
 def test_iso8601_datetime():
     # We don't know which one it'll pick, so pick one.
     name = zoneinfo.timezone_name(
-            iso8601.parse_date('2017-01-01T00:00+10:00'))
+        iso8601.parse_date('2017-01-01T00:00+10:00'))
     assert name in set([
         'Brisbane',
         'Chuuk',
@@ -70,11 +78,12 @@ def test_iso8601_datetime():
         'Ust-Nera',
         'Vladivostok'])
 
+
 def test_oddball_iso8601_datetime():
     # We won't have a matching one for this.
     try:
         zoneinfo.timezone_name(
-                iso8601.parse_date('2017-01-01T00:00+12:34'))
+            iso8601.parse_date('2017-01-01T00:00+12:34'))
         assert False, 'Matched an oddball timezone'
     except ValueError:
         pass

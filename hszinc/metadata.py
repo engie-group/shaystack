@@ -5,14 +5,16 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
-from .sortabledict import SortableDict
 from .datatypes import MARKER
+from .sortabledict import SortableDict
+
 
 class MetadataObject(SortableDict):
     '''
     An object that contains some metadata fields.  Used as a convenience
     base-class for grids and columns, both of which have metadata.
     '''
+
     def append(self, key, value=MARKER, replace=True):
         '''
         Append the item to the metadata.

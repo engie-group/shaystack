@@ -7,16 +7,16 @@
 # Assume unicode literals as per Python 3
 from __future__ import unicode_literals
 
-import base64
 import binascii
 import random
 from copy import copy, deepcopy
 
-
 import six
+from nose.tools import eq_
 
 import hszinc
-from hszinc.datatypes import XStr
+from hszinc.datatypes import XStr, Uri, Bin, MARKER, NA, REMOVE
+from hszinc.pintutil import to_haystack, to_pint
 from .pint_enable import _enable_pint
 
 
@@ -115,6 +115,13 @@ def test_ref_hash():
            hash('a.ref') ^ hash('display text') ^ hash(True)
 
 
+def test_ref_std_method():
+    if six.PY2:
+        assert str(hszinc.Ref(name='a.ref', value='display text')) == '@a.ref u\'display text\''
+    else:
+        assert str(hszinc.Ref(name='a.ref', value='display text')) == '@a.ref \'display text\''
+
+
 def test_qty_unary_ops():
     # How to run the test: check the result
     # applied to the Quantity object matches what
@@ -151,7 +158,7 @@ def test_qty_unary_ops():
             yield _check_qty_op, pint_en, fn, 123, -123
 
         # This only works with Python 2.
-        if six.PY2:
+        if six.PY2:  # pragma: no cover
             yield _check_qty_op, pint_en, lambda v: long(v), 123.45, -123.45
 
 
@@ -299,6 +306,19 @@ def test_qty_cmp():
         yield _check_qty_cmp, pint_en
 
 
+def test_qty_std_method():
+    def _check_qty_cmp(pint_en):
+        r = repr(hszinc.Quantity(4, unit='A'))
+        if six.PY2:
+            assert (r == 'BasicQuantity(4, u\'A\')') or (r == 'PintQuantity(4, u\'A\')')
+        else:
+            assert (r == 'BasicQuantity(4, \'A\')') or (r == 'PintQuantity(4, \'A\')')
+        assert str(hszinc.Quantity(4, unit='A')) == '4 A'
+
+    yield _check_qty_cmp, True
+    yield _check_qty_cmp, False
+
+
 class MyCoordinate(object):
     """
     A dummy class that can compare itself to a Coordinate from hszinc.
@@ -360,15 +380,27 @@ def test_coord_hash():
            hash(33.77) ^ hash(-77.45)
 
 
+def test_coord_default_method():
+    coord = hszinc.Coordinate(latitude=33.77, longitude=-77.45)
+    ref_str = u'33.770000° lat -77.450000° long'
+    if six.PY2:
+        ref_str = ref_str.encode('utf-8')
+
+    eq_(repr(coord), 'Coordinate(33.77, -77.45)')
+    eq_(str(coord), ref_str)
+
+
 def test_xstr_hex():
     assert XStr("hex", "deadbeef").data == b'\xde\xad\xbe\xef'
     barray = bytearray(random.getrandbits(8) for _ in range(10))
     assert barray == hszinc.XStr("hex", binascii.hexlify(barray).decode("ascii")).data
 
+
 def test_xstr_other():
     assert (XStr("other", "hello word").data == "hello word")
     barray = bytearray(random.getrandbits(8) for _ in range(10))
     assert barray == hszinc.XStr("other", barray).data
+
 
 def test_xstr_b64():
     assert XStr("b64", '3q2+7w==').data == b'\xde\xad\xbe\xef'
@@ -378,3 +410,45 @@ def test_xstr_b64():
 
 def test_xstr_equal():
     assert XStr("hex", "deadbeef") == XStr("b64", '3q2+7w==')
+
+
+def test_uri():
+    uri = Uri("abc")
+    assert uri == Uri("abc")
+    if six.PY2:
+        assert repr(uri) == 'Uri(u\'abc\')'
+    else:
+        assert repr(uri) == 'Uri(\'abc\')'
+    assert str(uri) == 'abc'
+
+
+def test_bin():
+    bin = Bin("text/plain")
+    if six.PY2:
+        assert repr(bin) == 'Bin(u\'text/plain\')'
+    else:
+        assert repr(bin) == 'Bin(\'text/plain\')'
+    assert str(bin) == 'text/plain'
+
+
+def test_marker():
+    assert repr(MARKER) == 'MARKER'
+
+
+def test_na():
+    assert repr(NA) == 'NA'
+
+
+def test_remove():
+    assert repr(REMOVE) == 'REMOVE'
+
+
+def test_to_haystack():
+    assert to_haystack('/h') == u''
+    assert to_haystack(u'foot ** 3') == u'cubic_foot'
+    assert to_haystack(u'deg') == u'\N{DEGREE SIGN}'
+
+
+def test_to_pint():
+    assert to_pint(u'\N{DEGREE SIGN}') == 'deg'
+    assert to_pint('cubic_foot') == u'cubic foot'

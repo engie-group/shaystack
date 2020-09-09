@@ -178,8 +178,8 @@ def test_generated_filter_with_reference():
 
 
 def test_grid_filter():
-    grid = Grid(columns={'id': {}, 'site': {}, 'equip':{},'geoPostalCode':{},'ahu':{},
-                         'geoCity':{},'curVal':{},'hvac':{},'siteRef':{}})
+    grid = Grid(columns={'id': {}, 'site': {}, 'equip': {}, 'geoPostalCode': {}, 'ahu': {},
+                         'geoCity': {}, 'curVal': {}, 'hvac': {}, 'siteRef': {}})
     grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
     grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
@@ -199,8 +199,8 @@ def test_grid_filter():
 
 
 def test_grid_specification_filter_sample():
-    grid = Grid(columns={'id': {}, 'site': {}, 'equip':{},'geoPostalCode':{},'ahu':{},
-                         'geoCity':{},'curVal':{},'hvac':{},'siteRef':{}})
+    grid = Grid(columns={'id': {}, 'site': {}, 'equip': {}, 'geoPostalCode': {}, 'ahu': {},
+                         'geoCity': {}, 'curVal': {}, 'hvac': {}, 'siteRef': {}})
     grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
     grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
@@ -266,8 +266,8 @@ def test_if_generated_function_removed():
 
 
 def test_slide_get():
-    grid = Grid(columns={'id': {}, 'site': {}, 'equip':{},'geoPostalCode':{},'ahu':{},
-                         'geoCity':{},'curVal':{},'hvac':{},'siteRef':{}})
+    grid = Grid(columns={'id': {}, 'site': {}, 'equip': {}, 'geoPostalCode': {}, 'ahu': {},
+                         'geoCity': {}, 'curVal': {}, 'hvac': {}, 'siteRef': {}})
     grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
     grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
@@ -278,8 +278,8 @@ def test_slide_get():
 
 
 def test_empty_filter():
-    grid = Grid(columns={'id': {}, 'site': {}, 'equip':{},'geoPostalCode':{},'ahu':{},
-                         'geoCity':{},'curVal':{},'hvac':{},'siteRef':{}})
+    grid = Grid(columns={'id': {}, 'site': {}, 'equip': {}, 'geoPostalCode': {}, 'ahu': {},
+                         'geoCity': {}, 'curVal': {}, 'hvac': {}, 'siteRef': {}})
     grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
     grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})

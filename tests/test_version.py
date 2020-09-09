@@ -21,21 +21,26 @@ def test_malformed():
     except ValueError:
         pass
 
+
 def test_str():
     assert str(Version('1.0')) == '1.0'
     assert str(Version('1.0a')) == '1.0a'
 
+
 def test_str_cmp():
     assert Version('1.0') == '1.0'
+
 
 def test_version_eq():
     assert Version('1') == Version('1.0')
     assert Version('1.0') == Version('1.0.0')
     assert Version('1.0a') == Version('1.0.0a')
 
+
 def test_version_ne():
     assert Version('1.1') != Version('2.2')
     assert Version('1.0a') != Version('1.0')
+
 
 def test_version_lt():
     assert Version('1.0') < Version('1.1')
@@ -43,23 +48,28 @@ def test_version_lt():
     assert Version('1.0') < Version('1.0a')
     assert Version('1.0a') < Version('1.0b')
 
+
 def test_version_le():
     assert Version('1.0') <= Version('1.0')
     assert Version('1.0') <= Version('1.5')
 
+
 def test_version_ge():
     assert Version('1.0') >= Version('1.0')
     assert Version('1.0') >= Version('0.9')
+
 
 def test_version_gt():
     assert Version('1.0') > Version('0.9')
     assert Version('1.0a') > Version('1.0')
     assert Version('1.0b') > Version('1.0a')
 
+
 _WARNING_RE = re.compile(
-            r'This version of hszinc does not yet support version ([\d\.]+), '\
-            r'please seek a newer version or file a bug.  Closest '\
-            r'\((older|newer)\) version supported is ([\d\.]+).')
+    r'This version of hszinc does not yet support version ([\d\.]+), ' \
+    r'please seek a newer version or file a bug.  Closest ' \
+    r'\((older|newer)\) version supported is ([\d\.]+).')
+
 
 def _check_warning(w):
     assert issubclass(w.category, UserWarning)
@@ -71,6 +81,7 @@ def _check_warning(w):
     return (older_newer, Version(detect_ver_str),
             Version(used_ver_str))
 
+
 def test_unsupported_old():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
@@ -81,6 +92,7 @@ def test_unsupported_old():
         (older_newer, detect_ver, used_ver) = _check_warning(w[-1])
         assert older_newer == 'newer'
         assert used_ver == Version('2.0')
+
 
 def test_unsupported_newer():
     with warnings.catch_warnings(record=True) as w:
@@ -94,6 +106,7 @@ def test_unsupported_newer():
             (older_newer, detect_ver, used_ver) = _check_warning(w[-1])
             assert older_newer == 'newer'
             assert used_ver == Version('3.0')
+
 
 def test_unsupported_bleedingedge():
     with warnings.catch_warnings(record=True) as w:

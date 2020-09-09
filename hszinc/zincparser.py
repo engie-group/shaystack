@@ -34,9 +34,7 @@ CHAR_NUM_RE = re.compile(' *\(at char \d+\),')
 
 
 def reformat_exception(ex_msg, line_num=None):
-    print(ex_msg)
     msg = CHAR_NUM_RE.sub(u'', six.text_type(ex_msg))
-    print(msg)
     if line_num is not None:
         return msg.replace(u'line:1', u'line:%d' % line_num)
     else:
@@ -267,17 +265,21 @@ hs_time_str = Combine(And([
     hs_digit, hs_digit,
     Literal(':'),
     hs_digit, hs_digit,
-    Literal(':'),
-    hs_digit, hs_digit,
     Optional(And([
-        Literal('.'),
-        OneOrMore(hs_digit)]))
+        Literal(':'),
+        hs_digit, hs_digit,
+        Optional(And([
+            Literal('.'),
+            OneOrMore(hs_digit)]))
+    ]))
 ]))
 
 
 def _parse_time(toks):
     time_str = toks[0]
-    time_fmt = '%H:%M:%S'
+    time_fmt = '%H:%M'
+    if time_str.count(':') == 2:
+        time_fmt += ':%S'
     if '.' in time_str:
         time_fmt += '.%f'
     return [datetime.datetime.strptime(time_str, time_fmt).time()]
@@ -474,19 +476,39 @@ hs_tags = GenerateMatch(
         .setName('tags'))
 
 
-def _to_dict(tokenlist):
+def to_dict(tokenlist):
     result = {}
-    for i, tok in enumerate(tokenlist):
-        if isinstance(tok, str):
-            result[tok] = MARKER
+    i = 0
+    it = enumerate(tokenlist)
+    for i, tok in it:
+        if i < len(tokenlist) - 2 and tokenlist[i + 1] == ':':
+            result[tokenlist[i]] = tokenlist[i + 2]
+            next(it)
+            next(it)
         else:
-            result[tok[0]] = tok[1]
+            if isinstance(tok, six.string_types):
+                result[tok] = MARKER
+            elif isinstance(tok, tuple):
+                result[tok[0]] = tok[1]
+            else:
+                result[tok] = MARKER
+
     return result
+
+
+# def to_dict(tokenlist):
+#     result = {}
+#     for i, tok in enumerate(tokenlist):
+#         if isinstance(tok, six.string_types):
+#             result[tok] = MARKER
+#         else:
+#             result[tok[0]] = tok[1]
+#     return result
 
 
 hs_dict = GenerateMatch(
     lambda ver: Or([
-        Suppress(Regex(r'[ *]')),
+        Suppress(Regex(r'[ *]')),  # FIXME : must be [ ]* and in another place, but pyparsing loop
         And([
             Suppress(Regex(r'{ *')),
             hs_tags[ver],
@@ -494,7 +516,7 @@ hs_dict = GenerateMatch(
         ])
     ])
         .setName("dict")
-        .setParseAction(_to_dict)
+        .setParseAction(to_dict)
 )
 
 hs_inner_grid = GenerateMatch( \

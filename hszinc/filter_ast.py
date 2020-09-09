@@ -35,5 +35,3 @@ class FilterAST:
 
     def __repr__(self):
         return "AST:" + repr(self._head)
-
-

@@ -180,8 +180,8 @@ class Grid(col.MutableSequence):
         assert isinstance(other, Grid)
         from .grid_diff import grid_merge
         if 'diff_' in self:
-            return grid_merge(other, self)
-        return grid_merge(self, other)
+            return grid_merge(other.copy(), self)
+        return grid_merge(self.copy(), other)
 
     @property
     def version(self):  # pragma: no cover

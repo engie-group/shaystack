@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 import copy
 import datetime
 
-from hszinc import Grid, Version, VER_3_0, Quantity, Coordinate
+from hszinc.grid import Grid, Version, VER_3_0, Quantity, Coordinate
 from hszinc.sortabledict import SortableDict
 
 
@@ -61,6 +61,16 @@ def test_grid_getitem():
     row = {'test': 'This is a test'}
     g.append(row)
     assert g[0] is row
+
+
+def test_grid_getitem_with_id():
+    g = Grid()
+    g.column['id'] = {}
+    g.column['test'] = {}
+
+    row = {'id': 'myid', 'test': 'This is a test'}
+    g.append(row)
+    assert g['myid'] is row
 
 
 def test_grid_setitem():
@@ -133,16 +143,17 @@ def test_grid_setitem_notdict():
 
 
 def test_grid_del():
-    g = Grid()
+    g = Grid(columns=['id', 'test'])
     rows = [
         {'test': 1},
         {'test': 2},
-        {'test': 3}
+        {'test': 3},
+        {'id': 'myid'}
     ]
-    g.column['test'] = {}
     g.extend(rows)
-    assert len(g) == 3
+    assert len(g) == 4
     del g[1]
+    del g['myid']
     assert len(g) == 2
     assert g[0] is rows[0]
     assert g[1] is rows[2]
@@ -165,6 +176,35 @@ def test_grid_insert():
     assert g[1] is new_row
     assert g[2] is rows[1]
     assert g[3] is rows[2]
+
+
+def test_grid_extend():
+    g = Grid(columns=['id'])
+    g.reindex()
+    rows = [
+        {'id': 'id1'},
+        {'id': 'id2'},
+        {'id': 'id3'}
+    ]
+    g.extend(rows)
+    assert len(g) == 3
+    assert 'id1' in g._index
+    assert 'id2' in g._index
+
+
+def test_grid_copy():
+    g = Grid(columns=['test'])
+    rows = [
+        {'test': 1},
+        {'test': 2},
+        {'test': 3}
+    ]
+    g.extend(rows)
+    g2 = g.copy()
+    assert len(g2) == 3
+    del g[1]
+    assert len(g) == 2
+    assert len(g2) == 3
 
 
 def test_grid_str():
@@ -200,6 +240,37 @@ def test_grid_equal():
     assert ref == copy.deepcopy(ref)
 
 
+def test_grid_equal_with_None():
+    ref = Grid()
+    ref.column['test', 'none'] = {}
+    ref.extend([
+        {'test': 1},
+        {'test': 2},
+        {'test': 3}
+    ])
+    other = copy.deepcopy(ref)
+    other[0]['none'] = None
+    assert ref == other
+
+
+def test_grid_equal_with_other_order():
+    left = Grid()
+    left.column['test'] = {}
+    left.extend([
+        {'test': 1},
+        {'test': 2},
+        {'test': 3}
+    ])
+    right = Grid()
+    right.column['test'] = {}
+    right.extend([
+        {'test': 2},
+        {'test': 1},
+        {'test': 3}
+    ])
+    assert left == copy.deepcopy(right)
+
+
 def test_grid_equal_with_complex_datas():
     ref = Grid()
     ref.column['test'] = {}
@@ -216,6 +287,29 @@ def test_grid_equal_with_complex_datas():
         {'test': Quantity(500.000001, 'kg')},
         {'test': Coordinate(100.000001, 100.000001)},
         {'test': 1.000001},
+    ])
+
+    assert ref == similar
+
+
+def test_grid_equal_with_complex_datas_and_ids():
+    ref = Grid()
+    ref.column['id'] = {}
+    ref.column['test'] = {}
+    ref.extend([
+        {'id': 'id1', 'test': datetime.datetime(2010, 11, 28, 7, 23, 2, 600000)},
+        {'id': 'id2', 'test': Quantity(500, 'kg')},
+        {'id': 'id3', 'test': Coordinate(100, 100)},
+        {'id': 'id4', 'test': 1.0},
+    ])
+    similar = Grid()
+    similar.column['id'] = {}
+    similar.column['test'] = {}
+    similar.extend([
+        {'id': 'id1', 'test': datetime.datetime(2010, 11, 28, 7, 23, 2, 500000)},
+        {'id': 'id2', 'test': Quantity(500.000001, 'kg')},
+        {'id': 'id3', 'test': Coordinate(100.000001, 100.000001)},
+        {'id': 'id4', 'test': 1.000001},
     ])
 
     assert ref == similar
@@ -343,11 +437,11 @@ def test_grid_index():
     assert 'idx2' in grid._index
     assert grid.get('idx2')
     grid[0] = {'id': 'idx3'}
-    assert not 'idx1' in grid._index
+    assert 'idx1' not in grid._index
     assert 'idx3' in grid._index
     assert grid.get('idx3')
     del grid[1]
-    assert not 'idx2' in grid._index
+    assert 'idx2' not in grid._index
     grid.extend([
         {'id': 'idx5'},
         {'id': 'idx6'},
@@ -367,12 +461,52 @@ def test_slice():
     grid.append({'id': 'id3'})
 
     result = grid[0:2]
+    assert isinstance(result, Grid)
     assert len(result) == 2
     assert result['id1']
     assert result['id2']
 
 
-def test_grid_with_sequence():
-    grid = Grid(columns=["id", "site"])
-    assert grid.column["id"] == {}
-    assert grid.column["site"] == {}
+def test_grid_contain():
+    grid = Grid(columns={'id': {}, 'site': {}})
+    grid.append({'id': 'id1', })
+    grid.append({'id': 'id2'})
+    grid.append({'id': 'id3'})
+
+    assert 'id1' in grid
+    assert 'id2' in grid
+
+
+def test_grid_keys():
+    grid = Grid(columns={'id': {}, 'site': {}})
+    grid.append({'id': 'id1', })
+    grid.append({'id': 'id2'})
+    grid.append({'id': 'id3'})
+
+    assert sorted(list(grid.keys())) == sorted(['id1', 'id2', 'id3'])
+
+
+def test_grid_sub():
+    left = Grid(columns={"id": {}, "a": {}, "b": {}})
+    left.append({"id": "my_id", "a": 1})
+    right = Grid(columns={"id": {}, "a": {}, "b": {}})
+    right.append({"id": "my_id", "a": 3, "b": 4})
+
+    diff = right - left
+    assert isinstance(diff, Grid)
+    assert len(diff) == 1
+
+    diff = left - right
+    assert isinstance(diff, Grid)
+    assert len(diff) == 1
+
+
+def test_grid_add():
+    left = Grid(columns={"id": {}, "a": {}, "b": {}})
+    left.append({"id": "my_id", "a": 1, "b": 2})
+    right = Grid(columns={"id": {}, "a": {}, "b": {}})
+    right.append({"id": "my_id", "a": 3, "c": 4})
+
+    sum = left + right
+    assert isinstance(sum, Grid)
+    assert len(sum) == 1

@@ -13,9 +13,9 @@ import re
 
 import six
 
-from .grid import Grid
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
     MARKER, NA, REMOVE, STR_SUB, XStr
+from .grid import Grid
 from .version import LATEST_VER, VER_3_0
 from .zoneinfo import timezone_name
 
@@ -89,12 +89,21 @@ def dump_rows(grid):
     return list(map(functools.partial(dump_row, grid), grid))
 
 
+_EMPTY = "<empty>"
+
+
 def dump_row(grid, row):
-    return ','.join([dump_scalar(row.get(c), version=grid.version) for \
-                     c in list(grid.column.keys())])
+    if len(grid.column.keys()) > 1:
+        return ','.join([dump_scalar(row.get(c, _EMPTY), version=grid.version) for \
+                         c in grid.column.keys()])
+    else:  # If if ambiguous
+        return ','.join([dump_scalar(row.get(c, None), version=grid.version) for \
+                         c in grid.column.keys()])
 
 
 def dump_scalar(scalar, version=LATEST_VER):
+    if scalar is _EMPTY:
+        return ""
     if scalar is None:
         return 'N'
     elif scalar is NA:

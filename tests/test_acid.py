@@ -10,15 +10,19 @@ import string
 import sys
 
 import hszinc
-from hszinc import VER_3_0, MODE_ZINC, MODE_JSON, XStr, MODE_CSV
+from hszinc import VER_3_0, MODE_ZINC, MODE_JSON, XStr, MetadataObject, MODE_CSV
 from .pint_enable import to_pint
 
 STR_CHARSET = string.ascii_letters + string.digits + '\n\r\t\f\b'
 
-GENERATION_NUMBER = 10
-GENERATION_COLUMN = 5
-GENERATION_ROW = 10
-PERCENT_RECURSIVE = 5
+GENERATION_NUMBER, \
+GENERATION_COLUMN, \
+GENERATION_ROW, \
+PERCENT_GEN_ID, \
+PERCENT_RECURSIVE = (1, 2, 3, 30, 5)
+
+
+# PERCENT_RECURSIVE = (10, 5, 10, 30, 5)
 
 
 def gen_random_const():
@@ -70,10 +74,8 @@ def gen_random_uri():
 
 def gen_random_str(min_length=1, max_length=20, charset=STR_CHARSET):
     # Generate a random 20-character string
-    # The first 'A' is to refuse to have a string with only a number.
-    # It's ambiguous with CSV
-    return 'A' + (''.join([random.choice(charset) for c in range(0,
-                                                                 random.randint(min_length, max_length))]))
+    return u''.join([random.choice(charset) for c in range(0,
+                                                           random.randint(min_length, max_length))])
 
 
 def gen_random_date():
@@ -165,18 +167,28 @@ def gen_random_grid(metadata=True):
 
     # Randomised columns
     for n in range(0, random.randint(1, GENERATION_COLUMN)):
-        col_name = gen_random_name(existing=grid.column)
+        if "id" not in grid.column and random.randint(0, 100) < PERCENT_GEN_ID:
+            col_name = "id"
+        else:
+            col_name = gen_random_name(existing=grid.column)
         if metadata and random.choice([True, False]):
             grid.column[col_name] = gen_random_meta()
         else:
-            grid.column[col_name] = {}
+            grid.column[col_name] = MetadataObject()
 
     # Randomised rows
     for n in range(0, random.randint(0, GENERATION_ROW)):
         row = {}
         for c in grid.column.keys():
-            if random.choice([True, False]):
-                row[c] = gen_random_scalar()
+            if "id" == c:
+                while True:
+                    id_val = gen_random_str()
+                    if id_val not in grid:
+                        row["id"] = id_val
+                        break
+            else:
+                if random.choice([True, False]):
+                    row[c] = gen_random_scalar()
         grid.append(row)
 
     return grid
@@ -214,15 +226,19 @@ def _try_dump_parse(ref_grid, mode):
 
     # Parse the grid string
     try:
-        grid = hszinc.parse(grid_str, mode=mode, single=True)
+        grid = hszinc.parse(grid_str, mode=mode)
     except:
         print('Failed to parse dumped grid')
         dump_grid(ref_grid)
         print('--- Parsed string ---')
         print(grid_str)
         raise
-
     assert grid == ref_grid
+
+
+def try_dump_parse_json():
+    ref_grid = gen_random_grid()
+    _try_dump_parse(ref_grid, MODE_JSON)
 
 
 def try_dump_parse_zinc():
@@ -251,5 +267,13 @@ def test_loopback_json():
 
 
 def test_loopback_csv():
-    for trial in range(0, GENERATION_NUMBER):
-        try_dump_parse_csv()
+    if True:
+        # for x in range(0,1000):
+        x = 1
+        random.seed(x)
+        try:
+            for trial in range(0, GENERATION_NUMBER):
+                try_dump_parse_csv()
+        except:
+            print(x)
+            raise

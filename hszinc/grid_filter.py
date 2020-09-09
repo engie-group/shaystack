@@ -1,4 +1,7 @@
-import logging
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
 from datetime import datetime
 
 try:
@@ -14,8 +17,6 @@ from .datatypes import *
 from .filter_ast import *
 from .zincparser import DelimitedList, to_dict
 from .zoneinfo import timezone
-
-log = logging.getLogger("grid.filter")
 
 hs_filter = Forward()
 hs_strChar = Regex(r"([^\x00-\x1f\\\"]|\\[bfnrt\\\"$]|\\[uU][0-9a-fA-F]{4})")
@@ -278,18 +279,18 @@ def _generate_filter_in_python(node, def_filter):
         def_filter.append("_get_path(_grid, _entity, %s)" % node.path)
     elif isinstance(node, FilterBinary):
         def_filter.append("(")
-        _generate_filter_in_python(node.left, def_filter)
+        def_filter.extend(_generate_filter_in_python(node.left, []))
         def_filter.append(" " + node.op + " ")
-        _generate_filter_in_python(node.right, def_filter)
+        def_filter.extend(_generate_filter_in_python(node.right, []))
         def_filter.append(")")
     elif isinstance(node, FilterUnary):
         if node.op == "has":
             def_filter.append('(id(')
-            _generate_filter_in_python(node.right, def_filter)
+            def_filter.extend(_generate_filter_in_python(node.right, []))
             def_filter.append(') !=  id(NOT_FOUND))')
         elif node.op == "not":
             def_filter.append('(id(')
-            _generate_filter_in_python(node.right, def_filter)
+            def_filter.extend(_generate_filter_in_python(node.right, []))
             def_filter.append(") == id(NOT_FOUND))")
         else:  # pragma: no cover
             assert 0
@@ -301,7 +302,7 @@ def _generate_filter_in_python(node, def_filter):
 class _FnWrapper():
     def __init__(self, fun_name, function_template):
         self.fun_name = fun_name
-        exec(function_template, globals(), globals())
+        exec (function_template, globals(), globals())
 
     def __del__(self):  # pragma: no cover
         del globals()[self.fun_name]  # Remove generated function if the LRU ask that
@@ -316,7 +317,7 @@ def _filter_function(filter):
     def_filter = _generate_filter_in_python(parse_filter(filter)._head, [])
     fun_name = "_gen_hsfilter_" + str(_id_function)
     function_template = "def %s(_grid, _entity):\n  return " % fun_name + "".join(def_filter)
-    log.debug("\nGenerate:\n# " + filter + "\n" + function_template)
+    print("\nGenerate:\n# " + filter + "\n" + function_template)  # FIXME: debug
     _id_function += 1
     return _FnWrapper(fun_name, function_template)
 

@@ -4,6 +4,7 @@
 # (C) 2016 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+import copy
 
 from .datatypes import MARKER
 from .sortabledict import SortableDict
@@ -30,3 +31,6 @@ class MetadataObject(SortableDict):
 
         for (key, value) in items:
             self.append(key, value, replace=replace)
+
+    def copy(self):
+        return copy.deepcopy(self)

@@ -22,7 +22,6 @@ try:
     from .grid import Grid
     from .dumper import dump, dump_scalar
     from .parser import parse, parse_scalar, MODE_JSON, MODE_ZINC, MODE_CSV
-    #from .parser import  MODE_CSV
     from .grid_filter import parse_filter
     from .metadata import MetadataObject
     from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, NA, \
@@ -45,6 +44,6 @@ __author__ = 'VRT Systems'
 __copyright__ = 'Copyright 2016, VRT Systems'
 __credits__ = ['VRT Systems', 'Philippe Prados']
 __license__ = 'BSD'
-__version__ = '1.3.1'
+__version__ = '1.3.2a'
 __maintainer__ = 'VRT Systems'
 __email__ = 'support@vrt.com.au'

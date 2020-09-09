@@ -4,9 +4,12 @@
 # (C) 2016 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+import copy
 import datetime
 import numbers
 from collections import Sequence
+
+import six
 
 from .datatypes import NA, Quantity, Coordinate
 from .metadata import MetadataObject
@@ -36,6 +39,7 @@ class Grid(col.MutableSequence):
             version = Version(version)
         else:
             version = VER_2_0
+            # version = VER_3_0  # TODO: set default version to 3
         self._version = version
         self._version_given = version_given
 
@@ -74,6 +78,11 @@ class Grid(col.MutableSequence):
     @staticmethod
     def _approx_check(v1, v2):
         # Check types match
+        if isinstance(v1, numbers.Number) and isinstance(v2, numbers.Number):
+            return abs(v1 - v2) < 0.000001
+        if type(v1) != type(v2) and \
+                not (isinstance(v1, six.string_types) and isinstance(v2, six.string_types)):
+            return False
         if isinstance(v1, datetime.time):
             return v1.replace(microsecond=0) == v2.replace(microsecond=0)
         elif isinstance(v1, datetime.datetime):
@@ -86,12 +95,20 @@ class Grid(col.MutableSequence):
         elif isinstance(v1, Coordinate):
             return Grid._approx_check(v1.latitude, v2.latitude) and \
                    Grid._approx_check(v1.longitude, v2.longitude)
-        elif isinstance(v1, float) or isinstance(v2, float):
-            return abs(v1 - v2) < 0.000001
+        elif isinstance(v1, dict):
+            for k, v in v1.items():
+                if not Grid._approx_check(v, v2.get(k, None)):
+                    return False
+            for k, v in v2.items():
+                if k not in v1 and not Grid._approx_check(v1.get(k, None), v):
+                    return False
+            return True
         else:
             return v1 == v2
 
     def __eq__(self, other):
+        if not isinstance(other, Grid):
+            return False
         if set(self.metadata.keys()) != set(other.metadata.keys()):
             return False
         for key in self.metadata.keys():
@@ -102,7 +119,7 @@ class Grid(col.MutableSequence):
             return False
 
         for col in self.column.keys():
-            if not col in other.column or \
+            if col not in other.column or \
                     len(self.column[col]) != len(other.column[col]):
                 return False
             for key in self.column[col].keys():
@@ -112,11 +129,59 @@ class Grid(col.MutableSequence):
         if len(self) != len(other):
             return False
 
-        for (ref_row, parsed_row) in zip(self, other):
-            for col in self.column.keys():
-                if not Grid._approx_check(ref_row.get(col), parsed_row.get(col)):
-                    return False
+        pending_right_row = [id(row) for row in other if 'id' not in row]
+        for left in self._row:
+            # Search record in other with same values
+            find = False
+            if 'id' in left:
+                if left['id'] in other:
+                    if self._approx_check(left, other[left['id']]):
+                        find = True
+            else:
+                for right in other._row:
+                    if id(right) not in pending_right_row:
+                        continue
+                    if self._approx_check(left, right):
+                        find = True
+                        pending_right_row.remove(id(right))
+                        break
+            if not find:
+                return False
+
         return True
+
+    def __sub__(self, other):
+        """
+        Calculate the difference between two grid.
+        The result is a grid with only the attributs to update (change value, delete, etc)
+        If a row with id must be removed,
+        - if the row has an id, the result add a row with this id, and a tag 'remove_'
+        - if the row has not an id, the result add a row with all values of the original row, and a tag 'remove_'
+
+        It's possible to update all metadatas, the order of columns, add, remove or update some rows
+
+        It's possible to apply the result in a grid, with the add operator.
+        At all time, with gridA and gridB, gridA + (gridB - gridA) == gridB
+        """
+        assert isinstance(other, Grid)
+        from .grid_diff import grid_diff
+        return grid_diff(self, other)
+
+    def __add__(self, other):
+        """
+        Merge two grid.
+        The metadata can be modified with the values from other.
+        Some attributs can be removed if the other attributs is REMOVE.
+        If a row have a 'remove_' tag, the corresponding row was removed.
+
+        The result of __sub__() can be used to patch the current grid.
+        At all time, with gridA and gridB, gridA + (gridB - gridA) == gridB
+        """
+        assert isinstance(other, Grid)
+        from .grid_diff import grid_merge
+        if 'diff_' in self:
+            return grid_merge(other, self)
+        return grid_merge(self, other)
 
     @property
     def version(self):  # pragma: no cover
@@ -189,10 +254,23 @@ class Grid(col.MutableSequence):
                 self.reindex()
             return self._index[str(key)]
 
+    def __contains__(self, key):
+        if isinstance(key, numbers.Number):
+            return key >= 0 and key < len(self._row)
+        else:
+            if not self._index:
+                self.reindex()
+            return key in self._index
+
     def get(self, index, default=None):
         if not self._index:
             self.reindex()
         return self._index.get(str(index), default)
+
+    def keys(self):
+        if not self._index:
+            self.reindex()
+        return self._index.keys()
 
     def __len__(self):
         '''
@@ -208,19 +286,38 @@ class Grid(col.MutableSequence):
             raise TypeError('value must be a dict')
         for val in value.values():
             self._detect_or_validate(val)
-        if "id" in self._row[index]:
-            self._index.pop(self._row[index]['id'], None)
-        self._row[index] = value
-        if "id" in value:
-            self._index[str(value["id"])] = value
+        if isinstance(index, numbers.Number):
+            if "id" in self._row[index]:
+                self._index.pop(self._row[index]['id'], None)
+            self._row[index] = value
+            if "id" in value:
+                self._index[str(value["id"])] = value
+        else:
+            if not self._index:
+                self.reindex()
+            idx = list.index(self._row, self._index[index])
+            if "id" in self._row[idx]:
+                self._index.pop(self._row[idx]['id'], None)
+            self._row[idx] = value
+            if "id" in value:
+                self._index[str(value["id"])] = value
 
-    def __delitem__(self, index):
+    def __delitem__(self, key):
         '''
         Delete the row at index.
         '''
-        if "id" in self._row[index]:
-            self._index.pop(self._row[index]['id'], None)
-        del self._row[index]
+        if isinstance(key, numbers.Number):
+            if "id" in self._row[key] and self._index:
+                del self._index[self._row[key]['id']]
+            del self._row[key]
+        else:
+            if not self._index:
+                self.reindex()
+            self._row.remove(self._index[key])
+            self._index.pop(key)
+
+    def remove(self, key):
+        self.__delitem__(key)
 
     def insert(self, index, value):
         '''
@@ -249,10 +346,12 @@ class Grid(col.MutableSequence):
     def extend(self, values):
         super(Grid, self).extend(values)  # Python 2 compatible :-(
         # super().extend(values)  # Python 3+ :-)
-        if self._index:
-            for item in self._row:
-                if "id" in item:
-                    self._index[str(item["id"])] = item
+        for item in self._row:
+            if "id" in item:
+                self._index[str(item["id"])] = item
+
+    def copy(self):
+        return copy.deepcopy(self)
 
     def filter(self, filter, limit=0):
         '''

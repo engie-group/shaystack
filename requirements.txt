@@ -6,3 +6,4 @@ coveralls
 pint
 backports.functools_lru_cache
 csv23
+nose

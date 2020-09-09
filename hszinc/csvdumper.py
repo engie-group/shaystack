@@ -138,8 +138,7 @@ def dump_bool(bool_value, version=LATEST_VER):
 
 
 def dump_coord(coordinate, version=LATEST_VER):
-    return '"'+zinc_dump_scalar(coordinate)+'"'
-
+    return '"' + zinc_dump_scalar(coordinate) + '"'
 
 
 def dump_ref(ref, version=LATEST_VER):

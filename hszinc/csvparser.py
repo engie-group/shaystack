@@ -13,7 +13,7 @@ from io import StringIO
 
 from .datatypes import MARKER, Ref
 from .grid import Grid
-from .version import VER_3_0, LATEST_VER
+from .version import VER_3_0
 from .zincparser import parse_scalar as zinc_parse_scalar, ZincParseException
 
 
@@ -54,4 +54,3 @@ def parse_scalar(scalar, version):
         return zinc_parse_scalar(scalar, version)  # Date, Time, ... ?
     except ZincParseException:
         return scalar  # It's a simple string
-

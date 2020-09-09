@@ -392,7 +392,6 @@ class Bin(six.text_type):
     types.
     """
 
-    # TODO: This seems to be the MIME type, no idea where the data lives.
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__,
                            super(Bin, self).__repr__())
@@ -497,7 +496,7 @@ class Ref(object):
     A reference to an object in Project Haystack.
     """
 
-    # TODO: The grammar specifies that it can have a string following a space,
+    # The grammar specifies that it can have a string following a space,
     # but the documentation does not specify what this string encodes.  This is
     # distinct from the reference name itself immediately following the @
     # symbol.  I'm guessing it's some kind of value.

@@ -199,14 +199,18 @@ def test_grid_filter():
 
 
 def test_grid_specification_filter_sample():
-    grid = Grid(columns={'id': {}, 'site': {}, 'equip': {}, 'geoPostalCode': {}, 'ahu': {},
-                         'geoCity': {}, 'curVal': {}, 'hvac': {}, 'siteRef': {}})
+    grid = Grid(columns=['id', 'site', 'equip', 'geoPostalCode', 'ahu',
+                         'geoCity', 'curVal', 'hvac', 'siteRef'])
     grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
     grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
     grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
 
     # specification samples
+    result = grid.filter('site')
+    assert len(result) == 1
+    assert result[0]['site'] == MARKER
+
     result = grid.filter('geoPostalCode == "23220"')
     assert len(result) == 1
     assert result[0]['id'] == 'id2'
@@ -236,7 +240,9 @@ def test_grid_specification_filter_sample():
     result = grid.filter('site or equip')
     assert len(result) == 2
     assert result[0]['id'] == 'id1'
+    assert result[0]['site'] == MARKER
     assert result[1]['siteRef'] == Ref('id1')
+    assert result[1]['equip'] == MARKER
 
     result = grid.filter('equip and hvac')
     assert len(result) == 1

@@ -259,6 +259,18 @@ class _NotFoundValue():
     def __ne__(self, other):
         return False
 
+    def __lt__(self, other):
+        return False
+
+    def __le__(self, other):
+        return False
+
+    def __gt__(self, other):
+        return False
+
+    def __ge__(self, other):
+        return False
+
 
 NOT_FOUND = _NotFoundValue()
 
@@ -302,7 +314,7 @@ def _generate_filter_in_python(node, def_filter):
 class _FnWrapper():
     def __init__(self, fun_name, function_template):
         self.fun_name = fun_name
-        exec (function_template, globals(), globals())
+        exec(function_template, globals(), globals())
 
     def __del__(self):  # pragma: no cover
         del globals()[self.fun_name]  # Remove generated function if the LRU ask that
@@ -317,9 +329,16 @@ def _filter_function(filter):
     def_filter = _generate_filter_in_python(parse_filter(filter)._head, [])
     fun_name = "_gen_hsfilter_" + str(_id_function)
     function_template = "def %s(_grid, _entity):\n  return " % fun_name + "".join(def_filter)
-    print("\nGenerate:\n# " + filter + "\n" + function_template)  # FIXME: debug
+    # print("\nGenerate:\n# " + filter + "\n" + function_template)  # FIXME: debug
     _id_function += 1
     return _FnWrapper(fun_name, function_template)
+
+
+def filter_set_lru_size(lru_size):
+    """ Change the lru size for the compiled filter functions """
+    global _filter_function
+    original_function = _filter_function.__wrapped__
+    _filter_function = lru_cache(original_function, maxsize=lru_size)
 
 
 def filter_function(filter):

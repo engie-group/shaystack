@@ -6,6 +6,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 import copy
 import datetime
+import logging
 import numbers
 from collections import Sequence
 
@@ -14,6 +15,8 @@ import six
 from .datatypes import NA, Quantity, Coordinate
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
+
+log = logging.getLogger("ping.Provider")
 
 try:
     import collections.abc as col
@@ -291,7 +294,7 @@ class Grid(col.MutableSequence):
                 self._index.pop(self._row[index]['id'], None)
             self._row[index] = value
             if "id" in value:
-                self._index[str(value["id"])] = value
+                self._index[str(value["id"])] = value  # FIXME: id must be a Ref, not a string
         else:
             if not self._index:
                 self.reindex()
@@ -351,16 +354,19 @@ class Grid(col.MutableSequence):
                 self._index[str(item["id"])] = item
 
     def copy(self):
-        return copy.deepcopy(self)
+        cp = copy.deepcopy(self)
+        cp._index = None
 
     def filter(self, filter, limit=0):
         '''
         Return a filter version of this grid.
         Warning, use a grid.filter(...).deepcopy() if you not whant to share metadata, columns and rows)
         '''
+        assert isinstance(limit, numbers.Number)
+        assert limit >=0
         from .grid_filter import filter_function
         if filter.strip() == '':
-            if not limit:
+            if limit == 0:
                 return self
             else:
                 result = Grid(version=self.version, metadata=self.metadata, columns=self.column)

@@ -1,8 +1,0 @@
-{
-  "Parameters": {
-    "LOGLEVEL": "DEBUG",
-    "DEBUGGING": "false",
-    "NOCOMPRESS": "true",
-    "HAYSTACK_PROVIDER": "providers.ping.Provider"
-  }
-}

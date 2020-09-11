@@ -247,8 +247,10 @@ $RECYCLE.BIN/
 .pytype/
 
 .aws-sam
-out.json
+.out.json
 .start
 .make*
 PPR*
 .env
+# All generated files
+_*

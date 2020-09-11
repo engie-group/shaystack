@@ -41,7 +41,7 @@ def test_ops_with_zinc(apigw_event: LambdaProxyEvent):
     # THEN
     assert response["statusCode"] == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    ops_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
+    ops_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
     assert ops_grid[0]["name"] == "about"
     assert ops_grid[1]["name"] == "ops"
 
@@ -66,6 +66,6 @@ def test_ops(apigw_event: LambdaEvent, lambda_client: BaseClient) -> None:
     assert 'errorType' not in response, response["errorMessage"]
     assert response["statusCode"] == 200
     assert response["headers"]["Content-Type"].startswith("text/zinc")
-    ops_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
+    ops_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
     assert ops_grid[0]["name"] == "about"
     assert ops_grid[1]["name"] == "ops"

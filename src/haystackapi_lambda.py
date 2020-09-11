@@ -14,13 +14,16 @@ from typing import cast, Tuple, Optional
 from accept_types import get_best_match
 
 import hszinc  # type: ignore
-from hszinc import Grid, MODE_ZINC, VER_3_0
+from hszinc import Grid, MODE_ZINC, MODE_CSV, MODE_JSON, VER_3_0
 from http_tools import get_best_encoding_match
 from lambda_types import LambdaProxyEvent, LambdaProxyResponse, AttrDict, LambdaEvent, LambdaContext, \
     cast_lambda_proxy_event
 from providers.haystack_interface import get_provider, HaystackInterface
 
 _DEFAULT_VERSION = VER_3_0
+_DEFAULT_MIME_TYPE = MODE_CSV
+_DEFAULT_MIME_TYPE_WITH_META = MODE_ZINC
+
 NO_COMPRESS = os.environ.get("NOCOMPRESS", "true").lower() == "true"
 # See https://tinyurl.com/y8rgcw8p
 if os.environ.get("DEBUGGING", "false").lower() == "true":
@@ -35,13 +38,11 @@ if os.environ.get("DEBUGGING", "false").lower() == "true":
 log = logging.getLogger("haystack_api")
 log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
 
-_DEFAULT_MIME_TYPE = MODE_ZINC
 
 
 def _parse_request(event) -> Grid:
-    # log.debug(event)
-    if "Content-Type" not in event.headers:
-        raise ValueError("Content-Type must be set")
+    log.debug(event)
+
     if "Content-Encoding" in event.headers and event.isBase64Encoded:
         content_encoding = event.headers["Content-Encoding"]
         if content_encoding != "gzip":
@@ -50,8 +51,11 @@ def _parse_request(event) -> Grid:
         log.debug(f"decode body={body}")
         event.body = gzip.decompress(base64.b64decode(body)).decode("utf-8")
         event.isBase64Encoded = False
-    content_type = event.headers["Content-Type"]
-    grid = hszinc.parse(event.body, mode=content_type)[0]
+    if "Content-Type" not in event.headers:
+        grid = Grid(VER_3_0)
+    else:
+        content_type = event.headers["Content-Type"]
+        grid = hszinc.parse(event.body, mode=content_type)
     return grid
 
 
@@ -66,13 +70,18 @@ def _format_response(event, grid_response, status, default=None):
 
 
 def _dump_response(accept: str, grid: hszinc.Grid, default: Optional[str] = None) -> Tuple[str, str]:
-    accept_type = get_best_match(accept, ['*/*', 'text/zinc', 'application/json'])
-    if accept_type in ("text/zinc", "*/*"):
-        return ("text/zinc; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_ZINC))
-    elif accept_type == "application/json":
-        return ("application/json; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_JSON))
+    accept_type = get_best_match(accept, ['*/*', hszinc.MODE_CSV, hszinc.MODE_ZINC, hszinc.MODE_JSON])
+    if accept_type:
+        if accept_type in (_DEFAULT_MIME_TYPE, "*/*"):
+            return (_DEFAULT_MIME_TYPE + "; charset=utf-8", hszinc.dump(grid, mode=_DEFAULT_MIME_TYPE))
+        elif accept_type in (hszinc.MODE_ZINC):
+            return (hszinc.MODE_ZINC + "; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_ZINC))
+        elif accept_type == hszinc.MODE_JSON:
+            return (hszinc.MODE_JSON + "; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_JSON))
+        elif accept_type == hszinc.MODE_CSV:
+            return (hszinc.MODE_CSV + "; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_CSV))
     if default:
-        return ("text/zinc; charset=utf-8", hszinc.dump(grid, mode=default))
+        return (default + "; charset=utf-8", hszinc.dump(grid, mode=default))
 
     raise ValueError(f"Accept:{accept} not supported")  # TODO: must return error 406
 
@@ -94,6 +103,7 @@ def _compress_response(content_encoding: Optional[str], response: LambdaProxyRes
 
 def _get_provider() -> HaystackInterface:
     assert "HAYSTACK_PROVIDER" in os.environ, "Set 'HAYSTACK_PROVIDER' environment variable"
+    log.debug(f'Provider={os.environ["HAYSTACK_PROVIDER"]}')
     return get_provider(os.environ["HAYSTACK_PROVIDER"])
 
 
@@ -130,7 +140,7 @@ def about(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  
                                  columns=[
                                      ('id',
                                       [('meta', None)])])
-        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
+        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_META)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
@@ -155,7 +165,7 @@ def ops(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # 
                                  columns=[
                                      ('id',
                                       [('meta', None)])])
-        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
+        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_META)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
@@ -175,8 +185,9 @@ def formats(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:
                                             "send": {},
                                         })
             grid_response.extend([
-                {"mime": "text/zinc", "receive": hszinc.MARKER, "send": hszinc.MARKER},
-                {"mime": "application/json", "receive": hszinc.MARKER, "send": hszinc.MARKER},
+                {"mime": MODE_ZINC, "receive": hszinc.MARKER, "send": hszinc.MARKER},
+                {"mime": MODE_JSON, "receive": hszinc.MARKER, "send": hszinc.MARKER},
+                {"mime": MODE_CSV, "receive": hszinc.MARKER, "send": hszinc.MARKER},
             ])
         response = _format_response(event, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
@@ -190,7 +201,7 @@ def formats(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:
                                  columns=[
                                      ('id',
                                       [('meta', None)])])
-        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
+        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_META)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
@@ -204,14 +215,22 @@ def read(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  #
         # global _tcontext
         # FIXME _tcontext[0].context = context
         grid_request = _parse_request(event)
-        if 'filter' in grid_request[0]:
-            read_filter = grid_request[0]['filter']
+        if 'filter' in grid_request.column:
+            read_filter = grid_request[0].get('filter', '')
         else:
             read_filter = ''
-        if 'limit' in grid_request[0]:
+        if 'limit' in grid_request.column:
             limit = int(grid_request[0].get('limit', 0))
         else:
             limit = 0
+
+        # Priority of query string
+        if event.queryStringParameters:
+            if 'filter' in event.queryStringParameters:
+                read_filter = event.queryStringParameters['filter']
+            if 'limit' in event.queryStringParameters:
+                limit = int(event.queryStringParameters['limit'])
+
         grid_response = provider.read(read_filter, limit)
         assert grid_response is not None
         response = _format_response(event, grid_response, 200)
@@ -225,7 +244,7 @@ def read(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  #
                                  columns=[
                                      ('id',
                                       [('meta', None)])])
-        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
+        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_META)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
@@ -250,7 +269,7 @@ def nav(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # 
                                  columns=[
                                      ('id',
                                       [('meta', None)])])
-        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
+        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_META)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
@@ -276,7 +295,7 @@ def watch_sub(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyRespons
                                  columns=[
                                      ('id',
                                       [('meta', None)])])
-        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
+        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_META)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
@@ -301,7 +320,7 @@ def watch_unsub(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyRespo
                                  columns=[
                                      ('id',
                                       [('meta', None)])])
-        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
+        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_META)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
@@ -326,7 +345,7 @@ def watch_poll(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyRespon
                                  columns=[
                                      ('id',
                                       [('meta', None)])])
-        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
+        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_META)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
@@ -351,7 +370,7 @@ def point_write(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyRespo
                                  columns=[
                                      ('id',
                                       [('meta', None)])])
-        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
+        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_META)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
@@ -376,7 +395,7 @@ def his_read(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse
                                  columns=[
                                      ('id',
                                       [('meta', None)])])
-        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
+        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_META)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
@@ -388,6 +407,7 @@ def his_write(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyRespons
     try:
         provider = _get_provider()
         grid_request = _parse_request(event)
+        log.debug(grid_request)
         entity_id = grid_request[0]["id"]
         grid_response = provider.his_write(entity_id)
         assert grid_response is not None
@@ -402,7 +422,7 @@ def his_write(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyRespons
                                  columns=[
                                      ('id',
                                       [('meta', None)])])
-        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
+        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_META)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)
 
 
@@ -431,5 +451,5 @@ def invoke_action(_event: LambdaEvent,
                                  columns=[
                                      ('id',
                                       [('meta', None)])])
-        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE)
+        response = _format_response(event, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_META)
     return _compress_response(event.headers.get("Accept-Encoding", None), response)

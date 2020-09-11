@@ -45,7 +45,7 @@ def test_hisRead_with_zinc(apigw_event: LambdaProxyEvent):
     # THEN
     assert response["statusCode"] == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    read_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
+    read_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
     assert not len(read_grid)
 
 

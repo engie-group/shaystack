@@ -1,5 +1,5 @@
 {
-  "body": "ver:\"3.0\"\nfilter\n\"site\"\n",
+  "body": "ver:\"3.0\"\nfilter,limit\n\"site\",5\n",
   "resource": "/{proxy+}",
   "pathParameters": {
     "proxy": "/read"
@@ -53,5 +53,6 @@
     "X-Forwarded-For": "127.0.0.1, 127.0.0.2",
     "X-Forwarded-Port": "443",
     "X-Forwarded-Proto": "https"
-  }
+  },
+  "headers": {"Accept":"text/zinc"}
 }

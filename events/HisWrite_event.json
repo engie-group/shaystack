@@ -53,5 +53,6 @@
     "X-Forwarded-For": "127.0.0.1, 127.0.0.2",
     "X-Forwarded-Port": "443",
     "X-Forwarded-Proto": "https"
-  }
+  },
+  "headers": {"Accept":"text/zinc"}
 }

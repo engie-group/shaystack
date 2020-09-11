@@ -40,7 +40,7 @@ def test_formats_with_zinc(apigw_event: LambdaProxyEvent):
     # THEN
     assert response["statusCode"] == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    format_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
+    format_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
     assert format_grid[0]["mime"] == "text/zinc"
     assert format_grid[0]["receive"] == hszinc.MARKER
     assert format_grid[0]["send"] == hszinc.MARKER
@@ -69,10 +69,15 @@ def test_formats(apigw_event: LambdaEvent, lambda_client: BaseClient) -> None:
     assert 'errorType' not in response, response["errorMessage"]
     assert response["statusCode"] == 200
     assert response["headers"]["Content-Type"].startswith("text/zinc")
-    format_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
-    assert format_grid[0]["mime"] == "text/zinc"
+    format_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
+    assert format_grid[0]["mime"] == hszinc.MODE_ZINC
     assert format_grid[0]["receive"] == hszinc.MARKER
     assert format_grid[0]["send"] == hszinc.MARKER
-    assert format_grid[1]["mime"] == "application/json"
+
+    assert format_grid[1]["mime"] == hszinc.MODE_JSON
     assert format_grid[1]["receive"] == hszinc.MARKER
     assert format_grid[1]["send"] == hszinc.MARKER
+
+    assert format_grid[2]["mime"] == hszinc.MODE_CSV
+    assert format_grid[2]["receive"] == hszinc.MARKER
+    assert format_grid[2]["send"] == hszinc.MARKER

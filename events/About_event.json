@@ -33,5 +33,6 @@
     "stage": "prod"
   },
   "queryStringParameters": {
-  }
+  },
+  "headers": {"Accept":"text/zinc"}
 }

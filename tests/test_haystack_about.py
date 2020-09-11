@@ -40,7 +40,7 @@ def test_about_with_zinc(apigw_event: LambdaEvent) -> None:
     # THEN
     assert response["statusCode"] == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    about_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
+    about_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
     assert about_grid[0]["haystackVersion"] == '3.0'
 
 
@@ -51,9 +51,8 @@ def test_about_without_headers(apigw_event: LambdaEvent) -> None:
     context.function_name = "About"
     context.aws_request_id = inspect.currentframe().f_code.co_name
     grid: Grid = hszinc.Grid()
-    mime_type = "text/zinc"
+    mime_type = "text/csv"
     apigw_event["headers"] = dict()
-    # apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
 
     # WHEN
     response = haystackapi_lambda.about(apigw_event, context)
@@ -61,8 +60,8 @@ def test_about_without_headers(apigw_event: LambdaEvent) -> None:
     # THEN
     assert response["statusCode"] == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    about_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
-    assert about_grid[0]["haystackVersion"] == '3.0'
+    about_grid: Grid = hszinc.parse(response["body"], mime_type)
+    assert about_grid[0]["haystackVersion"] == 3.0
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
@@ -83,7 +82,7 @@ def test_about_with_multivalues_headers(apigw_event: LambdaEvent) -> None:
     # THEN
     assert response["statusCode"] == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    about_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
+    about_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
     assert about_grid[0]["haystackVersion"] == '3.0'
 
 
@@ -108,5 +107,5 @@ def test_about(apigw_event: LambdaEvent, lambda_client: BaseClient) -> None:
         print(response["errorMessage"])
     assert 'errorType' not in response, response["errorMessage"]
     assert response["statusCode"] == 200
-    about_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
+    about_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
     assert about_grid[0]["haystackVersion"] == '3.0'

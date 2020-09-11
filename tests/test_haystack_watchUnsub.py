@@ -44,7 +44,7 @@ def test_watchUnsub_with_zinc(apigw_event: LambdaProxyEvent):
     # THEN
     assert response["statusCode"] == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    watchUnsub_grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
+    watchUnsub_grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
     assert not len(watchUnsub_grid)
 
 

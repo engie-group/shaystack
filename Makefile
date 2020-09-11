@@ -10,12 +10,22 @@ endif
 endif
 
 include ./Project.variables
+# Override project variables
+ifneq (,$(wildcard .env))
+include .env
+endif
 
-# FIXME: PARQUET_URL
-PARQUET_URL=s3://cdh-poc1c3ntinel-325540/pfihospital/raw/id1234.parquet
-export AWS_REGION
+# TODO: tester sans le .env !
+
+# Export all project variables
+export PRJ
+export HAYSTACK_PROVIDER
+export HAYSTACK_URL
+export AWS_STACK
 export AWS_PROFILE
-
+export AWS_REGION
+export PYTHON_VERSION
+export LOGLEVEL
 
 PYTHON_SRC=src/*.py src/providers/*.py
 PYTHON_VERSION:=3.7
@@ -27,22 +37,16 @@ CONDA_PYTHON:=$(CONDA_PREFIX)/bin/python
 CONDA_ARGS?=
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 PIP_ARGS?=
-ENVS_JSON?=envs.json
+ENVS_JSON?=_envs.json
 HSZINC_VERSION:=*
 export ROOT_DIR:=$$PWD
 export AWS_DEFAULT_REGION:=$(AWS_REGION)
 AWS_API_HOME=https://$(shell aws apigateway get-rest-apis --output text --profile $(AWS_PROFILE) --region $(AWS_REGION) --query 'items[?name==`$(AWS_STACK)`].id').execute-api.$(AWS_REGION).amazonaws.com/Prod
 
-SAM_TEMPLATE=-t <(sed "s/{{HAYSTACK_URL}}/$$(sed 's/[\*\./]/\\&/g' <<<"$$HAYSTACK_URL")/g;s/{{HAYSTACK_PROVIDER}}/$$HAYSTACK_PROVIDER/g" <template.yaml)
+SAM_TEMPLATE=-t _template.yaml
 SAM_DEPLOY_PARAMETERS?=$(SAM_TEMPLATE)
 SAM_BUILD_PARAMETERS?=-s . $(SAM_TEMPLATE)
-#--parameter-overrides NOCOMPRESS=True
-
-# FIXME poc1 environment must be updated with CDH interface
-ENVS_RUN?=\
-	NOCOMPRESS=True \
-	AWS_PROFILE=poc1 \
-	HAYSTACK_PROVIDER=providers.url.Provider
+SAM_ENV?=--env-vars $(ENVS_JSON)
 
 CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
@@ -123,12 +127,27 @@ dump-%:
 	fi
 
 
+# -------------------------------------- ENV
+# Convert .env to json
+_envs.json: .env
+	@source .env
+	cat >_envs.json <<ENVS
+	{
+	"Parameters": {
+		"LOGLEVEL": "$${LOGLEVEL}",
+		"DEBUGGING": "false",
+		"NOCOMPRESS": "true",
+		"HAYSTACK_PROVIDER": "$${HAYSTACK_PROVIDER}",
+		"HAYSTACK_URL": "$${HAYSTACK_URL}"
+		}
+	}
+	ENVS
+
 # -------------------------------------- GIT
 .git/config: | .git .git/hooks/pre-push # Configure git
 	@git config --local core.autocrlf input
 	# Set tabulation to 4 when use 'git diff'
 	@git config --local core.page 'less -x4'
-
 
 # Rule to add a validation before pushing in master branch.
 # Use FORCE=y git push to override this validation.
@@ -238,7 +257,8 @@ clean-venv : clean-$(VENV)
 
 ## Clean project
 clean: async-stop
-	@rm -rf bin/* .aws-sam .mypy_cache .pytest_cache .start build nohup.out dist .make-* .pytype out.json
+	@rm -rf bin/* .aws-sam .mypy_cache .pytest_cache .start build nohup.out dist .make-* .pytype out.json \
+	_envs.json _template.yaml
 
 .PHONY: clean-all
 # Clean all environments
@@ -247,20 +267,19 @@ clean-all: clean remove-venv
 
 
 # -------------------------------------- Build
-# FIXME : Initialize .env
-.env:
-	@cat >.env << EndOfMessage
-	AWS_REGION=eu-west-3
-	AWS_PROFILE=haystackapi
-	LOGLEVEL=DEBUG
-	HAYSTACK_URL=s3://cdh-poc1c3ntinel-325540/pfihospital/raw/grid.json
-	HAYSTACK_PROVIDER=providers.url.Provider
-	EndOfMessage
+
+# Patch the template.yaml, to inject some environment variables
+_template.yaml: template.yaml _envs.json
+	@sed "1s/^/# WARNING: NEWER EDIT THIS FILE. EDIT template.yaml\n/;\
+	s/{{PYTHON_VERSION}}/$$PYTHON_VERSION/g; \
+	s/{{LOGLEVEL}}/$$LOGLEVEL/g; \
+	s/{{HAYSTACK_URL}}/$$(sed 's/[\*\./]/\\&/g' <<<"$${HAYSTACK_URL}")/g;\
+	s/{{HAYSTACK_PROVIDER}}/$${HAYSTACK_PROVIDER}/g" <template.yaml >_template.yaml
 
 # Template to build custom runtime.
 # See https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-custom-runtimes.html
 # See https://github.com/awslabs/aws-sam-cli/blob/de8ad8e78491ebfa884c02c3439c6bcecd08516b/designs/build_for_layers.md
-build-HSZincLayer: hszinc/dist/hszinc-*.whl template.yaml Makefile
+build-HSZincLayer: hszinc/dist/hszinc-*.whl _template.yaml Makefile
 	@if [[ -z "$(ARTIFACTS_DIR)" ]]
 	then
 		@$(VALIDATE_VENV)
@@ -297,7 +316,7 @@ libsnappy-$(PYTHON_VERSION).so:
 	sudo chown $(USER):$(USER) libsnappy-$(PYTHON_VERSION).so
 	chmod 600 libsnappy-$(PYTHON_VERSION).so
 
-build-ParquetLayer: layers/parquet/requirements.txt template.yaml Makefile libsnappy-$(PYTHON_VERSION).so
+build-ParquetLayer: layers/parquet/requirements.txt _template.yaml Makefile libsnappy-$(PYTHON_VERSION).so
 	@if [[ -z "$(ARTIFACTS_DIR)" ]]
 	then
 		@$(VALIDATE_VENV)
@@ -333,14 +352,14 @@ build-About: hszinc/dist/hszinc-*.whl
 
 
 ## Build specific lambda function (ie. build-About)
-build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) template.yaml
+build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) _template.yaml
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Build Lambda $*$(normal)"
 	umask 0
 	@sam build $(SAM_BUILD_PARAMETERS) $*
 
 .PHONY: dist build
-.aws-sam/build: $(REQUIREMENTS) $(PYTHON_SRC) hszinc template.yaml src/requirements.txt \
+.aws-sam/build: $(REQUIREMENTS) $(PYTHON_SRC) hszinc _template.yaml src/requirements.txt \
 	layers/base/requirements.txt layers/parquet/requirements.txt Makefile
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Build Lambdas$(normal)"
@@ -357,24 +376,25 @@ build: .aws-sam/build
 ## Build and invoke lambda function in local with associated events (ie. invoke-About)
 invoke-%: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
-	sam local invoke --env-vars $(ENVS_JSON) $* -e events/$*_event.json >out.json
-	jq -r <out.json
+	sam local invoke --env-vars $(ENVS_JSON) $* -e events/$*_event.json >.out.json
+	jq -r <.out.json
 	echo -e "\n$(green)Body:$(normal)"
-	jq -r '.body' <out.json
+	jq -r '.body' <.out.json
+	rm .out.json
 
 .PHONY: start-api async-start-api async-stop-api
 ## Start api
 start-api: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
 	@[ -e .start/start-api.pid ] && $(MAKE) async-stop-api || true
-	$(ENVS_RUN) sam local start-api --env-vars $(ENVS_JSON)
+	sam local start-api --env-vars $(ENVS_JSON)
 
 # Start local api emulator in background
 async-start-api: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
 	@[ -e .start/start-api.pid ] && echo -e "$(orange)Local API was allready started$(normal)" && exit
 	mkdir -p .start
-	$(ENVS_RUN) nohup sam local start-api --env-vars $(ENVS_JSON) >.start/start-api.log 2>&1 &
+	nohup sam local start-api --env-vars $(ENVS_JSON) >.start/start-api.log 2>&1 &
 	echo $$! >.start/start-api.pid
 	sleep 0.5
 	tail .start/start-api.log
@@ -389,12 +409,13 @@ async-stop-api:
 .PHONY: api
 ## Print API URL
 api:
-	@grep -oh 'https://$${ServerlessRestApi}[^"]*' template.yaml | \
+	@grep -oh 'https://$${ServerlessRestApi}[^"]*' _template.yaml | \
 	sed 's/https:..$${ServerlessRestApi}.*\//http:\/\/locahost:3000\//g'
 
-## Invoke local API (eg. make api-About)
+## Invoke local API (eg. make build api-About)
 api-%:
-	@GET_POST=$$(jq -r '.httpMethod' events/$*_event.json)
+	@$(VALIDATE_VENV)
+	GET_POST=$$(jq -r '.httpMethod' events/$*_event.json)
 	ops=$*
 	if [[ $$GET_POST == "GET" ]]
 	then
@@ -416,16 +437,15 @@ api-%:
 start-lambda: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
 	[ -e .start/start-lambda.pid ] && $(MAKE) async-stop-lambda || true
-	AWS_DEFAULT_PROFILE=poc1 $(ENVS_RUN) sam local start-lambda --env-vars $(ENVS_JSON)
+	AWS_DEFAULT_PROFILE=$(AWS_PROFILE) sam local start-lambda --env-vars $(ENVS_JSON)
 	sleep 2
 
 # Start lambda local emulator in background
-# FIXME async-start-lambda: $(ENVS_JSON) .aws-sam/build
-async-start-lambda: $(ENVS_JSON)
+async-start-lambda: $(ENVS_JSON) .aws-sam/build
 	@$(VALIDATE_VENV)
 	[ -e .start/start-lambda.pid ] && echo -e "$(orange)Local Lambda was allready started$(normal)" && exit
 	mkdir -p .start
-	$(ENVS_RUN) nohup sam local start-lambda --env-vars $(ENVS_JSON) >.start/start-lambda.log 2>&1 &
+	nohup sam local start-lambda --env-vars $(ENVS_JSON) >.start/start-lambda.log 2>&1 &
 	echo $$! >.start/start-lambda.pid
 	sleep 2
 	tail .start/start-lambda.log
@@ -492,7 +512,7 @@ aws-invoke-%: .aws-sam/build
 .PHONY: aws-api
 ## Print AWS API URL
 aws-api:
-	@grep -oh 'https://$${ServerlessRestApi}[^"]*' template.yaml | \
+	@grep -oh 'https://$${ServerlessRestApi}[^"]*' _template.yaml | \
 	sed 's/https:..$${ServerlessRestApi}.*\//$(subst  /,\/,$(AWS_API_HOME))\//g'
 
 ## Invoke API via AWS (eg. make aws-api-About)
@@ -517,6 +537,16 @@ aws-logs-%:
 	sam $(SAM_TEMPLATE) logs --profile $(AWS_PROFILE) --region $(AWS_REGION) -n $* --stack-name $(AWS_STACK) --tail
 
 
+## Print project variables
+dump-params:
+	@echo PRJ=$(PRJ)
+	echo HAYSTACK_PROVIDER=$(HAYSTACK_PROVIDER)
+	echo HAYSTACK_URL=$(HAYSTACK_URL)
+	echo AWS_STACK=$(AWS_STACK)
+	echo AWS_PROFILE=$(AWS_PROFILE)
+	echo AWS_REGION=$(AWS_REGION)
+
+
 ## Print AWS stack info
 aws-info:
 	@$(VALIDATE_VENV)
@@ -525,7 +555,7 @@ aws-info:
 .PHONY: unit-test
 .make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile .env
 	@$(VALIDATE_VENV)
-	PYTHONPATH=./src $(ENVS_RUN) python -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
+	PYTHONPATH=./src python -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
 	date >.make-unit-test
 ## Run unit test
 unit-test: .make-unit-test
@@ -534,7 +564,7 @@ unit-test: .make-unit-test
 .make-functional-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build Makefile envs.json tests/data
 	@$(VALIDATE_VENV)
 	$(MAKE) async-start-lambda
-	PYTHONPATH=./src $(ENVS_RUN) python -m pytest -m "functional" -s tests $(PYTEST_ARGS)
+	PYTHONPATH=./src python -m pytest -m "functional" -s tests $(PYTEST_ARGS)
 	date >.make-functional-test
 ## Run functional test
 functional-test: .make-functional-test
@@ -543,7 +573,7 @@ functional-test: .make-functional-test
 .make-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build
 	@$(VALIDATE_VENV)
 	$(MAKE) async-start-lambda
-	@PYTHONPATH=./src $(ENVS_RUN) python -m pytest -s tests $(PYTEST_ARGS)
+	@PYTHONPATH=./src python -m pytest -s tests $(PYTEST_ARGS)
 	@date >.make-unit-test
 	@date >.make-functional-test
 	@date >.make-test
@@ -593,7 +623,7 @@ typing: .make-typing
 lint: .make-lint
 
 
-.make-sam-validate:  aws-update-token template.yaml
+.make-sam-validate:  aws-update-token _template.yaml
 	@echo -e "$(cyan)Validate template.yaml...$(normal)"
 	@sam $(SAM_TEMPLATE) validate
 	@date >.make-sam-validate

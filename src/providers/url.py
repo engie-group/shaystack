@@ -28,7 +28,8 @@ from fastparquet.compression import compressions, decompressions
 from fastparquet.util import default_open
 from overrides import overrides
 from pandas import DataFrame
-from pandas.io.s3 import s3fs
+#from pandas.io.s3 import s3fs
+from s3fs import S3FileSystem
 from snappy import snappy
 
 import hszinc
@@ -68,9 +69,9 @@ class Provider(HaystackInterface):
         grid = get_default_about()
         grid[0].update({  # pylint: disable=no-member
             "productUri": Uri("http://localhost:80"),  # FIXME indiquer le port et trouver l'URL ?
-            "productVersion": None,  # FIXME: set the product version
+            "productVersion": "1.0",  # FIXME: set the product version
             "moduleName": "URLProvider",
-            "moduleVersion": None  # FIXME: set the module version
+            "moduleVersion": "1.0"  # FIXME: set the module version
         })
         return grid
 
@@ -87,7 +88,8 @@ class Provider(HaystackInterface):
         """ Implement Haystack 'read' """
         log.info("----> Call his_read API")
         grid = Provider._download_grid(self._get_url())
-
+        if True:
+            return grid  # FIXME
         for row in grid:
             if "id" in row and row["id"] == entity_id:
                 # Find entity
@@ -135,6 +137,7 @@ class Provider(HaystackInterface):
         assert uri
         parsed_uri = urlparse(uri, allow_fragments=False)
         if parsed_uri.scheme == "s3":
+            # TODO: manage version
             s3 = boto3.client('s3')
             stream = BytesIO()
             s3.download_fileobj(parsed_uri.netloc, parsed_uri.path[1:], stream)
@@ -152,12 +155,12 @@ class Provider(HaystackInterface):
             raise ValueError("Empty body not supported")
         mode = MODE_JSON if (uri.endswith(".json")) else MODE_ZINC
         log.debug(f"_download_grid({uri})")
-        return hszinc.parse(body, mode)[0]
+        return hszinc.parse(body, mode)
 
     @staticmethod
     @lru_cache(maxsize=LRU_SIZE)
     def _load_parquet(uri: str) -> array:
-        s3 = s3fs.S3FileSystem()
+        s3 = S3FileSystem()
 
         open_with = s3.open
         if uri.startswith("file://"):

@@ -44,13 +44,13 @@ def test_watchPoll_with_zinc(apigw_event: LambdaProxyEvent):
     # THEN
     assert response["statusCode"] == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    read_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
+    read_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
     assert not len(read_grid)
 
 
 # ------------------------------------------
 @pytest.mark.functional
-def test_whatPoll(apigw_event: LambdaEvent, lambda_client: BaseClient) -> None:
+def test_watchPoll(apigw_event: LambdaEvent, lambda_client: BaseClient) -> None:
     # GIVEN
     apigw_event["headers"]["Accept-Encoding"] = "gzip, deflate, sdch"
     # WHEN

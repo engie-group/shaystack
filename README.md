@@ -25,7 +25,13 @@ The code implements all Haystack [operations](https://project-haystack.org/doc/R
 This project contains source code and supporting files for a Haystack application 
 that you can deploy with the [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html). 
 
-To create your custom Haystack API, fork this projet and update the file `Project.variables` and/or create a new provider.
+To create your custom Haystack API:
+- fork this projet,
+- checkout an new branch
+- update the file `Project.variables` 
+- and/or create a new provider.
+
+You can update the code with a `git rebase`.
 
 The project includes the following files and folders:
 - src - Code for the application's Lambda function.
@@ -36,6 +42,8 @@ The project includes the following files and folders:
 - layers - A lamdda layers shared with other lambdas 
 - `template.yaml` - A template that defines the application's AWS resources.
 - `Makefile` - All tools to manage the project (Use 'make help')
+
+You can add some environement variable in `.env` file.
 
 The application uses several AWS resources, including Lambda functions and an API Gateway. 
 These resources are defined in the `template.yaml` file. 
@@ -217,6 +225,9 @@ To print the AWS API URL:
 make aws-api
 ```
 
+### Customize environment variable
+Copy `.env.template` to `.env` and update your local variables
+Theses variables are used in Makefile, when we start the api, etc.
 
 ## Cleanup
 To cleanup the project, use `make clean`.

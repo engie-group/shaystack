@@ -9,7 +9,7 @@ from botocore.client import BaseClient
 
 import hszinc
 from haystackapi_lambda import NO_COMPRESS
-from hszinc import Grid
+from hszinc import Grid, MODE_ZINC
 from lambda_types import LambdaProxyEvent, LambdaContext, LambdaEvent
 from src import haystackapi_lambda
 from test_tools import boto_client
@@ -45,7 +45,7 @@ def test_hisWrite_with_zinc(apigw_event: LambdaProxyEvent):
     # THEN
     assert response["statusCode"] == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    read_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)[0]
+    read_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
     assert not len(read_grid)
 
 
@@ -56,10 +56,10 @@ def test_hisWrite(apigw_event: LambdaEvent, lambda_client: BaseClient) -> None:
     apigw_event["headers"]["Accept-Encoding"] = "gzip, deflate, sdch"
     grid = hszinc.Grid(columns={'id': {}})
     grid.append({"id": 1234})
-    mime_type = "text/zinc"
+    mime_type = MODE_ZINC
     apigw_event["headers"]["Content-Type"] = mime_type
     apigw_event["headers"]["Accept"] = mime_type
-    apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
+    apigw_event["body"] = hszinc.dump(grid, mode=mime_type)
 
     # WHEN
     boto_response = lambda_client.invoke(

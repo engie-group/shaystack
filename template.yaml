@@ -10,11 +10,11 @@ Description: An implementation of Haystack protocol
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Runtime: python3.7
+    Runtime: python{{PYTHON_VERSION}}
     Timeout: 30
     Environment:
       Variables:
-        LOGLEVEL: DEBUG
+        LOGLEVEL: WARNING
         DEBUGGING: false
         NOCOMPRESS: true
         HAYSTACK_PROVIDER: {{HAYSTACK_PROVIDER}}
@@ -22,6 +22,7 @@ Globals:
     Layers:
       - !Ref BaseLayer
       - !Ref HSZincLayer
+      - !Ref ParquetLayer
 
 Resources:
   BaseLayer:
@@ -31,6 +32,7 @@ Resources:
       CompatibleRuntimes:
         - python3.7
         - python3.8
+        - python3.9
       Description: Custom Haystack Zinc libraries
       LayerName: base
       LicenseInfo: BSD 2
@@ -47,6 +49,7 @@ Resources:
       CompatibleRuntimes:
         - python3.7
         - python3.8
+        - python3.9
       Description: Parquet loader layers
       LayerName: parquet
       LicenseInfo: BSD 2
@@ -61,6 +64,7 @@ Resources:
       CompatibleRuntimes:
         - python3.7
         - python3.8
+        - python3.9
       Description: Custom Haystack Zinc libraries
       LayerName: HSZinc
       LicenseInfo: BSD 2

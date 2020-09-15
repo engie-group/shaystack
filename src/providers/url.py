@@ -2,23 +2,29 @@
 An Haystack Read-Only API provider to expose an Haystack file via the Haystack API.
 The file must be referenced with the environment variable HAYSTACK_URL and may be the form:
 - http://.../ontology.json
-- http://.../ontology.zinc
-- file://.../ontology.zinc
+- http://.../ontology.zinc.gz
+- file:///var/task/.../ontology.json
+- .../ontology.json (implicitly prefixed with file:///var/task/)
 - ftp://.../ontology.json
 - s3://.../ontology.zinc (the lambda functions must have the privilege to read this file)
 - ...
+
+If the suffix is .gz, the body is unzipped.
 
 The time series to manage history must be referenced in entity, with the `hisURI` tag.
 This URI may be relative and MUST be in parquet format. The `his_read` implementation,
 download the parquet file in memory and convert to the negotiated haystack format.
 """
+import gzip
 import logging
 import os
-import urllib
+import sys
+import urllib.request
 from array import array
 from datetime import datetime, MAXYEAR, timezone, MINYEAR
 from functools import lru_cache
 from io import BytesIO
+from pathlib import Path
 from typing import cast, Optional, Union, Tuple
 from urllib.parse import urlparse
 
@@ -33,7 +39,7 @@ from s3fs import S3FileSystem
 from snappy import snappy
 
 import hszinc
-from hszinc import Grid, Uri, MODE_ZINC, MODE_JSON
+from hszinc import Grid, Uri, MODE_ZINC, MODE_JSON, MODE_CSV
 from .haystack_interface import HaystackInterface, get_default_about
 
 Timestamp = datetime
@@ -141,20 +147,36 @@ class Provider(HaystackInterface):
             s3 = boto3.client('s3')
             stream = BytesIO()
             s3.download_fileobj(parsed_uri.netloc, parsed_uri.path[1:], stream)
-            return stream.getvalue()
+            data = stream.getvalue()
         else:
+            # Manage default cwd
+            if not parsed_uri.scheme:
+                uri = Path(__file__).parent.parent.joinpath(uri).as_uri()
             with urllib.request.urlopen(uri) as response:
-                return response.read()
-        # if (uri.endwith(".gz")): ...  # TODO : a valider
+                data = response.read()
+        if uri.endswith(".gz"):
+            log.debug("Je dezip")
+            return gzip.decompress(data)
+        else:
+            return data
 
     @staticmethod
     @lru_cache(maxsize=LRU_SIZE)
     def _download_grid(uri: str) -> Grid:
+        log.debug(f"_download_grid({uri})")
         body = Provider._download_uri(uri).decode("utf-8")
         if body is None:
             raise ValueError("Empty body not supported")
-        mode = MODE_JSON if (uri.endswith(".json")) else MODE_ZINC
-        log.debug(f"_download_grid({uri})")
+        if uri.endswith(".gz"):
+            uri = uri[:-3]
+        if uri.endswith(".json"):
+            mode = MODE_JSON
+        elif uri.endswith(".zinc"):
+            mode = MODE_ZINC
+        elif uri.endswith(".csv"):
+            mode = MODE_CSV
+        else:
+            raise ValueError("The file extension must be .(json|zinc|csv)[.gz]")
         return hszinc.parse(body, mode)
 
     @staticmethod

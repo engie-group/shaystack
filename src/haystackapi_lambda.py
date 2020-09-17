@@ -24,9 +24,11 @@ _DEFAULT_VERSION = VER_3_0
 _DEFAULT_MIME_TYPE = MODE_CSV
 _DEFAULT_MIME_TYPE_WITH_META = MODE_ZINC
 
+# TODO See https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings.html
 NO_COMPRESS = os.environ.get("NOCOMPRESS", "true").lower() == "true"
 # See https://tinyurl.com/y8rgcw8p
 if os.environ.get("DEBUGGING", "false").lower() == "true":
+    # https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/ecs-debug.html
     # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-debugging-python.html
     import ptvsd  # type: ignore
 
@@ -37,7 +39,6 @@ if os.environ.get("DEBUGGING", "false").lower() == "true":
 
 log = logging.getLogger("haystack_api")
 log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
-
 
 
 def _parse_request(event) -> Grid:
@@ -125,8 +126,11 @@ def about(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  
         event.body = codecs.decode(str.encode(event.body), 'unicode-escape')  # FIXME: pourquoi ?
     try:
         provider = _get_provider()
-        # event = cast(LambdaProxyEvent, AttrDict(_event))
-        grid_response = provider.about()
+        if event.headers['Host'].startswith("localhost:"):
+            home = "http://" + event.headers['Host'] + '/'
+        else:
+            home = 'https://' + event.headers['Host'] + '/' + event.requestContext['stage']
+        grid_response = provider.about(home)
         assert grid_response is not None
         response = _format_response(event, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
@@ -223,6 +227,8 @@ def read(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  #
             limit = int(grid_request[0].get('limit', 0))
         else:
             limit = 0
+        # TODO: manage date_version. Default now()
+        date_version=datetime.now()
 
         # Priority of query string
         if event.queryStringParameters:
@@ -231,10 +237,11 @@ def read(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  #
             if 'limit' in event.queryStringParameters:
                 limit = int(event.queryStringParameters['limit'])
 
-        grid_response = provider.read(read_filter, limit)
+        grid_response = provider.read(read_filter, limit, date_version)
         assert grid_response is not None
         response = _format_response(event, grid_response, 200)
-    except Exception:  # pylint: disable=broad-except
+    except Exception as e:  # pylint: disable=broad-except
+        log.debug(e)
         error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
                                  metadata={
                                      "err": hszinc.MARKER,

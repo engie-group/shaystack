@@ -72,77 +72,77 @@ Resources:
     Metadata:
       BuildMethod: makefile
 
-  About:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/
-      Handler: haystackapi_lambda.about
-      Description: Implement the Haystack `About` api
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaReadOnlyAccess
-        - AWSXrayWriteOnlyAccess
-      Environment:
-        Variables:
-          LOGLEVEL: WARNING
-          DEBUGGING: false
-          NOCOMPRESS: true
-      Tracing: Active
-      Events:
-        HaystackAboutGET:
-          Type: Api
-          Properties:
-            Path: /about
-            Method: get
-        HaystackAboutPOST:
-          Type: Api
-          Properties:
-            Path: /about
-            Method: post
-
-  Ops:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/
-      Handler: haystackapi_lambda.ops
-      Description: Implement the Haystack `Ops` api
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaReadOnlyAccess
-        - AWSXrayWriteOnlyAccess
-      Events:
-        HaystackAboutGET:
-          Type: Api
-          Properties:
-            Path: /ops
-            Method: get
-        HaystackAboutPOST:
-          Type: Api
-          Properties:
-            Path: /ops
-            Method: post
-
-  Formats:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/
-      Handler: haystackapi_lambda.formats
-      Description: Implement the Haystack `Formats` api
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaReadOnlyAccess
-        - AWSXrayWriteOnlyAccess
-      Events:
-        HaystackAboutGET:
-          Type: Api
-          Properties:
-            Path: /formats
-            Method: get
-        HaystackAboutPOST:
-          Type: Api
-          Properties:
-            Path: /formats
-            Method: post
+#  About:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      CodeUri: src/
+#      Handler: haystackapi_lambda.about
+#      Description: Implement the Haystack `About` api
+#      Policies:
+#        - AWSLambdaBasicExecutionRole
+#        - AWSLambdaReadOnlyAccess
+#        - AWSXrayWriteOnlyAccess
+#      Environment:
+#        Variables:
+#          LOGLEVEL: WARNING
+#          DEBUGGING: false
+#          NOCOMPRESS: true
+#      Tracing: Active
+#      Events:
+#        HaystackAboutGET:
+#          Type: Api
+#          Properties:
+#            Path: /about
+#            Method: get
+#        HaystackAboutPOST:
+#          Type: Api
+#          Properties:
+#            Path: /about
+#            Method: post
+#
+#  Ops:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      CodeUri: src/
+#      Handler: haystackapi_lambda.ops
+#      Description: Implement the Haystack `Ops` api
+#      Policies:
+#        - AWSLambdaBasicExecutionRole
+#        - AWSLambdaReadOnlyAccess
+#        - AWSXrayWriteOnlyAccess
+#      Events:
+#        HaystackAboutGET:
+#          Type: Api
+#          Properties:
+#            Path: /ops
+#            Method: get
+#        HaystackAboutPOST:
+#          Type: Api
+#          Properties:
+#            Path: /ops
+#            Method: post
+#
+#  Formats:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      CodeUri: src/
+#      Handler: haystackapi_lambda.formats
+#      Description: Implement the Haystack `Formats` api
+#      Policies:
+#        - AWSLambdaBasicExecutionRole
+#        - AWSLambdaReadOnlyAccess
+#        - AWSXrayWriteOnlyAccess
+#      Events:
+#        HaystackAboutGET:
+#          Type: Api
+#          Properties:
+#            Path: /formats
+#            Method: get
+#        HaystackAboutPOST:
+#          Type: Api
+#          Properties:
+#            Path: /formats
+#            Method: post
 
   Read:
     Type: AWS::Serverless::Function
@@ -167,113 +167,113 @@ Resources:
             Path: /read
             Method: post
 
-  Nav:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/
-      Handler: haystackapi_lambda.nav
-      Description: Implement the Haystack `nav` api
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaReadOnlyAccess
-        - AWSXrayWriteOnlyAccess
-      Events:
-        HaystackAboutGET:
-          Type: Api
-          Properties:
-            Path: /nav
-            Method: get
-        HaystackAboutPOST:
-          Type: Api
-          Properties:
-            Path: /nav
-            Method: post
+#  Nav:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      CodeUri: src/
+#      Handler: haystackapi_lambda.nav
+#      Description: Implement the Haystack `nav` api
+#      Policies:
+#        - AWSLambdaBasicExecutionRole
+#        - AWSLambdaReadOnlyAccess
+#        - AWSXrayWriteOnlyAccess
+#      Events:
+#        HaystackAboutGET:
+#          Type: Api
+#          Properties:
+#            Path: /nav
+#            Method: get
+#        HaystackAboutPOST:
+#          Type: Api
+#          Properties:
+#            Path: /nav
+#            Method: post
 
-  WatchSub:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/
-      Handler: haystackapi_lambda.watch_sub
-      Description: Implement the Haystack `watch_sub` api
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaReadOnlyAccess
-        - AWSXrayWriteOnlyAccess
-      Events:
-        #        HaystackAboutGET:
-        #          Type: Api
-        #          Properties:
-        #            Path: /watch_sub
-        #            Method: get
-        HaystackAboutPOST:
-          Type: Api
-          Properties:
-            Path: /watch_sub
-            Method: post
-
-  WatchUnsub:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/
-      Handler: haystackapi_lambda.watch_unsub
-      Description: Implement the Haystack `watch_unsub` api
-      # Function's execution role
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaReadOnlyAccess
-        - AWSXrayWriteOnlyAccess
-      Events:
-        #        HaystackAboutGET:
-        #          Type: Api
-        #          Properties:
-        #            Path: /watch_unsub
-        #            Method: get
-        HaystackAboutPOST:
-          Type: Api
-          Properties:
-            Path: /watch_unsub
-            Method: post
-
-  WatchPoll:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/
-      Handler: haystackapi_lambda.watch_poll
-      Description: Implement the Haystack `watch_poll` api
-      # Function's execution role
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaReadOnlyAccess
-        - AWSXrayWriteOnlyAccess
-      Events:
-        HaystackAboutGET:
-          Type: Api
-          Properties:
-            Path: /watch_poll
-            Method: get
-        HaystackAboutPOST:
-          Type: Api
-          Properties:
-            Path: /watch_poll
-            Method: post
-
-  PointWrite:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/
-      Handler: haystackapi_lambda.point_write
-      Description: Implement the Haystack `point_write` api
-      # Function's execution role
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaReadOnlyAccess
-        - AWSXrayWriteOnlyAccess
-      Events:
-        HaystackAboutPOST:
-          Type: Api
-          Properties:
-            Path: /point_write
-            Method: post
+#  WatchSub:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      CodeUri: src/
+#      Handler: haystackapi_lambda.watch_sub
+#      Description: Implement the Haystack `watch_sub` api
+#      Policies:
+#        - AWSLambdaBasicExecutionRole
+#        - AWSLambdaReadOnlyAccess
+#        - AWSXrayWriteOnlyAccess
+#      Events:
+#        #        HaystackAboutGET:
+#        #          Type: Api
+#        #          Properties:
+#        #            Path: /watch_sub
+#        #            Method: get
+#        HaystackAboutPOST:
+#          Type: Api
+#          Properties:
+#            Path: /watch_sub
+#            Method: post
+#
+#  WatchUnsub:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      CodeUri: src/
+#      Handler: haystackapi_lambda.watch_unsub
+#      Description: Implement the Haystack `watch_unsub` api
+#      # Function's execution role
+#      Policies:
+#        - AWSLambdaBasicExecutionRole
+#        - AWSLambdaReadOnlyAccess
+#        - AWSXrayWriteOnlyAccess
+#      Events:
+#        #        HaystackAboutGET:
+#        #          Type: Api
+#        #          Properties:
+#        #            Path: /watch_unsub
+#        #            Method: get
+#        HaystackAboutPOST:
+#          Type: Api
+#          Properties:
+#            Path: /watch_unsub
+#            Method: post
+#
+#  WatchPoll:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      CodeUri: src/
+#      Handler: haystackapi_lambda.watch_poll
+#      Description: Implement the Haystack `watch_poll` api
+#      # Function's execution role
+#      Policies:
+#        - AWSLambdaBasicExecutionRole
+#        - AWSLambdaReadOnlyAccess
+#        - AWSXrayWriteOnlyAccess
+#      Events:
+#        HaystackAboutGET:
+#          Type: Api
+#          Properties:
+#            Path: /watch_poll
+#            Method: get
+#        HaystackAboutPOST:
+#          Type: Api
+#          Properties:
+#            Path: /watch_poll
+#            Method: post
+#
+#  PointWrite:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      CodeUri: src/
+#      Handler: haystackapi_lambda.point_write
+#      Description: Implement the Haystack `point_write` api
+#      # Function's execution role
+#      Policies:
+#        - AWSLambdaBasicExecutionRole
+#        - AWSLambdaReadOnlyAccess
+#        - AWSXrayWriteOnlyAccess
+#      Events:
+#        HaystackAboutPOST:
+#          Type: Api
+#          Properties:
+#            Path: /point_write
+#            Method: post
 
   HisRead:
     Type: AWS::Serverless::Function
@@ -299,44 +299,44 @@ Resources:
           Properties:
             Path: /his_read
             Method: post
-
-  HisWrite:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/
-      Handler: haystackapi_lambda.his_write
-      Description: Implement the Haystack `his_write` api
-      # Function's execution role
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaReadOnlyAccess
-        - AWSXrayWriteOnlyAccess
-      Layers:
-        - !Ref ParquetLayer
-      Events:
-        HaystackAboutPOST:
-          Type: Api
-          Properties:
-            Path: /his_write
-            Method: post
-
-  InvokeAction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/
-      Handler: haystackapi_lambda.invoke_action
-      Description: Implement the Haystack `invoke_action` api
-      # Function's execution role
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaReadOnlyAccess
-        - AWSXrayWriteOnlyAccess
-      Events:
-        HaystackAboutPOST:
-          Type: Api
-          Properties:
-            Path: /invoke_action
-            Method: post
+#
+#  HisWrite:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      CodeUri: src/
+#      Handler: haystackapi_lambda.his_write
+#      Description: Implement the Haystack `his_write` api
+#      # Function's execution role
+#      Policies:
+#        - AWSLambdaBasicExecutionRole
+#        - AWSLambdaReadOnlyAccess
+#        - AWSXrayWriteOnlyAccess
+#      Layers:
+#        - !Ref ParquetLayer
+#      Events:
+#        HaystackAboutPOST:
+#          Type: Api
+#          Properties:
+#            Path: /his_write
+#            Method: post
+#
+#  InvokeAction:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      CodeUri: src/
+#      Handler: haystackapi_lambda.invoke_action
+#      Description: Implement the Haystack `invoke_action` api
+#      # Function's execution role
+#      Policies:
+#        - AWSLambdaBasicExecutionRole
+#        - AWSLambdaReadOnlyAccess
+#        - AWSXrayWriteOnlyAccess
+#      Events:
+#        HaystackAboutPOST:
+#          Type: Api
+#          Properties:
+#            Path: /invoke_action
+#            Method: post
 
 #Outputs:
 #  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

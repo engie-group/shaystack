@@ -18,7 +18,6 @@ download the parquet file in memory and convert to the negotiated haystack forma
 import gzip
 import logging
 import os
-import sys
 import urllib.request
 from array import array
 from datetime import datetime, MAXYEAR, timezone, MINYEAR
@@ -34,13 +33,13 @@ from fastparquet.compression import compressions, decompressions
 from fastparquet.util import default_open
 from overrides import overrides
 from pandas import DataFrame
-#from pandas.io.s3 import s3fs
+# from pandas.io.s3 import s3fs
 from s3fs import S3FileSystem
 from snappy import snappy
 
 import hszinc
-from hszinc import Grid, Uri, MODE_ZINC, MODE_JSON, MODE_CSV
-from .haystack_interface import HaystackInterface, get_default_about
+from hszinc import Grid, MODE_ZINC, MODE_JSON, MODE_CSV
+from .haystack_interface import HaystackInterface
 
 Timestamp = datetime
 
@@ -70,45 +69,50 @@ class Provider(HaystackInterface):
         return os.environ.get("HAYSTACK_URL", "")
 
     @overrides
-    def about(self) -> Grid:  # pylint: disable=no-self-use
+    def about(self, home: str) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'about' operation """
-        grid = get_default_about()
+        grid = super().about(home)
         grid[0].update({  # pylint: disable=no-member
-            "productUri": Uri("http://localhost:80"),  # FIXME indiquer le port et trouver l'URL ?
-            "productVersion": "1.0",  # FIXME: set the product version
+            "productVersion": "1.0",
             "moduleName": "URLProvider",
-            "moduleVersion": "1.0"  # FIXME: set the module version
+            "moduleVersion": "1.0"
         })
         return grid
 
     @lru_cache(maxsize=LRU_SIZE)
     @overrides
-    def read(self, grid_filter: str, limit: Optional[int]) -> Grid:  # pylint: disable=unused-argument
+    def read(self, grid_filter: str, limit: Optional[int], date_version: datetime) -> Grid:  # pylint: disable=unused-argument
         """ Implement Haystack 'read' """
+        log.info(f"----> Call read(grid_filter:'{grid_filter}', limit:{limit})")
         grid = Provider._download_grid(self._get_url())
-        return grid.filter(grid_filter, limit if limit else 0)
+        result = grid.filter(grid_filter, limit if limit else 0)
+        return result
 
     @overrides
     def his_read(self, entity_id: str,
                  dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]]) -> Grid:
         """ Implement Haystack 'read' """
-        log.info("----> Call his_read API")
+        log.info(f"----> Call his_read(id:{entity_id}, range:{dates_range}")
         grid = Provider._download_grid(self._get_url())
-        if True:
-            return grid  # FIXME
-        for row in grid:
-            if "id" in row and row["id"] == entity_id:
-                # Find entity
-                if "hisURI" not in row:
-                    raise ValueError(f"hisURI not found in entity {id}")
-                his_uri = str(row["hisURI"])
+        if entity_id in grid:
+            entity = grid[entity_id]
+
+            # Differents solution to retreive the history value
+            # 1. use a parquet file in the dir(HAYSTACK_URL)+entity['hisURI']
+            # 2. use history tag with a type Grid
+            if "hisURI" in entity:
+                log.debug("J'ai bien hisURL")
+                his_uri = str(entity["hisURI"])
                 base = self._get_url()
                 parsed_relative = urlparse(str(his_uri), allow_fragments=False)
                 if not parsed_relative.scheme:
                     his_uri = base[:base.rfind('/')] + "/" + his_uri
 
+                log.debug(f"hisURL complet est {his_uri}")
+
                 df = cast(DataFrame, Provider._load_parquet(his_uri))
-                history = []
+
+                history = Grid(columns=['ts', 'val'])
                 unit = None
                 min_date = datetime(MAXYEAR, 12, 31, tzinfo=timezone.utc)  # FIXME: Manage local or UTC ?
                 max_date = datetime(MINYEAR, 1, 1, tzinfo=timezone.utc)
@@ -116,21 +120,20 @@ class Provider(HaystackInterface):
                 for i in range(len(df)):
                     start_date = cast(Timestamp, df.loc[i, 'StartDate'].to_pydatetime()).replace(tzinfo=timezone.utc)
                     end_date = cast(Timestamp, df.loc[i, 'EndDate'].to_pydatetime()).replace(tzinfo=timezone.utc)
-                    history.append({"ts": end_date,  # TODO: optimize this code
-                                    "value": float(df.loc[i, 'Value'])
+                    history.append({"ts": end_date,
+                                    "val": float(df.loc[i, 'Value'])
                                     })
                     # TODO unit = row['Unit']
                     min_date = min(min_date, start_date)
                     max_date = max(max_date, end_date)
 
-                result = Grid(version=grid.version,
-                              metadata={"id": entity_id,
-                                        "hisStart": min_date,
-                                        "hisEnd": max_date,
-                                        "unit": unit},
-                              columns={"ts": {}, "val": {}})
-                result.extend(history)
-                return result
+                grid.metadata = {'id': '@' + entity_id,
+                                 'hisStart': min_date,
+                                 'hisEnd': max_date,
+                                 }
+                return history
+            elif 'history' in entity:
+                return entity['history']
         raise ValueError(f"id {entity_id} not found")
 
     @staticmethod
@@ -144,7 +147,40 @@ class Provider(HaystackInterface):
         parsed_uri = urlparse(uri, allow_fragments=False)
         if parsed_uri.scheme == "s3":
             # TODO: manage version
-            s3 = boto3.client('s3')
+            if False:
+                # https://docs.min.io/docs/how-to-use-aws-sdk-for-python-with-minio-server.html
+                bucket_name = 'haystackapi'
+
+                s3 = boto3.resource('s3')
+                versioning = s3.BucketVersioning(bucket_name)
+                # check status
+                log.debug(versioning.status)
+                # enable versioning
+                versioning.enable()
+
+                # Retreive object
+                # See https://avilpage.com/2019/07/aws-s3-bucket-objects-versions.html
+                # https://docs.min.io/docs/how-to-use-aws-sdk-for-python-with-minio-server.html
+                s3 = boto3.resource('s3',
+                                    endpoint_url='http://localhost:9000',
+                                    aws_access_key_id='YOUR-ACCESSKEYID',
+                                    aws_secret_access_key='YOUR-SECRETACCESSKEY',
+                                    config=Config(signature_version='s3v4'),
+                                    region_name='us-east-1')
+                versions = s3.list_object_versions(Bucket=bucket_name)
+                for version in versions:
+                    version_id = versions['Versions'][0]['VersionId']
+                    file_key = versions['Versions'][0]['Key']
+
+                    response = s3.get_object(
+                        Bucket=bucket_name,
+                        Key=file_key,
+                        VersionId=version_id,
+                    )
+                    data = response['Body'].read()
+                    print(data)
+            # AWS_S3_ENDPOINT may be http://localhost:9000 to use minio (make start-minio)
+            s3 = boto3.client('s3', endpoint_url=os.environ.get('AWS_S3_ENDPOINT', None))
             stream = BytesIO()
             s3.download_fileobj(parsed_uri.netloc, parsed_uri.path[1:], stream)
             data = stream.getvalue()

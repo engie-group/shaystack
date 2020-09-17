@@ -24,6 +24,7 @@ export HAYSTACK_URL
 export AWS_STACK
 export AWS_PROFILE
 export AWS_REGION
+export AWS_S3_ENDPOINT
 export PYTHON_VERSION
 export LOGLEVEL
 
@@ -41,7 +42,11 @@ ENVS_JSON?=_envs.json
 HSZINC_VERSION:=*
 export ROOT_DIR:=$$PWD
 export AWS_DEFAULT_REGION:=$(AWS_REGION)
+AWS_S3_ENDPOINT?=https://s3.$(AWS_REGION).amazonaws.com
 AWS_API_HOME=https://$(shell aws apigateway get-rest-apis --output text --profile $(AWS_PROFILE) --region $(AWS_REGION) --query 'items[?name==`$(AWS_STACK)`].id').execute-api.$(AWS_REGION).amazonaws.com/Prod
+AWS_ACCESS_KEY=$(shell aws configure get aws_access_key_id)
+AWS_SECRET_KEY=$(shell aws configure get aws_secret_access_key)
+MINIO_HOME=$(HOME)/.minio
 
 SAM_TEMPLATE=-t _template.yaml
 SAM_DEPLOY_PARAMETERS?=$(SAM_TEMPLATE)
@@ -457,8 +462,42 @@ async-stop-lambda:
 	[ -e .start/start-lambda.pid ] && kill `cat .start/start-lambda.pid` >/dev/null || true && echo -e "$(green)Local Lambda stopped$(normal)"
 	rm -f .start/start-lambda.pid
 
+# -------------------------------------- Minio
+# https://min.io/
+# See https://docs.min.io/docs/how-to-use-aws-sdk-for-python-with-minio-server.html
+.minio:
+	mkdir -p .minio
+
+start-minio: $(ENVS_JSON) .minio
+	docker run -p 9000:9000 \
+	-e "MINIO_ACCESS_KEY=$(AWS_ACCESS_KEY)" \
+	-e "MINIO_SECRET_KEY=$(AWS_SECRET_KEY)" \
+	-v  "$(MINIO_HOME):/data" \
+	minio/minio server /data
+
+async-stop-minio:
+	@$(VALIDATE_VENV)
+	[ -e .start/start-minio.pid ] && kill `cat .start/start-minio.pid` >/dev/null || true && echo -e "$(green)Local Minio stopped$(normal)"
+	rm -f .start/start-minio.pid
+
+async-start-minio: .minio .aws-sam/build
+	@$(VALIDATE_VENV)
+	[ -e .start/start-minio.pid ] && echo -e "$(orange)Local Minio was allready started$(normal)" && exit
+	mkdir -p .start
+	nohup  docker run -p 9000:9000 \
+	--name minio_$(PRJ) \
+	-e "MINIO_ACCESS_KEY=$(AWS_ACCESS_KEY)" \
+	-e "MINIO_SECRET_KEY=$(AWS_SECRET_KEY)" \
+	-v  "$(MINIO_HOME):/data" \
+	minio/minio server /data >.start/start-minio.log 2>&1 &
+	echo $$! >.start/start-minio.pid
+	sleep 2
+	tail .start/start-minio.log
+	echo -e "$(orange)Local Minio was started$(normal)"
+
+
 ## Stop all async server
-async-stop: async-stop-api async-stop-lambda
+async-stop: async-stop-api async-stop-lambda async-stop-minio
 
 # -------------------------------------- AWS
 # Initialise okta with default values

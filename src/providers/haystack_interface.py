@@ -15,41 +15,6 @@ from hszinc import Grid, VER_3_0, Uri
 EmptyGrid = Grid(version=VER_3_0, columns={"empty": {}})
 
 
-def get_default_about() -> Grid:
-    """
-    Return the default 'about' grid.
-    Must be completed with "productUri", "productVersion", "moduleName" abd "moduleVersion"
-    """
-    grid = hszinc.Grid(version=VER_3_0,
-                       columns={
-                           "haystackVersion": {},  # Str version of REST implementation
-                           "tz": {},  # Str of server's default timezone
-                           "serverName": {},  # Str name of the server or project database
-                           "serverTime": {},
-                           "serverBootTime": {},
-                           "productName": {},  # Str name of the server software product
-                           "productUri": {},
-                           "productVersion": {},
-                           # "moduleName": {},
-                           # module which implements Haystack server protocol if its a plug-in to the product
-                           # "moduleVersion": {}  # Str version of moduleName
-                       })
-    grid.append(
-        {
-            "haystackVersion": str(VER_3_0),
-            "tz": str(get_localzone()),
-            "serverName": "haystack_" + os.environ["AWS_REGION"],  # FIXME: set the server name
-            "serverTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
-            "serverBootTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
-            "productName": "AWS Lamda Haystack Provider",
-            "productUri": Uri("http://localhost:80"),  # FIXME indiquer le port et trouver l'URL ?
-            "productVersion": None,  # FIXME: set the product version
-            "moduleName": "URLProvider",
-            "moduleVersion": None  # FIXME: set the module version
-        })
-    return grid
-
-
 def _to_camel(snake_str: str) -> str:
     first, *others = snake_str.split('_')
     return ''.join([first.lower(), *map(str.title, others)])
@@ -103,17 +68,49 @@ class HaystackInterface(ABC):
         return grid
 
     @abstractmethod
-    def about(self) -> Grid:
-        """ Implement the Haystack 'about' ops """
-        raise NotImplementedError()
+    def about(self, home: str) -> Grid:
+        """ Implement the Haystack 'about' ops
+        :param home: Home url of the API
+        Return the default 'about' grid.
+        Must be completed with "productUri", "productVersion", "moduleName" abd "moduleVersion"
+        """
+        grid = hszinc.Grid(version=VER_3_0,
+                           columns=[
+                               "haystackVersion",  # Str version of REST implementation
+                               "tz",  # Str of server's default timezone
+                               "serverName",  # Str name of the server or project database
+                               "serverTime",
+                               "serverBootTime",
+                               "productName",  # Str name of the server software product
+                               "productUri",
+                               "productVersion",
+                               # "moduleName",
+                               # module which implements Haystack server protocol if its a plug-in to the product
+                               # "moduleVersion"  # Str version of moduleName
+                           ])
+        grid.append(
+            {
+                "haystackVersion": str(VER_3_0),
+                "tz": str(get_localzone()),
+                "serverName": "haystack_" + os.environ["AWS_REGION"],  # FIXME: set the server name
+                "serverTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
+                "serverBootTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
+                "productName": "AWS Lamdda Haystack Provider",
+                "productUri": Uri(home),
+                "productVersion": "0.1",
+                "moduleName": "URLProvider",
+                "moduleVersion": "0.1"
+            })
+        return grid
 
     # Implement this method, only if you want to limited the format negociation
     def formats(self) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'formats' ops """
         return None
 
-    @abstractmethod
-    def read(self, grid_filter: str, limit: int) -> Grid:  # pylint: disable=no-self-use
+    @abstractmethod  # FIXME: accept id parameter
+    def read(self, grid_filter: str, limit: int,
+             date_version: datetime = datetime.now()) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'read' ops """
         raise NotImplementedError()
 
@@ -167,6 +164,8 @@ class HaystackInterface(ABC):
         raise NotImplementedError()
 
 
+_providers = {}  # Cached providers
+
 def get_provider(class_str) -> HaystackInterface:
     """ Return an instance of the provider.
     If the provider is an abstract class, create a sub class with all the implementation
@@ -174,20 +173,23 @@ def get_provider(class_str) -> HaystackInterface:
     and detect the implemented and abstract methods.
     """
     try:
+        if class_str in _providers:
+            return _providers[class_str]
+
         module_path, class_name = class_str.rsplit('.', 1)
         module = import_module(module_path)
         # Get the abstract class name
         provider_class = getattr(module, class_name)
 
         # Implement all abstract method.
-        # Then, it's possible to generate the Ops dynamically
+        # Then, it's possible to generate the Ops operator dynamically
         class FullInterface(provider_class):  # pylint: disable=missing-class-docstring
-            def about(self) -> Grid:  # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().about()
+            def about(self, home: str) -> Grid:  # pylint: disable=missing-function-docstring,useless-super-delegation
+                return super().about(home)
 
-            def read(self, grid_filter: str, limit: int) -> Grid:
+            def read(self, grid_filter: str, limit: int, date_version: datetime = datetime.now()) -> Grid:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().read(grid_filter, limit)
+                return super().read(grid_filter, limit, date_version)
 
             def nav(self, nav_id: Grid) -> Any:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
@@ -224,6 +226,7 @@ def get_provider(class_str) -> HaystackInterface:
                               entity_id: str, action: str, params: Dict[str, Any]) -> Grid:
                 return super().invoke_action(entity_id, action, params)
 
-        return FullInterface()
+        _providers[class_str] = FullInterface()
+        return _providers[class_str]
     except (ImportError, AttributeError):
         raise ImportError(class_str)  # pylint: disable=raise-missing-from

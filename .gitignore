@@ -246,6 +246,7 @@ $RECYCLE.BIN/
 .idea/
 .pytype/
 
+.minio
 .aws-sam
 .out.json
 .start

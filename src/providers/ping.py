@@ -21,7 +21,7 @@ class Provider(HaystackInterface):
     """ Simple provider to implement all Haystack operation """
 
     @overrides
-    def about(self) -> Grid:  # pylint: disable=no-self-use
+    def about(self, home:  str) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'about' ops """
         log.info("about()")
         grid = get_default_about()
@@ -35,7 +35,7 @@ class Provider(HaystackInterface):
         return grid
 
     @overrides
-    def read(self, grid_filter: str, limit: int) -> Grid:  # pylint: disable=no-self-use
+    def read(self, grid_filter: str, limit: int, date_version: datetime) -> Grid:  # pylint: disable=no-self-use
         """ Return EmptyGrid """
         log.info(f'read(filter="{grid_filter}",limit={limit})')
         return PingGrid

@@ -144,28 +144,28 @@ Resources:
 #            Path: /formats
 #            Method: post
 
-  Read:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/
-      Handler: haystackapi_lambda.read
-      Description: Implement the Haystack `read` api
-      Role: arn:aws:iam::695980681400:role/cdh_poc1paris_59238
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaReadOnlyAccess
-        - AWSXrayWriteOnlyAccess
-      Events:
-        HaystackAboutGET:
-          Type: Api
-          Properties:
-            Path: /read
-            Method: get
-        HaystackAboutPOST:
-          Type: Api
-          Properties:
-            Path: /read
-            Method: post
+#  Read:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      CodeUri: src/
+#      Handler: haystackapi_lambda.read
+#      Description: Implement the Haystack `read` api
+#      Role: arn:aws:iam::695980681400:role/cdh_poc1paris_59238
+#      Policies:
+#        - AWSLambdaBasicExecutionRole
+#        - AWSLambdaReadOnlyAccess
+#        - AWSXrayWriteOnlyAccess
+#      Events:
+#        HaystackAboutGET:
+#          Type: Api
+#          Properties:
+#            Path: /read
+#            Method: get
+#        HaystackAboutPOST:
+#          Type: Api
+#          Properties:
+#            Path: /read
+#            Method: post
 
 #  Nav:
 #    Type: AWS::Serverless::Function
@@ -292,12 +292,12 @@ Resources:
         HaystackAboutGET:
           Type: Api
           Properties:
-            Path: /his_read
+            Path: /hisRead
             Method: get
         HaystackAboutPOST:
           Type: Api
           Properties:
-            Path: /his_read
+            Path: /hisRead
             Method: post
 #
 #  HisWrite:
@@ -317,7 +317,7 @@ Resources:
 #        HaystackAboutPOST:
 #          Type: Api
 #          Properties:
-#            Path: /his_write
+#            Path: /hisWrite
 #            Method: post
 #
 #  InvokeAction:
@@ -335,7 +335,7 @@ Resources:
 #        HaystackAboutPOST:
 #          Type: Api
 #          Properties:
-#            Path: /invoke_action
+#            Path: /invokeAction
 #            Method: post
 
 #Outputs:

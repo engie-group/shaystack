@@ -42,8 +42,6 @@ log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
 
 
 def _parse_request(event) -> Grid:
-    log.debug(event)
-
     if "Content-Encoding" in event.headers and event.isBase64Encoded:
         content_encoding = event.headers["Content-Encoding"]
         if content_encoding != "gzip":
@@ -389,10 +387,28 @@ def his_read(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse
     try:
         provider = _get_provider()
         grid_request = _parse_request(event)
-        grid_response = provider.his_read(grid_request, (datetime.now(), datetime.now()))  # FIXME: use dates
+        if 'id' in grid_request.column:
+            entity_id = grid_request[0].get('id', '')
+        else:
+            entity_id = ''
+        if 'range' in grid_request.column:
+            date_range = grid_request[0].get('range', '')
+        else:
+            date_range = ''
+
+        # Priority of query string
+        log.debug(f"queryString={event.queryStringParameters}")
+        if event.queryStringParameters:
+            if 'id' in event.queryStringParameters:
+                entity_id = event.queryStringParameters['id']
+            if 'range' in event.queryStringParameters:
+                date_range = event.queryStringParameters['range']  # FIXME: parse date_range
+        log.debug(f"id={entity_id} range={date_range}")
+        grid_response = provider.his_read(entity_id, (datetime.now(), datetime.now()))  # FIXME: use dates
         assert grid_response is not None
         response = _format_response(event, grid_response, 200)
-    except Exception:  # pylint: disable=broad-except
+    except Exception as e:  # pylint: disable=broad-except
+        log.debug(e)
         error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
                                  metadata={
                                      "err": hszinc.MARKER,

@@ -11,16 +11,18 @@ The file must be referenced with the environment variable HAYSTACK_URL and may b
 
 If the suffix is .gz, the body is unzipped.
 
-The time series to manage history must be referenced in entity, with the `hisURI` tag.
-This URI may be relative and MUST be in parquet format. The `his_read` implementation,
-download the parquet file in memory and convert to the negotiated haystack format.
+The time series to manage history must be referenced in entity:
+- with inner ontology in tag 'history' or
+- with the `hisURI` tag. This URI may be relative and MUST be in parquet format, with UTC date time.
+The `his_read` implementation, download the parquet file in memory, update the date/time to point timezone,
+or the referenced site timezone and convert to the negotiated haystack format.
 """
 import gzip
 import logging
 import os
 import urllib.request
 from array import array
-from datetime import datetime, MAXYEAR, timezone, MINYEAR
+from datetime import datetime, MAXYEAR, MINYEAR
 from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
@@ -28,17 +30,16 @@ from typing import cast, Optional, Union, Tuple
 from urllib.parse import urlparse
 
 import boto3
+import pytz
 from fastparquet import ParquetFile
 from fastparquet.compression import compressions, decompressions
-from fastparquet.util import default_open
 from overrides import overrides
 from pandas import DataFrame
 # from pandas.io.s3 import s3fs
-from s3fs import S3FileSystem
 from snappy import snappy
 
 import hszinc
-from hszinc import Grid, MODE_ZINC, MODE_JSON, MODE_CSV
+from hszinc import Grid, MODE_ZINC, MODE_JSON, MODE_CSV, VER_3_0
 from .haystack_interface import HaystackInterface
 
 Timestamp = datetime
@@ -81,9 +82,10 @@ class Provider(HaystackInterface):
 
     @lru_cache(maxsize=LRU_SIZE)
     @overrides
-    def read(self, grid_filter: str, limit: Optional[int], date_version: datetime) -> Grid:  # pylint: disable=unused-argument
+    def read(self, grid_filter: str, limit: Optional[int],
+             date_version: datetime) -> Grid:  # pylint: disable=unused-argument
         """ Implement Haystack 'read' """
-        log.info(f"----> Call read(grid_filter:'{grid_filter}', limit:{limit})")
+        log.debug(f"----> Call read(grid_filter:'{grid_filter}', limit:{limit})")
         grid = Provider._download_grid(self._get_url())
         result = grid.filter(grid_filter, limit if limit else 0)
         return result
@@ -91,50 +93,53 @@ class Provider(HaystackInterface):
     @overrides
     def his_read(self, entity_id: str,
                  dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]]) -> Grid:
-        """ Implement Haystack 'read' """
-        log.info(f"----> Call his_read(id:{entity_id}, range:{dates_range}")
+        """ Implement Haystack 'hisRead' """
+        log.debug(f"----> Call his_read(id:{entity_id}, range:{dates_range}")
         grid = Provider._download_grid(self._get_url())
-        if entity_id in grid:
+        if str(entity_id) in grid:  # FIXME: utiliser des ref pour les id d'indaxtion
             entity = grid[entity_id]
-
+            tz = entity.get("tz")
+            if not tz:  # Try with refSite
+                if 'refSite' in entity and entity['refSite'] in grid:
+                    tz = grid[entity['refSite']].get('tz', "GMT")
+                else:
+                    tz = 'GMT'
+            local_tz = pytz.timezone(tz)
             # Differents solution to retreive the history value
-            # 1. use a parquet file in the dir(HAYSTACK_URL)+entity['hisURI']
-            # 2. use history tag with a type Grid
-            if "hisURI" in entity:
-                log.debug("J'ai bien hisURL")
+            # 1. use a file in the dir(HAYSTACK_URL)+entity['hisURI']
+            if entity.get("hisURI"):
                 his_uri = str(entity["hisURI"])
                 base = self._get_url()
-                parsed_relative = urlparse(str(his_uri), allow_fragments=False)
+                parsed_relative = urlparse(his_uri, allow_fragments=False)
                 if not parsed_relative.scheme:
                     his_uri = base[:base.rfind('/')] + "/" + his_uri
 
-                log.debug(f"hisURL complet est {his_uri}")
+                df = cast(DataFrame, Provider._load_time_series(his_uri))
 
-                df = cast(DataFrame, Provider._load_parquet(his_uri))
-
-                history = Grid(columns=['ts', 'val'])
-                unit = None
-                min_date = datetime(MAXYEAR, 12, 31, tzinfo=timezone.utc)  # FIXME: Manage local or UTC ?
-                max_date = datetime(MINYEAR, 1, 1, tzinfo=timezone.utc)
+                history = Grid(version=VER_3_0, columns=['ts', 'val'])
+                min_date = datetime(MAXYEAR, 12, 31, tzinfo=local_tz)  # FIXME: Manage local or UTC ?
+                max_date = datetime(MINYEAR, 1, 1, tzinfo=local_tz)
 
                 for i in range(len(df)):
-                    start_date = cast(Timestamp, df.loc[i, 'StartDate'].to_pydatetime()).replace(tzinfo=timezone.utc)
-                    end_date = cast(Timestamp, df.loc[i, 'EndDate'].to_pydatetime()).replace(tzinfo=timezone.utc)
-                    history.append({"ts": end_date,
-                                    "val": float(df.loc[i, 'Value'])
+                    date = local_tz.localize(df.loc[i, 'date'].to_pydatetime())
+                    history.append({"ts": date,
+                                    "val": float(df.loc[i, 'val'])
                                     })
-                    # TODO unit = row['Unit']
-                    min_date = min(min_date, start_date)
-                    max_date = max(max_date, end_date)
+                    min_date = min(min_date, date)
+                    max_date = max(max_date, date)
 
-                grid.metadata = {'id': '@' + entity_id,
+                grid.metadata = {'id': entity_id,
                                  'hisStart': min_date,
                                  'hisEnd': max_date,
                                  }
                 return history
+            # 2. use the inner time series in tag history with the type 'Grid'
             elif 'history' in entity:
                 return entity['history']
-        raise ValueError(f"id {entity_id} not found")
+            else:
+                ValueError(f"{entity_id} has not history")
+        else:
+            raise ValueError(f"id '{entity_id}' not found")
 
     @staticmethod
     def _download_uri(uri: str) -> bytes:
@@ -144,6 +149,7 @@ class Provider(HaystackInterface):
         The suffix describe the file format.
         """
         assert uri
+        log.debug(f"_download_uri('{uri}')")
         parsed_uri = urlparse(uri, allow_fragments=False)
         if parsed_uri.scheme == "s3":
             # TODO: manage version
@@ -217,13 +223,8 @@ class Provider(HaystackInterface):
 
     @staticmethod
     @lru_cache(maxsize=LRU_SIZE)
-    def _load_parquet(uri: str) -> array:
-        s3 = S3FileSystem()
-
-        open_with = s3.open
-        if uri.startswith("file://"):
-            open_with = default_open
-            uri = uri[7:]
-        log.debug(f"_load_parquet({uri})")
-        pf = ParquetFile(uri, open_with=open_with)
+    def _load_time_series(uri: str) -> array:
+        log.debug(f"_load_time_series({uri})")
+        buf = Provider._download_uri(uri)
+        pf = ParquetFile(BytesIO(buf))
         return pf.to_pandas()

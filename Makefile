@@ -27,6 +27,7 @@ export AWS_REGION
 export AWS_S3_ENDPOINT
 export PYTHON_VERSION
 export LOGLEVEL
+export PARAMS
 
 PYTHON_SRC=src/*.py src/providers/*.py
 PYTHON_VERSION:=3.7
@@ -209,8 +210,7 @@ $(PIP_PACKAGE): $(CONDA_PYTHON) \
 	@$(VALIDATE_VENV)
 	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"
 	pip install -r src/requirements.txt
-	pip install -r layers/base/requirements.txt
-	pip install -r layers/parquet/requirements.txt
+	find layers -name requirements.txt -exec pip install -r {} \;
 	conda install -c conda-forge -c anaconda -y \
 		awscli aws-sam-cli make \
 		pytype ninja flake8 pylint pytest jq
@@ -288,7 +288,7 @@ build-HSZincLayer: hszinc/dist/hszinc-*.whl _template.yaml Makefile
 	@if [[ -z "$(ARTIFACTS_DIR)" ]]
 	then
 		@$(VALIDATE_VENV)
-		echo -e "$(green)Build Lambda HSZincLayer$(normal)"
+		echo -e "$(green)Build Lambda HSZincLayer...$(normal)"
 		umask 0
 		@sam build $(SAM_BUILD_PARAMETERS) HSZincLayer
 	else
@@ -325,7 +325,7 @@ build-ParquetLayer: layers/parquet/requirements.txt _template.yaml Makefile libs
 	@if [[ -z "$(ARTIFACTS_DIR)" ]]
 	then
 		@$(VALIDATE_VENV)
-		echo -e "$(green)Build Lambda HSZincLayer$(normal)"
+		echo -e "$(green)Build Lambda HSZincLayer...$(normal)"
 		umask 0
 		@sam build $(SAM_BUILD_PARAMETERS) HSZincLayer
 	else
@@ -343,7 +343,7 @@ build-About: hszinc/dist/hszinc-*.whl
 	@if [[ -z "$(ARTIFACTS_DIR)" ]]
 	then
 		@$(VALIDATE_VENV)
-		echo -e "$(green)Build Lambda HSZincLayer$(normal)"
+		echo -e "$(green)Build Lambda HSZincLayer...$(normal)"
 		umask 0
 		@sam build $(SAM_BUILD_PARAMETERS) HSZincLayer
 	else
@@ -359,7 +359,7 @@ build-About: hszinc/dist/hszinc-*.whl
 ## Build specific lambda function (ie. build-About)
 build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) _template.yaml
 	@$(VALIDATE_VENV)
-	echo -e "$(green)Build Lambda $*$(normal)"
+	echo -e "$(green)Build Lambda $*...$(normal)"
 	umask 0
 	@sam build $(SAM_BUILD_PARAMETERS) $*
 
@@ -367,7 +367,7 @@ build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) _template.yaml
 .aws-sam/build: $(REQUIREMENTS) $(PYTHON_SRC) hszinc _template.yaml src/requirements.txt \
 	layers/base/requirements.txt layers/parquet/requirements.txt Makefile
 	@$(VALIDATE_VENV)
-	echo -e "$(green)Build Lambdas$(normal)"
+	echo -e "$(green)Build Lambdas...$(normal)"
 	umask 0
 	sam build $(SAM_BUILD_PARAMETERS)
 	find .aws-sam -type f -exec chmod 644 {} \;
@@ -425,7 +425,7 @@ api-%:
 	if [[ $$GET_POST == "GET" ]]
 	then
 		curl -H "Accept: text/zinc" \
-			"http://localhost:3000/$${ops,}"
+			"http://localhost:3000/$${ops,}"$(PARAMS)
 	else
 		# Add trailing CR
 		BODY="$$(jq -r '.body' <events/Read_event.json)"$$'\n'
@@ -433,7 +433,7 @@ api-%:
 			-H "Content-Type:text/zinc" \
 			-X POST \
 			--data-binary "$${BODY}" \
-			"http://localhost:3000/$${ops,}"
+			"http://localhost:3000/$${ops,}"$(PARAMS)
 	fi
 
 

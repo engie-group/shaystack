@@ -34,5 +34,8 @@
   },
   "queryStringParameters": {
   },
-  "headers": {"Accept":"text/zinc"}
+  "headers": {
+    "Accept": "text/zinc",
+    "Content-Type": "text/zinc"
+  }
 }

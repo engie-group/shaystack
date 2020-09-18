@@ -54,5 +54,8 @@
     "X-Forwarded-Port": "443",
     "X-Forwarded-Proto": "https"
   },
-  "headers": {"Accept":"text/zinc"}
+  "headers": {
+    "Accept": "text/zinc",
+    "Content-Type": "text/zinc"
+  }
 }

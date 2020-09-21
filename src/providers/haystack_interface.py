@@ -173,6 +173,8 @@ def get_provider(class_str) -> HaystackInterface:
     and detect the implemented and abstract methods.
     """
     try:
+        if not class_str.endWith(".Provider"):
+            class_str = class_str + ".Provider"
         if class_str in _providers:
             return _providers[class_str]
 

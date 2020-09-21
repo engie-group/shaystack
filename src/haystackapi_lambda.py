@@ -120,6 +120,8 @@ _tcontext = [
 def about(_event: LambdaEvent, context: LambdaContext) -> LambdaProxyResponse:  # pylint: disable=unused-argument
     """ Implement Haystack 'about' with AWS Lambda """
     event = cast_lambda_proxy_event(_event)
+    log.debug(f'HAYSTACK_PROVIDER={os.environ["HAYSTACK_PROVIDER"]}')
+    log.debug(f'HAYSTACK_URL={os.environ["HAYSTACK_URL"]}')
     if event.body:
         event.body = codecs.decode(str.encode(event.body), 'unicode-escape')  # FIXME: pourquoi ?
     try:

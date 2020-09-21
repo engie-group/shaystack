@@ -1,9 +1,11 @@
 # Set here, the specific variable for the project
 PRJ=haystackapi
-HAYSTACK_PROVIDER=providers.ping.Provider
-HAYSTACK_URL=
-AWS_STACK=$(PRJ)
-AWS_PROFILE=haystackapi
-AWS_REGION=eu-west-3
+USE_OKTA=Y
+#OKTA_USERNAME=--username XXXX
+HAYSTACK_PROVIDER=providers.url
+HAYSTACK_URL=data/marriot.json
+AWS_PROFILE=alpha-dev
+AWS_STACK=$(AWS_PROFILE)-$(PRJ)
+AWS_REGION=us-east-2
 LOGLEVEL=WARNING
-URL_PARAMS=?id=@id1
+URL_PARAMS=?id=@point_elec_397691

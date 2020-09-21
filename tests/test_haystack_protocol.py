@@ -22,7 +22,7 @@ def lambda_client() -> BaseClient:
     return boto_client()
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping'})
 def test_negociation_with_zinc(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
@@ -44,7 +44,7 @@ def test_negociation_with_zinc(apigw_event: LambdaProxyEvent):
     parse(response["body"], MODE_ZINC)
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping'})
 def test_negociation_with_json(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
@@ -66,7 +66,7 @@ def test_negociation_with_json(apigw_event: LambdaProxyEvent):
     parse(response["body"], mime_type)
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping'})
 def test_negociation_zinc_without_content_type(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
@@ -87,7 +87,7 @@ def test_negociation_zinc_without_content_type(apigw_event: LambdaProxyEvent):
     grid: Grid = parse(response["body"], mime_type)
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping'})
 def test_negociation_json_without_content_type(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
@@ -108,7 +108,7 @@ def test_negociation_json_without_content_type(apigw_event: LambdaProxyEvent):
     assert "err" in error_grid.metadata
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping'})
 def test_negociation_json_with_unknown_content_type(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
@@ -130,7 +130,7 @@ def test_negociation_json_with_unknown_content_type(apigw_event: LambdaProxyEven
     assert "err" in error_grid.metadata
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping'})
 def test_negociation_without_accept(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
@@ -151,7 +151,7 @@ def test_negociation_without_accept(apigw_event: LambdaProxyEvent):
     assert response.headers["Content-Type"].startswith(mime_type)  # Default value
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping'})
 def test_negociation_with_invalide_accept(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
@@ -173,7 +173,7 @@ def test_negociation_with_invalide_accept(apigw_event: LambdaProxyEvent):
     assert "err" in error_grid.metadata
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping'})
 def test_negociation_with_navigator_accept(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
@@ -196,7 +196,7 @@ def test_negociation_with_navigator_accept(apigw_event: LambdaProxyEvent):
     parse(response["body"], mime_type)
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping'})
 def test_negociation_with_complex_accept(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
@@ -217,7 +217,7 @@ def test_negociation_with_complex_accept(apigw_event: LambdaProxyEvent):
     assert response.headers["Content-Type"].startswith(mime_type)
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping'})
 def test_negociation_with_zinc_to_json(apigw_event: LambdaProxyEvent):
     # GIVEN
     context = LambdaContext()
@@ -239,7 +239,7 @@ def test_negociation_with_zinc_to_json(apigw_event: LambdaProxyEvent):
     parse(response["body"], mime_type)
 
 # TODO: Test encoding
-# @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
+# @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping'})
 # def test_negociation_extend_with_gzip_encoding_for_result(apigw_event: LambdaProxyEvent):
 #     # GIVEN
 #     context = LambdaContext()
@@ -268,7 +268,7 @@ def test_negociation_with_zinc_to_json(apigw_event: LambdaProxyEvent):
 #     parse(body, MODE_ZINC)
 
 
-# @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
+# @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping'})
 # def test_negociation_extend_with_gzip_encoding_for_request(apigw_event: LambdaProxyEvent):
 #     # GIVEN
 #     context = LambdaContext()
@@ -293,7 +293,7 @@ def test_negociation_with_zinc_to_json(apigw_event: LambdaProxyEvent):
 #     parse(response["body"], MODE_ZINC)
 
 
-# @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping.Provider'})
+# @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping'})
 # def test_negociation_extend_with_xxx_encoding_for_request(apigw_event: LambdaProxyEvent):
 #     # GIVEN
 #     context = LambdaContext()

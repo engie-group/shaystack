@@ -95,19 +95,21 @@ class Provider(HaystackInterface):
                  dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]]) -> Grid:
         """ Implement Haystack 'hisRead' """
         log.debug(f"----> Call his_read(id:{entity_id}, range:{dates_range}")
+
         grid = Provider._download_grid(self._get_url())
         if str(entity_id) in grid:  # FIXME: utiliser des ref pour les id d'indaxtion
             entity = grid[entity_id]
             tz = entity.get("tz")
-            if not tz:  # Try with refSite
-                if 'refSite' in entity and entity['refSite'] in grid:
-                    tz = grid[entity['refSite']].get('tz', "GMT")
+            if not tz:  # Try with siteRef PPR: try all link ? Recursive ?
+                if 'siteRef' in entity and entity['siteRef'] in grid:
+                    tz = grid[entity['siteRef']].get('tz', "GMT")
                 else:
                     tz = 'GMT'
-            local_tz = pytz.timezone(tz)
-            # Differents solution to retreive the history value
+            local_tz = pytz.timezone(str(hszinc.zoneinfo.timezone(tz, VER_3_0)))
+            log.debug(f"local_tz={local_tz}")
+            # Different solution to retrieve the history value
             # 1. use a file in the dir(HAYSTACK_URL)+entity['hisURI']
-            if entity.get("hisURI"):
+            if "hisURI" in entity:
                 his_uri = str(entity["hisURI"])
                 base = self._get_url()
                 parsed_relative = urlparse(his_uri, allow_fragments=False)
@@ -121,7 +123,7 @@ class Provider(HaystackInterface):
                 max_date = datetime(MINYEAR, 1, 1, tzinfo=local_tz)
 
                 for i in range(len(df)):
-                    date = local_tz.localize(df.loc[i, 'date'].to_pydatetime())
+                    date = local_tz.localize(df.loc[i, 'date'].to_pydatetime(), local_tz)
                     history.append({"ts": date,
                                     "val": float(df.loc[i, 'val'])
                                     })
@@ -133,7 +135,7 @@ class Provider(HaystackInterface):
                                  'hisEnd': max_date,
                                  }
                 return history
-            # 2. use the inner time series in tag history with the type 'Grid'
+            # 2. use the inner time series in tag 'history' with the type 'Grid'
             elif 'history' in entity:
                 return entity['history']
             else:

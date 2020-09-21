@@ -28,6 +28,7 @@ export AWS_S3_ENDPOINT
 export PYTHON_VERSION
 export LOGLEVEL
 export PARAMS
+export SAM_CLI_TELEMETRY
 
 PYTHON_SRC=src/*.py src/providers/*.py
 PYTHON_VERSION:=3.7
@@ -41,6 +42,7 @@ PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 PIP_ARGS?=
 ENVS_JSON?=_envs.json
 HSZINC_VERSION:=*
+OKTA_USERNAME?=
 export ROOT_DIR:=$$PWD
 export AWS_DEFAULT_REGION:=$(AWS_REGION)
 AWS_S3_ENDPOINT?=https://s3.$(AWS_REGION).amazonaws.com
@@ -49,7 +51,7 @@ AWS_ACCESS_KEY=$(shell aws configure get aws_access_key_id)
 AWS_SECRET_KEY=$(shell aws configure get aws_secret_access_key)
 MINIO_HOME=$(HOME)/.minio
 
-SAM_TEMPLATE=-t _template.yaml
+SAM_TEMPLATE=-t template.yaml
 SAM_DEPLOY_PARAMETERS?=$(SAM_TEMPLATE)
 SAM_BUILD_PARAMETERS?=-s . $(SAM_TEMPLATE)
 SAM_ENV?=--env-vars $(ENVS_JSON)
@@ -214,7 +216,10 @@ $(PIP_PACKAGE): $(CONDA_PYTHON) \
 	conda install -c conda-forge -c anaconda -y \
 		awscli aws-sam-cli make \
 		pytype ninja flake8 pylint pytest jq
+
+ifeq ($(USE_OKTA),Y)
 	pip install gimme-aws-creds
+endif
 	echo -e "$(cyan)Build dependencies updated$(normal)"
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	pip install -r src/requirements.txt
@@ -263,7 +268,7 @@ clean-venv : clean-$(VENV)
 ## Clean project
 clean: async-stop
 	@rm -rf bin/* .aws-sam .mypy_cache .pytest_cache .start build nohup.out dist .make-* .pytype out.json \
-	_envs.json _template.yaml
+		_envs.json
 
 .PHONY: clean-all
 # Clean all environments
@@ -271,20 +276,18 @@ clean-all: clean remove-venv
 	@rm libsnappy-$(PYTHON_VERSION).so
 
 
-# -------------------------------------- Build
+## Run bash in an AWS lambda image
+docker-bash:
+	docker run -it lambci/lambda:build-python$(PYTHON_VERSION) bash
 
-# Patch the template.yaml, to inject some environment variables
-_template.yaml: template.yaml _envs.json
-	@sed "1s/^/# WARNING: NEWER EDIT THIS FILE. EDIT template.yaml\n/;\
-	s/{{PYTHON_VERSION}}/$$PYTHON_VERSION/g; \
-	s/{{LOGLEVEL}}/$$LOGLEVEL/g; \
-	s/{{HAYSTACK_URL}}/$$(sed 's/[\*\./]/\\&/g' <<<"$${HAYSTACK_URL}")/g;\
-	s/{{HAYSTACK_PROVIDER}}/$${HAYSTACK_PROVIDER}/g" <template.yaml >_template.yaml
+tests/data: tests/data/grid.json tests/data/id1234.parquet
+
+# -------------------------------------- Build
 
 # Template to build custom runtime.
 # See https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-custom-runtimes.html
 # See https://github.com/awslabs/aws-sam-cli/blob/de8ad8e78491ebfa884c02c3439c6bcecd08516b/designs/build_for_layers.md
-build-HSZincLayer: hszinc/dist/hszinc-*.whl _template.yaml Makefile
+build-HSZincLayer: hszinc/dist/hszinc-*.whl template.yaml Makefile
 	@if [[ -z "$(ARTIFACTS_DIR)" ]]
 	then
 		@$(VALIDATE_VENV)
@@ -300,17 +303,6 @@ build-HSZincLayer: hszinc/dist/hszinc-*.whl _template.yaml Makefile
 	fi
 
 
-## Run bash in an AWS lambda image
-docker-bash:
-	docker run -it lambci/lambda:build-python$(PYTHON_VERSION) bash
-
-tests/data: tests/data/grid.json tests/data/id1234.parquet
-
-# Refresh the local copy of remote files (for function-tests)
-refresh-sample:
-	rm tests/data/tests/data/grid.json tests/data/id1234.parquet
-	make tests/data
-
 # Download lambda version of compiled library
 libsnappy-$(PYTHON_VERSION).so:
 	@echo -e "$(green)Download lambda version of libsnappy-$(PYTHON_VERSION).so...$(normal)"
@@ -321,7 +313,7 @@ libsnappy-$(PYTHON_VERSION).so:
 	sudo chown $(USER):$(USER) libsnappy-$(PYTHON_VERSION).so
 	chmod 600 libsnappy-$(PYTHON_VERSION).so
 
-build-ParquetLayer: layers/parquet/requirements.txt _template.yaml Makefile libsnappy-$(PYTHON_VERSION).so
+build-ParquetLayer: layers/parquet/requirements.txt template.yaml Makefile libsnappy-$(PYTHON_VERSION).so
 	@if [[ -z "$(ARTIFACTS_DIR)" ]]
 	then
 		@$(VALIDATE_VENV)
@@ -357,14 +349,14 @@ build-About: hszinc/dist/hszinc-*.whl
 
 
 ## Build specific lambda function (ie. build-About)
-build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) _template.yaml
+build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) template.yaml libsnappy-$(PYTHON_VERSION).so
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Build Lambda $*...$(normal)"
 	umask 0
 	@sam build $(SAM_BUILD_PARAMETERS) $*
 
 .PHONY: dist build
-.aws-sam/build: $(REQUIREMENTS) $(PYTHON_SRC) hszinc _template.yaml src/requirements.txt \
+.aws-sam/build: $(REQUIREMENTS) $(PYTHON_SRC) hszinc template.yaml src/requirements.txt \
 	layers/base/requirements.txt layers/parquet/requirements.txt Makefile
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Build Lambdas...$(normal)"
@@ -414,7 +406,7 @@ async-stop-api:
 .PHONY: api
 ## Print API URL
 api:
-	@grep -oh 'https://$${ServerlessRestApi}[^"]*' _template.yaml | \
+	@grep -oh 'https://$${ServerlessRestApi}[^"]*' template.yaml | \
 	sed 's/https:..$${ServerlessRestApi}.*\//http:\/\/locahost:3000\//g'
 
 ## Invoke local API (eg. make build api-About)
@@ -501,27 +493,39 @@ async-stop: async-stop-api async-stop-lambda async-stop-minio
 
 # -------------------------------------- AWS
 # Initialise okta with default values
-https://e6esmeduqa.execute-api.eu-west-3.amazonaws.com/Prod/about
+#https://e6esmeduqa.execute-api.eu-west-3.amazonaws.com/Prod/about
+# FIXME: init okta
+ifeq ($(USE_OKTA),Y)
 ~/.okta_aws_login_config: .okta_aws_login_config
 	@touch ~/.okta_aws_login_config
-	grep -Fxq "[carbonapi]" ~/.aws/config || echo -e '[carbonapi]\nregion = $(AWS_REGION)' >>~/.aws/config
-	grep -Fxq "[carbonapi]" ~/.aws/credentials || echo '[carbonapi]' >>~/.aws/credentials
-	grep -Fxq "[carbonapi]" ~/.okta_aws_login_config || cat .okta_aws_login_config >>~/.okta_aws_login_config
+	grep -Fxq "[haystackapi]" ~/.aws/config || echo -e '[carbonapi]\nregion = $(AWS_REGION)' >>~/.aws/config
+	grep -Fxq "[haystackapi]" ~/.aws/credentials || echo '[carbonapi]' >>~/.aws/credentials
+	grep -Fxq "[haystackapi]" ~/.okta_aws_login_config || cat .okta_aws_login_config >>~/.okta_aws_login_config
 	echo -e "$(green)Initialize ~/.okta_aws_login_config file$(normal)"
+endif
 
+ifeq ($(USE_OKTA),Y)
 .PHONY: aws-update-token
 # Update the AWS Token
 aws-update-token: ~/.okta_aws_login_config
-	@aws sts get-caller-identity >/dev/null 2>/dev/null || gimme-aws-creds --profile $(AWS_PROFILE)
+	@echo -e "$(green)Use AWS profile '$(AWS_PROFILE)$(normal)'"
+	@aws sts get-caller-identity >/dev/null 2>/dev/null || gimme-aws-creds $(OKTA_USERNAME) --profile $(AWS_PROFILE)
+endif
 
 .PHONY: aws-deploy
 ## Deploy lambda functions
-aws-deploy: .aws-sam/build
+aws-deploy: .make-sam-validate
 	$(VALIDATE_VENV)
-	gimme-aws-creds --profile $(AWS_PROFILE)
-	sam deploy $(SAM_DEPLOY_PARAMETERS) --debug --profile $(AWS_PROFILE) --region $(AWS_REGION) \
-	  $(SAM_BUILD_PARAMETERS)  \
-	  --no-confirm-changeset
+ifeq ($(USE_OKTA),Y)
+	gimme-aws-creds $(OKTA_USERNAME) --profile $(AWS_PROFILE)
+endif
+	sam deploy $(SAM_DEPLOY_PARAMETERS) \
+	  --debug \
+	  --profile $(AWS_PROFILE) \
+	  --region $(AWS_REGION) \
+	  $(SAM_TEMPLATE)  \
+	  --no-confirm-changeset  \
+	  --parameter-overrides 'HaystackProvider=$(HAYSTACK_PROVIDER) HaystackURL=$(HAYSTACK_URL) LOGLEVEL=$(LOGLEVEL)'
 	echo -e "$(green)Lambdas are deployed$(normal)"
 
 .PHONY: aws-clean-stack
@@ -551,7 +555,7 @@ aws-invoke-%: .aws-sam/build
 .PHONY: aws-api
 ## Print AWS API URL
 aws-api:
-	@grep -oh 'https://$${ServerlessRestApi}[^"]*' _template.yaml | \
+	@grep -oh 'https://$${ServerlessRestApi}[^"]*' template.yaml | \
 	sed 's/https:..$${ServerlessRestApi}.*\//$(subst  /,\/,$(AWS_API_HOME))\//g'
 
 ## Invoke API via AWS (eg. make aws-api-About)
@@ -662,9 +666,9 @@ typing: .make-typing
 lint: .make-lint
 
 
-.make-sam-validate:  aws-update-token _template.yaml
+.make-sam-validate:  aws-update-token template.yaml
 	@echo -e "$(cyan)Validate template.yaml...$(normal)"
-	@sam $(SAM_TEMPLATE) validate
+	@sam validate $(SAM_TEMPLATE)
 	@date >.make-sam-validate
 
 .PHONY: validate

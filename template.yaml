@@ -1,5 +1,3 @@
-# Note:
-# The variables {{HAYSTACK_PROVIDER}} and {{HAYSTACK_URL}} must be set via a sed
 # Use the `make build`.
 
 AWSTemplateFormatVersion: '2010-09-09'
@@ -7,22 +5,42 @@ Transform: AWS::Serverless-2016-10-31
 Description: An implementation of Haystack protocol
 # See https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html
 
+# More info about Parameters: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html#parameters-section-structure-requirements
+# Set the parameter with --parameter-overrides: https://docs.aws.amazon.com/cli/latest/reference/cloudformation/deploy/index.html#deploy
+Parameters:
+  HaystackProvider:
+    Type: String
+    Description: Enter the Haystack provider class name. See src/providers
+  HaystackURL:
+    Type: String
+    Default: grid.zinc
+    Description: If the provider is `providers.url`, enter the URL to load Haystack file
+  LOGLEVEL:
+    Type: String
+    Default: WARNING
+    AllowedValues:
+      - ERROR
+      - WARNING
+      - INFO
+      - DEBUG
+    Description: Enter ERROR, WARNING, INFO or DEBUG.
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Runtime: python{{PYTHON_VERSION}}
+    Runtime: python3.7
     Timeout: 30
     Environment:
       Variables:
-        LOGLEVEL: WARNING
         DEBUGGING: false
         NOCOMPRESS: true
-        HAYSTACK_PROVIDER: {{HAYSTACK_PROVIDER}}
-        HAYSTACK_URL: {{HAYSTACK_URL}}
+        LOGLEVEL: { "Ref" : "LOGLEVEL" }
+        HAYSTACK_PROVIDER: { "Ref" : "HaystackProvider" }
+        HAYSTACK_URL: { "Ref" : "HaystackURL" }
     Layers:
       - !Ref BaseLayer
-      - !Ref HSZincLayer
       - !Ref ParquetLayer
+      - !Ref HSZincLayer
 
 Resources:
   BaseLayer:
@@ -32,7 +50,6 @@ Resources:
       CompatibleRuntimes:
         - python3.7
         - python3.8
-        - python3.9
       Description: Custom Haystack Zinc libraries
       LayerName: base
       LicenseInfo: BSD 2
@@ -49,7 +66,6 @@ Resources:
       CompatibleRuntimes:
         - python3.7
         - python3.8
-        - python3.9
       Description: Parquet loader layers
       LayerName: parquet
       LicenseInfo: BSD 2
@@ -64,7 +80,6 @@ Resources:
       CompatibleRuntimes:
         - python3.7
         - python3.8
-        - python3.9
       Description: Custom Haystack Zinc libraries
       LayerName: HSZinc
       LicenseInfo: BSD 2
@@ -72,33 +87,28 @@ Resources:
     Metadata:
       BuildMethod: makefile
 
-#  About:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      CodeUri: src/
-#      Handler: haystackapi_lambda.about
-#      Description: Implement the Haystack `About` api
-#      Policies:
-#        - AWSLambdaBasicExecutionRole
-#        - AWSLambdaReadOnlyAccess
-#        - AWSXrayWriteOnlyAccess
-#      Environment:
-#        Variables:
-#          LOGLEVEL: WARNING
-#          DEBUGGING: false
-#          NOCOMPRESS: true
-#      Tracing: Active
-#      Events:
-#        HaystackAboutGET:
-#          Type: Api
-#          Properties:
-#            Path: /about
-#            Method: get
-#        HaystackAboutPOST:
-#          Type: Api
-#          Properties:
-#            Path: /about
-#            Method: post
+  About:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: ping.ping
+      Description: Implement the Haystack `About` api
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaReadOnlyAccess
+        - AWSXrayWriteOnlyAccess
+      Tracing: Active
+      Events:
+        HaystackAboutGET:
+          Type: Api
+          Properties:
+            Path: /about
+            Method: get
+        HaystackAboutPOST:
+          Type: Api
+          Properties:
+            Path: /about
+            Method: post
 #
 #  Ops:
 #    Type: AWS::Serverless::Function
@@ -275,30 +285,30 @@ Resources:
 #            Path: /point_write
 #            Method: post
 
-  HisRead:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/
-      Handler: haystackapi_lambda.his_read
-      Description: Implement the Haystack `his_read` api
-      # Function's execution role
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaReadOnlyAccess
-        - AWSXrayWriteOnlyAccess
-      Layers:
-        - !Ref ParquetLayer
-      Events:
-        HaystackAboutGET:
-          Type: Api
-          Properties:
-            Path: /hisRead
-            Method: get
-        HaystackAboutPOST:
-          Type: Api
-          Properties:
-            Path: /hisRead
-            Method: post
+#  HisRead:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      CodeUri: src/
+#      Handler: haystackapi_lambda.his_read
+#      Description: Implement the Haystack `his_read` api
+#      # Function's execution role
+#      Policies:
+#        - AWSLambdaBasicExecutionRole
+#        - AWSLambdaReadOnlyAccess
+#        - AWSXrayWriteOnlyAccess
+#      Layers:
+#        - !Ref ParquetLayer
+#      Events:
+#        HaystackAboutGET:
+#          Type: Api
+#          Properties:
+#            Path: /hisRead
+#            Method: get
+#        HaystackAboutPOST:
+#          Type: Api
+#          Properties:
+#            Path: /hisRead
+#            Method: post
 #
 #  HisWrite:
 #    Type: AWS::Serverless::Function

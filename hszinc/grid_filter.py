@@ -206,6 +206,7 @@ hs_val <<= hs_list | hs_dict | \
            hs_number | hs_na | hs_null | hs_marker | hs_bool | \
            hs_str | hs_uri
 
+#-------------------------------------
 hs_path = (hs_name + ZeroOrMore(Suppress(Literal("->")) + hs_name)).setParseAction(
     lambda toks: FilterPath([t for t in toks])
 )
@@ -281,6 +282,8 @@ def _get_path(grid, obj, paths):
             obj = obj[path]
             if i != len(paths) - 1 and isinstance(obj, Ref):
                 obj = grid[obj.name]  # Follow the reference
+        if not obj:
+            return NOT_FOUND
         return obj  # It's a value at this time
     except KeyError:
         return NOT_FOUND
@@ -291,18 +294,18 @@ def _generate_filter_in_python(node, def_filter):
         def_filter.append("_get_path(_grid, _entity, %s)" % node.path)
     elif isinstance(node, FilterBinary):
         def_filter.append("(")
-        def_filter.extend(_generate_filter_in_python(node.left, []))
+        _generate_filter_in_python(node.left, def_filter)
         def_filter.append(" " + node.op + " ")
-        def_filter.extend(_generate_filter_in_python(node.right, []))
+        _generate_filter_in_python(node.right, def_filter)
         def_filter.append(")")
     elif isinstance(node, FilterUnary):
         if node.op == "has":
             def_filter.append('(id(')
-            def_filter.extend(_generate_filter_in_python(node.right, []))
+            _generate_filter_in_python(node.right, def_filter)
             def_filter.append(') !=  id(NOT_FOUND))')
         elif node.op == "not":
             def_filter.append('(id(')
-            def_filter.extend(_generate_filter_in_python(node.right, []))
+            _generate_filter_in_python(node.right, def_filter)
             def_filter.append(") == id(NOT_FOUND))")
         else:  # pragma: no cover
             assert 0
@@ -329,7 +332,7 @@ def _filter_function(filter):
     def_filter = _generate_filter_in_python(parse_filter(filter)._head, [])
     fun_name = "_gen_hsfilter_" + str(_id_function)
     function_template = "def %s(_grid, _entity):\n  return " % fun_name + "".join(def_filter)
-    # print("\nGenerate:\n# " + filter + "\n" + function_template)  # FIXME: debug
+    #print("\nGenerate:\n# " + filter + "\n" + function_template)  # FIXME: debug
     _id_function += 1
     return _FnWrapper(fun_name, function_template)
 

@@ -10,7 +10,7 @@ requirements = [
             'six',
 ]
 if sys.version_info.major == 2:
-    requirements.extend(["backports.functools_lru_cache","csv23"])
+    requirements.extend(["backports.functools_lru_cache", "csv23"])
 
 setup(name='hszinc',
         url='https://github.com/vrtsystems/hszinc',

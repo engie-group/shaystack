@@ -455,7 +455,7 @@ def test_grid_index():
 
 
 def test_slice():
-    grid = Grid(columns={'id': {}, 'site': {}})
+    grid = Grid(columns=['id', 'site'])
     grid.append({'id': 'id1', })
     grid.append({'id': 'id2'})
     grid.append({'id': 'id3'})
@@ -468,7 +468,7 @@ def test_slice():
 
 
 def test_grid_contain():
-    grid = Grid(columns={'id': {}, 'site': {}})
+    grid = Grid(columns=['id', 'site'])
     grid.append({'id': 'id1', })
     grid.append({'id': 'id2'})
     grid.append({'id': 'id3'})
@@ -478,7 +478,7 @@ def test_grid_contain():
 
 
 def test_grid_keys():
-    grid = Grid(columns={'id': {}, 'site': {}})
+    grid = Grid(columns=['id', 'site'])
     grid.append({'id': 'id1', })
     grid.append({'id': 'id2'})
     grid.append({'id': 'id3'})
@@ -487,7 +487,7 @@ def test_grid_keys():
 
 
 def test_grid_sub():
-    left = Grid(columns={"id": {}, "a": {}, "b": {}})
+    left = Grid(columns=["id", "a", "b"])
     left.append({"id": "my_id", "a": 1})
     right = Grid(columns={"id": {}, "a": {}, "b": {}})
     right.append({"id": "my_id", "a": 3, "b": 4})
@@ -502,7 +502,7 @@ def test_grid_sub():
 
 
 def test_grid_add():
-    left = Grid(columns={"id": {}, "a": {}, "b": {}})
+    left = Grid(columns=["id", "a", "b"])
     left.append({"id": "my_id", "a": 1, "b": 2})
     right = Grid(columns={"id": {}, "a": {}, "b": {}})
     right.append({"id": "my_id", "a": 3, "c": 4})

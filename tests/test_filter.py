@@ -240,9 +240,9 @@ def test_grid_specification_filter_sample():
     result = grid.filter('site or equip')
     assert len(result) == 2
     assert result[0]['id'] == 'id1'
-    assert result[0]['site'] == MARKER
+    assert result[0]['site']
     assert result[1]['siteRef'] == Ref('id1')
-    assert result[1]['equip'] == MARKER
+    assert result[1]['equip']
 
     result = grid.filter('equip and hvac')
     assert len(result) == 1

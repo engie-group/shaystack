@@ -4,13 +4,13 @@
 # (C) 2016 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+import collections
+
+
 import copy
 import datetime
 import logging
 import numbers
-from collections import Sequence
-
-import six
 
 from .datatypes import NA, Quantity, Coordinate
 from .metadata import MetadataObject
@@ -20,10 +20,11 @@ log = logging.getLogger("ping.Provider")
 
 try:
     import collections.abc as col
+    from collections.abc import Sequence
 except ImportError:  # pragma: no cover
     import collections as col
+    from collections import Sequence
 from .version import Version, VER_3_0, VER_2_0
-
 
 class Grid(col.MutableSequence):
     '''
@@ -355,7 +356,8 @@ class Grid(col.MutableSequence):
 
     def copy(self):
         cp = copy.deepcopy(self)
-        cp._index = None
+        cp._index = None  # Remove index
+        return cp
 
     def filter(self, filter, limit=0):
         '''

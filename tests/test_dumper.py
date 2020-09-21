@@ -547,8 +547,8 @@ def test_data_types_csv_v2():
 "A string","This is a test\nLine two of test\n\tIndented with ""quotes"" and \\backslashes\\"
 "A date",2016-01-13
 "A time",07:51:43.012345
-"A timestamp (non-UTC)",2016-01-13T07:51:42.012345+01:00 Berlin
-"A timestamp (UTC)",2016-01-13T07:51:42.012345+00:00 UTC
+"A timestamp (non-UTC)",2016-01-13T07:51:42.012345+01:00
+"A timestamp (UTC)",2016-01-13T07:51:42.012345+00:00
 '''
 
 

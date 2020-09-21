@@ -161,7 +161,8 @@ def dump_time(time, version=LATEST_VER):
 
 def dump_date_time(date_time, version=LATEST_VER):
     tz_name = timezone_name(date_time, version=version)
-    return '%s %s' % (date_time.isoformat(), tz_name)
+    #return '%s %s' % (date_time.isoformat(), tz_name)
+    return '%s' % (date_time.isoformat())  # Note: Excel can not parse the date time with tz_name
 
 
 def dump_scalar(scalar, version=LATEST_VER):

@@ -1,0 +1,38 @@
+{
+  "dev": {
+    "profile_name": "haystackapi",
+//    "aws_region": "us-east-2",
+    "aws_region": "eu-west-3",
+    "app_function": "app.__init__.app",
+//    "app_function": "app.app.app",
+    "project_name": "alpha-dev-haystackapi",
+    "s3_bucket": "alpha-dev-zappa-fr",
+    "runtime": "python3.8",
+    "environment_variables": {
+      "COOKIE_SECRET_KEY": "2d1a12a6-3232-4328-9365-b5b65e64a68f"
+    } ,
+    "aws_environment_variables": {
+      "LOGLEVEL": "DEBUG",
+      "HAYSTACK_PROVIDER": "haystackapi.providers.ping",
+      "HAYSTACK_URL": "s3://alpha-dev-haystack-marriot/marriot.json",
+    } ,
+//    "layers": ["arn:aws:lambda:us-east-2:695980681400:layer:awswrangler-3_8:1"],
+    "exclude": [
+      ".*",
+      "*.postman*",
+      "*.ini",
+      "*.cfg",
+      "*.md",
+      "*.yaml",
+      "hszinc",
+      "tests",
+      "Makefile",
+      "Project.variables",
+      "pytest.ini",
+      "pytype.cfg",
+      "pip*",
+      "boto3","botocore",
+    ],
+    "slim_handler": false
+  }
+}

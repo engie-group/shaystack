@@ -31,30 +31,31 @@ export PARAMS
 export SAM_CLI_TELEMETRY
 
 PYTHON_SRC=src/*.py src/providers/*.py
-PYTHON_VERSION:=3.7
+PYTHON_VERSION:=3.8
 PRJ_PACKAGE:=$(PRJ)
 VENV ?= $(PRJ)
 CONDA_BASE:=$(shell AWS_PROFILE=default conda info --base)
 CONDA_PACKAGE:=$(CONDA_PREFIX)/lib/python$(PYTHON_VERSION)/site-packages
 CONDA_PYTHON:=$(CONDA_PREFIX)/bin/python
 CONDA_ARGS?=
+
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
-PIP_ARGS?=
-ENVS_JSON?=_envs.json
-HSZINC_VERSION:=*
-OKTA_USERNAME?=
-export ROOT_DIR:=$$PWD
-export AWS_DEFAULT_REGION:=$(AWS_REGION)
+
+AWS_REGION?=us-east-2
+AWS_STAGE?=dev
+AWS_API_HOME=$(shell zappa status $(AWS_STAGE) --json | jq -r '."API Gateway URL"')
+
+# For minio
 AWS_S3_ENDPOINT?=https://s3.$(AWS_REGION).amazonaws.com
-AWS_API_HOME=https://$(shell aws apigateway get-rest-apis --output text --profile $(AWS_PROFILE) --region $(AWS_REGION) --query 'items[?name==`$(AWS_STACK)`].id').execute-api.$(AWS_REGION).amazonaws.com/Prod
 AWS_ACCESS_KEY=$(shell aws configure get aws_access_key_id)
 AWS_SECRET_KEY=$(shell aws configure get aws_secret_access_key)
-MINIO_HOME=$(HOME)/.minio
 
-SAM_TEMPLATE=-t template.yaml
-SAM_DEPLOY_PARAMETERS?=$(SAM_TEMPLATE)
-SAM_BUILD_PARAMETERS?=-s . $(SAM_TEMPLATE)
-SAM_ENV?=--env-vars $(ENVS_JSON)
+FLASK_DEBUG?=1
+export FLASK_DEBUG
+MINIO_HOME=$(HOME)/.minio
+GIMME?=gimme-aws-creds
+
+ZAPPA_ENV=zappa_venv
 
 CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
@@ -126,6 +127,7 @@ help:
 
 
 .PHONY: dump-*
+# Tools to dump makefile variable (make dump-AWS_API_HOME)
 dump-%:
 	@if [ "${${*}}" = "" ]; then
 		echo "Environment variable $* is not set";
@@ -134,22 +136,14 @@ dump-%:
 		echo "$*=${${*}}";
 	fi
 
-
-# -------------------------------------- ENV
-# Convert .env to json
-_envs.json: .env
-	@source .env
-	cat >_envs.json <<ENVS
-	{
-	"Parameters": {
-		"LOGLEVEL": "$${LOGLEVEL}",
-		"DEBUGGING": "false",
-		"NOCOMPRESS": "true",
-		"HAYSTACK_PROVIDER": "$${HAYSTACK_PROVIDER}",
-		"HAYSTACK_URL": "$${HAYSTACK_URL}"
-		}
-	}
-	ENVS
+## Print project variables
+dump-params:
+	@echo PRJ=$(PRJ)
+	echo HAYSTACK_PROVIDER=$(HAYSTACK_PROVIDER)
+	echo HAYSTACK_URL=$(HAYSTACK_URL)
+	echo AWS_PROFILE=$(AWS_PROFILE)
+	echo AWS_REGION=$(AWS_REGION)
+	echo AWS_STAGE=$(AWS_STAGE)
 
 # -------------------------------------- GIT
 .git/config: | .git .git/hooks/pre-push # Configure git
@@ -187,7 +181,7 @@ _envs.json: .env
 	PRE-PUSH
 	chmod +x .git/hooks/pre-push
 
-# -------------------------------------- Conda venv
+# -------------------------------------- Virtualenv
 .PHONY: configure
 ## Prepare the work environment (conda venv, ...)
 configure:
@@ -205,29 +199,18 @@ requirements: $(REQUIREMENTS)
 dependencies: requirements
 
 # Rule to update the current venv, with the dependencies describe in `setup.py`
-$(PIP_PACKAGE): $(CONDA_PYTHON) \
-	src/requirements.txt \
-	layers/base/requirements.txt \
-	layers/parquet/requirements.txt | .git # Install pip dependencies
+$(PIP_PACKAGE): $(CONDA_PYTHON) | .git # Install pip dependencies
 	@$(VALIDATE_VENV)
 	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"
-	pip install -r src/requirements.txt
-	find layers -name requirements.txt -exec pip install -r {} \;
-	conda install -c conda-forge -c anaconda -y \
-		awscli aws-sam-cli make \
-		pytype ninja flake8 pylint pytest jq
-
 ifeq ($(USE_OKTA),Y)
 	pip install gimme-aws-creds
 endif
-	echo -e "$(cyan)Build dependencies updated$(normal)"
+	conda install -c conda-forge -c anaconda -y \
+		make jq
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
-	pip install -r src/requirements.txt
-	pip install -r layers/base/requirements.txt
-	pip install -r layers/parquet/requirements.txt
-	# Install the fork of hszinc
-	pip install -e hszinc
-	echo -e "$(cyan)Project dependencies updated$(normal)"
+	pip install -e .
+	pip install file://$$(pwd)#egg=foo[dev]
+	pip install file://$$(pwd)#egg=foo[lambda]
 	@touch $(PIP_PACKAGE)
 
 # All dependencies of the project must be here
@@ -265,133 +248,70 @@ clean-$(VENV): remove-venv
 ## Set the current VENV empty
 clean-venv : clean-$(VENV)
 
+
+# clean-zappa
+clean-zappa:
+	@rm -fr handler_venv $(ZAPPA_ENV) $(PRJ)-$(AWS_STAGE)-*.* handler_$(PRJ)-$(AWS_STAGE)*.zip
+
 ## Clean project
-clean: async-stop
-	@rm -rf bin/* .aws-sam .mypy_cache .pytest_cache .start build nohup.out dist .make-* .pytype out.json \
-		_envs.json
+clean: async-stop clean-zappa
+	@rm -rf bin/* .mypy_cache .pytest_cache .start build nohup.out dist .make-* .pytype out.json
 
 .PHONY: clean-all
 # Clean all environments
 clean-all: clean remove-venv
-	@rm libsnappy-$(PYTHON_VERSION).so
 
-
-## Run bash in an AWS lambda image
-docker-bash:
-	docker run -it lambci/lambda:build-python$(PYTHON_VERSION) bash
-
-tests/data: tests/data/grid.json tests/data/id1234.parquet
 
 # -------------------------------------- Build
 
-# Template to build custom runtime.
-# See https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-custom-runtimes.html
-# See https://github.com/awslabs/aws-sam-cli/blob/de8ad8e78491ebfa884c02c3439c6bcecd08516b/designs/build_for_layers.md
-build-HSZincLayer: hszinc/dist/hszinc-*.whl template.yaml Makefile
-	@if [[ -z "$(ARTIFACTS_DIR)" ]]
-	then
-		@$(VALIDATE_VENV)
-		echo -e "$(green)Build Lambda HSZincLayer...$(normal)"
-		umask 0
-		@sam build $(SAM_BUILD_PARAMETERS) HSZincLayer
-	else
-		# executed inside `sam build`
-		# The variable OLDPWD is set to the project home directory
-		umask 0
-		mkdir -p "$(ARTIFACTS_DIR)/python"
-		python -m pip install $(ROOT_DIR)/hszinc/dist/hszinc-$(HSZINC_VERSION)-py3-none-any.whl -t "$(ARTIFACTS_DIR)/python"
-	fi
+.PHONY: dist build compile-all
 
+# Compile all python files
+compile-all:
+	@echo -e "$(cyan)Compile all python file...$(normal)"
+	# FIXME python -m compileall
 
-# Download lambda version of compiled library
-libsnappy-$(PYTHON_VERSION).so:
-	@echo -e "$(green)Download lambda version of libsnappy-$(PYTHON_VERSION).so...$(normal)"
-	docker run --rm -v $$(pwd):/foo -w /foo lambci/lambda:build-python$(PYTHON_VERSION) \
-	/bin/bash -c "yum install -y snappy-devel ; cp /usr/lib64/libsnappy.so.1 /foo/libsnappy-$(PYTHON_VERSION).so"
-	echo -e "$(green)To update the owner of libsnappy-$(PYTHON_VERSION).so we must have a root access$(normal)"
-	echo -e "Ask the permission to change owner of libsnappy-$(PYTHON_VERSION).so..."
-	sudo chown $(USER):$(USER) libsnappy-$(PYTHON_VERSION).so
-	chmod 600 libsnappy-$(PYTHON_VERSION).so
+# -------------------------------------- API
+.PHONY: api
+## Print API URL
+api:
+	@echo http://localhost:3000/haystack
 
-build-ParquetLayer: layers/parquet/requirements.txt template.yaml Makefile libsnappy-$(PYTHON_VERSION).so
-	@if [[ -z "$(ARTIFACTS_DIR)" ]]
-	then
-		@$(VALIDATE_VENV)
-		echo -e "$(green)Build Lambda HSZincLayer...$(normal)"
-		umask 0
-		@sam build $(SAM_BUILD_PARAMETERS) HSZincLayer
-	else
-		# executed inside `sam build`
-		umask 0
-		mkdir -p "$(ARTIFACTS_DIR)/python"
-		python -m pip install -r layers/parquet/requirements.txt -t "$(ARTIFACTS_DIR)/python"
-		# See https://aws.amazon.com/fr/blogs/compute/working-with-aws-lambda-and-lambda-layers-in-aws-sam/
-		mkdir -p "$(ARTIFACTS_DIR)/lib"
-		cp libsnappy-$(PYTHON_VERSION).so "$(ARTIFACTS_DIR)/lib/libsnappy.so.1"
-	fi
-
-
-build-About: hszinc/dist/hszinc-*.whl
-	@if [[ -z "$(ARTIFACTS_DIR)" ]]
-	then
-		@$(VALIDATE_VENV)
-		echo -e "$(green)Build Lambda HSZincLayer...$(normal)"
-		umask 0
-		@sam build $(SAM_BUILD_PARAMETERS) HSZincLayer
-	else
-		# executed inside `sam build`
-		umask 0
-		mkdir -p "$(ARTIFACTS_DIR)/python"
-		python -m pip install -r src/requirements.txt -t "$(ARTIFACTS_DIR)/python"
-#		cp -R src "$(ARTIFACTS_DIR)"
-#		cp libsnappy.so "$(ARTIFACTS_DIR)"
-	fi
-
-
-## Build specific lambda function (ie. build-About)
-build-%: template.yaml $(REQUIREMENTS) $(PYTHON_SRC) template.yaml libsnappy-$(PYTHON_VERSION).so
+.PHONY: api-*
+## Invoke local API (eg. make api-about)
+api-%:
 	@$(VALIDATE_VENV)
-	echo -e "$(green)Build Lambda $*...$(normal)"
-	umask 0
-	@sam build $(SAM_BUILD_PARAMETERS) $*
+	TARGET="localhost:3000"
+	curl -H "Accept: text/zinc" \
+			"$${TARGET}/haystack/$*"
 
-.PHONY: dist build
-.aws-sam/build: $(REQUIREMENTS) $(PYTHON_SRC) hszinc template.yaml src/requirements.txt \
-	layers/base/requirements.txt layers/parquet/requirements.txt Makefile
+api-read:
+	#$(VALIDATE_VENV)
+	TARGET="localhost:3000"
+	curl -H "Accept: text/zinc" \
+			"$${TARGET}/haystack/read?filter=point&limit=5"
+
+api-hisRead:
 	@$(VALIDATE_VENV)
-	echo -e "$(green)Build Lambdas...$(normal)"
-	umask 0
-	sam build $(SAM_BUILD_PARAMETERS)
-	find .aws-sam -type f -exec chmod 644 {} \;
-	find .aws-sam -type d -exec chmod 755 {} \;
-
-## Build all lambda function
-build: .aws-sam/build
-
-# -------------------------------------- Invoke
-.PHONY: invoke-*
-## Build and invoke lambda function in local with associated events (ie. invoke-About)
-invoke-%: $(ENVS_JSON) .aws-sam/build
-	@$(VALIDATE_VENV)
-	sam local invoke --env-vars $(ENVS_JSON) $* -e events/$*_event.json >.out.json
-	jq -r <.out.json
-	echo -e "\n$(green)Body:$(normal)"
-	jq -r '.body' <.out.json
-	rm .out.json
+	TARGET="localhost:3000"
+	curl -H "Accept: text/zinc" \
+			"$${TARGET}/haystack/hisRead$(URL_PARAMS)"
 
 .PHONY: start-api async-start-api async-stop-api
 ## Start api
-start-api: $(ENVS_JSON) .aws-sam/build
+start-api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	@[ -e .start/start-api.pid ] && $(MAKE) async-stop-api || true
-	sam local start-api --env-vars $(ENVS_JSON)
+	FLASK_DEBUG=1 FLASK_ENV=$(AWS_STAGE) \
+	python -m app.__init__
 
-# Start local api emulator in background
-async-start-api: $(ENVS_JSON) .aws-sam/build
+# Start local api in background
+async-start-api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	@[ -e .start/start-api.pid ] && echo -e "$(orange)Local API was allready started$(normal)" && exit
 	mkdir -p .start
-	nohup sam local start-api --env-vars $(ENVS_JSON) >.start/start-api.log 2>&1 &
+	nohup 	FLASK_DEBUG=1 FLASK_APP=app.run FLASK_ENV=$(AWS_STAGE) \
+	flask run >.start/start-api.log 2>&1 &
 	echo $$! >.start/start-api.pid
 	sleep 0.5
 	tail .start/start-api.log
@@ -403,56 +323,6 @@ async-stop-api:
 	@[ -e .start/start-api.pid ] && kill `cat .start/start-api.pid` || true && echo -e "$(green)Local API stopped$(normal)"
 	rm -f .start/start-api.pid
 
-.PHONY: api
-## Print API URL
-api:
-	@grep -oh 'https://$${ServerlessRestApi}[^"]*' template.yaml | \
-	sed 's/https:..$${ServerlessRestApi}.*\//http:\/\/locahost:3000\//g'
-
-## Invoke local API (eg. make build api-About)
-api-%:
-	@$(VALIDATE_VENV)
-	GET_POST=$$(jq -r '.httpMethod' events/$*_event.json)
-	ops=$*
-	if [[ $$GET_POST == "GET" ]]
-	then
-		curl -H "Accept: text/zinc" \
-			"http://localhost:3000/$${ops,}"$(PARAMS)
-	else
-		# Add trailing CR
-		BODY="$$(jq -r '.body' <events/Read_event.json)"$$'\n'
-		curl -H "Accept:text/zinc" \
-			-H "Content-Type:text/zinc" \
-			-X POST \
-			--data-binary "$${BODY}" \
-			"http://localhost:3000/$${ops,}"$(PARAMS)
-	fi
-
-
-.PHONY: start-lambda async-start-lambda async-stop-lambda
-## Start lambda local emulator
-start-lambda: $(ENVS_JSON) .aws-sam/build
-	@$(VALIDATE_VENV)
-	[ -e .start/start-lambda.pid ] && $(MAKE) async-stop-lambda || true
-	AWS_DEFAULT_PROFILE=$(AWS_PROFILE) sam local start-lambda --env-vars $(ENVS_JSON)
-	sleep 2
-
-# Start lambda local emulator in background
-async-start-lambda: $(ENVS_JSON) .aws-sam/build
-	@$(VALIDATE_VENV)
-	[ -e .start/start-lambda.pid ] && echo -e "$(orange)Local Lambda was allready started$(normal)" && exit
-	mkdir -p .start
-	nohup sam local start-lambda --env-vars $(ENVS_JSON) >.start/start-lambda.log 2>&1 &
-	echo $$! >.start/start-lambda.pid
-	sleep 2
-	tail .start/start-lambda.log
-	echo -e "$(orange)Local Lambda was started$(normal)"
-
-# Stop lambda local emulator in background
-async-stop-lambda:
-	@$(VALIDATE_VENV)
-	[ -e .start/start-lambda.pid ] && kill `cat .start/start-lambda.pid` >/dev/null || true && echo -e "$(green)Local Lambda stopped$(normal)"
-	rm -f .start/start-lambda.pid
 
 # -------------------------------------- Minio
 # https://min.io/
@@ -460,7 +330,7 @@ async-stop-lambda:
 .minio:
 	mkdir -p .minio
 
-start-minio: $(ENVS_JSON) .minio
+start-minio: .minio $(REQUIREMENTS)
 	docker run -p 9000:9000 \
 	-e "MINIO_ACCESS_KEY=$(AWS_ACCESS_KEY)" \
 	-e "MINIO_SECRET_KEY=$(AWS_SECRET_KEY)" \
@@ -472,7 +342,7 @@ async-stop-minio:
 	[ -e .start/start-minio.pid ] && kill `cat .start/start-minio.pid` >/dev/null || true && echo -e "$(green)Local Minio stopped$(normal)"
 	rm -f .start/start-minio.pid
 
-async-start-minio: .minio .aws-sam/build
+async-start-minio: .minio $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	[ -e .start/start-minio.pid ] && echo -e "$(orange)Local Minio was allready started$(normal)" && exit
 	mkdir -p .start
@@ -489,111 +359,98 @@ async-start-minio: .minio .aws-sam/build
 
 
 ## Stop all async server
-async-stop: async-stop-api async-stop-lambda async-stop-minio
+async-stop: async-stop-api async-stop-minio
 
 # -------------------------------------- AWS
-# Initialise okta with default values
-#https://e6esmeduqa.execute-api.eu-west-3.amazonaws.com/Prod/about
-# FIXME: init okta
-ifeq ($(USE_OKTA),Y)
-~/.okta_aws_login_config: .okta_aws_login_config
-	@touch ~/.okta_aws_login_config
-	grep -Fxq "[haystackapi]" ~/.aws/config || echo -e '[carbonapi]\nregion = $(AWS_REGION)' >>~/.aws/config
-	grep -Fxq "[haystackapi]" ~/.aws/credentials || echo '[carbonapi]' >>~/.aws/credentials
-	grep -Fxq "[haystackapi]" ~/.okta_aws_login_config || cat .okta_aws_login_config >>~/.okta_aws_login_config
-	echo -e "$(green)Initialize ~/.okta_aws_login_config file$(normal)"
-endif
-
 ifeq ($(USE_OKTA),Y)
 .PHONY: aws-update-token
 # Update the AWS Token
-aws-update-token: ~/.okta_aws_login_config
+aws-update-token:
 	@echo -e "$(green)Use AWS profile '$(AWS_PROFILE)$(normal)'"
-	@aws sts get-caller-identity >/dev/null 2>/dev/null || gimme-aws-creds $(OKTA_USERNAME) --profile $(AWS_PROFILE)
+	@aws sts get-caller-identity >/dev/null 2>/dev/null || $(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
+else
+aws-update-token:
+	# Nothing
 endif
 
-.PHONY: aws-deploy
+.PHONY: aws-package aws-deploy aws-update aws-undeploy
+
+# Install a clean venv before invoking zappa
+_zappa_pre_install: clean-zappa
+	@virtualenv $(ZAPPA_ENV)
+	source $(ZAPPA_ENV)/bin/activate
+	# FIXME: injection des paramètres
+	pip install .
+	# Install extra
+	pip install "file://$$(pwd)#egg=foo[lambda]"
+	# Install submodule
+	pip install -e hszinc
+
+## Build lambda package
+aws-package: $(REQUIREMENTS) _zappa_pre_install compile-all
+	echo -e "$(cyan)Create lambda package...$(normal)"
+	source $(ZAPPA_ENV)/bin/activate
+	zappa package $(AWS_STAGE)
+	rm -Rf $(ZAPPA_ENV)
+
+
 ## Deploy lambda functions
-aws-deploy: .make-sam-validate
+aws-deploy: $(REQUIREMENTS) _zappa_pre_install compile-all
 	$(VALIDATE_VENV)
 ifeq ($(USE_OKTA),Y)
-	gimme-aws-creds $(OKTA_USERNAME) --profile $(AWS_PROFILE)
+	$(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
 endif
-	sam deploy $(SAM_DEPLOY_PARAMETERS) \
-	  --debug \
-	  --profile $(AWS_PROFILE) \
-	  --region $(AWS_REGION) \
-	  $(SAM_TEMPLATE)  \
-	  --no-confirm-changeset  \
-	  --parameter-overrides 'HaystackProvider=$(HAYSTACK_PROVIDER) HaystackURL=$(HAYSTACK_URL) LOGLEVEL=$(LOGLEVEL)'
+	source $(ZAPPA_ENV)/bin/activate
+	zappa deploy $(AWS_STAGE)
+	rm -Rf $(ZAPPA_ENV)
 	echo -e "$(green)Lambdas are deployed$(normal)"
 
-.PHONY: aws-clean-stack
-## Remove AWS Stack
-aws-clean-stack:
-	aws cloudformation delete-stack --stack-name $(AWS_STACK) --region $(AWS_REGION)
+## Update lambda functions
+aws-update: $(REQUIREMENTS) _zappa_pre_install compile-all
+	@$(VALIDATE_VENV)
+ifeq ($(USE_OKTA),Y)
+	$(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
+endif
+	source $(ZAPPA_ENV)/bin/activate
+	zappa update $(AWS_STAGE)
+	rm -Rf $(ZAPPA_ENV)
+	echo -e "$(green)Lambdas are updated$(normal)"
 
-##  Invoke lambda function via aws cli (ie. aws-invoke-About)
-aws-invoke-%: .aws-sam/build
-	$(VALIDATE_VENV)
-	FUNCTION=$$(aws cloudformation describe-stack-resource \
-		--stack-name $(AWS_STACK) \
-		--profile $(AWS_PROFILE) \
-		--region $(AWS_REGION) \
-		--logical-resource-id $* \
-		--query 'StackResourceDetail.PhysicalResourceId' --output text)
-	aws lambda invoke --function-name $$FUNCTION \
-		--payload file://events/$*_event.json \
-		--profile $(AWS_PROFILE) \
-		--region $(AWS_REGION) \
-		out.json \
-		--log-type Tail --query 'LogResult' --output text |  base64 -d
-	jq -r <out.json
-	echo -e "\n$(green)Body:$(normal)"
-	jq -r '.body' <out.json
+## Remove AWS Stack
+aws-undeploy: $(REQUIREMENTS)
+	zappa undeploy $(AWS_STAGE) --remove-logs
 
 .PHONY: aws-api
 ## Print AWS API URL
 aws-api:
-	@grep -oh 'https://$${ServerlessRestApi}[^"]*' template.yaml | \
-	sed 's/https:..$${ServerlessRestApi}.*\//$(subst  /,\/,$(AWS_API_HOME))\//g'
+	@echo $(AWS_API_HOME)
 
 ## Invoke API via AWS (eg. make aws-api-About)
+.PHONY: aws-api-*
+## Call AWS api (ie. aws-api-about)
 aws-api-%:
-	@GET_POST=$$(jq -r '.httpMethod' events/$*_event.json)
-	ops=$*
-	if [[ $$GET_POST == "GET" ]]
-	then
-		curl -H "Accept: text/zinc" \
-			"$(AWS_API_HOME)/$${ops,}"
-	else
-		curl -H "Accept:text/zinc" \
-			-H "Content-Type:text/zinc" \
-			-X POST \
-			--data-binary @<(jq -r '.body' <events/$*_event.json) \
-			"$(AWS_API_HOME)/$${ops,}"
-	fi
+	@$(VALIDATE_VENV)
+	TARGET="$(AWS_API_HOME)"
+	curl -H "Accept: text/zinc" \
+			"$${TARGET}/haystack/$*"
+
+aws-api-read:
+	$(VALIDATE_VENV)
+	TARGET="$(AWS_API_HOME)"
+	curl -H "Accept: text/zinc" \
+			"$${TARGET}/haystack/read?filter=point&limit=5"
+
+aws-api-hisRead:
+	@$(VALIDATE_VENV)
+	TARGET="$(AWS_API_HOME)"
+	curl -H "Accept: text/zinc" \
+			"$${TARGET}/haystack/hisRead$(URL_PARAMS)"
 
 ## Print AWS logs
-aws-logs-%:
+aws-logs:
 	@$(VALIDATE_VENV)
-	sam $(SAM_TEMPLATE) logs --profile $(AWS_PROFILE) --region $(AWS_REGION) -n $* --stack-name $(AWS_STACK) --tail
+	zappa tail
 
-
-## Print project variables
-dump-params:
-	@echo PRJ=$(PRJ)
-	echo HAYSTACK_PROVIDER=$(HAYSTACK_PROVIDER)
-	echo HAYSTACK_URL=$(HAYSTACK_URL)
-	echo AWS_STACK=$(AWS_STACK)
-	echo AWS_PROFILE=$(AWS_PROFILE)
-	echo AWS_REGION=$(AWS_REGION)
-
-
-## Print AWS stack info
-aws-info:
-	@$(VALIDATE_VENV)
-	aws cloudformation describe-stacks --region $(AWS_REGION) --profile $(AWS_PROFILE) --stack-name $(AWS_STACK)
 # -------------------------------------- Tests
 .PHONY: unit-test
 .make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile .env
@@ -604,7 +461,7 @@ aws-info:
 unit-test: .make-unit-test
 
 .PHONY: functional-test
-.make-functional-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build Makefile envs.json tests/data
+.make-functional-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build Makefile tests/data
 	@$(VALIDATE_VENV)
 	$(MAKE) async-start-lambda
 	PYTHONPATH=./src python -m pytest -m "functional" -s tests $(PYTEST_ARGS)
@@ -666,13 +523,8 @@ typing: .make-typing
 lint: .make-lint
 
 
-.make-sam-validate:  aws-update-token template.yaml
-	@echo -e "$(cyan)Validate template.yaml...$(normal)"
-	@sam validate $(SAM_TEMPLATE)
-	@date >.make-sam-validate
-
 .PHONY: validate
-.make-validate: .make-typing .make-lint .make-test .make-sam-validate
+.make-validate: build .make-typing .make-lint .make-test
 	@date >.make-validate
 
 ## Validate the project
@@ -692,16 +544,3 @@ submodule-push:
 
 submodule-stash:
 	git submodule foreach 'git stash'
-# -------------------------------------- DEBUG
-
-# TODO: Find how to use debugger
-# See https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-debugging-python.html
-debugging:
-	@$(VALIDATE_VENV)
-	# Install dependencies
-	pip install -r src/requirements.txt -t build/
-	pip install -r layers/base/requirements.txt -t build/
-	pip install -r layers/parquet/requirements.txt -t build/
-	# Install ptvsd library for step through debugging
-	pip install ptvsd -t build/
-	cp $(PRJ)/*.py build/

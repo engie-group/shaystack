@@ -1,6 +1,8 @@
 # Haystack AWS Lambda API
 
-Haystackapi is a skeleton AWS Lambda API to implement [Haystack Rest API](https://project-haystack.org/doc/Rest).
+Haystackapi is a skeleton to implement [Haystack Rest API](https://project-haystack.org/doc/Rest).
+It's compatible with AWS Lambda or Flask server.
+
 Theses API can negotiate:
 - Request format (`Content-Type: text/zinc` or `application/json`)
 - Request encoding (`Content-Encoding: gzip`)
@@ -23,7 +25,7 @@ The code implements all Haystack [operations](https://project-haystack.org/doc/R
 
 ## Summary
 This project contains source code and supporting files for a Haystack application 
-that you can deploy with the [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html). 
+that you can deploy with `make aws-deploy` 
 
 To create your custom Haystack API:
 - fork this projet,
@@ -34,35 +36,32 @@ To create your custom Haystack API:
 You can update the code with a `git rebase`.
 
 The project includes the following files and folders:
-- src - Code for the application's Lambda function.
-- src/providers - Sample of providers.
-- events - Invocation events that you can use to invoke functions.
-- tests - Unit tests for the application code. 
-- hszinc - Git submodule to extend the hszinc project. 
-- layers - A lamdda layers shared with other lambdas 
-- `template.yaml` - A template that defines the application's AWS resources.
+- `app` - Code for the application's Flask and Lambda function.
+- `haystackapi` - The generic wrapper between technology and implementation
+- `haystackapi/providers` - Sample of providers.
+- `tests` - Unit tests for the application code. 
+- `hszinc` - Git submodule to extend the hszinc project. 
+- `*.postman*.json` - script to invoke API with postman
 - `Makefile` - All tools to manage the project (Use `make help`'`)
 
 You can add some environement variable in `.env` file.
-
-The application uses several AWS resources, including Lambda functions and an API Gateway. 
-These resources are defined in the `template.yaml` file. 
 
 ## Providers
 Different sample of provider are proposed. You can add a new one with a subclass of `providers.HaystackInterface`.
 Then, you can implement only the method you want. The others methods are automatically exclude in 
 the [`../ops`](https://project-haystack.org/doc/Ops#ops) operation.
 
-To select a provider, add the environment variable `HAYSTACK_PROVIDER` in the lambda context.
+To select a provider, add the environment variable `HAYSTACK_PROVIDER` in the lambda context
+or before to start Flask.
 
 To add a new provider, *fork the project* and add a provider in the `providers` directory. You can update others 
-parameters in `Project.variables` (`HAYSTACK_PROVIDER`, `AWS_STACK`, `AWS_PROFILE`, `AWS_REGION` `AWS_STACK`, ...)
+parameters in `Project.variables` (`HAYSTACK_PROVIDER`, `AWS_STACK`, `AWS_PROFILE`, `AWS_REGION`, ...)
 
-### Provider
+### Provider ping
 Use `HAYSTACK_PROVIDER=providers.ping` to use this provider.
 It's a very simple provider, with a tiny implementation of all haystack operation.
 
-### Provider
+### Provider url
 Use `HAYSTACK_PROVIDER=providers.url` to use this provider.
 Add the variable `HAYSTACK_URL=<url>` to expose an Haystack file via the Haystack protocol.
 The methods `/read` and `/his_read` was implemented.
@@ -71,12 +70,12 @@ The time series to manage history must be referenced in the entity, with the `hi
 This URI may be relative and must be in parquet format.
 
 ## Build the application
-This project use a `Makefile` (>4.0) to integrate all tools, docker
+This project use a `Makefile` (>4.0) to integrate all tools
 and [Conda](https://docs.conda.io/projects/conda/en/latest/index.html)
 to manage dependencies and others tools.
 
 To initialise the Conda environment, use `make configure` and activate the conda environment.
-Then, it's possible to `test`, `build`, etc. See `make help` to print all major target.
+Then, it's possible to `test`, `start-api`, etc. See `make help` to print all major target.
 ```bash
 git clone --recurse-submodules http://github.com/pprados/haystackapi.git 
 make configure

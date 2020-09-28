@@ -36,7 +36,7 @@ from fastparquet.compression import compressions, decompressions
 from overrides import overrides
 from pandas import DataFrame
 # from pandas.io.s3 import s3fs
-from snappy import snappy
+#from snappy import snappy
 
 import hszinc
 from hszinc import Grid, MODE_ZINC, MODE_JSON, MODE_CSV, VER_3_0
@@ -53,10 +53,15 @@ LRU_SIZE = 32
 # -- Initialize fastparquet
 def snappy_decompress(data, uncompressed_size):  # pylint: disable=unused-argument
     """ decompress snappy data """
-    return snappy.decompress(data)
+    #return snappy.decompress(data)
+    raise NotImplementedError("Snappy not supported now")
 
+def snappy_compress(data):
+    """ compress snappy data """
+    #return snappy.compress(data)
+    raise NotImplementedError("Snappy not supported now")
 
-compressions['SNAPPY'] = snappy.compress
+compressions['SNAPPY'] = snappy_compress
 decompressions['SNAPPY'] = snappy_decompress
 
 

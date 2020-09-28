@@ -33,6 +33,42 @@ class HaystackInterface(ABC):
     def __str__(self):
         return self.__repr__()
 
+    @abstractmethod
+    def about(self, home: str) -> Grid:
+        """ Implement the Haystack 'about' ops
+        :param home: Home url of the API
+        Return the default 'about' grid.
+        Must be completed with "productUri", "productVersion", "moduleName" abd "moduleVersion"
+        """
+        grid = hszinc.Grid(version=VER_3_0,
+                           columns=[
+                               "haystackVersion",  # Str version of REST implementation
+                               "tz",  # Str of server's default timezone
+                               "serverName",  # Str name of the server or project database
+                               "serverTime",
+                               "serverBootTime",
+                               "productName",  # Str name of the server software product
+                               "productUri",
+                               "productVersion",
+                               # "moduleName",
+                               # module which implements Haystack server protocol if its a plug-in to the product
+                               # "moduleVersion"  # Str version of moduleName
+                           ])
+        grid.append(
+            {
+                "haystackVersion": str(VER_3_0),
+                "tz": str(get_localzone()),
+                "serverName": "haystack_" + os.environ.get("AWS_REGION", "local"),  # FIXME: set the server name
+                "serverTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
+                "serverBootTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
+                "productName": "AWS Lamdda Haystack Provider",
+                "productUri": Uri(home),
+                "productVersion": "0.1",
+                "moduleName": "URLProvider",
+                "moduleVersion": "0.1"
+            })
+        return grid
+
     def ops(self) -> Grid:
         """ Implement the Haystack 'ops' ops """
         # Automatically calculate the implemented version.
@@ -65,42 +101,6 @@ class HaystackInterface(ABC):
         all_haystack_ops = {_to_camel(k): v for k, v in all_haystack_ops.items()}
 
         grid.extend([{"name": name, "summary": summary} for name, summary in all_haystack_ops.items()])
-        return grid
-
-    @abstractmethod
-    def about(self, home: str) -> Grid:
-        """ Implement the Haystack 'about' ops
-        :param home: Home url of the API
-        Return the default 'about' grid.
-        Must be completed with "productUri", "productVersion", "moduleName" abd "moduleVersion"
-        """
-        grid = hszinc.Grid(version=VER_3_0,
-                           columns=[
-                               "haystackVersion",  # Str version of REST implementation
-                               "tz",  # Str of server's default timezone
-                               "serverName",  # Str name of the server or project database
-                               "serverTime",
-                               "serverBootTime",
-                               "productName",  # Str name of the server software product
-                               "productUri",
-                               "productVersion",
-                               # "moduleName",
-                               # module which implements Haystack server protocol if its a plug-in to the product
-                               # "moduleVersion"  # Str version of moduleName
-                           ])
-        grid.append(
-            {
-                "haystackVersion": str(VER_3_0),
-                "tz": str(get_localzone()),
-                "serverName": "haystack_" + os.environ["AWS_REGION"],  # FIXME: set the server name
-                "serverTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
-                "serverBootTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
-                "productName": "AWS Lamdda Haystack Provider",
-                "productUri": Uri(home),
-                "productVersion": "0.1",
-                "moduleName": "URLProvider",
-                "moduleVersion": "0.1"
-            })
         return grid
 
     # Implement this method, only if you want to limited the format negociation
@@ -166,6 +166,7 @@ class HaystackInterface(ABC):
 
 _providers = {}  # Cached providers
 
+
 def get_provider(class_str) -> HaystackInterface:
     """ Return an instance of the provider.
     If the provider is an abstract class, create a sub class with all the implementation
@@ -173,7 +174,7 @@ def get_provider(class_str) -> HaystackInterface:
     and detect the implemented and abstract methods.
     """
     try:
-        if not class_str.endWith(".Provider"):
+        if not class_str.endswith(".Provider"):
             class_str = class_str + ".Provider"
         if class_str in _providers:
             return _providers[class_str]

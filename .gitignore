@@ -189,6 +189,7 @@ celerybeat-schedule.*
 # Environments
 .env.backup
 .venv
+zappa_venv
 env/
 venv/
 ENV/
@@ -253,5 +254,3 @@ $RECYCLE.BIN/
 .make*
 PPR*
 .env
-# All generated files
-_*

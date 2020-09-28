@@ -1,11 +1,10 @@
 # Set here, the specific variable for the project
+#PRJ=alpha-dev-haystackapi
 PRJ=haystackapi
 USE_OKTA=Y
-#OKTA_USERNAME=--username XXXX
-HAYSTACK_PROVIDER=providers.url
+HAYSTACK_PROVIDER=haystackapi.providers.url
 HAYSTACK_URL=data/marriot.json
 AWS_PROFILE=alpha-dev
-AWS_STACK=$(AWS_PROFILE)-$(PRJ)
 AWS_REGION=us-east-2
 LOGLEVEL=WARNING
 URL_PARAMS=?id=@point_elec_397691

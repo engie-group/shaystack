@@ -1,6 +1,6 @@
 """
 An Haystack API provider with a very simple implementation.
-It's may be used to test.
+It's must be used for test.
 """
 import logging
 import os
@@ -9,8 +9,8 @@ from typing import Tuple, Any, Dict, Union
 
 from overrides import overrides
 
-from hszinc import Grid, Uri, VER_3_0
-from .haystack_interface import HaystackInterface, EmptyGrid, get_default_about
+from hszinc import Grid, VER_3_0
+from .haystack_interface import HaystackInterface
 
 log = logging.getLogger("ping.Provider")
 log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
@@ -24,12 +24,11 @@ class Provider(HaystackInterface):
     def about(self, home:  str) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'about' ops """
         log.info("about()")
-        grid = get_default_about()
+        grid = super().about(home)
         grid[0].update({  # pylint: disable=no-member
-            "productUri": Uri("http://localhost:80"),  # FIXME indiquer le port et trouver l'URL ?
-            "productVersion": "1.0",  # FIXME: set the product version
+            "productVersion": "1.0",
             "moduleName": "PingProvider",
-            "moduleVersion": "1.0"  # FIXME: set the module version
+            "moduleVersion": "1.0"
         })
 
         return grid

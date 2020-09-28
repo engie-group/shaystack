@@ -1,5 +1,0 @@
-fastparquet
-cffi
-python-snappy
-pandas
-s3fs

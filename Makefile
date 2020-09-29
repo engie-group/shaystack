@@ -15,47 +15,39 @@ ifneq (,$(wildcard .env))
 include .env
 endif
 
-# TODO: tester sans le .env !
-
 # Export all project variables
 export PRJ
 export HAYSTACK_PROVIDER
 export HAYSTACK_URL
-export AWS_STACK
-export AWS_PROFILE
-export AWS_REGION
-export AWS_S3_ENDPOINT
-export PYTHON_VERSION
 export LOGLEVEL
-export PARAMS
-export SAM_CLI_TELEMETRY
+export AWS_PROFILE
+export PYTHON_VERSION
+export HISREAD_PARAMS
+export FLASK_DEBUG
 
-PYTHON_SRC=src/*.py src/providers/*.py
+
+PYTHON_SRC=$(shell find . -name '*.py')
 PYTHON_VERSION:=3.8
 PRJ_PACKAGE:=$(PRJ)
 VENV ?= $(PRJ)
-CONDA_BASE:=$(shell AWS_PROFILE=default conda info --base)
+CONDA_BASE:=$(shell conda info --base)
 CONDA_PACKAGE:=$(CONDA_PREFIX)/lib/python$(PYTHON_VERSION)/site-packages
 CONDA_PYTHON:=$(CONDA_PREFIX)/bin/python
 CONDA_ARGS?=
+FLASK_DEBUG?=1
+AWS_STAGE?=dev
+GIMME?=gimme-aws-creds
+ZAPPA_ENV=zappa_venv
 
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 
-AWS_REGION?=us-east-2
-AWS_STAGE?=dev
 AWS_API_HOME=$(shell zappa status $(AWS_STAGE) --json | jq -r '."API Gateway URL"')
 
 # For minio
-AWS_S3_ENDPOINT?=https://s3.$(AWS_REGION).amazonaws.com
-AWS_ACCESS_KEY=$(shell aws configure get aws_access_key_id)
-AWS_SECRET_KEY=$(shell aws configure get aws_secret_access_key)
-
-FLASK_DEBUG?=1
-export FLASK_DEBUG
 MINIO_HOME=$(HOME)/.minio
-GIMME?=gimme-aws-creds
+AWS_ACCESS_KEY=$(shell aws configure --profile $(AWS_PROFILE) get aws_access_key_id)
+AWS_SECRET_KEY=$(shell aws configure --profile $(AWS_PROFILE) get aws_secret_access_key)
 
-ZAPPA_ENV=zappa_venv
 
 CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
@@ -142,7 +134,6 @@ dump-params:
 	echo HAYSTACK_PROVIDER=$(HAYSTACK_PROVIDER)
 	echo HAYSTACK_URL=$(HAYSTACK_URL)
 	echo AWS_PROFILE=$(AWS_PROFILE)
-	echo AWS_REGION=$(AWS_REGION)
 	echo AWS_STAGE=$(AWS_STAGE)
 
 # -------------------------------------- GIT
@@ -236,18 +227,18 @@ upgrade-venv: upgrade-$(VENV)
 
 # -------------------------------------- Clean
 .PHONY: clean-pip
-## Remove all the pip package
+# Remove all the pip package
 clean-pip:
 	@pip freeze | grep -v "^-e" | grep -v "@" | xargs pip uninstall -y
 	@echo -e "$(cyan)Virtual env cleaned$(normal)"
 
 .PHONY: clean-venv clean-$(VENV)
+# Clean venv
 clean-$(VENV): remove-venv
 	@conda create -y -q -n $(VENV) $(CONDA_ARGS)
 	@echo -e "$(yellow)Warning: Conda virtualenv $(VENV) is empty.$(normal)"
 ## Set the current VENV empty
 clean-venv : clean-$(VENV)
-
 
 # clean-zappa
 clean-zappa:
@@ -269,7 +260,7 @@ clean-all: clean remove-venv
 # Compile all python files
 compile-all:
 	@echo -e "$(cyan)Compile all python file...$(normal)"
-	# FIXME python -m compileall
+	$(CONDA_PYTHON) -m compileall
 
 # -------------------------------------- API
 .PHONY: api
@@ -295,7 +286,7 @@ api-hisRead:
 	@$(VALIDATE_VENV)
 	TARGET="localhost:3000"
 	curl -H "Accept: text/zinc" \
-			"$${TARGET}/haystack/hisRead$(URL_PARAMS)"
+			"$${TARGET}/haystack/hisRead$(HISREAD_PARAMS)"
 
 .PHONY: start-api async-start-api async-stop-api
 ## Start api
@@ -303,15 +294,15 @@ start-api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	@[ -e .start/start-api.pid ] && $(MAKE) async-stop-api || true
 	FLASK_DEBUG=1 FLASK_ENV=$(AWS_STAGE) \
-	python -m app.__init__
+	$(CONDA_PYTHON) -m app.__init__
 
 # Start local api in background
 async-start-api: $(REQUIREMENTS)
-	@$(VALIDATE_VENV)
-	@[ -e .start/start-api.pid ] && echo -e "$(orange)Local API was allready started$(normal)" && exit
+	$(VALIDATE_VENV)
+	[ -e .start/start-api.pid ] && echo -e "$(orange)Local API was allready started$(normal)" && exit
 	mkdir -p .start
-	nohup 	FLASK_DEBUG=1 FLASK_APP=app.run FLASK_ENV=$(AWS_STAGE) \
-	flask run >.start/start-api.log 2>&1 &
+	FLASK_DEBUG=1 FLASK_APP=app.run FLASK_ENV=$(AWS_STAGE) \
+	nohup flask run >.start/start-api.log 2>&1 &
 	echo $$! >.start/start-api.pid
 	sleep 0.5
 	tail .start/start-api.log
@@ -366,7 +357,6 @@ ifeq ($(USE_OKTA),Y)
 .PHONY: aws-update-token
 # Update the AWS Token
 aws-update-token:
-	@echo -e "$(green)Use AWS profile '$(AWS_PROFILE)$(normal)'"
 	@aws sts get-caller-identity >/dev/null 2>/dev/null || $(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
 else
 aws-update-token:
@@ -422,10 +412,9 @@ aws-undeploy: $(REQUIREMENTS)
 
 .PHONY: aws-api
 ## Print AWS API URL
-aws-api:
+aws-api: aws-update-token
 	@echo $(AWS_API_HOME)
 
-## Invoke API via AWS (eg. make aws-api-About)
 .PHONY: aws-api-*
 ## Call AWS api (ie. aws-api-about)
 aws-api-%:
@@ -455,38 +444,20 @@ aws-logs:
 .PHONY: unit-test
 .make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile .env
 	@$(VALIDATE_VENV)
-	PYTHONPATH=./src python -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
+	PYTHONPATH=./src $(CONDA_PYTHON) -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
 	date >.make-unit-test
 ## Run unit test
 unit-test: .make-unit-test
 
-.PHONY: functional-test
-.make-functional-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build Makefile tests/data
-	@$(VALIDATE_VENV)
-	$(MAKE) async-start-lambda
-	PYTHONPATH=./src python -m pytest -m "functional" -s tests $(PYTEST_ARGS)
-	date >.make-functional-test
-## Run functional test
-functional-test: .make-functional-test
-
-.PHONY: test
-.make-test: $(REQUIREMENTS) $(PYTHON_SRC) .aws-sam/build
-	@$(VALIDATE_VENV)
-	$(MAKE) async-start-lambda
-	@PYTHONPATH=./src python -m pytest -s tests $(PYTEST_ARGS)
-	@date >.make-unit-test
-	@date >.make-functional-test
-	@date >.make-test
-
 ## Run all tests (unit and functional)
-test: .make-test
+test: .make-unit-test
 	@date >.make-test
 
 
 # -------------------------------------- hszinc
 hszinc/dist/hszinc-*.whl: hszinc/hszinc/*.py
 	cd hszinc
-	python setup.py bdist_wheel
+	$(CONDA_PYTHON) setup.py bdist_wheel
 
 # -------------------------------------- Typing
 pytype.cfg: $(CONDA_PREFIX)/bin/pytype
@@ -544,3 +515,12 @@ submodule-push:
 
 submodule-stash:
 	git submodule foreach 'git stash'
+
+# --------------------------- Distribution
+.PHONY: bdist
+dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC)
+	@$(VALIDATE_VENV)
+	$(CONDA_PYTHON) setup.py bdist_wheel
+
+## Create a binary wheel distribution
+bdist: dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl

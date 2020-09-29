@@ -254,3 +254,5 @@ $RECYCLE.BIN/
 .make*
 PPR*
 .env
+
+*.zip

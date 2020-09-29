@@ -1,4 +1,4 @@
-from http_tools import get_best_encoding_match
+from haystackapi import get_best_encoding_match
 
 
 def test_accept_encoding_simple():

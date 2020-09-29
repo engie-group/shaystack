@@ -3,17 +3,13 @@ from typing import Union, Tuple, Dict, Any
 
 from overrides import overrides
 
+from haystackapi import HaystackInterface, get_provider
 from hszinc import Grid
-from providers.haystack_interface import HaystackInterface, get_provider
-
-
-class _NoImplementation(HaystackInterface):
-    pass
 
 
 def test_ops_without_implementation():
     # GIVEN
-    provider = get_provider('test_haystack_interface._NoImplementation')
+    provider = get_provider('tstprovider_no_implementation')
 
     # WHEN
     ops = provider.ops()
@@ -21,21 +17,9 @@ def test_ops_without_implementation():
     # THEN
     assert len(ops) == 2
 
-
-class _ReadImplementation(HaystackInterface):
-    @overrides
-    def read(self, grid_filter: str, limit: int) -> Grid:
-        pass
-
-    @overrides
-    def his_read(self, id: str,
-                 range: Union[Union[datetime, str], Tuple[Union[datetime, str], Union[datetime, str]]]) -> Grid:
-        pass
-
-
 def test_ops_with_readonly():
     # GIVEN
-    provider = get_provider('test_haystack_interface._ReadImplementation')
+    provider = get_provider('tstprovider_readonly')
 
     # WHEN
     ops = provider.ops()
@@ -58,7 +42,7 @@ class _WriteImplementation(HaystackInterface):
 
 def test_ops_with_writeonly():
     # GIVEN
-    provider = get_provider('test_haystack_interface._WriteImplementation')
+    provider = get_provider('tstprovider_write')
 
     # WHEN
     ops = provider.ops()
@@ -69,23 +53,9 @@ def test_ops_with_writeonly():
     assert ops[3]['name'] == 'hisWrite'
 
 
-class _SubscribeImplementation(HaystackInterface):
-    @overrides
-    def watch_poll(self, watchId: Grid) -> Grid:
-        pass
-
-    @overrides
-    def watch_sub(self, watchId: Grid) -> Grid:
-        pass
-
-    @overrides
-    def watch_unsub(self, watchId: Grid) -> Grid:
-        pass
-
-
 def test_ops_with_subscribe():
     # GIVEN
-    provider = get_provider('test_haystack_interface._SubscribeImplementation')
+    provider = get_provider('tstprovider_subscribe')
 
     # WHEN
     ops = provider.ops()
@@ -97,15 +67,9 @@ def test_ops_with_subscribe():
     assert ops[4]['name'] == 'watchPoll'
 
 
-class _InvokeActionImplementation(HaystackInterface):
-    @overrides
-    def invoke_action(self, id: str, action: str, params: Dict[str, Any]) -> Grid:
-        pass
-
-
 def test_ops_with_invoke_action():
     # GIVEN
-    provider = get_provider('test_haystack_interface._InvokeActionImplementation')
+    provider = get_provider('tstprovider_invokeaction')
 
     # WHEN
     ops = provider.ops()
@@ -115,15 +79,9 @@ def test_ops_with_invoke_action():
     assert ops[2]['name'] == 'invokeAction'
 
 
-class _NavImplementation(HaystackInterface):
-    @overrides
-    def nav(self, nav_id: Grid) -> Any:
-        pass
-
-
 def test_ops_with_nav():
     # GIVEN
-    provider = get_provider('test_haystack_interface._NavImplementation')
+    provider = get_provider('tstprovider_nav')
 
     # WHEN
     ops = provider.ops()

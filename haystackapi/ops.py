@@ -10,51 +10,42 @@ import codecs
 import gzip
 import logging
 import os
+import re
 import traceback
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Tuple
+from decimal import Decimal
+# Matches 'gzip' or 'compress'
+from typing import Optional, Any, Match, List
+from typing import Tuple, Dict
 
-from flask import Response, Request
+from accept_types import AcceptableType, get_best_match
 
-import hszinc  # FIXME: import nécessaire ? # type: ignore
-from hszinc import Grid, MODE_ZINC, MODE_CSV, MODE_JSON, VER_3_0
+import hszinc
 from .providers.haystack_interface import get_provider, HaystackInterface
 
-_DEFAULT_VERSION = VER_3_0
-_DEFAULT_MIME_TYPE = MODE_CSV
-_DEFAULT_MIME_TYPE_WITH_METADATA = MODE_ZINC
-
-# TODO See https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings.html
-NO_COMPRESS = os.environ.get("NOCOMPRESS", "true").lower() == "true"
-# See https://tinyurl.com/y8rgcw8p
-# if os.environ.get("DEBUGGING", "false").lower() == "true":
-#     # https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/ecs-debug.html
-#     # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-debugging-python.html
-#     import ptvsd  # type: ignore
-#
-#     # Enable ptvsd on 0.0.0.0 address and on port 5890 that we'll connect later with our IDE
-#     ptvsd.enable_attach(address=('0.0.0.0', 5890), redirect_output=True)
-#     print("Connect debugger...")
-#     ptvsd.wait_for_attach()
+_DEFAULT_VERSION = hszinc.VER_3_0
+_DEFAULT_MIME_TYPE = hszinc.MODE_CSV
+_DEFAULT_MIME_TYPE_WITH_METADATA = hszinc.MODE_ZINC
 
 log = logging.getLogger("haystackapi")
 log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
 
-"""Different tools to manage complex headers
-"""
-import re
-from decimal import Decimal
-# Matches 'gzip' or 'compress'
-from typing import Optional, Any, Match, List
 
-from accept_types import AcceptableType, get_best_match
+@dataclass
+class HaystackHttpRequest():
+    body: str = ""
+    args: Dict[str, str] = field(default_factory=lambda: ({}))
+    is_base64: bool = False
+    headers: Dict[str, str] = field(default_factory=lambda: (
+        {'Host': 'localhost', 'Content-Type': 'text:text', 'Accept': '*/*'}))
 
-class HaystackRequest(dict):  # TODO
-    pass
 
-class HaystackResponse(dict):  # TODO
-    pass
-
+@dataclass
+class HaystackHttpResponse():
+    status_code: int = 200
+    headers: Dict[str, str] = field(default_factory=lambda: ({'Content-Type': 'text/text'}))
+    body: str = ""
 
 
 _COMPRESS_TYPE_STR = r'[a-zA-Z0-9._-]+'
@@ -64,6 +55,7 @@ _valid_encoding_type = re.compile(r'^(?:[a-zA-Z-]+)$')
 
 # Matches the 'q=1.23' from the parameters of a Accept mime types
 _q_match = re.compile(r'(?:^|;)\s*q=([0-9.-]+)(?:$|;)')
+
 
 class _AcceptableEncoding:
     encoding_type = None
@@ -155,7 +147,7 @@ def _get_weight(tail):
     return Decimal(1)
 
 
-def _parse_body(request) -> Grid:
+def _parse_body(request: HaystackHttpRequest) -> hszinc.Grid:
     if "Content-Encoding" in request.headers and request.isBase64Encoded:
         content_encoding = request.headers["Content-Encoding"]
         if content_encoding != "gzip":
@@ -165,21 +157,22 @@ def _parse_body(request) -> Grid:
         request.body = gzip.decompress(base64.b64decode(body)).decode("utf-8")
         request.isBase64Encoded = False
     if "Content-Type" not in request.headers:
-        grid = Grid(version=_DEFAULT_VERSION)
+        grid = hszinc.Grid(version=_DEFAULT_VERSION)
     else:
         content_type = request.headers["Content-Type"]
         grid = hszinc.parse(request.body, mode=content_type)
     return grid
 
 
-def _format_response(headers, grid_response, status, default=None):
+def _format_response(headers: Dict[str, str], grid_response: hszinc.Grid, status: int, default=None) -> HaystackHttpResponse:
     hs_response = _dump_response(headers.get("Accept", _DEFAULT_MIME_TYPE), grid_response,
                                  default=default)
 
-    return Response(status=status,
-                    content_type=hs_response[0],
-                    response=hs_response[1]
-                    )
+    response = HaystackHttpResponse(status_code=status,
+                                    body=hs_response[1]
+                                    )
+    response.headers['Content-Type'] = hs_response[0]
+    return response
 
 
 def _dump_response(accept: str, grid: hszinc.Grid, default: Optional[str] = None) -> Tuple[str, str]:
@@ -203,20 +196,6 @@ def _dump_response(accept: str, grid: hszinc.Grid, default: Optional[str] = None
 def _compress_response(content_encoding: Optional[str], response):
     return response
 
-# def _compress_response(content_encoding: Optional[str], response: LambdaProxyResponse) -> LambdaProxyResponse:
-#     if not content_encoding or NO_COMPRESS:
-#         return response
-#     encoding = get_best_encoding_match(content_encoding, ['gzip'])
-#     if not encoding:
-#         return response
-#     # TODO: accept other encoding format ?
-#     if encoding == "gzip":
-#         gzip_body = base64.b64encode(gzip.compress(response.body.decode("utf-8")))
-#         response.body = gzip_body
-#         response.headers["Content-Encoding"] = "gzip"
-#         response["isBase64Encoded"] = True
-#     return response
-
 
 def _get_provider() -> HaystackInterface:
     assert "HAYSTACK_PROVIDER" in os.environ, "Set 'HAYSTACK_PROVIDER' environment variable"
@@ -224,13 +203,11 @@ def _get_provider() -> HaystackInterface:
     return get_provider(os.environ["HAYSTACK_PROVIDER"])
 
 
-def about(request: Request, stage: str):
+def about(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """ Implement Haystack 'about' with AWS Lambda """
-    body, headers, args = (request.body, request.headers, request.args)
-    log.debug(f'HAYSTACK_PROVIDER={os.environ.get("HAYSTACK_PROVIDER",None)}')
-    log.debug(f'HAYSTACK_URL={os.environ.get("HAYSTACK_URL",None)}')
-    if body:
-        body = codecs.decode(str.encode(body), 'unicode-escape')  # FIXME: pourquoi ?
+    headers = request.headers
+    log.debug(f'HAYSTACK_PROVIDER={os.environ.get("HAYSTACK_PROVIDER", None)}')
+    log.debug(f'HAYSTACK_URL={os.environ.get("HAYSTACK_URL", None)}')
     try:
         provider = _get_provider()
         if headers['Host'].startswith("localhost:"):
@@ -255,11 +232,9 @@ def about(request: Request, stage: str):
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
-def ops(request: Request, stage: str):
+def ops(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """ Implement Haystack 'ops' with AWS Lambda """
-    body, headers, args = (request.body, request.headers, request.args)
-    if body:
-        body = codecs.decode(str.encode(body), 'unicode-escape')  # FIXME: pourquoi ?
+    headers = request.headers
     try:
         provider = _get_provider()
         grid_response = provider.ops()
@@ -280,11 +255,9 @@ def ops(request: Request, stage: str):
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
-def formats(request: Request,  stage: str):
+def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """ Implement Haystack 'formats' with AWS Lambda """
-    body, headers, args = (request.body, request.headers, request.args)
-    if body:
-        body = codecs.decode(str.encode(body), 'unicode-escape')  # FIXME: pourquoi ?
+    headers = request.headers
     try:
         provider = _get_provider()
         grid_response = provider.formats()
@@ -296,9 +269,9 @@ def formats(request: Request,  stage: str):
                                             "send": {},
                                         })
             grid_response.extend([
-                {"mime": MODE_ZINC, "receive": hszinc.MARKER, "send": hszinc.MARKER},
-                {"mime": MODE_JSON, "receive": hszinc.MARKER, "send": hszinc.MARKER},
-                {"mime": MODE_CSV, "receive": hszinc.MARKER, "send": hszinc.MARKER},
+                {"mime": hszinc.MODE_ZINC, "receive": hszinc.MARKER, "send": hszinc.MARKER},
+                {"mime": hszinc.MODE_JSON, "receive": hszinc.MARKER, "send": hszinc.MARKER},
+                {"mime": hszinc.MODE_CSV, "receive": hszinc.MARKER, "send": hszinc.MARKER},
             ])
         response = _format_response(headers, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
@@ -316,11 +289,9 @@ def formats(request: Request,  stage: str):
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
-def read(request: Request,  stage: str):
+def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `read` operation"""
     body, headers, args = (request.body, request.headers, request.args)
-    if body:
-        body = codecs.decode(str.encode(body), 'unicode-escape')  # FIXME: pourquoi ?
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
@@ -360,11 +331,9 @@ def read(request: Request,  stage: str):
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
-def nav(request: Request,  stage: str):
+def nav(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `nav` operation"""
     body, headers, args = (request.body, request.headers, request.args)
-    if body:
-        body = codecs.decode(str.encode(body), 'unicode-escape')  # FIXME: pourquoi ?
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
@@ -385,11 +354,9 @@ def nav(request: Request,  stage: str):
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
-def watch_sub(request: Request,  stage: str):
+def watch_sub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `watch_sub` operation"""
     body, headers, args = (request.body, request.headers, request.args)
-    if body:
-        body = codecs.decode(str.encode(body), 'unicode-escape')  # FIXME: pourquoi ?
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
@@ -411,11 +378,9 @@ def watch_sub(request: Request,  stage: str):
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
-def watch_unsub(request: Request,  stage: str):
+def watch_unsub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `watch_unsub` operation"""
     body, headers, args = (request.body, request.headers, request.args)
-    if body:
-        body = codecs.decode(str.encode(body), 'unicode-escape')  # FIXME: pourquoi ?
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
@@ -436,11 +401,9 @@ def watch_unsub(request: Request,  stage: str):
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
-def watch_poll(request: Request,  stage: str):
+def watch_poll(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `watch_poll` operation"""
     body, headers, args = (request.body, request.headers, request.args)
-    if body:
-        body = codecs.decode(str.encode(body), 'unicode-escape')  # FIXME: pourquoi ?
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
@@ -461,11 +424,9 @@ def watch_poll(request: Request,  stage: str):
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
-def point_write(request: Request,  stage: str):
+def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `point_write` operation"""
     body, headers, args = (request.body, request.headers, request.args)
-    if body:
-        body = codecs.decode(str.encode(body), 'unicode-escape')  # FIXME: pourquoi ?
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
@@ -486,11 +447,9 @@ def point_write(request: Request,  stage: str):
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
-def his_read(request: Request,  stage: str):
+def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `his_read` operation"""
     body, headers, args = (request.body, request.headers, request.args)
-    if body:
-        body = codecs.decode(str.encode(body), 'unicode-escape')  # FIXME: pourquoi ?
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
@@ -528,11 +487,9 @@ def his_read(request: Request,  stage: str):
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
-def his_write(request: Request,  stage: str):
+def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `his_write` operation"""
     body, headers, args = (request.body, request.headers, request.args)
-    if body:
-        body = codecs.decode(str.encode(body), 'unicode-escape')  # FIXME: pourquoi ?
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
@@ -561,11 +518,9 @@ def his_write(request: Request,  stage: str):
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
-def invoke_action(request: Request,  stage: str):
+def invoke_action(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `invoke_action` operation"""
     body, headers, args = (request.body, request.headers, request.args)
-    if body:
-        body = codecs.decode(str.encode(body), 'unicode-escape')  # FIXME: pourquoi ?
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)

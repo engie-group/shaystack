@@ -4,7 +4,6 @@
 //    "aws_region": "us-east-2",
     "aws_region": "eu-west-3",
     "app_function": "app.__init__.app",
-//    "app_function": "app.app.app",
     "project_name": "alpha-dev-haystackapi",
     "s3_bucket": "alpha-dev-zappa-fr",
     "runtime": "python3.8",
@@ -31,7 +30,7 @@
       "pytest.ini",
       "pytype.cfg",
       "pip*",
-      "boto3","botocore",
+      "boto3", "botocore"
     ],
     "slim_handler": false
   }

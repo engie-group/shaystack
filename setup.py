@@ -33,14 +33,14 @@ requirements = [
     'accept_types',
     'overrides',
     'tzlocal',
-
     'hszinc',
     'pint',
+    'click',
 ]
 
 # Extra for a deployment in Flask server
 flask_requirements = [
-    'flask'
+    'flask',
 ]
 
 # Extra for a deployment in AWS Lambda
@@ -88,7 +88,7 @@ setup(name='haystackapi',
       install_requires=requirements,
       entry_points={
           "console_scripts": [
-              'haystackapi-run = app.__init__:main'
+              'haystackapi = app.__init__:main'
           ]
       },
       )

@@ -6,78 +6,30 @@ import pytest
 from botocore.client import BaseClient
 
 import hszinc
+import haystackapi
+from haystackapi import HaystackHttpRequest
 from hszinc import Grid
-from lambda_types import LambdaProxyEvent, LambdaContext, LambdaEvent
-from src import haystackapi_lambda
-from test_tools import boto_client
 
 
-@pytest.fixture()
-def apigw_event():
-    with open('events/Formats_event.json') as json_file:
-        return json.load(json_file)
-
-
-@pytest.fixture()
-def lambda_client() -> BaseClient:
-    return boto_client()
-
-
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'providers.ping'})
-def test_formats_with_zinc(apigw_event: LambdaProxyEvent):
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+def test_formats_with_zinc():
     # GIVEN
-    context = LambdaContext()
-    context.function_name = "Formats"
-    context.aws_request_id = inspect.currentframe().f_code.co_name
-    mime_type = "text/zinc"
-    apigw_event["headers"]["Content-Type"] = mime_type
-    apigw_event["headers"]["Accept"] = mime_type
+    mime_type = hszinc.MODE_ZINC
+    request = HaystackHttpRequest()
+    request.headers["Content-Type"] = mime_type
+    request.headers["Accept"] = mime_type
     # apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
 
     # WHEN
-    response = haystackapi_lambda.formats(apigw_event, context)
+    response = haystackapi.formats(request, "dev")
 
     # THEN
-    assert response["statusCode"] == 200
+    assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    format_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
-    assert format_grid[0]["mime"] == "text/zinc"
+    format_grid: Grid = hszinc.parse(response.body, hszinc.MODE_ZINC)
+    assert format_grid[0]["mime"] == hszinc.MODE_ZINC
     assert format_grid[0]["receive"] == hszinc.MARKER
     assert format_grid[0]["send"] == hszinc.MARKER
     assert format_grid[1]["mime"] == "application/json"
     assert format_grid[1]["receive"] == hszinc.MARKER
     assert format_grid[1]["send"] == hszinc.MARKER
-
-
-# ------------------------------------------
-
-@pytest.mark.functional
-def test_formats(apigw_event: LambdaEvent, lambda_client: BaseClient) -> None:
-    # WHEN
-    boto_response = lambda_client.invoke(
-        FunctionName="Formats",
-        InvocationType="RequestResponse",
-        ClientContext="",
-        Payload=json.dumps(apigw_event)
-    )
-
-    # GIVEN
-    assert boto_response["StatusCode"] == 200
-    response = json.loads(boto_response['Payload'].read())
-    if 'errorType' in response:
-        print(response["errorMessage"])
-    assert 'errorType' not in response, response["errorMessage"]
-    assert response["statusCode"] == 200
-    assert response["headers"]["Content-Type"].startswith("text/zinc")
-    format_grid: Grid = hszinc.parse(response["body"], hszinc.MODE_ZINC)
-    assert format_grid[0]["mime"] == hszinc.MODE_ZINC
-    assert format_grid[0]["receive"] == hszinc.MARKER
-    assert format_grid[0]["send"] == hszinc.MARKER
-
-    assert format_grid[1]["mime"] == hszinc.MODE_JSON
-    assert format_grid[1]["receive"] == hszinc.MARKER
-    assert format_grid[1]["send"] == hszinc.MARKER
-
-    assert format_grid[2]["mime"] == hszinc.MODE_CSV
-    assert format_grid[2]["receive"] == hszinc.MARKER
-    assert format_grid[2]["send"] == hszinc.MARKER

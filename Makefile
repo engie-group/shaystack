@@ -424,7 +424,7 @@ aws-api-%:
 			"$${TARGET}/haystack/$*"
 
 aws-api-read:
-	$(VALIDATE_VENV)
+	@$(VALIDATE_VENV)
 	TARGET="$(AWS_API_HOME)"
 	curl -H "Accept: text/zinc" \
 			"$${TARGET}/haystack/read?filter=point&limit=5"
@@ -433,7 +433,7 @@ aws-api-hisRead:
 	@$(VALIDATE_VENV)
 	TARGET="$(AWS_API_HOME)"
 	curl -H "Accept: text/zinc" \
-			"$${TARGET}/haystack/hisRead$(URL_PARAMS)"
+			"$${TARGET}/haystack/hisRead$(HISREAD_PARAMS)"
 
 ## Print AWS logs
 aws-logs:
@@ -454,7 +454,7 @@ test: .make-unit-test
 	@date >.make-test
 
 
-# -------------------------------------- hszinc
+# -------------------------------------- hszinc submodule
 hszinc/dist/hszinc-*.whl: hszinc/hszinc/*.py
 	cd hszinc
 	$(CONDA_PYTHON) setup.py bdist_wheel
@@ -524,3 +524,40 @@ dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC)
 
 ## Create a binary wheel distribution
 bdist: dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl
+
+.PHONY: sdist
+dist/$(PRJ_PACKAGE)-*.tar.gz: $(REQUIREMENTS)
+	@$(VALIDATE_VENV)
+	$(CONDA_PYTHON) setup.py sdist
+
+sdist: dist/$(PRJ_PACKAGE)-*.tar.gz
+
+.PHONY: dist
+## Create a full distribution
+dist: bdist sdist
+
+.PHONY: check-twine
+## Check the distribution before publication
+check-twine: bdist
+	$(VALIDATE_VENV)
+	twine check \
+		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
+
+## Publish distribution on test.pypi.org
+test-twine: bdist
+	$(VALIDATE_VENV)
+	rm -f dist/*.asc
+	twine upload --sign --repository-url https://test.pypi.org/legacy/ \
+		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
+
+.PHONY: release
+## Publish distribution on pypi.org
+release: clean dist
+	@$(VALIDATE_VENV)
+	[[ $$( find dist -name "*.dev*" | wc -l ) == 0 ]] || \
+		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \
+		; exit 1 )
+	rm -f dist/*.asc
+	echo "Enter Pypi password"
+	twine upload --sign \
+		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )

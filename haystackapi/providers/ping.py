@@ -13,7 +13,7 @@ from hszinc import Grid, VER_3_0
 from .haystack_interface import HaystackInterface
 
 log = logging.getLogger("ping.Provider")
-log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
+log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
 PingGrid = Grid(version=VER_3_0, columns={"empty": {}}, metadata={"dis":"Ping Provider"})
 

@@ -56,11 +56,14 @@ dev_requirements = [
     'flake8',
     'pylint',
     'pytest',
+    'twine'
 ]
 
 setup(name='haystackapi',
       url=_git_http_url(),
       description='Implementation of Haystack REST API',
+      long_description=open('README.md', mode='r', encoding='utf-8').read(),
+      long_description_content_type='text/markdown',
       version="0.1",
       author='Philippe PRADOS',
       # author_email='support@prados.fr',

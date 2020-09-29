@@ -17,7 +17,8 @@ def _as_request(request: flash_request) -> HaystackHttpRequest:
     haystack_request = HaystackHttpRequest()
     haystack_request.body = request.data
     haystack_request.headers = flash_request.headers
-    return request
+    haystack_request.args = flash_request.args
+    return haystack_request
 
 def _as_response(response: HaystackHttpResponse) -> flask_response:
     rep = flask_response()

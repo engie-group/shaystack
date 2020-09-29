@@ -27,17 +27,45 @@ The code implements all Haystack [operations](https://project-haystack.org/doc/R
 This project contains source code and supporting files for a Haystack application 
 that you can deploy with `make aws-deploy` 
 
-To create your custom Haystack API, it's depend of the runtime environment:
-- create a project
-- `pip install "haystackapi[lambda]"` # or [flask] or nothing to others environments
-- In a module, create a subclass of `HaystackInterface` with the name `Provider`
+## Quick local installation
+```bash
+pip install haystackapi[flask]`
+HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi
+```
+
+## Deploy server
 - start the api
     - with flask, `HAYSTACK_PROVIDER='<your provider module> haystackapi`
+        - `pip install "haystackapi[flask]"`
     - with AWS Lambda
-        - duplication the file zappa_settings.json
-        - update parameters
+        - `pip install "haystackapi[lambda]"`
+        - create a file zappa_settings.json with
+```json
+{
+  "dev": {
+    "profile_name": "default",
+    "aws_region": "us-east-2",
+    "app_function": "app.__init__.app",
+    "project_name": "my_haystackapi",
+    "s3_bucket": "zappa",
+    "runtime": "python3.8",
+    "aws_environment_variables": {
+      "HAYSTACK_PROVIDER": "haystackapi.providers.ping",
+      "HAYSTACK_URL": "s3://my_bucket/haystack_file.json"
+    }
+  }
+}
+```        
+        - update the parameters
         - `zappa deploy`
 
+# Custom provider
+To create your custom Haystack API
+- create a project
+- In a module, create a subclass of `HaystackInterface` with the name `Provider`
+- add parameter `HAYSTACK_PROVIDER` with the name of the package 
+
+# Organization
 The project includes the following files and folders:
 - `app` - Code for the application's Flask and Lambda function.
 - `haystackapi` - The generic wrapper between technology and implementation

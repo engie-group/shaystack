@@ -21,48 +21,27 @@ import gzip
 import logging
 import os
 import urllib.request
-from array import array
 from datetime import datetime, MAXYEAR, MINYEAR
 from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
-from typing import cast, Optional, Union, Tuple
+from typing import Optional, Union, Tuple
 from urllib.parse import urlparse
 
 import boto3
 import pytz
-from fastparquet import ParquetFile
-from fastparquet.compression import compressions, decompressions
 from overrides import overrides
-from pandas import DataFrame
-# from pandas.io.s3 import s3fs
-#from snappy import snappy
 
 import hszinc
-from hszinc import Grid, MODE_ZINC, MODE_JSON, MODE_CSV, VER_3_0
+from hszinc import Grid, MODE_ZINC, MODE_JSON, MODE_CSV
 from .haystack_interface import HaystackInterface
 
 Timestamp = datetime
 
 log = logging.getLogger("url.Provider")
-log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
+log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
-LRU_SIZE = 32
-
-
-# -- Initialize fastparquet
-def snappy_decompress(data, uncompressed_size):  # pylint: disable=unused-argument
-    """ decompress snappy data """
-    #return snappy.decompress(data)
-    raise NotImplementedError("Snappy not supported now")
-
-def snappy_compress(data):
-    """ compress snappy data """
-    #return snappy.compress(data)
-    raise NotImplementedError("Snappy not supported now")
-
-compressions['SNAPPY'] = snappy_compress
-decompressions['SNAPPY'] = snappy_decompress
+LRU_SIZE = 128
 
 
 class Provider(HaystackInterface):
@@ -104,14 +83,6 @@ class Provider(HaystackInterface):
         grid = Provider._download_grid(self._get_url())
         if str(entity_id) in grid:  # FIXME: utiliser des ref pour les id d'indaxtion
             entity = grid[entity_id]
-            tz = entity.get("tz")
-            if not tz:  # Try with siteRef PPR: try all link ? Recursive ?
-                if 'siteRef' in entity and entity['siteRef'] in grid:
-                    tz = grid[entity['siteRef']].get('tz', "GMT")
-                else:
-                    tz = 'GMT'
-            local_tz = pytz.timezone(str(hszinc.zoneinfo.timezone(tz, VER_3_0)))
-            log.debug(f"local_tz={local_tz}")
             # Different solution to retrieve the history value
             # 1. use a file in the dir(HAYSTACK_URL)+entity['hisURI']
             if "hisURI" in entity:
@@ -121,19 +92,14 @@ class Provider(HaystackInterface):
                 if not parsed_relative.scheme:
                     his_uri = base[:base.rfind('/')] + "/" + his_uri
 
-                df = cast(DataFrame, Provider._load_time_series(his_uri))
+                history = Provider._download_grid(his_uri)
 
-                history = Grid(version=VER_3_0, columns=['ts', 'val'])
-                min_date = datetime(MAXYEAR, 12, 31, tzinfo=local_tz)  # FIXME: Manage local or UTC ?
-                max_date = datetime(MINYEAR, 1, 1, tzinfo=local_tz)
+                min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
+                max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
 
-                for i in range(len(df)):
-                    date = local_tz.localize(df.loc[i, 'date'].to_pydatetime(), local_tz)
-                    history.append({"ts": date,
-                                    "val": float(df.loc[i, 'val'])
-                                    })
-                    min_date = min(min_date, date)
-                    max_date = max(max_date, date)
+                for r in history:
+                    min_date = min(min_date, r['date'])
+                    max_date = max(max_date, r['date'])
 
                 grid.metadata = {'id': entity_id,
                                  'hisStart': min_date,
@@ -156,46 +122,15 @@ class Provider(HaystackInterface):
         The suffix describe the file format.
         """
         assert uri
-        log.debug(f"_download_uri('{uri}')")
+        log.info(f"_download_uri('{uri}')")
         parsed_uri = urlparse(uri, allow_fragments=False)
         if parsed_uri.scheme == "s3":
-            # TODO: manage version
-            if False:
-                # https://docs.min.io/docs/how-to-use-aws-sdk-for-python-with-minio-server.html
-                bucket_name = 'haystackapi'
-
-                s3 = boto3.resource('s3')
-                versioning = s3.BucketVersioning(bucket_name)
-                # check status
-                log.debug(versioning.status)
-                # enable versioning
-                versioning.enable()
-
-                # Retreive object
-                # See https://avilpage.com/2019/07/aws-s3-bucket-objects-versions.html
-                # https://docs.min.io/docs/how-to-use-aws-sdk-for-python-with-minio-server.html
-                s3 = boto3.resource('s3',
-                                    endpoint_url='http://localhost:9000',
-                                    aws_access_key_id='YOUR-ACCESSKEYID',
-                                    aws_secret_access_key='YOUR-SECRETACCESSKEY',
-                                    config=Config(signature_version='s3v4'),
-                                    region_name='us-east-1')
-                versions = s3.list_object_versions(Bucket=bucket_name)
-                for version in versions:
-                    version_id = versions['Versions'][0]['VersionId']
-                    file_key = versions['Versions'][0]['Key']
-
-                    response = s3.get_object(
-                        Bucket=bucket_name,
-                        Key=file_key,
-                        VersionId=version_id,
-                    )
-                    data = response['Body'].read()
-                    print(data)
             # AWS_S3_ENDPOINT may be http://localhost:9000 to use minio (make start-minio)
             s3 = boto3.client('s3', endpoint_url=os.environ.get('AWS_S3_ENDPOINT', None))
+            obj_versions = s3.list_object_versions(Bucket=parsed_uri.netloc,Prefix=parsed_uri.path[1:])['Versions']
             stream = BytesIO()
-            s3.download_fileobj(parsed_uri.netloc, parsed_uri.path[1:], stream)
+            s3.download_fileobj(parsed_uri.netloc, parsed_uri.path[1:], stream,
+                                ExtraArgs={'VersionId': obj_versions[0]['VersionId']})
             data = stream.getvalue()
         else:
             # Manage default cwd
@@ -227,11 +162,3 @@ class Provider(HaystackInterface):
         else:
             raise ValueError("The file extension must be .(json|zinc|csv)[.gz]")
         return hszinc.parse(body, mode)
-
-    @staticmethod
-    @lru_cache(maxsize=LRU_SIZE)
-    def _load_time_series(uri: str) -> array:
-        log.debug(f"_load_time_series({uri})")
-        buf = Provider._download_uri(uri)
-        pf = ParquetFile(BytesIO(buf))
-        return pf.to_pandas()

@@ -29,7 +29,7 @@ _DEFAULT_MIME_TYPE = hszinc.MODE_CSV
 _DEFAULT_MIME_TYPE_WITH_METADATA = hszinc.MODE_ZINC
 
 log = logging.getLogger("haystackapi")
-log.setLevel(level=os.environ.get("LOGLEVEL", "WARNING"))
+log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
 
 @dataclass
@@ -164,7 +164,8 @@ def _parse_body(request: HaystackHttpRequest) -> hszinc.Grid:
     return grid
 
 
-def _format_response(headers: Dict[str, str], grid_response: hszinc.Grid, status: int, default=None) -> HaystackHttpResponse:
+def _format_response(headers: Dict[str, str], grid_response: hszinc.Grid, status: int,
+                     default=None) -> HaystackHttpResponse:
     hs_response = _dump_response(headers.get("Accept", _DEFAULT_MIME_TYPE), grid_response,
                                  default=default)
 
@@ -223,7 +224,7 @@ def about(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                                  metadata={
                                      "err": hszinc.MARKER,
                                      "id": "badId",
-                                     "errTrace": traceback.format_exc()
+                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
                                  },
                                  columns=[
                                      ('id',
@@ -246,7 +247,7 @@ def ops(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                                  metadata={
                                      "err": hszinc.MARKER,
                                      "id": "badId",
-                                     "errTrace": traceback.format_exc()
+                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
                                  },
                                  columns=[
                                      ('id',
@@ -280,7 +281,7 @@ def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                                  metadata={
                                      "err": hszinc.MARKER,
                                      "id": "badId",
-                                     "errTrace": traceback.format_exc()
+                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
                                  },
                                  columns=[
                                      ('id',
@@ -322,7 +323,7 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                                  metadata={
                                      "err": hszinc.MARKER,
                                      "id": "badId",
-                                     "errTrace": traceback.format_exc()
+                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
                                  },
                                  columns=[
                                      ('id',
@@ -345,7 +346,7 @@ def nav(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                                  metadata={
                                      "err": hszinc.MARKER,
                                      "id": "badId",
-                                     "errTrace": traceback.format_exc()
+                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
                                  },
                                  columns=[
                                      ('id',
@@ -369,7 +370,7 @@ def watch_sub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                                  metadata={
                                      "err": hszinc.MARKER,
                                      "id": "badId",
-                                     "errTrace": traceback.format_exc()
+                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
                                  },
                                  columns=[
                                      ('id',
@@ -392,7 +393,7 @@ def watch_unsub(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
                                  metadata={
                                      "err": hszinc.MARKER,
                                      "id": "badId",
-                                     "errTrace": traceback.format_exc()
+                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
                                  },
                                  columns=[
                                      ('id',
@@ -415,7 +416,7 @@ def watch_poll(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse
                                  metadata={
                                      "err": hszinc.MARKER,
                                      "id": "badId",
-                                     "errTrace": traceback.format_exc()
+                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
                                  },
                                  columns=[
                                      ('id',
@@ -438,7 +439,7 @@ def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
                                  metadata={
                                      "err": hszinc.MARKER,
                                      "id": "badId",
-                                     "errTrace": traceback.format_exc()
+                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
                                  },
                                  columns=[
                                      ('id',
@@ -478,7 +479,7 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                                  metadata={
                                      "err": hszinc.MARKER,
                                      "id": "badId",
-                                     "errTrace": traceback.format_exc()
+                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
                                  },
                                  columns=[
                                      ('id',
@@ -509,7 +510,7 @@ def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                                  metadata={
                                      "err": hszinc.MARKER,
                                      "id": "badId",
-                                     "errTrace": traceback.format_exc()
+                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
                                  },
                                  columns=[
                                      ('id',
@@ -547,7 +548,7 @@ def invoke_action(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespo
                                  metadata={
                                      "err": hszinc.MARKER,
                                      "id": "badId",
-                                     "errTrace": traceback.format_exc()
+                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
                                  },
                                  columns=[
                                      ('id',

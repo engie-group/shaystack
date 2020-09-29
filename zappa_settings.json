@@ -13,7 +13,7 @@
     "aws_environment_variables": {
       "LOGLEVEL": "DEBUG",
       "HAYSTACK_PROVIDER": "haystackapi.providers.url",
-      "HAYSTACK_URL": "s3://alpha-dev-haystack-marriot/marriot.json",
+      "HAYSTACK_URL": "s3://alpha-dev-haystack-marriott/marriott.json",
     } ,
 //    "layers": ["arn:aws:lambda:us-east-2:695980681400:layer:awswrangler-3_8:1"],
     "exclude": [
@@ -32,6 +32,14 @@
       "pip*",
       "boto3", "botocore"
     ],
-    "slim_handler": false
+    "slim_handler": false,
+//    "manage_roles": false,
+//    "role_name": "ZappaDjangoRole",
+//    "role_arn": "arn:aws:iam::908424941159:role/ZappaDjangoRole"
+//    "extra_permissions": [{ // Attach any extra permissions to this policy.
+//            "Effect": "Allow",
+//            "Action": ["rekognition:*"], // AWS Service ARN
+//            "Resource": "*"
+//        }]
   }
 }

@@ -5,7 +5,7 @@ It's must be used for test.
 import logging
 import os
 from datetime import datetime
-from typing import Tuple, Any, Dict, Union
+from typing import Tuple, Any, Dict, Union, Optional
 
 from overrides import overrides
 
@@ -34,22 +34,23 @@ class Provider(HaystackInterface):
         return grid
 
     @overrides
-    def read(self, grid_filter: str, limit: int, date_version: datetime) -> Grid:  # pylint: disable=no-self-use
+    def read(self, grid_filter: str, limit: int, date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
         """ Return EmptyGrid """
-        log.info(f'read(filter="{grid_filter}",limit={limit})')
+        log.info(f'read(filter="{grid_filter}", limit={limit}, date_version={date_version})')
         return PingGrid
 
     @overrides
     def his_read(self, entity_id: str,  # pylint: disable=no-self-use, unused-argument
-                 dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]]) -> Grid:
+                 dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+                 date_version: Optional[datetime]) -> Grid:
         """ Return EmptyGrid """
-        log.info(f'his_read(id="{id}",range={dates_range})')
+        log.info(f'his_read(id="{id}", range={dates_range}, date_version={date_version})')
         return PingGrid
 
     @overrides
-    def his_write(self, entity_id: str) -> Grid:  # pylint: disable=no-self-use
+    def his_write(self, entity_id: str, date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
         """ Return EmptyGrid """
-        log.info(f'his_write(id="{entity_id}")')
+        log.info(f'his_write(id="{entity_id}, date_version={date_version}")')
         return PingGrid
 
     @overrides
@@ -77,9 +78,10 @@ class Provider(HaystackInterface):
         return PingGrid
 
     @overrides
-    def point_write(self, entity_id: str) -> Grid:  # pylint: disable=no-self-use
+    def point_write(self, entity_id: str,
+                    date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
         """ Return EmptyGrid """
-        log.info(f'point_write(id="{entity_id}")')
+        log.info(f'point_write(id="{entity_id}, date_version={date_version}")')
         return PingGrid
 
     @overrides

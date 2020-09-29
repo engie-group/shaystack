@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Union, Tuple, Dict, Any
+from typing import Union, Tuple, Dict, Any, Optional
 
 from overrides import overrides
 
@@ -28,16 +28,6 @@ def test_ops_with_readonly():
     assert len(ops) == 4
     assert ops[2]['name'] == 'read'
     assert ops[3]['name'] == 'hisRead'
-
-
-class _WriteImplementation(HaystackInterface):
-    @overrides
-    def point_write(self, id: str) -> Grid:
-        pass
-
-    @overrides
-    def his_write(self, id: str) -> Grid:
-        pass
 
 
 def test_ops_with_writeonly():

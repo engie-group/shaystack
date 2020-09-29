@@ -1,0 +1,24 @@
+{
+  "dev": {
+    "profile_name": "alpha-dev",
+    "aws_region": "us-east-2",
+    "app_function": "app.__init__.app",
+    "project_name": "alpha-dev-CUSTOMER",
+    "s3_bucket": "alpha-dev-zappa",
+    "runtime": "python3.8",
+    "aws_environment_variables": {
+      "LOGLEVEL": "WARNING",
+      "HAYSTACK_PROVIDER": "haystackapi.providers.url",
+      "HAYSTACK_URL": "s3://alpha-dev-haystack-CUSTOMER/CUSTOMER.json"
+    },
+    "exclude": [
+      ".*",
+      "data",
+      "pip*",
+      "*csv",
+      "*.whl",
+      "boto3", "botocore"
+    ],
+    "slim_handler": false
+  }
+}

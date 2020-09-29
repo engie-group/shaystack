@@ -22,6 +22,7 @@ from typing import Tuple, Dict
 from accept_types import AcceptableType, get_best_match
 
 import hszinc
+from hszinc.grid_filter import _parse_datetime
 from .providers.haystack_interface import get_provider, HaystackInterface
 
 _DEFAULT_VERSION = hszinc.VER_3_0
@@ -304,8 +305,7 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             limit = int(grid_request[0].get('limit', 0))
         else:
             limit = 0
-        # TODO: manage date_version. Default now()
-        date_version = datetime.now()
+        date_version = grid_request[0].get('version', None) if len(grid_request) else None
 
         # Priority of query string
         if args:
@@ -313,7 +313,10 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                 read_filter = args['filter']
             if 'limit' in args:
                 limit = int(args['limit'])
+            if 'version' in args:
+                date_version = _parse_datetime(args['version'].split(' '))
 
+        log.debug(f"filter={read_filter} limit={limit}, date_version={date_version}")
         grid_response = provider.read(read_filter, limit, date_version)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200)
@@ -431,7 +434,9 @@ def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
-        grid_response = provider.point_write(grid_request)
+        date_version = grid_request[0].get('version', None) if len(grid_request) else None
+        # FIXME: check implementation
+        grid_response = provider.point_write(grid_request, date_version)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
@@ -462,6 +467,7 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             date_range = grid_request[0].get('range', '')
         else:
             date_range = ''
+        date_version = grid_request[0].get('version', None) if len(grid_request) else None
 
         # Priority of query string
         if args:
@@ -469,8 +475,11 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                 entity_id = args['id']
             if 'range' in args:
                 date_range = args['range']  # FIXME: parse date_range
-        log.debug(f"id={entity_id} range={date_range}")
-        grid_response = provider.his_read(entity_id, (datetime.now(), datetime.now()))  # FIXME: use dates
+            if 'version' in args:
+                date_version = _parse_datetime(args['version'].split(' '))
+
+        log.debug(f"id={entity_id} range={date_range}, date_version={date_version}")
+        grid_response = provider.his_read(entity_id, (datetime.now(), datetime.now()), date_version)  # FIXME: use dates
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200)
     except Exception as e:  # pylint: disable=broad-except
@@ -498,11 +507,15 @@ def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             entity_id = grid_request[0].get('id', '')
         else:
             entity_id = ''
+        date_version = grid_request[0].get('version', None) if len(grid_request) else None
+
         # Priority of query string
         if args:
             if 'id' in args:
                 entity_id = args['id']
-        grid_response = provider.his_write(entity_id)
+        if 'version' in args:
+            date_version = _parse_datetime(args['version'].split(' '))
+        grid_response = provider.his_write(entity_id, date_version)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200)
     except Exception:  # pylint: disable=broad-except

@@ -11,11 +11,12 @@ The file must be referenced with the environment variable HAYSTACK_URL and may b
 
 If the suffix is .gz, the body is unzipped.
 
+If the AWS bucket use the versionning, the correct version are return, to correspond to the version of the file
+at the `version_date`.
+
 The time series to manage history must be referenced in entity:
 - with inner ontology in tag 'history' or
-- with the `hisURI` tag. This URI may be relative and MUST be in parquet format, with UTC date time.
-The `his_read` implementation, download the parquet file in memory, update the date/time to point timezone,
-or the referenced site timezone and convert to the negotiated haystack format.
+- with the `hisURI` tag. This URI may be relative and MUST be in grid format.
 """
 import gzip
 import logging
@@ -41,7 +42,7 @@ Timestamp = datetime
 log = logging.getLogger("url.Provider")
 log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
-LRU_SIZE = 128
+LRU_SIZE = 1 # FIXME : LRU a 128
 
 
 class Provider(HaystackInterface):
@@ -66,21 +67,21 @@ class Provider(HaystackInterface):
 
     @lru_cache(maxsize=LRU_SIZE)
     @overrides
-    def read(self, grid_filter: str, limit: Optional[int],
-             date_version: datetime) -> Grid:  # pylint: disable=unused-argument
+    def read(self, grid_filter: str, limit: Optional[int], date_version: Optional[datetime]) -> Grid:  # pylint: disable=unused-argument
         """ Implement Haystack 'read' """
         log.debug(f"----> Call read(grid_filter:'{grid_filter}', limit:{limit})")
-        grid = Provider._download_grid(self._get_url())
+        grid = Provider._download_grid(self._get_url(), date_version)
         result = grid.filter(grid_filter, limit if limit else 0)
         return result
 
     @overrides
     def his_read(self, entity_id: str,
-                 dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]]) -> Grid:
+                 dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+                 date_version: Optional[datetime]) -> Grid:
         """ Implement Haystack 'hisRead' """
-        log.debug(f"----> Call his_read(id:{entity_id}, range:{dates_range}")
+        log.debug(f"----> Call his_read(id={entity_id}, range={dates_range}, date_version={date_version})")
 
-        grid = Provider._download_grid(self._get_url())
+        grid = Provider._download_grid(self._get_url(), date_version)
         if str(entity_id) in grid:  # FIXME: utiliser des ref pour les id d'indaxtion
             entity = grid[entity_id]
             # Different solution to retrieve the history value
@@ -92,7 +93,7 @@ class Provider(HaystackInterface):
                 if not parsed_relative.scheme:
                     his_uri = base[:base.rfind('/')] + "/" + his_uri
 
-                history = Provider._download_grid(his_uri)
+                history = Provider._download_grid(his_uri, date_version)
 
                 min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
                 max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
@@ -115,7 +116,7 @@ class Provider(HaystackInterface):
             raise ValueError(f"id '{entity_id}' not found")
 
     @staticmethod
-    def _download_uri(uri: str) -> bytes:
+    def _download_uri(uri: str, date_version: datetime) -> bytes:  # TODO: update LRU cache
         """ Download Haystack from URI.
         The uri must be a classic url (file://, http:// ...)
         or a s3 urn (s3://).
@@ -126,11 +127,25 @@ class Provider(HaystackInterface):
         parsed_uri = urlparse(uri, allow_fragments=False)
         if parsed_uri.scheme == "s3":
             # AWS_S3_ENDPOINT may be http://localhost:9000 to use minio (make start-minio)
-            s3 = boto3.client('s3', endpoint_url=os.environ.get('AWS_S3_ENDPOINT', None))
-            obj_versions = s3.list_object_versions(Bucket=parsed_uri.netloc,Prefix=parsed_uri.path[1:])['Versions']
+            s3 = boto3.client('s3',
+                              endpoint_url=os.environ.get('AWS_S3_ENDPOINT', None),
+                              verify=False  # See https://stackoverflow.com/questions/62541300/zappa-packaged-lambda-error-botocore-exceptions-sslerror-ssl-validation-faile
+                              )
+            extra_args = None
+            if date_version:
+                obj_versions = s3.list_object_versions(Bucket=parsed_uri.netloc, Prefix=parsed_uri.path[1:])['Versions']
+                for version in obj_versions:
+                    if version['LastModified'] < date_version:
+                        version_id = {'VersionId': version['VersionId'] }
+                        break
+                if not version_id:  # At this date, this file was not exist
+                    raise KeyError(parsed_uri.path[1:])
+
             stream = BytesIO()
+            log.debug(f"bucket={parsed_uri.netloc} path={parsed_uri.path[1:]} extra={extra_args}")
             s3.download_fileobj(parsed_uri.netloc, parsed_uri.path[1:], stream,
-                                ExtraArgs={'VersionId': obj_versions[0]['VersionId']})
+                                ExtraArgs=extra_args)
+            log.debug("apres download s3... ")
             data = stream.getvalue()
         else:
             # Manage default cwd
@@ -139,16 +154,15 @@ class Provider(HaystackInterface):
             with urllib.request.urlopen(uri) as response:
                 data = response.read()
         if uri.endswith(".gz"):
-            log.debug("Je dezip")
             return gzip.decompress(data)
         else:
             return data
 
     @staticmethod
     @lru_cache(maxsize=LRU_SIZE)
-    def _download_grid(uri: str) -> Grid:
-        log.debug(f"_download_grid({uri})")
-        body = Provider._download_uri(uri).decode("utf-8")
+    def _download_grid(uri: str, date_version: datetime) -> Grid:
+        log.debug(f"_download_grid({uri},{date_version})")
+        body = Provider._download_uri(uri, date_version).decode("utf-8")
         if body is None:
             raise ValueError("Empty body not supported")
         if uri.endswith(".gz"):

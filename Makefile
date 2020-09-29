@@ -277,10 +277,10 @@ api-%:
 			"$${TARGET}/haystack/$*"
 
 api-read:
-	#$(VALIDATE_VENV)
+	@$(VALIDATE_VENV)
 	TARGET="localhost:3000"
 	curl -H "Accept: text/zinc" \
-			"$${TARGET}/haystack/read?filter=point&limit=5"
+			"$${TARGET}/haystack/read$(READ_PARAMS)"
 
 api-hisRead:
 	@$(VALIDATE_VENV)
@@ -368,6 +368,9 @@ endif
 # Install a clean venv before invoking zappa
 _zappa_pre_install: clean-zappa
 	@virtualenv $(ZAPPA_ENV)
+ifeq ($(USE_OKTA),Y)
+	$(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
+endif
 	source $(ZAPPA_ENV)/bin/activate
 	# FIXME: injection des paramètres
 	pip install .
@@ -387,9 +390,6 @@ aws-package: $(REQUIREMENTS) _zappa_pre_install compile-all
 ## Deploy lambda functions
 aws-deploy: $(REQUIREMENTS) _zappa_pre_install compile-all
 	$(VALIDATE_VENV)
-ifeq ($(USE_OKTA),Y)
-	$(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
-endif
 	source $(ZAPPA_ENV)/bin/activate
 	zappa deploy $(AWS_STAGE)
 	rm -Rf $(ZAPPA_ENV)
@@ -398,9 +398,6 @@ endif
 ## Update lambda functions
 aws-update: $(REQUIREMENTS) _zappa_pre_install compile-all
 	@$(VALIDATE_VENV)
-ifeq ($(USE_OKTA),Y)
-	$(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
-endif
 	source $(ZAPPA_ENV)/bin/activate
 	zappa update $(AWS_STAGE)
 	rm -Rf $(ZAPPA_ENV)
@@ -408,6 +405,9 @@ endif
 
 ## Remove AWS Stack
 aws-undeploy: $(REQUIREMENTS)
+ifeq ($(USE_OKTA),Y)
+	$(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
+endif
 	zappa undeploy $(AWS_STAGE) --remove-logs
 
 .PHONY: aws-api

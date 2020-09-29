@@ -48,6 +48,10 @@ lambda_requirements = [
     'zappa'
 ] + flask_requirements
 
+azure_requirements = [
+    'azure-functions'
+] + flask_requirements
+
 dev_requirements = [
     'python-dotenv',
     'zappa',
@@ -86,6 +90,7 @@ setup(name='haystackapi',
           'dev': dev_requirements,
           'flask': flask_requirements,
           'lambda': lambda_requirements,
+          'azure': azure_requirements,
           # TODO 'test': test_requirements,
       },
       install_requires=requirements,

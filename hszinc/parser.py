@@ -31,7 +31,29 @@ MODE_ZINC = 'text/zinc'
 MODE_JSON = 'application/json'
 MODE_CSV = 'text/csv'
 
+_suffix_to_mode = {".zinc": MODE_ZINC,
+                   ".json": MODE_JSON,
+                   ".csv": MODE_CSV
+                   }
 
+_mode_to_suffix = {MODE_ZINC: ".zinc",
+                   MODE_JSON: ".json",
+                   MODE_CSV: ".csv"
+                   }
+
+
+def suffix_to_mode(ext):
+    """ Convert a file suffix to Haystack mode"""
+    return _suffix_to_mode.get(ext, None)
+
+
+def mode_to_suffix(mode):
+    """ Convert Hszinc mode to file suffix"""
+    return _mode_to_suffix(mode, None)
+
+
+def parse_file(filename):
+    pass
 def _parse_mode(mode):
     """
     Sanitise the mode given.  Whilst code _should_ use the MODE_ZINC and

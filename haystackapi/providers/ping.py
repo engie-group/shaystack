@@ -2,6 +2,7 @@
 An Haystack API provider with a very simple implementation.
 It's must be used for test.
 """
+from __future__ import annotations
 import logging
 import os
 from datetime import datetime

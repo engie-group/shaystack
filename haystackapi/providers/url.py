@@ -18,6 +18,7 @@ The time series to manage history must be referenced in entity:
 - with inner ontology in tag 'history' or
 - with the `hisURI` tag. This URI may be relative and MUST be in grid format.
 """
+from __future__ import annotations
 import gzip
 import logging
 import os
@@ -34,7 +35,7 @@ import pytz
 from overrides import overrides
 
 import hszinc
-from hszinc import Grid, MODE_ZINC, MODE_JSON, MODE_CSV
+from hszinc import Grid, MODE_ZINC, MODE_JSON, MODE_CSV, suffix_to_mode
 from .haystack_interface import HaystackInterface
 
 Timestamp = datetime
@@ -42,7 +43,7 @@ Timestamp = datetime
 log = logging.getLogger("url.Provider")
 log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
-LRU_SIZE = 1 # FIXME : LRU a 128
+LRU_SIZE = 128
 
 
 class Provider(HaystackInterface):
@@ -145,12 +146,11 @@ class Provider(HaystackInterface):
             log.debug(f"bucket={parsed_uri.netloc} path={parsed_uri.path[1:]} extra={extra_args}")
             s3.download_fileobj(parsed_uri.netloc, parsed_uri.path[1:], stream,
                                 ExtraArgs=extra_args)
-            log.debug("apres download s3... ")
             data = stream.getvalue()
         else:
             # Manage default cwd
             if not parsed_uri.scheme:
-                uri = Path(__file__).parent.parent.joinpath(uri).as_uri()
+                uri = Path.cwd().joinpath(uri).as_uri()
             with urllib.request.urlopen(uri) as response:
                 data = response.read()
         if uri.endswith(".gz"):
@@ -167,12 +167,8 @@ class Provider(HaystackInterface):
             raise ValueError("Empty body not supported")
         if uri.endswith(".gz"):
             uri = uri[:-3]
-        if uri.endswith(".json"):
-            mode = MODE_JSON
-        elif uri.endswith(".zinc"):
-            mode = MODE_ZINC
-        elif uri.endswith(".csv"):
-            mode = MODE_CSV
-        else:
+
+        mode = suffix_to_mode(os.path.splitext(uri)[1])
+        if not mode:
             raise ValueError("The file extension must be .(json|zinc|csv)[.gz]")
         return hszinc.parse(body, mode)

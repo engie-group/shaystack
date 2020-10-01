@@ -5,6 +5,7 @@
 
     Upper of this API, you can find a Flask, AWS Lambda, etc.
 """
+from __future__ import annotations
 import base64
 import codecs
 import gzip
@@ -26,7 +27,7 @@ from hszinc.grid_filter import _parse_datetime
 from .providers.haystack_interface import get_provider, HaystackInterface
 
 _DEFAULT_VERSION = hszinc.VER_3_0
-_DEFAULT_MIME_TYPE = hszinc.MODE_CSV
+_DEFAULT_MIME_TYPE: str = hszinc.MODE_CSV
 _DEFAULT_MIME_TYPE_WITH_METADATA = hszinc.MODE_ZINC
 
 log = logging.getLogger("haystackapi")
@@ -189,7 +190,7 @@ def _dump_response(accept: str, grid: hszinc.Grid, default: Optional[str] = None
         elif accept_type == hszinc.MODE_CSV:
             return (hszinc.MODE_CSV + "; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_CSV))
     if default:
-        return (default + "; charset=utf-8", hszinc.dump(grid, mode=default))
+        return (default + "; charset=utf-8", hszinc.dump(grid, mode=default))  # Return HTTP 403 ?
 
     raise ValueError(f"Accept:{accept} not supported")  # TODO: must return error 406
 

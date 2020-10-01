@@ -256,3 +256,5 @@ PPR*
 .env
 
 *.zip
+zappa_haystackapi.json
+tests/data/

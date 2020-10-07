@@ -203,8 +203,8 @@ def _check_metadata(grid, force_metadata_order=True):
 
 def _check_null(grid):
     assert len(grid) == 2
-    assert_is(grid[0]['null'], None)
-    assert_is(grid[1]['null'], None)
+    assert 'null' not in grid[0]
+    assert 'null' not in grid[1]
 
 
 def _check_na(grid):
@@ -478,7 +478,7 @@ def test_null_csv():
         grid = hszinc.parse(NULL_EXAMPLE_CSV, mode=hszinc.MODE_CSV)
         assert len(grid) == 2
         assert 'null' not in grid[0]
-        assert_is(grid[1]['null'], None)
+        assert 'null' not in grid[1]
 
     yield _check_null_csv, False  # without pint
     yield _check_null_csv, True  # with pint
@@ -570,7 +570,7 @@ str,marker
 "Marker",M
 ''')
         assert len(grid) == 2
-        assert_is(grid[0]['marker'], None)
+        assert 'marker' not in grid[0]
         assert_is(grid[1]['marker'], hszinc.MARKER)
 
     yield _check_marker_in_row_zinc, False  # without pint
@@ -591,7 +591,7 @@ def test_marker_in_row_json():
                 {'str': 'Marker', 'marker': 'm:'},
             ],
         }, mode=hszinc.MODE_JSON)
-        assert grid[0]['marker'] is None
+        assert 'marker' not in grid[0]
         assert grid[1]['marker'] is hszinc.MARKER
 
     yield _check_marker_in_row_json, False  # without pint
@@ -1744,7 +1744,7 @@ N
         assert len(grid) == 1
         assert len(grid.metadata) == 0
         assert list(grid.column.keys()) == ['val']
-        assert_is(grid[0]['val'], None)
+        assert 'val' not in grid[0]
 
     yield _check_nodehaystack_03_zinc, False  # without pint
     yield _check_nodehaystack_03_zinc, True  # with pint
@@ -1790,7 +1790,7 @@ C(12,-34),C(0.123,-.789),C(84.5,-77.45),C(-90,180)
         row = grid.pop(0)
         assert row['a'] == True
         assert row['b'] == False
-        assert_is(row['c'], None)
+        assert 'c' not in row
         assert row['d'] == -99.0
         row = grid.pop(0)
         assert row['a'] == 2.3
@@ -1972,7 +1972,7 @@ Bin(text/html; a=foo; bar="sep"),Bin(text/html; charset=utf8)
         assert grid.column['file2']['icon'] == hszinc.Bin('image/jpg')
         row = grid.pop(0)
         assert row['file1'] == hszinc.Bin('text/plain')
-        assert_is(row['file2'], None)
+        assert 'file2' not in row
         row = grid.pop(0)
         assert row['file1'] == 4
         assert row['file2'] == hszinc.Bin('image/png')
@@ -2000,29 +2000,29 @@ a, b, c
         assert len(grid.metadata) == 0
         assert list(grid.column.keys()) == ['a', 'b', 'c']
         row = grid.pop(0)
-        assert_is(row['a'], None)
+        assert 'a' not in row
         assert row['b'] == 1
         assert row['c'] == 2
         row = grid.pop(0)
         assert row['a'] == 3
-        assert_is(row['b'], None)
+        assert 'b' not in row
         assert row['c'] == 5
         row = grid.pop(0)
         assert row['a'] == 6
         assert row['b'] == 7000
-        assert_is(row['c'], None)
+        assert 'c'  not in row
         row = grid.pop(0)
-        assert_is(row['a'], None)
-        assert_is(row['b'], None)
+        assert 'a'  not in row
+        assert 'b' not in row
         assert row['c'] == 10
         row = grid.pop(0)
-        assert_is(row['a'], None)
-        assert_is(row['b'], None)
-        assert_is(row['c'], None)
+        assert 'a'  not in row
+        assert 'b' not in row
+        assert 'c' not in row
         row = grid.pop(0)
         assert row['a'] == 14
-        assert_is(row['b'], None)
-        assert_is(row['c'], None)
+        assert 'b' not in row
+        assert 'c' not in row
 
     yield _check_nodehaystack_11_zinc, False  # without pint
     yield _check_nodehaystack_11_zinc, True  # with pint

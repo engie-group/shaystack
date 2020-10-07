@@ -31,7 +31,8 @@ def parse_grid(grid_str):
             if value is not _EMPTY:
                 if idx >= len(headers):
                     raise ZincParseException('Failed to parse scalar: %s' % value, 1, 1)
-                m[headers[idx]] = value
+                if value is not None:
+                    m[headers[idx]] = value
         grid.append(m)
     return grid
 

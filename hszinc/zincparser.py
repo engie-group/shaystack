@@ -22,6 +22,13 @@ from .sortabledict import SortableDict
 from .version import Version, VER_2_0, VER_3_0
 from .zoneinfo import timezone
 
+# pp.__diag__.warn_ungrouped_named_tokens_in_collection = True
+# pp.__diag__.warn_multiple_tokens_in_named_alternation = True
+# pp.__diag__.warn_ungrouped_named_tokens_in_collection = True
+# pp.__diag__.warn_name_set_on_empty_Forward = True
+# pp.__diag__.warn_on_multiple_string_args_to_oneof = True
+# pp.__diag__.enable_debug_on_named_expressions = True
+
 # Logging instance for reporting debug info
 LOG = logging.getLogger(__name__)
 
@@ -622,7 +629,8 @@ def _gen_grid(toks):
     g = Grid(version=grid_meta.pop('ver'),
              metadata=grid_meta,
              columns=list(col_meta.items()))
-    g.extend(map(lambda row: dict(zip(col_meta.keys(), row)), rows))
+    for row in rows:
+        g.append({k: row[p] for p, k in enumerate(col_meta.keys()) if row[p] is not None})
     return g
 
 
@@ -659,11 +667,11 @@ def parse_grid(grid_data, parseAll=True):
         LOG.debug('Failing grid: %r', grid_data)
         raise ZincParseException(
             'Failed to parse: %s' % reformat_exception(pe, pe.lineno),
-            grid_data, pe.lineno, pe.col)
+            grid_data, pe.lineno, pe.col)  # Python3: from pe
     except:
         LOG.debug('Failing grid: %r', grid_data)
         raise ZincParseException(
-            'Failed to parse: %s' % sys.exc_info()[0], grid_data, 0, 0)
+            'Failed to parse: %s' % sys.exc_info()[0], grid_data, 0, 0)  # Python3: from pe
 
 
 def parse_scalar(scalar_data, version):
@@ -676,7 +684,7 @@ def parse_scalar(scalar_data, version):
         # Raise a new exception with the appropriate line number.
         raise ZincParseException(
             'Failed to parse scalar: %s' % reformat_exception(pe),
-            scalar_data, 1, pe.col)
+            scalar_data, 1, pe.col)  # Python3: from pe
     except:
         LOG.debug('Failing scalar data: %r (version %r)',
                   scalar_data, version)

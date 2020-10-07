@@ -12,6 +12,8 @@ import datetime
 import logging
 import numbers
 
+import six
+
 from .datatypes import NA, Quantity, Coordinate
 from .metadata import MetadataObject
 from .sortabledict import SortableDict

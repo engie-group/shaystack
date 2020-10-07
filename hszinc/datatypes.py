@@ -7,6 +7,7 @@
 import base64
 import binascii
 import locale
+import re
 import sys
 from abc import ABCMeta
 
@@ -501,6 +502,7 @@ class Ref(object):
     # distinct from the reference name itself immediately following the @
     # symbol.  I'm guessing it's some kind of value.
     def __init__(self, name, value=None, has_value=False):
+        assert isinstance(name, six.string_types) and re.match("^[a-zA-Z0-9_:\-.~]+$", name)
         self.name = name
         self.value = value
         self.has_value = has_value or (value is not None)

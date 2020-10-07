@@ -69,14 +69,18 @@ def parse_grid(grid_str):
         name = col.pop('name')
         meta = {}
         for key, value in col.items():
-            meta[key] = parse_embedded_scalar(value, version=version)
+            value = parse_embedded_scalar(value, version=version)
+            if value is not None:
+                meta[key] = value
         grid.column[name] = meta
 
     # Parse the rows
     for row in (parsed.pop('rows', []) or []):
         parsed_row = {}
         for col, value in row.items():
-            parsed_row[col] = parse_embedded_scalar(value, version=version)
+            value = parse_embedded_scalar(value, version=version)
+            if value is not None:
+                parsed_row[col] = value
         grid.append(parsed_row)
 
     return grid

@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import haystackapi
 import hszinc
-from haystackapi import HaystackHttpRequest
+from haystackapi import HaystackHttpRequest, Ref
 from hszinc import Grid
 
 
@@ -33,7 +33,7 @@ def test_invokeAction_without_params_with_zinc():
     # GIVEN
     mime_type = hszinc.MODE_ZINC
     request = HaystackHttpRequest()
-    grid = hszinc.Grid(metadata={'id': '123', 'action': 'doIt'},
+    grid = hszinc.Grid(metadata={'id': Ref('123'), 'action': 'doIt'},
                        columns={'key': {}, 'value': {}})
     request.headers["Content-Type"] = mime_type
     request.headers["Accept"] = mime_type

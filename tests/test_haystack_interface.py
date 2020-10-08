@@ -1,15 +1,9 @@
-from datetime import datetime
-from typing import Union, Tuple, Dict, Any, Optional
-
-from overrides import overrides
-
-from haystackapi import HaystackInterface, get_provider
-from hszinc import Grid
+from haystackapi import get_provider
 
 
 def test_ops_without_implementation():
     # GIVEN
-    provider = get_provider('tstprovider_no_implementation')
+    provider = get_provider('tstprovider_no_implementation')  # FIXME: use mock ?
 
     # WHEN
     ops = provider.ops()

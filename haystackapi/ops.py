@@ -6,6 +6,7 @@
     Upper of this API, you can find a Flask, AWS Lambda, etc.
 """
 from __future__ import annotations
+
 import base64
 import codecs
 import gzip
@@ -23,11 +24,12 @@ from typing import Tuple, Dict
 from accept_types import AcceptableType, get_best_match
 
 import hszinc
-from hszinc.grid_filter import _parse_datetime
+from hszinc import Grid
+from hszinc.grid_filter import _parse_datetime, Ref
 from .providers.haystack_interface import get_provider, HaystackInterface
 
 _DEFAULT_VERSION = hszinc.VER_3_0
-_DEFAULT_MIME_TYPE: str = hszinc.MODE_CSV
+DEFAULT_MIME_TYPE: str = hszinc.MODE_CSV
 _DEFAULT_MIME_TYPE_WITH_METADATA = hszinc.MODE_ZINC
 
 log = logging.getLogger("haystackapi")
@@ -40,7 +42,7 @@ class HaystackHttpRequest():
     args: Dict[str, str] = field(default_factory=lambda: ({}))
     is_base64: bool = False
     headers: Dict[str, str] = field(default_factory=lambda: (
-        {'Host': 'localhost', 'Content-Type': 'text:text', 'Accept': '*/*'}))
+        {'Host': 'localhost', 'Content-Type': 'text/text', 'Accept': '*/*'}))
 
 
 @dataclass
@@ -159,16 +161,19 @@ def _parse_body(request: HaystackHttpRequest) -> hszinc.Grid:
         request.body = gzip.decompress(base64.b64decode(body)).decode("utf-8")
         request.isBase64Encoded = False
     if "Content-Type" not in request.headers:
-        grid = hszinc.Grid(version=_DEFAULT_VERSION)
+        grid = hszinc.parse(request.body, mode=DEFAULT_MIME_TYPE)
     else:
         content_type = request.headers["Content-Type"]
-        grid = hszinc.parse(request.body, mode=content_type)
+        if hszinc.mode_to_suffix(content_type):
+            grid = hszinc.parse(request.body, mode=content_type)
+        else:
+            grid = hszinc.Grid(version=_DEFAULT_VERSION)
     return grid
 
 
 def _format_response(headers: Dict[str, str], grid_response: hszinc.Grid, status: int,
                      default=None) -> HaystackHttpResponse:
-    hs_response = _dump_response(headers.get("Accept", _DEFAULT_MIME_TYPE), grid_response,
+    hs_response = _dump_response(headers.get("Accept", DEFAULT_MIME_TYPE), grid_response,
                                  default=default)
 
     response = HaystackHttpResponse(status_code=status,
@@ -181,8 +186,8 @@ def _format_response(headers: Dict[str, str], grid_response: hszinc.Grid, status
 def _dump_response(accept: str, grid: hszinc.Grid, default: Optional[str] = None) -> Tuple[str, str]:
     accept_type = get_best_match(accept, ['*/*', hszinc.MODE_CSV, hszinc.MODE_ZINC, hszinc.MODE_JSON])
     if accept_type:
-        if accept_type in (_DEFAULT_MIME_TYPE, "*/*"):
-            return (_DEFAULT_MIME_TYPE + "; charset=utf-8", hszinc.dump(grid, mode=_DEFAULT_MIME_TYPE))
+        if accept_type in (DEFAULT_MIME_TYPE, "*/*"):
+            return (DEFAULT_MIME_TYPE + "; charset=utf-8", hszinc.dump(grid, mode=DEFAULT_MIME_TYPE))
         elif accept_type in (hszinc.MODE_ZINC):
             return (hszinc.MODE_ZINC + "; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_ZINC))
         elif accept_type == hszinc.MODE_JSON:
@@ -298,27 +303,38 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
-        if 'filter' in grid_request.column:
-            read_filter = grid_request[0].get('filter', '')
-        else:
-            read_filter = ''
-        if 'limit' in grid_request.column:
-            limit = int(grid_request[0].get('limit', 0))
-        else:
-            limit = 0
-        date_version = grid_request[0].get('version', None) if len(grid_request) else None
+        read_ids = read_filter = date_version = None
+        limit = 0
+        if len(grid_request):
+            if 'id' in grid_request.column:
+                read_ids = grid_request
+            else:
+                if 'filter' in grid_request.column:
+                    read_filter = grid_request[0].get('filter', '')
+                else:
+                    read_filter = ''
+            if 'limit' in grid_request.column:
+                limit = int(grid_request[0].get('limit', 0))
+            date_version = grid_request[0].get('version', None) if len(grid_request) else None
 
         # Priority of query string
         if args:
-            if 'filter' in args:
-                read_filter = args['filter']
-            if 'limit' in args:
-                limit = int(args['limit'])
+            if 'id' in args:
+                read_ids = Grid(version=grid_request.version, columns=["id"])
+                for i in args['id'].split(','):
+                    read_ids.append({"id": i})
+            else:
+                if 'filter' in args:
+                    read_filter = args['filter']
+                if 'limit' in args:
+                    limit = int(args['limit'])
             if 'version' in args:
                 date_version = _parse_datetime(args['version'].split(' '))
 
-        log.debug(f"filter={read_filter} limit={limit}, date_version={date_version}")
-        grid_response = provider.read(read_filter, limit, date_version)
+        if read_ids is None and read_filter is None:
+            raise ValueError("'id' or 'filter' must be set")
+        log.debug(f"id={read_ids} filter={read_filter} limit={limit}, date_version={date_version}")
+        grid_response = provider.read(limit, read_ids, read_filter, date_version)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200)
     except Exception as e:  # pylint: disable=broad-except
@@ -435,9 +451,14 @@ def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
-        date_version = grid_request[0].get('version', None) if len(grid_request) else None
-        # FIXME: check implementation
-        grid_response = provider.point_write(grid_request, date_version)
+        entity_id = date_version = None
+        if len(grid_request):
+            entity_id = grid_request[0].get('id', None)
+        if "id" in args:
+            entity_id = Ref(args["id"][1:])
+        if entity_id is None:
+            raise ValueError("'id' must be set")
+        grid_response = provider.point_write(entity_id, date_version)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
@@ -460,20 +481,19 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
-        if 'id' in grid_request.column:
-            entity_id = grid_request[0].get('id', '')
-        else:
-            entity_id = ''
-        if 'range' in grid_request.column:
-            date_range = grid_request[0].get('range', '')
-        else:
-            date_range = ''
-        date_version = grid_request[0].get('version', None) if len(grid_request) else None
+        entity_id = date_version = None
+        date_range = ''
+        if len(grid_request):
+            if 'id' in grid_request.column:
+                entity_id = grid_request[0].get('id', '')
+            if 'range' in grid_request.column:
+                date_range = grid_request[0].get('range', '')
+            date_version = grid_request[0].get('version', None) if len(grid_request) else None
 
         # Priority of query string
         if args:
             if 'id' in args:
-                entity_id = args['id']
+                entity_id = Ref(args['id'][1:])
             if 'range' in args:
                 date_range = args['range']  # FIXME: parse date_range
             if 'version' in args:
@@ -504,19 +524,18 @@ def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
-        if 'id' in grid_request.column:
-            entity_id = grid_request[0].get('id', '')
-        else:
-            entity_id = ''
-        date_version = grid_request[0].get('version', None) if len(grid_request) else None
+        entity_id = grid_request.metadata.get('id')
+        date_version = grid_request.metadata.get('version')
+        ts = grid_request
 
         # Priority of query string
         if args:
             if 'id' in args:
-                entity_id = args['id']
+                entity_id = Ref(args['id'][1:])
+        # FIXME : ts in request
         if 'version' in args:
             date_version = _parse_datetime(args['version'].split(' '))
-        grid_response = provider.his_write(entity_id, date_version)
+        grid_response = provider.his_write(entity_id, ts, date_version)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
@@ -539,19 +558,13 @@ def invoke_action(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespo
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
-        if 'id' in grid_request.column:
-            entity_id = grid_request[0].get('id', '')
-        else:
-            entity_id = ''
-        if 'action' in grid_request.column:
-            action = grid_request[0].get('action', '')
-        else:
-            action = ''
+        entity_id = grid_request.metadata.get("id")
+        action = grid_request.metadata.get("action")
         # Priority of query string
         if args:
-            if 'action' in args:
-                entity_id = args['id']
             if 'id' in args:
+                entity_id = Ref(args['id'][1:])
+            if 'action' in args:
                 entity_id = args['action']
         params = grid_request[0] if grid_request else {}
         grid_response = provider.invoke_action(entity_id, action, params)

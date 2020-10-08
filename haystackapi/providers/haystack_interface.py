@@ -2,6 +2,7 @@
 Base of haystack implementation.
 """
 from __future__ import annotations
+
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime
@@ -11,7 +12,7 @@ from typing import Any, Tuple, Dict, Union, Optional
 from tzlocal import get_localzone
 
 import hszinc
-from hszinc import Grid, VER_3_0, Uri
+from hszinc import Grid, VER_3_0, Uri, Ref
 
 EmptyGrid = Grid(version=VER_3_0, columns={"empty": {}})
 
@@ -110,7 +111,7 @@ class HaystackInterface(ABC):
         return None
 
     @abstractmethod  # FIXME: accept id parameter
-    def read(self, grid_filter: str, limit: int,
+    def read(self, limit: int, entity_ids: Optional[Grid], grid_filter: Optional[str],
              date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'read' ops """
         raise NotImplementedError()
@@ -136,7 +137,8 @@ class HaystackInterface(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def point_write(self, entity_id: str,
+    def point_write(self,
+                    entity_id: Ref,
                     date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'pointWrite' ops """
         raise NotImplementedError()
@@ -149,7 +151,7 @@ class HaystackInterface(ABC):
     # "{dateTime},{dateTime}"
     # "{dateTime}"
     @abstractmethod
-    def his_read(self, entity_id: str,
+    def his_read(self, entity_ids: Ref,
                  dates_range: Union[Union[datetime, str],
                                     Tuple[datetime, datetime]],
                  date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
@@ -157,13 +159,15 @@ class HaystackInterface(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def his_write(self, entity_id: str,
-                 date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
+    def his_write(self,
+                  entity_id: Ref,
+                  ts: Grid,
+                  date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'hisWrite' ops """
         raise NotImplementedError()
 
     @abstractmethod
-    def invoke_action(self, entity_id: str, action: str, params: Dict[str, Any]) -> Grid:  # pylint: disable=no-self-use
+    def invoke_action(self, entity_id: Ref, action: str, params: Dict[str, Any]) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'invokeAction' ops """
         raise NotImplementedError()
 
@@ -194,9 +198,10 @@ def get_provider(class_str) -> HaystackInterface:
             def about(self, home: str) -> Grid:  # pylint: disable=missing-function-docstring,useless-super-delegation
                 return super().about(home)
 
-            def read(self, grid_filter: str, limit: int, date_version: Optional[datetime]) -> Grid:
+            def read(self, limit: int, entity_id: Optional[Grid], grid_filter: Optional[str],
+                     date_version: Optional[datetime]) -> Grid:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().read(grid_filter, limit, date_version)
+                return super().read(limit, entity_id, grid_filter, date_version)
 
             def nav(self, nav_id: Grid) -> Any:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
@@ -214,24 +219,25 @@ def get_provider(class_str) -> HaystackInterface:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
                 return super().watch_poll(watch_id)
 
-            def point_write(self, entity_id: str, date_version: Optional[datetime]) -> Grid:
+            def point_write(self, entity_id: Ref, date_version: Optional[datetime]) -> Grid:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().point_write(entity_id)
+                return super().point_write(entity_id, date_version)
 
-            def his_read(self, entity_id: str,
+            def his_read(self, entity_id: Ref,
                          # pylint: disable=missing-function-docstring,useless-super-delegation
                          date_range: Union[Union[datetime, str],
                                            Tuple[Union[datetime, str], Union[datetime, str]]],
                          date_version: Optional[datetime]) -> Grid:
                 return super().his_read(entity_id, date_range, date_version)
 
-            def his_write(self, entity_id: str,
+            def his_write(self, entity_id: Ref,
+                          ts: Grid,
                           date_version: Optional[datetime]) -> Grid:
                 # pylint: disable=missing-function-docstring, useless-super-delegation
-                return super().his_write(entity_id)
+                return super().his_write(entity_id, ts, date_version)
 
             def invoke_action(self,  # pylint: disable=missing-function-docstring,useless-super-delegation
-                              entity_id: str, action: str, params: Dict[str, Any]) -> Grid:
+                              entity_id: Ref, action: str, params: Dict[str, Any]) -> Grid:
                 return super().invoke_action(entity_id, action, params)
 
         _providers[class_str] = FullInterface()

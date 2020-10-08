@@ -1,13 +1,8 @@
-import inspect
-import json
 from unittest.mock import patch
-
-import pytest
-from botocore.client import BaseClient
 
 import haystackapi
 import hszinc
-from haystackapi import HaystackHttpRequest
+from haystackapi import HaystackHttpRequest, Ref
 from hszinc import Grid
 
 
@@ -23,7 +18,7 @@ def test_negociation_with_zinc() -> None:
     request.body = hszinc.dump(grid, mode=mime_type)
 
     # WHEN
-    response = haystackapi.read(request,"dev")
+    response = haystackapi.read(request, "dev")
 
     # THEN
     assert response.status_code == 200
@@ -43,7 +38,7 @@ def test_negociation_with_json() -> None:
     request.body = hszinc.dump(grid, mode=mime_type)
 
     # WHEN
-    response = haystackapi.read(request,"dev")
+    response = haystackapi.read(request, "dev")
 
     # THEN
     assert response.status_code == 200
@@ -56,13 +51,14 @@ def test_negociation_zinc_without_content_type() -> None:
     # GIVEN
     mime_type = hszinc.MODE_CSV
     request = HaystackHttpRequest()
-    grid: Grid = Grid(columns={'id': {}})
+    grid = Grid(columns={'id': {}})
+    grid.append({"id": Ref("1234")})
     del request.headers["Content-Type"]
     request.headers["Accept"] = mime_type
     request.body = hszinc.dump(grid, mode=mime_type)
 
     # WHEN
-    response = haystackapi.read(request,"dev")
+    response = haystackapi.read(request, "dev")
 
     # THEN
     assert response.status_code == 200
@@ -80,7 +76,7 @@ def test_negociation_json_without_content_type() -> None:
     request.body = hszinc.dump(grid, mode=mime_type)
 
     # WHEN
-    response = haystackapi.read(request,"dev")
+    response = haystackapi.read(request, "dev")
 
     # THEN
     assert response.status_code == 400
@@ -100,7 +96,7 @@ def test_negociation_json_with_unknown_content_type() -> None:
     request.body = hszinc.dump(grid, mode=mime_type)
 
     # WHEN
-    response = haystackapi.read(request,"dev")
+    response = haystackapi.read(request, "dev")
 
     # THEN
     assert response.status_code == 400
@@ -121,7 +117,7 @@ def test_negociation_without_accept() -> None:
     request.body = hszinc.dump(grid, mode=mime_type)
 
     # WHEN
-    response = haystackapi.read(request,"dev")
+    response = haystackapi.read(request, "dev")
 
     # THEN
     assert response.status_code == 200
@@ -139,7 +135,7 @@ def test_negociation_with_invalide_accept() -> None:
     request.body = hszinc.dump(grid, mode=mime_type)
 
     # WHEN
-    response = haystackapi.read(request,"dev")
+    response = haystackapi.read(request, "dev")
 
     # THEN
     assert response.status_code == 400
@@ -161,7 +157,7 @@ def test_negociation_with_navigator_accept() -> None:
     request.body = hszinc.dump(grid, mode=mime_type)
 
     # WHEN
-    response = haystackapi.read(request,"dev")
+    response = haystackapi.read(request, "dev")
 
     # THEN
     assert response.status_code == 200
@@ -181,7 +177,7 @@ def test_negociation_with_complex_accept() -> None:
     request.body = hszinc.dump(grid, mode=mime_type)
 
     # WHEN
-    response = haystackapi.read(request,"dev")
+    response = haystackapi.read(request, "dev")
 
     # THEN
     assert response.status_code == 200

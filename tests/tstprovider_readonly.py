@@ -9,7 +9,8 @@ from hszinc import Grid
 
 class Provider(HaystackInterface):
     @overrides
-    def read(self, grid_filter: str, limit: int, date_version: Optional[datetime]) -> Grid:
+    def read(self, limit: int, entity_ids: Optional[Grid], grid_filter: Optional[str],
+             date_version: Optional[datetime]) -> Grid:
         pass
 
     @overrides

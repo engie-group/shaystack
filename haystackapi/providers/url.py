@@ -19,6 +19,7 @@ The time series to manage history must be referenced in entity:
 - with the `hisURI` tag. This URI may be relative and MUST be in grid format.
 """
 from __future__ import annotations
+
 import gzip
 import logging
 import os
@@ -35,7 +36,7 @@ import pytz
 from overrides import overrides
 
 import hszinc
-from hszinc import Grid, MODE_ZINC, MODE_JSON, MODE_CSV, suffix_to_mode
+from hszinc import Grid, suffix_to_mode
 from .haystack_interface import HaystackInterface
 
 Timestamp = datetime
@@ -68,11 +69,18 @@ class Provider(HaystackInterface):
 
     @lru_cache(maxsize=LRU_SIZE)
     @overrides
-    def read(self, grid_filter: str, limit: Optional[int], date_version: Optional[datetime]) -> Grid:  # pylint: disable=unused-argument
+    def read(self, limit: int, entity_ids: Optional[Grid], grid_filter: Optional[str],
+             date_version: Optional[datetime]) -> Grid:  # pylint: disable=unused-argument
         """ Implement Haystack 'read' """
-        log.debug(f"----> Call read(grid_filter:'{grid_filter}', limit:{limit})")
+        log.debug(
+            f"----> Call read(limit:{limit}, ids:{entity_ids} grid_filter:'{grid_filter}' date_version={date_version})")
         grid = Provider._download_grid(self._get_url(), date_version)
-        result = grid.filter(grid_filter, limit if limit else 0)
+        if entity_ids:
+            result = Grid(grid.version, columns=grid.column)
+            for ref in entity_ids:
+                result.append(grid[ref['id']])
+        else:
+            result = grid.filter(grid_filter, limit if limit else 0)
         return result
 
     @overrides
@@ -130,14 +138,15 @@ class Provider(HaystackInterface):
             # AWS_S3_ENDPOINT may be http://localhost:9000 to use minio (make start-minio)
             s3 = boto3.client('s3',
                               endpoint_url=os.environ.get('AWS_S3_ENDPOINT', None),
-                              verify=False  # See https://stackoverflow.com/questions/62541300/zappa-packaged-lambda-error-botocore-exceptions-sslerror-ssl-validation-faile
+                              verify=False
+                              # See https://stackoverflow.com/questions/62541300/zappa-packaged-lambda-error-botocore-exceptions-sslerror-ssl-validation-faile
                               )
             extra_args = None
             if date_version:
                 obj_versions = s3.list_object_versions(Bucket=parsed_uri.netloc, Prefix=parsed_uri.path[1:])['Versions']
                 for version in obj_versions:
                     if version['LastModified'] < date_version:
-                        version_id = {'VersionId': version['VersionId'] }
+                        version_id = {'VersionId': version['VersionId']}
                         break
                 if not version_id:  # At this date, this file was not exist
                     raise KeyError(parsed_uri.path[1:])

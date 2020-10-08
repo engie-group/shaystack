@@ -510,3 +510,17 @@ def test_grid_add():
     sum = left + right
     assert isinstance(sum, Grid)
     assert len(sum) == 1
+
+
+def test_pack_columns_with_unused_columns():
+    grid = Grid(columns=["id", "a", "b"])
+    grid.append({"id": "myid", "a": 1})
+    grid.pack_columns()
+    assert set(grid.column.keys()) == set(["id", "a"])
+
+
+def test_pack_columns_with_all_columns():
+    grid = Grid(columns=["id", "a", "b"])
+    grid.append({"id": "myid", "a": 1, "b": 2})
+    grid.pack_columns()
+    assert set(grid.column.keys()) == set(["id", "a", "b"])

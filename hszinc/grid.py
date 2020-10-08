@@ -4,7 +4,6 @@
 # (C) 2016 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
-import collections
 
 
 import copy
@@ -27,6 +26,7 @@ except ImportError:  # pragma: no cover
     import collections as col
     from collections import Sequence
 from .version import Version, VER_3_0, VER_2_0
+
 
 class Grid(col.MutableSequence):
     '''
@@ -348,7 +348,17 @@ class Grid(col.MutableSequence):
             if "id" in item:
                 self._index[str(item["id"])] = item
 
-    # FIXME
+    def pack_columns(self):
+        using_columns = set()
+        columns_keys = self.column.keys()
+        for row in self._row:
+            for col in columns_keys:
+                if col in row:
+                    using_columns.add(col)
+                if len(using_columns) == len(columns_keys):  # All columns was found
+                    return
+        self.column = {k: self.column[k] for k in using_columns}
+
     def extend(self, values):
         super(Grid, self).extend(values)  # Python 2 compatible :-(
         # super().extend(values)  # Python 3+ :-)
@@ -367,7 +377,7 @@ class Grid(col.MutableSequence):
         Warning, use a grid.filter(...).deepcopy() if you not whant to share metadata, columns and rows)
         '''
         assert isinstance(limit, numbers.Number)
-        assert limit >=0
+        assert limit >= 0
         from .grid_filter import filter_function
         if filter.strip() == '':
             if limit == 0:

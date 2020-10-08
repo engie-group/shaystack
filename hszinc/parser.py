@@ -49,7 +49,7 @@ def suffix_to_mode(ext):
 
 def mode_to_suffix(mode):
     """ Convert Hszinc mode to file suffix"""
-    return _mode_to_suffix(mode, None)
+    return _mode_to_suffix.get(mode, None)
 
 
 def parse_file(filename):

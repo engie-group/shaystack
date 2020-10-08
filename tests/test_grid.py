@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 import copy
 import datetime
 
+from hszinc import mode_to_suffix, suffix_to_mode
 from hszinc.grid import Grid, Version, VER_3_0, Quantity, Coordinate
 from hszinc.sortabledict import SortableDict
 
@@ -524,3 +525,8 @@ def test_pack_columns_with_all_columns():
     grid.append({"id": "myid", "a": 1, "b": 2})
     grid.pack_columns()
     assert set(grid.column.keys()) == set(["id", "a", "b"])
+
+def test_mode_to_suffix():
+    assert mode_to_suffix(suffix_to_mode(".csv")) == ".csv"
+    assert mode_to_suffix(suffix_to_mode(".zinc")) == ".zinc"
+    assert mode_to_suffix(suffix_to_mode(".json")) == ".json"

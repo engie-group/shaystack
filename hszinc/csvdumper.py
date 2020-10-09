@@ -204,11 +204,10 @@ def dump_scalar(scalar, version=LATEST_VER):
             isinstance(scalar, int) or \
             isinstance(scalar, int):
         return dump_decimal(scalar, version=version)
-    # FIXME
-    # elif isinstance(scalar, list):
-    #     return '"' + str_csv_escape(zinc_dump_scalar(scalar, version=version)) + '"'
-    # elif isinstance(scalar, dict):
-    #     return '"' + str_csv_escape(zinc_dump_scalar(scalar, version=version)) + '"'
+    elif isinstance(scalar, list):
+        return '"' + str_csv_escape(zinc_dump_scalar(scalar, version=version)) + '"'
+    elif isinstance(scalar, dict):
+        return '"' + str_csv_escape(zinc_dump_scalar(scalar, version=version)) + '"'
     elif isinstance(scalar, Grid):
         return '"' + str_csv_escape("<<" + zinc_dump_grid(scalar) + ">>") + '"'
     else:

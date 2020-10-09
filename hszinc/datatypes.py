@@ -532,5 +532,17 @@ class Ref(object):
             return NotImplemented
         return not (self == other)
 
+    def __lt__(self, other):
+        return self.name.__lt__(other.name)
+
+    def __le__(self, other):
+        return self.name.__le__(other.name)
+
+    def __gt__(self, other):
+        return self.name.__gt__(other.name)
+
+    def __ge__(self, other):
+        return self.name.__ge__(other.name)
+
     def __hash__(self):
         return hash(self.name) ^ hash(self.value) ^ hash(self.has_value)

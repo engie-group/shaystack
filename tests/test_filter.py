@@ -173,24 +173,24 @@ def test_generated_filter():
 
 def test_generated_filter_with_reference():
     grid = Grid(columns={'id': {}})
-    grid.insert(0, {'id': 'id1'})
+    grid.insert(0, {'id': Ref('id1')})
     assert filter_function('ref == @id1')(None, {"ref": Ref("id1")})
 
 
 def test_grid_filter():
     grid = Grid(columns={'id': {}, 'site': {}, 'equip': {}, 'geoPostalCode': {}, 'ahu': {},
                          'geoCity': {}, 'curVal': {}, 'hvac': {}, 'siteRef': {}})
-    grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
-    grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
+    grid.append({'id': Ref('id2'), 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
     grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
     result = grid.filter('site')
     assert len(result) == 1
-    assert result['id1']
+    assert result[Ref('id1')]
 
     result = grid.filter('equip == "Chicago"')
     assert len(result) == 2
-    assert result[0]['id'] == 'id1'
+    assert result[0]['id'] == Ref('id1')
     assert result[1]['equip'] == 'Chicago'
 
     result = grid.filter('not id')
@@ -201,9 +201,9 @@ def test_grid_filter():
 def test_grid_specification_filter_sample():
     grid = Grid(columns=['id', 'site', 'equip', 'geoPostalCode', 'ahu',
                          'geoCity', 'curVal', 'hvac', 'siteRef'])
-    grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
-    grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
+    grid.append({'id': Ref('id2'), 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
     grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
 
     # specification samples
@@ -213,11 +213,11 @@ def test_grid_specification_filter_sample():
 
     result = grid.filter('geoPostalCode == "23220"')
     assert len(result) == 1
-    assert result[0]['id'] == 'id2'
+    assert result[0]['id'] == Ref('id2')
 
     result = grid.filter('geoPostalCode != "23220"')
     assert len(result) == 1
-    assert result[0]['id'] == 'id1'
+    assert result[0]['id'] == Ref('id1')
 
     result = grid.filter('curVal < 75')
     assert len(result) == 1
@@ -225,21 +225,21 @@ def test_grid_specification_filter_sample():
 
     result = grid.filter('curVal <= 75')
     assert len(result) == 2
-    assert result[0]['id'] == 'id2'
+    assert result[0]['id'] == Ref('id2')
     assert result[1]['siteRef'] == Ref('id1')
 
     result = grid.filter('curVal > 75')
     assert len(result) == 1
-    assert result[0]['id'] == 'id1'
+    assert result[0]['id'] == Ref('id1')
 
     result = grid.filter('curVal >= 75')
     assert len(result) == 2
-    assert result[0]['id'] == 'id1'
-    assert result[1]['id'] == 'id2'
+    assert result[0]['id'] == Ref('id1')
+    assert result[1]['id'] == Ref('id2')
 
     result = grid.filter('site or equip')
     assert len(result) == 2
-    assert result[0]['id'] == 'id1'
+    assert result[0]['id'] == Ref('id1')
     assert result[0]['site']
     assert result[1]['siteRef'] == Ref('id1')
     assert result[1]['equip']
@@ -274,9 +274,9 @@ def test_if_generated_function_removed():
 def test_slide_get():
     grid = Grid(columns={'id': {}, 'site': {}, 'equip': {}, 'geoPostalCode': {}, 'ahu': {},
                          'geoCity': {}, 'curVal': {}, 'hvac': {}, 'siteRef': {}})
-    grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
-    grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
+    grid.append({'id': Ref('id2'), 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
     grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
     assert len(grid[0:1]) == 1
     assert len(grid[1:]) == 2
@@ -286,18 +286,18 @@ def test_slide_get():
 def test_empty_filter():
     grid = Grid(columns={'id': {}, 'site': {}, 'equip': {}, 'geoPostalCode': {}, 'ahu': {},
                          'geoCity': {}, 'curVal': {}, 'hvac': {}, 'siteRef': {}})
-    grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
-    grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
+    grid.append({'id': Ref('id2'), 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
     grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
     assert len(grid.filter('')) == 3
 
 
 def test_empty_filter_and_limit():
     grid = Grid(columns={'id': {}, 'site': {}})
-    grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
-    grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
+    grid.append({'id': Ref('id2'), 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
     grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
     assert len(grid.filter('', limit=1)) == 1
     assert len(grid.filter('', limit=2)) == 2
@@ -305,9 +305,9 @@ def test_empty_filter_and_limit():
 
 def test_filter_and_limit():
     grid = Grid(columns={'id': {}, 'site': {}})
-    grid.append({'id': 'id1', 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
-    grid.append({'id': 'id2', 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
+    grid.append({'id': Ref('id2'), 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
     grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
 
     assert len(grid.filter('not acme', limit=1)) == 1

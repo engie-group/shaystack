@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
-from hszinc import Grid, REMOVE, VER_2_0, VER_3_0
+from hszinc import Grid, REMOVE, VER_2_0, VER_3_0, Ref
 from hszinc.grid_diff import grid_diff, grid_merge
 
 
@@ -138,14 +138,14 @@ def test_diff_cols_move_col():
 
 def test_diff_change_value_with_id():
     left = Grid(columns={"id": {}, "a": {}, "b": {}})
-    left.append({"id": "my_id", "a": 1, "b": 2})
+    left.append({"id": Ref("my_id"), "a": 1, "b": 2})
     right = Grid(columns={"id": {}, "a": {}, "b": {}})
-    right.append({"id": "my_id", "a": 3, "b": 4})
+    right.append({"id": Ref("my_id"), "a": 3, "b": 4})
 
     diff = grid_diff(left, right)
     assert len(diff) == 1
     assert len(diff[0].keys()) == 3
-    assert diff[0]['id'] == "my_id"
+    assert diff[0]['id'] == Ref("my_id")
     assert diff[0]['a'] == 3
     assert diff[0]['b'] == 4
 
@@ -159,14 +159,14 @@ def test_diff_change_value_with_id():
 
 def test_diff_add_empty_value_with_id():
     left = Grid(columns={"id": {}, "a": {}, "b": {}})
-    left.append({"id": "my_id", "a": 1})
+    left.append({"id": Ref("my_id"), "a": 1})
     right = Grid(columns={"id": {}, "a": {}, "b": {}})
-    right.append({"id": "my_id", "a": 3, "b": 4})
+    right.append({"id": Ref("my_id"), "a": 3, "b": 4})
 
     diff = grid_diff(left, right)
     assert len(diff) == 1
     assert len(diff[0].keys()) == 3
-    assert diff[0]['id'] == "my_id"
+    assert diff[0]['id'] == Ref("my_id")
     assert diff[0]['a'] == 3
     assert diff[0]['b'] == 4
 
@@ -180,14 +180,14 @@ def test_diff_add_empty_value_with_id():
 
 def test_diff_add_value_with_id():
     left = Grid(columns={"id": {}, "a": {}})
-    left.append({"id": "my_id", "a": 1})
+    left.append({"id": Ref("my_id"), "a": 1})
     right = Grid(columns={"id": {}, "a": {}, "b": {}})
-    right.append({"id": "my_id", "a": 3, "b": 4})
+    right.append({"id": Ref("my_id"), "a": 3, "b": 4})
 
     diff = grid_diff(left, right)
     assert len(diff) == 1
     assert len(diff[0].keys()) == 3
-    assert diff[0]['id'] == "my_id"
+    assert diff[0]['id'] == Ref("my_id")
     assert diff[0]['a'] == 3
     assert diff[0]['b'] == 4
 
@@ -200,14 +200,14 @@ def test_diff_add_value_with_id():
 
 def test_diff_remove_value_with_id():
     left = Grid(columns={"id": {}, "a": {}, "b": {}})
-    left.append({"id": "my_id", "a": 1, "b": 2})
+    left.append({"id": Ref("my_id"), "a": 1, "b": 2})
     right = Grid(columns={"id": {}, "a": {}, "b": {}})
-    right.append({"id": "my_id", "a": 3})
+    right.append({"id": Ref("my_id"), "a": 3})
 
     diff = grid_diff(left, right)
     assert len(diff) == 1
     assert len(diff[0].keys()) == 3
-    assert diff[0]['id'] == "my_id"
+    assert diff[0]['id'] == Ref("my_id")
     assert diff[0]['a'] == 3
     assert diff[0]['b'] == REMOVE
 
@@ -220,17 +220,17 @@ def test_diff_remove_value_with_id():
 
 def test_diff_remove_record_with_id():
     left = Grid(columns={"id": {}, "a": {}, "b": {}})
-    left.append({"id": "my_id", "a": 1, "b": 2})
+    left.append({"id": Ref("my_id"), "a": 1, "b": 2})
     right = Grid(columns={"id": {}, "a": {}, "b": {}})
-    right.append({"id": "other_id", "a": 3})
+    right.append({"id": Ref("other_id"), "a": 3})
 
     diff = grid_diff(left, right)
     assert len(diff) == 2
     assert len(diff[0].keys()) == 2
-    assert diff[0]['id'] == "my_id"
+    assert diff[0]['id'] == Ref("my_id")
     assert diff[0]['remove_'] == REMOVE
     assert len(diff[1].keys()) == 2
-    assert diff[1]['id'] == "other_id"
+    assert diff[1]['id'] == Ref("other_id")
     assert diff[1]['a'] == 3
 
     assert 'id' in diff.column

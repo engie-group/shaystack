@@ -19,11 +19,7 @@ GENERATION_NUMBER, \
 GENERATION_COLUMN, \
 GENERATION_ROW, \
 PERCENT_GEN_ID, \
-PERCENT_RECURSIVE = (1, 2, 3, 30, 5)
-
-
-# PERCENT_RECURSIVE = (10, 5, 10, 30, 5)
-
+PERCENT_RECURSIVE = (10, 5, 10, 30, 5)
 
 def gen_random_const():
     return random.choice([True, False, None, hszinc.MARKER, hszinc.REMOVE, hszinc.NA])
@@ -182,7 +178,7 @@ def gen_random_grid(metadata=True):
         for c in grid.column.keys():
             if "id" == c:
                 while True:
-                    id_val = gen_random_str()
+                    id_val = gen_random_ref()
                     if id_val not in grid:
                         row["id"] = id_val
                         break
@@ -261,16 +257,27 @@ def test_loopback_zinc():
         try_dump_parse_zinc()
 
 
+_FIND_BUG = 1
+
+
 def test_loopback_json():
-    for trial in range(0, GENERATION_NUMBER):
-        try_dump_parse_json()
+    for x in range(0, _FIND_BUG):
+        x = 1
+        if _FIND_BUG != 1:
+            random.seed(x)
+        try:
+            for trial in range(0, GENERATION_NUMBER):
+                try_dump_parse_json()
+        except:
+            print(x)
+            raise
 
 
 def test_loopback_csv():
-    if True:
-        # for x in range(0,1000):
+    for x in range(0, _FIND_BUG):
         x = 1
-        random.seed(x)
+        if _FIND_BUG != 1:
+            random.seed(x)
         try:
             for trial in range(0, GENERATION_NUMBER):
                 try_dump_parse_csv()

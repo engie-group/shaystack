@@ -281,7 +281,7 @@ def _get_path(grid, obj, paths):
         for i, path in enumerate(paths):
             obj = obj[path]
             if i != len(paths) - 1 and isinstance(obj, Ref):
-                obj = grid[obj.name]  # Follow the reference
+                obj = grid[obj]  # Follow the reference
         if not obj:
             return NOT_FOUND
         return obj  # It's a value at this time
@@ -332,7 +332,7 @@ def _filter_function(filter):
     def_filter = _generate_filter_in_python(parse_filter(filter)._head, [])
     fun_name = "_gen_hsfilter_" + str(_id_function)
     function_template = "def %s(_grid, _entity):\n  return " % fun_name + "".join(def_filter)
-    #print("\nGenerate:\n# " + filter + "\n" + function_template)  # FIXME: debug
+    # print("\nGenerate:\n# " + filter + "\n" + function_template)  # debug
     _id_function += 1
     return _FnWrapper(fun_name, function_template)
 

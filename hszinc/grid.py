@@ -11,9 +11,10 @@ import datetime
 import logging
 import numbers
 
+import pytz
 import six
 
-from .datatypes import NA, Quantity, Coordinate
+from .datatypes import NA, Quantity, Coordinate, Ref
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
 
@@ -92,9 +93,9 @@ class Grid(col.MutableSequence):
         if isinstance(v1, datetime.time):
             return v1.replace(microsecond=0) == v2.replace(microsecond=0)
         elif isinstance(v1, datetime.datetime):
-            return v1.tzinfo == v2.tzinfo and \
-                   v1.date() == v2.date() and \
-                   Grid._approx_check(v1.time(), v2.time())
+            dt1, dt2 = v1.replace(tzinfo=pytz.UTC), v2.replace(tzinfo=pytz.UTC)
+            return dt1.date() == dt2.date() and \
+                   Grid._approx_check(dt1.time(), dt2.time())
         elif isinstance(v1, Quantity):
             return v1.unit == v2.unit and \
                    Grid._approx_check(v1.value, v2.value)
@@ -185,7 +186,7 @@ class Grid(col.MutableSequence):
         """
         assert isinstance(other, Grid)
         from .grid_diff import grid_merge
-        if 'diff_' in self:
+        if 'diff_' in self.metadata:
             return grid_merge(other.copy(), self)
         return grid_merge(self.copy(), other)
 
@@ -256,9 +257,10 @@ class Grid(col.MutableSequence):
         elif isinstance(key, numbers.Number):
             return self._row[key]
         else:
+            assert isinstance(key, Ref), "The 'id' tag must be a Ref"
             if not self._index:
                 self.reindex()
-            return self._index[str(key)]
+            return self._index[key]
 
     def __contains__(self, key):
         if isinstance(key, numbers.Number):
@@ -271,7 +273,7 @@ class Grid(col.MutableSequence):
     def get(self, index, default=None):
         if not self._index:
             self.reindex()
-        return self._index.get(str(index), default)
+        return self._index.get(index, default)
 
     def keys(self):
         if not self._index:
@@ -297,7 +299,7 @@ class Grid(col.MutableSequence):
                 self._index.pop(self._row[index]['id'], None)
             self._row[index] = value
             if "id" in value:
-                self._index[str(value["id"])] = value  # FIXME: id must be a Ref, not a string
+                self._index[value["id"]] = value
         else:
             if not self._index:
                 self.reindex()
@@ -306,7 +308,7 @@ class Grid(col.MutableSequence):
                 self._index.pop(self._row[idx]['id'], None)
             self._row[idx] = value
             if "id" in value:
-                self._index[str(value["id"])] = value
+                self._index[value["id"]] = value
 
     def __delitem__(self, key):
         '''
@@ -337,7 +339,7 @@ class Grid(col.MutableSequence):
         if "id" in value:
             if not self._index:
                 self.reindex()
-            self._index[str(value["id"])] = value
+            self._index[value["id"]] = value
 
     def reindex(self):
         '''
@@ -346,7 +348,8 @@ class Grid(col.MutableSequence):
         self._index = {}
         for item in self._row:
             if "id" in item:
-                self._index[str(item["id"])] = item
+                assert isinstance(item["id"], Ref), "The 'id' tag must be a reference"
+                self._index[item["id"]] = item
 
     def pack_columns(self):
         using_columns = set()
@@ -364,7 +367,7 @@ class Grid(col.MutableSequence):
         # super().extend(values)  # Python 3+ :-)
         for item in self._row:
             if "id" in item:
-                self._index[str(item["id"])] = item
+                self._index[item["id"]] = item
 
     def copy(self):
         cp = copy.deepcopy(self)

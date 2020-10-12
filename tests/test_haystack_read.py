@@ -3,12 +3,15 @@ from unittest.mock import patch
 import haystackapi
 import hszinc
 from haystackapi import HaystackHttpRequest, DEFAULT_MIME_TYPE
+from haystackapi.providers import ping
 from hszinc import Grid, Ref
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
-def test_read_with_zinc_and_filter() -> None:
+@patch.object(ping.Provider, 'read')
+def test_read_with_zinc_and_filter(mock) -> None:
     # GIVEN
+    mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
     request = HaystackHttpRequest()
     grid = hszinc.Grid(columns={'filter': {}, "limit": {}})
@@ -21,15 +24,17 @@ def test_read_with_zinc_and_filter() -> None:
     response = haystackapi.read(request, "dev")
 
     # THEN
+    mock.assert_called_once_with(1, None, 'id==@me', None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    read_grid: Grid = hszinc.parse(response.body, mime_type)
-    assert not len(read_grid)
+    assert not len(hszinc.parse(response.body, mime_type))
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
-def test_read_with_arg_and_filter() -> None:
+@patch.object(ping.Provider, 'read')
+def test_read_with_arg_and_filter(mock) -> None:
     # GIVEN
+    mock.return_value = ping.PingGrid
     mime_type = DEFAULT_MIME_TYPE
     request = HaystackHttpRequest()
     request.args["filter"] = "id==@me"
@@ -39,6 +44,7 @@ def test_read_with_arg_and_filter() -> None:
     response = haystackapi.read(request, "dev")
 
     # THEN
+    mock.assert_called_once_with(1, None, 'id==@me', None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     read_grid: Grid = hszinc.parse(response.body, mime_type)
@@ -46,8 +52,10 @@ def test_read_with_arg_and_filter() -> None:
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
-def test_read_with_zinc_and_id() -> None:
+@patch.object(ping.Provider, 'read')
+def test_read_with_zinc_and_id(mock) -> None:
     # GIVEN
+    mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
     request = HaystackHttpRequest()
     grid = hszinc.Grid(columns=['id'])
@@ -60,24 +68,30 @@ def test_read_with_zinc_and_id() -> None:
     response = haystackapi.read(request, "dev")
 
     # THEN
+    ids = Grid(columns=["id"])
+    ids.append({"id": Ref("me")})
+    mock.assert_called_once_with(0, ids, None, None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    read_grid: Grid = hszinc.parse(response.body, mime_type)
-    assert not len(read_grid)
+    assert hszinc.parse(response.body, mime_type) is not None
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
-def test_read_with_arg_and_id() -> None:
+@patch.object(ping.Provider, 'read')
+def test_read_with_arg_and_id(mock) -> None:
     # GIVEN
+    mock.return_value = ping.PingGrid
     mime_type = DEFAULT_MIME_TYPE
     request = HaystackHttpRequest()
-    request.args["id"] = str(Ref("me"))
+    request.args["id"] = Ref("me").name
 
     # WHEN
     response = haystackapi.read(request, "dev")
 
     # THEN
+    ids = Grid(columns=["id"])
+    ids.append({"id": Ref("me")})
+    mock.assert_called_once_with(0, ids, None, None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    read_grid: Grid = hszinc.parse(response.body, mime_type)
-    assert not len(read_grid)
+    assert hszinc.parse(response.body, mime_type) is not None

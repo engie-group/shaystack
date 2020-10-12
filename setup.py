@@ -5,6 +5,7 @@ import subprocess
 
 from setuptools import setup, find_packages
 
+
 # Return git remote url
 def _git_url() -> str:
     try:
@@ -60,7 +61,8 @@ dev_requirements = [
     'flake8',
     'pylint',
     'pytest',
-    'twine'
+    'twine',
+    'mock'
 ]
 
 setup(name='haystackapi',

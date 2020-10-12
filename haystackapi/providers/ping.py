@@ -59,7 +59,7 @@ class Provider(HaystackInterface):
         return PingGrid
 
     @overrides
-    def nav(self, nav_id: Grid) -> Any:  # pylint: disable=no-self-use
+    def nav(self, nav_id: str) -> Any:  # pylint: disable=no-self-use
         """ Return EmptyGrid """
         log.info(f'nav(id="{nav_id}")')
         return PingGrid
@@ -83,10 +83,10 @@ class Provider(HaystackInterface):
         return PingGrid
 
     @overrides
-    def point_write(self, entity_id: Ref,
-                    date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
+    def point_write_read(self, entity_id: Ref,
+                         date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
         """ Return EmptyGrid """
-        log.info(f'point_write(id="{entity_id}, date_version={date_version}")')
+        log.info(f'point_write_read(id="{entity_id}, date_version={date_version}")')
         return PingGrid
 
     @overrides

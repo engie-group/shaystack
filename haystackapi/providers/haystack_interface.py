@@ -7,12 +7,12 @@ import os
 from abc import ABC, abstractmethod
 from datetime import datetime
 from importlib import import_module
-from typing import Any, Tuple, Dict, Union, Optional
+from typing import Any, Tuple, Dict, Union, Optional, List
 
 from tzlocal import get_localzone
 
 import hszinc
-from hszinc import Grid, VER_3_0, Uri, Ref
+from hszinc import Grid, VER_3_0, Uri, Ref, Quantity
 
 EmptyGrid = Grid(version=VER_3_0, columns={"empty": {}})
 
@@ -90,7 +90,7 @@ class HaystackInterface(ABC):
                            "or remove entities from a watch.",
             "watch_poll": "The watch_poll operation is used to poll a watch for "
                           "changes to the subscribed entity records.",
-            "point_write": "The point_write op is used to: read the current status of a "
+            "point_write": "The point_write_read op is used to: read the current status of a "
                            "writable point's priority array "
                            "or write to a given level",
             "his_read": "The his_read op is used to read a time-series data from historized point.",
@@ -100,6 +100,9 @@ class HaystackInterface(ABC):
         # Remove abstract method
         for x in self.__class__.__base__.__abstractmethods__:
             all_haystack_ops.pop(x, None)
+        if "point_write_read" in self.__class__.__base__.__abstractmethods__ or \
+                "point_write_write" in self.__class__.__base__.__abstractmethods__:
+            all_haystack_ops.pop("point_write", None)
         all_haystack_ops = {_to_camel(k): v for k, v in all_haystack_ops.items()}
 
         grid.extend([{"name": name, "summary": summary} for name, summary in all_haystack_ops.items()])
@@ -117,29 +120,41 @@ class HaystackInterface(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def nav(self, nav_id: Grid) -> Any:  # pylint: disable=no-self-use
+    def nav(self, nav_id: str) -> Any:  # pylint: disable=no-self-use
         """ Implement the Haystack 'nav' ops """
         raise NotImplementedError()
 
     @abstractmethod
-    def watch_sub(self, watch_id: Grid) -> Grid:  # pylint: disable=no-self-use
+    def watch_sub(self, watch_dis: str, watch_id: str, ids: List[Ref],
+                  lease: Optional[int]) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'watchSub' ops """
         raise NotImplementedError()
 
     @abstractmethod
-    def watch_unsub(self, watch_id: Grid) -> Grid:  # pylint: disable=no-self-use
+    def watch_unsub(self, watch_id: str, ids: List[Ref], close: bool) -> None:  # pylint: disable=no-self-use
         """ Implement the Haystack 'watchUnsub' ops """
         raise NotImplementedError()
 
     @abstractmethod
-    def watch_poll(self, watch_id: Grid) -> Grid:  # pylint: disable=no-self-use
+    def watch_poll(self, watch_id: str, refresh: bool) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'watchPoll' ops """
         raise NotImplementedError()
 
     @abstractmethod
-    def point_write(self,
-                    entity_id: Ref,
-                    date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
+    def point_write_read(self,
+                         entity_id: Ref,
+                         date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
+        """ Implement the Haystack 'pointWrite' ops """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def point_write_write(self,
+                          entity_id: Ref,
+                          level: int,
+                          val: Optional[Any],
+                          duration: Quantity,
+                          who: Optional[str],
+                          date_version: Optional[datetime]) -> None:  # pylint: disable=no-self-use
         """ Implement the Haystack 'pointWrite' ops """
         raise NotImplementedError()
 
@@ -203,25 +218,34 @@ def get_provider(class_str) -> HaystackInterface:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
                 return super().read(limit, entity_id, grid_filter, date_version)
 
-            def nav(self, nav_id: Grid) -> Any:
+            def nav(self, nav_id: str) -> Any:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
                 return super().nav(nav_id)
 
-            def watch_sub(self, watch_id: Grid) -> Grid:
+            def watch_sub(self, watch_dis: str, watch_id: str, ids: List[Ref], lease: Optional[int]) -> Grid:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().watch_sub(watch_id)
+                return super().watch_sub(watch_dis, watch_id, ids, lease)
 
-            def watch_unsub(self, watch_id: Grid) -> Grid:
+            def watch_unsub(self, watch_id: str, ids: List[Ref], close_all: bool) -> None:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().watch_unsub(watch_id)
+                return super().watch_unsub(watch_id, ids, close_all)
 
-            def watch_poll(self, watch_id: Grid) -> Grid:
+            def watch_poll(self, watch_id: str, refresh: bool) -> Grid:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().watch_poll(watch_id)
+                return super().watch_poll(watch_id, refresh)
 
-            def point_write(self, entity_id: Ref, date_version: Optional[datetime]) -> Grid:
+            def point_write_read(self, entity_id: Ref, date_version: Optional[datetime]) -> Grid:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().point_write(entity_id, date_version)
+                return super().point_write_read(entity_id, date_version)
+
+            def point_write_write(self,
+                                  entity_id: Ref,
+                                  level: int,
+                                  val: Optional[Any],
+                                  duration: Quantity,
+                                  who: Optional[str],
+                                  date_version: Optional[datetime]) -> None:  # pylint: disable=no-self-use
+                return super().point_write_write(entity_id, level, val, duration, who, date_version)
 
             def his_read(self, entity_id: Ref,
                          # pylint: disable=missing-function-docstring,useless-super-delegation

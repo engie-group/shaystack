@@ -14,8 +14,8 @@ import logging
 import os
 import re
 import traceback
+from ast import literal_eval
 from dataclasses import dataclass, field
-from datetime import datetime
 from decimal import Decimal
 # Matches 'gzip' or 'compress'
 from typing import Optional, Any, Match, List
@@ -24,9 +24,9 @@ from typing import Tuple, Dict
 from accept_types import AcceptableType, get_best_match
 
 import hszinc
-from hszinc import Grid
-from hszinc.grid_filter import _parse_datetime, Ref
-from .providers.haystack_interface import get_provider, HaystackInterface
+from hszinc import Grid, VER_3_0, parse_scalar, MODE_ZINC
+from hszinc.grid_filter import _parse_datetime, Ref, parse_date_format, hs_quantity
+from .providers.haystack_interface import get_provider, HaystackInterface, EmptyGrid
 
 _DEFAULT_VERSION = hszinc.VER_3_0
 DEFAULT_MIME_TYPE: str = hszinc.MODE_CSV
@@ -322,7 +322,7 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             if 'id' in args:
                 read_ids = Grid(version=grid_request.version, columns=["id"])
                 for i in args['id'].split(','):
-                    read_ids.append({"id": i})
+                    read_ids.append({"id": Ref(i)})
             else:
                 if 'filter' in args:
                     read_filter = args['filter']
@@ -358,7 +358,14 @@ def nav(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
-        grid_response = provider.nav(grid_request)
+        nav_id = None
+        if len(grid_request):
+            if 'navId' in grid_request.column:
+                nav_id = grid_request[0]['navId']
+        if args:
+            if 'navId' in args:
+                nav_id = args['navId']
+        grid_response = provider.nav(nav_id=nav_id)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
@@ -381,8 +388,30 @@ def watch_sub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
-        grid_response = provider.watch_sub(grid_request)
+        watch_dis = watch_id = lease = None
+        ids = []
+        if len(grid_request):
+            watch_dis = grid_request.metadata['watchDis']
+            watch_id = grid_request.metadata['watchId']
+            if "lease" in grid_request.metadata:
+                lease = int(grid_request.metadata['lease'])
+            ids = [row["id"] for row in grid_request]
+
+        if args:
+            if 'watchDis' in args:
+                watch_dis = args['watchDis']
+            if 'watchId' in args:
+                watch_id = args['watchId']
+            if 'lease' in args:
+                lease = int(args['lease'])
+            if "ids" in args:  # Use list of str
+                ids = [Ref(x[1:]) for x in literal_eval(args["ids"])]
+        if not watch_dis or not watch_id:
+            raise ValueError("'watchDis' and 'watchId' must be setted")
+        grid_response = provider.watch_sub(watch_dis, watch_id, ids, lease)
         assert grid_response is not None
+        assert "watchId" in grid_response.metadata
+        assert "lease" in grid_response.metadata
         response = _format_response(headers, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
         log.error(traceback.format_exc())
@@ -405,8 +434,28 @@ def watch_unsub(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
-        grid_response = provider.watch_unsub(grid_request)
-        assert grid_response is not None
+        close = False
+        watch_id = False
+        ids = []
+        if len(grid_request):
+            if "watchId" in grid_request.metadata:
+                watch_id = grid_request.metadata['watchId']
+            if "close" in grid_request.metadata:
+                close = bool(grid_request.metadata['close'])
+            ids = [row["id"] for row in grid_request]
+
+        if args:
+            if "watchId" in args:
+                watch_id = args["watchId"]
+            if "close" in args:
+                close = bool(args["close"])
+            if "ids" in args:  # Use list of str
+                ids = {Ref(x[1:]) for x in literal_eval(args["ids"])}
+
+        if not watch_id:
+            raise ValueError("'watchId' must be set")
+        provider.watch_unsub(watch_id, ids, close)
+        grid_response = EmptyGrid
         response = _format_response(headers, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
         error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
@@ -428,7 +477,20 @@ def watch_poll(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
-        grid_response = provider.watch_poll(grid_request)
+        watch_id = None
+        refresh = False
+        if len(grid_request):
+            if "watchId" in grid_request.metadata:
+                watch_id = grid_request.metadata['watchId']
+            if "refresh" in grid_request.metadata:
+                refresh = True
+        if args:
+            if "watchId" in args:
+                watch_id = args["watchId"]
+            if "refresh" in args:
+                refresh = True
+
+        grid_response = provider.watch_poll(watch_id, refresh)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
@@ -446,20 +508,47 @@ def watch_poll(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse
 
 
 def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
-    """Implement the haystack `point_write` operation"""
+    """Implement the haystack `point_write_read` operation"""
     body, headers, args = (request.body, request.headers, request.args)
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
-        entity_id = date_version = None
+        date_version = None
+        level = 17
+        val = who = duration = None
         if len(grid_request):
-            entity_id = grid_request[0].get('id', None)
+            entity_id = grid_request[0]['id']
+            date_version = grid_request[0].get('version', None)
+            if "level" in grid_request[0]:
+                level = int(grid_request[0]['level'])
+            val = grid_request[0].get("val")
+            who = grid_request[0].get("who")
+            duration = grid_request[0].get("duration")  # Must be quantity
+
         if "id" in args:
             entity_id = Ref(args["id"][1:])
+        if "level" in args:
+            level = int(args["level"])
+        if "val" in args:
+            val = parse_scalar(args["val"], mode=MODE_ZINC, )
+        if "who" in args:
+            val = args["who"]
+        if "duration" in args:
+            duration = hs_quantity.parseString(args["duration"], parseAll=True)[0]
+        if 'version' in args:
+            date_version = _parse_datetime(args['version'].split(' '))
         if entity_id is None:
             raise ValueError("'id' must be set")
-        grid_response = provider.point_write(entity_id, date_version)
-        assert grid_response is not None
+        if val is not None:
+            provider.point_write_write(entity_id, level, val, who, duration, date_version)
+            grid_response = EmptyGrid
+        else:
+            grid_response = provider.point_write_read(entity_id, date_version)
+            assert grid_response is not None
+            assert "level" in grid_response.column
+            assert "levelDis" in grid_response.column
+            assert "val" in grid_response.column
+            assert "who" in grid_response.column
         response = _format_response(headers, grid_response, 200)
     except Exception:  # pylint: disable=broad-except
         error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
@@ -497,10 +586,10 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             if 'range' in args:
                 date_range = args['range']  # FIXME: parse date_range
             if 'version' in args:
-                date_version = _parse_datetime(args['version'].split(' '))
+                date_version = parse_date_format(args['version'])
 
         log.debug(f"id={entity_id} range={date_range}, date_version={date_version}")
-        grid_response = provider.his_read(entity_id, (datetime.now(), datetime.now()), date_version)  # FIXME: use dates
+        grid_response = provider.his_read(entity_id, (None, None), date_version)  # FIXME: use dates
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200)
     except Exception as e:  # pylint: disable=broad-except
@@ -532,9 +621,12 @@ def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         if args:
             if 'id' in args:
                 entity_id = Ref(args['id'][1:])
-        # FIXME : ts in request
+            if 'ts' in args:  # Array of tuple
+                ts = Grid(version=VER_3_0, columns=["date", "val"])
+                ts.extend([{"date": parse_date_format(d), "val": v} for d, v in
+                           literal_eval(args["ts"])])
         if 'version' in args:
-            date_version = _parse_datetime(args['version'].split(' '))
+            date_version = parse_date_format(args['version'])
         grid_response = provider.his_write(entity_id, ts, date_version)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200)

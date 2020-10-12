@@ -3,12 +3,15 @@ from unittest.mock import patch
 import haystackapi
 import hszinc
 from haystackapi import HaystackHttpRequest
+from haystackapi.providers import ping
 from hszinc import Grid
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
-def test_ops_with_zinc() -> None:
+@patch.object(ping.Provider, 'ops')
+def test_ops_with_zinc(mock) -> None:
     # GIVEN
+    mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
     request = HaystackHttpRequest()
     grid: Grid = hszinc.Grid()
@@ -17,11 +20,10 @@ def test_ops_with_zinc() -> None:
     # apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
 
     # WHEN
-    response = haystackapi.ops(request,"dev")
+    response = haystackapi.ops(request, "dev")
 
     # THEN
+    mock.assert_called_once_with()
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    ops_grid: Grid = hszinc.parse(response.body, hszinc.MODE_ZINC)
-    assert ops_grid[0]["name"] == "about"
-    assert ops_grid[1]["name"] == "ops"
+    assert hszinc.parse(response.body, hszinc.MODE_ZINC) is not None

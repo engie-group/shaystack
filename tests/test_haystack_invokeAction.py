@@ -3,15 +3,17 @@ from unittest.mock import patch
 import haystackapi
 import hszinc
 from haystackapi import HaystackHttpRequest, Ref
-from hszinc import Grid
+from haystackapi.providers import ping
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
-def test_invokeAction_with_zinc() -> None:
+@patch.object(ping.Provider, 'invoke_action')
+def test_invokeAction_with_zinc(mock) -> None:
     # GIVEN
+    mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
     request = HaystackHttpRequest()
-    grid = hszinc.Grid(metadata={'id': '123', 'action': 'doIt'},
+    grid = hszinc.Grid(metadata={'id': Ref('123'), 'action': 'doIt'},
                        columns={'key': {}, 'value': {}})
     grid.append({'param': 'value'})
     request.headers["Content-Type"] = mime_type
@@ -22,15 +24,17 @@ def test_invokeAction_with_zinc() -> None:
     response = haystackapi.invoke_action(request,"dev")
 
     # THEN
+    mock.assert_called_once_with(Ref("123"), "doIt", {})
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    read_grid = hszinc.parse(response.body, hszinc.MODE_ZINC)
-    assert not len(read_grid)
+    assert hszinc.parse(response.body, hszinc.MODE_ZINC) is not None
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
-def test_invokeAction_without_params_with_zinc():
+@patch.object(ping.Provider, 'invoke_action')
+def test_invokeAction_without_params_with_zinc(mock):
     # GIVEN
+    mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
     request = HaystackHttpRequest()
     grid = hszinc.Grid(metadata={'id': Ref('123'), 'action': 'doIt'},
@@ -43,7 +47,7 @@ def test_invokeAction_without_params_with_zinc():
     response = haystackapi.invoke_action(request,"dev")
 
     # THEN
+    mock.assert_called_once_with(Ref("123"), "doIt", {})
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    read_grid: Grid = hszinc.parse(response.body, hszinc.MODE_ZINC)
-    assert not len(read_grid)
+    assert hszinc.parse(response.body, hszinc.MODE_ZINC) is not None

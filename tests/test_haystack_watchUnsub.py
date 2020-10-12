@@ -1,34 +1,55 @@
-import base64
-import gzip
-import inspect
-import json
 from unittest.mock import patch
-
-import pytest
-from botocore.client import BaseClient
 
 import haystackapi
 import hszinc
-from haystackapi import HaystackHttpRequest
-from hszinc import Grid
+from haystackapi import HaystackHttpRequest, Ref
+from haystackapi.providers import ping
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
-def test_watchUnsub_with_zinc() -> None:
+@patch.object(ping.Provider, 'watch_unsub')
+def test_watchUnsub_with_zinc(mock) -> None:
     # GIVEN
+    mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
     request = HaystackHttpRequest()
-    grid: Grid = hszinc.Grid(columns={'id': {}})
+    grid = hszinc.Grid(metadata={"close": True,
+                                 "watchId": "0123456789ABCDEF"},
+                       columns=['id'])
+    grid.append({"id": Ref("id1")})
+    grid.append({"id": Ref("id2")})
     request.headers["Content-Type"] = mime_type
     request.headers["Accept"] = mime_type
     request.body = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
 
     # WHEN
-    response = haystackapi.watch_unsub(request,"dev")
+    response = haystackapi.watch_unsub(request, "dev")
 
     # THEN
+    mock.assert_called_once_with("0123456789ABCDEF", [Ref("id1"), Ref("id2")], True)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    watchUnsub_grid = hszinc.parse(response.body, hszinc.MODE_ZINC)
-    assert not len(watchUnsub_grid)
+    assert hszinc.parse(response.body, hszinc.MODE_ZINC) is not None
 
+
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch.object(ping.Provider, 'watch_unsub')
+def test_watchUnsub_with_args(mock) -> None:
+    # GIVEN
+    mock.return_value = ping.PingGrid
+    mime_type = hszinc.MODE_ZINC
+    request = HaystackHttpRequest()
+    request.headers["Accept"] = mime_type
+    request.args["watchId"] = "0123456789ABCDEF"
+    request.args["close"] = True
+    ids = set(["@id1", "@id2"])
+    request.args["ids"] = str(ids)
+
+    # WHEN
+    response = haystackapi.watch_unsub(request, "dev")
+
+    # THEN
+    mock.assert_called_once_with("0123456789ABCDEF", set([Ref("id1"), Ref("id2")]), True)
+    assert response.status_code == 200
+    assert response.headers["Content-Type"].startswith(mime_type)
+    assert hszinc.parse(response.body, hszinc.MODE_ZINC) is not None

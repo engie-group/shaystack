@@ -22,7 +22,7 @@ PERCENT_GEN_ID, \
 PERCENT_RECURSIVE = (10, 5, 10, 30, 5)
 
 def gen_random_const():
-    return random.choice([True, False, None, hszinc.MARKER, hszinc.REMOVE, hszinc.NA])
+    return random.choice([True, False, hszinc.MARKER, hszinc.REMOVE, hszinc.NA])
 
 
 def gen_random_ref():

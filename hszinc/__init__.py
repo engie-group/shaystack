@@ -24,7 +24,7 @@ try:
     from .grid import Grid
     from .dumper import dump, dump_scalar
     from .parser import parse, parse_scalar, MODE_JSON, MODE_ZINC, MODE_CSV, suffix_to_mode, mode_to_suffix
-    from .grid_filter import parse_filter
+    from .grid_filter import parse_filter, parse_date_format
     from .metadata import MetadataObject
     from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, NA, \
         REMOVE, Ref, XStr, use_pint
@@ -35,6 +35,7 @@ try:
                'MetadataObject', 'ureg',
                'Coordinate', 'Uri', 'Bin', 'XStr', 'Quantity', 'MARKER', 'NA', 'REMOVE', 'Ref',
                'MODE_JSON', 'MODE_ZINC', 'MODE_CSV', 'suffix_to_mode', 'mode_to_suffix',
+               'parse_date_format',
                'VER_2_0', 'VER_3_0', 'LATEST_VER', 'Version']
 except ImportError as e:  # pragma: no cover
     # For setup.py to interrogate the version information.  This should *NOT*

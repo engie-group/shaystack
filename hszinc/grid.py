@@ -362,6 +362,14 @@ class Grid(col.MutableSequence):
                     return
         self.column = {k: self.column[k] for k in using_columns}
 
+    def extends_columns(self):
+        new_cols = self.column.copy()
+        for row in self._row:
+            for k in row.keys():
+                if k not in new_cols:
+                    new_cols[k] = {}
+        self.column = new_cols
+
     def extend(self, values):
         super(Grid, self).extend(values)  # Python 2 compatible :-(
         # super().extend(values)  # Python 3+ :-)

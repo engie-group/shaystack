@@ -526,6 +526,14 @@ def test_pack_columns_with_all_columns():
     grid.pack_columns()
     assert set(grid.column.keys()) == set(["id", "a", "b"])
 
+
+def test_extends_columns():
+    grid = Grid(columns=["id", "a"])
+    grid.append({"id": Ref("myid"), "a": 1, "b": 2})
+    grid.extends_columns()
+    assert "b" in grid.column
+
+
 def test_mode_to_suffix():
     assert mode_to_suffix(suffix_to_mode(".csv")) == ".csv"
     assert mode_to_suffix(suffix_to_mode(".zinc")) == ".zinc"

@@ -19,7 +19,10 @@ GENERATION_NUMBER, \
 GENERATION_COLUMN, \
 GENERATION_ROW, \
 PERCENT_GEN_ID, \
-PERCENT_RECURSIVE = (10, 5, 10, 30, 5)
+PERCENT_RECURSIVE = (1, 3, 3, 30, 5)
+
+
+# PERCENT_RECURSIVE = (10, 5, 10, 30, 5)
 
 def gen_random_const():
     return random.choice([True, False, hszinc.MARKER, hszinc.REMOVE, hszinc.NA])
@@ -151,7 +154,8 @@ def gen_random_meta():
     for n in range(0, random.randint(1, 5)):
         name = gen_random_name(existing=names)
         value = gen_random_scalar()
-        meta[name] = value
+        if name != "ver":
+            meta[name] = value
     return meta
 
 
@@ -252,17 +256,23 @@ def try_dump_parse_csv():
     _try_dump_parse(ref_grid, MODE_CSV)
 
 
-def test_loopback_zinc():
-    for trial in range(0, GENERATION_NUMBER):
-        try_dump_parse_zinc()
-
-
 _FIND_BUG = 1
+
+
+def test_loopback_zinc():
+    for x in range(0, _FIND_BUG):  # FIXME : 0,
+        if _FIND_BUG != 1:
+            random.seed(x)
+        try:
+            for trial in range(0, GENERATION_NUMBER):
+                try_dump_parse_zinc()
+        except:
+            print(x)
+            raise
 
 
 def test_loopback_json():
     for x in range(0, _FIND_BUG):
-        x = 1
         if _FIND_BUG != 1:
             random.seed(x)
         try:
@@ -274,8 +284,7 @@ def test_loopback_json():
 
 
 def test_loopback_csv():
-    for x in range(0, _FIND_BUG):
-        x = 1
+    for x in range(275, _FIND_BUG):
         if _FIND_BUG != 1:
             random.seed(x)
         try:

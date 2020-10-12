@@ -199,9 +199,10 @@ hs_ref = (Suppress(Literal('@')) + Combine(ZeroOrMore(hs_refChar)) + Optional(
     hs_str)).setParseAction(
     lambda toks: [Ref(toks[0], toks[1] if len(toks) > 1 else None)])
 
+hs_all_date = hs_dateTime | hs_date | hs_time
 hs_val <<= hs_list | hs_dict | \
            hs_ref | hs_bin | hs_xstr | \
-           hs_dateTime | hs_date | hs_time | \
+           hs_all_date | \
            hs_coord | \
            hs_number | hs_na | hs_null | hs_marker | hs_bool | \
            hs_str | hs_uri
@@ -346,3 +347,7 @@ def filter_set_lru_size(lru_size):
 
 def filter_function(filter):
     return _filter_function(filter).get()
+
+
+def parse_date_format(date_str):
+    return hs_all_date.parseString(date_str, parseAll=True)[0]

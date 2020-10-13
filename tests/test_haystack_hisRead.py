@@ -1,3 +1,6 @@
+from datetime import datetime, date
+
+import pytz
 from mock import patch
 
 import haystackapi
@@ -23,7 +26,7 @@ def test_hisRead_with_zinc(mock) -> None:
     response = haystackapi.his_read(request, "dev")
 
     # THEN
-    mock.assert_called_once_with(Ref("1234"), (None, None), None)
+    mock.assert_called_once_with(Ref("1234"), None, None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert hszinc.parse(response.body, mime_type) is not None
@@ -42,7 +45,151 @@ def test_hisRead_with_args(mock) -> None:
     response = haystackapi.his_read(request, "dev")
 
     # THEN
-    mock.assert_called_once_with(Ref("1234"), (None, None), None)
+    mock.assert_called_once_with(Ref("1234"), None, None)
+    assert response.status_code == 200
+    assert response.headers["Content-Type"].startswith(mime_type)
+    assert hszinc.parse(response.body, mime_type) is not None
+
+
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch.object(ping.Provider, 'his_read')
+def test_hisRead_with_range_today(mock) -> None:
+    # GIVEN
+    mock.return_value = ping.PingGrid
+    mime_type = hszinc.MODE_ZINC
+    request = HaystackHttpRequest()
+    grid = hszinc.Grid(columns=['id', 'range'])
+    grid.append({"id": Ref("1234"), "range": "today"})
+    request.headers["Content-Type"] = mime_type
+    request.headers["Accept"] = mime_type
+    request.body = hszinc.dump(grid, mode=mime_type)
+
+    # WHEN
+    response = haystackapi.his_read(request, "dev")
+
+    # THEN
+    mock.assert_called_once_with(Ref("1234"), "today", None)
+    assert response.status_code == 200
+    assert response.headers["Content-Type"].startswith(mime_type)
+    assert hszinc.parse(response.body, mime_type) is not None
+
+
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch.object(ping.Provider, 'his_read')
+def test_hisRead_with_range_yesterday(mock) -> None:
+    # GIVEN
+    mock.return_value = ping.PingGrid
+    mime_type = hszinc.MODE_ZINC
+    request = HaystackHttpRequest()
+    grid = hszinc.Grid(columns=['id', 'range'])
+    grid.append({"id": Ref("1234"), "range": "yesterday"})
+    request.headers["Content-Type"] = mime_type
+    request.headers["Accept"] = mime_type
+    request.body = hszinc.dump(grid, mode=mime_type)
+
+    # WHEN
+    response = haystackapi.his_read(request, "dev")
+
+    # THEN
+    mock.assert_called_once_with(Ref("1234"), "yesterday", None)
+    assert response.status_code == 200
+    assert response.headers["Content-Type"].startswith(mime_type)
+    assert hszinc.parse(response.body, mime_type) is not None
+
+
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch.object(ping.Provider, 'his_read')
+def test_hisRead_with_range_two_datetime(mock) -> None:
+    # GIVEN
+    mock.return_value = ping.PingGrid
+    mime_type = hszinc.MODE_ZINC
+    request = HaystackHttpRequest()
+    grid = hszinc.Grid(columns=['id', 'range'])
+    datetime_1 = datetime(2020, 1, 1, 0, 0, 0, tzinfo=pytz.UTC)
+    datetime_2 = datetime(2020, 1, 1, 0, 0, 0, tzinfo=pytz.UTC)
+    grid.append({"id": Ref("1234"), "range": datetime_1.isoformat() + ',' + datetime_2.isoformat()})
+    request.headers["Content-Type"] = mime_type
+    request.headers["Accept"] = mime_type
+    request.body = hszinc.dump(grid, mode=mime_type)
+
+    # WHEN
+    response = haystackapi.his_read(request, "dev")
+
+    # THEN
+    mock.assert_called_once_with(Ref("1234"), (datetime_1, datetime_2), None)
+    assert response.status_code == 200
+    assert response.headers["Content-Type"].startswith(mime_type)
+    assert hszinc.parse(response.body, mime_type) is not None
+
+
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch.object(ping.Provider, 'his_read')
+def test_hisRead_with_range_one_datetime(mock) -> None:
+    # GIVEN
+    mock.return_value = ping.PingGrid
+    mime_type = hszinc.MODE_ZINC
+    request = HaystackHttpRequest()
+    grid = hszinc.Grid(columns=['id', 'range'])
+    datetime_1 = datetime(2020, 1, 1, 0, 0, 0, tzinfo=pytz.UTC)
+    grid.append({"id": Ref("1234"), "range": datetime_1.isoformat()})
+    request.headers["Content-Type"] = mime_type
+    request.headers["Accept"] = mime_type
+    request.body = hszinc.dump(grid, mode=mime_type)
+
+    # WHEN
+    response = haystackapi.his_read(request, "dev")
+
+    # THEN
+    mock.assert_called_once_with(Ref("1234"), (datetime_1, None), None)
+    assert response.status_code == 200
+    assert response.headers["Content-Type"].startswith(mime_type)
+    assert hszinc.parse(response.body, mime_type) is not None
+
+
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch.object(ping.Provider, 'his_read')
+def test_hisRead_with_range_two_date(mock) -> None:
+    # GIVEN
+    mock.return_value = ping.PingGrid
+    mime_type = hszinc.MODE_ZINC
+    request = HaystackHttpRequest()
+    grid = hszinc.Grid(columns=['id', 'range'])
+    date_1 = date(2020, 1, 1)
+    date_2 = date(2020, 1, 1)
+    grid.append({"id": Ref("1234"), "range": date_1.isoformat() + ',' + date_2.isoformat()})
+    request.headers["Content-Type"] = mime_type
+    request.headers["Accept"] = mime_type
+    request.body = hszinc.dump(grid, mode=mime_type)
+
+    # WHEN
+    response = haystackapi.his_read(request, "dev")
+
+    # THEN
+    mock.assert_called_once_with(Ref("1234"), (date_1, date_2), None)
+    assert response.status_code == 200
+    assert response.headers["Content-Type"].startswith(mime_type)
+    assert hszinc.parse(response.body, mime_type) is not None
+
+
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch.object(ping.Provider, 'his_read')
+def test_hisRead_with_range_one_date(mock) -> None:
+    # GIVEN
+    mock.return_value = ping.PingGrid
+    mime_type = hszinc.MODE_ZINC
+    request = HaystackHttpRequest()
+    grid = hszinc.Grid(columns=['id', 'range'])
+    date_1 = date(2020, 1, 1)
+    grid.append({"id": Ref("1234"), "range": date_1.isoformat()})
+    request.headers["Content-Type"] = mime_type
+    request.headers["Accept"] = mime_type
+    request.body = hszinc.dump(grid, mode=mime_type)
+
+    # WHEN
+    response = haystackapi.his_read(request, "dev")
+
+    # THEN
+    mock.assert_called_once_with(Ref("1234"), date_1, None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert hszinc.parse(response.body, mime_type) is not None

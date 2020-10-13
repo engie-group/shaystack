@@ -36,7 +36,7 @@ import pytz
 from overrides import overrides
 
 import hszinc
-from hszinc import Grid, suffix_to_mode
+from hszinc import Grid, suffix_to_mode, Ref
 from .haystack_interface import HaystackInterface
 
 Timestamp = datetime
@@ -84,14 +84,14 @@ class Provider(HaystackInterface):
         return result
 
     @overrides
-    def his_read(self, entity_id: str,
+    def his_read(self, entity_id: Ref,
                  dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
                  date_version: Optional[datetime]) -> Grid:
         """ Implement Haystack 'hisRead' """
         log.debug(f"----> Call his_read(id={entity_id}, range={dates_range}, date_version={date_version})")
 
         grid = Provider._download_grid(self._get_url(), date_version)
-        if str(entity_id) in grid:  # FIXME: utiliser des ref pour les id d'indaxtion
+        if entity_id in grid:
             entity = grid[entity_id]
             # Different solution to retrieve the history value
             # 1. use a file in the dir(HAYSTACK_URL)+entity['hisURI']
@@ -124,6 +124,7 @@ class Provider(HaystackInterface):
         else:
             raise ValueError(f"id '{entity_id}' not found")
 
+    s3_client = None
     @staticmethod
     def _download_uri(uri: str, date_version: datetime) -> bytes:  # TODO: update LRU cache
         """ Download Haystack from URI.
@@ -136,11 +137,13 @@ class Provider(HaystackInterface):
         parsed_uri = urlparse(uri, allow_fragments=False)
         if parsed_uri.scheme == "s3":
             # AWS_S3_ENDPOINT may be http://localhost:9000 to use minio (make start-minio)
-            s3 = boto3.client('s3',
-                              endpoint_url=os.environ.get('AWS_S3_ENDPOINT', None),
-                              verify=False
-                              # See https://stackoverflow.com/questions/62541300/zappa-packaged-lambda-error-botocore-exceptions-sslerror-ssl-validation-faile
-                              )
+            if not HaystackInterface.s3_client:
+                # See https://stackoverflow.com/questions/62541300/zappa-packaged-lambda-error-botocore-exceptions-sslerror-ssl-validation-faile
+                HaystackInterface.s3_client = boto3.client('s3',
+                                                           endpoint_url=os.environ.get('AWS_S3_ENDPOINT', None),
+                                                           verify=False
+                                                           )
+            s3 = HaystackInterface.s3_client
             extra_args = None
             if date_version:
                 obj_versions = s3.list_object_versions(Bucket=parsed_uri.netloc, Prefix=parsed_uri.path[1:])['Versions']

@@ -37,6 +37,7 @@ requirements = [
     'hszinc',
     'pint',
     'click',
+    'click_pathlib'
 ]
 
 # Extra for a deployment in Flask server
@@ -46,12 +47,12 @@ flask_requirements = [
 
 # Extra for a deployment in AWS Lambda
 lambda_requirements = [
-    'zappa'
-] + flask_requirements
+                          'zappa'
+                      ] + flask_requirements
 
 azure_requirements = [
-    'azure-functions'
-] + flask_requirements
+                         'azure-functions'
+                     ] + flask_requirements
 
 dev_requirements = [
     'python-dotenv',
@@ -92,8 +93,7 @@ setup(name='haystackapi',
           'dev': dev_requirements,
           'flask': flask_requirements,
           'lambda': lambda_requirements,
-          'azure': azure_requirements,
-          # TODO 'test': test_requirements,
+          # 'azure': azure_requirements,
       },
       install_requires=requirements,
       entry_points={
@@ -101,4 +101,5 @@ setup(name='haystackapi',
               'haystackapi = app.__init__:main'
           ]
       },
+      dependency_links=['git+https://github.com/pprados/hszinc.git#egg=hszinc-4.0']
       )

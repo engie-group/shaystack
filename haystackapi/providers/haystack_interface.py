@@ -5,7 +5,8 @@ from __future__ import annotations
 
 import os
 from abc import ABC, abstractmethod
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import datetime, date
 from importlib import import_module
 from typing import Any, Tuple, Dict, Union, Optional, List
 
@@ -21,6 +22,11 @@ def _to_camel(snake_str: str) -> str:
     first, *others = snake_str.split('_')
     return ''.join([first.lower(), *map(str.title, others)])
 
+
+@dataclass
+class HttpError(Exception):
+    error: int
+    msg: str
 
 class HaystackInterface(ABC):
     """
@@ -60,7 +66,7 @@ class HaystackInterface(ABC):
             {
                 "haystackVersion": str(VER_3_0),
                 "tz": str(get_localzone()),
-                "serverName": "haystack_" + os.environ.get("AWS_REGION", "local"),  # FIXME: set the server name
+                "serverName": "haystack_" + os.environ.get("AWS_REGION", "local"),
                 "serverTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
                 "serverBootTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
                 "productName": "AWS Lamdda Haystack Provider",
@@ -113,7 +119,7 @@ class HaystackInterface(ABC):
         """ Implement the Haystack 'formats' ops """
         return None
 
-    @abstractmethod  # FIXME: accept id parameter
+    @abstractmethod
     def read(self, limit: int, entity_ids: Optional[Grid], grid_filter: Optional[str],
              date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'read' ops """
@@ -167,8 +173,9 @@ class HaystackInterface(ABC):
     # "{dateTime}"
     @abstractmethod
     def his_read(self, entity_ids: Ref,
-                 dates_range: Union[Union[datetime, str],
-                                    Tuple[datetime, datetime]],
+                 dates_range: Optional[Union[Union[datetime, str],
+                                             Tuple[datetime, Optional[datetime]],
+                                             Tuple[date, Optional[date]]]],
                  date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'hisRead' ops """
         raise NotImplementedError()
@@ -249,8 +256,9 @@ def get_provider(class_str) -> HaystackInterface:
 
             def his_read(self, entity_id: Ref,
                          # pylint: disable=missing-function-docstring,useless-super-delegation
-                         date_range: Union[Union[datetime, str],
-                                           Tuple[Union[datetime, str], Union[datetime, str]]],
+                         date_range: Optional[Union[Union[datetime, str],
+                                                    Tuple[datetime, Optional[datetime]],
+                                                    Tuple[date, Optional[date]]]],
                          date_version: Optional[datetime]) -> Grid:
                 return super().his_read(entity_id, date_range, date_version)
 

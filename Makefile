@@ -481,13 +481,13 @@ typing: .make-typing
 	@$(VALIDATE_VENV)
 	pylint --generate-rcfile > .pylintrc
 
-.make-lint: $(REQUIREMENTS) $(PYTHON_SRC) tests/*.py | .pylintrc
+.make-lint: $(REQUIREMENTS) $(PYTHON_SRC) | .pylintrc
 	$(VALIDATE_VENV)
 	@echo -e "$(cyan)Check lint...$(normal)"
 	@echo "---------------------- FLAKE"
-	@flake8 src
+	@flake8
 	@echo "---------------------- PYLINT"
-	@PYTHONPATH=./src pylint src
+	@pylint
 	touch .make-lint
 
 ## Lint the code

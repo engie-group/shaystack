@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Union, Tuple, Optional
 
 from overrides import overrides
@@ -15,6 +15,8 @@ class Provider(HaystackInterface):
 
     @overrides
     def his_read(self, id: str,
-                 range: Union[Union[datetime, str], Tuple[Union[datetime, str], Union[datetime, str]]],
+                 range: Optional[Union[Union[datetime, str],
+                                       Tuple[datetime, Optional[datetime]],
+                                       Tuple[date, Optional[date]]]],
                  date_version: Optional[datetime]) -> Grid:
         pass

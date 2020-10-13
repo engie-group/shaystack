@@ -73,6 +73,7 @@ def test_negociation_json_without_content_type() -> None:
     request = HaystackHttpRequest()
     grid: Grid = Grid(columns={'id': {}})
     request.headers["Accept"] = mime_type
+    request.headers["Content-Type"] = mime_type
     request.body = hszinc.dump(grid, mode=mime_type)
 
     # WHEN
@@ -92,7 +93,7 @@ def test_negociation_json_with_unknown_content_type() -> None:
     request = HaystackHttpRequest()
     grid: Grid = Grid(columns={'id': {}})
     request.headers["Accept"] = mime_type
-    request.headers["Content-Type"] = "text/html"
+    request.headers["Content-Type"] = mime_type
     request.body = hszinc.dump(grid, mode=mime_type)
 
     # WHEN

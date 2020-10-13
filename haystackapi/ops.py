@@ -16,17 +16,16 @@ import re
 import traceback
 from ast import literal_eval
 from dataclasses import dataclass, field
+from datetime import datetime
 from decimal import Decimal
-# Matches 'gzip' or 'compress'
 from typing import Optional, Any, Match, List
 from typing import Tuple, Dict
 
 from accept_types import AcceptableType, get_best_match
 
 import hszinc
-from hszinc import Grid, VER_3_0, parse_scalar, MODE_ZINC
-from hszinc.grid_filter import _parse_datetime, Ref, parse_date_format, hs_quantity
-from .providers.haystack_interface import get_provider, HaystackInterface, EmptyGrid
+from hszinc import Grid, VER_3_0, parse_scalar, MODE_ZINC, parse_date_format, Ref
+from .providers.haystack_interface import get_provider, HaystackInterface, EmptyGrid, HttpError
 
 _DEFAULT_VERSION = hszinc.VER_3_0
 DEFAULT_MIME_TYPE: str = hszinc.MODE_CSV
@@ -48,6 +47,7 @@ class HaystackHttpRequest():
 @dataclass
 class HaystackHttpResponse():
     status_code: int = 200
+    status: str = 'OK'
     headers: Dict[str, str] = field(default_factory=lambda: ({'Content-Type': 'text/text'}))
     body: str = ""
 
@@ -166,17 +166,23 @@ def _parse_body(request: HaystackHttpRequest) -> hszinc.Grid:
         content_type = request.headers["Content-Type"]
         if hszinc.mode_to_suffix(content_type):
             grid = hszinc.parse(request.body, mode=content_type)
+        elif len(request.body):
+            raise HttpError(406, f"Content-Type '{content_type}' not supported")
         else:
-            grid = hszinc.Grid(version=_DEFAULT_VERSION)
+            grid = Grid(version=VER_3_0)
     return grid
 
 
-def _format_response(headers: Dict[str, str], grid_response: hszinc.Grid, status: int,
+def _format_response(headers: Dict[str, str],
+                     grid_response: hszinc.Grid,
+                     status_code: int,
+                     status_msg: str,
                      default=None) -> HaystackHttpResponse:
     hs_response = _dump_response(headers.get("Accept", DEFAULT_MIME_TYPE), grid_response,
                                  default=default)
 
-    response = HaystackHttpResponse(status_code=status,
+    response = HaystackHttpResponse(status_code=status_code,
+                                    status=status_msg,
                                     body=hs_response[1]
                                     )
     response.headers['Content-Type'] = hs_response[0]
@@ -188,7 +194,7 @@ def _dump_response(accept: str, grid: hszinc.Grid, default: Optional[str] = None
     if accept_type:
         if accept_type in (DEFAULT_MIME_TYPE, "*/*"):
             return (DEFAULT_MIME_TYPE + "; charset=utf-8", hszinc.dump(grid, mode=DEFAULT_MIME_TYPE))
-        elif accept_type in (hszinc.MODE_ZINC):
+        elif accept_type == hszinc.MODE_ZINC:
             return (hszinc.MODE_ZINC + "; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_ZINC))
         elif accept_type == hszinc.MODE_JSON:
             return (hszinc.MODE_JSON + "; charset=utf-8", hszinc.dump(grid, mode=hszinc.MODE_JSON))
@@ -197,7 +203,7 @@ def _dump_response(accept: str, grid: hszinc.Grid, default: Optional[str] = None
     if default:
         return (default + "; charset=utf-8", hszinc.dump(grid, mode=default))  # Return HTTP 403 ?
 
-    raise ValueError(f"Accept:{accept} not supported")  # TODO: must return error 406
+    raise HttpError(406, f"Accept '{accept}' not supported")
 
 
 # PPR: manage compression ?
@@ -209,6 +215,25 @@ def _get_provider() -> HaystackInterface:
     assert "HAYSTACK_PROVIDER" in os.environ, "Set 'HAYSTACK_PROVIDER' environment variable"
     log.debug(f'Provider={os.environ["HAYSTACK_PROVIDER"]}')
     return get_provider(os.environ["HAYSTACK_PROVIDER"])
+
+
+def _manage_exception(headers: Dict[str, str], e: Exception, stage: str) -> HaystackHttpResponse:
+    log.error(traceback.format_exc())
+    error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
+                             metadata={
+                                 "err": hszinc.MARKER,
+                                 "id": "badId",
+                                 "errTrace": traceback.format_exc() if stage == "dev" else ""
+                             },
+                             columns=[
+                                 ('id',
+                                  [('meta', None)])])
+    status_code = 400
+    status_msg = "ERROR"
+    if isinstance(e, HttpError):
+        status_code = e.error
+        status_msg = e.msg
+    return _format_response(headers, error_grid, status_code, status_msg, default=_DEFAULT_MIME_TYPE_WITH_METADATA)
 
 
 def about(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
@@ -224,19 +249,9 @@ def about(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             home = 'https://' + headers['Host'] + '/' + stage
         grid_response = provider.about(home)
         assert grid_response is not None
-        return _format_response(headers, grid_response, 200)
-    except Exception:  # pylint: disable=broad-except
-        log.error(traceback.format_exc())
-        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
-                                 metadata={
-                                     "err": hszinc.MARKER,
-                                     "id": "badId",
-                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
-                                 },
-                                 columns=[
-                                     ('id',
-                                      [('meta', None)])])
-        response = _format_response(headers, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_METADATA)
+        return _format_response(headers, grid_response, 200, "OK")
+    except Exception as e:  # pylint: disable=broad-except
+        response = _manage_exception(headers, e, stage)
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
@@ -247,19 +262,9 @@ def ops(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         provider = _get_provider()
         grid_response = provider.ops()
         assert grid_response is not None
-        response = _format_response(headers, grid_response, 200)
-    except Exception:  # pylint: disable=broad-except
-        log.error(traceback.format_exc())
-        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
-                                 metadata={
-                                     "err": hszinc.MARKER,
-                                     "id": "badId",
-                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
-                                 },
-                                 columns=[
-                                     ('id',
-                                      [('meta', None)])])
-        response = _format_response(headers, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_METADATA)
+        response = _format_response(headers, grid_response, 200, "OK")
+    except Exception as e:  # pylint: disable=broad-except
+        response = _manage_exception(headers, e, stage)
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
@@ -281,19 +286,9 @@ def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                 {"mime": hszinc.MODE_JSON, "receive": hszinc.MARKER, "send": hszinc.MARKER},
                 {"mime": hszinc.MODE_CSV, "receive": hszinc.MARKER, "send": hszinc.MARKER},
             ])
-        response = _format_response(headers, grid_response, 200)
-    except Exception:  # pylint: disable=broad-except
-        log.error(traceback.format_exc())
-        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
-                                 metadata={
-                                     "err": hszinc.MARKER,
-                                     "id": "badId",
-                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
-                                 },
-                                 columns=[
-                                     ('id',
-                                      [('meta', None)])])
-        response = _format_response(headers, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_METADATA)
+        response = _format_response(headers, grid_response, 200, "OK")
+    except Exception as e:  # pylint: disable=broad-except
+        response = _manage_exception(headers, e, stage)
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
@@ -329,26 +324,16 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                 if 'limit' in args:
                     limit = int(args['limit'])
             if 'version' in args:
-                date_version = _parse_datetime(args['version'].split(' '))
+                date_version = parse_date_format(args['version'].split(' '))
 
         if read_ids is None and read_filter is None:
             raise ValueError("'id' or 'filter' must be set")
         log.debug(f"id={read_ids} filter={read_filter} limit={limit}, date_version={date_version}")
         grid_response = provider.read(limit, read_ids, read_filter, date_version)
         assert grid_response is not None
-        response = _format_response(headers, grid_response, 200)
+        response = _format_response(headers, grid_response, 200, "OK")
     except Exception as e:  # pylint: disable=broad-except
-        log.debug(e)
-        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
-                                 metadata={
-                                     "err": hszinc.MARKER,
-                                     "id": "badId",
-                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
-                                 },
-                                 columns=[
-                                     ('id',
-                                      [('meta', None)])])
-        response = _format_response(headers, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_METADATA)
+        response = _manage_exception(headers, e, stage)
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
@@ -367,18 +352,9 @@ def nav(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                 nav_id = args['navId']
         grid_response = provider.nav(nav_id=nav_id)
         assert grid_response is not None
-        response = _format_response(headers, grid_response, 200)
-    except Exception:  # pylint: disable=broad-except
-        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
-                                 metadata={
-                                     "err": hszinc.MARKER,
-                                     "id": "badId",
-                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
-                                 },
-                                 columns=[
-                                     ('id',
-                                      [('meta', None)])])
-        response = _format_response(headers, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_METADATA)
+        response = _format_response(headers, grid_response, 200, "OK")
+    except Exception as e:  # pylint: disable=broad-except
+        response = _manage_exception(headers, e, stage)
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
@@ -412,19 +388,9 @@ def watch_sub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         assert grid_response is not None
         assert "watchId" in grid_response.metadata
         assert "lease" in grid_response.metadata
-        response = _format_response(headers, grid_response, 200)
-    except Exception:  # pylint: disable=broad-except
-        log.error(traceback.format_exc())
-        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
-                                 metadata={
-                                     "err": hszinc.MARKER,
-                                     "id": "badId",
-                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
-                                 },
-                                 columns=[
-                                     ('id',
-                                      [('meta', None)])])
-        response = _format_response(headers, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_METADATA)
+        response = _format_response(headers, grid_response, 200, "OK")
+    except Exception as e:  # pylint: disable=broad-except
+        response = _manage_exception(headers, e, stage)
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
@@ -456,18 +422,9 @@ def watch_unsub(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
             raise ValueError("'watchId' must be set")
         provider.watch_unsub(watch_id, ids, close)
         grid_response = EmptyGrid
-        response = _format_response(headers, grid_response, 200)
-    except Exception:  # pylint: disable=broad-except
-        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
-                                 metadata={
-                                     "err": hszinc.MARKER,
-                                     "id": "badId",
-                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
-                                 },
-                                 columns=[
-                                     ('id',
-                                      [('meta', None)])])
-        response = _format_response(headers, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_METADATA)
+        response = _format_response(headers, grid_response, 200, "OK")
+    except Exception as e:  # pylint: disable=broad-except
+        response = _manage_exception(headers, e, stage)
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
@@ -492,18 +449,9 @@ def watch_poll(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse
 
         grid_response = provider.watch_poll(watch_id, refresh)
         assert grid_response is not None
-        response = _format_response(headers, grid_response, 200)
-    except Exception:  # pylint: disable=broad-except
-        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
-                                 metadata={
-                                     "err": hszinc.MARKER,
-                                     "id": "badId",
-                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
-                                 },
-                                 columns=[
-                                     ('id',
-                                      [('meta', None)])])
-        response = _format_response(headers, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_METADATA)
+        response = _format_response(headers, grid_response, 200, "OK")
+    except Exception as e:  # pylint: disable=broad-except
+        response = _manage_exception(headers, e, stage)
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
@@ -549,18 +497,9 @@ def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
             assert "levelDis" in grid_response.column
             assert "val" in grid_response.column
             assert "who" in grid_response.column
-        response = _format_response(headers, grid_response, 200)
-    except Exception:  # pylint: disable=broad-except
-        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
-                                 metadata={
-                                     "err": hszinc.MARKER,
-                                     "id": "badId",
-                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
-                                 },
-                                 columns=[
-                                     ('id',
-                                      [('meta', None)])])
-        response = _format_response(headers, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_METADATA)
+        response = _format_response(headers, grid_response, 200, "OK")
+    except Exception as e:  # pylint: disable=broad-except
+        response = _manage_exception(headers, e, stage)
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
@@ -571,7 +510,7 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         provider = _get_provider()
         grid_request = _parse_body(request)
         entity_id = date_version = None
-        date_range = ''
+        date_range = None
         if len(grid_request):
             if 'id' in grid_request.column:
                 entity_id = grid_request[0].get('id', '')
@@ -584,26 +523,29 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             if 'id' in args:
                 entity_id = Ref(args['id'][1:])
             if 'range' in args:
-                date_range = args['range']  # FIXME: parse date_range
+                date_range = args['range']
             if 'version' in args:
                 date_version = parse_date_format(args['version'])
 
+        if date_range:
+            if "today" != date_range and "yesterday" != date_range:
+                split_date = [parse_date_format(x) for x in date_range.split(',')]
+                if len(split_date) > 1:
+                    assert type(split_date[0]) == type(split_date[1])
+                    date_range = tuple(split_date)
+                else:
+                    if type(split_date[0]) == datetime:
+                        split_date.append(None)
+                        date_range = tuple(split_date)
+                    else:
+                        date_range = split_date[0]
+
         log.debug(f"id={entity_id} range={date_range}, date_version={date_version}")
-        grid_response = provider.his_read(entity_id, (None, None), date_version)  # FIXME: use dates
+        grid_response = provider.his_read(entity_id, date_range, date_version)
         assert grid_response is not None
-        response = _format_response(headers, grid_response, 200)
+        response = _format_response(headers, grid_response, 200, "OK")
     except Exception as e:  # pylint: disable=broad-except
-        log.debug(e)
-        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
-                                 metadata={
-                                     "err": hszinc.MARKER,
-                                     "id": "badId",
-                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
-                                 },
-                                 columns=[
-                                     ('id',
-                                      [('meta', None)])])
-        response = _format_response(headers, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_METADATA)
+        response = _manage_exception(headers, e, stage)
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
@@ -629,18 +571,9 @@ def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             date_version = parse_date_format(args['version'])
         grid_response = provider.his_write(entity_id, ts, date_version)
         assert grid_response is not None
-        response = _format_response(headers, grid_response, 200)
-    except Exception:  # pylint: disable=broad-except
-        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
-                                 metadata={
-                                     "err": hszinc.MARKER,
-                                     "id": "badId",
-                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
-                                 },
-                                 columns=[
-                                     ('id',
-                                      [('meta', None)])])
-        response = _format_response(headers, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_METADATA)
+        response = _format_response(headers, grid_response, 200, "OK")
+    except Exception as e:  # pylint: disable=broad-except
+        response = _manage_exception(headers, e, stage)
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
 
@@ -661,16 +594,7 @@ def invoke_action(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespo
         params = grid_request[0] if grid_request else {}
         grid_response = provider.invoke_action(entity_id, action, params)
         assert grid_response is not None
-        response = _format_response(headers, grid_response, 200)
-    except Exception:  # pylint: disable=broad-except
-        error_grid = hszinc.Grid(version=_DEFAULT_VERSION,
-                                 metadata={
-                                     "err": hszinc.MARKER,
-                                     "id": "badId",
-                                     "errTrace": traceback.format_exc() if stage == "dev" else ""
-                                 },
-                                 columns=[
-                                     ('id',
-                                      [('meta', None)])])
-        response = _format_response(headers, error_grid, 400, default=_DEFAULT_MIME_TYPE_WITH_METADATA)
+        response = _format_response(headers, grid_response, 200, "OK")
+    except Exception as e:  # pylint: disable=broad-except
+        response = _manage_exception(headers, e, stage)
     return _compress_response(headers.get("Accept-Encoding", None), response)

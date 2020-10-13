@@ -3,7 +3,7 @@ from haystackapi import get_provider
 
 def test_ops_without_implementation():
     # GIVEN
-    provider = get_provider('tstprovider_no_implementation')  # FIXME: use mock ?
+    provider = get_provider('tstprovider_no_implementation')
 
     # WHEN
     ops = provider.ops()

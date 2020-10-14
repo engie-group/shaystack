@@ -12,12 +12,12 @@ import math
 import os
 import warnings
 
+import hszinc
 import pytz
+from hszinc import MARKER, Grid, MODE_JSON, XStr, MODE_CSV
+from hszinc.zincparser import _unescape, ZincParseException
 from nose.tools import assert_is
 
-import hszinc
-from hszinc import MARKER, Grid, MODE_JSON, XStr, MODE_CSV
-from hszinc.zincparser import hs_row, _unescape, ZincParseException
 from .pint_enable import _enable_pint
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
@@ -164,7 +164,7 @@ def _check_metadata(grid, force_metadata_order=True):
     if force_metadata_order:
         assert list(grid.metadata.keys()) == ['database', 'dis']
     else:
-        assert set(grid.metadata.keys()) == set(['database', 'dis'])
+        assert set(grid.metadata.keys()) == {'database', 'dis'}
 
     assert grid.metadata['database'] == 'test'
     assert grid.metadata['dis'] == 'Site Energy Summary'
@@ -178,7 +178,7 @@ def _check_metadata(grid, force_metadata_order=True):
     if force_metadata_order:
         assert list(col.keys()) == ['dis', 'unit']
     else:
-        assert set(col.keys()) == set(['dis', 'unit'])
+        assert set(col.keys()) == {'dis', 'unit'}
     assert col['dis'] == 'Value'
     assert col['unit'] == 'kW'
 
@@ -249,27 +249,27 @@ def _check_datetime(grid):
     row = grid.pop(0)
     assert isinstance(row['datetime'], datetime.datetime)
     assert row['datetime'] == \
-           pytz.timezone('America/Los_Angeles').localize( \
+           pytz.timezone('America/Los_Angeles').localize(
                datetime.datetime(2010, 11, 28, 7, 23, 2, 500000))
     row = grid.pop(0)
     assert row['datetime'] == \
-           pytz.timezone('Asia/Taipei').localize( \
+           pytz.timezone('Asia/Taipei').localize(
                datetime.datetime(2010, 11, 28, 23, 19, 29, 500000))
     row = grid.pop(0)
     assert row['datetime'] == \
-           pytz.timezone('Etc/GMT-3').localize( \
+           pytz.timezone('Etc/GMT-3').localize(
                datetime.datetime(2010, 11, 28, 18, 21, 58, 0))
     row = grid.pop(0)
     assert row['datetime'] == \
-           pytz.timezone('Etc/GMT+3').localize( \
+           pytz.timezone('Etc/GMT+3').localize(
                datetime.datetime(2010, 11, 28, 12, 22, 27, 0))
     row = grid.pop(0)
     assert row['datetime'] == \
-           pytz.timezone('UTC').localize( \
+           pytz.timezone('UTC').localize(
                datetime.datetime(2010, 1, 8, 5, 0, 0, 0))
     row = grid.pop(0)
     assert row['datetime'] == \
-           pytz.timezone('UTC').localize( \
+           pytz.timezone('UTC').localize(
                datetime.datetime(2010, 1, 8, 5, 0, 0, 0))
 
 
@@ -371,7 +371,7 @@ comment
 def test_oddball_version_zinc():
     def _check_oddball_version_zinc(pint_en):
         _enable_pint(pint_en)
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as warning:
             warnings.simplefilter("always")
             grid = hszinc.parse('''ver:"3"
 comment
@@ -381,7 +381,7 @@ comment
             assert grid._version == hszinc.Version('3')
 
             # This should not have raised a warning
-            assert len(w) == 0
+            assert len(warning) == 0
 
     yield _check_oddball_version_zinc, False  # without pint
     yield _check_oddball_version_zinc, True  # with pint
@@ -621,8 +621,8 @@ str,bool
 "False",F
 ''')
         assert len(grid) == 2
-        assert grid[0]['bool'] == True
-        assert grid[1]['bool'] == False
+        assert grid[0]['bool']
+        assert not grid[1]['bool']
 
     yield _check_bool_zinc, False  # without pint
     yield _check_bool_zinc, True  # with pint
@@ -642,8 +642,8 @@ def test_bool_json():
                 {'str': 'False', 'bool': False},
             ],
         }, mode=hszinc.MODE_JSON)
-        assert grid[0]['bool'] == True
-        assert grid[1]['bool'] == False
+        assert grid[0]['bool']
+        assert not grid[1]['bool']
 
     yield _check_bool_json, False  # without pint
     yield _check_bool_json, True  # with pint
@@ -655,8 +655,8 @@ def test_bool_csv():
         grid = hszinc.parse('''str,bool
 "True",true
 "False",false''', mode=hszinc.MODE_CSV)
-        assert grid[0]['bool'] == True
-        assert grid[1]['bool'] == False
+        assert grid[0]['bool']
+        assert not grid[1]['bool']
 
     yield _check_bool_csv, False  # without pint
     yield _check_bool_csv, True  # with pint
@@ -1250,21 +1250,6 @@ def test_list_v3_csv():
     yield _check_list_v3_csv, True  # with pint
 
 
-def test_bin_zinc():
-    def _check_bin_zinc(pint_en):
-        _enable_pint(pint_en)
-        grid = hszinc.parse('''ver:"2.0"
-    bin
-    Bin(text/plain)
-    ''')
-
-        assert len(grid) == 1
-        assert grid[0]['bin'] == hszinc.Bin('text/plain')
-
-    yield _check_bin_zinc, False  # without pint
-    yield _check_bin_zinc, True  # with pint
-
-
 def test_dict_zinc():
     def _check_dict_zinc(pint_en):
         _enable_pint(pint_en)
@@ -1364,6 +1349,7 @@ def test_bin_zinc():
 bin
 Bin(text/plain)
 ''')
+
         assert len(grid) == 1
         assert grid[0]['bin'] == hszinc.Bin('text/plain')
 
@@ -1399,7 +1385,7 @@ def test_dict_invalide_version_zinc():
             00,{},                                                         "An empty dict"
             ''')
             assert False
-        except ZincParseException as e:
+        except ZincParseException:
             pass
 
     yield _check_dict_invalide_version_zinc, False
@@ -1575,22 +1561,6 @@ def test_multi_grid_json():
     yield _check_multi_grid_json, True  # with pint
 
 
-def test_multi_grid_json():
-    def _check_multi_grid_json(pint_en):
-        _enable_pint(pint_en)
-        # Multiple grids are separated by newlines.
-        grid_list = hszinc.parse(list(map(json.dumps, [SIMPLE_EXAMPLE_JSON,
-                                                       METADATA_EXAMPLE_JSON, NULL_EXAMPLE_JSON])),
-                                 mode=hszinc.MODE_JSON, single=False)
-        assert len(grid_list) == 3
-        _check_simple(grid_list[0])
-        _check_metadata(grid_list[1], force_metadata_order=False)
-        _check_null(grid_list[2])
-
-    yield _check_multi_grid_json, False  # without pint
-    yield _check_multi_grid_json, True  # with pint
-
-
 def test_multi_grid_csv():
     def _check_multi_grid_csv(pint_en):
         _enable_pint(pint_en)
@@ -1610,9 +1580,17 @@ def test_multi_grid_csv():
 def test_grid_meta_zinc():
     def _check_grid_meta_zinc(pint_en):
         _enable_pint(pint_en)
-        grid = hszinc.parse('''ver:"3.0" aString:"aValue" aNumber:3.14159 aNull:N aMarker:M anotherMarker aQuantity:123Hz aDate:2016-01-13 aTime:06:44:00 aTimestamp:2016-01-13T06:44:00+10:00 Brisbane aPlace:C(-27.4725,153.003)
-empty
-''')
+        grid = hszinc.parse('ver:"3.0" '
+                            'aString:"aValue" '
+                            'aNumber:3.14159 '
+                            'aNull:N '
+                            'aMarker:M '
+                            'anotherMarker '
+                            'aQuantity:123Hz '
+                            'aDate:2016-01-13 '
+                            'aTime:06:44:00 '
+                            'aTimestamp:2016-01-13T06:44:00+10:00 Brisbane '
+                            'aPlace:C(-27.4725,153.003)\nempty\n')
 
         assert len(grid) == 0
         meta = grid.metadata
@@ -1633,7 +1611,7 @@ empty
         assert meta['aTime'] == datetime.time(6, 44)
         assert isinstance(meta['aTimestamp'], datetime.datetime)
         assert meta['aTimestamp'] == \
-               pytz.timezone('Australia/Brisbane').localize( \
+               pytz.timezone('Australia/Brisbane').localize(
                    datetime.datetime(2016, 1, 13, 6, 44))
         assert isinstance(meta['aPlace'], hszinc.Coordinate)
         assert meta['aPlace'].latitude == -27.4725
@@ -1646,9 +1624,16 @@ empty
 def test_col_meta_zinc():
     def _check_col_meta_zinc(pint_en):
         _enable_pint(pint_en)
-        grid = hszinc.parse('''ver:"3.0"
-aColumn aString:"aValue" aNumber:3.14159 aNull:N aMarker:M anotherMarker aQuantity:123Hz aDate:2016-01-13 aTime:06:44:00 aTimestamp:2016-01-13T06:44:00+10:00 Brisbane aPlace:C(-27.4725,153.003)
-''')
+        grid = hszinc.parse('ver:"3.0"\n'
+                            'aColumn '
+                            'aString:"aValue" '
+                            'aNumber:3.14159 '
+                            'aNull:N '
+                            'aMarker:M '
+                            'anotherMarker '
+                            'aQuantity:123Hz aDate:2016-01-13 aTime:06:44:00 '
+                            'aTimestamp:2016-01-13T06:44:00+10:00 Brisbane '
+                            'aPlace:C(-27.4725,153.003)\n')
 
         assert len(grid) == 0
         assert len(grid.metadata) == 0
@@ -1671,7 +1656,7 @@ aColumn aString:"aValue" aNumber:3.14159 aNull:N aMarker:M anotherMarker aQuanti
         assert meta['aTime'] == datetime.time(6, 44)
         assert isinstance(meta['aTimestamp'], datetime.datetime)
         assert meta['aTimestamp'] == \
-               pytz.timezone('Australia/Brisbane').localize( \
+               pytz.timezone('Australia/Brisbane').localize(
                    datetime.datetime(2016, 1, 13, 6, 44))
         assert isinstance(meta['aPlace'], hszinc.Coordinate)
         assert meta['aPlace'].latitude == -27.4725
@@ -1693,7 +1678,7 @@ col1, col2, col3
         assert list(grid.column.keys()) == ['col1', 'col2', 'col3']
 
         row = grid[0]
-        assert set(row.keys()) == set(['col1', 'col2', 'col3'])
+        assert set(row.keys()) == {'col1', 'col2', 'col3'}
         assert row['col1'] == 'Val1'
         assert row['col2'] == 'Val2'
         assert row['col3'] == 'Val3'
@@ -1788,8 +1773,8 @@ C(12,-34),C(0.123,-.789),C(84.5,-77.45),C(-90,180)
         assert len(grid.metadata) == 0
         assert list(grid.column.keys()) == ['a', 'b', 'c', 'd']
         row = grid.pop(0)
-        assert row['a'] == True
-        assert row['b'] == False
+        assert row['a']
+        assert not row['b']
         assert 'c' not in row
         assert row['d'] == -99.0
         row = grid.pop(0)
@@ -1900,9 +1885,9 @@ a,b
         assert len(grid.metadata) == 0
         assert list(grid.column.keys()) == ['a', 'b']
         row = grid.pop(0)
-        assert row['a'] == hszinc.zoneinfo.timezone('GMT+5').localize( \
+        assert row['a'] == hszinc.zoneinfo.timezone('GMT+5').localize(
             datetime.datetime(2010, 3, 1, 23, 55, 0, 13000))
-        assert row['b'] == hszinc.zoneinfo.timezone('GMT-10').localize( \
+        assert row['b'] == hszinc.zoneinfo.timezone('GMT-10').localize(
             datetime.datetime(2010, 3, 1, 23, 55, 0, 13000))
 
     yield _check_nodehaystack_08_zinc, False  # without pint
@@ -1925,22 +1910,22 @@ a
 ''')
         assert len(grid) == 8
         assert list(grid.metadata.keys()) == ['a', 'foo', 'b', 'bar', 'c', 'baz']
-        assert grid.metadata['a'] == pytz.utc.localize( \
+        assert grid.metadata['a'] == pytz.utc.localize(
             datetime.datetime(2009, 2, 3, 4, 5, 6))
-        assert grid.metadata['b'] == pytz.utc.localize( \
+        assert grid.metadata['b'] == pytz.utc.localize(
             datetime.datetime(2010, 2, 3, 4, 5, 6))
-        assert grid.metadata['c'] == pytz.timezone('Europe/London').localize( \
+        assert grid.metadata['c'] == pytz.timezone('Europe/London').localize(
             datetime.datetime(2009, 12, 3, 4, 5, 6))
         assert_is(grid.metadata['foo'], hszinc.MARKER)
         assert_is(grid.metadata['bar'], hszinc.MARKER)
         assert_is(grid.metadata['baz'], hszinc.MARKER)
         assert list(grid.column.keys()) == ['a']
         assert grid.pop(0)['a'] == 3.814697265625E-6
-        assert grid.pop(0)['a'] == pytz.utc.localize( \
+        assert grid.pop(0)['a'] == pytz.utc.localize(
             datetime.datetime(2010, 12, 18, 14, 11, 30, 924000))
-        assert grid.pop(0)['a'] == pytz.utc.localize( \
+        assert grid.pop(0)['a'] == pytz.utc.localize(
             datetime.datetime(2010, 12, 18, 14, 11, 30, 925000))
-        assert grid.pop(0)['a'] == pytz.timezone('Europe/London').localize( \
+        assert grid.pop(0)['a'] == pytz.timezone('Europe/London').localize(
             datetime.datetime(2010, 12, 18, 14, 11, 30, 925000))
         assert grid.pop(0)['a'] == hszinc.Quantity(45, '$')
         assert grid.pop(0)['a'] == hszinc.Quantity(33, u'\u00a3')
@@ -2010,13 +1995,13 @@ a, b, c
         row = grid.pop(0)
         assert row['a'] == 6
         assert row['b'] == 7000
-        assert 'c'  not in row
+        assert 'c' not in row
         row = grid.pop(0)
-        assert 'a'  not in row
+        assert 'a' not in row
         assert 'b' not in row
         assert row['c'] == 10
         row = grid.pop(0)
-        assert 'a'  not in row
+        assert 'a' not in row
         assert 'b' not in row
         assert 'c' not in row
         row = grid.pop(0)
@@ -2222,7 +2207,7 @@ def test_malformed_scalar_zinc():
         assert False, 'Should have failed'
     except AssertionError:
         raise
-    except:
+    except:  # noqa: E722
         pass
 
 
@@ -2315,7 +2300,7 @@ def test_grid_in_grid_in_grid_zinc():
 def test_grid_in_grid_in_grid_json():
     def _check_grid_in_grid_in_grid_json(pint_en=True):
         _enable_pint(pint_en)
-        x = \
+        str_grid = \
             '{"meta": {"ver": "3.0"},' \
             ' "cols": [{"name": "inner"}], ' \
             '"rows": [' \
@@ -2331,7 +2316,7 @@ def test_grid_in_grid_in_grid_json():
             '}' \
             '}]' \
             '}'
-        grid = hszinc.parse(x, mode=hszinc.MODE_JSON)
+        grid = hszinc.parse(str_grid, mode=hszinc.MODE_JSON)
         assert len(grid) == 1
         inner = grid[0]['inner']
         assert isinstance(inner, Grid)
@@ -2346,7 +2331,7 @@ def test_grid_in_grid_in_grid_json():
 def test_grid_in_grid_in_grid_csv():
     def _check_grid_in_grid_in_grid_csv(pint_en=True):
         _enable_pint(pint_en)
-        x = '''inner
+        str_grid = '''inner
 "<<ver:""3.0""
 innerinner
 <<ver:""3.0""
@@ -2354,7 +2339,7 @@ comment
 ""A innerinnergrid""
 >>
 >>"'''
-        grid = hszinc.parse(x, mode=hszinc.MODE_CSV)
+        grid = hszinc.parse(str_grid, mode=hszinc.MODE_CSV)
         assert len(grid) == 1
         inner = grid[0]['inner']
         assert isinstance(inner, Grid)

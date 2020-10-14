@@ -16,7 +16,7 @@ The version number itself consists of digits grouped by decimal points;
 followed by some arbitrary text.
 
 Each group of digits is compared directly.
-The arbitrary text is compared lexographically.
+The arbitrary text is compared lexicographically.
 
 So, in this implementation:
 
@@ -29,10 +29,10 @@ So, in this implementation:
 import re
 import warnings
 
-VERSION_RE = re.compile(r'^(\d[\d\.]*)([^\d].*)*$')
+VERSION_RE = re.compile(r'^(\d[\d.]*)([^\d].*)*$')
 
 
-class Version(object):
+class Version:
     """
     A Project Haystack version number
     """
@@ -50,7 +50,7 @@ class Version(object):
             # We should have a nice friendly dotted decimal, followed
             # by anything else not recognised.  Parse out the first bit.
             (version_nums, version_extra) = match.groups()
-            self.version_nums = tuple([int(p or 0) \
+            self.version_nums = tuple([int(p or 0)
                                        for p in version_nums.split('.')])
             self.version_extra = version_extra
 
@@ -75,14 +75,14 @@ class Version(object):
 
         # Pad both to be the same length
         ver_len = max(len(num1), len(num2))
-        num1 += tuple([0 for n in range(len(num1), ver_len)])
-        num2 += tuple([0 for n in range(len(num2), ver_len)])
+        num1 += tuple([0 for _ in range(len(num1), ver_len)])
+        num2 += tuple([0 for _ in range(len(num2), ver_len)])
 
         # Compare the versions
-        for (p1, p2) in zip(num1, num2):
-            if p1 < p2:
+        for (pair_1, pair_2) in zip(num1, num2):
+            if pair_1 < pair_2:
                 return -1
-            elif p1 > p2:
+            if pair_1 > pair_2:
                 return 1
 
         # All the same, compare the extra strings.
@@ -90,16 +90,14 @@ class Version(object):
         if self.version_extra is None:
             if other.version_extra is None:
                 return 0
-            else:
-                return -1
-        elif other.version_extra is None:
-            return 1
-        elif self.version_extra == other.version_extra:
-            return 0
-        elif self.version_extra < other.version_extra:
             return -1
-        else:
+        if other.version_extra is None:
             return 1
+        if self.version_extra == other.version_extra:
+            return 0
+        if self.version_extra < other.version_extra:
+            return -1
+        return 1
 
     def __hash__(self):
         return hash(str(self))
@@ -125,7 +123,7 @@ class Version(object):
         return self._cmp(other) > 0
 
     @classmethod
-    def nearest(self, ver):
+    def nearest(cls, ver):
         """
         Retrieve the official version nearest the one given.
         """
@@ -151,9 +149,9 @@ class Version(object):
             # If we have not seen a better candidate, and this is older
             # then we may have to settle for that.
             if (best is None) and (candidate < ver):
-                warnings.warn('This version of hszinc does not yet ' \
-                              'support version %s, please seek a newer version ' \
-                              'or file a bug.  Closest (older) version supported is %s.' \
+                warnings.warn('This version of hszinc does not yet '
+                              'support version %s, please seek a newer version '
+                              'or file a bug.  Closest (older) version supported is %s.'
                               % (ver, candidate))
                 return candidate
 
@@ -163,9 +161,9 @@ class Version(object):
 
         # Unhappy path, no best option?  This should not happen.
         assert best is not None
-        warnings.warn('This version of hszinc does not yet ' \
-                      'support version %s, please seek a newer version ' \
-                      'or file a bug.  Closest (newer) version supported is %s.' \
+        warnings.warn('This version of hszinc does not yet '
+                      'support version %s, please seek a newer version '
+                      'or file a bug.  Closest (newer) version supported is %s.'
                       % (ver, best))
         return best
 
@@ -175,6 +173,6 @@ VER_2_0 = Version('2.0')
 VER_3_0 = Version('3.0')
 LATEST_VER = VER_3_0
 
-OFFICIAL_VERSIONS = set([
+OFFICIAL_VERSIONS = {
     VER_2_0, VER_3_0
-])
+}

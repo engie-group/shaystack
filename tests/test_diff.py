@@ -12,8 +12,8 @@ def test_diff_version():
 
     diff = grid_diff(left, right)
 
-    assert (diff.version == VER_3_0)
-    assert grid_merge(left, diff) == right # A + (B - A) == B
+    assert diff.version == VER_3_0
+    assert grid_merge(left, diff) == right  # A + (B - A) == B
 
 
 def test_diff_metadata_change_value():

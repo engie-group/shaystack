@@ -1,16 +1,14 @@
 # (C) 2020 Philippe PRADOS
 # -*- coding: utf-8 -*-
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
-import datetime
 import gc
 from datetime import time, date, datetime
-
-from iso8601 import iso8601
 
 from hszinc import Grid, Uri, Ref, Coordinate, MARKER, XStr
 from hszinc.filter_ast import FilterUnary, FilterBinary, FilterPath, FilterAST
 from hszinc.grid_filter import hs_filter, _FnWrapper, filter_function
 from hszinc.zoneinfo import timezone
+from iso8601 import iso8601
 
 
 def test_filter_ast():
@@ -20,7 +18,7 @@ def test_filter_ast():
 def test_filter_tag_only():
     result = hs_filter.parseString('geo', parseAll=True)[0]
     assert isinstance(result, FilterUnary)
-    assert result.op == "has"
+    assert result.operator == "has"
 
 
 def test_filter_tag_equal_values():
@@ -93,27 +91,27 @@ def test_filter_tag_equal_values():
 def test_filter_tag_comparaison_operator():
     result = hs_filter.parseString('bool == true', parseAll=True)[0]
     assert isinstance(result, FilterBinary)
-    assert result.op == '=='
+    assert result.operator == '=='
 
     result = hs_filter.parseString('bool <= true', parseAll=True)[0]
     assert isinstance(result, FilterBinary)
-    assert result.op == '<='
+    assert result.operator == '<='
 
     result = hs_filter.parseString('bool >= true', parseAll=True)[0]
     assert isinstance(result, FilterBinary)
-    assert result.op == '>='
+    assert result.operator == '>='
 
     result = hs_filter.parseString('bool != true', parseAll=True)[0]
     assert isinstance(result, FilterBinary)
-    assert result.op == '!='
+    assert result.operator == '!='
 
     result = hs_filter.parseString('bool < true', parseAll=True)[0]
     assert isinstance(result, FilterBinary)
-    assert result.op == '<'
+    assert result.operator == '<'
 
     result = hs_filter.parseString('bool > true', parseAll=True)[0]
     assert isinstance(result, FilterBinary)
-    assert result.op == '>'
+    assert result.operator == '>'
 
 
 def test_filter_navigation():
@@ -131,36 +129,36 @@ def test_filter_navigation():
 def test_filter_boolean_operator():
     result = hs_filter.parseString('bool and bool', parseAll=True)[0]
     assert isinstance(result, FilterBinary)
-    assert result.op == "and"
+    assert result.operator == "and"
 
     result = hs_filter.parseString('bool==true and bool!=false', parseAll=True)[0]
     assert isinstance(result, FilterBinary)
-    assert result.op == "and"
-    assert result.left.op == "=="
-    assert result.right.op == "!="
+    assert result.operator == "and"
+    assert result.left.operator == "=="
+    assert result.right.operator == "!="
 
     result = hs_filter.parseString('bool>=true or bool<=false', parseAll=True)[0]
     assert isinstance(result, FilterBinary)
-    assert result.op == "or"
-    assert result.left.op == ">="
-    assert result.right.op == "<="
+    assert result.operator == "or"
+    assert result.left.operator == ">="
+    assert result.right.operator == "<="
 
     result = hs_filter.parseString('(bool<true or bool>false) and not bool', parseAll=True)[0]
     assert isinstance(result, FilterBinary)
-    assert result.op == "and"
+    assert result.operator == "and"
     assert isinstance(result.left, FilterBinary)
-    assert result.left.op == "or"
+    assert result.left.operator == "or"
     assert isinstance(result.right, FilterUnary)
-    assert result.right.op == 'not'
+    assert result.right.operator == 'not'
 
     result = hs_filter.parseString('equip and siteRef->geoCity == "Chicago"', parseAll=True)[0]
     repr(result)
     assert isinstance(result, FilterBinary)
-    assert result.op == "and"
+    assert result.operator == "and"
     assert isinstance(result.left, FilterUnary)
-    assert result.left.op == "has"
+    assert result.left.operator == "has"
     assert isinstance(result.right, FilterBinary)
-    assert result.right.op == "=="
+    assert result.right.operator == "=="
     assert result.right.left.path == ["siteRef", "geoCity"]
 
 
@@ -261,11 +259,12 @@ def test_if_generated_function_removed():
     # Check if the generated function will be removed
     import hszinc.grid_filter
     wrapper = _FnWrapper("_acme", "def _acme(): pass")
-    assert hszinc.grid_filter._acme
-    del wrapper
+    assert hszinc.grid_filter._acme  # pylint: disable=E1101
+    if wrapper:
+        del wrapper
     gc.collect()
     try:
-        hszinc.grid_filter._acme
+        assert hszinc.grid_filter._acme is not None
         assert False
     except AttributeError:
         pass

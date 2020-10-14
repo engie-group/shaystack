@@ -10,23 +10,23 @@ class FilterPath:
         return "->".join(self.path)
 
 
-class FilterBinary():
-    def __init__(self, op, left, right):
-        self.op = op
+class FilterBinary:
+    def __init__(self, operator, left, right):
+        self.operator = operator
         self.left = left
         self.right = right
 
     def __repr__(self):
-        return "%s %s %s" % (self.left, self.op, self.right)
+        return "%s %s %s" % (self.left, self.operator, self.right)
 
 
-class FilterUnary():
-    def __init__(self, op, right):
-        self.op = op
+class FilterUnary:
+    def __init__(self, operator, right):
+        self.operator = operator
         self.right = right
 
     def __repr__(self):
-        return "%s %s" % (self.op, self.right)
+        return "%s %s" % (self.operator, self.right)
 
 
 class FilterAST:

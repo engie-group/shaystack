@@ -1,3 +1,4 @@
+-- See https://project-haystack.org/download/units.txt
 -- dimensionless --
 percent,%
 pixel,px

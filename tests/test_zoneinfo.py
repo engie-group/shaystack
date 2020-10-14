@@ -26,8 +26,8 @@ def test_get_tz_map():
     assert tz_map['Adelaide'] == 'Australia/Adelaide'
     assert tz_map['Detroit'] == 'America/Detroit'
     assert tz_map['GMT'] == 'Etc/GMT'
-    for etc_tz in (('GMT',) + \
-                   tuple(['GMT-%d' % n for n in range(1, 13)]) + \
+    for etc_tz in (('GMT',) +
+                   tuple(['GMT-%d' % n for n in range(1, 13)]) +
                    tuple(['GMT+%d' % n for n in range(1, 13)])):
         assert tz_map[etc_tz] == 'Etc/%s' % etc_tz
 
@@ -66,7 +66,7 @@ def test_iso8601_datetime():
     # We don't know which one it'll pick, so pick one.
     name = zoneinfo.timezone_name(
         iso8601.parse_date('2017-01-01T00:00+10:00'))
-    assert name in set([
+    assert name in {
         'Brisbane',
         'Chuuk',
         'DumontDUrville',
@@ -76,7 +76,7 @@ def test_iso8601_datetime():
         'Port_Moresby',
         'Saipan',
         'Ust-Nera',
-        'Vladivostok'])
+        'Vladivostok'}
 
 
 def test_oddball_iso8601_datetime():

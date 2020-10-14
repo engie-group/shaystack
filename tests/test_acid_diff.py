@@ -7,6 +7,7 @@ import random
 
 from hszinc import Grid, REMOVE
 from hszinc.grid_diff import grid_diff, grid_merge
+
 from .test_acid import gen_random_grid, gen_random_scalar, gen_random_str
 
 GENERATION_NUMBER, \
@@ -22,17 +23,17 @@ class RefuseRemove(BaseException):
 
 def _patch_dict(a_dict, cols=None):
     a_dict = a_dict.copy()
-    l = int(len(a_dict) * (PERCENT_PATCH / 100))
+    max_rand = int(len(a_dict) * (PERCENT_PATCH / 100))
     keys = list(a_dict.keys())
     # Remove REMOVE flag
-    for v in a_dict.values():
-        if v is REMOVE:
+    for val in a_dict.values():
+        if val is REMOVE:
             raise RefuseRemove()
-    if len(keys):
-        for _ in range(0, random.randint(0, l) + 1):
+    if keys:
+        for _ in range(0, random.randint(0, max_rand) + 1):
             j = random.randint(0, len(keys) - 1)
             k = keys[j]
-            if 'id' != k:
+            if k != 'id':
                 while True:
                     a_dict[k] = gen_random_scalar()
                     if a_dict[k] is not REMOVE:
@@ -40,7 +41,7 @@ def _patch_dict(a_dict, cols=None):
     # Add keys
     if cols and random.randint(0, 100) < PERCENT_ADD_VAL:
         k = list(cols.keys())[random.randint(0, len(cols) - 1)]
-        if 'id' != k:
+        if k != 'id':
             a_dict[k] = gen_random_str()
     return a_dict
 
@@ -99,7 +100,6 @@ def _try_diff():
 
 
 def _validate_grid(grid):
-    # Verifier l'absence de doublon
     addr = [id(row) for row in grid._row]
     assert len(addr) == len(set(addr)), "Row in multiple place in grid"
     ids = [x['id'] for x in grid if 'id' in x]

@@ -48,12 +48,10 @@ def suffix_to_mode(ext):
 
 
 def mode_to_suffix(mode):
-    """ Convert Hszinc mode to file suffix"""
+    """ Convert hszinc mode to file suffix"""
     return _mode_to_suffix.get(mode, None)
 
 
-def parse_file(filename):
-    pass
 def _parse_mode(mode):
     """
     Sanitise the mode given.  Whilst code _should_ use the MODE_ZINC and
@@ -69,15 +67,14 @@ def _parse_mode(mode):
     if mode == 'zinc':
         LOG.warning("Use MODE_ZINC in place of 'zinc'")
         return MODE_ZINC
-    elif mode == 'json':
+    if mode == 'json':
         LOG.warning("Use MODE_JSON in place of 'json'")
         return MODE_JSON
-    elif mode == 'csv':
+    if mode == 'csv':
         LOG.warning("Use MODE_CSV in place of 'csv'")
         return MODE_JSON
-    else:
-        # Clearly that was a wrong assumption.  Let 'em have it!
-        raise ValueError('Unrecognised mode, should be MODE_ZINC or MODE_JSON')
+    # Clearly that was a wrong assumption.  Let 'em have it!
+    raise ValueError('Unrecognised mode, should be MODE_ZINC or MODE_JSON')
 
 
 def parse(grid_str, mode=MODE_ZINC, charset='utf-8', single=True):
@@ -118,10 +115,8 @@ def parse(grid_str, mode=MODE_ZINC, charset='utf-8', single=True):
         # Most of the time, we will only want one grid.
         if grids:
             return grids[0]
-        else:
-            return None
-    else:
-        return grids
+        return None
+    return grids
 
 
 def parse_grid(grid_str, mode=MODE_ZINC, charset='utf-8'):
@@ -131,17 +126,16 @@ def parse_grid(grid_str, mode=MODE_ZINC, charset='utf-8'):
     # Decode incoming text
     if isinstance(grid_str, six.binary_type):  # pragma: no cover
         # No coverage here, because it *should* be handled above unless the user
-        # is pre-empting us by calling `parse_grid` directly.
+        # is preempting us by calling `parse_grid` directly.
         grid_str = grid_str.decode(encoding=charset)
 
     if mode == MODE_ZINC:
         return parse_zinc_grid(grid_str)
-    elif mode == MODE_JSON:
+    if mode == MODE_JSON:
         return parse_json_grid(grid_str)
-    elif mode == MODE_CSV:
+    if mode == MODE_CSV:
         return parse_csv_grid(grid_str)
-    else:  # pragma: no cover
-        raise NotImplementedError('Format not implemented: %s' % mode)
+    raise NotImplementedError('Format not implemented: %s' % mode)
 
 
 def parse_scalar(scalar, mode=MODE_ZINC, version=LATEST_VER, charset='utf-8'):
@@ -158,9 +152,8 @@ def parse_scalar(scalar, mode=MODE_ZINC, version=LATEST_VER, charset='utf-8'):
 
     if mode == MODE_ZINC:
         return parse_zinc_scalar(scalar, version=version)
-    elif mode == MODE_JSON:
+    if mode == MODE_JSON:
         return parse_json_scalar(scalar, version=version)
-    elif mode == MODE_CSV:
+    if mode == MODE_CSV:
         return parse_csv_scalar(scalar, version=version)
-    else:  # pragma: no cover
-        raise NotImplementedError('Format not implemented: %s' % mode)
+    raise NotImplementedError('Format not implemented: %s' % mode)

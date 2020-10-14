@@ -1,8 +1,13 @@
-import os
+from pint import UndefinedUnitError
 
-import pkg_resources
+try:
+    import importlib.resources as pkg_resources
+except ImportError:
+    # Try backported to PY<37 `importlib_resources`.
+    import importlib_resources as pkg_resources
 
 import hszinc
+
 from .pint_enable import _enable_pint
 
 units = []
@@ -10,10 +15,7 @@ units = []
 
 def get_units():
     _enable_pint(True)
-    file_path = os.path.join('', 'project_haystack_units.txt')
-    units_file = pkg_resources.resource_string(__name__, file_path)
-    global units
-    with open(units_file, 'r', encoding='UTF-8') as file:
+    with pkg_resources.open_text(__package__, 'project_haystack_units.txt', encoding='UTF-8') as file:
         for line in file:
             if '--' not in line and line != '':
                 res = line.rstrip().split(',')
@@ -26,14 +28,17 @@ def get_units():
 
 def test_all_units():
     _enable_pint(True)
+    get_units()
     not_defined = []
     defined = []
     for each in units:
         try:
-            q = hszinc.Q_(1, each)
+            # if to_haystack(each) != each:
+            #     assert to_pint(to_haystack(each)) == each
+            quantity = hszinc.Quantity(1, each)
             defined.append(each)
-            print(each, q)
-        except Exception as error:
+            print(each, quantity)
+        except UndefinedUnitError as error:
             not_defined.append(each)
             print(error, each)
     assert (len(not_defined)) == 0

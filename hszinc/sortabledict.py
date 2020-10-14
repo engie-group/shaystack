@@ -5,6 +5,9 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 import copy
+import sys
+
+import six
 
 try:
     import collections.abc as col
@@ -76,11 +79,13 @@ class SortableDict(col.MutableMapping):
 
         if (index is not None) and (pos_key is not None):
             raise ValueError('Either specify index or pos_key, not both.')
-        elif pos_key is not None:
+        if pos_key is not None:
             try:
                 index = self.index(pos_key)
             except ValueError:
-                raise KeyError('%r not found' % pos_key)
+                six.reraise(KeyError,
+                            KeyError('%r not found' % pos_key),
+                            sys.exc_info()[2])
 
         if after and (index is not None):
             # insert inserts *before* index, so increment by one.
@@ -106,7 +111,7 @@ class SortableDict(col.MutableMapping):
             self._order.append(key)
         self._values[key] = value
 
-    def at(self, index):
+    def at(self, index):  # pylint: disable=C0103
         """
         Return the key at the given index.
         """
@@ -121,8 +126,8 @@ class SortableDict(col.MutableMapping):
     def index(self, *args, **kwargs):
         return self._order.index(*args, **kwargs)
 
-    def reverse(self, *args, **kwargs):
-        return self._order.reverse(*args, **kwargs)
+    def reverse(self):
+        return self._order.reverse()
 
     def sort(self, *args, **kwargs):
         return self._order.sort(*args, **kwargs)

@@ -3,21 +3,21 @@
 # (C) 2016 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+import datetime
+import json
 import sys
+
+import hszinc
+import pytz
+from hszinc import dump_scalar
+
+from .test_parser import SIMPLE_EXAMPLE_ZINC, SIMPLE_EXAMPLE_JSON, \
+    METADATA_EXAMPLE_JSON, SIMPLE_EXAMPLE_CSV, METADATA_EXAMPLE_CSV
 
 if sys.version_info[0] == 2:
     from csv23 import reader
 else:
     from csv import reader
-import datetime
-import json
-
-import pytz
-
-import hszinc
-from hszinc import dump_scalar
-from .test_parser import SIMPLE_EXAMPLE_ZINC, SIMPLE_EXAMPLE_JSON, \
-    METADATA_EXAMPLE_JSON, SIMPLE_EXAMPLE_CSV, METADATA_EXAMPLE_CSV
 
 # The metadata example is a little different, as we generate the grid without
 # spaces around the commas.
@@ -60,7 +60,7 @@ def test_simple_json():
 def test_simple_csv():
     grid = make_simple_grid()
     grid_csv = hszinc.dump(grid, mode=hszinc.MODE_CSV)
-    assert len(list(reader(grid_csv.splitlines())))
+    assert list(reader(grid_csv.splitlines()))
     assert grid_csv == SIMPLE_EXAMPLE_CSV
 
 
@@ -100,7 +100,7 @@ def test_metadata_json():
 def test_metadata_csv():
     grid = make_metadata_grid()
     grid_csv = hszinc.dump(grid, mode=hszinc.MODE_CSV)
-    assert len(list(reader(grid_csv.splitlines())))
+    assert list(reader(grid_csv.splitlines()))
     assert grid_csv == METADATA_EXAMPLE_CSV
 
 
@@ -122,7 +122,7 @@ def test_multi_grid_json():
 def test_multi_grid_csv():
     grids = [make_simple_grid(), make_metadata_grid()]
     grid_csv = hszinc.dump(grids, mode=hszinc.MODE_CSV)
-    assert len(list(reader(grid_csv.splitlines())))
+    assert list(reader(grid_csv.splitlines()))
     assert grid_csv == '''firstName,bday
 "Jack",1973-07-23
 "Jill",1975-11-15
@@ -172,7 +172,7 @@ def test_grid_meta_json():
 
 def test_grid_meta_csv():
     grid_csv = hszinc.dump(make_grid_meta(), mode=hszinc.MODE_CSV)
-    assert len(list(reader(grid_csv.splitlines())))
+    assert list(reader(grid_csv.splitlines()))
     assert grid_csv == 'empty\n'
 
 
@@ -217,7 +217,7 @@ def test_col_meta_json():
 
 def test_col_meta_csv():
     grid_csv = hszinc.dump(make_col_meta(), mode=hszinc.MODE_CSV)
-    assert len(list(reader(grid_csv.splitlines())))
+    assert list(reader(grid_csv.splitlines()))
     assert grid_csv == 'empty\n'
 
 
@@ -276,9 +276,9 @@ def test_data_types_zinc_v2():
         },
         {
             'comment': 'A string',
-            'value': u'This is a test\n' \
-                     u'Line two of test\n' \
-                     u'\tIndented with "quotes", \\backslashes\\ and ' \
+            'value': u'This is a test\n'
+                     u'Line two of test\n'
+                     u'\tIndented with "quotes", \\backslashes\\ and '
                      u'Unicode characters: \u1234\u5678 and a $ dollar sign',
         },
         {
@@ -291,12 +291,12 @@ def test_data_types_zinc_v2():
         },
         {
             'comment': 'A timestamp (non-UTC)',
-            'value': pytz.timezone('Europe/Berlin').localize( \
+            'value': pytz.timezone('Europe/Berlin').localize(
                 datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
         },
         {
             'comment': 'A timestamp (UTC)',
-            'value': pytz.timezone('UTC').localize( \
+            'value': pytz.timezone('UTC').localize(
                 datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
         },
     ])
@@ -379,8 +379,8 @@ def test_data_types_json_v2():
         },
         {
             'comment': 'A string',
-            'value': 'This is a test\n' \
-                     'Line two of test\n' \
+            'value': 'This is a test\n'
+                     'Line two of test\n'
                      '\tIndented with "quotes" and \\backslashes\\',
         },
         {
@@ -393,12 +393,12 @@ def test_data_types_json_v2():
         },
         {
             'comment': 'A timestamp (non-UTC)',
-            'value': pytz.timezone('Europe/Berlin').localize( \
+            'value': pytz.timezone('Europe/Berlin').localize(
                 datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
         },
         {
             'comment': 'A timestamp (UTC)',
-            'value': pytz.timezone('UTC').localize( \
+            'value': pytz.timezone('UTC').localize(
                 datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
         },
     ])
@@ -435,9 +435,9 @@ def test_data_types_json_v2():
             {'comment': 's:A URI',
              'value': 'u:http://www.example.com'},
             {'comment': 's:A string',
-             'value': 's:This is a test\n' \
-                      'Line two of test\n' \
-                      '\tIndented with \"quotes\" ' \
+             'value': 's:This is a test\n'
+                      'Line two of test\n'
+                      '\tIndented with \"quotes\" '
                       'and \\backslashes\\'},
             {'comment': 's:A date',
              'value': 'd:2016-01-13'},
@@ -506,8 +506,8 @@ def test_data_types_csv_v2():
         },
         {
             'comment': 'A string',
-            'value': 'This is a test\n' \
-                     'Line two of test\n' \
+            'value': 'This is a test\n'
+                     'Line two of test\n'
                      '\tIndented with "quotes" and \\backslashes\\',
         },
         {
@@ -520,17 +520,17 @@ def test_data_types_csv_v2():
         },
         {
             'comment': 'A timestamp (non-UTC)',
-            'value': pytz.timezone('Europe/Berlin').localize( \
+            'value': pytz.timezone('Europe/Berlin').localize(
                 datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
         },
         {
             'comment': 'A timestamp (UTC)',
-            'value': pytz.timezone('UTC').localize( \
+            'value': pytz.timezone('UTC').localize(
                 datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
         },
     ])
     grid_csv = hszinc.dump(grid, mode=hszinc.MODE_CSV)
-    assert len(list(reader(grid_csv.splitlines())))
+    assert list(reader(grid_csv.splitlines()))
     assert grid_csv == u'''comment,value
 "A null value",
 "A marker",\u2713
@@ -741,7 +741,7 @@ def test_data_types_csv_v3():
         },
     ])
     grid_csv = hszinc.dump(grid, mode=hszinc.MODE_CSV)
-    assert len(list(reader(grid_csv.splitlines())))
+    assert list(reader(grid_csv.splitlines()))
     assert grid_csv == u'''comment,value
 "A Remove (3.0 version)",R
 "A NA",NA
@@ -783,8 +783,8 @@ def test_scalar_dict_zinc_v3():
                         "\"An empty dict\",{}\n"
                         "\"A marker in a dict\",{marker:M}\n"
                         "\"A references in a dict\",{" +
-                        " ".join([str(k) + ":" + str(v) for k, v in {"ref": "@a-ref", "ref2": "@a-ref"}.items()]) \
-                        .replace("ref2:@a-ref", "ref2:@a-ref \"a value\"") + \
+                        " ".join([str(k) + ":" + str(v) for k, v in {"ref": "@a-ref", "ref2": "@a-ref"}.items()])
+                        .replace("ref2:@a-ref", "ref2:@a-ref \"a value\"") +
                         "}\n"
                         "\"A quantity in a dict\",{quantity:500miles}\n")
 
@@ -864,7 +864,7 @@ def test_scalar_dict_csv_v3():
         },
     ])
     grid_csv = hszinc.dump(grid, mode=hszinc.MODE_CSV)
-    assert len(list(reader(grid_csv.splitlines())))
+    assert list(reader(grid_csv.splitlines()))
     assert grid_csv == u'''comment,value
 "An empty dict","{}"
 "A marker in a dict","{marker:M}"
@@ -1201,7 +1201,7 @@ def test_grid_types_csv():
         },
     ])
     grid_csv = hszinc.dump(grid, mode=hszinc.MODE_CSV)
-    assert len(list(reader(grid_csv.splitlines())))
+    assert list(reader(grid_csv.splitlines()))
     assert grid_csv == '''inner
 "<<ver:""3.0""
 comment

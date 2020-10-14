@@ -24,7 +24,8 @@ HAYSTACK_CONVERSION = [
     (u'%', 'percent'),
     (u'degree kelvin', 'degK'),
     (u'degree celsius', 'degC'),
-    (u'degree farenheit', 'degF'),
+    (u'degree fahrenheit', 'degF'),
+    (u'btu', 'BTU'),
     (u'pound force', 'pound_force'),
     (u'metric ton', 'metric_ton'),
     (u'fluid ounce', 'fluid_ounce'),
@@ -120,7 +121,8 @@ PINT_CONVERSION = [
     (u'hectofoot ** 3', 'hecto_cubic_foot'),
     (u'meter ** 3', 'cubic_meter'),
     (u'Volt_per', 'volts_per'),
-    (u'°ree', 'degree')
+    (u'°ree', 'degree'),
+    (u'BTU', 'btu')
 ]
 
 
@@ -136,7 +138,7 @@ def to_haystack(unit):
             unit == u'/s' or \
             unit == u'per_hour' or \
             unit == u'/h' or \
-            unit == None:
+            unit is None:
         return u''
         # Those units are not units... they are impossible to fit anywhere in Pint
 
@@ -145,7 +147,7 @@ def to_haystack(unit):
     for haystack_value, pint_value in HAYSTACK_CONVERSION:
         if pint_value == u'':
             continue
-        unit = unit.replace(pint_value, haystack_value)
+        unit = unit.replace(pint_value, haystack_value)  # FIXME: optimise this big loop
     return unit
 
 
@@ -160,10 +162,10 @@ def to_pint(unit):
             unit == u'/s' or \
             unit == u'per_hour' or \
             unit == u'/h' or \
-            unit == None:
+            unit is None:
         return ''
         # Those units are not units... they are impossible to fit anywhere in Pint
-    for haystack_value, pint_value in HAYSTACK_CONVERSION:
+    for haystack_value, pint_value in HAYSTACK_CONVERSION:  # FIXME: leasy
         unit = unit.replace(haystack_value, pint_value)
     return unit
 
@@ -173,43 +175,43 @@ def define_haystack_units():
     Missing units found in project-haystack
     Added to the registry
     """
-    ureg = UnitRegistry(on_redefinition='ignore')
-    ureg.define(u'% = [] = percent')
-    ureg.define(u'pixel = [] = px = dot = picture_element = pel')
-    ureg.define(u'decibel = [] = dB')
-    ureg.define(u'ppu = [] = parts_per_unit')
-    ureg.define(u'ppm = [] = parts_per_million')
-    ureg.define(u'ppb = [] = parts_per_billion')
-    ureg.define(u'%RH = [] = percent_relative_humidity = percentRH')
-    ureg.define(u'cubic_feet = ft ** 3 = cu_ft')
-    ureg.define(u'cfm = cu_ft * minute = liter_per_second / 0.4719475')
-    ureg.define(u'cfh = cu_ft * hour')
-    ureg.define(u'cfs = cu_ft * second')
-    ureg.define(u'VAR = volt * ampere')
-    ureg.define(u'kVAR = 1000 * volt * ampere')
-    ureg.define(u'MVAR = 1000000 * volt * ampere')
-    ureg.define(u'inH2O = in_H2O')
-    ureg.define(u'dry_air = []')
-    ureg.define(u'gas = []')
-    ureg.define(u'energy_efficiency_ratio = [] = EER')
-    ureg.define(u'coefficient_of_performance = [] = COP')
-    ureg.define(u'data_center_infrastructure_efficiency = [] = DCIE')
-    ureg.define(u'power_usage_effectiveness = [] = PUE')
-    ureg.define(u'formazin_nephelometric_unit = [] = fnu')
-    ureg.define(u'nephelometric_turbidity_units = [] = ntu')
-    ureg.define(u'power_factor = [] = PF')
-    ureg.define(u'degree_day_celsius = [] = degdaysC')
-    ureg.define(u'degree_day_farenheit = degree_day_celsius * 9 / 5 = degdaysF')
-    ureg.define(u'footcandle = lumen / sq_ft = ftcd')
-    ureg.define(u'Nm = newton * meter')
-    ureg.define(u'%obsc = [] = percent_obscuration = percentobsc')
-    ureg.define(u'cycle = []')
-    ureg.define(u'cph = cycle / hour')
-    ureg.define(u'cpm = cycle / minute')
-    ureg.define(u'cps = cycle / second')
-    ureg.define(u'hecto_cubic_foot = 100 * cubic_foot')
-    ureg.define(u'tenths_second = second / 10')
-    ureg.define(u'hundredths_second = second / 100')
+    unit_ureg = UnitRegistry(on_redefinition='ignore')
+    unit_ureg.define(u'% = [] = percent')
+    unit_ureg.define(u'pixel = [] = px = dot = picture_element = pel')
+    unit_ureg.define(u'decibel = [] = dB')
+    unit_ureg.define(u'ppu = [] = parts_per_unit')
+    unit_ureg.define(u'ppm = [] = parts_per_million')
+    unit_ureg.define(u'ppb = [] = parts_per_billion')
+    unit_ureg.define(u'%RH = [] = percent_relative_humidity = percentRH')
+    unit_ureg.define(u'cubic_feet = ft ** 3 = cu_ft')
+    unit_ureg.define(u'cfm = cu_ft * minute = liter_per_second / 0.4719475')
+    unit_ureg.define(u'cfh = cu_ft * hour')
+    unit_ureg.define(u'cfs = cu_ft * second')
+    unit_ureg.define(u'VAR = volt * ampere')
+    unit_ureg.define(u'kVAR = 1000 * volt * ampere')
+    unit_ureg.define(u'MVAR = 1000000 * volt * ampere')
+    unit_ureg.define(u'inH2O = in_H2O')
+    unit_ureg.define(u'dry_air = []')
+    unit_ureg.define(u'gas = []')
+    unit_ureg.define(u'energy_efficiency_ratio = [] = EER')
+    unit_ureg.define(u'coefficient_of_performance = [] = COP')
+    unit_ureg.define(u'data_center_infrastructure_efficiency = [] = DCIE')
+    unit_ureg.define(u'power_usage_effectiveness = [] = PUE')
+    unit_ureg.define(u'formazin_nephelometric_unit = [] = fnu')
+    unit_ureg.define(u'nephelometric_turbidity_units = [] = ntu')
+    unit_ureg.define(u'power_factor = [] = PF')
+    unit_ureg.define(u'degree_day_celsius = [] = degdaysC')
+    unit_ureg.define(u'degree_day_farenheit = degree_day_celsius * 9 / 5 = degdaysF')
+    unit_ureg.define(u'footcandle = lumen / sq_ft = ftcd')
+    unit_ureg.define(u'Nm = newton * meter')
+    unit_ureg.define(u'%obsc = [] = percent_obscuration = percentobsc')
+    unit_ureg.define(u'cycle = []')
+    unit_ureg.define(u'cph = cycle / hour')
+    unit_ureg.define(u'cpm = cycle / minute')
+    unit_ureg.define(u'cps = cycle / second')
+    unit_ureg.define(u'hecto_cubic_foot = 100 * cubic_foot')
+    unit_ureg.define(u'tenths_second = second / 10')
+    unit_ureg.define(u'hundredths_second = second / 100')
 
     # ureg.define('irradiance = W / sq_meter = irr')
     # In the definition of project haystack, there's a redundancy as irr = W/m^2
@@ -217,20 +219,22 @@ def define_haystack_units():
 
     # CURRENCY
     # I know...we won'T be able to convert right now !
-    ureg.define(u'australian_dollar = [] = AUD')
-    ureg.define(u'british_pound = [] = GBP = £')
-    ureg.define(u'canadian_dollar = [] = CAD')
-    ureg.define(u'chinese_yuan = [] = CNY = 元')
-    ureg.define(u'emerati_dirham = [] = AED')
-    ureg.define(u'euro = [] = EUR = €')
-    ureg.define(u'indian_rupee = [] = INR = ₹')
-    ureg.define(u'japanese_yen = [] = JPY = ¥')
-    ureg.define(u'russian_ruble = [] = RUB = руб')
-    ureg.define(u'south_korean_won = [] = KRW = ₩')
-    ureg.define(u'swedish_krona = [] = SEK = kr')
-    ureg.define(u'swiss_franc = [] = CHF = Fr')
-    ureg.define(u'taiwan_dollar = [] = TWD')
-    ureg.define(u'us_dollar = [] = USD = $')
-    ureg.define(u'new_israeli_shekel = [] = NIS')
+    unit_ureg.define(u'australian_dollar = [] = AUD')
+    unit_ureg.define(u'british_pound = [] = GBP = £')
+    unit_ureg.define(u'canadian_dollar = [] = CAD')
+    unit_ureg.define(u'chinese_yuan = [] = CNY = 元')
+    unit_ureg.define(u'emerati_dirham = [] = AED')
+    unit_ureg.define(u'euro = [] = EUR = €')
+    unit_ureg.define(u'indian_rupee = [] = INR = ₹')
+    unit_ureg.define(u'japanese_yen = [] = JPY = ¥')
+    unit_ureg.define(u'russian_ruble = [] = RUB = руб')
+    unit_ureg.define(u'south_korean_won = [] = KRW = ₩')
+    unit_ureg.define(u'swedish_krona = [] = SEK = kr')
+    unit_ureg.define(u'swiss_franc = [] = CHF = Fr')
+    unit_ureg.define(u'taiwan_dollar = [] = TWD')
+    unit_ureg.define(u'us_dollar = [] = USD = $')
+    unit_ureg.define(u'new_israeli_shekel = [] = NIS')
 
-    return ureg
+    # See https://pint.readthedocs.io/en/stable/defining.html
+
+    return unit_ureg

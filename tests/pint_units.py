@@ -1,5 +1,9 @@
 import random
-from io import open
+try:
+    import importlib.resources as pkg_resources
+except ImportError:
+    # Try backported to PY<37 `importlib_resources`.
+    import importlib_resources as pkg_resources
 
 _RAW_UNIT_DATA = None
 
@@ -9,9 +13,7 @@ def get_units():
     if _RAW_UNIT_DATA is None:
         unit_data = {}
 
-        for raw_row in open(
-                'tests/project_haystack_units.txt',
-                mode='r', encoding='utf-8'):
+        for raw_row in pkg_resources.open_text(__package__, 'project_haystack_units.txt', encoding='UTF-8'):
             row = raw_row.split(u',')
             if not bool(row):
                 continue

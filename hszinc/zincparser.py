@@ -22,6 +22,8 @@ from .sortabledict import SortableDict
 from .version import Version, VER_2_0, VER_3_0
 from .zoneinfo import timezone
 
+# flake8: noqa E731
+
 # pp.__diag__.warn_ungrouped_named_tokens_in_collection = True
 # pp.__diag__.warn_multiple_tokens_in_named_alternation = True
 # pp.__diag__.warn_ungrouped_named_tokens_in_collection = True
@@ -37,15 +39,14 @@ VERSION_RE = re.compile(r'^ver:"(([^"\\]|\\[\\"bfnrt$])+)"')
 NEWLINE_RE = re.compile(r'\r?\n')
 
 # Character number regex; for exceptions
-CHAR_NUM_RE = re.compile(' *\(at char \d+\),')
+CHAR_NUM_RE = re.compile(r' *\(at char \d+\),')
 
 
 def reformat_exception(ex_msg, line_num=None):
     msg = CHAR_NUM_RE.sub(u'', six.text_type(ex_msg))
     if line_num is not None:
         return msg.replace(u'line:1', u'line:%d' % line_num)
-    else:
-        return msg
+    return msg
 
 
 # Convenience function, we want whitespace left alone.
@@ -85,12 +86,12 @@ class ZincParseException(ValueError):
         try:
             # If we know the line and column, point it out in the message.
             grid_str_lines = grid_str.split('\n')
-            width = max([len(l) for l in grid_str_lines])
-            linefmt = u'%%-%ds' % width
-            rowfmt = u'%4d%s' + linefmt + u'%s'
+            width = max([len(line) for line in grid_str_lines])
+            line_fmt = u'%%-%ds' % width
+            row_fmt = u'%4d%s' + line_fmt + u'%s'
 
             formatted_lines = [
-                rowfmt % (
+                row_fmt % (
                     num,
                     ' >' if (line == num) else '| ',
                     line_str,
@@ -100,7 +101,7 @@ class ZincParseException(ValueError):
                 in enumerate(grid_str.split('\n'), 1)
             ]
             formatted_lines.insert(line,
-                                   (u'    | ' + linefmt + u' |') \
+                                   (u'    | ' + line_fmt + u' |')
                                    % (((col - 2) * u' ') + '.^.')
                                    )
 
@@ -113,12 +114,11 @@ class ZincParseException(ValueError):
         except:  # pragma: no cover
             # We should not get here.
             LOG.exception('Exception encountered formatting log message')
-            pass
 
         super(ZincParseException, self).__init__(message)
 
 
-class NearestMatch(object):
+class NearestMatch:
     """
     This class returns the nearest matching grammar for the given version.
     """
@@ -136,12 +136,12 @@ class NearestMatch(object):
             pass
 
         nearest = Version.nearest(ver)
-        g = self._known_grammars[nearest]
-        self._known_grammars[ver] = g
-        return g
+        a_generator = self._known_grammars[nearest]
+        self._known_grammars[ver] = a_generator
+        return a_generator
 
 
-class GenerateMatch(object):
+class GenerateMatch:
     """
     This class tries to generate a matching grammar based on the version input given.
     """
@@ -154,49 +154,47 @@ class GenerateMatch(object):
         try:
             return self._known_grammars[ver]
         except KeyError:
-            g = self._generator_fn(ver)
-            self._known_grammars[ver] = g
-            return g
+            a_generator = self._generator_fn(ver)
+            self._known_grammars[ver] = a_generator
+            return a_generator
 
 
-def _unescape(s, uri=False):
+def _unescape(a_string, uri=False):
     """
     Iterative parser for string escapes.
     """
     out = ''
-    while len(s) > 0:
-        c = s[0]
-        if c == '\\':
+    while len(a_string) > 0:
+        char = a_string[0]
+        if char == '\\':
             # Backslash escape
-            esc_c = s[1]
+            esc_c = a_string[1]
 
             if esc_c in ('u', 'U'):
                 # Unicode escape
-                out += six.unichr(int(s[2:6], base=16))
-                s = s[6:]
+                out += six.unichr(int(a_string[2:6], base=16))
+                a_string = a_string[6:]
                 continue
+            if esc_c == 'b':
+                out += '\b'
+            elif esc_c == 'f':
+                out += '\f'
+            elif esc_c == 'n':
+                out += '\n'
+            elif esc_c == 'r':
+                out += '\r'
+            elif esc_c == 't':
+                out += '\t'
             else:
-                if esc_c == 'b':
-                    out += '\b'
-                elif esc_c == 'f':
-                    out += '\f'
-                elif esc_c == 'n':
-                    out += '\n'
-                elif esc_c == 'r':
-                    out += '\r'
-                elif esc_c == 't':
-                    out += '\t'
-                else:
-                    if uri and (esc_c == '#'):
-                        # \# is passed through with backslash.
-                        out += '\\'
-                    # Pass through
-                    out += esc_c
-                s = s[2:]
-                continue
-        else:
-            out += c
-            s = s[1:]
+                if uri and (esc_c == '#'):
+                    # \# is passed through with backslash.
+                    out += '\\'
+                # Pass through
+                out += esc_c
+            a_string = a_string[2:]
+            continue
+        out += char
+        a_string = a_string[1:]
     return out
 
 
@@ -250,9 +248,9 @@ hs_tzHHMMOffset = Combine(Or([
     And([hs_plusMinus, Regex(r'\d\d:\d\d')])]
 ))
 hs_tzName = Regex(r'[A-Z][a-zA-Z0-9_\-]*')
-hs_tzUTCGMT = Or([Literal('UTC'), Literal('GMT')])
+hs_tz_UTC_GMT = Or([Literal('UTC'), Literal('GMT')])
 hs_tzUTCOffset = Combine(And([
-    hs_tzUTCGMT, Optional(
+    hs_tz_UTC_GMT, Optional(
         Or([Literal('0'),
             And([hs_plusMinus, OneOrMore(hs_digit)]
                 )]
@@ -312,10 +310,9 @@ def _parse_datetime(toks):
     if (isodt.tzinfo is None) and bool(tzname):  # pragma: no cover
         # This technically shouldn't happen according to Zinc specs
         return [timezone(tzname).localise(isodt)]
-    elif bool(tzname):
+    if bool(tzname):
         try:
-            tz = timezone(tzname)
-            return [isodt.astimezone(tz)]
+            return [isodt.astimezone(timezone(tzname))]
         except:  # pragma: no cover
             # Unlikely to occur, might do though if Project Haystack changes
             # its timezone list or if a system doesn't recognise a particular
@@ -370,7 +367,7 @@ hs_number = Or([
 ])
 
 # URIs
-hs_uriChar = Regex(r"([^\x00-\x1f\\`]|\\[bfnrt\\:/?" \
+hs_uriChar = Regex(r"([^\x00-\x1f\\`]|\\[bfnrt\\:/?"
                    + r"#\[\]@&=;`]|\\[uU][0-9a-fA-F]{4})")
 hs_uri = Combine(And([
     Suppress(Literal('`')),
@@ -395,9 +392,9 @@ hs_ref = And([
         Suppress(Literal(' ')),
         hs_str
     ]))
-]).setParseAction(lambda toks: [ \
-    Ref(toks[0], toks[1] if len(toks) > 1 else None) \
-    ])
+]).setParseAction(lambda toks: [
+    Ref(toks[0], toks[1] if len(toks) > 1 else None)
+])
 
 # Bins
 hs_binChar = Regex(r"[\x20-\x27\x2a-\x7f]")
@@ -416,17 +413,17 @@ hs_xstr = And([
 ]).setParseAction(lambda toks: [XStr(toks[0], toks[1])])
 
 # Booleans
-hs_bool = Word('TF', min=1, max=1, exact=1).setParseAction( \
+hs_bool = Word('TF', min=1, max=1, exact=1).setParseAction(
     lambda toks: [toks[0] == 'T'])
 
 # Singleton values
-hs_remove = Literal('R').setParseAction( \
+hs_remove = Literal('R').setParseAction(
     lambda toks: [REMOVE]).setName('remove')
-hs_marker = Literal('M').setParseAction( \
+hs_marker = Literal('M').setParseAction(
     lambda toks: [MARKER]).setName('marker')
-hs_null = Literal('N').setParseAction( \
+hs_null = Literal('N').setParseAction(
     lambda toks: [None]).setName('null')
-hs_na = Literal('NA').setParseAction( \
+hs_na = Literal('NA').setParseAction(
     lambda toks: [NA]).setName('na')
 # Lists, these will probably be in Haystack 4.0, so let's not
 # assume a version.  There are three cases:
@@ -437,24 +434,24 @@ hs_na = Literal('NA').setParseAction( \
 # We need to handle this trailing separator case.  That for now means
 # that a NULL within a list *MUST* be explicitly given using the 'N'
 # literal: we cannot support implicit NULLs as they are ambiguous.
-hs_list = GenerateMatch( \
-    lambda ver: Group(Or([ \
-        Suppress(Regex(r'[ *]')), \
-        And([ \
-            Suppress(Regex(r'\[ *')), \
-            Optional(DelimitedList( \
-                hs_scalar[ver], \
-                delim=hs_valueSep)), \
-            Suppress(Optional(hs_valueSep)), \
-            Suppress(Regex(r' *\]')) \
-            ]) \
-        ])).setParseAction(lambda toks: toks.asList()))
+hs_list = GenerateMatch(
+    lambda ver: Group(Or([
+        Suppress(Regex(r'[ *]')),
+        And([
+            Suppress(Regex(r'\[ *')),
+            Optional(DelimitedList(
+                hs_scalar[ver],
+                delim=hs_valueSep)),
+            Suppress(Optional(hs_valueSep)),
+            Suppress(Regex(r' *\]'))
+        ])
+    ])).setParseAction(lambda toks: toks.asList()))
 # Tag IDs
 hs_id = Regex(r'[a-z][a-zA-Z0-9_]*').setName('id')
 
 # Grid building blocks
-hs_cell = GenerateMatch( \
-    lambda ver: Or([Empty().copy().setParseAction(lambda toks: [None]), \
+hs_cell = GenerateMatch(
+    lambda ver: Or([Empty().copy().setParseAction(lambda toks: [None]),
                     hs_scalar[ver]]).setName('cell'))
 
 # Dict
@@ -469,29 +466,24 @@ hs_tagpair = GenerateMatch(
     lambda ver: And([hs_id,
                      Suppress(Regex(r': *')),
                      hs_scalar[ver]
-                     ])
-        .setParseAction(lambda toks: tuple(toks[:2]))
-        .setName('tagPair'))
+                     ]).setParseAction(lambda toks: tuple(toks[:2])).setName('tagPair'))
 
 hs_tag = GenerateMatch(
-    lambda ver: Or([hs_tagmarker, hs_tagpair[ver]])
-        .setName('tag'))
+    lambda ver: Or([hs_tagmarker, hs_tagpair[ver]]).setName('tag'))
 
 hs_tags = GenerateMatch(
-    lambda ver: ZeroOrMore(Or([hs_tag[ver], \
-                               Suppress(Regex(r'[ *]'))])) \
-        .setName('tags'))
+    lambda ver: ZeroOrMore(Or([hs_tag[ver],
+                               Suppress(Regex(r'[ *]'))])).setName('tags'))
 
 
-def to_dict(tokenlist):
+def to_dict(token_list):
     result = {}
-    i = 0
-    it = enumerate(tokenlist)
-    for i, tok in it:
-        if i < len(tokenlist) - 2 and tokenlist[i + 1] == ':':
-            result[tokenlist[i]] = tokenlist[i + 2]
-            next(it)
-            next(it)
+    iterator = enumerate(token_list)
+    for i, tok in iterator:
+        if i < len(token_list) - 2 and token_list[i + 1] == ':':
+            result[token_list[i]] = token_list[i + 2]
+            next(iterator)
+            next(iterator)
         else:
             if isinstance(tok, six.string_types):
                 result[tok] = MARKER
@@ -503,9 +495,9 @@ def to_dict(tokenlist):
     return result
 
 
-# def to_dict(tokenlist):
+# def to_dict(token_list):
 #     result = {}
-#     for i, tok in enumerate(tokenlist):
+#     for i, tok in enumerate(token_list):
 #         if isinstance(tok, six.string_types):
 #             result[tok] = MARKER
 #         else:
@@ -521,12 +513,10 @@ hs_dict = GenerateMatch(
             hs_tags[ver],
             Suppress(Regex(r' *}'))
         ])
-    ])
-        .setName("dict")
-        .setParseAction(to_dict)
+    ]).setName("dict").setParseAction(to_dict)
 )
 
-hs_inner_grid = GenerateMatch( \
+hs_inner_grid = GenerateMatch(
     lambda ver: And([
         Suppress(Regex(r'<< *')),
         hs_grid[ver],
@@ -543,49 +533,49 @@ hs_scalar_3_0 <<= Or([hs_ref, hs_xstr, hs_str, hs_uri, hs_dateTime,
 
 hs_nl = Combine(And([Optional(Literal('\r')), Literal('\n')]))
 
-hs_row = GenerateMatch( \
+hs_row = GenerateMatch(
     lambda ver: Group(And([DelimitedList(hs_cell[ver], delim=hs_valueSep),
                            Suppress(Regex(r' *')),
                            Suppress(hs_nl)
                            ])).setName('row'))
 
-hs_rows = GenerateMatch( \
+hs_rows = GenerateMatch(
     lambda ver: Group(ZeroOrMore(hs_row[ver])).setName("rows"))
 
-hs_metaPair = GenerateMatch( \
-    lambda ver: And([ \
-        hs_id, \
-        Suppress(And([ \
-            ZeroOrMore(Literal(' ')), \
-            Literal(':'), \
-            ZeroOrMore(Literal(' ')) \
-            ])), \
-        hs_scalar[ver] \
-        ]).setParseAction(lambda toks: [tuple(toks[:2])]).setName('metaPair'))
-hs_metaMarker = hs_id.copy().setParseAction( \
+hs_metaPair = GenerateMatch(
+    lambda ver: And([
+        hs_id,
+        Suppress(And([
+            ZeroOrMore(Literal(' ')),
+            Literal(':'),
+            ZeroOrMore(Literal(' '))
+        ])),
+        hs_scalar[ver]
+    ]).setParseAction(lambda toks: [tuple(toks[:2])]).setName('metaPair'))
+hs_metaMarker = hs_id.copy().setParseAction(
     lambda toks: [(toks[0], MARKER)]).setName('metaMarker')
-hs_metaItem = GenerateMatch( \
-    lambda ver: Or([ \
-        hs_metaMarker, \
-        hs_metaPair[ver] \
-        ]).setName('metaItem'))
-hs_meta = GenerateMatch( \
-    lambda ver: DelimitedList(hs_metaItem[ver], \
-                              delim=' ').setParseAction( \
-        lambda toks: [SortableDict(toks.asList())] \
-        ).setName('meta'))
+hs_metaItem = GenerateMatch(
+    lambda ver: Or([
+        hs_metaMarker,
+        hs_metaPair[ver]
+    ]).setName('metaItem'))
+hs_meta = GenerateMatch(
+    lambda ver: DelimitedList(hs_metaItem[ver],
+                              delim=' ').setParseAction(
+        lambda toks: [SortableDict(toks.asList())]
+    ).setName('meta'))
 
-hs_col = GenerateMatch( \
-    lambda ver: And([ \
-        hs_id, \
-        Optional(And([ \
-            Suppress(Literal(' ')), \
+hs_col = GenerateMatch(
+    lambda ver: And([
+        hs_id,
+        Optional(And([
+            Suppress(Literal(' ')),
             hs_meta[ver]
-        ])).setName('colMeta') \
-        ]).setParseAction(lambda toks: [ \
+        ])).setName('colMeta')
+    ]).setParseAction(lambda toks: [
         (toks[0], toks[1] if len(toks) > 1 else {})]))
 
-hs_cols = GenerateMatch( \
+hs_cols = GenerateMatch(
     lambda ver: And([
         DelimitedList(
             hs_col[ver], delim=hs_valueSep).setParseAction(  # + hs_nl
@@ -610,13 +600,13 @@ def _assign_ver(toks):
     return grid_meta
 
 
-hs_gridMeta = GenerateMatch( \
-    lambda ver: And([ \
-        hs_gridVer, \
-        Optional(And([ \
-            Suppress(Literal(' ')), \
-            hs_meta[ver] \
-            ])).setName('gridMeta'),
+hs_gridMeta = GenerateMatch(
+    lambda ver: And([
+        hs_gridVer,
+        Optional(And([
+            Suppress(Literal(' ')),
+            hs_meta[ver]
+        ])).setName('gridMeta'),
         Suppress(Regex(r' *')),
         Suppress(hs_nl)
     ]).setParseAction(_assign_ver))  # + hs_nl
@@ -624,30 +614,30 @@ hs_gridMeta = GenerateMatch( \
 
 def _gen_grid(toks):
     (grid_meta, col_meta, rows) = toks
-    if len(rows) == 1 and rows[0] == None:
+    if len(rows) == 1 and rows[0] is None:
         rows = []
-    g = Grid(version=grid_meta.pop('ver'),
-             metadata=grid_meta,
-             columns=list(col_meta.items()))
+    grid = Grid(version=grid_meta.pop('ver'),
+                metadata=grid_meta,
+                columns=list(col_meta.items()))
     for row in rows:
-        g.append({k: row[p] for p, k in enumerate(col_meta.keys()) if row[p] is not None})
-    return g
+        grid.append({k: row[p] for p, k in enumerate(col_meta.keys()) if row[p] is not None})
+    return grid
 
 
-hs_grid_2_0 <<= And([ \
+hs_grid_2_0 <<= And([
     hs_gridMeta[VER_2_0],
     hs_cols[VER_2_0],
     hs_rows[VER_2_0],
 ]).setParseAction(_gen_grid)
 
-hs_grid_3_0 <<= And([ \
+hs_grid_3_0 <<= And([
     hs_gridMeta[VER_3_0],
     hs_cols[VER_3_0],
     hs_rows[VER_3_0],
 ]).setParseAction(_gen_grid)
 
 
-def parse_grid(grid_data, parseAll=True):
+def parse_grid(grid_data, parse_all=True):
     """
     Parse the incoming grid.
     """
@@ -661,17 +651,21 @@ def parse_grid(grid_data, parseAll=True):
         version = Version(ver_match.group(1))
 
         # Now parse the grid of the grid accordingly
-        g = hs_grid[version].parseString(grid_data, parseAll=parseAll)[0]
-        return g
-    except pp.ParseException as pe:
+        return hs_grid[version].parseString(grid_data, parseAll=parse_all)[0]
+    except pp.ParseException as parse_exception:
         LOG.debug('Failing grid: %r', grid_data)
-        raise ZincParseException(
-            'Failed to parse: %s' % reformat_exception(pe, pe.lineno),
-            grid_data, pe.lineno, pe.col)  # Python3: from pe
+        six.reraise(ZincParseException,
+                    ZincParseException(
+                        'Failed to parse: %s' % reformat_exception(parse_exception, parse_exception.lineno),
+                        grid_data, parse_exception.lineno, parse_exception.col),
+                    sys.exc_info()[2])
+
     except:
         LOG.debug('Failing grid: %r', grid_data)
-        raise ZincParseException(
-            'Failed to parse: %s' % sys.exc_info()[0], grid_data, 0, 0)  # Python3: from pe
+        six.reraise(ZincParseException,
+                    ZincParseException(
+                        'Failed to parse: %s' % sys.exc_info()[0], grid_data, 0, 0),
+                    sys.exc_info()[2])
 
 
 def parse_scalar(scalar_data, version):
@@ -680,11 +674,14 @@ def parse_scalar(scalar_data, version):
     """
     try:
         return hs_scalar[version].parseString(scalar_data, parseAll=True)[0]
-    except pp.ParseException as pe:
+    except pp.ParseException as parse_exception:
         # Raise a new exception with the appropriate line number.
-        raise ZincParseException(
-            'Failed to parse scalar: %s' % reformat_exception(pe),
-            scalar_data, 1, pe.col)  # Python3: from pe
+        six.reraise(ZincParseException,
+                    ZincParseException(
+                        'Failed to parse scalar: %s' % reformat_exception(parse_exception),
+                        scalar_data, 1, parse_exception.col),
+                    sys.exc_info()[2])
+
     except:
         LOG.debug('Failing scalar data: %r (version %r)',
                   scalar_data, version)

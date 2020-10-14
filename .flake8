@@ -1,0 +1,7 @@
+[flake8]
+# E722 a virer
+#ignore = W503, W504, E122, E126, E128, E303, E722, E731
+ignore = W503, W504, E122, E126
+exclude = .git,__pycache__,build,dist
+max-line-length = 200
+max-complexity = 50

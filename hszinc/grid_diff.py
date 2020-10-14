@@ -10,47 +10,47 @@ from .sortabledict import SortableDict
 
 
 def grid_diff(left, right):
-    diff = Grid(version=right._version, metadata={})
+    diff = Grid(version=right.version, metadata={})
     metadata = diff.metadata
     metadata["diff_"] = MARKER  # Mark the grid to be a difference between grid
 
     # Calculate diff of metadata
-    for k in left.metadata:
-        if right.metadata and k in right.metadata:
-            if left.metadata[k] != right.metadata[k]:
-                metadata[k] = right.metadata[k]
+    for key in left.metadata:
+        if right.metadata and key in right.metadata:
+            if left.metadata[key] != right.metadata[key]:
+                metadata[key] = right.metadata[key]
         else:
-            metadata[k] = REMOVE
+            metadata[key] = REMOVE
 
     # Add metadata only in right
-    for k in right.metadata:
-        if k not in left.metadata:
-            metadata[k] = right.metadata[k]
+    for key in right.metadata:
+        if key not in left.metadata:
+            metadata[key] = right.metadata[key]
 
     # Calculate diff of columns
     columns = SortableDict()
-    for k in right.column:
-        columns[k] = MetadataObject()
+    for key in right.column:
+        columns[key] = MetadataObject()
     for right_col in right.column:
         if right_col not in left.column:
             # New column
             columns[right_col] = right.column[right_col]
         else:
             # Calculate diff
-            m = MetadataObject()
+            metadata = MetadataObject()
             left_row = left.column[right_col]
             right_row = right.column[right_col]
-            for k, v in right.column[right_col].items():
-                if k in left_row:
-                    if left_row[k] != v:
-                        m[k] = v
+            for key, value in right.column[right_col].items():
+                if key in left_row:
+                    if left_row[key] != value:
+                        metadata[key] = value
                 else:
-                    m[k] = v
+                    metadata[key] = value
 
-            for k, v in left_row.items():
-                if k not in right_row:
-                    m[k] = REMOVE
-            columns[right_col] = m
+            for key, value in left_row.items():
+                if key not in right_row:
+                    metadata[key] = REMOVE
+            columns[right_col] = metadata
     diff.column = columns
 
     # Add removed left columns
@@ -128,9 +128,9 @@ def grid_diff(left, right):
                 diff.append(diff_row)
 
     # Add the row with id, if it's only in right
-    for k in right.keys():
-        if k not in left:
-            pending_right_row.append(id(right[k]))
+    for key in right.keys():
+        if key not in left:
+            pending_right_row.append(id(right[key]))
 
     # Now, the pending_right_row have the not associated row
     for right_row in right:
@@ -140,7 +140,7 @@ def grid_diff(left, right):
 
 
 def grid_merge(orig_grid, diff):
-    orig_grid._version = diff._version
+    orig_grid._version = diff.version
 
     # Apply diff of metadata
     left_metadata = orig_grid.metadata
@@ -163,14 +163,14 @@ def grid_merge(orig_grid, diff):
                 map_col = orig_grid.column[col].copy()
             else:
                 map_col = MetadataObject()
-            for k, v in v_col.items():
-                if v is REMOVE:
-                    del map_col[k]
+            for key, value in v_col.items():
+                if value is REMOVE:
+                    del map_col[key]
                 else:
-                    map_col[k] = v
-            for k, v in diff.column[col].items():
-                if k not in map_col and v is not REMOVE:
-                    map_col[k] = v
+                    map_col[key] = value
+            for key, value in diff.column[col].items():
+                if key not in map_col and value is not REMOVE:
+                    map_col[key] = value
             new_cols[col] = map_col
     orig_grid.column = new_cols
 
@@ -180,7 +180,7 @@ def grid_merge(orig_grid, diff):
             id_diff = diff_row['id']
             if id_diff in orig_grid:
                 if 'remove_' in diff_row:
-                    orig_grid.remove(id_diff)
+                    orig_grid.pop(id_diff)
                 else:
                     left_row = orig_grid[id_diff]
                     for col in diff.column:
@@ -200,7 +200,7 @@ def grid_merge(orig_grid, diff):
                 # Search same record
                 for pos, grid_row in enumerate(orig_grid):
                     if grid_row == copy_diff_row:
-                        orig_grid.remove(pos)
+                        orig_grid.pop(pos)
                         break
             else:
                 # Add a new record

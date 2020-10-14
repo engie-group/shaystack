@@ -31,203 +31,260 @@ def test_grid_given_metadata():
 def test_grid_given_column_list():
     col_list = [('col1', [('c1m1', None), ('c1m2', None)]),
                 ('col2', [('c2m1', None), ('c2m2', None)])]
-    g = Grid(columns=col_list)
-    assert list(g.column.keys()) == ['col1', 'col2']
+    grid = Grid(columns=col_list)
+    assert list(grid.column.keys()) == ['col1', 'col2']
     for col, meta in col_list:
-        assert list(g.column[col].items()) == meta
+        assert list(grid.column[col].items()) == meta
 
 
 def test_grid_given_column_dict():
     cols = SortableDict([('col1', [('c1m1', None), ('c1m2', None)]),
                          ('col2', [('c2m1', None), ('c2m2', None)])])
-    g = Grid(columns=cols)
-    assert list(g.column.keys()) == ['col1', 'col2']
+    grid = Grid(columns=cols)
+    assert list(grid.column.keys()) == ['col1', 'col2']
     for col, meta in cols.items():
-        assert list(g.column[col].items()) == meta
+        assert list(grid.column[col].items()) == meta
 
 
 def test_grid_given_column_meta_dict():
     cols = SortableDict([('col1', SortableDict([('c1m1', None), ('c1m2', None)])),
                          ('col2', SortableDict([('c2m1', None), ('c2m2', None)]))])
-    g = Grid(columns=cols)
-    assert list(g.column.keys()) == ['col1', 'col2']
+    grid = Grid(columns=cols)
+    assert list(grid.column.keys()) == ['col1', 'col2']
     for col, meta in cols.items():
-        assert list(g.column[col].items()) == list(meta.items())
+        assert list(grid.column[col].items()) == list(meta.items())
 
 
 def test_grid_getitem():
-    g = Grid()
-    g.column['test'] = {}
+    grid = Grid()
+    grid.column['test'] = {}
 
     row = {'test': 'This is a test'}
-    g.append(row)
-    assert g[0] is row
+    grid.append(row)
+    assert grid[0] is row
 
 
 def test_grid_getitem_with_id():
-    g = Grid()
-    g.column['id'] = {}
-    g.column['test'] = {}
+    grid = Grid()
+    grid.column['id'] = {}
+    grid.column['test'] = {}
 
     row = {'id': Ref('myid'), 'test': 'This is a test'}
-    g.append(row)
-    assert g[Ref('myid')] is row
+    grid.append(row)
+    assert grid[Ref('myid')] is row
 
 
 def test_grid_setitem():
-    g = Grid()
-    g.column['test'] = {}
+    grid = Grid()
+    grid.column['test'] = {}
 
     row_1 = {'test': 'This is a test'}
     row_2 = {'test': 'This is another test'}
-    g.append(row_1)
-    g[0] = row_2
-    assert g[0] is row_2
+    grid.append(row_1)
+    grid[0] = row_2
+    assert grid[0] is row_2
 
 
 def test_grid_append_notdict():
-    g = Grid()
-    g.column['test'] = {}
+    grid = Grid()
+    grid.column['test'] = {}
 
     row_1 = {'test': 'This is a test'}
     row_2 = 'This is not a dict'
-    g.append(row_1)
+    grid.append(row_1)
     try:
-        g.append(row_2)
+        grid.append(row_2)
         assert False
-    except TypeError as e:
-        assert str(e) == 'value must be a dict'
-        assert len(g) == 1
+    except TypeError as exception:
+        assert str(exception) == 'value must be a dict'
+        assert len(grid) == 1
 
 
 def test_grid_append_v2_list_fail():
-    g = Grid(version='2.0')
-    g.column['test'] = {}
+    grid = Grid(version='2.0')
+    grid.column['test'] = {}
 
     row_1 = {'test': 'This is a test'}
     row_2 = {'test': ['This should fail']}
-    g.append(row_1)
+    grid.append(row_1)
     try:
-        g.append(row_2)
+        grid.append(row_2)
         assert False, 'Appended invalid data type'
-    except ValueError as e:
-        assert str(e) == 'Data type requires version 3.0'
+    except ValueError as exception:
+        assert str(exception) == 'Data type requires version 3.0'
 
 
 def test_grid_append_nover_list():
-    g = Grid(version=None)
-    assert g.version == Version('2.0')
-    g.column['test'] = {}
+    grid = Grid(version=None)
+    assert grid.version == Version('2.0')
+    grid.column['test'] = {}
 
     row_1 = {'test': 'This is a test'}
     row_2 = {'test': ['This should fail']}
-    g.append(row_1)
-    assert g.version == Version('2.0')
-    g.append(row_2)
-    assert g.version == Version('3.0')
+    grid.append(row_1)
+    assert grid.version == Version('2.0')
+    grid.append(row_2)
+    assert grid.version == Version('3.0')
 
 
 def test_grid_setitem_notdict():
-    g = Grid()
-    g.column['test'] = {}
+    grid = Grid()
+    grid.column['test'] = {}
 
     row = {'test': 'This is a test'}
-    g.append(row)
+    grid.append(row)
 
     try:
-        g[0] = 'This is not a dict'
+        grid[0] = 'This is not a dict'
         assert False, 'Accepted a string'
     except TypeError:
         pass
-    assert len(g) == 1
-    assert g[0]['test'] == 'This is a test'
+    assert len(grid) == 1
+    assert grid[0]['test'] == 'This is a test'
 
 
 def test_grid_del():
-    g = Grid(columns=['id', 'test'])
+    grid = Grid(columns=['id', 'test'])
     rows = [
         {'test': 1},
         {'test': 2},
         {'test': 3},
         {'id': Ref('myid')}
     ]
-    g.extend(rows)
-    assert len(g) == 4
-    del g[1]
-    del g[Ref('myid')]
-    assert len(g) == 2
-    assert g[0] is rows[0]
-    assert g[1] is rows[2]
+    grid.extend(rows)
+    assert len(grid) == 4
+    del grid[1]
+    del grid[Ref('myid')]
+    assert len(grid) == 2
+    assert grid[0] is rows[0]
+    assert grid[1] is rows[2]
+
+
+def test_pop_key():
+    grid = Grid(columns=["id", "a"])
+    row = {"id": Ref("myid"), "a": 1, "b": 2}
+    grid.append(row)
+    old = grid.pop(Ref("myid"))
+    assert not grid
+    assert id(old) == id(row)
+
+
+def test_pop_multiple_keys():
+    grid = Grid(columns=["id", "a"])
+    row1 = {"id": Ref("id1"), "a": 1, "b": 2}
+    row2 = {"id": Ref("id2"), "a": 1, "b": 2}
+    grid.append(row1)
+    grid.append(row2)
+    old = grid.pop(Ref("id1"), Ref("id2"))
+    assert not grid
+    assert id(old) == id(row1)
+
+
+def test_pop_invalid_key():
+    grid = Grid(columns=["id", "a"])
+    row = {"id": Ref("myid"), "a": 1, "b": 2}
+    grid.append(row)
+    old = grid.pop(Ref("other_id"))
+    assert grid
+    assert not old
+
+
+def test_pop_pos():
+    grid = Grid(columns=["id", "a"])
+    row = {"id": Ref("myid"), "a": 1, "b": 2}
+    grid.append(row)
+    old = grid.pop(0)
+    assert not grid
+    assert id(old) == id(row)
+
+
+def test_pop_multiple_pos():
+    grid = Grid(columns=["id", "a"])
+    row = {"id": Ref("id1"), "a": 1, "b": 2}
+    row = {"id": Ref("id2"), "a": 1, "b": 2}
+    grid.append(row)
+    old = grid.pop(0, 1)
+    assert not grid
+    assert id(old) == id(row)
+
+
+def test_pop_invalid_pos():
+    grid = Grid(columns=["id", "a"])
+    row = {"id": Ref("myid"), "a": 1, "b": 2}
+    grid.append(row)
+    old = grid.pop(-1)
+    assert grid
+    assert not old
 
 
 def test_grid_insert():
-    g = Grid()
+    grid = Grid()
     rows = [
         {'test': 1},
         {'test': 2},
         {'test': 3}
     ]
-    g.column['test'] = {}
-    g.extend(rows)
-    assert len(g) == 3
+    grid.column['test'] = {}
+    grid.extend(rows)
+    assert len(grid) == 3
     new_row = {'test': 'new'}
-    g.insert(1, new_row)
-    assert len(g) == 4
-    assert g[0] is rows[0]
-    assert g[1] is new_row
-    assert g[2] is rows[1]
-    assert g[3] is rows[2]
+    grid.insert(1, new_row)
+    assert len(grid) == 4
+    assert grid[0] is rows[0]
+    assert grid[1] is new_row
+    assert grid[2] is rows[1]
+    assert grid[3] is rows[2]
 
 
 def test_grid_extend():
-    g = Grid(columns=['id'])
-    g.reindex()
+    grid = Grid(columns=['id'])
+    grid.reindex()
     rows = [
         {'id': Ref('id1')},
         {'id': Ref('id2')},
         {'id': Ref('id3')}
     ]
-    g.extend(rows)
-    assert len(g) == 3
-    assert Ref('id1') in g._index
-    assert Ref('id2') in g._index
+    grid.extend(rows)
+    assert len(grid) == 3
+    assert Ref('id1') in grid._index
+    assert Ref('id2') in grid._index
 
 
 def test_grid_copy():
-    g = Grid(columns=['test'])
+    grid = Grid(columns=['test'])
     rows = [
         {'test': 1},
         {'test': 2},
         {'test': 3}
     ]
-    g.extend(rows)
-    g2 = g.copy()
-    assert len(g2) == 3
-    del g[1]
-    assert len(g) == 2
-    assert len(g2) == 3
+    grid.extend(rows)
+    grid_2 = grid.copy()
+    assert len(grid_2) == 3
+    del grid[1]
+    assert len(grid) == 2
+    assert len(grid_2) == 3
 
 
 def test_grid_str():
-    g = Grid(version=VER_3_0)
+    grid = Grid(version=VER_3_0)
     rows = [
         {'test': 1},
         {'test': 2},
         {'test': 3}
     ]
-    g.column['test'] = {}
-    g.extend(rows)
-    assert repr(g) == '<Grid>\n' \
-                      '\tVersion: 3.0\n' \
-                      '\tColumns:\n' \
-                      '\t\ttest\n' \
-                      '\tRow    0:\n' \
-                      '\ttest=1\n' \
-                      '\tRow    1:\n' \
-                      '\ttest=2\n' \
-                      '\tRow    2:\n' \
-                      '\ttest=3\n' \
-                      '</Grid>'
+    grid.column['test'] = {}
+    grid.extend(rows)
+    assert repr(grid) == '<Grid>\n' \
+                         '\tVersion: 3.0\n' \
+                         '\tColumns:\n' \
+                         '\t\ttest\n' \
+                         '\tRow    0:\n' \
+                         '\ttest=1\n' \
+                         '\tRow    1:\n' \
+                         '\ttest=2\n' \
+                         '\tRow    2:\n' \
+                         '\ttest=3\n' \
+                         '</Grid>'
 
 
 def test_grid_equal():
@@ -241,7 +298,7 @@ def test_grid_equal():
     assert ref == copy.deepcopy(ref)
 
 
-def test_grid_equal_with_None():
+def test_grid_equal_with_none():
     ref = Grid()
     ref.column['test', 'none'] = {}
     ref.extend([
@@ -359,7 +416,7 @@ def test_grid_not_equal__with_new_col():
     assert ref != diff
 
 
-def test_grid_not_equal_col_with_updated_metadata():
+def test_grid_not_equal_col_with_change_col_name():
     ref = Grid()
     ref.column['test'] = {}
     ref.extend([
@@ -508,23 +565,23 @@ def test_grid_add():
     right = Grid(columns={"id": {}, "a": {}, "b": {}})
     right.append({"id": Ref("my_id"), "a": 3, "c": 4})
 
-    sum = left + right
-    assert isinstance(sum, Grid)
-    assert len(sum) == 1
+    add_grid = left + right
+    assert isinstance(add_grid, Grid)
+    assert len(add_grid) == 1
 
 
 def test_pack_columns_with_unused_columns():
     grid = Grid(columns=["id", "a", "b"])
     grid.append({"id": Ref("myid"), "a": 1})
     grid.pack_columns()
-    assert set(grid.column.keys()) == set(["id", "a"])
+    assert set(grid.column.keys()) == {"id", "a"}
 
 
 def test_pack_columns_with_all_columns():
     grid = Grid(columns=["id", "a", "b"])
     grid.append({"id": Ref("myid"), "a": 1, "b": 2})
     grid.pack_columns()
-    assert set(grid.column.keys()) == set(["id", "a", "b"])
+    assert set(grid.column.keys()) == {"id", "a", "b"}
 
 
 def test_extends_columns():

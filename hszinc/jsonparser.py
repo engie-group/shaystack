@@ -20,7 +20,7 @@ from .grid import Grid
 from .version import LATEST_VER, Version, VER_3_0
 from .zoneinfo import timezone
 
-URI_META = re.compile(r'\\([:/\?#\[\]@\\&=;"$`])')
+URI_META = re.compile(r'([:/?#[\]@&=;"$`])')
 GRID_SEP = re.compile(r'\n\n+')
 
 # Type regular expressions
@@ -35,8 +35,8 @@ REF_RE = re.compile(r'^r:([a-zA-Z0-9_:\-.~]+)(:? (.*))?$',
 DATE_RE = re.compile(r'^d:(\d{4})-(\d{2})-(\d{2})$', flags=re.MULTILINE)
 TIME_RE = re.compile(r'^h:(\d{2}):(\d{2})(:?:(\d{2}(:?\.\d+)?))?$',
                      flags=re.MULTILINE)
-DATETIME_RE = re.compile(r'^t:(\d{4}-\d{2}-\d{2}T' \
-                         r'\d{2}:\d{2}(:?:\d{2}(:?\.\d+)?)' \
+DATETIME_RE = re.compile(r'^t:(\d{4}-\d{2}-\d{2}T'
+                         r'\d{2}:\d{2}(:?:\d{2}(:?\.\d+)?)'
                          r'(:?[zZ]|[+\-]\d+:?\d*))(:? ([A-Za-z\-+_0-9]+))?$',
                          flags=re.MULTILINE)
 URI_RE = re.compile(r'u:(.+)$', flags=re.MULTILINE)
@@ -90,42 +90,41 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
     # Simple cases
     if scalar is None:
         return None
-    elif isinstance(scalar, list):
+    if isinstance(scalar, list):
         # We support this only in version 3.0 and up.
         if version < VER_3_0:
-            raise ValueError('Lists are not supported in Haystack version %s' \
+            raise ValueError('Lists are not supported in Haystack version %s'
                              % version)
         return list(map(functools.partial(parse_scalar, version=version),
                         scalar))
-    elif isinstance(scalar, dict):
+    if isinstance(scalar, dict):
         # We support this only in version 3.0 and up.
         if version < VER_3_0:
-            raise ValueError('Dicts are not supported in Haystack version %s' \
+            raise ValueError('Dicts are not supported in Haystack version %s'
                              % version)
         if sys.version_info[0] < 3 and {"meta", "cols", "rows"} <= scalar.viewkeys() \
                 or {"meta", "cols", "rows"} <= scalar.keys():  # Check if grid in grid
             return parse_grid(scalar)
-        else:
-            return {k: parse_scalar(v, version=version) for (k, v) in scalar.items()}
-    elif scalar == MARKER_STR:
+        return {k: parse_scalar(v, version=version) for (k, v) in scalar.items()}
+    if scalar == MARKER_STR:
         return MARKER
-    elif scalar == NA_STR:
+    if scalar == NA_STR:
         return NA
-    elif (scalar == REMOVE2_STR) or (scalar == REMOVE3_STR):
+    if scalar in (REMOVE2_STR, REMOVE3_STR):
         # Strictly speaking: x: is a HS 2.0 Remove, and -: is a 3.0 Remove
         # but we'll treat both the same.
         return REMOVE
-    elif isinstance(scalar, bool):
+    if isinstance(scalar, bool):
         return scalar
-    elif scalar == 'n:INF':
+    if scalar == 'n:INF':
         return float('INF')
-    elif scalar == 'n:-INF':
+    if scalar == 'n:-INF':
         return -float('INF')
-    elif scalar == 'n:NaN':
+    if scalar == 'n:NaN':
         return float('nan')
-    # Conversion to dict of float value turn them into float 
+    # Conversion to dict of float value turn them into float
     # so regex won't work... better just return them
-    elif isinstance(scalar, float) or isinstance(scalar, six.integer_types):
+    if isinstance(scalar, (float, six.integer_types)):
         return scalar
 
     # Is it a number?
@@ -137,9 +136,8 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
         if matched[-1] is not None:
             # It's a quantity
             return Quantity(value, matched[-1])
-        else:
-            # It's a raw value
-            return value
+        # It's a raw value
+        return value
 
     # Is it a string?
     if scalar.startswith('s:'):
@@ -155,8 +153,7 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
         matched = match.groups()
         if matched[-1] is not None:
             return Ref(matched[0], matched[-1], has_value=True)
-        else:
-            return Ref(matched[0])
+        return Ref(matched[0])
 
     # Is it a date?
     match = DATE_RE.match(scalar)
@@ -187,18 +184,17 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
     if match:
         matches = match.groups()
         # Parse ISO8601 component
-        isodate = iso8601.parse_date(matches[0])
+        iso_date = iso8601.parse_date(matches[0])
         # Parse timezone
         tzname = matches[-1]
         if tzname is None:
-            return isodate  # No timezone given
-        else:
-            try:
-                tz = timezone(tzname)
-                return isodate.astimezone(tz)
-            except:  # pragma: no cover
-                # Unlikely code path.
-                return isodate
+            return iso_date  # No timezone given
+        try:
+            time_zone = timezone(tzname)
+            return iso_date.astimezone(time_zone)
+        except:  # noqa: E722 pragma: no cover
+            # Unlikely code path.
+            return iso_date
 
     # Is it a URI?
     match = URI_RE.match(scalar)

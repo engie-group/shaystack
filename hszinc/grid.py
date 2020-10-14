@@ -17,6 +17,7 @@ import six
 from .datatypes import NA, Quantity, Coordinate, Ref
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
+from .version import Version, VER_3_0, VER_2_0
 
 log = logging.getLogger("ping.Provider")
 
@@ -26,20 +27,19 @@ try:
 except ImportError:  # pragma: no cover
     import collections as col
     from collections import Sequence
-from .version import Version, VER_3_0, VER_2_0
 
 
 class Grid(col.MutableSequence):
-    '''
+    """
     A grid is basically a series of tabular records.  The grid has a header
     which describes some metadata about the grid and its columns.  This is
     followed by zero or more rows.
-    '''
+    """
 
     def __init__(self, version=None, metadata=None, columns=None):
-        '''
+        """
         Create a new Grid.
-        '''
+        """
         # Version
         version_given = version is not None
         if version_given:
@@ -66,52 +66,52 @@ class Grid(col.MutableSequence):
             self.metadata.update(metadata.items())
 
         if columns is not None:
-            if isinstance(columns, dict) or isinstance(columns, SortableDict):
+            if isinstance(columns, (dict, SortableDict)):
                 columns = list(columns.items())
             elif isinstance(columns, Sequence):
-                if len(columns) and not isinstance(columns[0], tuple):
+                if columns and not isinstance(columns[0], tuple):
                     columns = list(zip(columns, [{}] * len(columns)))
 
             for col_id, col_meta in columns:
                 # Convert sorted lists and dicts back to a list of items.
-                if isinstance(col_meta, dict) or \
-                        isinstance(col_meta, SortableDict):
+                if isinstance(col_meta, (dict, SortableDict)):
                     col_meta = list(col_meta.items())
 
-                mo = MetadataObject(validate_fn=self._detect_or_validate)
-                mo.extend(col_meta)
-                self.column.add_item(col_id, mo)
+                metadata_object = MetadataObject(validate_fn=self._detect_or_validate)
+                metadata_object.extend(col_meta)
+                self.column.add_item(col_id, metadata_object)
 
     @staticmethod
-    def _approx_check(v1, v2):
+    def _approx_check(version_1, version_2):
         # Check types match
-        if isinstance(v1, numbers.Number) and isinstance(v2, numbers.Number):
-            return abs(v1 - v2) < 0.000001
-        if type(v1) != type(v2) and \
-                not (isinstance(v1, six.string_types) and isinstance(v2, six.string_types)):
+        if isinstance(version_1, numbers.Number) and isinstance(version_2, numbers.Number):
+            return abs(version_1 - version_2) < 0.000001
+        # pylint: disable=C0123
+        if type(version_1) != type(version_2) and \
+                not (isinstance(version_1, six.string_types) and isinstance(version_2,
+                                                                            six.string_types)):
             return False
-        if isinstance(v1, datetime.time):
-            return v1.replace(microsecond=0) == v2.replace(microsecond=0)
-        elif isinstance(v1, datetime.datetime):
-            dt1, dt2 = v1.replace(tzinfo=pytz.UTC), v2.replace(tzinfo=pytz.UTC)
-            return dt1.date() == dt2.date() and \
-                   Grid._approx_check(dt1.time(), dt2.time())
-        elif isinstance(v1, Quantity):
-            return v1.unit == v2.unit and \
-                   Grid._approx_check(v1.value, v2.value)
-        elif isinstance(v1, Coordinate):
-            return Grid._approx_check(v1.latitude, v2.latitude) and \
-                   Grid._approx_check(v1.longitude, v2.longitude)
-        elif isinstance(v1, dict):
-            for k, v in v1.items():
-                if not Grid._approx_check(v, v2.get(k, None)):
+        # pylint: enable=C0123
+        if isinstance(version_1, datetime.time):
+            return version_1.replace(microsecond=0) == version_2.replace(microsecond=0)
+        if isinstance(version_1, datetime.datetime):
+            dt1, dt2 = version_1.replace(tzinfo=pytz.UTC), version_2.replace(tzinfo=pytz.UTC)
+            return dt1.date() == dt2.date() and Grid._approx_check(dt1.time(), dt2.time())
+        if isinstance(version_1, Quantity):
+            return version_1.unit == version_2.unit and \
+                   Grid._approx_check(version_1.value, version_2.value)
+        if isinstance(version_1, Coordinate):
+            return Grid._approx_check(version_1.latitude, version_2.latitude) and \
+                   Grid._approx_check(version_1.longitude, version_2.longitude)
+        if isinstance(version_1, dict):
+            for key, val in version_1.items():
+                if not Grid._approx_check(val, version_2.get(key, None)):
                     return False
-            for k, v in v2.items():
-                if k not in v1 and not Grid._approx_check(v1.get(k, None), v):
+            for key, val in version_2.items():
+                if key not in version_1 and not Grid._approx_check(version_1.get(key, None), val):
                     return False
             return True
-        else:
-            return v1 == v2
+        return version_1 == version_2
 
     def __eq__(self, other):
         if not isinstance(other, Grid):
@@ -125,12 +125,12 @@ class Grid(col.MutableSequence):
         if set(self.column.keys()) != set(other.column.keys()):
             return False
 
-        for col in self.column.keys():
-            if col not in other.column or \
-                    len(self.column[col]) != len(other.column[col]):
+        for col_name in self.column.keys():
+            if col_name not in other.column or \
+                    len(self.column[col_name]) != len(other.column[col_name]):
                 return False
-            for key in self.column[col].keys():
-                if not Grid._approx_check(self.column[col][key], other.column[col][key]):
+            for key in self.column[col_name].keys():
+                if not Grid._approx_check(self.column[col_name][key], other.column[col_name][key]):
                     return False
         # Check row matches
         if len(self) != len(other):
@@ -207,23 +207,23 @@ class Grid(col.MutableSequence):
 
     def __repr__(self):  # pragma: no cover
         # Not critical to the operation of the library.
-        '''
+        """
         Return a representation of this grid.
-        '''
+        """
         parts = [u'\tVersion: %s' % self.ver_str]
         if bool(self.metadata):
             parts.append(u'\tMetadata: %s' % self.metadata)
 
         column_meta = []
-        for col, col_meta in self.column.items():
+        for col_name, col_meta in self.column.items():
             if bool(col_meta):
-                column_meta.append(u'\t\t%s: %s' % (col, col_meta))
+                column_meta.append(u'\t\t%s: %s' % (col_name, col_meta))
             else:
-                column_meta.append(u'\t\t%s' % col)
+                column_meta.append(u'\t\t%s' % col_name)
 
         if bool(column_meta):
             parts.append(u'\tColumns:\n%s' % '\n'.join(column_meta))
-        elif len(self.column):
+        elif self.column:
             parts.append(u'\tColumns: %s' % ', '.join(self.column.keys()))
         else:
             parts.append(u'\tNo columns')
@@ -231,10 +231,9 @@ class Grid(col.MutableSequence):
         if bool(self):
             parts.extend([
                 u'\tRow %4d:\n\t%s' % (row, u'\n\t'.join([
-                    ((u'%s=%r' % (col, data[col])) \
-                         if col in data else \
-                         (u'%s absent' % col)) for col \
-                    in self.column.keys()]))
+                    ((u'%s=%r' % (col_name, data[col_name]))
+                     if col_name in data else
+                     (u'%s absent' % col_name)) for col_name in self.column.keys()]))
                 for (row, data) in enumerate(self)
             ])
         else:
@@ -246,29 +245,27 @@ class Grid(col.MutableSequence):
         )
 
     def __getitem__(self, key):
-        '''
+        """
         Retrieve the row at index.
-        '''
+        """
         if isinstance(key, slice):
             result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
             result._row = self._row[key]
             result._index = None
             return result
-        elif isinstance(key, numbers.Number):
+        if isinstance(key, numbers.Number):
             return self._row[key]
-        else:
-            assert isinstance(key, Ref), "The 'id' tag must be a Ref"
-            if not self._index:
-                self.reindex()
-            return self._index[key]
+        assert isinstance(key, Ref), "The 'id' tag must be a Ref"
+        if not self._index:
+            self.reindex()
+        return self._index[key]
 
     def __contains__(self, key):
         if isinstance(key, numbers.Number):
-            return key >= 0 and key < len(self._row)
-        else:
-            if not self._index:
-                self.reindex()
-            return key in self._index
+            return 0 <= key < len(self._row)
+        if not self._index:
+            self.reindex()
+        return key in self._index
 
     def get(self, index, default=None):
         if not self._index:
@@ -281,20 +278,20 @@ class Grid(col.MutableSequence):
         return self._index.keys()
 
     def __len__(self):
-        '''
+        """
         Return the number of rows in the grid.
-        '''
+        """
         return len(self._row)
 
     def __setitem__(self, index, value):
-        '''
+        """
         Replace the row at index.
-        '''
+        """
         if not isinstance(value, dict):
             raise TypeError('value must be a dict')
         for val in value.values():
             self._detect_or_validate(val)
-        if isinstance(index, numbers.Number):
+        if isinstance(index, int):
             if "id" in self._row[index]:
                 self._index.pop(self._row[index]['id'], None)
             self._row[index] = value
@@ -311,26 +308,41 @@ class Grid(col.MutableSequence):
                 self._index[value["id"]] = value
 
     def __delitem__(self, key):
-        '''
+        """
         Delete the row at index.
-        '''
-        if isinstance(key, numbers.Number):
-            if "id" in self._row[key] and self._index:
-                del self._index[self._row[key]['id']]
-            del self._row[key]
-        else:
-            if not self._index:
-                self.reindex()
-            self._row.remove(self._index[key])
-            self._index.pop(key)
+        """
+        return self.pop(key)
 
-    def remove(self, key):
-        self.__delitem__(key)
+    def pop(self, *index):  # pylint: disable=W0222
+        """
+        Delete the row at index or with specified Ref id.
+        If multiple index/key was specified, all row was removed.
+        Return the old value of the first deleted item.
+        """
+        ret_value = None
+        for key in sorted(index, reverse=True):  # Remove index at the end
+            if isinstance(key, int):
+                if not 0 <= key < len(self._row):
+                    ret_value = None
+                else:
+                    if "id" in self._row[key] and self._index:
+                        del self._index[self._row[key]['id']]
+                    ret_value = self._row[key]
+                    del self._row[key]
+            else:
+                if not self._index:
+                    self.reindex()
+                if key not in self._index:
+                    ret_value = None
+                else:
+                    self._row.remove(self._index[key])
+                    ret_value = self._index.pop(key)
+        return ret_value
 
     def insert(self, index, value):
-        '''
+        """
         Insert a new row before index.
-        '''
+        """
         if not isinstance(value, dict):
             raise TypeError('value must be a dict')
         for val in value.values():
@@ -342,9 +354,9 @@ class Grid(col.MutableSequence):
             self._index[value["id"]] = value
 
     def reindex(self):
-        '''
+        """
         Reindex the grid if a user, update directly an id of a row
-        '''
+        """
         self._index = {}
         for item in self._row:
             if "id" in item:
@@ -355,9 +367,9 @@ class Grid(col.MutableSequence):
         using_columns = set()
         columns_keys = self.column.keys()
         for row in self._row:
-            for col in columns_keys:
-                if col in row:
-                    using_columns.add(col)
+            for col_name in columns_keys:
+                if col_name in row:
+                    using_columns.add(col_name)
                 if len(using_columns) == len(columns_keys):  # All columns was found
                     return
         self.column = {k: self.column[k] for k in using_columns}
@@ -378,57 +390,51 @@ class Grid(col.MutableSequence):
                 self._index[item["id"]] = item
 
     def copy(self):
-        cp = copy.deepcopy(self)
-        cp._index = None  # Remove index
-        return cp
+        a_copy = copy.deepcopy(self)
+        a_copy._index = None  # Remove index
+        return a_copy
 
-    def filter(self, filter, limit=0):
-        '''
+    def filter(self, grid_filter, limit=0):
+        """
         Return a filter version of this grid.
         Warning, use a grid.filter(...).deepcopy() if you not whant to share metadata, columns and rows)
-        '''
+        """
         assert isinstance(limit, numbers.Number)
         assert limit >= 0
         from .grid_filter import filter_function
-        if filter.strip() == '':
+        if grid_filter is None or grid_filter.strip() == '':
             if limit == 0:
                 return self
-            else:
-                result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
-                result.extend(self.__getitem__(slice(0, limit)))
-                return result
+            result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
+            result.extend(self.__getitem__(slice(0, limit)))
+            return result
 
         result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
-        fn = filter_function(filter)
+        a_filter = filter_function(grid_filter)
         for row in self._row:
-            if fn(self, row):
+            if a_filter(self, row):
                 result.append(row)
             if limit and len(result) == limit:
                 break
         return result
 
     def _detect_or_validate(self, val):
-        '''
+        """
         Detect the version used from the row content, or validate against
         the version if given.
-        '''
+        """
         if (val is NA) \
-                or isinstance(val, list) \
-                or isinstance(val, dict) \
-                or isinstance(val, SortableDict) \
-                or isinstance(val, Grid):
+                or isinstance(val, (list, dict, SortableDict, Grid)):
             # Project Haystack 3.0 type.
             self._assert_version(VER_3_0)
 
     def _assert_version(self, version):
-        '''
+        """
         Assert that the grid version is equal to or above the given value.
         If no version is set, set the version.
-        '''
+        """
         if self.nearest_version < version:
             if self._version_given:
                 raise ValueError(
-                    'Data type requires version %s' \
-                    % version)
-            else:
-                self._version = version
+                    'Data type requires version %s' % version)
+            self._version = version

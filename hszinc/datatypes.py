@@ -16,7 +16,7 @@ import six
 from . import PINT_AVAILABLE
 
 if PINT_AVAILABLE:
-    from . import ureg
+    from . import unit_reg
     from .pintutil import to_pint
 
 STR_SUB = [
@@ -47,14 +47,18 @@ def use_pint(val=True):
 
 
 class Quantity(six.with_metaclass(ABCMeta, object)):
-    def __new__(self, value, unit=None):
+    def __new__(cls, value, unit=None):
         if MODE_PINT:
             return PintQuantity(value, to_pint(unit))
-        else:
-            return BasicQuantity(value, unit)
+        return BasicQuantity(value, unit)
+
+    # Fake ctr to help audit tools
+    def __init__(self, value, unit=None):
+        self.value = value
+        self.unit = unit
 
 
-class Qty(object):
+class Qty:
     """
     A quantity is a scalar value (floating point) with a unit.
     """
@@ -88,7 +92,7 @@ class Qty(object):
     if six.PY2:  # pragma: no cover
         # Python 3 doesn't have 'long'
         def __long__(self):
-            return long(self.value)
+            return long(self.value)  # noqa: F821
 
     def __complex__(self):
         return complex(self.value)
@@ -262,13 +266,12 @@ class Qty(object):
             other = other.value
         return other | self.value
 
-    def _cmp_op(self, other, op):
+    def _cmp_op(self, other, operator):
         if isinstance(other, Qty):
             if other.unit != self.unit:
-                raise TypeError('Quantity units differ: %s vs %s' \
-                                % (self.unit, other.unit))
-            return op(self.value, other.value)
-        return op(self.value, other)
+                raise TypeError('Quantity units differ: %s vs %s' % (self.unit, other.unit))
+            return operator(self.value, other.value)
+        return operator(self.value, other)
 
     def __lt__(self, other):
         return self._cmp_op(other, lambda x, y: x < y)
@@ -291,10 +294,9 @@ class Qty(object):
     def __cmp__(self, other):
         if self == other:
             return 0
-        elif self < other:
+        if self < other:
             return -1
-        else:
-            return 1
+        return 1
 
     def __hash__(self):
         return hash((self.value, self.unit))
@@ -304,13 +306,12 @@ class BasicQuantity(Qty):
     """
     Default class to be used to define Quantity.
     """
-    pass
 
 
 Quantity.register(BasicQuantity)
 
 if PINT_AVAILABLE:
-    class PintQuantity(Qty, ureg.Quantity):
+    class PintQuantity(Qty, unit_reg.Quantity):
         """
         A quantity is a scalar value (floating point) with a unit.
         This object uses Pint feature allowing conversion between units
@@ -320,18 +321,15 @@ if PINT_AVAILABLE:
         See https://pint.readthedocs.io for details
         """
 
-        def __init__(self, value, unit):
-            super(PintQuantity, self).__init__(value, unit)
 
-
-    Quantity.register(PintQuantity)
+    Quantity.register(PintQuantity)  # noqa: E303
 else:  # pragma: no cover
     # If things turn really bad...just in case.
     PintQuantity = BasicQuantity
-    to_pint = lambda unit: unit
+    to_pint = lambda unit: unit  # noqa: F811, E261, E731
 
 
-class Coordinate(object):
+class Coordinate:
     """
     A 2D co-ordinate in degrees latitude and longitude.
     """
@@ -351,10 +349,9 @@ class Coordinate(object):
                 locale.getpreferredencoding()) % (
                        round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
                    )
-        else:
-            return (u'%f\N{DEGREE SIGN} lat %f\N{DEGREE SIGN} long' % (
-                round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
-            ))
+        return (u'%f\N{DEGREE SIGN} lat %f\N{DEGREE SIGN} long' % (
+            round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
+        ))
 
     def __eq__(self, other):
         if not isinstance(other, Coordinate):
@@ -365,7 +362,7 @@ class Coordinate(object):
     def __ne__(self, other):
         if not isinstance(other, Coordinate):
             return NotImplemented
-        return not (self == other)
+        return not self == other
 
     def __hash__(self):
         return hash(self.latitude) ^ hash(self.longitude)
@@ -403,19 +400,19 @@ class Bin(six.text_type):
         return super(Bin, self).__eq__(other)
 
 
-class XStr(object):
+class XStr:
     """
     A convenience class to allow identification of a Xstr
     """
 
     def __init__(self, encoding, data):
         self.encoding = encoding
-        if "hex" == encoding:
+        if encoding == "hex":
             if six.PY2:  # pragma: no cover
                 self.data = binascii.a2b_hex(data)
             else:
                 self.data = bytearray.fromhex(data)
-        elif "b64" == encoding:
+        elif encoding == "b64":
             if six.PY2:  # pragma: no cover
                 self.data = data.decode('base64')
             else:
@@ -424,17 +421,15 @@ class XStr(object):
             self.data = data  # Not decoded
 
     def data_to_string(self):
-        if "hex" == self.encoding:
+        if self.encoding == "hex":
             return binascii.b2a_hex(self.data).decode("ascii")
-        elif "b64" == self.encoding:
+        if self.encoding == "b64":
             if six.PY2:  # pragma: no cover
                 return binascii.b2a_base64(self.data)[:-1]
-            elif sys.version_info[0:2] <= (3, 6):
+            if sys.version_info[0:2] <= (3, 6):
                 return binascii.b2a_base64(self.data).decode("ascii").replace('\n', '')
-            else:
-                return binascii.b2a_base64(self.data, newline=False).decode("ascii")
-        else:
-            return self.data
+            return binascii.b2a_base64(self.data, newline=False).decode("ascii")
+        return self.data
 
     def __repr__(self):
         return '%s("%s")' % (self.encoding, self.data_to_string())
@@ -442,10 +437,10 @@ class XStr(object):
     def __eq__(self, other):
         if not isinstance(other, XStr):
             return NotImplemented
-        return self.data == other.data  # Check only binary datas
+        return self.data == other.data  # Check only binary data
 
 
-class Singleton(object):
+class Singleton:
     def __copy__(self):
         return self
 
@@ -492,7 +487,7 @@ class RemoveType(Singleton):
 REMOVE = RemoveType()
 
 
-class Ref(object):
+class Ref:
     """
     A reference to an object in Project Haystack.
     """
@@ -502,7 +497,7 @@ class Ref(object):
     # distinct from the reference name itself immediately following the @
     # symbol.  I'm guessing it's some kind of value.
     def __init__(self, name, value=None, has_value=False):
-        assert isinstance(name, six.string_types) and re.match("^[a-zA-Z0-9_:\-.~]+$", name)
+        assert isinstance(name, six.string_types) and re.match("^[a-zA-Z0-9_:\\-.~]+$", name)
         self.name = name
         self.value = value
         self.has_value = has_value or (value is not None)
@@ -517,8 +512,7 @@ class Ref(object):
             return '@%s %r' % (
                 self.name, self.value
             )
-        else:
-            return '@%s' % self.name
+        return '@%s' % self.name
 
     def __eq__(self, other):
         if not isinstance(other, Ref):
@@ -530,7 +524,7 @@ class Ref(object):
     def __ne__(self, other):
         if not isinstance(other, Ref):
             return NotImplemented
-        return not (self == other)
+        return not self == other
 
     def __lt__(self, other):
         return self.name.__lt__(other.name)

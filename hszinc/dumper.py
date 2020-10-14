@@ -31,12 +31,11 @@ def dump(grids, mode=MODE_ZINC):
     _dump = functools.partial(dump_grid, mode=mode)
     if mode == MODE_ZINC:
         return '\n'.join(map(_dump, grids))
-    elif mode == MODE_JSON:
+    if mode == MODE_JSON:
         return '[%s]' % ','.join(map(_dump, grids))
-    elif mode == MODE_CSV:
+    if mode == MODE_CSV:
         return '\n'.join(map(_dump, grids))
-    else:  # pragma: no cover
-        raise NotImplementedError('Format not implemented: %s' % mode)
+    raise NotImplementedError('Format not implemented: %s' % mode)
 
 
 def dump_grid(grid, mode=MODE_ZINC):
@@ -45,12 +44,11 @@ def dump_grid(grid, mode=MODE_ZINC):
 
     if mode == MODE_ZINC:
         return dump_zinc_grid(grid)
-    elif mode == MODE_JSON:
+    if mode == MODE_JSON:
         return dump_json_grid(grid)
-    elif mode == MODE_CSV:
+    if mode == MODE_CSV:
         return dump_csv_grid(grid)
-    else:  # pragma: no cover
-        raise NotImplementedError('Format not implemented: %s' % mode)
+    raise NotImplementedError('Format not implemented: %s' % mode)
 
 
 def dump_scalar(scalar, mode=MODE_ZINC, version=LATEST_VER):
@@ -59,9 +57,8 @@ def dump_scalar(scalar, mode=MODE_ZINC, version=LATEST_VER):
 
     if mode == MODE_ZINC:
         return dump_zinc_scalar(scalar, version=version)
-    elif mode == MODE_JSON:
+    if mode == MODE_JSON:
         return dump_json_scalar(scalar, version=version)
-    elif mode == MODE_CSV:
+    if mode == MODE_CSV:
         return dump_csv_scalar(scalar, version=version)
-    else:  # pragma: no cover
-        raise NotImplementedError('Format not implemented: %s' % mode)
+    raise NotImplementedError('Format not implemented: %s' % mode)

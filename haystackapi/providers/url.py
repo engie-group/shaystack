@@ -207,7 +207,7 @@ class Provider(HaystackInterface):
             self._versions[parsed_uri.geturl()] = url_version
             self._lock.release()
         else:
-            self._versions[datetime.min] = ("", None)
+            self._versions[parsed_uri.geturl()] = {datetime.min: ("", None)}
         if PERIODIC_REFRESH:
             now = datetime.utcnow()
             to = now.replace(minute=0, second=0) + timedelta(

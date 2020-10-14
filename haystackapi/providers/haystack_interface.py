@@ -28,6 +28,7 @@ class HttpError(Exception):
     error: int
     msg: str
 
+
 class HaystackInterface(ABC):
     """
     Interface to implement to be compatible with Haystack REST protocol.
@@ -120,8 +121,8 @@ class HaystackInterface(ABC):
         return None
 
     @abstractmethod
-    def read(self, limit: int, entity_ids: Optional[Grid], grid_filter: Optional[str],
-             date_version: Optional[datetime]) -> Grid:  # pylint: disable=no-self-use
+    def read(self, limit: int, entity_ids: Optional[Grid] = None, grid_filter: Optional[str] = None,
+             date_version: Optional[datetime] = None) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'read' ops """
         raise NotImplementedError()
 

@@ -125,6 +125,7 @@ class Provider(HaystackInterface):
             raise ValueError(f"id '{entity_id}' not found")
 
     s3_client = None
+
     @staticmethod
     def _download_uri(uri: str, date_version: datetime) -> bytes:  # TODO: update LRU cache
         """ Download Haystack from URI.
@@ -137,11 +138,10 @@ class Provider(HaystackInterface):
         parsed_uri = urlparse(uri, allow_fragments=False)
         if parsed_uri.scheme == "s3":
             # AWS_S3_ENDPOINT may be http://localhost:9000 to use minio (make start-minio)
-            if not HaystackInterface.s3_client:
-                # See https://stackoverflow.com/questions/62541300/zappa-packaged-lambda-error-botocore-exceptions-sslerror-ssl-validation-faile
+            if not HaystackInterface.s3_client:  # Lazy init
                 HaystackInterface.s3_client = boto3.client('s3',
                                                            endpoint_url=os.environ.get('AWS_S3_ENDPOINT', None),
-                                                           verify=False
+                                                           verify=False  # See https://tinyurl.com/y5tap6ys
                                                            )
             s3 = HaystackInterface.s3_client
             extra_args = None

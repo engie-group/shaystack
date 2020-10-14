@@ -131,7 +131,7 @@ class HaystackInterface(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def watch_sub(self, watch_dis: str, watch_id: str, ids: List[Ref],
+    def watch_sub(self, watch_dis: str, watch_id: Optional[str], ids: List[Ref],
                   lease: Optional[int]) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'watchSub' ops """
         raise NotImplementedError()
@@ -229,7 +229,7 @@ def get_provider(class_str) -> HaystackInterface:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
                 return super().nav(nav_id)
 
-            def watch_sub(self, watch_dis: str, watch_id: str, ids: List[Ref], lease: Optional[int]) -> Grid:
+            def watch_sub(self, watch_dis: str, watch_id: Optional[str], ids: List[Ref], lease: Optional[int]) -> Grid:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
                 return super().watch_sub(watch_dis, watch_id, ids, lease)
 

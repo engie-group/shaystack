@@ -368,7 +368,7 @@ def watch_sub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         ids = []
         if len(grid_request):
             watch_dis = grid_request.metadata['watchDis']
-            watch_id = grid_request.metadata['watchId']
+            watch_id = grid_request.metadata.get('watchId', None)
             if "lease" in grid_request.metadata:
                 lease = int(grid_request.metadata['lease'])
             ids = [row["id"] for row in grid_request]
@@ -382,7 +382,7 @@ def watch_sub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                 lease = int(args['lease'])
             if "ids" in args:  # Use list of str
                 ids = [Ref(x[1:]) for x in literal_eval(args["ids"])]
-        if not watch_dis or not watch_id:
+        if not watch_dis:
             raise ValueError("'watchDis' and 'watchId' must be setted")
         grid_response = provider.watch_sub(watch_dis, watch_id, ids, lease)
         assert grid_response is not None

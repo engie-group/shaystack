@@ -34,9 +34,16 @@ from threading import Lock
 from typing import Optional, Union, Tuple
 from urllib.parse import urlparse, ParseResultBytes
 
-import boto3
+BOTO3_AVAILABLE = False
+try:
+    import boto3
+    from botocore.client import BaseClient
+
+    BOTO3_AVAILABLE = True
+except ImportError:
+    pass
+
 import pytz
-from botocore.client import BaseClient
 from overrides import overrides
 
 import hszinc
@@ -156,6 +163,7 @@ class Provider(HaystackInterface):
         assert parsed_uri
         log.info(f"_download_uri('{parsed_uri.geturl()}')")
         if parsed_uri.scheme == "s3":
+            assert BOTO3_AVAILABLE, "Use 'pip install boto3'"
             s3 = self._s3()
             extra_args = None
             if date_ask:
@@ -187,6 +195,7 @@ class Provider(HaystackInterface):
         """ Refresh list of versions """
         # Refresh at a rounded period, then all cloud instances refresh data at the same time.
         if parsed_uri.scheme == "s3":
+            assert BOTO3_AVAILABLE, "Use 'pip install boto3'"
             s3 = self._s3()
             obj_versions = [(v['LastModified'], v['VersionId']) for v in
                             s3.list_object_versions(Bucket=parsed_uri.netloc, Prefix=parsed_uri.path[1:])['Versions']]

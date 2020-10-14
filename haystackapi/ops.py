@@ -170,6 +170,8 @@ def _parse_body(request: HaystackHttpRequest) -> hszinc.Grid:
             raise HttpError(406, f"Content-Type '{content_type}' not supported")
         else:
             grid = Grid(version=VER_3_0)
+    if grid is None:
+        grid = EmptyGrid
     return grid
 
 

@@ -8,7 +8,8 @@ from hszinc import Grid
 
 class Provider(HaystackInterface):
     @overrides
-    def watch_sub(self, watch_dis: str, watch_id: str, ids: List[Ref], lease: Optional[int]) -> Grid:
+    def watch_sub(self, watch_dis: str, watch_id: str,
+                  ids: List[Ref], lease: Optional[int]) -> Grid:
         pass
 
     @overrides

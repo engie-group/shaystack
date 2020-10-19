@@ -9,7 +9,7 @@ from hszinc import Quantity
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
 @patch.object(ping.Provider, 'point_write_write')
-def test_pointWrite_write_with_zinc(mock) -> None:
+def test_point_write_write_with_zinc(mock) -> None:
     # GIVEN
     mock.return_value = Grid(version=VER_3_0, columns=["level", "levelDis", "val", "who"])
     mime_type = hszinc.MODE_ZINC

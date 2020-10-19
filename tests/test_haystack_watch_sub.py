@@ -9,7 +9,7 @@ from hszinc import Grid
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
 @patch.object(ping.Provider, 'watch_sub')
-def test_watchSub_with_zinc(mock):
+def test_watch_sub_with_zinc(mock):
     # GIVEN
     mock.return_value = Grid(version=VER_3_0,
                              metadata={"watchId": "0123456789ABCDEF", "lease": 1},
@@ -38,7 +38,7 @@ def test_watchSub_with_zinc(mock):
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
 @patch.object(ping.Provider, 'watch_sub')
-def test_watchSub_with_args(mock):
+def test_watch_sub_with_args(mock):
     # GIVEN
     mock.return_value = Grid(version=VER_3_0,
                              metadata={"watchId": "0123456789ABCDEF", "lease": 1},

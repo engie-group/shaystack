@@ -9,7 +9,9 @@ from hszinc import Grid, Quantity
 
 class Provider(HaystackInterface):
     @overrides
-    def point_write_read(self, id: Ref) -> Grid:
+    def point_write_read(self,
+                         entity_id: Ref,
+                         date_version: Optional[datetime]) -> Grid:
         pass
 
     @overrides
@@ -23,5 +25,8 @@ class Provider(HaystackInterface):
         pass
 
     @overrides
-    def his_write(self, id: Ref, ts: Grid, date_version: Optional[datetime]) -> Grid:
+    def his_write(self,
+                  entity_id: Ref,
+                  time_serie: Grid,
+                  date_version: Optional[datetime]) -> Grid:
         pass

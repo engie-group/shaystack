@@ -53,7 +53,6 @@ def test_about_with_multivalues_headers(mock) -> None:
     mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
     request = HaystackHttpRequest()
-    grid: Grid = hszinc.Grid()
     request.headers["Accept"] = "text/zinc, application/json"
 
     # WHEN

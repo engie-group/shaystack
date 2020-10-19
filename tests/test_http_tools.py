@@ -14,7 +14,7 @@ def test_accept_encoding_unknown():
     encoding = get_best_encoding_match("gzip", ["compress"])
 
     # GIVEN
-    assert encoding == None
+    assert encoding is None
 
 def test_accept_encoding_complex():
     # WHEN

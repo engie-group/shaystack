@@ -4,7 +4,6 @@ import haystackapi
 import hszinc
 from haystackapi import HaystackHttpRequest
 from haystackapi.providers import ping
-from hszinc import Grid
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
@@ -14,7 +13,6 @@ def test_ops_with_zinc(mock) -> None:
     mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
     request = HaystackHttpRequest()
-    grid: Grid = hszinc.Grid()
     request.headers["Content-Type"] = mime_type
     request.headers["Accept"] = mime_type
     # apigw_event["body"] = hszinc.dump(grid, mode=hszinc.MODE_ZINC)

@@ -8,7 +8,7 @@ from haystackapi.providers import ping
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
 @patch.object(ping.Provider, 'point_write_read')
-def test_pointWrite_read_with_zinc(mock) -> None:
+def test_point_write_read_with_zinc(mock) -> None:
     # GIVEN
     mock.return_value = Grid(version=VER_3_0, columns=["level", "levelDis", "val", "who"])
     mime_type = hszinc.MODE_ZINC
@@ -31,7 +31,7 @@ def test_pointWrite_read_with_zinc(mock) -> None:
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
 @patch.object(ping.Provider, 'point_write_read')
-def test_pointWrite_read_with_arg(mock) -> None:
+def test_point_write_read_with_arg(mock) -> None:
     # GIVEN
     mock.return_value = Grid(version=VER_3_0, columns=["level", "levelDis", "val", "who"])
     mime_type = hszinc.MODE_ZINC

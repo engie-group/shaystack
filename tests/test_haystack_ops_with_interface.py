@@ -3,7 +3,7 @@ from haystackapi import get_provider
 
 def test_ops_without_implementation():
     # GIVEN
-    provider = get_provider('tstprovider_no_implementation')
+    provider = get_provider('tests.tstprovider_no_implementation')
 
     # WHEN
     ops = provider.ops()
@@ -13,7 +13,7 @@ def test_ops_without_implementation():
 
 def test_ops_with_readonly():
     # GIVEN
-    provider = get_provider('tstprovider_readonly')
+    provider = get_provider('tests.tstprovider_readonly')
 
     # WHEN
     ops = provider.ops()
@@ -26,7 +26,7 @@ def test_ops_with_readonly():
 
 def test_ops_with_writeonly():
     # GIVEN
-    provider = get_provider('tstprovider_write')
+    provider = get_provider('tests.tstprovider_write')
 
     # WHEN
     ops = provider.ops()
@@ -39,7 +39,7 @@ def test_ops_with_writeonly():
 
 def test_ops_with_subscribe():
     # GIVEN
-    provider = get_provider('tstprovider_subscribe')
+    provider = get_provider('tests.tstprovider_subscribe')
 
     # WHEN
     ops = provider.ops()
@@ -53,7 +53,7 @@ def test_ops_with_subscribe():
 
 def test_ops_with_invoke_action():
     # GIVEN
-    provider = get_provider('tstprovider_invokeaction')
+    provider = get_provider('tests.tstprovider_invokeaction')
 
     # WHEN
     ops = provider.ops()
@@ -65,7 +65,7 @@ def test_ops_with_invoke_action():
 
 def test_ops_with_nav():
     # GIVEN
-    provider = get_provider('tstprovider_nav')
+    provider = get_provider('tests.tstprovider_nav')
 
     # WHEN
     ops = provider.ops()

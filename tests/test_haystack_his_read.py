@@ -11,7 +11,7 @@ from haystackapi.providers import ping
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
-def test_hisRead_with_zinc(mock) -> None:
+def test_his_read_with_zinc(mock) -> None:
     # GIVEN
     mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
@@ -34,7 +34,7 @@ def test_hisRead_with_zinc(mock) -> None:
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
-def test_hisRead_with_args(mock) -> None:
+def test_his_read_with_args(mock) -> None:
     # GIVEN
     mock.return_value = ping.PingGrid
     mime_type = DEFAULT_MIME_TYPE
@@ -53,7 +53,7 @@ def test_hisRead_with_args(mock) -> None:
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
-def test_hisRead_with_range_today(mock) -> None:
+def test_his_read_with_range_today(mock) -> None:
     # GIVEN
     mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
@@ -76,7 +76,7 @@ def test_hisRead_with_range_today(mock) -> None:
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
-def test_hisRead_with_range_yesterday(mock) -> None:
+def test_his_read_with_range_yesterday(mock) -> None:
     # GIVEN
     mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
@@ -99,7 +99,7 @@ def test_hisRead_with_range_yesterday(mock) -> None:
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
-def test_hisRead_with_range_two_datetime(mock) -> None:
+def test_his_read_with_range_two_datetime(mock) -> None:
     # GIVEN
     mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
@@ -124,7 +124,7 @@ def test_hisRead_with_range_two_datetime(mock) -> None:
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
-def test_hisRead_with_range_one_datetime(mock) -> None:
+def test_his_read_with_range_one_datetime(mock) -> None:
     # GIVEN
     mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
@@ -148,7 +148,7 @@ def test_hisRead_with_range_one_datetime(mock) -> None:
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
-def test_hisRead_with_range_two_date(mock) -> None:
+def test_his_read_with_range_two_date(mock) -> None:
     # GIVEN
     mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
@@ -173,7 +173,7 @@ def test_hisRead_with_range_two_date(mock) -> None:
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
-def test_hisRead_with_range_one_date(mock) -> None:
+def test_his_read_with_range_one_date(mock) -> None:
     # GIVEN
     mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC

@@ -5,6 +5,7 @@ import os
 import sys
 
 import click
+
 try:
     from flask import Flask, send_from_directory
 except ImportError:
@@ -22,11 +23,17 @@ app.register_blueprint(haystack_blueprint)
 
 @app.route('/')
 def index():
+    """
+    Empty page to check the deployment
+    """
     return "Flask is up and running"
 
 
 @app.route('/favicon.ico')
 def favicon():
+    """
+    Return the favorite icon
+    """
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
@@ -35,7 +42,11 @@ def favicon():
 @click.option('-h', '--host', default='0.0.0.0')
 @click.option('-p', '--port', default=3000)
 def main(host, port) -> int:
-    debug = ("1" == os.environ.get("FLASK_DEBUG", "0"))
+    """
+    Stack a flask server.
+    The command line must set the host and port.
+    """
+    debug = (os.environ.get("FLASK_DEBUG", "0") == "1")
     app.run(host=host if not debug else 'localhost',
             port=port,
             debug=debug)

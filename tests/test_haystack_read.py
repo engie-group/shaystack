@@ -27,7 +27,7 @@ def test_read_with_zinc_and_filter(mock) -> None:
     mock.assert_called_once_with(1, None, 'id==@me', None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    assert not len(hszinc.parse(response.body, mime_type))
+    assert not hszinc.parse(response.body, mime_type)
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
@@ -48,7 +48,7 @@ def test_read_with_arg_and_filter(mock) -> None:
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     read_grid: Grid = hszinc.parse(response.body, mime_type)
-    assert not len(read_grid)
+    assert not read_grid
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})

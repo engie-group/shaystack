@@ -481,13 +481,11 @@ typing: .make-typing
 	@$(VALIDATE_VENV)
 	pylint --generate-rcfile > .pylintrc
 
-.make-lint: $(REQUIREMENTS) $(PYTHON_SRC) | .pylintrc
+.make-lint: $(REQUIREMENTS) $(PYTHON_SRC) | .pylintrc .pylintrc-test
 	$(VALIDATE_VENV)
 	@echo -e "$(cyan)Check lint...$(normal)"
-	@echo "---------------------- FLAKE"
-	@flake8
-	@echo "---------------------- PYLINT"
-	@pylint
+	@pylint app haystackapi
+	@pylint --rcfile=.pylintrc-test tests
 	touch .make-lint
 
 ## Lint the code

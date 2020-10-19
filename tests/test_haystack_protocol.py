@@ -153,7 +153,11 @@ def test_negociation_with_navigator_accept() -> None:
     grid = Grid(columns={'filter': {}, 'limit': {}})
     grid.append({'filter': '', 'limit': -1})
     request.headers[
-        "Accept"] = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
+        "Accept"] = "Accept:text/html,application/xhtml+xml," \
+                    "application/xml;q=0.9," \
+                    "image/webp,image/apng," \
+                    "*/*;q=0.8," \
+                    "application/signed-exchange;v=b3;q=0.9"
     request.headers["Content-Type"] = mime_type
     request.body = hszinc.dump(grid, mode=mime_type)
 

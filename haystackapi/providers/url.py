@@ -32,7 +32,7 @@ from io import BytesIO
 from pathlib import Path
 from threading import Lock
 from typing import Optional, Union, Tuple, Dict, Any
-from urllib.parse import urlparse, ParseResultBytes
+from urllib.parse import urlparse, ParseResult
 
 import pytz
 from overrides import overrides
@@ -176,7 +176,7 @@ class Provider(HaystackInterface):
             )
         return self._s3_client
 
-    def _download_uri(self, parsed_uri: ParseResultBytes, date_ask: datetime) -> bytes:
+    def _download_uri(self, parsed_uri: ParseResult, date_ask: datetime) -> bytes:
         """Download Haystack from URI.
         The uri must be a classic url (file://, http:// ...)
         or a s3 urn (s3://).
@@ -219,7 +219,7 @@ class Provider(HaystackInterface):
             return gzip.decompress(data)
         return data
 
-    def _periodic_refresh_versions(self, parsed_uri: ParseResultBytes):
+    def _periodic_refresh_versions(self, parsed_uri: ParseResult):
         """ Refresh list of versions """
         # Refresh at a rounded period, then all cloud instances refresh data at the same time.
         if parsed_uri.scheme == "s3":
@@ -254,7 +254,7 @@ class Provider(HaystackInterface):
             self._timer = threading.Timer((next_time - now).seconds, partial_refresh)
             self._timer.start()
 
-    def _refresh_versions(self, parsed_uri: ParseResultBytes):
+    def _refresh_versions(self, parsed_uri: ParseResult):
         if not PERIODIC_REFRESH or parsed_uri.geturl() not in self._versions:
             self._periodic_refresh_versions(parsed_uri)
 

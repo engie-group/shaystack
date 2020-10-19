@@ -18,7 +18,7 @@ from ast import literal_eval
 from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional, Any, Match, List
+from typing import Optional, Any, Match, List, cast
 from typing import Tuple, Dict
 
 from accept_types import AcceptableType, get_best_match
@@ -186,7 +186,7 @@ def _get_weight(tail):
 
 
 def _parse_body(request: HaystackHttpRequest) -> hszinc.Grid:
-    if "Content-Encoding" in request.headers and request.isBase64Encoded:
+    if "Content-Encoding" in request.headers and request.is_base64:
         content_encoding = request.headers["Content-Encoding"]
         if content_encoding != "gzip":
             raise ValueError(f"Content-Encoding '{content_encoding}' not supported")
@@ -294,8 +294,9 @@ def _manage_exception(
     status_code = 400
     status_msg = "ERROR"
     if isinstance(ex, HttpError):
-        status_code = ex.error
-        status_msg = ex.msg
+        ex_http = cast(HttpError, ex)
+        status_code = ex_http.error
+        status_msg = ex_http.msg
     return _format_response(
         headers,
         error_grid,

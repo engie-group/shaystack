@@ -28,7 +28,6 @@ class HttpError(Exception):
     """
     Exception to propagate specific HTTP error
     """
-
     error: int
     msg: str
 

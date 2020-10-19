@@ -449,9 +449,11 @@ aws-logs:
 ## Run unit test
 unit-test: .make-unit-test
 
-## Run all tests (unit and functional)
-test: .make-unit-test
+.make-test: .make-unit-test
 	@date >.make-test
+
+## Run all tests (unit and functional)
+test: .make-test
 
 
 # -------------------------------------- hszinc submodule
@@ -469,7 +471,7 @@ pytype.cfg: $(CONDA_PREFIX)/bin/pytype
 .make-typing: $(REQUIREMENTS) $(CONDA_PREFIX)/bin/pytype pytype.cfg $(PYTHON_SRC)
 	$(VALIDATE_VENV)
 	@echo -e "$(cyan)Check typing...$(normal)"
-	pytype -P src -V $(PYTHON_VERSION) src
+	pytype -V $(PYTHON_VERSION) haystackapi app
 	touch .make-typing
 
 ## Check python typing

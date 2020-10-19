@@ -30,7 +30,6 @@ try:
         REMOVE, Ref, XStr, use_pint
     from .version import Version, VER_2_0, VER_3_0, LATEST_VER
 
-    Q_ = Quantity
     __all__ = ['Grid', 'dump', 'parse', 'dump_scalar', 'parse_scalar', 'parse_filter',
                'MetadataObject', 'unit_reg', 'zoneinfo',
                'Coordinate', 'Uri', 'Bin', 'XStr', 'Quantity', 'MARKER', 'NA', 'REMOVE', 'Ref',

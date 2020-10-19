@@ -121,7 +121,7 @@ PINT_CONVERSION = [
     (u'hectofoot ** 3', 'hecto_cubic_foot'),
     (u'meter ** 3', 'cubic_meter'),
     (u'Volt_per', 'volts_per'),
-    (u'°ree', 'degree'),
+    (u'°', 'degree'),
     (u'BTU', 'btu')
 ]
 

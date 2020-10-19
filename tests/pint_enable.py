@@ -10,6 +10,7 @@ try:
     import pint  # pylint: disable=W0611
     from hszinc.pintutil import to_pint
     import hszinc
+    from hszinc.pintutil import to_pint  # pylint: disable= W0611
 
     def _enable_pint(pint_en):
         hszinc.use_pint(pint_en)
@@ -29,5 +30,5 @@ except ImportError:
         if pint_en:
             raise SkipTest('pint not available')
 
-    # def to_pint(*a, **kwa):  # noqa: E303
-    #     raise SkipTest('pint not available')
+    def to_pint(*a, **kwa):  # noqa: E303
+        raise SkipTest('pint not available')

@@ -1,9 +1,8 @@
 #!/usr/bin/python
 import sys
 
-from setuptools import setup
-
 from hszinc import __version__
+from setuptools import setup
 
 requirements = [
     'pyparsing',
@@ -12,7 +11,10 @@ requirements = [
     'six',
 ]
 if sys.version_info.major == 2:
-    requirements.extend(["backports.functools_lru_cache", "csv23"])
+    requirements.extend([
+        "backports.functools_lru_cache",
+        "csv23",
+        "importlib_resources"])
 
 setup(name='hszinc',
       url='https://github.com/vrtsystems/hszinc',

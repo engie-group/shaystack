@@ -45,6 +45,11 @@ flask_requirements = [
     'flask',
 ]
 
+graphql_requirements = [
+    'graphene>=2.0',
+    'flask_graphql'
+]
+
 # Extra for a deployment in AWS Lambda
 lambda_requirements = [
                           'zappa'
@@ -100,6 +105,7 @@ setup(name='haystackapi',
           'graphql': graphql_requirements,
           'lambda': lambda_requirements,
           # 'azure': azure_requirements,
+          'graphql': graphql_requirements,
       },
       install_requires=requirements,
       entry_points={

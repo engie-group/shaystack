@@ -357,6 +357,7 @@ ifeq ($(USE_OKTA),Y)
 .PHONY: aws-update-token
 # Update the AWS Token
 aws-update-token:
+	@echo -e "$(green)Update the token for profile '$(AWS_PROFILE)$(normal)'"
 	@aws sts get-caller-identity >/dev/null 2>/dev/null || $(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
 else
 aws-update-token:

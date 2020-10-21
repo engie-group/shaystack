@@ -1,6 +1,6 @@
-# Haystack AWS Lambda API
+# ReadHaystack AWS Lambda API
 
-Haystackapi is a skeleton to implement [Haystack Rest API](https://project-haystack.org/doc/Rest).
+Haystackapi is a skeleton to implement [ReadHaystack Rest API](https://project-haystack.org/doc/Rest).
 It's compatible with AWS Lambda or Flask server.
 
 Theses API can negotiate:
@@ -9,7 +9,7 @@ Theses API can negotiate:
 - Response format (`Accept: text/zinc, application/json, text/csv`)
 - Response encoding (`Accept-Encoding: gzip`)
 
-The code implements all Haystack [operations](https://project-haystack.org/doc/Rest):
+The code implements all ReadHaystack [operations](https://project-haystack.org/doc/Rest):
 - [about](https://project-haystack.org/doc/Ops#about)
 - [ops](https://project-haystack.org/doc/Ops#ops)
 - [formats](https://project-haystack.org/doc/Ops#formats)
@@ -24,7 +24,7 @@ The code implements all Haystack [operations](https://project-haystack.org/doc/R
 - [invokeAction](https://project-haystack.org/doc/Ops#invokeAction)
 
 ## Summary
-This project contains source code and supporting files for a Haystack application 
+This project contains source code and supporting files for a ReadHaystack application 
 that you can deploy with `make aws-deploy` 
 
 ## Quick local installation
@@ -60,7 +60,7 @@ HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi
         - `zappa deploy`
 
 # Custom provider
-To create your custom Haystack API
+To create your custom ReadHaystack API
 - create a project
 - In a module, create a subclass of `HaystackInterface` with the name `Provider`
 - add parameter `HAYSTACK_PROVIDER` with the name of the package 
@@ -94,7 +94,7 @@ It's a very simple provider, with a tiny implementation of all haystack operatio
 
 ### Provider url
 Use `HAYSTACK_PROVIDER=providers.url` to use this provider.
-Add the variable `HAYSTACK_URL=<url>` to expose an Haystack file via the Haystack protocol.
+Add the variable `HAYSTACK_URL=<url>` to expose an ReadHaystack file via the ReadHaystack protocol.
 The methods `/read` and `/hisRead` was implemented.
 The `<url>` may have the classic form (`http://...`, `ftp://...`) or can reference an S3 file (`s3://...`).
 The time series to manage history must be referenced in the entity, with the `hisURI` tag.

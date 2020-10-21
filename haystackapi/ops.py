@@ -16,7 +16,6 @@ import re
 import traceback
 from ast import literal_eval
 from dataclasses import dataclass, field
-from datetime import datetime
 from decimal import Decimal
 from typing import Optional, Any, Match, List, cast
 from typing import Tuple, Dict
@@ -35,7 +34,7 @@ from hszinc import (
 )
 from .providers.haystack_interface import (
     EmptyGrid,
-    HttpError, get_singleton_provider,
+    HttpError, get_singleton_provider, parse_date_range,
 )
 
 _DEFAULT_VERSION = hszinc.VER_3_0
@@ -597,7 +596,6 @@ def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
         response = _manage_exception(headers, ex, stage)
     return _compress_response(headers.get("Accept-Encoding", None), response)
 
-
 def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `his_read` operation"""
     headers, args = (request.headers, request.args)
@@ -624,25 +622,11 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             if "version" in args:
                 date_version = parse_date_format(args["version"])
 
-        if date_range:
-            if date_range not in ("today", "yesterday"):
-                split_date = [parse_date_format(x) for x in date_range.split(",")]
-                if len(split_date) > 1:
-                    assert type(split_date[0]) == type(  # pylint: disable=C0123
-                        split_date[1]
-                    )
-                    date_range = tuple(split_date)
-                else:
-                    if isinstance(split_date[0], datetime):
-                        split_date.append(None)
-                        date_range = tuple(split_date)
-                    else:
-                        date_range = split_date[0]
-
+        grid_date_range = parse_date_range(date_range)
         log.debug(
-            "id=%s range=%s, date_version=%s", entity_id, date_range, date_version
+            "id=%s range=%s, date_version=%s", entity_id, grid_date_range, date_version
         )
-        grid_response = provider.his_read(entity_id, date_range, date_version)
+        grid_response = provider.his_read(entity_id, grid_date_range, date_version)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except

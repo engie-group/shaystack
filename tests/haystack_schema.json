@@ -1,0 +1,927 @@
+{
+  "meta": {
+    "ver": "3.0"
+  },
+  "cols": [
+    {
+      "name": "absorption",
+      "kind": "Marker"
+    },
+    {
+      "name": "ac",
+      "kind": "Marker"
+    },
+    {
+      "name": "active",
+      "kind": "Marker"
+    },
+    {
+      "name": "ahu",
+      "kind": "Marker"
+    },
+    {
+      "name": "ahuRef",
+      "kind": "Ref"
+    },
+    {
+      "name": "air",
+      "kind": "Marker"
+    },
+    {
+      "name": "airCooled",
+      "kind": "Marker"
+    },
+    {
+      "name": "angle",
+      "kind": "Marker"
+    },
+    {
+      "name": "apparent",
+      "kind": "Marker"
+    },
+    {
+      "name": "area",
+      "kind": "Number"
+    },
+    {
+      "name": "avg",
+      "kind": "Marker"
+    },
+    {
+      "name": "barometric",
+      "kind": "Marker"
+    },
+    {
+      "name": "blowdown",
+      "kind": "Marker"
+    },
+    {
+      "name": "boiler",
+      "kind": "Marker"
+    },
+    {
+      "name": "bypass",
+      "kind": "Marker"
+    },
+    {
+      "name": "centrifugal",
+      "kind": "Marker"
+    },
+    {
+      "name": "chilled",
+      "kind": "Marker"
+    },
+    {
+      "name": "chilledBeamZone",
+      "kind": "Marker"
+    },
+    {
+      "name": "chilledWaterCool",
+      "kind": "Marker"
+    },
+    {
+      "name": "chilledWaterPlant",
+      "kind": "Marker"
+    },
+    {
+      "name": "chilledWaterPlantRef",
+      "kind": "Ref"
+    },
+    {
+      "name": "chiller",
+      "kind": "Marker"
+    },
+    {
+      "name": "circ",
+      "kind": "Marker"
+    },
+    {
+      "name": "circuit",
+      "kind": "Marker"
+    },
+    {
+      "name": "closedLoop",
+      "kind": "Marker"
+    },
+    {
+      "name": "cloudage",
+      "kind": "Marker"
+    },
+    {
+      "name": "cmd",
+      "kind": "Marker"
+    },
+    {
+      "name": "co",
+      "kind": "Marker"
+    },
+    {
+      "name": "co2",
+      "kind": "Marker"
+    },
+    {
+      "name": "coldDeck",
+      "kind": "Marker"
+    },
+    {
+      "name": "condensate",
+      "kind": "Marker"
+    },
+    {
+      "name": "condenser",
+      "kind": "Marker"
+    },
+    {
+      "name": "connection",
+      "kind": "Marker"
+    },
+    {
+      "name": "constantVolume",
+      "kind": "Marker"
+    },
+    {
+      "name": "cool",
+      "kind": "Marker"
+    },
+    {
+      "name": "coolOnly",
+      "kind": "Marker"
+    },
+    {
+      "name": "cooling",
+      "kind": "Marker"
+    },
+    {
+      "name": "coolingCapacity",
+      "kind": "Number"
+    },
+    {
+      "name": "coolingTower",
+      "kind": "Marker"
+    },
+    {
+      "name": "cur",
+      "kind": "Marker"
+    },
+    {
+      "name": "curErr",
+      "kind": "Str"
+    },
+    {
+      "name": "curStatus",
+      "kind": "Str"
+    },
+    {
+      "name": "curVal",
+      "kind": "Obj"
+    },
+    {
+      "name": "current",
+      "kind": "Marker"
+    },
+    {
+      "name": "damper",
+      "kind": "Marker"
+    },
+    {
+      "name": "dc",
+      "kind": "Marker"
+    },
+    {
+      "name": "delta",
+      "kind": "Marker"
+    },
+    {
+      "name": "device",
+      "kind": "Marker"
+    },
+    {
+      "name": "device1Ref",
+      "kind": "Ref"
+    },
+    {
+      "name": "device2Ref",
+      "kind": "Ref"
+    },
+    {
+      "name": "dew",
+      "kind": "Marker"
+    },
+    {
+      "name": "directZone",
+      "kind": "Marker"
+    },
+    {
+      "name": "direction",
+      "kind": "Marker"
+    },
+    {
+      "name": "dis",
+      "kind": "Str"
+    },
+    {
+      "name": "discharge",
+      "kind": "Marker"
+    },
+    {
+      "name": "diverting",
+      "kind": "Marker"
+    },
+    {
+      "name": "domestic",
+      "kind": "Marker"
+    },
+    {
+      "name": "dualDuct",
+      "kind": "Marker"
+    },
+    {
+      "name": "ductArea",
+      "kind": "Marker"
+    },
+    {
+      "name": "dxCool",
+      "kind": "Marker"
+    },
+    {
+      "name": "effective",
+      "kind": "Marker"
+    },
+    {
+      "name": "efficiency",
+      "kind": "Marker"
+    },
+    {
+      "name": "elec",
+      "kind": "Marker"
+    },
+    {
+      "name": "elecHeat",
+      "kind": "Marker"
+    },
+    {
+      "name": "elecMeterLoad",
+      "kind": "Ref"
+    },
+    {
+      "name": "elecMeterRef",
+      "kind": "Ref"
+    },
+    {
+      "name": "elecPanel",
+      "kind": "Marker"
+    },
+    {
+      "name": "elecPanelOf",
+      "kind": "Ref"
+    },
+    {
+      "name": "elecReheat",
+      "kind": "Marker"
+    },
+    {
+      "name": "enable",
+      "kind": "Marker"
+    },
+    {
+      "name": "energy",
+      "kind": "Marker"
+    },
+    {
+      "name": "entering",
+      "kind": "Marker"
+    },
+    {
+      "name": "enum",
+      "kind": "Str"
+    },
+    {
+      "name": "equip",
+      "kind": "Marker"
+    },
+    {
+      "name": "equipRef",
+      "kind": "Ref"
+    },
+    {
+      "name": "evaporator",
+      "kind": "Marker"
+    },
+    {
+      "name": "exhaust",
+      "kind": "Marker"
+    },
+    {
+      "name": "export",
+      "kind": "Marker"
+    },
+    {
+      "name": "faceBypass",
+      "kind": "Marker"
+    },
+    {
+      "name": "fan",
+      "kind": "Marker"
+    },
+    {
+      "name": "fanPowered",
+      "kind": "Marker"
+    },
+    {
+      "name": "fcu",
+      "kind": "Marker"
+    },
+    {
+      "name": "filter",
+      "kind": "Marker"
+    },
+    {
+      "name": "flow",
+      "kind": "Marker"
+    },
+    {
+      "name": "flue",
+      "kind": "Marker"
+    },
+    {
+      "name": "freezeStat",
+      "kind": "Marker"
+    },
+    {
+      "name": "freq",
+      "kind": "Marker"
+    },
+    {
+      "name": "gas",
+      "kind": "Marker"
+    },
+    {
+      "name": "gasHeat",
+      "kind": "Marker"
+    },
+    {
+      "name": "gasMeterLoad",
+      "kind": "Ref"
+    },
+    {
+      "name": "geoAddr",
+      "kind": "Str"
+    },
+    {
+      "name": "geoCity",
+      "kind": "Str"
+    },
+    {
+      "name": "geoCoord",
+      "kind": "Coord"
+    },
+    {
+      "name": "geoCountry",
+      "kind": "Str"
+    },
+    {
+      "name": "geoCounty",
+      "kind": "Str"
+    },
+    {
+      "name": "geoPostalCode",
+      "kind": "Str"
+    },
+    {
+      "name": "geoState",
+      "kind": "Str"
+    },
+    {
+      "name": "geoStreet",
+      "kind": "Str"
+    },
+    {
+      "name": "header",
+      "kind": "Marker"
+    },
+    {
+      "name": "heat",
+      "kind": "Marker"
+    },
+    {
+      "name": "heatExchanger",
+      "kind": "Marker"
+    },
+    {
+      "name": "heatPump",
+      "kind": "Marker"
+    },
+    {
+      "name": "heatWheel",
+      "kind": "Marker"
+    },
+    {
+      "name": "heating",
+      "kind": "Marker"
+    },
+    {
+      "name": "his",
+      "kind": "Marker"
+    },
+    {
+      "name": "hisErr",
+      "kind": "Str"
+    },
+    {
+      "name": "hisInterpolate",
+      "kind": "Str"
+    },
+    {
+      "name": "hisStatus",
+      "kind": "Str"
+    },
+    {
+      "name": "hisTotalized",
+      "kind": "Marker"
+    },
+    {
+      "name": "hot",
+      "kind": "Marker"
+    },
+    {
+      "name": "hotDeck",
+      "kind": "Marker"
+    },
+    {
+      "name": "hotWaterHeat",
+      "kind": "Marker"
+    },
+    {
+      "name": "hotWaterPlant",
+      "kind": "Marker"
+    },
+    {
+      "name": "hotWaterPlantRef",
+      "kind": "Ref"
+    },
+    {
+      "name": "hotWaterReheat",
+      "kind": "Marker"
+    },
+    {
+      "name": "humidifier",
+      "kind": "Marker"
+    },
+    {
+      "name": "humidity",
+      "kind": "Marker"
+    },
+    {
+      "name": "hvac",
+      "kind": "Marker"
+    },
+    {
+      "name": "id",
+      "kind": "Ref"
+    },
+    {
+      "name": "imbalance",
+      "kind": "Marker"
+    },
+    {
+      "name": "import_FIXME",
+      "kind": "Marker"
+    },
+    {
+      "name": "irradiance",
+      "kind": "Marker"
+    },
+    {
+      "name": "isolation",
+      "kind": "Marker"
+    },
+    {
+      "name": "kind",
+      "kind": "Str"
+    },
+    {
+      "name": "leaving",
+      "kind": "Marker"
+    },
+    {
+      "name": "level",
+      "kind": "Marker"
+    },
+    {
+      "name": "lightLevel",
+      "kind": "Marker"
+    },
+    {
+      "name": "lighting",
+      "kind": "Marker"
+    },
+    {
+      "name": "lights",
+      "kind": "Marker"
+    },
+    {
+      "name": "lightsGroup",
+      "kind": "Marker"
+    },
+    {
+      "name": "load",
+      "kind": "Marker"
+    },
+    {
+      "name": "mag",
+      "kind": "Marker"
+    },
+    {
+      "name": "makeup",
+      "kind": "Marker"
+    },
+    {
+      "name": "mau",
+      "kind": "Marker"
+    },
+    {
+      "name": "max",
+      "kind": "Marker"
+    },
+    {
+      "name": "maxVal",
+      "kind": "Number"
+    },
+    {
+      "name": "meter",
+      "kind": "Marker"
+    },
+    {
+      "name": "min",
+      "kind": "Marker"
+    },
+    {
+      "name": "minVal",
+      "kind": "Number"
+    },
+    {
+      "name": "mixed",
+      "kind": "Marker"
+    },
+    {
+      "name": "mixing",
+      "kind": "Marker"
+    },
+    {
+      "name": "multiZone",
+      "kind": "Marker"
+    },
+    {
+      "name": "net",
+      "kind": "Marker"
+    },
+    {
+      "name": "network",
+      "kind": "Marker"
+    },
+    {
+      "name": "networkRef",
+      "kind": "Ref"
+    },
+    {
+      "name": "neutralDeck",
+      "kind": "Marker"
+    },
+    {
+      "name": "occ",
+      "kind": "Marker"
+    },
+    {
+      "name": "occupancyIndicator",
+      "kind": "Marker"
+    },
+    {
+      "name": "occupied",
+      "kind": "Marker"
+    },
+    {
+      "name": "oil",
+      "kind": "Marker"
+    },
+    {
+      "name": "openLoop",
+      "kind": "Marker"
+    },
+    {
+      "name": "outside",
+      "kind": "Marker"
+    },
+    {
+      "name": "parallel",
+      "kind": "Marker"
+    },
+    {
+      "name": "perimeterHeat",
+      "kind": "Marker"
+    },
+    {
+      "name": "pf",
+      "kind": "Marker"
+    },
+    {
+      "name": "phase",
+      "kind": "Str"
+    },
+    {
+      "name": "point",
+      "kind": "Marker"
+    },
+    {
+      "name": "power",
+      "kind": "Marker"
+    },
+    {
+      "name": "precipitation",
+      "kind": "Marker"
+    },
+    {
+      "name": "pressure",
+      "kind": "Marker"
+    },
+    {
+      "name": "pressureDependent",
+      "kind": "Marker"
+    },
+    {
+      "name": "pressureIndependent",
+      "kind": "Marker"
+    },
+    {
+      "name": "primaryFunction",
+      "kind": "Str"
+    },
+    {
+      "name": "primaryLoop",
+      "kind": "Marker"
+    },
+    {
+      "name": "protocol",
+      "kind": "Str"
+    },
+    {
+      "name": "pump",
+      "kind": "Marker"
+    },
+    {
+      "name": "reactive",
+      "kind": "Marker"
+    },
+    {
+      "name": "reciprocal",
+      "kind": "Marker"
+    },
+    {
+      "name": "refrig",
+      "kind": "Marker"
+    },
+    {
+      "name": "reheat",
+      "kind": "Marker"
+    },
+    {
+      "name": "reheating",
+      "kind": "Marker"
+    },
+    {
+      "name": "return_FIXME",
+      "kind": "Marker"
+    },
+    {
+      "name": "rooftop",
+      "kind": "Marker"
+    },
+    {
+      "name": "run",
+      "kind": "Marker"
+    },
+    {
+      "name": "screw",
+      "kind": "Marker"
+    },
+    {
+      "name": "secondaryLoop",
+      "kind": "Marker"
+    },
+    {
+      "name": "sensor",
+      "kind": "Marker"
+    },
+    {
+      "name": "series",
+      "kind": "Marker"
+    },
+    {
+      "name": "singleDuct",
+      "kind": "Marker"
+    },
+    {
+      "name": "site",
+      "kind": "Marker"
+    },
+    {
+      "name": "siteMeter",
+      "kind": "Marker"
+    },
+    {
+      "name": "sitePanel",
+      "kind": "Marker"
+    },
+    {
+      "name": "siteRef",
+      "kind": "Ref"
+    },
+    {
+      "name": "solar",
+      "kind": "Marker"
+    },
+    {
+      "name": "sp",
+      "kind": "Marker"
+    },
+    {
+      "name": "speed",
+      "kind": "Marker"
+    },
+    {
+      "name": "stage",
+      "kind": "Number"
+    },
+    {
+      "name": "standby",
+      "kind": "Marker"
+    },
+    {
+      "name": "steam",
+      "kind": "Marker"
+    },
+    {
+      "name": "steamHeat",
+      "kind": "Marker"
+    },
+    {
+      "name": "steamMeterLoad",
+      "kind": "Ref"
+    },
+    {
+      "name": "steamPlant",
+      "kind": "Marker"
+    },
+    {
+      "name": "steamPlantRef",
+      "kind": "Ref"
+    },
+    {
+      "name": "subPanelOf",
+      "kind": "Ref"
+    },
+    {
+      "name": "submeterOf",
+      "kind": "Ref"
+    },
+    {
+      "name": "sunrise",
+      "kind": "Marker"
+    },
+    {
+      "name": "tank",
+      "kind": "Marker"
+    },
+    {
+      "name": "temp",
+      "kind": "Marker"
+    },
+    {
+      "name": "thd",
+      "kind": "Marker"
+    },
+    {
+      "name": "total",
+      "kind": "Marker"
+    },
+    {
+      "name": "tripleDuct",
+      "kind": "Marker"
+    },
+    {
+      "name": "tz",
+      "kind": "Str"
+    },
+    {
+      "name": "unit",
+      "kind": "Str"
+    },
+    {
+      "name": "unocc",
+      "kind": "Marker"
+    },
+    {
+      "name": "uv",
+      "kind": "Marker"
+    },
+    {
+      "name": "valve",
+      "kind": "Marker"
+    },
+    {
+      "name": "variableVolume",
+      "kind": "Marker"
+    },
+    {
+      "name": "vav",
+      "kind": "Marker"
+    },
+    {
+      "name": "vavMode",
+      "kind": "Marker"
+    },
+    {
+      "name": "vavZone",
+      "kind": "Marker"
+    },
+    {
+      "name": "vfd",
+      "kind": "Marker"
+    },
+    {
+      "name": "visibility",
+      "kind": "Marker"
+    },
+    {
+      "name": "volt",
+      "kind": "Marker"
+    },
+    {
+      "name": "volume",
+      "kind": "Marker"
+    },
+    {
+      "name": "water",
+      "kind": "Marker"
+    },
+    {
+      "name": "waterCooled",
+      "kind": "Marker"
+    },
+    {
+      "name": "waterMeterLoad",
+      "kind": "Ref"
+    },
+    {
+      "name": "weather",
+      "kind": "Marker"
+    },
+    {
+      "name": "weatherCond",
+      "kind": "Marker"
+    },
+    {
+      "name": "weatherPoint",
+      "kind": "Marker"
+    },
+    {
+      "name": "weatherRef",
+      "kind": "Ref"
+    },
+    {
+      "name": "wetBulb",
+      "kind": "Marker"
+    },
+    {
+      "name": "wind",
+      "kind": "Marker"
+    },
+    {
+      "name": "writable",
+      "kind": "Marker"
+    },
+    {
+      "name": "writeErr",
+      "kind": "Str"
+    },
+    {
+      "name": "writeLevel",
+      "kind": "Number"
+    },
+    {
+      "name": "writeStatus",
+      "kind": "Str"
+    },
+    {
+      "name": "writeVal",
+      "kind": "Obj"
+    },
+    {
+      "name": "yearBuilt",
+      "kind": "Number"
+    },
+    {
+      "name": "zone",
+      "kind": "Marker"
+    }
+  ]
+}

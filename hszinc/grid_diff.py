@@ -67,7 +67,7 @@ def grid_diff(left, right):
             if left_id in right:
                 # row with same id in left and right
                 right_row = right[left_id]
-                diff_row = {"id": left_id}
+                diff_row = {}
                 for col in left.column:
                     if col in left_row:
                         # Left has col
@@ -93,14 +93,18 @@ def grid_diff(left, right):
                             diff_row[col] = right_row[col]
                 # Check add cols in right
                 for col in right.column:
-                    if col not in left.column:
+                    if col not in left.column and col in right_row:
                         diff_row[col] = right_row[col]
-                diff.append(diff_row)
+                if len(diff_row):
+                    diff_row["id"] = left_id
+                    diff.append(diff_row)
             else:
                 # left id is not in right. row is deleted
                 if 'id' not in diff.column:
                     diff.column['id'] = left.column['id']
                 diff.append({"id": left_id, "remove_": REMOVE})
+                if 'remove_' not in diff.column:
+                    diff.column.add_item("remove_", {})
         else:
             same_values = False
             # Manage row without id
@@ -125,6 +129,8 @@ def grid_diff(left, right):
             if not same_values:
                 diff_row = left_row.copy()
                 diff_row['remove_'] = REMOVE
+                if 'remove_' not in diff.column:
+                    diff.column.add_item("remove_", {})
                 diff.append(diff_row)
 
     # Add the row with id, if it's only in right
@@ -144,35 +150,8 @@ def grid_merge(orig_grid, diff):
 
     # Apply diff of metadata
     left_metadata = orig_grid.metadata
-
-    for k_metadata, v_metadata in diff.metadata.items():
-        if k_metadata == 'diff_' and v_metadata == MARKER:
-            pass
-        elif REMOVE == v_metadata:
-            del left_metadata[k_metadata]
-        else:
-            left_metadata[k_metadata] = v_metadata
-
-    # Apply diff of columns
-    new_cols = diff.column.copy()  # Order describe by diff
-    for col, v_col in diff.column.items():
-        if 'remove_' in v_col:
-            del new_cols[col]
-        else:
-            if col in orig_grid.column:
-                map_col = orig_grid.column[col].copy()
-            else:
-                map_col = MetadataObject()
-            for key, value in v_col.items():
-                if value is REMOVE:
-                    del map_col[key]
-                else:
-                    map_col[key] = value
-            for key, value in diff.column[col].items():
-                if key not in map_col and value is not REMOVE:
-                    map_col[key] = value
-            new_cols[col] = map_col
-    orig_grid.column = new_cols
+    merge_metadata(diff.metadata, left_metadata)
+    orig_grid.column = merge_cols(diff.column, orig_grid.column)
 
     # Apply diff of rows
     for diff_row in diff:
@@ -205,4 +184,39 @@ def grid_merge(orig_grid, diff):
             else:
                 # Add a new record
                 orig_grid.append(diff_row)
+    if "remove_" in orig_grid.column:
+        orig_grid.column.pop("remove_")
     return orig_grid
+
+
+def merge_cols(column, orig_column):
+    # Apply diff of columns
+    new_cols = column.copy()  # Order describe by diff
+    for col, v_col in column.items():
+        if 'remove_' in v_col:
+            del new_cols[col]
+        else:
+            if col in orig_column:
+                map_col = orig_column[col].copy()
+            else:
+                map_col = MetadataObject()
+            for key, value in v_col.items():
+                if value is REMOVE:
+                    del map_col[key]
+                else:
+                    map_col[key] = value
+            for key, value in column[col].items():
+                if key not in map_col and value is not REMOVE:
+                    map_col[key] = value
+            new_cols[col] = map_col
+    return new_cols
+
+
+def merge_metadata(metadata, left_metadata):
+    for k_metadata, v_metadata in metadata.items():
+        if k_metadata == 'diff_' and v_metadata == MARKER:
+            pass
+        elif REMOVE == v_metadata:
+            del left_metadata[k_metadata]
+        else:
+            left_metadata[k_metadata] = v_metadata

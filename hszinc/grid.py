@@ -172,7 +172,7 @@ class Grid(col.MutableSequence):
         """
         assert isinstance(other, Grid)
         from .grid_diff import grid_diff
-        return grid_diff(self, other)
+        return grid_diff(other, self)
 
     def __add__(self, other):
         """
@@ -352,6 +352,7 @@ class Grid(col.MutableSequence):
             if not self._index:
                 self.reindex()
             self._index[value["id"]] = value
+        return self
 
     def reindex(self):
         """
@@ -362,6 +363,7 @@ class Grid(col.MutableSequence):
             if "id" in item:
                 assert isinstance(item["id"], Ref), "The 'id' tag must be a reference"
                 self._index[item["id"]] = item
+        return self
 
     def pack_columns(self):
         using_columns = set()
@@ -381,6 +383,7 @@ class Grid(col.MutableSequence):
                 if k not in new_cols:
                     new_cols[k] = {}
         self.column = new_cols
+        return self
 
     def extend(self, values):
         super(Grid, self).extend(values)  # Python 2 compatible :-(
@@ -388,6 +391,7 @@ class Grid(col.MutableSequence):
         for item in self._row:
             if "id" in item:
                 self._index[item["id"]] = item
+        return self
 
     def copy(self):
         a_copy = copy.deepcopy(self)

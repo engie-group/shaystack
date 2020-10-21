@@ -2,15 +2,19 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
-class FilterPath:
-    def __init__(self, path):
-        self.path = path
+class FilterNode:
+    pass
+
+
+class FilterPath(FilterNode):
+    def __init__(self, paths):
+        self.paths = paths
 
     def __repr__(self):
-        return "->".join(self.path)
+        return "->".join(self.paths)
 
 
-class FilterBinary:
+class FilterBinary(FilterNode):
     def __init__(self, operator, left, right):
         self.operator = operator
         self.left = left
@@ -20,7 +24,7 @@ class FilterBinary:
         return "%s %s %s" % (self.left, self.operator, self.right)
 
 
-class FilterUnary:
+class FilterUnary(FilterNode):
     def __init__(self, operator, right):
         self.operator = operator
         self.right = right

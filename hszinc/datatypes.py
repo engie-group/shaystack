@@ -432,7 +432,7 @@ class XStr:
         return self.data
 
     def __repr__(self):
-        return '%s("%s")' % (self.encoding, self.data_to_string())
+        return 'XStr("%s","%s")' % (self.encoding, self.data_to_string())
 
     def __eq__(self, other):
         if not isinstance(other, XStr):

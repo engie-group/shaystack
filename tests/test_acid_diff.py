@@ -7,7 +7,6 @@ import random
 
 from hszinc import Grid, REMOVE
 from hszinc.grid_diff import grid_diff, grid_merge
-
 from .test_acid import gen_random_grid, gen_random_scalar, gen_random_str
 
 GENERATION_NUMBER, \
@@ -73,8 +72,8 @@ def gen_new_row(grid):
 
 def gen_diff(orig):
     new_metadata = gen_diff_metadata(orig.metadata)
-    new_metacols = gen_diff_meta_cols(orig.column)
-    grid = Grid(orig.version, metadata=new_metadata, columns=new_metacols)
+    new_meta_cols = gen_diff_meta_cols(orig.column)
+    grid = Grid(orig.version, metadata=new_metadata, columns=new_meta_cols)
     for row in gen_new_row(orig):
         grid.append(row)
         if "id" not in row and random.randint(0, 100) < PERCENT_DUPLICATE:

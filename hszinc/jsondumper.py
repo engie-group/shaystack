@@ -69,7 +69,7 @@ def dump_rows(grid):
 def dump_row(grid, row):
     return {
         c: dump_scalar(row.get(c), version=grid.version)
-        for c in list(grid.column.keys())}
+        for c in list(grid.column.keys()) if c in row}
 
 
 def dump_scalar(scalar, version=LATEST_VER):

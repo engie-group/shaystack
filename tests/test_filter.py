@@ -4,11 +4,12 @@
 import gc
 from datetime import time, date, datetime
 
+from iso8601 import iso8601
+
 from hszinc import Grid, Uri, Ref, Coordinate, MARKER, XStr
 from hszinc.filter_ast import FilterUnary, FilterBinary, FilterPath, FilterAST
 from hszinc.grid_filter import hs_filter, _FnWrapper, filter_function
 from hszinc.zoneinfo import timezone
-from iso8601 import iso8601
 
 
 def test_filter_ast():
@@ -88,7 +89,7 @@ def test_filter_tag_equal_values():
     assert result.right == XStr("hex", "010203")
 
 
-def test_filter_tag_comparaison_operator():
+def test_filter_tag_comparison_operator():
     result = hs_filter.parseString('bool == true', parseAll=True)[0]
     assert isinstance(result, FilterBinary)
     assert result.operator == '=='
@@ -118,12 +119,12 @@ def test_filter_navigation():
     result = hs_filter.parseString('a->b', parseAll=True)[0]
     assert isinstance(result, FilterUnary)
     assert isinstance(result.right, FilterPath)
-    assert result.right.path == ['a', 'b']
+    assert result.right.paths == ['a', 'b']
 
     result = hs_filter.parseString('a->b->c', parseAll=True)[0]
     assert isinstance(result, FilterUnary)
     assert isinstance(result.right, FilterPath)
-    assert result.right.path == ['a', 'b', 'c']
+    assert result.right.paths == ['a', 'b', 'c']
 
 
 def test_filter_boolean_operator():
@@ -159,14 +160,14 @@ def test_filter_boolean_operator():
     assert result.left.operator == "has"
     assert isinstance(result.right, FilterBinary)
     assert result.right.operator == "=="
-    assert result.right.left.path == ["siteRef", "geoCity"]
+    assert result.right.left.paths == ["siteRef", "geoCity"]
 
 
 def test_generated_filter():
     assert filter_function('equip == "Chicago"')(None, {"equip": "Chicago"})
-    assert filter_function('equip == "Chicago" or not titi')(None, {"equip": "Chicago"})
-    assert filter_function('equip == "Chicago" or not titi')(None, {"equip": "NewYork"})
-    assert not filter_function('equip == "Chicago" or not titi')(None, {"titi": MARKER})
+    assert filter_function('equip == "Chicago" or not acme')(None, {"equip": "Chicago"})
+    assert filter_function('equip == "Chicago" or not acme')(None, {"equip": "NewYork"})
+    assert not filter_function('equip == "Chicago" or not acme')(None, {"acme": MARKER})
 
 
 def test_generated_filter_with_reference():
@@ -292,6 +293,14 @@ def test_empty_filter():
     assert len(grid.filter('')) == 3
 
 
+def test_multiple_and_filter():
+    grid = Grid(columns={'id': {}, 'site': {}, 'equip': {}, 'geoPostalCode': {}, 'ahu': {},
+                         'geoCity': {}, 'curVal': {}, 'hvac': {}, 'siteRef': {}})
+    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+                 'geoCity': 'Chicago', 'curVal': 76})
+    assert len(grid.filter("id and site and equip and geoPostalCode")) == 1
+
+
 def test_empty_filter_and_limit():
     grid = Grid(columns={'id': {}, 'site': {}})
     grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
@@ -310,3 +319,10 @@ def test_filter_and_limit():
     grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
 
     assert len(grid.filter('not acme', limit=1)) == 1
+
+
+def test_xstr():
+    grid = Grid(columns={'id': {}, 'data': {}})
+    grid.append({'id': Ref('id1'), 'data': XStr("hex", 'deadbeef')})
+
+    assert len(grid.filter('data == hex("deadbeef")')) == 1

@@ -58,14 +58,30 @@ def parse_grid(grid_str):
     version = Version(meta.pop('ver'))
 
     # Parse the remaining elements
-    metadata = {}
-    for name, value in meta.items():
-        metadata[name] = parse_embedded_scalar(value, version=version)
+    metadata = parse_metadata(meta, version)
 
     grid = Grid(version=version, metadata=metadata)
 
     # Grab the columns in the order given
-    for col in parsed.pop('cols'):
+    parse_cols(grid, parsed.pop('cols'), version)
+
+    # Parse the rows
+    for row in (parsed.pop('rows', []) or []):
+        parsed_row = parse_row(row, version)
+        grid.append(parsed_row)
+
+    return grid
+
+
+def parse_metadata(meta, version):
+    metadata = {}
+    for name, value in meta.items():
+        metadata[name] = parse_embedded_scalar(value, version=version)
+    return metadata
+
+
+def parse_cols(grid, parsed, version):
+    for col in parsed:
         name = col.pop('name')
         meta = {}
         for key, value in col.items():
@@ -74,16 +90,14 @@ def parse_grid(grid_str):
                 meta[key] = value
         grid.column[name] = meta
 
-    # Parse the rows
-    for row in (parsed.pop('rows', []) or []):
-        parsed_row = {}
-        for col, value in row.items():
-            value = parse_embedded_scalar(value, version=version)
-            if value is not None:
-                parsed_row[col] = value
-        grid.append(parsed_row)
 
-    return grid
+def parse_row(row, version):
+    parsed_row = {}
+    for col, value in row.items():
+        value = parse_embedded_scalar(value, version=version)
+        if value is not None:
+            parsed_row[col] = value
+    return parsed_row
 
 
 def parse_embedded_scalar(scalar, version=LATEST_VER):
@@ -223,3 +237,4 @@ def parse_scalar(scalar, version=LATEST_VER):
         scalar = json.loads(scalar)
 
     return parse_embedded_scalar(scalar, version=version)
+

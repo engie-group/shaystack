@@ -11,12 +11,12 @@ import binascii
 import random
 from copy import copy, deepcopy
 
-import hszinc
 import six
-from hszinc.datatypes import XStr, Uri, Bin, MARKER, NA, REMOVE
-from hszinc.pintutil import to_haystack, to_pint
 from nose.tools import eq_
 
+import hszinc
+from hszinc.datatypes import XStr, Uri, Bin, MARKER, NA, REMOVE
+from hszinc.pintutil import to_haystack, to_pint
 from .pint_enable import _enable_pint
 
 
@@ -208,7 +208,7 @@ def test_qty_binary_ops():
                 if small_int_left == small_int_right:
                     continue
 
-                for a_lamnda in (lambda a, b: a + b,
+                for a_lambda in (lambda a, b: a + b,
                                  lambda a, b: a - b,
                                  lambda a, b: a * b,
                                  lambda a, b: a / b,
@@ -221,7 +221,7 @@ def test_qty_binary_ops():
                                  lambda a, b: a != b,
                                  lambda a, b: a >= b,
                                  lambda a, b: a > b):
-                    yield _check_qty_op, pint_en, a_lamnda, small_int_left, small_int_right
+                    yield _check_qty_op, pint_en, a_lambda, small_int_left, small_int_right
 
         # Exponentiation, we can't use all the values above
         # as some go out of dates_range.
@@ -245,7 +245,7 @@ def test_qty_binary_ops():
                 if small_int_left == small_int_right:
                     continue
 
-                for a_lamnda in (lambda a, b: a + b,
+                for a_lambda in (lambda a, b: a + b,
                                  lambda a, b: a - b,
                                  lambda a, b: a * b,
                                  lambda a, b: a / b,
@@ -261,12 +261,12 @@ def test_qty_binary_ops():
                                  lambda a, b: a != b,
                                  lambda a, b: a >= b,
                                  lambda a, b: a > b):
-                    yield _check_qty_op, pint_en, a_lamnda, small_int_left, small_int_right
+                    yield _check_qty_op, pint_en, a_lambda, small_int_left, small_int_right
 
                 if small_int_right >= 0:
-                    for a_lamnda in (lambda a, b: a << b,
+                    for a_lambda in (lambda a, b: a << b,
                                      lambda a, b: a >> b):
-                        yield _check_qty_op, pint_en, a_lamnda, small_int_left, small_int_right
+                        yield _check_qty_op, pint_en, a_lambda, small_int_left, small_int_right
 
         # Exponentiation, we can't use all the values above
         # as some go out of dates_range.

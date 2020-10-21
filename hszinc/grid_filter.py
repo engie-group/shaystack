@@ -227,11 +227,19 @@ hs_parens = (Suppress(Literal("(")) + hs_filter + Suppress(Literal(")"))).setPar
     lambda toks: toks[0]
 )
 hs_term = hs_parens | hs_missing | hs_cmp | hs_has
+
+
+def _merge_and_or(key, toks):
+    if len(toks) == 1:
+        return toks[0]
+    return FilterBinary(key, _merge_and_or(key, toks[:-2]), toks[-1])
+
+
 hs_condAnd = (hs_term + ZeroOrMore(Literal("and") + hs_term)).setParseAction(
-    lambda toks: FilterBinary("and", toks[0], toks[2]) if len(toks) > 1 else toks[0]
+    lambda toks: _merge_and_or("and", toks)
 )
 hs_condOr = (hs_condAnd + ZeroOrMore(Literal("or") + hs_condAnd)).setParseAction(
-    lambda toks: FilterBinary("or", toks[0], toks[2]) if len(toks) > 1 else toks[0]
+    lambda toks: _merge_and_or("or", toks)
 )
 hs_filter <<= hs_condOr
 
@@ -297,7 +305,7 @@ def _get_path(grid, obj, paths):
 
 def _generate_filter_in_python(node, def_filter):
     if isinstance(node, FilterPath):
-        def_filter.append("_get_path(_grid, _entity, %s)" % node.path)
+        def_filter.append("_get_path(_grid, _entity, %s)" % node.paths)
     elif isinstance(node, FilterBinary):
         def_filter.append("(")
         _generate_filter_in_python(node.left, def_filter)
@@ -338,7 +346,7 @@ def _filter_function(grid_filter):
     def_filter = _generate_filter_in_python(parse_filter(grid_filter)._head, [])
     fun_name = "_gen_hsfilter_" + str(_id_function)
     function_template = "def %s(_grid, _entity):\n  return " % fun_name + "".join(def_filter)
-    # print("\nGenerate:\n# " + filter + "\n" + function_template)  # debug
+    # print("\nGenerate:\n# " + grid_filter + "\n" + function_template)  # For debug
     _id_function += 1
     return _FnWrapper(fun_name, function_template)
 

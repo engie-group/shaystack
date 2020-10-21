@@ -236,6 +236,7 @@ def test_diff_remove_record_with_id():
     assert 'id' in diff.column
     assert 'a' in diff.column
     assert 'b' in diff.column
+    assert 'remove_' in diff.column
 
     assert grid_merge(left, diff) == right
 

@@ -187,7 +187,7 @@ def dump_bin(bin_value):
 
 
 def dump_xstr(xstr_value):
-    return str(xstr_value)
+    return '%s("%s")' % (xstr_value.encoding, xstr_value.data_to_string())
 
 
 def dump_quantity(quantity):

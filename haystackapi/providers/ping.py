@@ -9,9 +9,9 @@ import os
 from datetime import datetime
 from typing import Tuple, Any, Dict, Union, Optional, List, Set
 
+from hszinc import Grid, VER_3_0, Ref, Quantity, MARKER
 from overrides import overrides
 
-from hszinc import Grid, VER_3_0, Ref
 from .haystack_interface import HaystackInterface
 
 log = logging.getLogger("ping.Provider")
@@ -65,7 +65,9 @@ class Provider(HaystackInterface):
             grid_filter,
             date_version,
         )
-        return PingGrid
+        grid = Grid(VER_3_0)
+        grid.append({"id": Ref("id1"), "site": MARKER})
+        return grid.extends_columns()
 
     @overrides
     def his_read(
@@ -81,7 +83,15 @@ class Provider(HaystackInterface):
             dates_range,
             date_version,
         )
-        return PingGrid
+        grid = Grid(VER_3_0,
+                    metadata={"id": entity_id,
+                              "hisStart": None,  # FIXME
+                              "hisEnd": None
+                              })
+        grid.append({"data": None,  # FIXME
+                     "val": Quantity(100, "°")}
+                    )
+        return grid.extends_columns()
 
     @overrides
     def his_write(
@@ -100,7 +110,7 @@ class Provider(HaystackInterface):
     def nav(self, nav_id: str) -> Any:  # pylint: disable=no-self-use
         """ Return EmptyGrid """
         log.info('nav(nav_id="%s")', nav_id)
-        return PingGrid
+        return PingGrid  # FIXME
 
     @overrides
     def watch_sub(
@@ -118,7 +128,9 @@ class Provider(HaystackInterface):
             ids,
             lease,
         )
-        return PingGrid
+        grid = Grid(VER_3_0)
+        grid.append({"id": Ref("id1"), "val": Quantity(100, "°")})
+        return grid.extends_columns()
 
     @overrides
     def watch_unsub(
@@ -136,7 +148,9 @@ class Provider(HaystackInterface):
     ) -> Grid:  # pylint: disable=no-self-use
         """ Return EmptyGrid """
         log.info('watch_poll(watch_id="%s", refresh=%s)', watch_id, refresh)
-        return PingGrid
+        grid = Grid(VER_3_0)
+        grid.append({"id": Ref("id1"), "val": Quantity(100, "°")})
+        return grid.extends_columns()
 
     @overrides
     def point_write_read(
@@ -144,6 +158,26 @@ class Provider(HaystackInterface):
     ) -> Grid:  # pylint: disable=no-self-use
         """ Return EmptyGrid """
         log.info('point_write_read(id=%s, date_version=%s")', entity_id, date_version)
+        grid = Grid(VER_3_0)
+        grid.append({"level": 1,
+                     "levelDis": "a level",
+                     "val": Quantity(100, "°"),
+                     "who": "me"
+                     })
+        return grid.extends_columns()
+
+    @overrides
+    def point_write_write(self,
+                          entity_id: Ref,
+                          level: int,
+                          val: Optional[Any],
+                          duration: Quantity,
+                          who: Optional[str],
+                          date_version: Optional[datetime],
+                          ) -> None:  # pylint: disable=no-self-use
+        """ Return EmptyGrid """
+        log.info('point_write_write(id=%s, level=%s, val=%s, duration=%s, who=%s, date_version=%s")',
+                 entity_id, level, val, duration, who, date_version)
         return PingGrid
 
     @overrides

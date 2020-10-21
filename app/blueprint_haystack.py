@@ -13,7 +13,9 @@ from haystackapi import HaystackHttpRequest, HaystackHttpResponse, \
     about, ops, formats, read, nav, watch_sub, \
     watch_unsub, watch_poll, point_write, his_read, his_write, invoke_action
 
-haystack = Blueprint('haystack', __name__, static_folder='app/static')
+haystack_blueprint = Blueprint('haystack', __name__,
+                               static_folder='app/static',
+                               url_prefix='/haystack')
 
 
 def _as_request(request: flash_request) -> HaystackHttpRequest:
@@ -33,7 +35,7 @@ def _as_response(response: HaystackHttpResponse) -> flask_response:
     return rep
 
 
-@haystack.route('/haystack/about', methods=['POST', 'GET'])
+@haystack_blueprint.route('/about', methods=['POST', 'GET'])
 def flask_about():
     """
     Invoke about() from flask
@@ -41,7 +43,7 @@ def flask_about():
     return _as_response(about(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
 
 
-@haystack.route('/haystack/ops', methods=['POST', 'GET'])
+@haystack_blueprint.route('/ops', methods=['POST', 'GET'])
 def flask_ops():
     """
     Invoke ops() from flask
@@ -49,7 +51,7 @@ def flask_ops():
     return _as_response(ops(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
 
 
-@haystack.route('/haystack/formats', methods=['POST', 'GET'])
+@haystack_blueprint.route('/formats', methods=['POST', 'GET'])
 def flask_formats():
     """
     Invoke formats() from flask
@@ -57,7 +59,7 @@ def flask_formats():
     return _as_response(formats(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
 
 
-@haystack.route('/haystack/read', methods=['POST', 'GET'])
+@haystack_blueprint.route('/read', methods=['POST', 'GET'])
 def flask_read():
     """
     Invoke read() from flask
@@ -65,7 +67,7 @@ def flask_read():
     return _as_response(read(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
 
 
-@haystack.route('/haystack/nav', methods=['POST', 'GET'])
+@haystack_blueprint.route('/nav', methods=['POST', 'GET'])
 def flask_nav():
     """
     Invoke nav() from flask
@@ -73,7 +75,7 @@ def flask_nav():
     return _as_response(nav(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
 
 
-@haystack.route('/haystack/watchSub', methods=['POST', 'GET'])
+@haystack_blueprint.route('/watchSub', methods=['POST', 'GET'])
 def flask_watch_sub():
     """
     Invoke watch_sub() from flask
@@ -81,7 +83,7 @@ def flask_watch_sub():
     return _as_response(watch_sub(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
 
 
-@haystack.route('/haystack/watchUnsub', methods=['POST', 'GET'])
+@haystack_blueprint.route('/watchUnsub', methods=['POST', 'GET'])
 def flask_watch_unsub():
     """
     Invoke watch_unsub() from flask
@@ -90,7 +92,7 @@ def flask_watch_unsub():
                                     os.environ.get("FLASK_ENV", "prod")))
 
 
-@haystack.route('/haystack/watchPoll', methods=['POST', 'GET'])
+@haystack_blueprint.route('/watchPoll', methods=['POST', 'GET'])
 def flask_watch_poll():
     """
     Invoke watch_poll() from flask
@@ -98,7 +100,7 @@ def flask_watch_poll():
     return _as_response(watch_poll(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
 
 
-@haystack.route('/haystack/pointWrite', methods=['POST', 'GET'])
+@haystack_blueprint.route('/pointWrite', methods=['POST', 'GET'])
 def flask_point_write():
     """
     Invoke point_write() from flask
@@ -107,7 +109,7 @@ def flask_point_write():
                                     os.environ.get("FLASK_ENV", "prod")))
 
 
-@haystack.route('/haystack/hisRead', methods=['POST', 'GET'])
+@haystack_blueprint.route('/hisRead', methods=['POST', 'GET'])
 def flask_his_read():
     """
     Invoke his_read() from flask
@@ -115,7 +117,7 @@ def flask_his_read():
     return _as_response(his_read(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
 
 
-@haystack.route('/haystack/hisWrite', methods=['POST', 'GET'])
+@haystack_blueprint.route('/hisWrite', methods=['POST', 'GET'])
 def flask_his_write():
     """
     Invoke his_write() from flask
@@ -123,7 +125,7 @@ def flask_his_write():
     return his_write(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod"))
 
 
-@haystack.route('/haystack/invokeAction', methods=['POST', 'GET'])
+@haystack_blueprint.route('/invokeAction', methods=['POST', 'GET'])
 def flask_invoke_action():
     """
     Invoke invoke_action() from flask

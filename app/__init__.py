@@ -6,6 +6,8 @@ import sys
 
 import click
 
+from app.blueprint_graphql import graphql_blueprint
+
 try:
     from flask import Flask, send_from_directory
 except ImportError:
@@ -15,10 +17,11 @@ except ImportError:
     print("HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi")
     sys.exit(-1)
 
-from app.blueprint_haystack import haystack as haystack_blueprint
+from app.blueprint_haystack import haystack_blueprint as haystack_blueprint
 
 app = Flask(__name__)
 app.register_blueprint(haystack_blueprint)
+app.register_blueprint(graphql_blueprint)
 
 
 @app.route('/')

@@ -54,6 +54,11 @@ azure_requirements = [
                          'azure-functions'
                      ] + flask_requirements
 
+graphql_requirements = [
+                           'graphene',
+                           'flask_graphql'
+                       ] + flask_requirements
+
 dev_requirements = [
     'python-dotenv',
     'zappa',
@@ -92,6 +97,7 @@ setup(name='haystackapi',
       extras_require={
           'dev': dev_requirements,
           'flask': flask_requirements,
+          'graphql': graphql_requirements,
           'lambda': lambda_requirements,
           # 'azure': azure_requirements,
       },

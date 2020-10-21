@@ -1,26 +1,27 @@
-import json
+"""
+Model to inject a another graphene model, to manage the haystack layer.
+See the blueprint_graphql to see how to integrate this part of global GraphQL model.
+"""
 import logging
 import os
+import sys
 from datetime import datetime
 from functools import partial
 from pathlib import Path
 from typing import Optional, List
 
+import click
 import graphene
-import hszinc
 from graphene import Scalar, Node
 from graphql.language import ast
+
+import hszinc
 from haystackapi.providers.haystack_interface import get_singleton_provider, parse_date_range
 from hszinc import Ref, MODE_JSON
 
 log = logging.getLogger("haystackapi")
 log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
-
-# L'idée est d'avoir des valeurs avec typage, pour éviter les ambiguités
-# C'est au client d'en tenir compte.
-
-# Une autre idée est de produire un type "compatible" GraphQL/Json, mais on perd de l'info.
 
 class _HSKind(Scalar):
     serialize = partial(hszinc.dump_scalar, mode=hszinc.MODE_JSON, version=hszinc.VER_3_0)
@@ -164,7 +165,7 @@ def _hskind_to_grafene(kind: str) -> str:
 
 # FIXME: voir import
 def reserve_word(col: str) -> str:
-    if col in ("import", "def", "if"):  # FIXME
+    if col in ("import", "def", "if", "return"):  # FIXME
         col = col + "_"
 
 
@@ -173,18 +174,23 @@ def generate_entity_from_schema(filename: Path):
     with open(filename) as f:
         schema = hszinc.parse(f.read(), MODE_JSON)
     body = [f"\t{col} = {_hskind_to_grafene(meta['kind'])}" for col, meta in schema.column.items()]
-    entity_source_code = "class Entity(graphene.ObjectType):\n" + "\n".join(body)
+    entity_source_code = """
+class Entity(graphene.ObjectType):
+\tclass Meta:
+\t\tdescription="Haystack haystack entity conform with a specific schema"
+\t""" + "\n".join(body)
     # print(entity_source_code)
     exec(entity_source_code, globals(), locals())
     return locals()['Entity']
 
 
-Entity = generate_entity_from_schema(Path("tests/marriott_schema.json"))
+Entity = generate_entity_from_schema(Path(os.environ["GRAPHQL_SCHEMA"]))
 
-
-# FIXME Entity = generate_entity_from_schema(Path("tests/haystack_schema.json"))
 
 class About(graphene.ObjectType):
+    class Meta:
+        description = "Result of 'about' haystack operation"
+
     haystackVersion = graphene.String(required=True)  # TODO: auto require pour les HSType ?
     tz = graphene.String(required=True)
     serverName = graphene.String(required=True)
@@ -197,26 +203,37 @@ class About(graphene.ObjectType):
     moduleVersion = graphene.String(required=True)
 
 
-class Obs(graphene.ObjectType):
+class Ops(graphene.ObjectType):
+    class Meta:
+        description = "Result of 'ops' haystack operation"
+
     name = graphene.String()
     summary = graphene.String()
 
 
 class TS(graphene.ObjectType):
+    class Meta:
+        description = "Result of 'hisRead' haystack operation"
+
     date = graphene.Field(HSDateTime)
     val = graphene.Field(HSNumber)
 
 
 class PointWrite(graphene.ObjectType):
+    class Meta:
+        description = "Result of 'pointWrite' haystack operation"
+
     level = graphene.Int()
     levelDis = graphene.String()
     val = graphene.Field(HSNumber)
     who = graphene.String()
 
 
+# TODO: WriteHaystack avec point_write_write et his_write
+
 class ReadHaystack(graphene.ObjectType):
     class Meta:
-        description = 'Ontology conform with Haystack project'
+        description = 'Request an ontology conform with the Haystack project'
         name = "Haystack"
 
     about = graphene.List(
@@ -224,7 +241,7 @@ class ReadHaystack(graphene.ObjectType):
     )
 
     ops = graphene.List(
-        graphene.NonNull(Obs),
+        graphene.NonNull(Ops),
     )
 
     read = graphene.List(
@@ -232,20 +249,20 @@ class ReadHaystack(graphene.ObjectType):
         ids=graphene.List(graphene.ID),
         filter=graphene.String(default_value=''),
         limit=graphene.Int(default_value=0),
-        version=graphene.DateTime()
+        version=HSDateTime()
     )
 
     his_read = graphene.List(
         graphene.NonNull(TS),
         id=graphene.ID(),
         dates_range=graphene.String(),
-        version=graphene.DateTime()
+        version=HSDateTime()
     )
 
     point_write = graphene.List(
         graphene.NonNull(PointWrite),
         id=graphene.ID(),
-        version=graphene.DateTime()
+        version=HSDateTime()
     )
 
     @staticmethod
@@ -258,7 +275,7 @@ class ReadHaystack(graphene.ObjectType):
     def resolve_ops(parent, info):
         log.debug(f"resolve_about(parent,info)")
         grid = get_singleton_provider().ops()
-        return ReadHaystack._conv_to_object_type(Obs, grid)
+        return ReadHaystack._conv_to_object_type(Ops, grid)
 
     @staticmethod
     def resolve_read(parent, info,
@@ -318,71 +335,24 @@ class ReadHaystack(graphene.ObjectType):
         return result
 
 
-# TODO: WriteHaystack avec point_write_write et his_write
-class Query(graphene.ObjectType):
-    class Meta:
-        description = 'Top query'
-
-    haystack = graphene.Field(ReadHaystack)
-
-    @staticmethod
-    def resolve_haystack(parent, info):
-        return ReadHaystack()
-
-
-hs_schema = graphene.Schema(query=Query)
-
-
-def dump_graphql_schema():
+def _dump_haystack_schema():
+    """
+    Print haystack schema to insert in another global schema.
+    """
     # Print only haystack schema
     from graphql.utils import schema_printer
     print(schema_printer.print_schema(graphene.Schema(query=ReadHaystack)))
 
 
-result = hs_schema.execute('''
-{ 
-    # haystack(select: "id,dis"ids: ["@customer-913"])
-    haystack 
-    {
-        about {
-            haystackVersion
-            tz
-            serverName
-            serverTime
-            serverBootTime
-            productName
-            productUri
-            productVersion
-            moduleName
-            moduleVersion
-        }
-        ops 
-        {
-            name
-            summary
-        }
-#         read(filter: "site", limit: 2)
-#         { 
-#             site
-#             dis
-#         }
-#         hisRead(id:"@elec-16514")
-#         {
-#             date
-#             val
-#         }
-        pointWrite(id:"@elec-16514")
-        {
-            level
-            levelDis
-            val
-            who
-        }
-    }
-}
-''')
-# dump_graphql_schema()
-print("result = " + json.dumps(result.data, indent=4, sort_keys=True))
-print("error = " + str(result.errors))
+@click.command()
+def main() -> int:
+    """
+    Print the partial schema for haystack API.
+    `GRAPHQL_SCHEMA=app/haystack_schema.json python app/graphql_model.py` >partial_gql.graphql
+    """
+    _dump_haystack_schema()
+    return 0
 
-# TODO: https://docs.graphene-python.org/en/latest/execution/middleware/
+
+if __name__ == '__main__':
+    sys.exit(main())  # pylint: disable=no-value-for-parameter,unexpected-keyword-arg

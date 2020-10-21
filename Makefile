@@ -367,16 +367,13 @@ endif
 
 # Install a clean venv before invoking zappa
 _zappa_pre_install: clean-zappa
-	@virtualenv $(ZAPPA_ENV)
+	@virtualenv -p python$(PYTHON_VERSION) $(ZAPPA_ENV)
 ifeq ($(USE_OKTA),Y)
 	$(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
 endif
 	source $(ZAPPA_ENV)/bin/activate
-	# FIXME: injection des paramètres
-	pip install .
-	# Install extra
-	pip install "file://$$(pwd)#egg=foo[lambda]"
-	# Install submodule
+	pip install -e '.[graphql,lambda]'
+	# FIXME Install submodule
 	pip install -e hszinc
 
 ## Build lambda package

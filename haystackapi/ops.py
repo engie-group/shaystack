@@ -34,10 +34,8 @@ from hszinc import (
     Quantity,
 )
 from .providers.haystack_interface import (
-    get_provider,
-    HaystackInterface,
     EmptyGrid,
-    HttpError,
+    HttpError, get_singleton_provider,
 )
 
 _DEFAULT_VERSION = hszinc.VER_3_0
@@ -270,14 +268,6 @@ def _compress_response(
     return response
 
 
-def _get_provider() -> HaystackInterface:
-    assert (
-            "HAYSTACK_PROVIDER" in os.environ
-    ), "Set 'HAYSTACK_PROVIDER' environment variable"
-    log.debug("Provider=%s", os.environ["HAYSTACK_PROVIDER"])
-    return get_provider(os.environ["HAYSTACK_PROVIDER"])
-
-
 def _manage_exception(
         headers: Dict[str, str], ex: Exception, stage: str
 ) -> HaystackHttpResponse:
@@ -312,7 +302,7 @@ def about(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     log.debug("HAYSTACK_PROVIDER=%s", os.environ.get("HAYSTACK_PROVIDER", None))
     log.debug("HAYSTACK_URL=%s", os.environ.get("HAYSTACK_URL", None))
     try:
-        provider = _get_provider()
+        provider = get_singleton_provider()
         if headers["Host"].startswith("localhost:"):
             home = "http://" + headers["Host"] + "/"
         else:
@@ -329,7 +319,7 @@ def ops(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """ Implement Haystack 'ops' with AWS Lambda """
     headers = request.headers
     try:
-        provider = _get_provider()
+        provider = get_singleton_provider()
         grid_response = provider.ops()
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, "OK")
@@ -342,7 +332,7 @@ def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """ Implement Haystack 'formats' with AWS Lambda """
     headers = request.headers
     try:
-        provider = _get_provider()
+        provider = get_singleton_provider()
         grid_response = provider.formats()
         if grid_response is None:
             grid_response = hszinc.Grid(
@@ -382,7 +372,7 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `read` operation"""
     headers, args = (request.headers, request.args)
     try:
-        provider = _get_provider()
+        provider = get_singleton_provider()
         grid_request = _parse_body(request)
         read_ids = select = read_filter = date_version = None
         limit = 0
@@ -440,7 +430,7 @@ def nav(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `nav` operation"""
     headers, args = (request.headers, request.args)
     try:
-        provider = _get_provider()
+        provider = get_singleton_provider()
         grid_request = _parse_body(request)
         nav_id = None
         if grid_request:
@@ -461,7 +451,7 @@ def watch_sub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `watch_sub` operation"""
     headers, args = (request.headers, request.args)
     try:
-        provider = _get_provider()
+        provider = get_singleton_provider()
         grid_request = _parse_body(request)
         watch_dis = watch_id = lease = None
         ids = []
@@ -497,7 +487,7 @@ def watch_unsub(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
     """Implement the haystack `watch_unsub` operation"""
     headers, args = (request.headers, request.args)
     try:
-        provider = _get_provider()
+        provider = get_singleton_provider()
         grid_request = _parse_body(request)
         close = False
         watch_id = False
@@ -531,7 +521,7 @@ def watch_poll(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse
     """Implement the haystack `watch_poll` operation"""
     headers, args = (request.headers, request.args)
     try:
-        provider = _get_provider()
+        provider = get_singleton_provider()
         grid_request = _parse_body(request)
         watch_id = None
         refresh = False
@@ -558,7 +548,7 @@ def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
     """Implement the haystack `point_write_read` operation"""
     headers, args = (request.headers, request.args)
     try:
-        provider = _get_provider()
+        provider = get_singleton_provider()
         grid_request = _parse_body(request)
         date_version = None
         level = 17
@@ -612,7 +602,7 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `his_read` operation"""
     headers, args = (request.headers, request.args)
     try:
-        provider = _get_provider()
+        provider = get_singleton_provider()
         grid_request = _parse_body(request)
         entity_id = date_version = None
         date_range = None
@@ -664,7 +654,7 @@ def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `his_write` operation"""
     headers, args = (request.headers, request.args)
     try:
-        provider = _get_provider()
+        provider = get_singleton_provider()
         grid_request = _parse_body(request)
         entity_id = grid_request.metadata.get("id")
         date_version = grid_request.metadata.get("version")
@@ -696,7 +686,7 @@ def invoke_action(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespo
     """Implement the haystack `invoke_action` operation"""
     headers, args = (request.headers, request.args)
     try:
-        provider = _get_provider()
+        provider = get_singleton_provider()
         grid_request = _parse_body(request)
         entity_id = grid_request.metadata.get("id")
         action = grid_request.metadata.get("action")

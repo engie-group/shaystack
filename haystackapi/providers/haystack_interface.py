@@ -3,6 +3,7 @@ Base of haystack implementation.
 """
 from __future__ import annotations
 
+import logging
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -13,7 +14,10 @@ from typing import Any, Tuple, Dict, Union, Optional, List, Set
 from tzlocal import get_localzone
 
 import hszinc
-from hszinc import Grid, VER_3_0, Uri, Ref, Quantity
+from hszinc import Grid, VER_3_0, Uri, Ref, Quantity, parse_date_format
+
+log = logging.getLogger("haystackapi")
+log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
 EmptyGrid = Grid(version=VER_3_0, columns={"empty": {}})
 
@@ -417,3 +421,44 @@ def get_provider(class_str) -> HaystackInterface:
         return _providers[class_str]
     except (ImportError, AttributeError):
         raise ImportError(class_str)  # pylint: disable=raise-missing-from
+
+
+_singleton_provider = None
+
+
+def get_singleton_provider() -> HaystackInterface:
+    global _singleton_provider
+    assert (
+            "HAYSTACK_PROVIDER" in os.environ
+    ), "Set 'HAYSTACK_PROVIDER' environment variable"
+    if not _singleton_provider:
+        log.debug("Provider=%s", os.environ["HAYSTACK_PROVIDER"])
+        _singleton_provider = get_provider(os.environ["HAYSTACK_PROVIDER"])
+    return _singleton_provider
+
+
+def parse_date_range(date_range: str) -> Optional[
+    Union[
+        Union[datetime, str],
+        Tuple[datetime, Optional[datetime]],
+        Tuple[date, Optional[date]],
+    ]
+]:
+    if not date_range:
+        return None
+    if date_range not in ("today", "yesterday"):
+        split_date = [parse_date_format(x) for x in date_range.split(",")]
+        if len(split_date) > 1:
+            assert type(split_date[0]) == type(  # pylint: disable=C0123
+                split_date[1]
+            )
+            return tuple(split_date)
+        else:
+            if isinstance(split_date[0], datetime):
+                split_date.append(None)
+                return tuple(split_date)
+            else:
+                return split_date[0]
+    else:
+        pass  # TODO: today,yesteray
+    return None

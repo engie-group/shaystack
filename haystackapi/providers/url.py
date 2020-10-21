@@ -31,14 +31,15 @@ from datetime import datetime, MAXYEAR, MINYEAR, timedelta
 from io import BytesIO
 from pathlib import Path
 from threading import Lock
-from typing import Optional, Union, Tuple, Dict, Any
+from typing import Optional, Union, Tuple, Dict, Any, Set
 from urllib.parse import urlparse, ParseResult
 
 import pytz
 from overrides import overrides
 
 import hszinc
-from hszinc import Grid, suffix_to_mode, Ref
+from hszinc import Grid, suffix_to_mode, Ref, MetadataObject
+from hszinc.sortabledict import SortableDict
 from .haystack_interface import HaystackInterface
 
 BOTO3_AVAILABLE = False
@@ -71,6 +72,12 @@ class Provider(HaystackInterface):
         self._timer = None
 
     @overrides
+    def values_for_tag(self, tag: str,
+                       date_version: Optional[datetime] = None) -> Set[Any]:
+        grid = self._download_grid(self._get_url(), date_version)
+        return {row[tag] for row in grid.filter(tag)}
+
+    @overrides
     def about(self, home: str) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'about' operation """
         grid = super().about(home)
@@ -88,14 +95,16 @@ class Provider(HaystackInterface):
     def read(
             self,
             limit: int,
+            select: Optional[str],
             entity_ids: Optional[Grid] = None,
             grid_filter: Optional[str] = None,
             date_version: Optional[datetime] = None,
     ) -> Grid:  # pylint: disable=unused-argument
         """ Implement Haystack 'read' """
         log.debug(
-            "----> Call read(limit:%s, ids:%s " "grid_filter:'%s' date_version=%s)",
+            "----> Call read(limit=%s, select='%s', ids=%s grid_filter='%s' date_version=%s)",
             limit,
+            select,
             entity_ids,
             grid_filter,
             date_version,
@@ -107,6 +116,18 @@ class Provider(HaystackInterface):
                 result.append(grid[ref])
         else:
             result = grid.filter(grid_filter, limit if limit else 0)
+        if select:
+            select = select.strip()
+            if select not in ["*", '']:
+                new_cols = SortableDict()
+                selected_columns = select.split(',')
+                for col in selected_columns:
+                    new_cols[col] = MetadataObject()
+                for col, meta in result.column.items():
+                    if col in selected_columns:
+                        new_cols[col] = meta
+                result.column = new_cols
+
         return result
 
     @overrides

@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, date
 from importlib import import_module
-from typing import Any, Tuple, Dict, Union, Optional, List
+from typing import Any, Tuple, Dict, Union, Optional, List, Set
 
 from tzlocal import get_localzone
 
@@ -45,9 +45,17 @@ class HaystackInterface(ABC):
     def __str__(self):
         return self.__repr__()
 
+    def values_for_tag(self, tag: str,
+                       date_version: Optional[datetime] = None) -> Set[Any]:
+        """
+        Return all differents values for a specific tag
+        """
+        raise NotImplementedError()
+
     @abstractmethod
     def about(self, home: str) -> Grid:
-        """Implement the Haystack 'about' ops
+        """
+        Implement the Haystack 'about' ops
         :param home: Home url of the API
         Return the default 'about' grid.
         Must be completed with "productUri", "productVersion", "moduleName" abd "moduleVersion"
@@ -147,11 +155,19 @@ class HaystackInterface(ABC):
     def read(
             self,
             limit: int,
-            entity_ids: Optional[Grid] = None,
-            grid_filter: Optional[str] = None,
-            date_version: Optional[datetime] = None,
+            select: Optional[str],
+            entity_ids: Optional[Grid],
+            grid_filter: Optional[str],
+            date_version: Optional[datetime],
     ) -> Grid:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'read' ops """
+        """
+        Implement the Haystack 'read' ops
+        :param limit: The number of record to return or zero
+        :param select: The selected tag separated with comma, else '' or '*'
+        :param entity_ids: A list en ids. If set, grid_filter and limit are ignored
+        :param grid_filter: A filter to apply. Ignored if entity_ids is set.
+        :param date_version: The date to return of the last version.
+        """
         raise NotImplementedError()
 
     @abstractmethod
@@ -167,28 +183,47 @@ class HaystackInterface(ABC):
             ids: List[Ref],
             lease: Optional[int],
     ) -> Grid:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'watchSub' ops """
+        """
+        Implement the Haystack 'watchSub' ops
+        :param watch_dis: Watch description
+        :param watch_id: The user watch_id to update or None
+        :param ids: The list of ids to watch
+        :param lease: Lease to apply
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def watch_unsub(
             self, watch_id: str, ids: List[Ref], close: bool
     ) -> None:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'watchUnsub' ops """
+        """
+        Implement the Haystack 'watchUnsub' ops
+        :param watch_id: The user watch_id to update or None
+        :param ids: The list of ids to watch
+        :param close: Set to True to close
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def watch_poll(
             self, watch_id: str, refresh: bool
     ) -> Grid:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'watchPoll' ops """
+        """
+        Implement the Haystack 'watchPoll' ops
+        :param watch_id: The user watch_id to update or None
+        :param refresh: Set to True to refresh the data
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def point_write_read(
             self, entity_id: Ref, date_version: Optional[datetime]
     ) -> Grid:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'pointWrite' ops """
+        """
+        Implement the Haystack 'pointWrite' ops
+        :param entity_id: The entity to update
+        :param date_version: The optional date version to update
+        """
         raise NotImplementedError()
 
     @abstractmethod
@@ -201,7 +236,15 @@ class HaystackInterface(ABC):
             who: Optional[str],
             date_version: Optional[datetime],
     ) -> None:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'pointWrite' ops """
+        """
+        Implement the Haystack 'pointWrite' ops
+        :param entity_id: The entity to update
+        :param level: Number from 1-17 for level to write
+        :param val: Value to write or null to auto the level
+        :param who: Optional username performing the write, otherwise user dis is used
+        :param duration: Number with duration unit if setting level 8
+        :param date_version: The optional date version to update
+        """
         raise NotImplementedError()
 
     # Date dates_range must be:
@@ -224,21 +267,41 @@ class HaystackInterface(ABC):
             ],
             date_version: Optional[datetime],
     ) -> Grid:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'hisRead' ops """
+        """
+        Implement the Haystack 'hisRead' ops
+        :param entity_id: The entity to read
+        :param dates_range: The date range.
+        May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}), {dateTime}
+        :param date_version: The optional date version to update
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def his_write(
-            self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime]
+            self, entity_id: Ref, time_serie: Grid,
+            date_version: Optional[datetime]
     ) -> Grid:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'hisWrite' ops """
+        """
+        Implement the Haystack 'hisWrite' ops
+        :param entity_id: The entity to read
+        :param time_serie: A grid with a time series
+        :param date_version: The optional date version to update
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def invoke_action(
-            self, entity_id: Ref, action: str, params: Dict[str, Any]
+            self, entity_id: Ref, action: str, params: Dict[str, Any],
+            date_version: Optional[datetime]
+
     ) -> Grid:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'invokeAction' ops """
+        """
+        Implement the Haystack 'invokeAction' ops
+        :param entity_id: The entity to read
+        :param action: The action string
+        :param params: A dictionary with parameters
+        :param date_version: The optional date version to update
+        """
         raise NotImplementedError()
 
 
@@ -274,12 +337,13 @@ def get_provider(class_str) -> HaystackInterface:
             def read(
                     self,
                     limit: int,
+                    select: Optional[str],
                     entity_id: Optional[Grid],
                     grid_filter: Optional[str],
                     date_version: Optional[datetime],
             ) -> Grid:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().read(limit, entity_id, grid_filter, date_version)
+                return super().read(limit, select, entity_id, grid_filter, date_version)
 
             def nav(self, nav_id: str) -> Any:
                 # pylint: disable=missing-function-docstring,useless-super-delegation

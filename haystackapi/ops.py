@@ -384,7 +384,7 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     try:
         provider = _get_provider()
         grid_request = _parse_body(request)
-        read_ids = read_filter = date_version = None
+        read_ids = select = read_filter = date_version = None
         limit = 0
         if grid_request:
             if "id" in grid_request.column:
@@ -394,8 +394,10 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                     read_filter = grid_request[0].get("filter", "")
                 else:
                     read_filter = ""
-            if "limit" in grid_request.column:
-                limit = int(grid_request[0].get("limit", 0))
+                if "limit" in grid_request.column:
+                    limit = int(grid_request[0].get("limit", 0))
+            if "select" in grid_request.column:
+                select = grid_request[0].get("select", "*")
             date_version = (
                 grid_request[0].get("version", None) if grid_request else None
             )
@@ -411,19 +413,22 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                     read_filter = args["filter"]
                 if "limit" in args:
                     limit = int(args["limit"])
+            if "select" in args:
+                select = args["select"]
             if "version" in args:
                 date_version = parse_date_format(args["version"].split(" "))
 
         if read_ids is None and read_filter is None:
             raise ValueError("'id' or 'filter' must be set")
         log.debug(
-            "id=%s filter=%s limit=%s, date_version=%s",
+            "id=%s select='%s' filter='%s' limit=%s, date_version=%s",
             read_ids,
+            select,
             read_filter,
             limit,
             date_version,
         )
-        grid_response = provider.read(limit, read_ids, read_filter, date_version)
+        grid_response = provider.read(limit, select, read_ids, read_filter, date_version)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except

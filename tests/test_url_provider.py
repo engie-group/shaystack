@@ -6,7 +6,7 @@ import pytz
 import hszinc
 from haystackapi import get_provider, Ref
 from haystackapi.providers.url import Provider
-from hszinc import Grid, VER_3_0, MODE_ZINC
+from hszinc import Grid, VER_3_0, MODE_ZINC, MetadataObject
 
 
 def _get_mock_s3():
@@ -37,6 +37,18 @@ def _get_mock_s3():
     return MockS3()
 
 
+@patch.object(Provider, '_get_url')
+@patch.object(Provider, '_s3')
+def test_values_for_tag(mock_s3, mock_get_url):
+    mock_s3.return_value = _get_mock_s3()
+    mock_get_url.return_value = "s3://bucket/grid.zinc"
+    provider = get_provider("haystackapi.providers.url")
+    result = provider.values_for_tag("col")
+    assert result == {1.0, 2.0}
+    result = provider.values_for_tag("id")
+    assert result == {Ref("id1"), Ref("id2")}
+
+
 def test_ops():
     try:
         provider = get_provider("haystackapi.providers.url")
@@ -62,7 +74,7 @@ def test_read_last_without_filter(mock_s3, mock_get_url):
         mock_s3.return_value = _get_mock_s3()
         mock_get_url.return_value = "s3://bucket/grid.zinc"
         provider = get_provider("haystackapi.providers.url")
-        result = provider.read(0, None, None, None)
+        result = provider.read(0, None, None, None, None)
         assert result.metadata["v"] == "last"
     finally:
         provider.cancel()
@@ -76,7 +88,7 @@ def test_read_version_without_filter(mock_s3, mock_get_url):
         mock_get_url.return_value = "s3://bucket/grid.zinc"
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
         provider = get_provider("haystackapi.providers.url")
-        result = provider.read(0, None, None, date_version=version_2)
+        result = provider.read(0, None, None, None, date_version=version_2)
         assert result.metadata["v"] == "2"
     finally:
         provider.cancel()
@@ -90,10 +102,24 @@ def test_read_version_with_filter(mock_s3, mock_get_url):
         mock_get_url.return_value = "s3://bucket/grid.zinc"
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
         provider = get_provider("haystackapi.providers.url")
-        result = provider.read(0, None, "id==@id1", version_2)
+        result = provider.read(0, None, None, "id==@id1", version_2)
         assert result.metadata["v"] == "2"
         assert len(result) == 1
         assert result[0]['id'] == Ref("id1")
+    finally:
+        provider.cancel()
+
+
+@patch.object(Provider, '_get_url')
+@patch.object(Provider, '_s3')
+def test_read_version_with_filter(mock_s3, mock_get_url):
+    try:
+        mock_s3.return_value = _get_mock_s3()
+        mock_get_url.return_value = "s3://bucket/grid.zinc"
+        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
+        provider = get_provider("haystackapi.providers.url")
+        result = provider.read(0, "id,other", None, "id==@id1", version_2)
+        assert result.column == {"id": MetadataObject(), "other": MetadataObject()}
     finally:
         provider.cancel()
 
@@ -106,7 +132,7 @@ def test_read_version_with_ids(mock_s3, mock_get_url):
         mock_get_url.return_value = "s3://bucket/grid.zinc"
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
         provider = get_provider("haystackapi.providers.url")
-        result = provider.read(0, [Ref("id1")], None, version_2)
+        result = provider.read(0, None, [Ref("id1")], None, version_2)
         assert result.metadata["v"] == "2"
         assert len(result) == 1
         assert result[0]['id'] == Ref("id1")

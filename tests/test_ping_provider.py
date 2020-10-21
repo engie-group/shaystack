@@ -15,5 +15,5 @@ def test_about():
 
 def test_read():
     provider = get_provider("haystackapi.providers.ping")
-    result = provider.read(0, None, None, None)
+    result = provider.read(0, None, None, None, None)
     assert len(result) == 0

@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 import os
 from datetime import datetime
-from typing import Tuple, Any, Dict, Union, Optional, List
+from typing import Tuple, Any, Dict, Union, Optional, List, Set
 
 from overrides import overrides
 
@@ -24,6 +24,11 @@ PingGrid = Grid(
 
 class Provider(HaystackInterface):
     """ Simple provider to implement all Haystack operation """
+
+    @overrides
+    def values_for_tag(self, tag: str,
+                       date_version: Optional[datetime]) -> Set[Any]:
+        return ["value1", "value2"]
 
     @overrides
     def about(self, home: str) -> Grid:  # pylint: disable=no-self-use
@@ -46,14 +51,16 @@ class Provider(HaystackInterface):
     def read(
             self,
             limit: int,
+            select: Optional[str],
             entity_ids: Optional[Grid] = None,
             grid_filter: Optional[str] = None,
             date_version: Optional[datetime] = None,
     ) -> Grid:  # pylint: disable=no-self-use
         """ Return EmptyGrid """
-        log.info(
-            "read(limit=%s, ids=%s " 'filter="%s", date_version=%s)',
+        log.debug(
+            "read(limit=%s, select='%s', ids=%s grid_filter='%s' date_version=%s)",
             limit,
+            select,
             entity_ids,
             grid_filter,
             date_version,
@@ -141,10 +148,12 @@ class Provider(HaystackInterface):
 
     @overrides
     def invoke_action(
-            self, entity_id: Ref, action: str, params: Dict[str, Any]
+            self, entity_id: Ref, action: str, params: Dict[str, Any],
+            date_version: Optional[datetime]
     ) -> Grid:  # pylint: disable=no-self-use
         """ Return EmptyGrid """
         log.info(
-            'invoke_action(id=%s,action="%s",params=%s)', entity_id, action, params
+            'invoke_action(id=%s,action="%s",params=%s, date_version=%s)',
+            entity_id, action, params, date_version
         )
         return PingGrid

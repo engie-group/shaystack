@@ -6,294 +6,166 @@ import logging
 import os
 import sys
 from datetime import datetime
-from functools import partial
-from pathlib import Path
 from typing import Optional, List
 
 import click
 import graphene
-from graphene import Scalar, Node
 from graphql.language import ast
 
 import hszinc
 from haystackapi.providers.haystack_interface import get_singleton_provider, parse_date_range
-from hszinc import Ref, MODE_JSON
+from hszinc import Ref
+
+BOTO3_AVAILABLE = False
+try:
+    import boto3
+    from botocore.client import BaseClient
+
+    BOTO3_AVAILABLE = True
+except ImportError:
+    pass
 
 log = logging.getLogger("haystackapi")
 log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
 
-class _HSKind(Scalar):
-    serialize = partial(hszinc.dump_scalar, mode=hszinc.MODE_JSON, version=hszinc.VER_3_0)
+# TODO: voir la batch approche
+# PPR: autre modèle possible, retourner un JSon, valide partout
+# WARNING: At this time only public endpoints are supported by AWS AppSync
 
+# Alias of AWS scalar type (see https://docs.aws.amazon.com/appsync/latest/devguide/scalars.html)
+class AWSDate(graphene.Date):
+    pass
+
+
+class AWSTime(graphene.Time):
+    pass
+
+
+class AWSDateTime(graphene.DateTime):
+    pass
+
+
+# class AWSTimestamp(graphene.String):
+#     pass
+
+
+class AWSJSON(graphene.JSONString):
+    pass
+
+
+class AWSURL(graphene.String):
+    pass
+
+
+class AWSPhone(graphene.String):
+    pass
+
+
+class AWSIPAddress(graphene.String):
+    pass
+
+
+# ---------------
+# AWS Scalar : https://docs.aws.amazon.com/appsync/latest/devguide/scalars.html
+# TODO: utiliser les parametres dans l'URL en plus du POST ?
+# Dans Zappa, il faut ajouter un handler Voir page 320
+# pour voir le event envoyé à la lambda par AppSync.
+# Il faut probablement ajouter un handler spécifique.
+# Voir page 317 https://docs.aws.amazon.com/appsync/latest/devguide/appsync-dg.pdf
+class HSScalar(graphene.Scalar):
+    '''Haystack Scalar'''
+
+    class Meta:
+        name = "AWSJSON" if BOTO3_AVAILABLE else "JSONString"
+
+    @staticmethod
+    def serialize(hs_scalar):
+        return hszinc.dump_scalar(hs_scalar, hszinc.MODE_JSON, version=hszinc.VER_3_0)
+
+    @staticmethod
     # Parse from AST See https://tinyurl.com/y3fr76a4
-    def parse_literal(node: Node):
+    def parse_literal(node):
         if isinstance(node, ast.StringValue):  # FIXME
-            return hszinc.dump_scalar(ast.value, mode=hszinc.MODE_JSON, version=hszinc.VER_3_0)
+            return f"node={node}"
 
+    @staticmethod
     # Parse form json
-    # FIXME parse_value = partial(hszinc.dump_scalar, mode=hszinc.MODE_JSON, version=hszinc.VER_3_0)
     def parse_value(value):
         return f"parse_value={value}"  # FIXME
 
 
-class HSMarker(_HSKind):
-    class Meta:
-        description = "Haystack marker"
-
-
-class HSBool(_HSKind):
-    class Meta:
-        description = "Haystack bool"
-
-
-class HSNA(_HSKind):
-    class Meta:
-        description = "Haystack NA"
-
-
-class HSNumber(_HSKind):
-    class Meta:
-        description = "Haystack Number with unit"
-
-
-class HSStr(graphene.String):
-    class Meta:
-        description = "Haystack str"
-
-
-class HSUri(_HSKind):
-    class Meta:
-        description = "Haystack uri"
-
-
-class HSRef(_HSKind):
-    class Meta:
-        description = "Haystack reference"
-
-
-class HSBin(_HSKind):
-    class Meta:
-        description = "Haystack bin"
-
-
-class HSDate(_HSKind):
-    class Meta:
-        description = "Haystack date"
-
-
-class HSTime(_HSKind):
-    class Meta:
-        description = "Haystack time"
-
-
-class HSDateTime(_HSKind):
-    class Meta:
-        description = "Haystack DateTime"
-
-
-class HSCoord(_HSKind):
-    class Meta:
-        description = "Haystack Coord"
-
-
-class HSXStr(_HSKind):
-    class Meta:
-        description = "Haystack XStr"
-
-
-class HSList(graphene.JSONString):
-    class Meta:
-        description = "Haystack List"
-
-
-class HSDict(graphene.JSONString):
-    class Meta:
-        description = "Haystack dict"
-
-
-class HSGrid(graphene.JSONString):
-    class Meta:
-        description = "Haystack grid"
-
-
-# class XEntity(graphene.ObjectType):
-#     id = graphene.Field(HSRef)
-#     site = graphene.Field(HSMarker)
-#     dis = graphene.String()
-#     toto = graphene.Field(_HSKind)
-
-
-def _hskind_to_grafene(kind: str) -> str:
-    kind = kind.lower()
-    if kind == "marker":
-        return "graphene.Field(HSMarker)"
-    if kind == "bool":
-        return "graphene.Field(HSBool)"
-    if kind == "na":
-        return "graphene.Field(HSNA)"
-    if kind == "number":
-        return "graphene.Field(HSNumber)"
-    if kind == "str":
-        return "graphene.String()"
-    if kind == "uri":
-        return "graphene.Field(HSUri)"
-    if kind == "ref":
-        return "graphene.Field(HSRef)"
-    if kind == "bin":
-        return "graphene.Field(HSBin)"
-    if kind == "date":
-        return "graphene.Field(HSDate)"
-    if kind == "time":
-        return "graphene.Field(HSTime)"
-    if kind == "datetime":
-        return "graphene.Field(HSDateTime)"
-    if kind == "coord":
-        return "graphene.Field(HSCoord)"
-    if kind == "xstr":
-        return "graphene.Field(HSXStr)"
-    if kind == "list":
-        return "graphene.Field(HSList)"
-    if kind == "dict":
-        return "graphene.Field(HSDict)"
-    if kind == "grid":
-        return "graphene.Field(HSGrid)"
-    if kind == "obj":
-        return "graphene.Field(_HSKind)"
-    assert False, f"Invalid {kind}"
-
-
-# FIXME: voir import
-def reserve_word(col: str) -> str:
-    if col in ("import", "def", "if", "return"):  # FIXME
-        col = col + "_"
-
-
-def generate_entity_from_schema(filename: Path):
-    # Dynamically generate class Entity from Haystack schema
-    with open(filename) as f:
-        schema = hszinc.parse(f.read(), MODE_JSON)
-    body = [f"\t{col} = {_hskind_to_grafene(meta['kind'])}" for col, meta in schema.column.items()]
-    entity_source_code = """
-class Entity(graphene.ObjectType):
-\tclass Meta:
-\t\tdescription="Haystack haystack entity conform with a specific schema"
-\t""" + "\n".join(body)
-    # print(entity_source_code)
-    exec(entity_source_code, globals(), locals())
-    return locals()['Entity']
-
-
-Entity = generate_entity_from_schema(Path(os.environ["GRAPHQL_SCHEMA"]))
-
-
-class About(graphene.ObjectType):
-    class Meta:
-        description = "Result of 'about' haystack operation"
-
-    haystackVersion = graphene.String(required=True)  # TODO: auto require pour les HSType ?
-    tz = graphene.String(required=True)
-    serverName = graphene.String(required=True)
-    serverTime = graphene.Field(graphene.NonNull(HSTime))
-    serverBootTime = graphene.Field(graphene.NonNull(HSTime))
-    productName = graphene.String(required=True)
-    productUri = graphene.Field(graphene.NonNull(HSUri))
-    productVersion = graphene.String(required=True)
-    moduleName = graphene.String(required=True)
-    moduleVersion = graphene.String(required=True)
-
-
-class Ops(graphene.ObjectType):
-    class Meta:
-        description = "Result of 'ops' haystack operation"
-
+# TODO: ajouter un filter sur le name ? name(q="site") ?
+class HSTag(graphene.ObjectType):
+    # FIXME: Add primary key to auto-save ?
     name = graphene.String()
-    summary = graphene.String()
+    value = graphene.Field(HSScalar)
 
 
-class TS(graphene.ObjectType):
-    class Meta:
-        description = "Result of 'hisRead' haystack operation"
-
-    date = graphene.Field(HSDateTime)
-    val = graphene.Field(HSNumber)
-
-
-class PointWrite(graphene.ObjectType):
-    class Meta:
-        description = "Result of 'pointWrite' haystack operation"
-
-    level = graphene.Int()
-    levelDis = graphene.String()
-    val = graphene.Field(HSNumber)
-    who = graphene.String()
-
-
-# TODO: WriteHaystack avec point_write_write et his_write
-
+# TODO: voir l'approche Batch
 class ReadHaystack(graphene.ObjectType):
     class Meta:
-        description = 'Request an ontology conform with the Haystack project'
+        description = 'Ontology conform with Haystack project'
         name = "Haystack"
 
+    # TODO: values_for_tag
     about = graphene.List(
-        graphene.NonNull(About),
+        graphene.NonNull(graphene.List(graphene.NonNull(HSTag))),
     )
 
     ops = graphene.List(
-        graphene.NonNull(Ops),
+        graphene.NonNull(graphene.List(graphene.NonNull(HSTag))),
     )
 
+    # TODO: voir comment en faire une classe et réorganiser le code
+    # TODO: proxy Appsync https://stackoverflow.com/questions/60361326/proxy-request-to-graphql-server-through-aws-appsync
+    # TODO: wrapper all values for tag
     read = graphene.List(
-        graphene.NonNull(Entity),
+        graphene.NonNull(graphene.List(graphene.NonNull(HSTag))),
         ids=graphene.List(graphene.ID),
+        select=graphene.String(default_value='*'),
         filter=graphene.String(default_value=''),
         limit=graphene.Int(default_value=0),
-        version=HSDateTime()
+        version=HSScalar()
     )
 
     his_read = graphene.List(
-        graphene.NonNull(TS),
-        id=graphene.ID(),
+        graphene.NonNull(graphene.List(graphene.NonNull(HSTag))),
+        id=graphene.ID(required=True),
         dates_range=graphene.String(),
-        version=HSDateTime()
+        version=HSScalar()
     )
 
     point_write = graphene.List(
-        graphene.NonNull(PointWrite),
-        id=graphene.ID(),
-        version=HSDateTime()
+        graphene.NonNull(graphene.List(graphene.NonNull(HSTag))),
+        id=graphene.ID(required=True),
+        version=HSScalar()
     )
 
     @staticmethod
     def resolve_about(parent, info):
         log.debug(f"resolve_about(parent,info)")
         grid = get_singleton_provider().about("dev")  # FIXME: dev
-        return ReadHaystack._conv_to_object_type(About, grid)
+        return [[HSTag(name, val) for name, val in entity.items()] for entity in grid]
 
     @staticmethod
     def resolve_ops(parent, info):
         log.debug(f"resolve_about(parent,info)")
         grid = get_singleton_provider().ops()
-        return ReadHaystack._conv_to_object_type(Ops, grid)
+        return [[HSTag(name, val) for name, val in entity.items()] for entity in grid]
 
     @staticmethod
     def resolve_read(parent, info,
                      ids: Optional[List[str]] = None,
+                     select: str = '*',
                      filter: str = '',
                      limit: int = 0,
                      version: Optional[datetime] = None):
-        log.debug(f"resolve_haystack(parent,info,ids={ids}, filter={filter}, limit={limit}, datetime={datetime})")
-        # Extraction des fields à récuperer
-        field_selected = [field.name.value for field in info.field_asts[0].selection_set.selections]
-        # FIXME: modifier type de select pour avoir directement un liste ?
-        select = ",".join(field_selected)
+        log.debug(f"resolve_haystack(parent,info,ids={ids}, query={filter}, limit={limit}, datetime={datetime})")
         if ids:
             ids = [Ref(ReadHaystack._filter_id(id)) for id in ids]
         grid = get_singleton_provider().read(limit, select, ids, filter, version)
-        # FIXME: normalement Entity(**grid[0])
-        # return [ Entity(*row) for row in grid]
-        return ReadHaystack._conv_to_object_type(Entity, grid)
+        return [[HSTag(name, val) for name, val in entity.items()] for entity in grid]
 
     @staticmethod
     def resolve_his_read(parent, info,
@@ -303,17 +175,18 @@ class ReadHaystack(graphene.ObjectType):
         log.debug(f"resolve_his_read(parent,info,id={id}, range={range}, datetime={datetime})")
         ref = Ref(ReadHaystack._filter_id(id))
         grid_date_range = parse_date_range(dates_range)
-        grid_ts = get_singleton_provider().his_read(ref, grid_date_range, version)
-        return ReadHaystack._conv_to_object_type(TS, grid_ts)
+        grid = get_singleton_provider().his_read(ref, grid_date_range, version)
+        # FIXME: format des TS
+        return [[HSTag(name, val) for name, val in entity.items()] for entity in grid]
 
     @staticmethod
     def resolve_point_write(parent, info,
                             id: str,
                             version: Optional[datetime] = None):
-        log.debug(f"resolve_point_write(parent,info, id={id}, version={version})")
+        log.debug(f"resolve_point_write(parent,info, {id})")
         ref = Ref(ReadHaystack._filter_id(id))
         grid = get_singleton_provider().point_write_read(ref, version)
-        return ReadHaystack._conv_to_object_type(PointWrite, grid)
+        return [[HSTag(name, val) for name, val in entity.items()] for entity in grid]
 
     @staticmethod
     def _filter_id(id: str) -> str:
@@ -322,17 +195,6 @@ class ReadHaystack(graphene.ObjectType):
         if id.startswith('@'):
             return id[1:]
         return id
-
-    @staticmethod
-    def _conv_to_object_type(cls, grid):
-        result = []
-        for row in grid:
-            entity = cls()
-            for key, val in row.items():
-                if key in entity.__dict__:
-                    entity.__setattr__(key, val)
-            result.append(entity)
-        return result
 
 
 def _dump_haystack_schema():

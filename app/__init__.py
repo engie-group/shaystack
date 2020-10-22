@@ -6,22 +6,38 @@ import sys
 
 import click
 
-from app.blueprint_graphql import graphql_blueprint
-
 try:
     from flask import Flask, send_from_directory
 except ImportError:
-    print("To start haystackapi, use")
-    print("pip install \"haystackapi[flask]\"")
-    print("and set HAYSTACK_PROVIDER variable")
-    print("HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi")
+    # FIXME
+    print("""
+To start haystackapi, use
+pip install "haystackapi[flask]"
+or
+pip install "haystackapi[flask,graphql]"
+and set HAYSTACK_PROVIDER variable
+HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi
+""", file=sys.stderr)
     sys.exit(-1)
+
+USE_GRAPHQL = False
+try:
+    import graphene
+    from app.blueprint_graphql import graphql_blueprint
+
+    USE_GRAPHQL = True
+except ImportError:
+    print("""
+To use GraphQL,use
+pip install "haystackapi[flask,graphql]"  
+""", file=sys.stderr)
 
 from app.blueprint_haystack import haystack_blueprint as haystack_blueprint
 
 app = Flask(__name__)
 app.register_blueprint(haystack_blueprint)
-app.register_blueprint(graphql_blueprint)
+if USE_GRAPHQL:
+    app.register_blueprint(graphql_blueprint)
 
 
 @app.route('/')

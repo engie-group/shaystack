@@ -314,6 +314,29 @@ async-stop-api:
 	@[ -e .start/start-api.pid ] && kill `cat .start/start-api.pid` || true && echo -e "$(green)Local API stopped$(normal)"
 	rm -f .start/start-api.pid
 
+# -------------------------------------- GraphQL
+.PHONY: graphql-schema-schema graphql-schema
+## Print only haystack graphql schema to inject somewhere
+graphql-hs-schema:
+	@$(VALIDATE_VENV)
+	@python app/graphql_model.py
+
+## Print full haystack graphql schema
+graphql-schema:
+	@$(VALIDATE_VENV)
+	@python app/blueprint_graphql.py
+
+## Print GraphQL API url
+graphql-api:
+	@echo "http://localhost:3000/graphql/
+
+graphql-api-%:
+	@$(VALIDATE_VENV)
+	curl \
+		-X POST \
+		-H "Content-Type: application/json" \
+		--data '{ "query": "{ haystack { about { name } } }" }' \
+		http://localhost:3000/graphql/
 
 # -------------------------------------- Minio
 # https://min.io/
@@ -412,6 +435,10 @@ endif
 ## Print AWS API URL
 aws-api: aws-update-token
 	@echo $(AWS_API_HOME)
+
+## Print GraphQL API url
+aws-graphql-api: aws-update-token
+	@echo $(AWS_API_HOME)/graphql/
 
 .PHONY: aws-api-*
 ## Call AWS api (ie. aws-api-about)

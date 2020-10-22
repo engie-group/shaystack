@@ -172,6 +172,7 @@ class HaystackInterface(ABC):
         :param grid_filter: A filter to apply. Ignored if entity_ids is set.
         :param date_version: The date to return of the last version.
         """
+        # PPR: Add nextToken to paginate ?
         raise NotImplementedError()
 
     @abstractmethod

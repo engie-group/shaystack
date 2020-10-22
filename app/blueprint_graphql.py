@@ -39,9 +39,12 @@ gr_view = GraphQLView.as_view(
     schema=schema,
     graphiql=True,
 )
+# FIXME: il faut régler le pb avec les OPTIONS sur GraphQL.
+# Pb avec https://lucasconstantino.github.io/graphiql-online/
+# avec https://countries.trevorblades.com/
 # gr_view.provide_automatic_options = False
 # gr_view.methods=['GET', 'OPTIONS']
-graphql_blueprint.add_url_rule('/',
+graphql_blueprint.add_url_rule('',
                                view_func=gr_view)
 
 

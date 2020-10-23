@@ -116,19 +116,25 @@ class Provider(HaystackInterface):
                 result.append(grid[ref])
         else:
             result = grid.filter(grid_filter, limit if limit else 0)
+        return self.select_grid(result, select)
+
+    @staticmethod
+    def select_grid(grid, select) -> Grid:
         if select:
             select = select.strip()
             if select not in ["*", '']:
+                new_grid = Grid(version=grid.version, columns=grid.column, metadata=grid.metadata)
                 new_cols = SortableDict()
-                selected_columns = select.split(',')
-                for col in selected_columns:
+                for col in select.split(','):
                     new_cols[col] = MetadataObject()
-                for col, meta in result.column.items():
-                    if col in selected_columns:
+                for col, meta in grid.column.items():
+                    if col in new_cols:
                         new_cols[col] = meta
-                result.column = new_cols
-
-        return result
+                new_grid.column = new_cols
+                for row in grid:
+                    new_grid.append({key: val for key, val in row.items() if key in new_cols})
+                return new_grid
+        return grid
 
     @overrides
     def his_read(
@@ -240,11 +246,20 @@ class Provider(HaystackInterface):
             return gzip.decompress(data)
         return data
 
-    def _periodic_refresh_versions(self, parsed_uri: ParseResult):
+    def _periodic_refresh_versions(self, parsed_uri: ParseResult, first_time: bool):
         """ Refresh list of versions """
         # Refresh at a rounded period, then all cloud instances refresh data at the same time.
+        now = datetime.utcnow()
+        next_time = now.replace(minute=0, second=0) + timedelta(
+            minutes=(now.minute + PERIODIC_REFRESH)
+                    // PERIODIC_REFRESH
+                    * PERIODIC_REFRESH
+        )
+        assert next_time > now
         if parsed_uri.scheme == "s3":
             assert BOTO3_AVAILABLE, "Use 'pip install boto3'"
+            # FIXME: tester
+            start_of_current_period = next_time - timedelta(minutes=PERIODIC_REFRESH)
             s3_client = self._s3()
             obj_versions = [
                 (v["LastModified"], v["VersionId"])
@@ -253,31 +268,30 @@ class Provider(HaystackInterface):
                 )["Versions"]
             ]
             self._lock.acquire()
-            url_version = self._versions.get(parsed_uri.geturl(), OrderedDict())
+            all_versions = self._versions.get(parsed_uri.geturl(), OrderedDict())
             for date_version, version_id in obj_versions:
-                if date_version not in url_version:
-                    url_version[date_version] = (version_id, None)  # Add a slot
-            self._versions[parsed_uri.geturl()] = url_version
+                if date_version not in all_versions:
+                    # Purge refresh during current period. Then, all AWS instance see the
+                    # same data and wait the end of the current period to refresh.
+                    # Else, it's may be possible to have two different versions if an
+                    # new AWS Lambda instance was created after an updated version.
+                    if not first_time or date_version < start_of_current_period:
+                        all_versions[date_version] = (version_id, None)  # Add a slot
+            self._versions[parsed_uri.geturl()] = all_versions
             self._lock.release()
         else:
             self._versions[parsed_uri.geturl()] = {datetime.min: ("", None)}
+
         if PERIODIC_REFRESH:
-            now = datetime.utcnow()
-            next_time = now.replace(minute=0, second=0) + timedelta(
-                minutes=(now.minute + PERIODIC_REFRESH)
-                        // PERIODIC_REFRESH
-                        * PERIODIC_REFRESH
-            )
-            assert next_time > now
             partial_refresh = functools.partial(
-                self._periodic_refresh_versions, self, parsed_uri
+                self._periodic_refresh_versions, parsed_uri, False
             )
             self._timer = threading.Timer((next_time - now).seconds, partial_refresh)
             self._timer.start()
 
     def _refresh_versions(self, parsed_uri: ParseResult):
         if not PERIODIC_REFRESH or parsed_uri.geturl() not in self._versions:
-            self._periodic_refresh_versions(parsed_uri)
+            self._periodic_refresh_versions(parsed_uri, True)
 
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
         parsed_uri = urlparse(uri, allow_fragments=False)

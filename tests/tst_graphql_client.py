@@ -2,7 +2,7 @@ import json
 
 from graphqlclient import GraphQLClient
 
-client = GraphQLClient('http://localhost:3000/graphql/')
+client = GraphQLClient('http://localhost:3000/graphql')
 
 result = client.execute('''
 query
@@ -10,32 +10,10 @@ query
     # haystack(select: "id,dis"ids: ["@customer-913"])
     haystack 
     {
-        about 
-        {
-            name
-            value
-        }
-#         ops 
-#         {
-#             name
-#             value
-#         }
-#         read(select: "id,dis" filter: "id", limit: 2)
-# #        read
-#         { 
-#             name
-#             value
-#         }
-#         hisRead(id:"@elec-16514")
-#         {
-#             name
-#             value
-#         }
-#         pointWrite(id:"@elec-16514")
-#         {
-#             name
-#             value
-#         }
+        ops
+        read(select: "id,dis" filter: "id", limit: 2)
+        hisRead(id:"@elec-16514")
+        pointWrite(id:"@elec-16514")
     }
 }
 ''')

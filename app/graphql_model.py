@@ -2,6 +2,7 @@
 Model to inject a another graphene model, to manage the haystack layer.
 See the blueprint_graphql to see how to integrate this part of global GraphQL model.
 """
+import json
 import logging
 import os
 import sys
@@ -10,6 +11,7 @@ from typing import Optional, List
 
 import click
 import graphene
+from graphene import Scalar
 from graphql.language import ast
 
 import hszinc
@@ -34,36 +36,58 @@ log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 # WARNING: At this time only public endpoints are supported by AWS AppSync
 
 # Alias of AWS scalar type (see https://docs.aws.amazon.com/appsync/latest/devguide/scalars.html)
-class AWSDate(graphene.Date):
-    pass
-
-
-class AWSTime(graphene.Time):
-    pass
-
-
-class AWSDateTime(graphene.DateTime):
-    pass
-
-
-# class AWSTimestamp(graphene.String):
+# class AWSDate(graphene.Date):
+#     pass
+#
+#
+# class AWSTime(graphene.Time):
+#     pass
+#
+#
+# class AWSDateTime(graphene.DateTime):
+#     pass
+#
+#
+# # class AWSTimestamp(graphene.String):
+# #     pass
+#
+#
+# class AWSJSON(graphene.JSONString):
+#     pass
+#
+#
+# class AWSURL(graphene.String):
+#     pass
+#
+#
+# class AWSPhone(graphene.String):
+#     pass
+#
+#
+# class AWSIPAddress(graphene.String):
 #     pass
 
 
-class AWSJSON(graphene.JSONString):
-    pass
+XHSJSON = graphene.JSONString  # FIXME
 
 
-class AWSURL(graphene.String):
-    pass
+class HSJSON(Scalar):
+    class Meta:
+        # name = "AWSJSON" if BOTO3_AVAILABLE else "HSJSON"
+        name = "JSONString"
 
+    @staticmethod
+    def serialize(dt):
+        return json.dumps(dt, default=str)  # FIXME: str
 
-class AWSPhone(graphene.String):
-    pass
+    @staticmethod
+    def parse_literal(node):
+        if isinstance(node, ast.StringValue):
+            return json.loads(node.value)
 
-
-class AWSIPAddress(graphene.String):
-    pass
+    @staticmethod
+    def parse_value(value):
+        return json.loads(value)
 
 
 # ---------------
@@ -95,13 +119,6 @@ class HSScalar(graphene.Scalar):
         return f"parse_value={value}"  # FIXME
 
 
-# TODO: ajouter un filter sur le name ? name(q="site") ?
-class HSTag(graphene.ObjectType):
-    # FIXME: Add primary key to auto-save ?
-    name = graphene.String()
-    value = graphene.Field(HSScalar)
-
-
 # TODO: voir l'approche Batch
 class ReadHaystack(graphene.ObjectType):
     class Meta:
@@ -109,19 +126,19 @@ class ReadHaystack(graphene.ObjectType):
         name = "Haystack"
 
     # TODO: values_for_tag
-    about = graphene.List(
-        graphene.NonNull(graphene.List(graphene.NonNull(HSTag))),
-    )
+    about = graphene.NonNull(HSJSON)
 
-    ops = graphene.List(
-        graphene.NonNull(graphene.List(graphene.NonNull(HSTag))),
-    )
+    # ops = graphene.List(
+    #     graphene.NonNull(graphene.List(graphene.NonNull(graphene.JSONString))),
+    # )
+    ops = graphene.NonNull(HSJSON)
 
     # TODO: voir comment en faire une classe et réorganiser le code
     # TODO: proxy Appsync https://stackoverflow.com/questions/60361326/proxy-request-to-graphql-server-through-aws-appsync
     # TODO: wrapper all values for tag
     read = graphene.List(
-        graphene.NonNull(graphene.List(graphene.NonNull(HSTag))),
+        # graphene.NonNull(graphene.List(graphene.NonNull(HSJSON))),
+        graphene.NonNull(HSJSON),
         ids=graphene.List(graphene.ID),
         select=graphene.String(default_value='*'),
         filter=graphene.String(default_value=''),
@@ -130,14 +147,15 @@ class ReadHaystack(graphene.ObjectType):
     )
 
     his_read = graphene.List(
-        graphene.NonNull(graphene.List(graphene.NonNull(HSTag))),
+        graphene.NonNull(HSJSON),
         id=graphene.ID(required=True),
         dates_range=graphene.String(),
         version=HSScalar()
     )
 
+    # Retourne une liste, car on ne peut pas avoir de paramètres sur les scalar
     point_write = graphene.List(
-        graphene.NonNull(graphene.List(graphene.NonNull(HSTag))),
+        graphene.NonNull(HSJSON),
         id=graphene.ID(required=True),
         version=HSScalar()
     )
@@ -146,13 +164,13 @@ class ReadHaystack(graphene.ObjectType):
     def resolve_about(parent, info):
         log.debug(f"resolve_about(parent,info)")
         grid = get_singleton_provider().about("dev")  # FIXME: dev
-        return [[HSTag(name, val) for name, val in entity.items()] for entity in grid]
+        return grid[0]
 
     @staticmethod
     def resolve_ops(parent, info):
         log.debug(f"resolve_about(parent,info)")
         grid = get_singleton_provider().ops()
-        return [[HSTag(name, val) for name, val in entity.items()] for entity in grid]
+        return grid[0]
 
     @staticmethod
     def resolve_read(parent, info,
@@ -165,7 +183,7 @@ class ReadHaystack(graphene.ObjectType):
         if ids:
             ids = [Ref(ReadHaystack._filter_id(id)) for id in ids]
         grid = get_singleton_provider().read(limit, select, ids, filter, version)
-        return [[HSTag(name, val) for name, val in entity.items()] for entity in grid]
+        return grid
 
     @staticmethod
     def resolve_his_read(parent, info,
@@ -177,7 +195,7 @@ class ReadHaystack(graphene.ObjectType):
         grid_date_range = parse_date_range(dates_range)
         grid = get_singleton_provider().his_read(ref, grid_date_range, version)
         # FIXME: format des TS
-        return [[HSTag(name, val) for name, val in entity.items()] for entity in grid]
+        return grid
 
     @staticmethod
     def resolve_point_write(parent, info,
@@ -186,7 +204,7 @@ class ReadHaystack(graphene.ObjectType):
         log.debug(f"resolve_point_write(parent,info, {id})")
         ref = Ref(ReadHaystack._filter_id(id))
         grid = get_singleton_provider().point_write_read(ref, version)
-        return [[HSTag(name, val) for name, val in entity.items()] for entity in grid]
+        return grid
 
     @staticmethod
     def _filter_id(id: str) -> str:

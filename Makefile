@@ -293,6 +293,7 @@ api-hisRead:
 start-api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	@[ -e .start/start-api.pid ] && $(MAKE) async-stop-api || true
+	echo "$(green)Use http://localhost:3000/graphql or http://localhost:3000/haystack$(normal)"
 	FLASK_DEBUG=1 FLASK_ENV=$(AWS_STAGE) \
 	$(CONDA_PYTHON) -m app.__init__
 

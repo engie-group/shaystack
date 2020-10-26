@@ -1,4 +1,4 @@
-from haystackapi import get_provider
+from haystackapi.providers import get_provider
 
 
 def test_ops_without_implementation():

@@ -3,7 +3,8 @@ from typing import Dict, Any, Optional
 
 from overrides import overrides
 
-from haystackapi import HaystackInterface, Ref
+from haystackapi import Ref
+from haystackapi.providers import HaystackInterface
 from hszinc import Grid
 
 

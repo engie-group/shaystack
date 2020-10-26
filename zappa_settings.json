@@ -2,7 +2,6 @@
   "dev": {
     "profile_name": "haystackapi",
     "aws_region": "us-east-2",
-//    "aws_region": "eu-west-3",
     "app_function": "app.__init__.app",
     "project_name": "alpha-dev-haystackapi",
     "s3_bucket": "alpha-dev-zappa",
@@ -13,7 +12,7 @@
     "aws_environment_variables": {
       "LOGLEVEL": "DEBUG",
       "HAYSTACK_PROVIDER": "haystackapi.providers.url",
-      "HAYSTACK_URL": "s3://alpha-dev-haystack-marriott/marriott.json",
+      "HAYSTACK_URL": "s3://alpha-dev-haystack-marriott/marriott.json.gz"
     } ,
 //    "layers": ["arn:aws:lambda:us-east-2:695980681400:layer:awswrangler-3_8:1"],
     "exclude": [

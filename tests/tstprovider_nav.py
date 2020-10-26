@@ -1,6 +1,7 @@
 from overrides import overrides
 
-from haystackapi import HaystackInterface, Any
+from haystackapi import Any
+from haystackapi.providers import HaystackInterface
 
 
 class Provider(HaystackInterface):

@@ -1,10 +1,10 @@
-from haystackapi import get_provider
+from haystackapi.providers import get_provider
 
 
 def test_ops():
     provider = get_provider("haystackapi.providers.ping")
     result = provider.ops()
-    assert len(result) == 11
+    assert len(result) == 12
 
 
 def test_about():
@@ -16,4 +16,4 @@ def test_about():
 def test_read():
     provider = get_provider("haystackapi.providers.ping")
     result = provider.read(0, None, None, None, None)
-    assert len(result) == 0
+    assert len(result) == 1

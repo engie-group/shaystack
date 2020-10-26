@@ -4,7 +4,8 @@ from unittest.mock import patch
 import pytz
 
 import hszinc
-from haystackapi import get_provider, Ref
+from haystackapi import Ref
+from haystackapi.providers import get_provider
 from haystackapi.providers.url import Provider
 from hszinc import Grid, VER_3_0, MODE_ZINC, MetadataObject
 

@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 import pytz
 from mock import patch
@@ -68,7 +68,7 @@ def test_his_read_with_range_today(mock) -> None:
     response = haystackapi.his_read(request, "dev")
 
     # THEN
-    mock.assert_called_once_with(Ref("1234"), "today", None)
+    mock.assert_called_once_with(Ref("1234"), (date.today(),), None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert hszinc.parse(response.body, mime_type) is not None
@@ -91,7 +91,7 @@ def test_his_read_with_range_yesterday(mock) -> None:
     response = haystackapi.his_read(request, "dev")
 
     # THEN
-    mock.assert_called_once_with(Ref("1234"), "yesterday", None)
+    mock.assert_called_once_with(Ref("1234"), (date.today() - timedelta(days=1),), None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert hszinc.parse(response.body, mime_type) is not None

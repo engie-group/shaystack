@@ -7,7 +7,7 @@ import logging
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from importlib import import_module
 from typing import Any, Tuple, Dict, Union, Optional, List, Set
 
@@ -461,5 +461,9 @@ def parse_date_range(date_range: str) -> Optional[
             else:
                 return split_date[0]
     else:
-        pass  # TODO: today,yesteray
+        if date_range == "today":
+            return (date.today(),)
+        if date_range == "yesterday":
+            return (date.today() - timedelta(days=1),)
+        raise ValueError(f"date_range {date_range} unknown")
     return None

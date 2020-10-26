@@ -249,7 +249,7 @@ class Provider(HaystackInterface):
     def _periodic_refresh_versions(self, parsed_uri: ParseResult, first_time: bool):
         """ Refresh list of versions """
         # Refresh at a rounded period, then all cloud instances refresh data at the same time.
-        now = datetime.utcnow()
+        now = datetime.utcnow().replace(tzinfo=pytz.UTC)
         next_time = now.replace(minute=0, second=0) + timedelta(
             minutes=(now.minute + PERIODIC_REFRESH)
                     // PERIODIC_REFRESH
@@ -259,7 +259,7 @@ class Provider(HaystackInterface):
         if parsed_uri.scheme == "s3":
             assert BOTO3_AVAILABLE, "Use 'pip install boto3'"
             # FIXME: tester
-            start_of_current_period = next_time - timedelta(minutes=PERIODIC_REFRESH)
+            start_of_current_period = (next_time - timedelta(minutes=PERIODIC_REFRESH)).replace(tzinfo=pytz.UTC)
             s3_client = self._s3()
             obj_versions = [
                 (v["LastModified"], v["VersionId"])
@@ -271,12 +271,16 @@ class Provider(HaystackInterface):
             all_versions = self._versions.get(parsed_uri.geturl(), OrderedDict())
             for date_version, version_id in obj_versions:
                 if date_version not in all_versions:
+                    # FIXME: doc si parallele instance >1
                     # Purge refresh during current period. Then, all AWS instance see the
                     # same data and wait the end of the current period to refresh.
                     # Else, it's may be possible to have two different versions if an
                     # new AWS Lambda instance was created after an updated version.
                     if not first_time or date_version < start_of_current_period:
                         all_versions[date_version] = (version_id, None)  # Add a slot
+                    else:
+                        log.warning("Ignore the version '%s' ignore until the next period.\n" +
+                                    "Then, all lambda instance are synchronized.", version_id)
             self._versions[parsed_uri.geturl()] = all_versions
             self._lock.release()
         else:

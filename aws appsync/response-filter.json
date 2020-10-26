@@ -1,0 +1,11 @@
+## Raise a GraphQL field error in case of a datasource invocation error
+#if($ctx.error)
+$util.error($ctx.error.message, $ctx.error.type)
+#end
+#set($body = $util.parseJson($ctx.result.body))
+#set($graphql_result=$body.data)
+#if($body.errors)
+$util.error($util.toJson($body.errors), "ERROR")
+#end
+#set($root=$graphql_result.entrySet().iterator().next().key)
+$util.toJson($graphql_result["$root"])

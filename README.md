@@ -3,6 +3,15 @@
 Haystackapi is a skeleton to implement [ReadHaystack Rest API](https://project-haystack.org/doc/Rest).
 It's compatible with AWS Lambda or Flask server.
 
+## Summary
+This project contains source code and supporting files for a Haystack server application 
+that you can deploy with `make aws-deploy` 
+
+This implementation propose two API endpoint:
+- Classical Haystack API
+- GraphQL API
+
+# Classical Haystack API
 Theses API can negotiate:
 - Request format (`Content-Type: text/zinc`, `application/json` or `text/csv`)
 - Request encoding (`Content-Encoding: gzip`)
@@ -23,22 +32,20 @@ The code implements all ReadHaystack [operations](https://project-haystack.org/d
 - [hisWrite](https://project-haystack.org/doc/Ops#hisWrite)
 - [invokeAction](https://project-haystack.org/doc/Ops#invokeAction)
 
-## Summary
-This project contains source code and supporting files for a ReadHaystack application 
-that you can deploy with `make aws-deploy` 
-
 ## Quick local installation
 ```bash
-pip install haystackapi[flask]`
+pip install haystackapi[flask,graphql]`
 HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi
 ```
 
 ## Deploy server
 - start the api
-    - with flask, `HAYSTACK_PROVIDER='<your provider module> haystackapi`
+    - with flask and Haystack classical API, `HAYSTACK_PROVIDER='<your provider module> haystackapi`
         - `pip install "haystackapi[flask]"`
+    - with flask and Haystack+GraphQL API, `HAYSTACK_PROVIDER='<your provider module> haystackapi`
+        - `pip install "haystackapi[graphql]"`
     - with AWS Lambda
-        - `pip install "haystackapi[lambda]"`
+        - `pip install "haystackapi[graphql,lambda]"`
         - create a file zappa_settings.json with
 ```json
 {
@@ -134,7 +141,7 @@ You can also start API server in background with `make async-start-api` and clos
 
 ```bash
 make async-start-api
-curl http://localhost:3000/about
+curl http://localhost:3000/haystack/about
 ```
 
 ### Invoke local API
@@ -148,6 +155,62 @@ To print the local API URL:
 ```bash
 make api
 ```
+
+### Invoke GraphQL API
+To print the local GraphQL API URL:
+```bash
+make graphql-api
+```
+
+To test the GraphQL API, open this URL with a web browser
+or use a GraphQL Client with this URL.
+
+```GraphQL
+{ haystack {
+    about
+    {
+        haystackVersion
+        tz
+        serverName
+        serverTime
+        serverBootTime
+        productName
+        productUri
+        productVersion
+        moduleName
+        moduleVersion
+    }
+    ops
+    {
+        name
+        summary
+    }
+    read(select: "id,dis" filter: "site", limit: 2)
+    hisRead(id:"@elec-16514")
+    pointWrite(id:"@elec-16514")
+    {
+        level
+        levelDis
+        val
+        who
+    }
+} }
+```
+#### Merge GraphQL API 
+To integrate Haystack GraphQL API inside another GraphQL API,
+- Extract the schema
+```bash
+make graphql-schema
+```
+- Insert this schema without the `Query`
+- In you query, insert a link to app/graphql_model.py!ReadHaystack
+- And deploy your application
+
+#### Use AWS AppSync
+It's possible to une AWS AppSync to integrate the Haystack GraphQL API.
+Read the file `README.md` in the folder `aws appsync`.
+
+
 
 ## Deploy the application on AWS Lambda
 To build and deploy application in AWS, run the following in your shell:

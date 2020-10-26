@@ -2,7 +2,8 @@ from typing import List
 
 from overrides import overrides
 
-from haystackapi import HaystackInterface, Optional, Ref
+from haystackapi import Optional, Ref
+from haystackapi.providers import HaystackInterface
 from hszinc import Grid
 
 

@@ -1,0 +1,73 @@
+#**
+The value of 'payload' after the template has been evaluated
+will be passed as the event to AWS Lambda.
+*#
+#set($resource = "/graphql")
+#set($host = "w1pub81bkc.execute-api.us-east-2.amazonaws.com")
+#set($stage = "dev")
+#set($useragent = "AppSync")
+#set($root = $ctx.info.fieldName)
+##set($brRegex = "")
+##set($imageDescription = $imageDescription.replaceAll($brRegex, " "))`
+
+##set($request = $esc.java( $ctx.info.selectionSetGraphQL) )
+#set($request = "query { $root $ctx.info.selectionSetGraphQL }")
+##set($request = "{ haystack { about { tz }}}")
+{
+"operation": "Invoke",
+"payload": {
+"resource": "/{proxy+}",
+"path": "$resource",
+"httpMethod": "GET",
+"headers": {
+"accept": "application/json",
+"Host": "$host",
+"User-Agent": "$useragent"
+},
+##    "multiValueHeaders": {
+##      "accept": ["application/json"],
+##      "Host": ["$host"],
+##      "User-Agent": ["$useragent"]
+##},
+"queryStringParameters": {
+"query": $util.toJson($request)
+},
+##    "multiValueQueryStringParameters": {
+##      "query": ["$request"]
+##},
+"pathParameters": null,
+##    "stageVariables": null,
+"requestContext": {
+##      "resourceId": "2gxmpl",
+"resourcePath": "/{proxy+}",
+"httpMethod": "GET",
+##      "extendedRequestId": "JJbxmplHYosFVYQ=",
+##      "requestTime": "10/Mar/2020:00:03:59 +0000",
+"path": "/$stage/$resource",
+##      "accountId": "123456789012",
+"protocol": "HTTP/1.0",
+"stage": "$stage",
+##      "domainPrefix": "70ixmpl4fl",
+##      "requestTimeEpoch": 1583798639428,
+##      "requestId": "77375676-xmpl-4b79-853a-f982474efe18",
+"identity": {
+"accountId": "$util.toJson($ctx.identity.accountId)",
+"cognitoIdentityPoolId": "$util.toJson($ctx.identity.cognitoIdentityPoolId)",
+"cognitoIdentityId": "$util.toJson($ctx.identity.cognitoIdentityId)",
+"cognitoAuthenticationType": "$util.toJson($ctx.identity.cognitoIdentityAuthType)",
+"cognitoAuthenticationProvider": "$util.toJson($ctx.identity.cognitoAuthenticationProvider)",
+"caller": "AppSync",
+"sourceIp": "0.0.0.0",
+"principalOrgId": null,
+"accessKey": null,
+"userAgent": "$useragent",
+"user": "$util.toJson($ctx.identity.username)"
+"userArn": "$util.toJson($ctx.identity.userArn)",
+},
+"domainName": "$host",
+##      "apiId": "70ixmpl4fl"
+},
+"body": null,
+##    "isBase64Encoded": false
+}
+}

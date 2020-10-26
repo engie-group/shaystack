@@ -2,8 +2,10 @@
 Module to implement Haystack API.
 """
 from .ops import *
+from .providers import HaystackInterface
 
 __all__ = [
+    "HaystackInterface",
     "about",
     "ops",
     "formats",

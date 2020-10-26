@@ -315,20 +315,10 @@ async-stop-api:
 	rm -f .start/start-api.pid
 
 # -------------------------------------- GraphQL
-.PHONY: graphql-schema-schema graphql-schema
-## Print only haystack graphql schema to inject somewhere
-graphql-hs-schema:
-	@$(VALIDATE_VENV)
-	@python app/graphql_model.py
-
-## Print full haystack graphql schema
-graphql-schema:
-	@$(VALIDATE_VENV)
-	@python app/blueprint_graphql.py
-
+.PHONY: graphql-schema graphql-api
 ## Print GraphQL API url
 graphql-api:
-	@echo "http://localhost:3000/graphql/
+	@echo "http://localhost:3000/graphql/"
 
 graphql-api-%:
 	@$(VALIDATE_VENV)
@@ -337,6 +327,15 @@ graphql-api-%:
 		-H "Content-Type: application/json" \
 		--data '{ "query": "{ haystack { about { name } } }" }' \
 		http://localhost:3000/graphql/
+
+schema.graphql: app/graphql_model.py app/blueprint_graphql.py
+	@$(VALIDATE_VENV)
+	@python app/blueprint_graphql.py >schema.graphql
+
+## Print haystack graphql schema
+graphql-schema: schema.graphql
+	@cat schema.graphql
+
 
 # -------------------------------------- Minio
 # https://min.io/
@@ -543,7 +542,7 @@ submodule-stash:
 
 # --------------------------- Distribution
 .PHONY: bdist
-dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC)
+dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC) schema.graphql
 	@$(VALIDATE_VENV)
 	$(CONDA_PYTHON) setup.py bdist_wheel
 
@@ -551,7 +550,7 @@ dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC)
 bdist: dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl
 
 .PHONY: sdist
-dist/$(PRJ_PACKAGE)-*.tar.gz: $(REQUIREMENTS)
+dist/$(PRJ_PACKAGE)-*.tar.gz: $(REQUIREMENTS) schema.graphql
 	@$(VALIDATE_VENV)
 	$(CONDA_PYTHON) setup.py sdist
 

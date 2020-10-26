@@ -1,0 +1,45 @@
+schema {
+  query: Query
+}
+
+scalar AWSJSON
+
+scalar AWSURL
+
+type HSAbout {
+  haystackVersion: String!
+  tz: String!
+  serverName: String!
+  serverTime: String!
+  serverBootTime: String!
+  productName: String!
+  productUri: AWSURL!
+  productVersion: String!
+  moduleName: String!
+  moduleVersion: String!
+}
+
+type HSOps {
+  name: String
+  summary: String
+}
+
+type Haystack {
+  about: HSAbout!
+  ops: [HSOps!]!
+  read(ids: [ID], select: String = "*", limit: Int = 0, filter: String = "", version: String): [AWSJSON!]
+  hisRead(id: ID!, datesRange: String, version: String): AWSJSON!
+  pointWrite(id: ID!, version: String): [PointWrite!]
+}
+
+type PointWrite {
+  level: Int
+  levelDis: String
+  val: AWSJSON
+  who: String
+}
+
+type Query {
+  haystack: Haystack!
+}
+

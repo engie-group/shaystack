@@ -2,16 +2,12 @@
 Model to inject a another graphene model, to manage the haystack layer.
 See the blueprint_graphql to see how to integrate this part of global GraphQL model.
 """
-import json
 import logging
 import os
-import sys
 from datetime import datetime
 from typing import Optional, List
 
-import click
 import graphene
-from graphene import Scalar
 from graphql.language import ast
 
 import hszinc
@@ -30,45 +26,10 @@ except ImportError:
 log = logging.getLogger("haystackapi")
 log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
+
 # TODO: voir la batch approche
 # PPR: autre modèle possible, retourner un JSon, valide partout
 # WARNING: At this time only public endpoints are supported by AWS AppSync
-
-# Alias of AWS scalar type (see https://docs.aws.amazon.com/appsync/latest/devguide/scalars.html)
-# class AWSDate(graphene.Date):
-#     pass
-#
-#
-# class AWSTime(graphene.Time):
-#     pass
-#
-#
-# class AWSDateTime(graphene.DateTime):
-#     pass
-#
-#
-# # class AWSTimestamp(graphene.String):
-# #     pass
-#
-#
-# class AWSJSON(graphene.JSONString):
-#     pass
-#
-#
-# class AWSURL(graphene.String):
-#     pass
-#
-#
-# class AWSPhone(graphene.String):
-#     pass
-#
-#
-# class AWSIPAddress(graphene.String):
-#     pass
-
-
-XHSJSON = graphene.JSONString  # FIXME
-
 
 # ---------------
 # AWS Scalar : https://docs.aws.amazon.com/appsync/latest/devguide/scalars.html
@@ -99,25 +60,6 @@ class HSScalar(graphene.Scalar):
         return f"parse_value={value}"  # FIXME
 
 
-class HSJSON(Scalar):
-    # class Meta:
-    #     # name = "AWSJSON" if BOTO3_AVAILABLE else "HSJSON"
-    #     name = "JSONString"
-
-    @staticmethod
-    def serialize(dt):
-        return json.dumps(dt, default=str)  # FIXME: str
-
-    @staticmethod
-    def parse_literal(node):
-        if isinstance(node, ast.StringValue):
-            return json.loads(node.value)
-
-    @staticmethod
-    def parse_value(value):
-        return json.loads(value)
-
-
 class HSDate(graphene.String):
     class Meta:
         name = "AWSDate" if BOTO3_AVAILABLE else "Date"
@@ -132,9 +74,12 @@ class HSTime(graphene.String):
     pass
 
 
-class HSDateTime(HSScalar):
+class HSDateTime(graphene.String):
     # class Meta:
     #     name = "AWSDateTime" if BOTO3_AVAILABLE else "DateTime"
+    class Meta:
+        name = "String"
+
     pass
 
 
@@ -150,8 +95,8 @@ class HSAbout(graphene.ObjectType):
     haystackVersion = graphene.String(required=True)  # TODO: auto require pour les HSType ?
     tz = graphene.String(required=True)
     serverName = graphene.String(required=True)
-    serverTime = graphene.Field(graphene.NonNull(HSTime))
-    serverBootTime = graphene.Field(graphene.NonNull(HSTime))
+    serverTime = graphene.Field(graphene.NonNull(HSDateTime))
+    serverBootTime = graphene.Field(graphene.NonNull(HSDateTime))
     productName = graphene.String(required=True)
     productUri = graphene.Field(graphene.NonNull(HSUri))
     productVersion = graphene.String(required=True)
@@ -200,12 +145,12 @@ class ReadHaystack(graphene.ObjectType):
         graphene.NonNull(HSScalar),
         ids=graphene.List(graphene.ID),
         select=graphene.String(default_value='*'),
-        filter=graphene.String(default_value=''),
         limit=graphene.Int(default_value=0),
+        filter=graphene.String(default_value=''),
         version=HSDateTime()
     )
 
-    his_read = graphene.Field(graphene.NonNull(HSJSON),
+    his_read = graphene.Field(graphene.NonNull(HSScalar),
                               id=graphene.ID(required=True),
                               dates_range=graphene.String(),
                               version=HSDateTime()
@@ -222,7 +167,10 @@ class ReadHaystack(graphene.ObjectType):
     def resolve_about(parent, info):
         log.debug(f"resolve_about(parent,info)")
         grid = get_singleton_provider().about("http://localhost")  # FIXME
-        return ReadHaystack._conv_entity(HSAbout, grid[0])
+        rc = ReadHaystack._conv_entity(HSAbout, grid[0])
+        # FIXME rc.serverTime=grid[0]["serverTime"].isoformat()
+        # rc.bootTime=grid[0]["bootTime"].isoformat()
+        return rc
 
     @staticmethod
     def resolve_ops(parent, info):
@@ -287,24 +235,4 @@ class ReadHaystack(graphene.ObjectType):
         return result
 
 
-def _dump_haystack_schema():
-    """
-    Print haystack schema to insert in another global schema.
-    """
-    # Print only haystack schema
-    from graphql.utils import schema_printer
-    print(schema_printer.print_schema(graphene.Schema(query=ReadHaystack)))
 
-
-@click.command()
-def main() -> int:
-    """
-    Print the partial schema for haystack API.
-    `GRAPHQL_SCHEMA=app/haystack_schema.json python app/graphql_model.py` >partial_gql.graphql
-    """
-    _dump_haystack_schema()
-    return 0
-
-
-if __name__ == '__main__':
-    sys.exit(main())  # pylint: disable=no-value-for-parameter,unexpected-keyword-arg

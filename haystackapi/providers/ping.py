@@ -9,9 +9,9 @@ import os
 from datetime import datetime
 from typing import Tuple, Any, Dict, Union, Optional, List, Set
 
-from hszinc import Grid, VER_3_0, Ref, Quantity, MARKER
 from overrides import overrides
 
+from hszinc import Grid, VER_3_0, Ref, Quantity, MARKER
 from .haystack_interface import HaystackInterface
 
 log = logging.getLogger("ping.Provider")
@@ -88,7 +88,10 @@ class Provider(HaystackInterface):
                               "hisStart": None,  # FIXME
                               "hisEnd": None
                               })
-        grid.append({"data": None,  # FIXME
+        grid.append({"date": datetime.now().isoformat(),  # FIXME
+                     "val": Quantity(100, "°")}
+                    )
+        grid.append({"data": datetime.now().isoformat(),  # FIXME
                      "val": Quantity(100, "°")}
                     )
         return grid.extends_columns()

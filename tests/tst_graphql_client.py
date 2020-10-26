@@ -10,10 +10,33 @@ query
     # haystack(select: "id,dis"ids: ["@customer-913"])
     haystack 
     {
+        about
+        {
+            haystackVersion
+            tz
+            serverName
+            serverTime
+            serverBootTime
+            productName
+            productUri
+            productVersion
+            moduleName
+            moduleVersion
+        }
         ops
+        {
+            name
+            summary
+        }
         read(select: "id,dis" filter: "id", limit: 2)
         hisRead(id:"@elec-16514")
         pointWrite(id:"@elec-16514")
+        {
+            level
+            levelDis
+            val
+            who
+        }
     }
 }
 ''')

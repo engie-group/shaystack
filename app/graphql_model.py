@@ -30,7 +30,6 @@ except ImportError:
 log = logging.getLogger("haystackapi")
 log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
-
 # TODO: voir la batch approche
 # PPR: autre modèle possible, retourner un JSon, valide partout
 # WARNING: At this time only public endpoints are supported by AWS AppSync
@@ -71,25 +70,6 @@ log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 XHSJSON = graphene.JSONString  # FIXME
 
 
-class HSJSON(Scalar):
-    class Meta:
-        # name = "AWSJSON" if BOTO3_AVAILABLE else "HSJSON"
-        name = "JSONString"
-
-    @staticmethod
-    def serialize(dt):
-        return json.dumps(dt, default=str)  # FIXME: str
-
-    @staticmethod
-    def parse_literal(node):
-        if isinstance(node, ast.StringValue):
-            return json.loads(node.value)
-
-    @staticmethod
-    def parse_value(value):
-        return json.loads(value)
-
-
 # ---------------
 # AWS Scalar : https://docs.aws.amazon.com/appsync/latest/devguide/scalars.html
 # TODO: utiliser les parametres dans l'URL en plus du POST ?
@@ -119,58 +99,136 @@ class HSScalar(graphene.Scalar):
         return f"parse_value={value}"  # FIXME
 
 
+class HSJSON(Scalar):
+    # class Meta:
+    #     # name = "AWSJSON" if BOTO3_AVAILABLE else "HSJSON"
+    #     name = "JSONString"
+
+    @staticmethod
+    def serialize(dt):
+        return json.dumps(dt, default=str)  # FIXME: str
+
+    @staticmethod
+    def parse_literal(node):
+        if isinstance(node, ast.StringValue):
+            return json.loads(node.value)
+
+    @staticmethod
+    def parse_value(value):
+        return json.loads(value)
+
+
+class HSDate(graphene.String):
+    class Meta:
+        name = "AWSDate" if BOTO3_AVAILABLE else "Date"
+
+    pass
+
+
+class HSTime(graphene.String):
+    class Meta:
+        name = "AWSTime" if BOTO3_AVAILABLE else "HSTime"
+
+    pass
+
+
+class HSDateTime(HSScalar):
+    # class Meta:
+    #     name = "AWSDateTime" if BOTO3_AVAILABLE else "DateTime"
+    pass
+
+
+class HSUri(graphene.String):
+    class Meta:
+        name = "AWSURL" if BOTO3_AVAILABLE else "HSURL"
+
+
+class HSAbout(graphene.ObjectType):
+    class Meta:
+        description = "Result of 'about' haystack operation"
+
+    haystackVersion = graphene.String(required=True)  # TODO: auto require pour les HSType ?
+    tz = graphene.String(required=True)
+    serverName = graphene.String(required=True)
+    serverTime = graphene.Field(graphene.NonNull(HSTime))
+    serverBootTime = graphene.Field(graphene.NonNull(HSTime))
+    productName = graphene.String(required=True)
+    productUri = graphene.Field(graphene.NonNull(HSUri))
+    productVersion = graphene.String(required=True)
+    moduleName = graphene.String(required=True)
+    moduleVersion = graphene.String(required=True)
+
+
+class HSOps(graphene.ObjectType):
+    class Meta:
+        description = "Result of 'ops' haystack operation"
+
+    name = graphene.String()
+    summary = graphene.String()
+
+
+class HSTS(graphene.ObjectType):
+    class Meta:
+        description = "Result of 'hisRead' haystack operation"
+
+    date = graphene.Field(HSDateTime)
+    val = graphene.Field(HSScalar)
+
+
+class PointWrite(graphene.ObjectType):
+    class Meta:
+        description = "Result of 'pointWrite' haystack operation"
+
+    level = graphene.Int()
+    levelDis = graphene.String()
+    val = graphene.Field(HSScalar)
+    who = graphene.String()
+
+
 # TODO: voir l'approche Batch
 class ReadHaystack(graphene.ObjectType):
     class Meta:
         description = 'Ontology conform with Haystack project'
         name = "Haystack"
 
-    # TODO: values_for_tag
-    about = graphene.NonNull(HSJSON)
+    about = graphene.NonNull(HSAbout)
 
-    # ops = graphene.List(
-    #     graphene.NonNull(graphene.List(graphene.NonNull(graphene.JSONString))),
-    # )
-    ops = graphene.NonNull(HSJSON)
+    ops = graphene.NonNull(graphene.List(
+        graphene.NonNull(HSOps)))
 
-    # TODO: voir comment en faire une classe et réorganiser le code
-    # TODO: proxy Appsync https://stackoverflow.com/questions/60361326/proxy-request-to-graphql-server-through-aws-appsync
-    # TODO: wrapper all values for tag
     read = graphene.List(
-        # graphene.NonNull(graphene.List(graphene.NonNull(HSJSON))),
-        graphene.NonNull(HSJSON),
+        graphene.NonNull(HSScalar),
         ids=graphene.List(graphene.ID),
         select=graphene.String(default_value='*'),
         filter=graphene.String(default_value=''),
         limit=graphene.Int(default_value=0),
-        version=HSScalar()
+        version=HSDateTime()
     )
 
-    his_read = graphene.List(
-        graphene.NonNull(HSJSON),
-        id=graphene.ID(required=True),
-        dates_range=graphene.String(),
-        version=HSScalar()
-    )
+    his_read = graphene.Field(graphene.NonNull(HSJSON),
+                              id=graphene.ID(required=True),
+                              dates_range=graphene.String(),
+                              version=HSDateTime()
+                              )
 
     # Retourne une liste, car on ne peut pas avoir de paramètres sur les scalar
     point_write = graphene.List(
-        graphene.NonNull(HSJSON),
+        graphene.NonNull(PointWrite),
         id=graphene.ID(required=True),
-        version=HSScalar()
+        version=HSDateTime()
     )
 
     @staticmethod
     def resolve_about(parent, info):
         log.debug(f"resolve_about(parent,info)")
-        grid = get_singleton_provider().about("dev")  # FIXME: dev
-        return grid[0]
+        grid = get_singleton_provider().about("http://localhost")  # FIXME
+        return ReadHaystack._conv_entity(HSAbout, grid[0])
 
     @staticmethod
     def resolve_ops(parent, info):
         log.debug(f"resolve_about(parent,info)")
         grid = get_singleton_provider().ops()
-        return grid[0]
+        return ReadHaystack._conv_list_to_object_type(HSOps, grid)
 
     @staticmethod
     def resolve_read(parent, info,
@@ -193,18 +251,17 @@ class ReadHaystack(graphene.ObjectType):
         log.debug(f"resolve_his_read(parent,info,id={id}, range={range}, datetime={datetime})")
         ref = Ref(ReadHaystack._filter_id(id))
         grid_date_range = parse_date_range(dates_range)
-        grid = get_singleton_provider().his_read(ref, grid_date_range, version)
-        # FIXME: format des TS
-        return grid
+        grid_ts = get_singleton_provider().his_read(ref, grid_date_range, version)
+        return list(grid_ts)
 
     @staticmethod
     def resolve_point_write(parent, info,
                             id: str,
                             version: Optional[datetime] = None):
-        log.debug(f"resolve_point_write(parent,info, {id})")
+        log.debug(f"resolve_point_write(parent,info, id={id}, version={version})")
         ref = Ref(ReadHaystack._filter_id(id))
         grid = get_singleton_provider().point_write_read(ref, version)
-        return grid
+        return ReadHaystack._conv_list_to_object_type(PointWrite, grid)
 
     @staticmethod
     def _filter_id(id: str) -> str:
@@ -213,6 +270,21 @@ class ReadHaystack(graphene.ObjectType):
         if id.startswith('@'):
             return id[1:]
         return id
+
+    @staticmethod
+    def _conv_entity(cls, entity):
+        entity_result = cls()
+        for key, val in entity.items():
+            if key in entity:
+                entity_result.__setattr__(key, val)
+        return entity_result
+
+    @staticmethod
+    def _conv_list_to_object_type(cls, grid):
+        result = []
+        for row in grid:
+            result.append(ReadHaystack._conv_entity(cls, row))
+        return result
 
 
 def _dump_haystack_schema():

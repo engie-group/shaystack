@@ -136,6 +136,11 @@ class ReadHaystack(graphene.ObjectType):
         description = 'Ontology conform with Haystack project'
         name = "Haystack"
 
+    values = graphene.List(graphene.NonNull(HSScalar),
+                           tag=graphene.String(required=True),
+                           version=HSDateTime()
+                           )
+
     about = graphene.NonNull(HSAbout)
 
     ops = graphene.NonNull(graphene.List(
@@ -162,6 +167,11 @@ class ReadHaystack(graphene.ObjectType):
         id=graphene.ID(required=True),
         version=HSDateTime()
     )
+
+    @staticmethod
+    def resolve_values(parent, info, tag: str, version: Optional[datetime] = None):
+        log.debug("resolve_values(parent,info,%s)", tag)
+        return get_singleton_provider().values_for_tag(tag, version)
 
     @staticmethod
     def resolve_about(parent, info):
@@ -233,6 +243,3 @@ class ReadHaystack(graphene.ObjectType):
         for row in grid:
             result.append(ReadHaystack._conv_entity(cls, row))
         return result
-
-
-

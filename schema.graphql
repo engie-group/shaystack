@@ -25,7 +25,8 @@ type HSOps {
 }
 
 type Haystack {
-  about: HSAbout!
+  values(tag: String!): [AWSJSON!]
+    about: HSAbout!
   ops: [HSOps!]!
   read(ids: [ID], select: String = "*", limit: Int = 0, filter: String = "", version: String): [AWSJSON!]
   hisRead(id: ID!, datesRange: String, version: String): AWSJSON!

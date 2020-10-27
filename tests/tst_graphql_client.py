@@ -34,6 +34,7 @@ result = client.execute('''
         val
         who
     }
+    country:values(tag:"geoCountry")
 } }
 ''')
 

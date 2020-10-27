@@ -163,3 +163,5 @@ def test_lru_version(mock):
             pass
     finally:
         provider.cancel()
+
+# TODO: tester le boot avec un doc rescent, avec ou sans concurrency à 1 ou +

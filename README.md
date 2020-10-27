@@ -107,6 +107,17 @@ The `<url>` may have the classic form (`http://...`, `ftp://...`) or can referen
 The time series to manage history must be referenced in the entity, with the `hisURI` tag.
 This URI may be relative and must be in parquet format.
 
+Because this provider use a local cache with the parsing version of S3 file,
+it's may be possible to see different versions if AWS use multiple instance of lambda.
+To fixe that, the environment variable `REFRESH` can be set to a delay to refresh
+the cache (Default value is 15m). Every quarter of an hour, each lambda check the list
+of version of this file, and refresh the cache in memory, at the time time.
+If a new version is published juste before you start the lambda, it's may be possible
+you can't see this version. You must wait the end of the current quarter.
+
+If you limit the concurrency of lambda to 1, this synchronisation between lambda
+is not activate. 
+
 ### Using with Excel or PowerBI
 Because the default negotiated format is CSV, you can call theses API with PowerQuery/
 

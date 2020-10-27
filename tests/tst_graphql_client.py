@@ -1,7 +1,12 @@
 import json
 
+import boto3
 from graphqlclient import GraphQLClient
 
+client = boto3.client('lambda')
+response = client.get_function_concurrency(
+    FunctionName='alpha-dev-haystackapi-dev'
+)
 client = GraphQLClient('http://localhost:3000/graphql')
 # client = GraphQLClient('https://w1pub81bkc.execute-api.us-east-2.amazonaws.com/dev/graphql')
 

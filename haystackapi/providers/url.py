@@ -56,7 +56,7 @@ Timestamp = datetime
 log = logging.getLogger("url.Provider")
 log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
-LRU_SIZE, PERIODIC_REFRESH = 16, 15
+LRU_SIZE, PERIODIC_REFRESH = 16, int(os.environ.get("REFRESH", "15"))
 
 
 class Provider(HaystackInterface):
@@ -66,6 +66,7 @@ class Provider(HaystackInterface):
 
     def __init__(self):
         self._s3_client = None
+        self._lambda_client = None
         self._lock = Lock()
         self._versions = {}  # Dict of OrderedDict with versions
         self._lru = []
@@ -193,6 +194,15 @@ class Provider(HaystackInterface):
         """ Return the url to the file to expose. """
         return os.environ.get("HAYSTACK_URL", "")
 
+    def _lambda(self) -> BaseClient:
+        if not self._lambda_client:  # Lazy init
+            self._lambda_client = boto3.client("lambda", region_name=os.environ["AWS_REGION"])
+        return self._lambda_client
+
+    def _function_concurrency(self) -> int:
+        return self._lambda().get_function_concurrency(
+            FunctionName=os.environ['AWS_LAMBDA_FUNCTION_NAME'])['ReservedConcurrentExecutions']
+
     def _s3(self) -> BaseClient:
         # AWS_S3_ENDPOINT may be http://localhost:9000 to use minio (make start-minio)
         if not self._s3_client:  # Lazy init
@@ -269,14 +279,14 @@ class Provider(HaystackInterface):
             ]
             self._lock.acquire()
             all_versions = self._versions.get(parsed_uri.geturl(), OrderedDict())
+            concurrency = self._function_concurrency()
             for date_version, version_id in obj_versions:
                 if date_version not in all_versions:
-                    # FIXME: doc si parallele instance >1
                     # Purge refresh during current period. Then, all AWS instance see the
                     # same data and wait the end of the current period to refresh.
                     # Else, it's may be possible to have two different versions if an
                     # new AWS Lambda instance was created after an updated version.
-                    if not first_time or date_version < start_of_current_period:
+                    if not first_time or concurrency <= 1 or date_version < start_of_current_period:
                         all_versions[date_version] = (version_id, None)  # Add a slot
                     else:
                         log.warning("Ignore the version '%s' ignore until the next period.\n" +

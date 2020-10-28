@@ -24,20 +24,21 @@ type HSOps {
   summary: String
 }
 
-type Haystack {
-  values(tag: String!): [AWSJSON!]
-    about: HSAbout!
-  ops: [HSOps!]!
-  read(ids: [ID], select: String = "*", limit: Int = 0, filter: String = "", version: String): [AWSJSON!]
-  hisRead(id: ID!, datesRange: String, version: String): AWSJSON!
-  pointWrite(id: ID!, version: String): [PointWrite!]
-}
-
-type PointWrite {
+type HSPointWrite {
   level: Int
   levelDis: String
   val: AWSJSON
   who: String
+}
+
+type Haystack {
+  about: HSAbout!
+  ops: [HSOps!]!
+  tagValues: [AWSJSON!]!
+  versions: [String!]!
+  entities(ids: [ID], select: String = "*", limit: Int = 0, filter: String = "", version: String): [AWSJSON!]
+  histories(ids: [ID], datesRange: String, version: String): [AWSJSON!]
+  pointWrite(id: ID!, version: String): [HSPointWrite!]
 }
 
 type Query {

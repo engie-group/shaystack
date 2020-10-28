@@ -1,14 +1,9 @@
 import json
 
-import boto3
 from graphqlclient import GraphQLClient
 
-client = boto3.client('lambda')
-response = client.get_function_concurrency(
-    FunctionName='alpha-dev-haystackapi-dev'
-)
-client = GraphQLClient('http://localhost:3000/graphql')
-# client = GraphQLClient('https://w1pub81bkc.execute-api.us-east-2.amazonaws.com/dev/graphql')
+# client = GraphQLClient('http://localhost:3000/graphql')
+client = GraphQLClient('https://w1pub81bkc.execute-api.us-east-2.amazonaws.com/dev/graphql')
 
 result = client.execute('''
 { haystack {
@@ -30,8 +25,11 @@ result = client.execute('''
         name
         summary
     }
-    read(select: "id,dis" filter: "id", limit: 2)
-    hisRead(id:"@elec-16514")
+    versions
+    entities(ids:["@elec-16514","@site-434051"])
+    byid:entities(ids:["@elec-16514","@site-434051"])
+    byfilter:entities(select: "id,dis" filter: "id", limit: 2)
+    histories(ids:["@elec-397691","@elec-434051"])
     pointWrite(id:"@elec-16514")
     {
         level

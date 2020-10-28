@@ -14,7 +14,8 @@ from typing import Any, Tuple, Dict, Union, Optional, List, Set
 from tzlocal import get_localzone
 
 import hszinc
-from hszinc import Grid, VER_3_0, Uri, Ref, Quantity, parse_date_format
+from hszinc import Grid, VER_3_0, Uri, Ref, Quantity, parse_date_format, MetadataObject
+from hszinc.sortabledict import SortableDict
 
 log = logging.getLogger("haystackapi")
 log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
@@ -55,6 +56,12 @@ class HaystackInterface(ABC):
         Return all differents values for a specific tag
         """
         raise NotImplementedError()
+
+    def versions(self) -> List[datetime]:
+        """
+        Return datetime for each versions or empty array if is unknown
+        """
+        return []
 
     @abstractmethod
     def about(self, home: str) -> Grid:
@@ -308,6 +315,24 @@ class HaystackInterface(ABC):
         :param date_version: The optional date version to update
         """
         raise NotImplementedError()
+
+    @staticmethod
+    def select_grid(grid, select) -> Grid:
+        if select:
+            select = select.strip()
+            if select not in ["*", '']:
+                new_grid = Grid(version=grid.version, columns=grid.column, metadata=grid.metadata)
+                new_cols = SortableDict()
+                for col in select.split(','):
+                    new_cols[col] = MetadataObject()
+                for col, meta in grid.column.items():
+                    if col in new_cols:
+                        new_cols[col] = meta
+                new_grid.column = new_cols
+                for row in grid:
+                    new_grid.append({key: val for key, val in row.items() if key in new_cols})
+                return new_grid
+        return grid
 
 
 _providers = {}  # Cached providers

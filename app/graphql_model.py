@@ -89,89 +89,110 @@ class HSUri(graphene.String):
 
 
 class HSAbout(graphene.ObjectType):
-    class Meta:
-        description = "Result of 'about' haystack operation"
-
-    haystackVersion = graphene.String(required=True)  # TODO: auto require pour les HSType ?
-    tz = graphene.String(required=True)
-    serverName = graphene.String(required=True)
-    serverTime = graphene.Field(graphene.NonNull(HSDateTime))
-    serverBootTime = graphene.Field(graphene.NonNull(HSDateTime))
-    productName = graphene.String(required=True)
-    productUri = graphene.Field(graphene.NonNull(HSUri))
-    productVersion = graphene.String(required=True)
-    moduleName = graphene.String(required=True)
-    moduleVersion = graphene.String(required=True)
+    """Result of 'about' haystack operation"""
+    haystackVersion = graphene.String(required=True,
+                                      description="Haystack version implemented")
+    tz = graphene.String(required=True,
+                         description="Server time zone")
+    serverName = graphene.String(required=True,
+                                 description="Server name")
+    serverTime = graphene.Field(graphene.NonNull(HSDateTime),
+                                description="Server current time")
+    serverBootTime = graphene.Field(graphene.NonNull(HSDateTime),
+                                    description="Server boot time")
+    productName = graphene.String(required=True,
+                                  description="Server Product name")
+    productUri = graphene.Field(graphene.NonNull(HSUri),
+                                description="Server URL")
+    productVersion = graphene.String(required=True,
+                                     description="Product version")
+    moduleName = graphene.String(required=True,
+                                 description="Module name")
+    moduleVersion = graphene.String(required=True,
+                                    description="Module version")
 
 
 class HSOps(graphene.ObjectType):
-    class Meta:
-        description = "Result of 'ops' haystack operation"
+    """Result of 'ops' haystack operation"""
 
-    name = graphene.String()
-    summary = graphene.String()
+    name = graphene.String(description="Name of operation (see https://project-haystack.org/doc/Ops)")
+    summary = graphene.String(description="Summary of operation")
 
 
 class HSTS(graphene.ObjectType):
-    class Meta:
-        description = "Result of 'hisRead' haystack operation"
+    """Result of 'hisRead' haystack operation"""
+    date = graphene.Field(HSDateTime,
+                          description="Date time of event")
+    val = graphene.Field(HSScalar,
+                         description="Value of event with unit")
 
-    date = graphene.Field(HSDateTime)
-    val = graphene.Field(HSScalar)
 
-
-class PointWrite(graphene.ObjectType):
-    class Meta:
-        description = "Result of 'pointWrite' haystack operation"
-
-    level = graphene.Int()
-    levelDis = graphene.String()
-    val = graphene.Field(HSScalar)
-    who = graphene.String()
+class HSPointWrite(graphene.ObjectType):
+    """Result of 'pointWrite' haystack operation"""
+    level = graphene.Int(description="Current level")
+    levelDis = graphene.String(description="Description of level")
+    val = graphene.Field(HSScalar, description="Value")
+    who = graphene.String(description="Who has updated the value")
 
 
 # TODO: voir l'approche Batch
 class ReadHaystack(graphene.ObjectType):
+    """ Ontology conform with Haystack project """
+
     class Meta:
-        description = 'Ontology conform with Haystack project'
         name = "Haystack"
 
-    values = graphene.List(graphene.NonNull(HSScalar),
-                           tag=graphene.String(required=True),
-                           version=HSDateTime()
-                           )
-
-    about = graphene.NonNull(HSAbout)
+    about = graphene.NonNull(HSAbout,
+                             description="Versions of api")
 
     ops = graphene.NonNull(graphene.List(
-        graphene.NonNull(HSOps)))
+        graphene.NonNull(HSOps)),
+        description="List of operation implemented")
 
-    read = graphene.List(
+    tag_values = graphene.NonNull(graphene.List(graphene.NonNull(HSScalar),
+                                                tag=graphene.String(required=True,
+                                                                    description="Tag name"),
+                                                version=HSDateTime(description="Date of the version "
+                                                                               "or nothing for the last version")
+                                                ),
+                                  description="All values for a specific tag")
+
+    versions = graphene.NonNull(graphene.List(graphene.NonNull(HSDateTime)),
+                                description="All versions of datas")
+
+    entities = graphene.List(
         graphene.NonNull(HSScalar),
-        ids=graphene.List(graphene.ID),
-        select=graphene.String(default_value='*'),
-        limit=graphene.Int(default_value=0),
-        filter=graphene.String(default_value=''),
-        version=HSDateTime()
+        ids=graphene.List(graphene.ID,
+                          description="List of ids to return (if set, ignore filter and limit)"),
+        select=graphene.String(default_value='*',
+                               description="List of tags to return"),
+        limit=graphene.Int(default_value=0,
+                           description="Maximum number of items to return"),
+        filter=graphene.String(default_value='',
+                               description="Filter or item (see https://project-haystack.org/doc/Filters"),
+        version=HSDateTime(description="Date of the version or nothing for the last version"),
+        description="Selected entities of ontology"
     )
 
-    his_read = graphene.Field(graphene.NonNull(HSScalar),
-                              id=graphene.ID(required=True),
-                              dates_range=graphene.String(),
-                              version=HSDateTime()
-                              )
+    histories = graphene.List(graphene.NonNull(HSScalar),
+                              ids=graphene.List(graphene.ID,
+                                                description="List of ids to return"),
+                              dates_range=graphene.String(description="today, yesterday, "
+                                                                      "{date}, {date},{date}, "
+                                                                      "{datetime}, "
+                                                                      "{datetime},{datetime}"
+                                                          ),
+                              version=HSDateTime(description="Date of the version or nothing for the last version"),
+                              description="Selected time series")
 
     # Retourne une liste, car on ne peut pas avoir de paramètres sur les scalar
     point_write = graphene.List(
-        graphene.NonNull(PointWrite),
-        id=graphene.ID(required=True),
-        version=HSDateTime()
+        graphene.NonNull(HSPointWrite),
+        id=graphene.ID(required=True,
+                       description="Id to read (accept @xxx, r:xxx or xxx)"),
+        version=HSDateTime(description="Date of the version or nothing for the last version"),
+        description="Point write values"
     )
-
-    @staticmethod
-    def resolve_values(parent, info, tag: str, version: Optional[datetime] = None):
-        log.debug("resolve_values(parent,info,%s)", tag)
-        return get_singleton_provider().values_for_tag(tag, version)
 
     @staticmethod
     def resolve_about(parent, info):
@@ -189,28 +210,37 @@ class ReadHaystack(graphene.ObjectType):
         return ReadHaystack._conv_list_to_object_type(HSOps, grid)
 
     @staticmethod
-    def resolve_read(parent, info,
-                     ids: Optional[List[str]] = None,
-                     select: str = '*',
-                     filter: str = '',
-                     limit: int = 0,
-                     version: Optional[datetime] = None):
-        log.debug(f"resolve_haystack(parent,info,ids={ids}, query={filter}, limit={limit}, datetime={datetime})")
+    def resolve_tag_values(parent, info, tag: str, version: Optional[datetime] = None):
+        log.debug("resolve_values(parent,info,%s)", tag)
+        return get_singleton_provider().values_for_tag(tag, version)
+
+    @staticmethod
+    def resolve_versions(parent, info):
+        log.debug("resolve_versions(parent,info)")
+        return get_singleton_provider().versions()
+
+    @staticmethod
+    def resolve_entities(parent, info,
+                         ids: Optional[List[str]] = None,
+                         select: str = '*',
+                         filter: str = '',
+                         limit: int = 0,
+                         version: Optional[datetime] = None):
+        log.debug(f"resolve_entities(parent,info,ids={ids}, query={filter}, limit={limit}, datetime={datetime})")
         if ids:
             ids = [Ref(ReadHaystack._filter_id(id)) for id in ids]
         grid = get_singleton_provider().read(limit, select, ids, filter, version)
         return grid
 
     @staticmethod
-    def resolve_his_read(parent, info,
-                         id: str,
-                         dates_range: Optional[str] = None,
-                         version: Optional[datetime] = None):
-        log.debug(f"resolve_his_read(parent,info,id={id}, range={range}, datetime={datetime})")
-        ref = Ref(ReadHaystack._filter_id(id))
+    def resolve_histories(parent, info,
+                          ids: Optional[List[str]] = None,
+                          dates_range: Optional[str] = None,
+                          version: Optional[datetime] = None):
+        log.debug(f"resolve_histories(parent,info,id={id}, range={range}, datetime={datetime})")
         grid_date_range = parse_date_range(dates_range)
-        grid_ts = get_singleton_provider().his_read(ref, grid_date_range, version)
-        return list(grid_ts)
+        return [get_singleton_provider().his_read(Ref(ReadHaystack._filter_id(id)), grid_date_range, version)
+                for id in ids]
 
     @staticmethod
     def resolve_point_write(parent, info,
@@ -219,7 +249,7 @@ class ReadHaystack(graphene.ObjectType):
         log.debug(f"resolve_point_write(parent,info, id={id}, version={version})")
         ref = Ref(ReadHaystack._filter_id(id))
         grid = get_singleton_provider().point_write_read(ref, version)
-        return ReadHaystack._conv_list_to_object_type(PointWrite, grid)
+        return ReadHaystack._conv_list_to_object_type(HSPointWrite, grid)
 
     @staticmethod
     def _filter_id(id: str) -> str:

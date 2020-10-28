@@ -196,8 +196,11 @@ or use a GraphQL Client with this URL.
         name
         summary
     }
-    read(select: "id,dis" filter: "site", limit: 2)
-    hisRead(id:"@elec-16514")
+    versions
+    entities(ids:["@elec-16514","@site-434051"])
+    byid:entities(ids:["@elec-16514","@site-434051"])
+    byfilter:entities(select: "id,dis" filter: "id", limit: 2)
+    histories(ids:["@elec-397691","@elec-434051"])
     pointWrite(id:"@elec-16514")
     {
         level
@@ -205,6 +208,7 @@ or use a GraphQL Client with this URL.
         val
         who
     }
+    country:values(tag:"geoCountry")
 } }
 ```
 #### Merge GraphQL API 

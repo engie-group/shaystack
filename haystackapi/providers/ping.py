@@ -9,6 +9,7 @@ import os
 from datetime import datetime
 from typing import Tuple, Any, Dict, Union, Optional, List, Set
 
+import pytz
 from overrides import overrides
 
 from hszinc import Grid, VER_3_0, Ref, Quantity, MARKER
@@ -29,6 +30,12 @@ class Provider(HaystackInterface):
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime]) -> Set[Any]:
         return ["value1", "value2"]
+
+    @overrides
+    def versions(self) -> List[datetime]:
+        return [datetime(2020, 1, 1, tzinfo=pytz.utc).isoformat(),
+                datetime(2020, 2, 1, tzinfo=pytz.utc).isoformat(),
+                ]
 
     @overrides
     def about(self, home: str) -> Grid:  # pylint: disable=no-self-use

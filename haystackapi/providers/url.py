@@ -31,7 +31,7 @@ from datetime import datetime, MAXYEAR, MINYEAR, timedelta
 from io import BytesIO
 from pathlib import Path
 from threading import Lock
-from typing import Optional, Union, Tuple, Dict, Any, Set
+from typing import Optional, Union, Tuple, Dict, Any, Set, List
 from urllib.parse import urlparse, ParseResult
 
 import pytz
@@ -71,12 +71,19 @@ class Provider(HaystackInterface):
         self._versions = {}  # Dict of OrderedDict with versions
         self._lru = []
         self._timer = None
+        self._concurrency = None
 
     @overrides
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -> Set[Any]:
         grid = self._download_grid(self._get_url(), date_version)
         return {row[tag] for row in grid.filter(tag)}
+
+    @overrides
+    def versions(self) -> List[datetime]:
+        parsed_uri = urlparse(self._get_url(), allow_fragments=False)
+        self._refresh_versions(parsed_uri)
+        return [date_version for date_version, _ in self._versions[parsed_uri.geturl()].items()]
 
     @overrides
     def about(self, home: str) -> Grid:  # pylint: disable=no-self-use
@@ -196,12 +203,23 @@ class Provider(HaystackInterface):
 
     def _lambda(self) -> BaseClient:
         if not self._lambda_client:  # Lazy init
-            self._lambda_client = boto3.client("lambda", region_name=os.environ["AWS_REGION"])
+            self._lambda_client = boto3.client("lambda",
+                                               region_name=os.environ["AWS_REGION"],
+                                               endpoint_url=os.environ.get("AWS_S3_ENDPOINT", None),
+                                               verify=False,  # See https://tinyurl.com/y5tap6ys
+                                               )
         return self._lambda_client
 
     def _function_concurrency(self) -> int:
-        return self._lambda().get_function_concurrency(
-            FunctionName=os.environ['AWS_LAMBDA_FUNCTION_NAME'])['ReservedConcurrentExecutions']
+        # if not self._concurrency:
+        #     try:
+        #         self._concurrency = self._lambda().get_function_concurrency(
+        #             FunctionName=os.environ['AWS_LAMBDA_FUNCTION_NAME'])['ReservedConcurrentExecutions']
+        #     except (KeyError):
+        #         log.warning("Impossible to get `ReservedConcurrentExecutions`")
+        #         self._concurrency = 1000  # Default value if error
+        # return self._concurrency
+        return 1000
 
     def _s3(self) -> BaseClient:
         # AWS_S3_ENDPOINT may be http://localhost:9000 to use minio (make start-minio)

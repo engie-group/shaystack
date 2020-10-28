@@ -164,4 +164,12 @@ def test_lru_version(mock):
     finally:
         provider.cancel()
 
+
 # TODO: tester le boot avec un doc rescent, avec ou sans concurrency à 1 ou +
+
+@patch.object(Provider, '_s3')
+def test_version(mock):
+    mock.return_value = _get_mock_s3()
+    provider = get_provider("haystackapi.providers.url")
+    versions = provider.versions()
+    assert len(versions) == 3

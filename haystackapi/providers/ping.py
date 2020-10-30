@@ -5,7 +5,6 @@ It's must be used for test.
 from __future__ import annotations
 
 import logging
-import os
 from datetime import datetime
 from typing import Tuple, Any, Dict, Union, Optional, List, Set
 
@@ -16,7 +15,6 @@ from hszinc import Grid, VER_3_0, Ref, Quantity, MARKER
 from .haystack_interface import HaystackInterface
 
 log = logging.getLogger("ping.Provider")
-log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
 PingGrid = Grid(
     version=VER_3_0, columns={"empty": {}}, metadata={"dis": "Ping Provider"}

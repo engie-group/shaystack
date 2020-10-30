@@ -34,7 +34,7 @@ requirements = [
     'accept_types',
     'overrides',
     'tzlocal',
-    'hszinc',
+    'hszinc[unitconversion]',
     'pint',
     'click',
     'click_pathlib'

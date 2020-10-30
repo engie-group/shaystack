@@ -18,7 +18,6 @@ from hszinc import Grid, VER_3_0, Uri, Ref, Quantity, parse_date_format, Metadat
 from hszinc.sortabledict import SortableDict
 
 log = logging.getLogger("haystackapi")
-log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
 EmptyGrid = Grid(version=VER_3_0, columns={"empty": {}})
 

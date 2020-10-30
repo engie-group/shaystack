@@ -54,9 +54,8 @@ except ImportError:
 Timestamp = datetime
 
 log = logging.getLogger("url.Provider")
-log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
-LRU_SIZE, PERIODIC_REFRESH = 16, int(os.environ.get("REFRESH", "15"))
+LRU_SIZE, PERIODIC_REFRESH = 15, int(os.environ.get("REFRESH", "15"))
 
 
 class Provider(HaystackInterface):
@@ -68,7 +67,7 @@ class Provider(HaystackInterface):
         self._s3_client = None
         self._lambda_client = None
         self._lock = Lock()
-        self._versions = {}  # Dict of OrderedDict with versions
+        self._versions = {}  # Dict of OrderedDict with date_version:version_id
         self._lru = []
         self._timer = None
         self._concurrency = None
@@ -231,35 +230,30 @@ class Provider(HaystackInterface):
             )
         return self._s3_client
 
-    def _download_uri(self, parsed_uri: ParseResult, date_ask: datetime) -> bytes:
-        """Download Haystack from URI.
+    def _download_uri(self, parsed_uri: ParseResult, effective_version: datetime) -> bytes:
+        """Download bytes from URI.
         The uri must be a classic url (file://, http:// ...)
         or a s3 urn (s3://).
         The suffix describe the file format.
+
+        Return decompressed data
         """
         assert parsed_uri
-        log.info("_download_uri('%s')", parsed_uri.geturl())
+        assert effective_version
+        log.error("_download_uri('%s')", parsed_uri.geturl())
         if parsed_uri.scheme == "s3":
             assert BOTO3_AVAILABLE, "Use 'pip install boto3'"
             s3_client = self._s3()
             extra_args = None
-            if date_ask:
-                obj_versions = self._versions[parsed_uri.geturl()]
-                version_id = None
-                for date_version, (version_id, _) in obj_versions.items():
-                    if date_version <= date_ask:
-                        extra_args = {"VersionId": version_id}
-                        break
-                if not version_id:  # At this date, this file was not exist
-                    raise KeyError(parsed_uri.path[1:])
+            obj_versions = self._versions[parsed_uri.geturl()]
+            version_id = None
+            for date_version, version_id in obj_versions.items():
+                if date_version == effective_version:
+                    extra_args = {"VersionId": version_id}
+                    break
+            assert version_id, "Version not found"
 
             stream = BytesIO()
-            log.debug(
-                "bucket=%s path=%s extra=%s",
-                parsed_uri.netloc,
-                parsed_uri.path[1:],
-                extra_args,
-            )
             s3_client.download_fileobj(
                 parsed_uri.netloc, parsed_uri.path[1:], stream, ExtraArgs=extra_args
             )
@@ -305,14 +299,14 @@ class Provider(HaystackInterface):
                     # Else, it's may be possible to have two different versions if an
                     # new AWS Lambda instance was created after an updated version.
                     if not first_time or concurrency <= 1 or date_version < start_of_current_period:
-                        all_versions[date_version] = (version_id, None)  # Add a slot
+                        all_versions[date_version] = version_id  # Add a slot
                     else:
                         log.warning("Ignore the version '%s' ignore until the next period.\n" +
                                     "Then, all lambda instance are synchronized.", version_id)
-            self._versions[parsed_uri.geturl()] = all_versions
+            self._versions[parsed_uri.geturl()] = all_versions  # Lru and versions)
             self._lock.release()
         else:
-            self._versions[parsed_uri.geturl()] = {datetime.min: ("", None)}
+            self._versions[parsed_uri.geturl()] = {datetime.min: "direct_file"}
 
         if PERIODIC_REFRESH:
             partial_refresh = functools.partial(
@@ -325,38 +319,28 @@ class Provider(HaystackInterface):
         if not PERIODIC_REFRESH or parsed_uri.geturl() not in self._versions:
             self._periodic_refresh_versions(parsed_uri, True)
 
+    @functools.lru_cache
+    def _download_grid_effective_version(self, uri: str, effective_version: datetime) -> Grid:
+        log.info("_download_grid(%s,%s)", uri, effective_version)
+        parsed_uri = urlparse(uri, allow_fragments=False)
+        body = self._download_uri(parsed_uri, effective_version).decode("utf-8")
+        if body is None:
+            raise ValueError("Empty body not supported")
+        if uri.endswith(".gz"):
+            uri = uri[:-3]
+
+        mode = suffix_to_mode(os.path.splitext(uri)[1])
+        if not mode:
+            raise ValueError(
+                "The file extension must be .(json|zinc|csv)[.gz]"
+            )
+        return hszinc.parse(body, mode)
+
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
         parsed_uri = urlparse(uri, allow_fragments=False)
         self._refresh_versions(parsed_uri)
-        for version, (_, grid) in self._versions[uri].items():
+        effective_version = None  # The effective date to use
+        for version, _ in self._versions[uri].items():
             if not date_version or version <= date_version:
-                if not grid:
-                    log.debug(
-                        "_download_grid(%s,%s)", parsed_uri.geturl(), date_version
-                    )
-                    body = self._download_uri(parsed_uri, date_version).decode("utf-8")
-                    if body is None:
-                        raise ValueError("Empty body not supported")
-                    if uri.endswith(".gz"):
-                        uri = uri[:-3]
-
-                    mode = suffix_to_mode(os.path.splitext(uri)[1])
-                    if not mode:
-                        raise ValueError(
-                            "The file extension must be .(json|zinc|csv)[.gz]"
-                        )
-                    grid = hszinc.parse(body, mode)
-                self._lock.acquire()
-                self._versions[version] = grid
-                if version in self._lru:
-                    self._lru.remove(version)
-                self._lru.append(version)
-                # Purge LRU
-                if len(self._lru) > LRU_SIZE:
-                    split = len(self._lru) - LRU_SIZE
-                    for lru_version in self._lru[0:split]:
-                        self._versions[lru_version] = None
-                    self._lru = self._lru[split:]
-                self._lock.release()
-                return grid
+                return self._download_grid_effective_version(uri, version)
         raise ValueError("Empty body not supported")

@@ -42,7 +42,6 @@ DEFAULT_MIME_TYPE: str = hszinc.MODE_CSV
 _DEFAULT_MIME_TYPE_WITH_METADATA = hszinc.MODE_ZINC
 
 log = logging.getLogger("haystackapi")
-log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
 
 @dataclass

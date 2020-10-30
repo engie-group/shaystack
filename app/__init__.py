@@ -1,6 +1,7 @@
 """
 A Flask layer to haystack interface.
 """
+import logging
 import os
 import sys
 
@@ -35,6 +36,9 @@ pip install "haystackapi[flask,graphql]"
 from app.blueprint_haystack import haystack_blueprint as haystack_blueprint
 
 app = Flask(__name__)
+_log_level = os.environ.get("LOG_LEVEL", "WARNING")
+logging.basicConfig(level=_log_level)
+app.logger.setLevel(_log_level)
 app.register_blueprint(haystack_blueprint)
 if USE_GRAPHQL:
     app.register_blueprint(graphql_blueprint)

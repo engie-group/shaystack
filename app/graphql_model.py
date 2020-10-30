@@ -3,7 +3,6 @@ Model to inject a another graphene model, to manage the haystack layer.
 See the blueprint_graphql to see how to integrate this part of global GraphQL model.
 """
 import logging
-import os
 from datetime import datetime
 from typing import Optional, List
 
@@ -24,7 +23,6 @@ except ImportError:
     pass
 
 log = logging.getLogger("haystackapi")
-log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
 
 # TODO: voir la batch approche
@@ -174,7 +172,7 @@ class ReadHaystack(graphene.ObjectType):
         description="Selected entities of ontology"
     )
 
-    histories = graphene.List(graphene.NonNull(HSScalar),
+    histories = graphene.List(graphene.NonNull(graphene.List(graphene.NonNull(HSScalar))),
                               ids=graphene.List(graphene.ID,
                                                 description="List of ids to return"),
                               dates_range=graphene.String(description="today, yesterday, "

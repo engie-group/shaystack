@@ -4,7 +4,6 @@ A top GraphQL query.
 You can use a similar code to integrate the haystack graphql api in a bigger environment.
 """
 import logging
-import os
 import sys
 
 import click
@@ -15,7 +14,6 @@ from flask_graphql import GraphQLView
 from app.graphql_model import ReadHaystack
 
 log = logging.getLogger("haystackapi")
-log.setLevel(level=logging.getLevelName(os.environ.get("LOGLEVEL", "WARNING")))
 
 class Query(graphene.ObjectType):
     class Meta:

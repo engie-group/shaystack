@@ -88,15 +88,16 @@ class Provider(HaystackInterface):
             dates_range,
             date_version,
         )
+        now = datetime.now(tz=pytz.utc)
         grid = Grid(VER_3_0,
                     metadata={"id": entity_id,
-                              "hisStart": None,  # FIXME
-                              "hisEnd": None
+                              "hisStart": now,
+                              "hisEnd": now
                               })
-        grid.append({"date": datetime.now().isoformat(),  # FIXME
+        grid.append({"date": now,
                      "val": Quantity(100, "°")}
                     )
-        grid.append({"data": datetime.now().isoformat(),  # FIXME
+        grid.append({"data": now,
                      "val": Quantity(100, "°")}
                     )
         return grid.extends_columns()
@@ -118,7 +119,7 @@ class Provider(HaystackInterface):
     def nav(self, nav_id: str) -> Any:  # pylint: disable=no-self-use
         """ Return EmptyGrid """
         log.info('nav(nav_id="%s")', nav_id)
-        return PingGrid  # FIXME
+        return PingGrid
 
     @overrides
     def watch_sub(

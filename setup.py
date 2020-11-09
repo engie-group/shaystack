@@ -5,6 +5,8 @@ import subprocess
 
 from setuptools import setup, find_packages
 
+ROOT = "https://github.com/pprados/haystackapi"
+
 
 # Return git remote url
 def _git_url() -> str:
@@ -30,11 +32,15 @@ def _git_http_url() -> str:
     return re.sub(r".*@(.*):(.*).git", r"http://\1/\2", _git_url())
 
 
+# See setup.cfg
+install_requirements = [
+]
+
 requirements = [
     'accept_types',
     'overrides',
     'tzlocal',
-    'hszinc[unitconversion]',
+    'hszinc',
     'pint',
     'click',
     'click_pathlib'
@@ -99,6 +105,7 @@ setup(name='haystackapi',
           'Topic :: Scientific/Engineering :: Information Analysis',
       ],
       requires=requirements,
+      python_requires='>=3',
       extras_require={
           'dev': dev_requirements,
           'flask': flask_requirements,
@@ -107,11 +114,16 @@ setup(name='haystackapi',
           # 'azure': azure_requirements,
           'graphql': graphql_requirements,
       },
-      install_requires=requirements,
+      install_requires=install_requirements,
       entry_points={
           "console_scripts": [
               'haystackapi = app.__init__:main'
           ]
       },
-      dependency_links=['git+https://github.com/pprados/hszinc.git#egg=hszinc-4.0']
+      dependency_links=['git+https://github.com/pprados/hszinc.git#egg=hszinc-4.0'],
+      project_urls={
+          'Documentation': ROOT,
+          'Source': ROOT,
+          'Tracker': ROOT + '/issues',
+      },
       )

@@ -259,13 +259,6 @@ def _dump_response(
     raise HttpError(406, f"Accept '{accept}' not supported")
 
 
-# PPR: manage compression ?
-def _compress_response(
-        content_encoding: Optional[str], response
-):  # pylint: disable=W0613
-    return response
-
-
 def _manage_exception(
         headers: Dict[str, str], ex: Exception, stage: str
 ) -> HaystackHttpResponse:
@@ -310,7 +303,7 @@ def about(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         return _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
-    return _compress_response(headers.get("Accept-Encoding", None), response)
+    return response
 
 
 def ops(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
@@ -323,7 +316,7 @@ def ops(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
-    return _compress_response(headers.get("Accept-Encoding", None), response)
+    return response
 
 
 def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
@@ -363,7 +356,7 @@ def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
-    return _compress_response(headers.get("Accept-Encoding", None), response)
+    return response
 
 
 def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
@@ -421,7 +414,7 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
-    return _compress_response(headers.get("Accept-Encoding", None), response)
+    return response
 
 
 def nav(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
@@ -442,7 +435,7 @@ def nav(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
-    return _compress_response(headers.get("Accept-Encoding", None), response)
+    return response
 
 
 def watch_sub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
@@ -478,7 +471,7 @@ def watch_sub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
-    return _compress_response(headers.get("Accept-Encoding", None), response)
+    return response
 
 
 def watch_unsub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
@@ -512,7 +505,7 @@ def watch_unsub(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
-    return _compress_response(headers.get("Accept-Encoding", None), response)
+    return response
 
 
 def watch_poll(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
@@ -539,7 +532,7 @@ def watch_poll(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
-    return _compress_response(headers.get("Accept-Encoding", None), response)
+    return response
 
 
 def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
@@ -593,7 +586,7 @@ def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
-    return _compress_response(headers.get("Accept-Encoding", None), response)
+    return response
 
 def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `his_read` operation"""
@@ -630,7 +623,7 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
-    return _compress_response(headers.get("Accept-Encoding", None), response)
+    return response
 
 
 def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
@@ -662,7 +655,7 @@ def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
-    return _compress_response(headers.get("Accept-Encoding", None), response)
+    return response
 
 
 def invoke_action(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
@@ -685,4 +678,4 @@ def invoke_action(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespo
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
-    return _compress_response(headers.get("Accept-Encoding", None), response)
+    return response

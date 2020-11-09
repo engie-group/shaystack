@@ -18,8 +18,8 @@ in another schema.
     - Import schema or merge Haystack schema with another
     - add a resolver in the tag `haystack'
     - select `HaystackLambda` datasource
-    - Enable request mapping template with the file `request-filter.json`
+    - Enable request mapping template with the file `request-filter.vm`
     - Update the parameter
-    - Enable response mapping template with the file `response-filter.json`
+    - Enable response mapping template with the file `response-filter.vm`
     - Save the resolver
-* Test a query like `{ haystack { about } }`  # FIXME
+* Test a query like `{ haystack { tagValues(tag:"dis") } }`

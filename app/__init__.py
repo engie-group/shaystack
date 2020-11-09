@@ -10,7 +10,6 @@ import click
 try:
     from flask import Flask, send_from_directory
 except ImportError:
-    # FIXME
     print("""
 To start haystackapi, use
 pip install "haystackapi[flask]"

@@ -41,6 +41,6 @@ result = client.execute('''
 } }
 ''')
 
-# TODO: Voir batch query support
+# PPR: Voir batch query support
 ## https://github.com/graphql-python/flask-graphql
 print(json.dumps(json.loads(result), indent=4, sort_keys=True))

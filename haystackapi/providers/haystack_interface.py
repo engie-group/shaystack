@@ -14,8 +14,7 @@ from typing import Any, Tuple, Dict, Union, Optional, List, Set
 from tzlocal import get_localzone
 
 import hszinc
-from hszinc import Grid, VER_3_0, Uri, Ref, Quantity, parse_date_format, MetadataObject
-from hszinc.sortabledict import SortableDict
+from hszinc import Grid, VER_3_0, Uri, Ref, Quantity, parse_date_format
 
 log = logging.getLogger("haystackapi")
 
@@ -48,6 +47,12 @@ class HaystackInterface(ABC):
 
     def __str__(self):
         return self.__repr__()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        pass
 
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -> Set[Any]:
@@ -315,25 +320,6 @@ class HaystackInterface(ABC):
         """
         raise NotImplementedError()
 
-    @staticmethod
-    def select_grid(grid, select) -> Grid:
-        if select:
-            select = select.strip()
-            if select not in ["*", '']:
-                new_grid = Grid(version=grid.version, columns=grid.column, metadata=grid.metadata)
-                new_cols = SortableDict()
-                for col in select.split(','):
-                    new_cols[col] = MetadataObject()
-                for col, meta in grid.column.items():
-                    if col in new_cols:
-                        new_cols[col] = meta
-                new_grid.column = new_cols
-                for row in grid:
-                    new_grid.append({key: val for key, val in row.items() if key in new_cols})
-                return new_grid
-        return grid
-
-
 _providers = {}  # Cached providers
 
 
@@ -358,6 +344,9 @@ def get_provider(class_str) -> HaystackInterface:
         # Then, it's possible to generate the Ops operator dynamically
         # pylint: disable=missing-function-docstring,useless-super-delegation
         class FullInterface(provider_class):  # pylint: disable=missing-class-docstring
+            def __init__(self):
+                super().__init__()
+
             def about(
                     self, home: str
             ) -> Grid:  # pylint: disable=missing-function-docstring,useless-super-delegation

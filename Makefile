@@ -247,6 +247,7 @@ clean-zappa:
 ## Clean project
 clean: async-stop clean-zappa
 	@rm -rf bin/* .mypy_cache .pytest_cache .start build nohup.out dist .make-* .pytype out.json
+	@rm test/
 
 .PHONY: clean-all
 # Clean all environments
@@ -300,17 +301,17 @@ start-api: $(REQUIREMENTS)
 # Start local api in background
 async-start-api: $(REQUIREMENTS)
 	$(VALIDATE_VENV)
-	[ -e .start/start-api.pid ] && echo -e "$(orange)Local API was allready started$(normal)" && exit
+	[ -e .start/start-api.pid ] && echo -e "$(yellow)Local API was allready started$(normal)" && exit
 	mkdir -p .start
 	FLASK_DEBUG=1 FLASK_APP=app.run FLASK_ENV=$(AWS_STAGE) \
 	nohup flask run >.start/start-api.log 2>&1 &
 	echo $$! >.start/start-api.pid
 	sleep 0.5
 	tail .start/start-api.log
-	echo -e "$(orange)Local API started$(normal)"
+	echo -e "$(yellow)Local API started$(normal)"
 
 # Stop local api emulator in background
-async-stop-api:
+async-stop-api: pg-stop pg-stop-pgadmin
 	@$(VALIDATE_VENV)
 	@[ -e .start/start-api.pid ] && kill `cat .start/start-api.pid` || true && echo -e "$(green)Local API stopped$(normal)"
 	rm -f .start/start-api.pid
@@ -358,7 +359,7 @@ async-stop-minio:
 
 async-start-minio: .minio $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
-	[ -e .start/start-minio.pid ] && echo -e "$(orange)Local Minio was allready started$(normal)" && exit
+	[ -e .start/start-minio.pid ] && echo -e "$(yellow)Local Minio was allready started$(normal)" && exit
 	mkdir -p .start
 	nohup  docker run -p 9000:9000 \
 	--name minio_$(PRJ) \
@@ -369,7 +370,7 @@ async-start-minio: .minio $(REQUIREMENTS)
 	echo $$! >.start/start-minio.pid
 	sleep 2
 	tail .start/start-minio.log
-	echo -e "$(orange)Local Minio was started$(normal)"
+	echo -e "$(yellow)Local Minio was started$(normal)"
 
 
 ## Stop all async server
@@ -380,7 +381,6 @@ ifeq ($(USE_OKTA),Y)
 .PHONY: aws-update-token
 # Update the AWS Token
 aws-update-token:
-	@echo -e "$(green)Update the token for profile '$(AWS_PROFILE)$(normal)'"
 	@aws sts get-caller-identity >/dev/null 2>/dev/null || $(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
 else
 aws-update-token:
@@ -396,8 +396,7 @@ ifeq ($(USE_OKTA),Y)
 	$(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
 endif
 	source $(ZAPPA_ENV)/bin/activate
-	pip install -e '.[graphql,lambda]'
-	# FIXME Install submodule
+	pip install -e '.[graphql,lambda,aws]'
 	pip install -e hszinc
 
 ## Build lambda package
@@ -586,3 +585,54 @@ release: clean dist
 	echo "Enter Pypi password"
 	twine upload --sign \
 		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
+
+# ------------- Postgres database
+## Print sqlite db url connection
+sqlite-url:
+	echo "sqlite3://test.db#haystack"
+
+# ------------- Postgres database
+## Start postgres database
+start-pg:
+	@docker start postgres || docker run \
+		--name postgres \
+		--hostname postgres \
+		-e POSTGRES_PASSWORD=password \
+		-d postgres
+	echo -e "$(yellow)Postgres started$(normal)"
+
+## Stop postgres database
+stop-pg:
+	@docker stop postgres
+	echo -e "$(green)Postgres stopped$(normal)"
+
+## Print postgres db url connection
+pg-url:
+	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
+	@echo "postgres://postgres:password@$$IP:5432/postgres#haystack"
+
+pg-shell:
+	@docker exec -it postgres psql -U postgres -h $(shell make postgres-ip)
+
+# You can change the password in .env
+PGADMIN_USER?=$(USER)@domain.com
+PGADMIN_PASSWORD?=password
+
+## Start PGAdmin
+start-pgadmin:
+	@docker start pgadmin || docker run \
+	--name pgadmin \
+	-p 80:80 \
+	--link postgres \
+    -e 'PGADMIN_DEFAULT_EMAIL=$(PGADMIN_USER)' \
+    -e 'PGADMIN_DEFAULT_PASSWORD=$(PGADMIN_PASSWORD)' \
+    -d dpage/pgadmin4
+	echo -e "$(yellow)PGAdmin started. Use $(cyan)$(PGADMIN_USER)$(yellow) and $(cyan)$(PGADMIN_PASSWORD)$(yellow) $(normal)"
+
+## Stop PGAdmin
+stop-pgadmin:
+	@docker stop pgadmin
+	echo -e "$(green)PGAdmin stopped$(normal)"
+
+## Print all URL
+info: aws-api api  pg-url

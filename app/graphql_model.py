@@ -25,17 +25,9 @@ except ImportError:
 log = logging.getLogger("haystackapi")
 
 
-# TODO: voir la batch approche
-# PPR: autre modèle possible, retourner un JSon, valide partout
+# PPR: see the batch approch
 # WARNING: At this time only public endpoints are supported by AWS AppSync
 
-# ---------------
-# AWS Scalar : https://docs.aws.amazon.com/appsync/latest/devguide/scalars.html
-# TODO: utiliser les parametres dans l'URL en plus du POST ?
-# Dans Zappa, il faut ajouter un handler Voir page 320
-# pour voir le event envoyé à la lambda par AppSync.
-# Il faut probablement ajouter un handler spécifique.
-# Voir page 317 https://docs.aws.amazon.com/appsync/latest/devguide/appsync-dg.pdf
 class HSScalar(graphene.Scalar):
     '''Haystack Scalar'''
 
@@ -133,7 +125,7 @@ class HSPointWrite(graphene.ObjectType):
     who = graphene.String(description="Who has updated the value")
 
 
-# TODO: voir l'approche Batch
+# PPR: voir l'approche Batch
 class ReadHaystack(graphene.ObjectType):
     """ Ontology conform with Haystack project """
 
@@ -195,10 +187,10 @@ class ReadHaystack(graphene.ObjectType):
     @staticmethod
     def resolve_about(parent, info):
         log.debug(f"resolve_about(parent,info)")
-        grid = get_singleton_provider().about("http://localhost")  # FIXME
+        grid = get_singleton_provider().about("http://localhost")
         rc = ReadHaystack._conv_entity(HSAbout, grid[0])
-        # FIXME rc.serverTime=grid[0]["serverTime"].isoformat()
-        # rc.bootTime=grid[0]["bootTime"].isoformat()
+        rc.serverTime = grid[0]["serverTime"].isoformat()
+        rc.bootTime = grid[0]["bootTime"].isoformat()
         return rc
 
     @staticmethod

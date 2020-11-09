@@ -14,9 +14,7 @@ This implementation propose two API endpoint:
 # Classical Haystack API
 Theses API can negotiate:
 - Request format (`Content-Type: text/zinc`, `application/json` or `text/csv`)
-- Request encoding (`Content-Encoding: gzip`)
 - Response format (`Accept: text/zinc, application/json, text/csv`)
-- Response encoding (`Accept-Encoding: gzip`)
 
 The code implements all ReadHaystack [operations](https://project-haystack.org/doc/Rest):
 - [about](https://project-haystack.org/doc/Ops#about)
@@ -31,6 +29,10 @@ The code implements all ReadHaystack [operations](https://project-haystack.org/d
 - [hisRead](https://project-haystack.org/doc/Ops#hisRead)
 - [hisWrite](https://project-haystack.org/doc/Ops#hisWrite)
 - [invokeAction](https://project-haystack.org/doc/Ops#invokeAction)
+
+# GraphQL Haystack API
+This API use the `http://<host>:<port>/graphql` url and was conform to the schema
+describe in file `schema.graphql`.
 
 ## Quick local installation
 ```bash
@@ -95,11 +97,11 @@ To select a provider, add the environment variable `HAYSTACK_PROVIDER` in the en
 To add a new provider, *fork the project* and add a provider in the `providers` directory. You can update others 
 parameters in `Project.variables` (`HAYSTACK_PROVIDER`, `AWS_STACK`, `AWS_PROFILE`, `AWS_REGION`, ...)
 
-### Provider ping
+### Provider Ping
 Use `HAYSTACK_PROVIDER=providers.ping` to use this provider.
 It's a very simple provider, with a tiny implementation of all haystack operation.
 
-### Provider url
+### Provider URL
 Use `HAYSTACK_PROVIDER=providers.url` to use this provider.
 Add the variable `HAYSTACK_URL=<url>` to expose an ReadHaystack file via the ReadHaystack protocol.
 The methods `/read` and `/hisRead` was implemented.
@@ -109,14 +111,44 @@ This URI may be relative and must be in parquet format.
 
 Because this provider use a local cache with the parsing version of S3 file,
 it's may be possible to see different versions if AWS use multiple instance of lambda.
-To fixe that, the environment variable `REFRESH` can be set to a delay to refresh
-the cache (Default value is 15m). Every quarter of an hour, each lambda check the list
-of version of this file, and refresh the cache in memory, at the time time.
+To fixe that, the environment variable `REFRESH` can be set to delay cache refresh
+(Default value is 15m). Every quarter of an hour, each lambda check the list
+of version for this file, and refresh the cache in memory, at the same time.
 If a new version is published juste before you start the lambda, it's may be possible
 you can't see this version. You must wait the end of the current quarter.
 
 If you limit the concurrency of lambda to 1, this synchronisation between lambda
 is not activate. 
+
+### Provider SQL
+This provider use an ontology imported in SQL database. Each entity is saved in a row
+in the JSON format.
+Use `HAYSTACK_PROVIDER=providers.sql` to use this provider.
+Add the variable `HAYSTACK_DB` to describe the link to the table. 
+At this time, only Postgresql was supported.
+```bash
+HAYSTACK_PROVIDER=providers.sql
+HAYSTACK_DB=postgresql://scott:tiger@localhost/mydatabase#haystack
+HAYSTACK_DB=postgresql+psycopg2://scott:tiger@localhost/mydatabase
+```
+The methods `/read` was implemented.
+
+You can use `import_db` to import an Haystack file in database. 
+```bash
+python -m haystackapi.providers.import_db <haystack file url> <db url>
+```
+After deployment, you can use this provider like any others providers. 
+The haystack filter was automatically converted to Postgres SQL.
+Two table was created:
+- <table_name> (haystack by default)
+- <table_name>_meta_datas
+and some index.
+The column `entity` use a json version of haystack entity 
+(See [here](https://project-haystack.org/doc/Json)).
+
+To manage the multi-tenancy, it's possible to use different approach:
+- Overload the method `get_customer()` to return the name of customer, deduce by the user logging
+- Use different table (change the table name, ...#haystack_customer1, ...#haystack_customer2)
 
 ### Using with Excel or PowerBI
 Because the default negotiated format is CSV, you can call theses API with PowerQuery/
@@ -222,9 +254,8 @@ make graphql-schema
 - And deploy your application
 
 #### Use AWS AppSync
-It's possible to une AWS AppSync to integrate the Haystack GraphQL API.
+It's possible to use AWS AppSync to integrate the Haystack GraphQL API.
 Read the file `README.md` in the folder `aws appsync`.
-
 
 
 ## Deploy the application on AWS Lambda

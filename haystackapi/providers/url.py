@@ -18,7 +18,6 @@ The time series to manage history must be referenced in entity:
 - with inner ontology in tag 'history' or
 - with the `hisURI` tag. This URI may be relative and MUST be in grid format.
 """
-from __future__ import annotations
 
 import functools
 import gzip
@@ -38,8 +37,8 @@ import pytz
 from overrides import overrides
 
 import hszinc
-from hszinc import Grid, suffix_to_mode, Ref, MetadataObject
-from hszinc.sortabledict import SortableDict
+from hszinc import Grid, suffix_to_mode, Ref
+from . import select_grid
 from .haystack_interface import HaystackInterface
 
 BOTO3_AVAILABLE = False
@@ -71,6 +70,7 @@ class Provider(HaystackInterface):
         self._lru = []
         self._timer = None
         self._concurrency = None
+        log.info("Use %s", self._get_url())
 
     @overrides
     def values_for_tag(self, tag: str,
@@ -123,25 +123,7 @@ class Provider(HaystackInterface):
                 result.append(grid[ref])
         else:
             result = grid.filter(grid_filter, limit if limit else 0)
-        return self.select_grid(result, select)
-
-    @staticmethod
-    def select_grid(grid, select) -> Grid:
-        if select:
-            select = select.strip()
-            if select not in ["*", '']:
-                new_grid = Grid(version=grid.version, columns=grid.column, metadata=grid.metadata)
-                new_cols = SortableDict()
-                for col in select.split(','):
-                    new_cols[col] = MetadataObject()
-                for col, meta in grid.column.items():
-                    if col in new_cols:
-                        new_cols[col] = meta
-                new_grid.column = new_cols
-                for row in grid:
-                    new_grid.append({key: val for key, val in row.items() if key in new_cols})
-                return new_grid
-        return grid
+        return select_grid(result, select)
 
     @overrides
     def his_read(
@@ -191,10 +173,13 @@ class Provider(HaystackInterface):
             raise ValueError(f"{entity_id} has no history")
         raise ValueError(f"id '{entity_id}' not found")
 
-    def cancel(self):
+    def __exit__(self, exc_type, exc_value, exc_traceback):
         """ Stop the timer """
         if self._timer:
             self._timer.cancel()
+
+    def __del__(self):
+        self.__exit__(None, None, None)
 
     def _get_url(self):  # pylint: disable=no-self-use
         """ Return the url to the file to expose. """
@@ -280,7 +265,6 @@ class Provider(HaystackInterface):
         assert next_time > now
         if parsed_uri.scheme == "s3":
             assert BOTO3_AVAILABLE, "Use 'pip install boto3'"
-            # FIXME: tester
             start_of_current_period = (next_time - timedelta(minutes=PERIODIC_REFRESH)).replace(tzinfo=pytz.UTC)
             s3_client = self._s3()
             obj_versions = [
@@ -289,6 +273,7 @@ class Provider(HaystackInterface):
                     Bucket=parsed_uri.netloc, Prefix=parsed_uri.path[1:]
                 )["Versions"]
             ]
+            obj_versions = sorted(obj_versions, key=lambda x: x[0], reverse=True)
             self._lock.acquire()
             all_versions = self._versions.get(parsed_uri.geturl(), OrderedDict())
             concurrency = self._function_concurrency()

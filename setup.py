@@ -49,6 +49,7 @@ requirements = [
 # Extra for a deployment in Flask server
 flask_requirements = [
     'flask',
+    'flask-cors'
 ]
 
 graphql_requirements = [

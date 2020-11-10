@@ -41,13 +41,13 @@ class HSScalar(graphene.Scalar):
     @staticmethod
     # Parse from AST See https://tinyurl.com/y3fr76a4
     def parse_literal(node):
-        if isinstance(node, ast.StringValue):  # FIXME
+        if isinstance(node, ast.StringValue):  # FIXME: parse_literal in GraphQL API
             return f"node={node}"
 
     @staticmethod
     # Parse form json
     def parse_value(value):
-        return f"parse_value={value}"  # FIXME
+        return f"parse_value={value}"  # FIXME: parse_value in GraphQL API
 
 
 class HSDate(graphene.String):
@@ -125,7 +125,7 @@ class HSPointWrite(graphene.ObjectType):
     who = graphene.String(description="Who has updated the value")
 
 
-# PPR: voir l'approche Batch
+# PPR: see the batch approch
 class ReadHaystack(graphene.ObjectType):
     """ Ontology conform with Haystack project """
 

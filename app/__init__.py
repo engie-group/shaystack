@@ -6,6 +6,7 @@ import os
 import sys
 
 import click
+from flask_cors import CORS
 
 try:
     from flask import Flask, send_from_directory
@@ -35,6 +36,13 @@ pip install "haystackapi[flask,graphql]"
 from app.blueprint_haystack import haystack_blueprint as haystack_blueprint
 
 app = Flask(__name__)
+cors = CORS(app, resources=
+{
+    r"/api/*": {"origins": "*"},
+    r"/graphql/*": {"origins": "*"}
+},
+            )
+
 _log_level = os.environ.get("LOG_LEVEL", "WARNING")
 logging.basicConfig(level=_log_level)
 app.logger.setLevel(_log_level)

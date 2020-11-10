@@ -15,6 +15,7 @@ from app.graphql_model import ReadHaystack
 
 log = logging.getLogger("haystackapi")
 
+
 class Query(graphene.ObjectType):
     class Meta:
         description = "Root for haystack api"
@@ -32,11 +33,6 @@ graphql_blueprint = Blueprint('graphql',
                               __name__,
                               url_prefix='/graphql')
 
-# FIXME: il faut régler le pb avec les OPTIONS sur GraphQL.
-# Pb avec https://lucasconstantino.github.io/graphiql-online/
-# avec https://countries.trevorblades.com/
-# gr_view.provide_automatic_options = False
-# gr_view.methods=['GET', 'OPTIONS']
 graphql_blueprint.add_url_rule('',
                                view_func=GraphQLView.as_view(
                                    'graphql',

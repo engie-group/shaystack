@@ -11,13 +11,13 @@ import sys
 
 import hszinc
 from hszinc import VER_3_0, MODE_ZINC, MODE_JSON, XStr, MetadataObject, MODE_CSV
-
 from .pint_enable import to_pint
 
 STR_CHARSET = string.ascii_letters + string.digits + '\n\r\t\f\b'
 
 GENERATION_NUMBER, GENERATION_COLUMN, GENERATION_ROW, PERCENT_GEN_ID, PERCENT_RECURSIVE = \
     (1, 3, 3, 30, 5)  # (10, 5, 10, 30, 5)
+
 
 def gen_random_const():
     return random.choice([True, False, hszinc.MARKER, hszinc.REMOVE, hszinc.NA])

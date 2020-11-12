@@ -23,6 +23,7 @@ var/
 .installed.cfg
 *.egg
 .pybuild
+.pytype
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

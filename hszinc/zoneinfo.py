@@ -472,13 +472,13 @@ def timezone(haystack_tz):
     tz_map = get_tz_map()
     try:
         tz_name = tz_map[haystack_tz]
+        return pytz.timezone(tz_name)
     except KeyError:
         six.reraise(ValueError,
                     ValueError('%s is not a recognised timezone on this host'
                                % haystack_tz),
                     sys.exc_info()[2])
 
-    return pytz.timezone(tz_name)
 
 
 def timezone_name(date_time):

@@ -38,8 +38,8 @@ try:
                'parse_date_format', 'use_pint',
                'VER_2_0', 'VER_3_0', 'LATEST_VER', 'Version', '__version__']
 except ModuleNotFoundError as import_error:  # pragma: no cover
-# For setup.py to interrogate the version information.  This should *NOT*
-# get executed in production, and if it did, things wouldn't work anyway.
+    # For setup.py to interrogate the version information.  This should *NOT*
+    # get executed in production, and if it did, things wouldn't work anyway.
     pass
 except ImportError as import_error:  # pragma: no cover
     # For setup.py to interrogate the version information.  This should *NOT*

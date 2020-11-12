@@ -200,7 +200,6 @@ def test_pop_pos():
 
 def test_pop_multiple_pos():
     grid = Grid(columns=["id", "a"])
-    row = {"id": Ref("id1"), "a": 1, "b": 2}
     row = {"id": Ref("id2"), "a": 1, "b": 2}
     grid.append(row)
     old = grid.pop(0, 1)

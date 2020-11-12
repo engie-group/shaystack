@@ -12,12 +12,12 @@ import math
 import os
 import warnings
 
-import hszinc
 import pytz
-from hszinc import MARKER, Grid, MODE_JSON, XStr, MODE_CSV
-from hszinc.zincparser import _unescape, ZincParseException
 from nose.tools import assert_is
 
+import hszinc
+from hszinc import MARKER, Grid, MODE_JSON, XStr, MODE_CSV
+from hszinc.zincparser import _unescape, ZincParseException
 from .pint_enable import _enable_pint
 
 # These are examples taken from http://project-haystack.org/doc/Zinc

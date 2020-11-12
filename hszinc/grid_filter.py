@@ -252,11 +252,7 @@ def parse_filter(grid_filter):
     return FilterAST(hs_filter.parseString(grid_filter, parseAll=True)[0])
 
 
-def parse_date_format(date_str):
-    return hs_all_date.parseString(date_str, parseAll=True)[0]
-
-
-## --- Generate python to apply filter
+# --- Generate python to apply filter
 FILTER_CACHE_LRU_SIZE = 500
 _id_function = 0  # pylint: disable=C0103
 

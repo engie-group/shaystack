@@ -66,20 +66,31 @@ def _read_grid(uri):
 
 # May be an handler for Lambda
 # TODO: imported les TS
-def db_import(hs_url: str = os.environ.get("HAYSTACK_URL"),
-              db: str = os.environ.get("HAYSTACK_DB"),
-              customer: Optional[str] = None,
+def db_import(hs_url: str,
+              db: str,
+              customer_id: str = '',
               reset: bool = False,
               version: Optional[datetime] = None):
-    assert hs_url, "Set `HAYSTACK_URL`"
-    assert db, "Set `HAYSTACK_DB`"
     os.environ["HAYSTACK_DB"] = db
     with get_provider("haystackapi.providers.sql") as provider:
         if reset:
             provider.purge_db()
-        original_grid = provider.export_grid_from_db(customer, version)
+        original_grid = provider.export_grid_from_db(customer_id, version)
         target_grid = _read_grid(hs_url)
-        provider.import_diff_grid_in_db(target_grid - original_grid, customer)
+        provider.import_diff_grid_in_db(target_grid - original_grid, customer_id, version)
+
+
+def aws_handler(event, context):
+    """
+    AWS Handler.
+    Set the environment variable HAYSTACK_URL and HAYSTACK_DB
+    """
+    hs_url = os.environ.get("HAYSTACK_URL")
+    db = os.environ.get("HAYSTACK_DB")
+    customer = event.get("CUSTOMER")
+    assert hs_url, "Set `HAYSTACK_URL`"
+    assert db, "Set `HAYSTACK_DB`"
+    db_import(hs_url, db, customer)
 
 
 @click.command(short_help='Import haystack file in database')
@@ -97,11 +108,15 @@ def db_import(hs_url: str = os.environ.get("HAYSTACK_URL"),
 @click.option("--clean",
               help='Clean the database before import the first version',
               is_flag=True)
-def main(haystack_url: str, database_url: str, customer: str, clean: bool) -> int:
+def main(haystack_url: str, database_url: str, customer: Optional[str], clean: Optional[bool]) -> int:
     """
     Import haystack file for file or URL, to database, to be used with sql provider.
     Only the difference was imported, with a new version of ontology.
     """
+    if customer is None:
+        customer = ''
+    if clean is None:
+        clean = False
     db_import(haystack_url, database_url, customer, clean)
     log.info("%s imported in %s", haystack_url, database_url)
     return 0

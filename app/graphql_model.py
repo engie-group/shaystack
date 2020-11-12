@@ -139,12 +139,12 @@ class ReadHaystack(graphene.ObjectType):
         graphene.NonNull(HSOps)),
         description="List of operation implemented")
 
-    tag_values = graphene.NonNull(graphene.List(graphene.NonNull(HSScalar),
-                                                tag=graphene.String(required=True,
-                                                                    description="Tag name"),
-                                                version=HSDateTime(description="Date of the version "
-                                                                               "or nothing for the last version")
+    tag_values = graphene.NonNull(graphene.List(graphene.NonNull(graphene.String),
                                                 ),
+                                  tag=graphene.String(required=True,
+                                                      description="Tag name"),
+                                  version=HSDateTime(description="Date of the version "
+                                                                 "or nothing for the last version"),
                                   description="All values for a specific tag")
 
     versions = graphene.NonNull(graphene.List(graphene.NonNull(HSDateTime)),
@@ -190,7 +190,7 @@ class ReadHaystack(graphene.ObjectType):
         grid = get_singleton_provider().about("http://localhost")
         rc = ReadHaystack._conv_entity(HSAbout, grid[0])
         rc.serverTime = grid[0]["serverTime"].isoformat()
-        rc.bootTime = grid[0]["bootTime"].isoformat()
+        rc.bootTime = grid[0]["serverBootTime"].isoformat()
         return rc
 
     @staticmethod

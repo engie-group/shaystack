@@ -54,6 +54,10 @@ class HaystackInterface(ABC):
     def __exit__(self, exc_type, exc_value, exc_traceback):
         pass
 
+    def get_customer_id(self) -> str:
+        """ Override this for multi-tenant"""
+        return ''
+
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -> Set[Any]:
         """

@@ -171,14 +171,14 @@ def _optimize_filter_for_sql(node: FilterNode) -> _Root:
 # Phase 2: Generate SQL
 
 def _generate_sql_block(table_name: str,
-                        customer: Optional[str],
+                        customer_id: str,
                         node: _Root,
                         generated_sql: List[Union[str, List[str]]],
                         num_table: int,
                         limit,
                         version: datetime) -> List[Union[str, List[str]]]:
     prefix, new_num_table, lines = _generate_filter_in_sql(table_name,
-                                                           customer,
+                                                           customer_id,
                                                            node,
                                                            generated_sql,
                                                            num_table,
@@ -203,7 +203,7 @@ def _select_version(version: datetime, num_table):
 
 
 def _generate_path(table_name: str,
-                   customer: Optional[str],
+                   customer_id: str,
                    node: _Path,
                    generated_sql: List[Union[str, List[str]]],
                    version: datetime,
@@ -224,8 +224,7 @@ def _generate_path(table_name: str,
             )
         first = False
         generated_sql.append(_select_version(version, num_table - 1))
-        if customer:
-            generated_sql.append(fr"t{num_table - 1}.customer='{customer}' AND ")
+        generated_sql.append(fr"t{num_table - 1}.customer_id='{customer_id}' AND ")
         generated_sql.append(
             f"t{num_table - 1}.entity->'{path}' = t{num_table}.entity->'id'\n"
         )
@@ -234,7 +233,7 @@ def _generate_path(table_name: str,
 
 
 def _generate_filter_in_sql(table_name: str,
-                            customer: Optional[str],
+                            customer_id: str,
                             node: _Root,
                             generated_sql: List[Union[str, List[str]]],
                             num_table: int,
@@ -245,27 +244,24 @@ def _generate_filter_in_sql(table_name: str,
     if isinstance(node, _Has):
         l = len(generated_sql)
         prefix, num_table, generated_sql = \
-            _generate_path(table_name, customer, node.tag, generated_sql, version, num_table)
+            _generate_path(table_name, customer_id, node.tag, generated_sql, version, num_table)
         if len(generated_sql) != l:
             generated_sql.append("AND\n")
         generated_sql.append(_select_version(version, num_table))
-        if customer:
-            generated_sql.append(fr"t{num_table}.customer='{customer}' AND ")
+        generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
         generated_sql.append(f"t{num_table}.entity ? '{node.tag.paths[-1]}'\n")
     elif isinstance(node, _NotHas):
         l = len(generated_sql)
         prefix, num_table, _ = \
-            _generate_path(table_name, customer, node.tag, generated_sql, version, num_table)
+            _generate_path(table_name, customer_id, node.tag, generated_sql, version, num_table)
         if len(generated_sql) != l:
             generated_sql.append("AND\n")
         generated_sql.append(_select_version(version, num_table))
-        if customer:
-            generated_sql.append(fr"t{num_table}.customer='{customer}' AND ")
+        generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
         generated_sql.append(f"NOT t{num_table}.entity ? '{node.tag.paths[-1]}'\n")
     elif isinstance(node, _AndHasTags):
         generated_sql.append(_select_version(version, num_table))
-        if customer:
-            generated_sql.append(fr"t{num_table}.customer='{customer}' AND ")
+        generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
         if node.not_op:
             generated_sql.append("NOT ")
         if len(node.tags) == 1:
@@ -274,41 +270,43 @@ def _generate_filter_in_sql(table_name: str,
             generated_sql.append(f"t{num_table}.entity ?& array{node.tags}\n")
     elif isinstance(node, _OrHasTags):
         generated_sql.append(_select_version(version, num_table))
-        if customer:
-            generated_sql.append(fr"t{num_table}.customer='{customer}' AND ")
+        generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
         generated_sql.append(f"t{num_table}.entity ?| array{node.tags}\n")
     elif isinstance(node, _And):
-        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer, node.left, generated_sql, num_table, limit,
+        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer_id, node.left, generated_sql, num_table,
+                                                       limit,
                                                        version)
         generated_sql.append("AND\n")
-        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer, node.right, generated_sql, num_table,
+        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer_id, node.right, generated_sql, num_table,
                                                        limit, version)
     elif isinstance(node, _Intersect):
-        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer, node.left, generated_sql, num_table, limit,
+        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer_id, node.left, generated_sql, num_table,
+                                                       limit,
                                                        version)
         generated_sql.append("INTERSECT\n")
         num_table += 1
         generated_sql.append(
-            _generate_sql_block(table_name, customer, node.right, [], num_table, 0, version))
+            _generate_sql_block(table_name, customer_id, node.right, [], num_table, 0, version))
     elif isinstance(node, _Or):
-        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer, node.left, generated_sql, num_table, limit,
+        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer_id, node.left, generated_sql, num_table,
+                                                       limit,
                                                        version)
         generated_sql.append("OR\n")
-        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer, node.right, generated_sql, num_table,
+        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer_id, node.right, generated_sql, num_table,
                                                        limit, version)
     elif isinstance(node, _Union):
-        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer, node.left, generated_sql, num_table, limit,
+        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer_id, node.left, generated_sql, num_table,
+                                                       limit,
                                                        version)
         generated_sql.append("UNION\n")
         num_table += 1
         generated_sql.append(
-            _generate_sql_block(table_name, customer, node.right, [], num_table, 0, version))
+            _generate_sql_block(table_name, customer_id, node.right, [], num_table, 0, version))
     elif isinstance(node, _Path):
         if len(node.paths) == 1:
             # Simple case
             generated_sql.append(_select_version(version, num_table))
-            if customer:
-                generated_sql.append(fr"t{num_table}.customer='{customer}' AND ")
+            generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
             generated_sql.append(f" t{num_table}.entity @? '$.{node.paths[0]}\n")
         else:
             # Path navigation. Use inner join
@@ -317,12 +315,11 @@ def _generate_filter_in_sql(table_name: str,
             inner_num_block = num_table
             inners_join.extend([
                 f" INNER JOIN {table_name} as t{inner_num_block + 1} ON\n",
-                ''.join(_generate_sql_block(table_name, customer, node.right, [], inner_num_block, "WHERE")),
+                ''.join(_generate_sql_block(table_name, customer_id, node.right, [], inner_num_block, "WHERE")),
                 ' AND\n',
             ])
             generated_sql.append(_select_version(version, num_table))
-            if customer:
-                inners_join.append(fr"t{num_table}.customer='{customer}' AND ")
+            inners_join.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
             inners_join.append(
                 f"t{inner_num_block + 1}.entity @? ('$.{last_path} ? (@ == \"r:' || t{inner_num_block}.id ||'\")')::jsonpath\n"
             )
@@ -345,12 +342,11 @@ def _generate_filter_in_sql(table_name: str,
             # Comparison with numbers. Must remove the header 'n:'
             l = len(generated_sql)
             prefix, num_table, generated_sql = \
-                _generate_path(table_name, customer, node.path, generated_sql, version, num_table)
+                _generate_path(table_name, customer_id, node.path, generated_sql, version, num_table)
             if len(generated_sql) > l:
                 generated_sql.append("AND\n")
             generated_sql.append(_select_version(version, num_table))
-            if customer:
-                generated_sql.append(fr"t{num_table}.customer='{customer}' AND ")
+            generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
             generated_sql.extend([
                 f"substring(t{num_table}.entity->>'{node.path.paths[-1]}' from 3)::float",
                 f" {node.operator} {value}\n",
@@ -359,12 +355,11 @@ def _generate_filter_in_sql(table_name: str,
             assert node.operator in ('=', '!='), "Operator not supported for this type"
             l = len(generated_sql)
             prefix, num_table, generated_sql = \
-                _generate_path(table_name, customer, node.path, generated_sql, version, num_table)
+                _generate_path(table_name, customer_id, node.path, generated_sql, version, num_table)
             if len(generated_sql) > l:
                 generated_sql.append("AND\n")
             generated_sql.append(_select_version(version, num_table))
-            if customer:
-                generated_sql.append(fr"t{num_table}.customer='{customer}' AND ")
+            generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
             v = jsondumper.dump_scalar(node.value)
             if v == None:
                 if node.operator == '!=':
@@ -396,10 +391,10 @@ def _sql_filter(table_name: str,
                 grid_filter: Optional[str],
                 version: datetime,
                 limit: int = 0,
-                customer: Optional[str] = None):
+                customer_id: str = ''):
     generated_sql = _generate_sql_block(
         table_name,
-        customer,
+        customer_id,
         _optimize_filter_for_sql(parse_filter(grid_filter)._head),
         [],
         1,
@@ -417,12 +412,9 @@ def _exec_sql_filter(params: Dict[str, Any],
                      grid_filter: Optional[str],
                      version: datetime,
                      limit: int = 0,
-                     customer: Optional[str] = None):
+                     customer_id: str = ''):
     if grid_filter is None or grid_filter == '':
-        if customer:
-            cursor.execute(params["SELECT_ENTITY_WITH_CUSTOMER"], (version, version, customer))
-        else:
-            cursor.execute(params["SELECT_ENTITY"], (version, version))
+        cursor.execute(params["SELECT_ENTITY"], (version, version, customer_id))
         return
 
     sql_request = _sql_filter(
@@ -430,7 +422,7 @@ def _exec_sql_filter(params: Dict[str, Any],
         grid_filter,
         version,
         limit,
-        customer)
+        customer_id)
     log.debug(sql_request)
     cursor.execute(sql_request)
     return cursor
@@ -444,7 +436,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
            CREATE TABLE IF NOT EXISTS {table_name}
                (
                id text,
-               customer text,
+               customer_id text NOT NULL,
                start_datetime timestamp NOT NULL,
                end_datetime timestamp,
                entity jsonb NOT NULL
@@ -462,7 +454,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
         "CREATE_METADATA_TABLE": textwrap.dedent(f'''
            CREATE TABLE IF NOT EXISTS {table_name}_meta_datas
                (
-               customer text,
+               customer_id text NOT NULL,
                start_datetime timestamp NOT NULL,
                end_datetime timestamp,
                metadata jsonb,
@@ -478,15 +470,12 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
         "SELECT_META_DATA": textwrap.dedent(f'''
         SELECT metadata,cols from {table_name}_meta_datas
         WHERE %s >= start_datetime AND (%s < end_datetime or end_datetime is NULL)
-        '''),
-        "SELECT_META_DATA_WITH_CUSTOMER": textwrap.dedent(f'''
-        SELECT metadata,cols from {table_name}_meta_datas
-        WHERE %s >= start_datetime AND (%s < end_datetime or end_datetime is NULL)
-        AND customer = %s
+        AND customer_id = %s
         '''),
         "CLOSE_META_DATA": textwrap.dedent(f'''
             UPDATE {table_name}_meta_datas  SET end_datetime=%s
             WHERE end_datetime IS NULL
+            AND customer_id=%s
             '''),
         "UDPATE_META_DATA": textwrap.dedent(f'''
             INSERT INTO {table_name}_meta_datas VALUES (%s,%s,null,%s,%s)
@@ -494,34 +483,30 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
         "SELECT_ENTITY": textwrap.dedent(f'''
             SELECT entity FROM {table_name}
             WHERE %s >= start_datetime AND (%s < end_datetime or end_datetime is NULL)
-            '''),
-        "SELECT_ENTITY_WITH_CUSTOMER": textwrap.dedent(f'''
-            SELECT entity FROM {table_name}
-            WHERE %s >= start_datetime AND (%s < end_datetime or end_datetime is NULL)
-            AND customer = %s
+            AND customer_id = %s
             '''),
         "SELECT_ENTITY_WITH_ID": textwrap.dedent(f'''
             SELECT entity FROM {table_name}
             WHERE %s >= start_datetime AND (%s < end_datetime or end_datetime is NULL)
-            AND id IN '''),
-        "SELECT_ENTITY_WITH_ID_AND_CUSTOMER": textwrap.dedent(f'''
-            SELECT entity FROM {table_name}
-            WHERE %s >= start_datetime AND (%s < end_datetime or end_datetime is NULL)
-            AND customer = %s
+            AND customer_id = %s
             AND id IN '''),
         "CLOSE_ENTITY": textwrap.dedent(f'''
             UPDATE {table_name} SET end_datetime=%s 
             WHERE id=%s AND end_datetime IS NULL
+            AND customer_id=%s
             '''),
         "INSERT_ENTITY": textwrap.dedent(f'''
             INSERT INTO {table_name} VALUES (%s,%s,%s,null,%s)
             '''),
         "DISTINCT_VERSION": textwrap.dedent(f'''
             SELECT DISTINCT start_datetime
-            FROM {table_name};
+            FROM {table_name}
+            WHERE customer_id=%s
+            ORDER BY start_datetime
             '''),
         "DISTINCT_TAG_VALUES": textwrap.dedent(f'''
             SELECT DISTINCT entity->'[#]'
-            FROM {table_name};
+            FROM {table_name}
+            WHERE customer_id = %s
             '''),
     }

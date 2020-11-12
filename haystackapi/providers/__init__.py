@@ -1,6 +1,8 @@
 """
 Implementation of Haystack API
 """
+import re
+
 from hszinc import Grid, MetadataObject
 from hszinc.sortabledict import SortableDict
 from .haystack_interface import HaystackInterface, get_provider
@@ -14,7 +16,7 @@ def select_grid(grid, select) -> Grid:
         if select not in ["*", '']:
             new_grid = Grid(version=grid.version, columns=grid.column, metadata=grid.metadata)
             new_cols = SortableDict()
-            for col in select.split(','):
+            for col in re.split('[, ]', select):
                 new_cols[col] = MetadataObject()
             for col, meta in grid.column.items():
                 if col in new_cols:

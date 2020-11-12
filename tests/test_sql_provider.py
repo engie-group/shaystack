@@ -11,9 +11,9 @@ from pytest import skip
 from haystackapi import Ref, Grid, VER_3_0
 from haystackapi.providers import get_provider
 
-# HAYSTACK_DB = os.environ.get("HAYSTACK_DB", 'sqlite3://:memory:/test.db#haystack')
-HAYSTACK_DB = os.environ.get("HAYSTACK_DB", 'sqlite3://test.db#haystack')
+# Set HAYSTACK_DB variable, before running the tests to validate with another database
 # HAYSTACK_DB = 'postgresql://postgres:password@172.17.0.2:5432/postgres#haystack'
+HAYSTACK_DB = os.environ.get("HAYSTACK_DB", 'sqlite3://:memory:/test.db#haystack')
 
 FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
@@ -46,7 +46,7 @@ def _get_grids():
 def _populate_db(provider):
     provider.purge_db()
     for grid, version in _get_grids():
-        provider.import_diff_grid_in_db(grid, "customer", None, version)
+        provider.import_diff_grid_in_db(grid, "", None, version)
 
 
 def setup_function(fun):

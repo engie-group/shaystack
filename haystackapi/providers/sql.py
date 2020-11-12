@@ -106,16 +106,17 @@ class Provider(HaystackInterface):
 
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -> Set[Any]:
+        customer_id = self.get_customer_id()
         distinct = self._sql.get("DISTINCT_TAG_VALUES")
         if distinct is None:
             raise NotImplementedError("Not implemented")
         conn = self._get_connect()
         cursor = conn.cursor()
-        cursor.execute(re.sub(r"\[#]", tag, self._sql["DISTINCT_TAG_VALUES"]),
-                       (tag,))
+        cursor.execute(re.sub(r"\[#]", tag, distinct),
+                       (customer_id,))
         result = cursor.fetchall()
         conn.commit()
-        return [jsonparser.parse_scalar(x[0]) for x in result]
+        return [jsonparser.parse_scalar(x[0]) for x in result if x[0] is not None]
 
     def versions(self) -> List[datetime]:
         """
@@ -123,12 +124,13 @@ class Provider(HaystackInterface):
         """
         conn = self._get_connect()
         cursor = conn.cursor()
-        cursor.execute(self._sql["DISTINCT_VERSION"])
+        customer_id = self.get_customer_id()
+        cursor.execute(self._sql["DISTINCT_VERSION"], (customer_id,))
         result = cursor.fetchall()
         conn.commit()
         if result and isinstance(result[0], str):
             return [iso8601.parse_date(x[0], default_timezone=pytz.UTC) for x in result]
-        return result
+        return [x[0] for x in result]
 
     @overrides
     def about(self, home: str) -> Grid:  # pylint: disable=no-self-use
@@ -175,7 +177,7 @@ class Provider(HaystackInterface):
                             grid_filter,
                             date_version,
                             limit,
-                            self.get_customer(),
+                            self.get_customer_id(),
                             )
             grid = self._init_grid_from_db(date_version)
             for row in cursor:
@@ -183,14 +185,10 @@ class Provider(HaystackInterface):
             conn.commit()
             return select_grid(grid, select)
         else:
-            customer = self.get_customer()
-            sql_ids = "('" + "',".join([jsondumper.dump_scalar(id) for id in entity_ids]) + "')"
-            if customer:
-                cursor.execute(self._sql["SELECT_ENTITY_WITH_ID_AND_CUSTOMER"] + sql_ids,
-                               (date_version, date_version, customer))
-            else:
-                cursor.execute(self._sql["SELECT_ENTITY_WITH_ID"] + sql_ids,
-                               (date_version, date_version))
+            customer_id = self.get_customer_id()
+            sql_ids = "('" + "','".join([jsondumper.dump_scalar(id) for id in entity_ids]) + "')"
+            cursor.execute(self._sql["SELECT_ENTITY_WITH_ID"] + sql_ids,
+                           (date_version, date_version, customer_id))
 
             grid = self._init_grid_from_db(date_version)
             for row in cursor:
@@ -243,18 +241,14 @@ class Provider(HaystackInterface):
         return self._connect
 
     def _init_grid_from_db(self, version: Optional[datetime]) -> Grid:
-        customer = self.get_customer()
+        customer = self.get_customer_id()
         if version is None:
             version = datetime(9999, 12, 31)
         conn = self._get_connect()
         cursor = conn.cursor()
         sql_type_to_json = self._sql_type_to_json
-        if customer:
-            cursor.execute(self._sql["SELECT_META_DATA_WITH_CUSTOMER"],
-                           (version, version, customer))
-        else:
-            cursor.execute(self._sql["SELECT_META_DATA"],
-                           (version, version))
+        cursor.execute(self._sql["SELECT_META_DATA"],
+                       (version, version, customer))
         grid = Grid(version=VER_3_0)
         row = cursor.fetchone()
         if row:
@@ -274,12 +268,8 @@ class Provider(HaystackInterface):
         cursor = conn.cursor()
         sql_type_to_json = self._sql_type_to_json
 
-        if customer:
-            cursor.execute(self._sql["SELECT_META_DATA_WITH_CUSTOMER"],
-                           (version, version, customer))
-        else:
-            cursor.execute(self._sql["SELECT_META_DATA"],
-                           (version, version))
+        cursor.execute(self._sql["SELECT_META_DATA"],
+                       (version, version, customer))
         grid = Grid(version=VER_3_0)
         row = cursor.fetchone()
         if row:
@@ -287,12 +277,8 @@ class Provider(HaystackInterface):
             grid.metadata = jsonparser.parse_metadata(sql_type_to_json(meta), VER_3_0)
             jsonparser.parse_cols(grid, sql_type_to_json(cols), VER_3_0)
 
-        if customer:
-            cursor.execute(self._sql["SELECT_ENTITY_WITH_CUSTOMER"],
-                           (version, version, customer))
-        else:
-            cursor.execute(self._sql["SELECT_ENTITY"],
-                           (version, version))
+        cursor.execute(self._sql["SELECT_ENTITY"],
+                       (version, version, customer))
 
         for row in cursor:
             grid.append(jsonparser.parse_row(sql_type_to_json(row[0]), VER_3_0))
@@ -309,7 +295,7 @@ class Provider(HaystackInterface):
 
     def import_diff_grid_in_db(self,
                                diff_grid: Grid,
-                               customer: Optional[str],
+                               customer_id: Optional[str],
                                version: Optional[datetime],
                                now: Optional[datetime] = None):
 
@@ -325,18 +311,19 @@ class Provider(HaystackInterface):
         cursor = conn.cursor()
         sql_type_to_json = self._sql_type_to_json
         cursor.execute(self._sql["SELECT_META_DATA"],
-                       (version, version))
+                       (version, version, customer_id))
 
         # Update metadata ?
         if new_grid.metadata != init_grid.metadata or new_grid.column != init_grid.column:
             cursor.execute(self._sql["CLOSE_META_DATA"],
                            (
                                now,
+                               customer_id
                            )
                            )
             cursor.execute(self._sql["UDPATE_META_DATA"],
                            (
-                               customer,
+                               customer_id,
                                now,
                                json.dumps(jsondumper.dump_meta(new_grid.metadata)),
                                json.dumps(jsondumper.dump_columns(new_grid.column))
@@ -351,13 +338,14 @@ class Provider(HaystackInterface):
                            (
                                now,
                                json_id,
+                               customer_id
                            )
                            )
             if "remove_" not in row:
                 cursor.execute(self._sql["INSERT_ENTITY"],
                                (
                                    json_id,
-                                   customer,
+                                   customer_id,
                                    now,
                                    json.dumps(jsondumper.dump_row(new_grid, new_grid[row["id"]]))
                                )
@@ -367,10 +355,6 @@ class Provider(HaystackInterface):
                 log.debug("Remove %s", row['id'].name)
 
         conn.commit()
-
-    def get_customer(self) -> Optional[str]:
-        """ Override this for multi-tenant"""
-        return None
 
     def _dialect_request(self, dialect: str) -> Dict[str, str]:
         table_name = self._parsed_db.fragment

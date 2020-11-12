@@ -147,7 +147,7 @@ The column `entity` use a json version of haystack entity
 (See [here](https://project-haystack.org/doc/Json)).
 
 To manage the multi-tenancy, it's possible to use different approach:
-- Overload the method `get_customer()` to return the name of customer, deduce by the user logging
+- Overload the method `get_customer_id()` to return the name of customer, deduce by the user logging
 - Use different table (change the table name, ...#haystack_customer1, ...#haystack_customer2)
 
 ### Using with Excel or PowerBI

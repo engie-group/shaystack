@@ -2,7 +2,8 @@ from unittest.mock import patch
 
 import haystackapi
 import hszinc
-from haystackapi import HaystackHttpRequest, Ref
+from haystackapi import Ref
+from haystackapi.ops import HaystackHttpRequest
 from haystackapi.providers import ping
 
 

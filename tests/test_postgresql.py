@@ -20,11 +20,12 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 def check_pg(sql_request: str):
     if check_postgres:
-        old = os.environ['HAYSTACK_DB']
+        old = os.environ.get('HAYSTACK_DB')
         os.environ['HAYSTACK_DB'] = 'postgresql://postgres:password@172.17.0.2:5432/postgres#haystack'
         provider = get_provider("haystackapi.providers.sql")
-        os.environ['HAYSTACK_DB'] = old
-        cursor = provider._get_connect().cursor()
+        if old:
+            os.environ['HAYSTACK_DB'] = old
+        cursor = provider.get_connect().cursor()
         cursor.execute(sql_request)
 
 

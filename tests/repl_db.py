@@ -18,7 +18,7 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 def main():
     """ Loop to test the postgres generation with REPL """
 
-    conn = get_provider("haystackapi.providers.sql")._get_connect()
+    conn = get_provider("haystackapi.providers.sql").get_connect()
     cursor = conn.cursor()
 
     class TstRequest(cmd.Cmd):

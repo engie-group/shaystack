@@ -3,9 +3,8 @@ from typing import Union, Tuple, Optional
 
 from overrides import overrides
 
-from haystackapi import Ref
 from haystackapi.providers import HaystackInterface
-from hszinc import Grid
+from hszinc import Grid, Ref
 
 
 class Provider(HaystackInterface):

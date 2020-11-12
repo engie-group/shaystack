@@ -1,6 +1,7 @@
+from typing import Any
+
 from overrides import overrides
 
-from haystackapi import Any
 from haystackapi.providers import HaystackInterface
 
 

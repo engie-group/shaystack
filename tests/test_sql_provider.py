@@ -8,8 +8,8 @@ from unittest.mock import patch
 import pytz
 from pytest import skip
 
-from haystackapi import Ref, Grid, VER_3_0
 from haystackapi.providers import get_provider
+from hszinc import Ref, Grid, VER_3_0
 
 # Set HAYSTACK_DB variable, before running the tests to validate with another database
 # HAYSTACK_DB = 'postgresql://postgres:password@172.17.0.2:5432/postgres#haystack'

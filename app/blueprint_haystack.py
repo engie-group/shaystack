@@ -9,9 +9,9 @@ from flask import request as flash_request
 
 # from werkzeug.local import LocalProxy
 # log = LocalProxy(lambda: current_app.logger)
-from haystackapi import HaystackHttpRequest, HaystackHttpResponse, \
+from haystackapi import \
     about, ops, formats, read, nav, watch_sub, \
-    watch_unsub, watch_poll, point_write, his_read, his_write, invoke_action
+    watch_unsub, watch_poll, point_write, his_read, his_write, invoke_action, HaystackHttpRequest, HaystackHttpResponse
 
 haystack_blueprint = Blueprint('haystack', __name__,
                                static_folder='app/static',

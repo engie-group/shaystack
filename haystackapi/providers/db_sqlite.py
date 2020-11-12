@@ -17,7 +17,7 @@ def _sql_filter(params: Dict[str, Any],
     if grid_filter is None or grid_filter == '':
         cursor.execute(params["SELECT_ENTITY"], (version, version, customer_id))
         return cursor
-    raise NotImplementedError("Complex request not implemted")
+    raise NotImplementedError("Complex request not implemented")
 
 
 def _exec_sql_filter(params: Dict[str, Any],
@@ -87,7 +87,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
             WHERE end_datetime IS NULL
             AND customer_id=?
             '''),
-        "UDPATE_META_DATA": textwrap.dedent(f'''
+        "UPDATE_META_DATA": textwrap.dedent(f'''
             INSERT INTO {table_name}_meta_datas VALUES (?,?,NULL,?,?)
             '''),
         "SELECT_ENTITY": textwrap.dedent(f'''

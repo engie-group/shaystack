@@ -324,7 +324,7 @@ class HaystackInterface(ABC):
         """
         raise NotImplementedError()
 
-_providers = {}  # Cached providers
+_providers = {}  # TODO Cached providers
 
 
 def get_provider(class_str) -> HaystackInterface:
@@ -444,12 +444,16 @@ def get_provider(class_str) -> HaystackInterface:
 _singleton_provider = None
 
 
+def no_cache():
+    """ Must be patched in unit test """
+    return False
+
 def get_singleton_provider() -> HaystackInterface:
     global _singleton_provider
     assert (
             "HAYSTACK_PROVIDER" in os.environ
     ), "Set 'HAYSTACK_PROVIDER' environment variable"
-    if not _singleton_provider:
+    if not _singleton_provider or no_cache():
         log.debug("Provider=%s", os.environ["HAYSTACK_PROVIDER"])
         _singleton_provider = get_provider(os.environ["HAYSTACK_PROVIDER"])
     return _singleton_provider

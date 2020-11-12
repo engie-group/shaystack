@@ -2,13 +2,15 @@ from unittest.mock import patch
 
 import haystackapi
 import hszinc
-from haystackapi import HaystackHttpRequest, Ref
-from hszinc import Grid
+from haystackapi.ops import HaystackHttpRequest
+from hszinc import Grid, Ref
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
-def test_negociation_with_zinc() -> None:
+@patch('haystackapi.providers.haystack_interface.no_cache')
+def test_negociation_with_zinc(no_cache) -> None:
     # GIVEN
+    no_cache.return_value = True
     mime_type = hszinc.MODE_ZINC
     request = HaystackHttpRequest()
     grid = Grid(columns={'filter': {}, "limit": {}})
@@ -27,8 +29,10 @@ def test_negociation_with_zinc() -> None:
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
-def test_negociation_with_json() -> None:
+@patch('haystackapi.providers.haystack_interface.no_cache')
+def test_negociation_with_json(no_cache) -> None:
     # GIVEN
+    no_cache.return_value = True
     mime_type = hszinc.MODE_JSON
     request = HaystackHttpRequest()
     grid = Grid(columns={'filter': {}, 'limit': {}})

@@ -11,7 +11,7 @@ import graphene
 from flask import Blueprint
 from flask_graphql import GraphQLView
 
-from app.graphql_model import ReadHaystack
+from .graphql_model import ReadHaystack
 
 log = logging.getLogger("haystackapi")
 

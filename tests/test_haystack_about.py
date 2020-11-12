@@ -2,15 +2,17 @@ from unittest.mock import patch
 
 import haystackapi
 import hszinc
-from haystackapi import HaystackHttpRequest
+from haystackapi.ops import HaystackHttpRequest
 from haystackapi.providers import ping
 from hszinc import Grid
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch('haystackapi.providers.haystack_interface.no_cache')
 @patch.object(ping.Provider, 'about')
-def test_about_with_zinc(mock) -> None:
+def test_about_with_zinc(mock, no_cache) -> None:
     # GIVEN
+    no_cache.return_value = True
     mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
     request = HaystackHttpRequest()
@@ -28,9 +30,11 @@ def test_about_with_zinc(mock) -> None:
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch('haystackapi.providers.haystack_interface.no_cache')
 @patch.object(ping.Provider, 'about')
-def test_about_without_headers(mock) -> None:
+def test_about_without_headers(mock, no_cache) -> None:
     # GIVEN
+    no_cache.return_value = True
     mock.return_value = Grid(columns=["a"])
     mock.return_value.append({"a": 1})
     mime_type = hszinc.MODE_CSV
@@ -47,9 +51,11 @@ def test_about_without_headers(mock) -> None:
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch('haystackapi.providers.haystack_interface.no_cache')
 @patch.object(ping.Provider, 'about')
-def test_about_with_multivalues_headers(mock) -> None:
+def test_about_with_multivalues_headers(mock, no_cache) -> None:
     # GIVEN
+    no_cache.return_value = True
     mock.return_value = ping.PingGrid
     mime_type = hszinc.MODE_ZINC
     request = HaystackHttpRequest()

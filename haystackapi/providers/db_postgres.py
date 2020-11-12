@@ -477,7 +477,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
             WHERE end_datetime IS NULL
             AND customer_id=%s
             '''),
-        "UDPATE_META_DATA": textwrap.dedent(f'''
+        "UPDATE_META_DATA": textwrap.dedent(f'''
             INSERT INTO {table_name}_meta_datas VALUES (%s,%s,null,%s,%s)
             '''),
         "SELECT_ENTITY": textwrap.dedent(f'''

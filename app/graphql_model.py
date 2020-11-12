@@ -25,7 +25,7 @@ except ImportError:
 log = logging.getLogger("haystackapi")
 
 
-# PPR: see the batch approch
+# PPR: see the batch approach
 # WARNING: At this time only public endpoints are supported by AWS AppSync
 
 class HSScalar(graphene.Scalar):
@@ -125,7 +125,7 @@ class HSPointWrite(graphene.ObjectType):
     who = graphene.String(description="Who has updated the value")
 
 
-# PPR: see the batch approch
+# PPR: see the batch approach
 class ReadHaystack(graphene.ObjectType):
     """ Ontology conform with Haystack project """
 
@@ -148,7 +148,7 @@ class ReadHaystack(graphene.ObjectType):
                                   description="All values for a specific tag")
 
     versions = graphene.NonNull(graphene.List(graphene.NonNull(HSDateTime)),
-                                description="All versions of datas")
+                                description="All versions of data")
 
     entities = graphene.List(
         graphene.NonNull(HSScalar),
@@ -175,7 +175,6 @@ class ReadHaystack(graphene.ObjectType):
                               version=HSDateTime(description="Date of the version or nothing for the last version"),
                               description="Selected time series")
 
-    # Retourne une liste, car on ne peut pas avoir de paramètres sur les scalar
     point_write = graphene.List(
         graphene.NonNull(HSPointWrite),
         id=graphene.ID(required=True,

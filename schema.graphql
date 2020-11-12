@@ -2,92 +2,46 @@ schema {
   query: Query
 }
 
-directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+scalar AWSJSON
 
-directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+scalar AWSURL
 
-type __Directive {
-  name: String!
-  description: String
-  locations: [__DirectiveLocation!]!
-  args: [__InputValue!]!
-  onOperation: Boolean! @deprecated(reason: "Use `locations`.")
-  onFragment: Boolean! @deprecated(reason: "Use `locations`.")
-  onField: Boolean! @deprecated(reason: "Use `locations`.")
+type HSAbout {
+  haystackVersion: String!
+  tz: String!
+  serverName: String!
+  serverTime: String!
+  serverBootTime: String!
+  productName: String!
+  productUri: AWSURL!
+  productVersion: String!
+  moduleName: String!
+  moduleVersion: String!
 }
 
-enum __DirectiveLocation {
-  QUERY
-  MUTATION
-  SUBSCRIPTION
-  FIELD
-  FRAGMENT_DEFINITION
-  FRAGMENT_SPREAD
-  INLINE_FRAGMENT
-  SCHEMA
-  SCALAR
-  OBJECT
-  FIELD_DEFINITION
-  ARGUMENT_DEFINITION
-  INTERFACE
-  UNION
-  ENUM
-  ENUM_VALUE
-  INPUT_OBJECT
-  INPUT_FIELD_DEFINITION
-}
-
-type __EnumValue {
-  name: String!
-  description: String
-  isDeprecated: Boolean!
-  deprecationReason: String
-}
-
-type __Field {
-  name: String!
-  description: String
-  args: [__InputValue!]!
-  type: __Type!
-  isDeprecated: Boolean!
-  deprecationReason: String
-}
-
-type __InputValue {
-  name: String!
-  description: String
-  type: __Type!
-  defaultValue: String
-}
-
-type __Schema {
-  types: [__Type!]!
-  queryType: __Type!
-  mutationType: __Type
-  subscriptionType: __Type
-  directives: [__Directive!]!
-}
-
-type __Type {
-  kind: __TypeKind!
+type HSOps {
   name: String
-  description: String
-  fields(includeDeprecated: Boolean = false): [__Field!]
-  interfaces: [__Type!]
-  possibleTypes: [__Type!]
-  enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
-  inputFields: [__InputValue!]
-  ofType: __Type
+  summary: String
 }
 
-enum __TypeKind {
-  SCALAR
-  OBJECT
-  INTERFACE
-  UNION
-  ENUM
-  INPUT_OBJECT
-  LIST
-  NON_NULL
+type HSPointWrite {
+  level: Int
+  levelDis: String
+  val: AWSJSON
+  who: String
+}
+
+type Haystack {
+  about: HSAbout!
+  ops: [HSOps!]!
+  tagValues(tag: String!, version: String): [String!]!
+  versions: [String!]!
+  entities(ids: [ID], select: String = "*", limit: Int = 0, filter: String = "", version: String): [AWSJSON!]
+  histories(ids: [ID], datesRange: String, version: String): [[AWSJSON!]!]
+  pointWrite(id: ID!, version: String): [HSPointWrite!]
+}
+
+type Query {
+  haystack: Haystack!
 }
 

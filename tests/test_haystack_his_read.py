@@ -5,15 +5,18 @@ from mock import patch
 
 import haystackapi
 import hszinc
-from haystackapi import HaystackHttpRequest, Ref, DEFAULT_MIME_TYPE
+from haystackapi import Ref
+from haystackapi.ops import HaystackHttpRequest, DEFAULT_MIME_TYPE
 from haystackapi.providers import ping
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch('haystackapi.providers.haystack_interface.no_cache')
 @patch.object(ping.Provider, 'his_read')
-def test_his_read_with_zinc(mock) -> None:
+def test_his_read_with_zinc(mock, no_cache) -> None:
     # GIVEN
     mock.return_value = ping.PingGrid
+    no_cache.return_value = True
     mime_type = hszinc.MODE_ZINC
     request = HaystackHttpRequest()
     grid = hszinc.Grid(columns={'id': {}})

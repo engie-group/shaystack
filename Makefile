@@ -332,7 +332,7 @@ graphql-api-%:
 
 schema.graphql: app/graphql_model.py app/blueprint_graphql.py
 	@$(VALIDATE_VENV)
-	@python app/blueprint_graphql.py >schema.graphql
+	@python -m app.blueprint_graphql >schema.graphql
 
 ## Print haystack graphql schema
 graphql-schema: schema.graphql
@@ -464,6 +464,8 @@ aws-logs:
 	@$(VALIDATE_VENV)
 	zappa tail
 
+HAYSTACK_PROVIDER="haystackapi.providers.url"
+HAYSTACK_DB="sqlite3:///test.db#haystack"
 # -------------------------------------- Tests
 .PHONY: unit-test
 .make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile .env

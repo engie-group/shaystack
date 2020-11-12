@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import haystackapi
 import hszinc
-from haystackapi import HaystackHttpRequest, DEFAULT_MIME_TYPE
+from haystackapi.ops import HaystackHttpRequest, DEFAULT_MIME_TYPE
 from haystackapi.providers import ping
 from hszinc import Grid, Ref
 

@@ -76,7 +76,7 @@ class Provider(HaystackInterface):
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -> Set[Any]:
         grid = self._download_grid(self._get_url(), date_version)
-        return {row[tag] for row in grid.filter(tag)}
+        return sorted({row[tag] for row in grid.filter(tag)})
 
     @overrides
     def versions(self) -> List[datetime]:

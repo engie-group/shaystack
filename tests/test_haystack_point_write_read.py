@@ -2,8 +2,9 @@ from unittest.mock import patch
 
 import haystackapi
 import hszinc
-from haystackapi import HaystackHttpRequest, Ref, Grid, VER_3_0
+from haystackapi.ops import HaystackHttpRequest
 from haystackapi.providers import ping
+from hszinc import Grid, VER_3_0, Ref
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})

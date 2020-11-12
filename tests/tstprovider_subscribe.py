@@ -1,10 +1,9 @@
-from typing import List
+from typing import List, Optional
 
 from overrides import overrides
 
-from haystackapi import Optional, Ref
 from haystackapi.providers import HaystackInterface
-from hszinc import Grid
+from hszinc import Grid, Ref
 
 
 class Provider(HaystackInterface):

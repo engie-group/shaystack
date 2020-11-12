@@ -91,7 +91,7 @@ class Provider(HaystackInterface):
         return os.environ["HAYSTACK_DB"]
 
     def create_db(self):
-        conn = self._get_connect()
+        conn = self.get_connect()
         cursor = conn.cursor()
         table_name = self._parsed_db.fragment
         # Create table
@@ -110,7 +110,7 @@ class Provider(HaystackInterface):
         distinct = self._sql.get("DISTINCT_TAG_VALUES")
         if distinct is None:
             raise NotImplementedError("Not implemented")
-        conn = self._get_connect()
+        conn = self.get_connect()
         cursor = conn.cursor()
         cursor.execute(re.sub(r"\[#]", tag, distinct),
                        (customer_id,))
@@ -122,7 +122,7 @@ class Provider(HaystackInterface):
         """
         Return datetime for each versions or empty array if is unknown
         """
-        conn = self._get_connect()
+        conn = self.get_connect()
         cursor = conn.cursor()
         customer_id = self.get_customer_id()
         cursor.execute(self._sql["DISTINCT_VERSION"], (customer_id,))
@@ -164,7 +164,7 @@ class Provider(HaystackInterface):
             grid_filter,
             date_version,
         )
-        conn = self._get_connect()
+        conn = self.get_connect()
         cursor = conn.cursor()
         sql_type_to_json = self._sql_type_to_json
         if date_version is None:
@@ -216,17 +216,23 @@ class Provider(HaystackInterface):
         raise NotImplementedError()
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        self._get_connect().close()
-        self._connect = False
+        conn = self.get_connect()
+        if conn:
+            conn.close()
+            self._connect = False
 
     def __del__(self):
         self.__exit__(None, None, None)
 
-    def _get_connect(self):  # PPR: monothread ? No with Zappa
+    def get_connect(self):  # PPR: monothread ? No with Zappa
         if not self._connect:  # Lazy connection
+            try:
+                port = self._parsed_db.port  # To manage sqlite in memory
+            except ValueError:
+                port = 0
             params = {
                 "host": self._parsed_db.hostname,
-                "port": self._parsed_db.port,
+                "port": port,
                 "user": self._parsed_db.username,
                 "passwd": self._parsed_db.password,
                 "password": self._parsed_db.password,
@@ -234,17 +240,18 @@ class Provider(HaystackInterface):
                 "database": self._parsed_db.path[1:],
                 "dbname": self._parsed_db.path[1:],
             }
-            _, keys = _default_driver[self._parsed_db.scheme]
-            filtered = {key: val for key, val in params.items() if key in keys}
-            self._connect = self.db.connect(**filtered)
-            self.create_db()
+            if _default_driver:
+                _, keys = _default_driver[self._parsed_db.scheme]
+                filtered = {key: val for key, val in params.items() if key in keys}
+                self._connect = self.db.connect(**filtered)
+                self.create_db()
         return self._connect
 
     def _init_grid_from_db(self, version: Optional[datetime]) -> Grid:
         customer = self.get_customer_id()
         if version is None:
             version = datetime(9999, 12, 31)
-        conn = self._get_connect()
+        conn = self.get_connect()
         cursor = conn.cursor()
         sql_type_to_json = self._sql_type_to_json
         cursor.execute(self._sql["SELECT_META_DATA"],
@@ -264,7 +271,7 @@ class Provider(HaystackInterface):
         """ Read haystack data from database and return a Grid"""
         if version is None:
             version = datetime(9999, 12, 31)
-        conn = self._get_connect()
+        conn = self.get_connect()
         cursor = conn.cursor()
         sql_type_to_json = self._sql_type_to_json
 
@@ -287,7 +294,7 @@ class Provider(HaystackInterface):
         return grid
 
     def purge_db(self):
-        conn = self._get_connect()
+        conn = self.get_connect()
         cursor = conn.cursor()
         cursor.execute(self._sql["PURGE_TABLES_HAYSTACK"])
         cursor.execute(self._sql["PURGE_TABLES_HAYSTACK_META"])
@@ -307,7 +314,7 @@ class Provider(HaystackInterface):
 
         if version is None:
             version = datetime(9999, 12, 31)
-        conn = self._get_connect()
+        conn = self.get_connect()
         cursor = conn.cursor()
         sql_type_to_json = self._sql_type_to_json
         cursor.execute(self._sql["SELECT_META_DATA"],
@@ -321,7 +328,7 @@ class Provider(HaystackInterface):
                                customer_id
                            )
                            )
-            cursor.execute(self._sql["UDPATE_META_DATA"],
+            cursor.execute(self._sql["UPDATE_META_DATA"],
                            (
                                customer_id,
                                now,

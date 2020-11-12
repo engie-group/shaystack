@@ -30,8 +30,8 @@ def check_pg(sql_request: str):
 
 
 def test_and_ltag_rtag():
-    filter = 'site and ref'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'site and ref'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- site and ref
         SELECT t1.entity
@@ -46,8 +46,8 @@ def test_and_ltag_rtag():
 
 
 def test_and_andtag_rtag():
-    filter = '(site and ref) and his'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = '(site and ref) and his'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- (site and ref) and his
         SELECT t1.entity
@@ -62,8 +62,8 @@ def test_and_andtag_rtag():
 
 
 def test_and_ltag_andtag():
-    filter = 'his and (site and ref)'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'his and (site and ref)'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- his and (site and ref)
         SELECT t1.entity
@@ -78,8 +78,8 @@ def test_and_ltag_andtag():
 
 
 def test_and_andtag_andtag():
-    filter = '(his and point) and (site and ref)'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = '(his and point) and (site and ref)'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- (his and point) and (site and ref)
         SELECT t1.entity
@@ -94,8 +94,8 @@ def test_and_andtag_andtag():
 
 
 def test_and_not_ltag_rtag():
-    filter = 'not site and not ref'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'not site and not ref'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- not site and not ref
         SELECT t1.entity
@@ -110,8 +110,8 @@ def test_and_not_ltag_rtag():
 
 
 def test_and_not_andtag_rtag():
-    filter = '(not site and not ref) and not his'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = '(not site and not ref) and not his'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- (not site and not ref) and not his
         SELECT t1.entity
@@ -126,8 +126,8 @@ def test_and_not_andtag_rtag():
 
 
 def test_and_not_ltag_andtag():
-    filter = 'not his and (not site and not ref)'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'not his and (not site and not ref)'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- not his and (not site and not ref)
         SELECT t1.entity
@@ -142,8 +142,8 @@ def test_and_not_ltag_andtag():
 
 
 def test_and_not_andtag_andtag():
-    filter = '(not his and not point) and (not site and not ref)'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = '(not his and not point) and (not site and not ref)'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- (not his and not point) and (not site and not ref)
         SELECT t1.entity
@@ -158,9 +158,8 @@ def test_and_not_andtag_andtag():
 
 
 def test_equal():
-    filter = 'geoPostal==78000'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1)
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'geoPostal==78000'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- geoPostal==78000
         SELECT t1.entity
@@ -175,8 +174,8 @@ def test_equal():
 
 
 def test_has_and_equal():
-    filter = 'site and geoPostal==78000'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'site and geoPostal==78000'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- site and geoPostal==78000
         SELECT t1.entity
@@ -195,8 +194,8 @@ def test_has_and_equal():
 
 
 def test_and_with_not():
-    filter = 'site and his and not geoPostal'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'site and his and not geoPostal'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- site and his and not geoPostal
         SELECT t1.entity
@@ -215,8 +214,8 @@ def test_and_with_not():
 
 
 def test_equal_not_a_number():
-    filter = 'geoState=="MN"'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'geoState=="MN"'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- geoState=="MN"
         SELECT t1.entity
@@ -231,8 +230,8 @@ def test_equal_not_a_number():
 
 
 def test_equal_number():
-    filter = 'geoPostalCode==1111'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'geoPostalCode==1111'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- geoPostalCode==1111
         SELECT t1.entity
@@ -247,8 +246,8 @@ def test_equal_number():
 
 
 def test_greater_number():
-    filter = 'geoPostalCode > 55400'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'geoPostalCode > 55400'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- geoPostalCode > 55400
         SELECT t1.entity
@@ -263,8 +262,8 @@ def test_greater_number():
 
 
 def test_greater_quantity():
-    filter = 'temp > 55400°'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'temp > 55400°'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- temp > 55400°
         SELECT t1.entity
@@ -279,8 +278,8 @@ def test_greater_quantity():
 
 
 def test_path_equal_quantity():
-    filter = 'siteRef->temp == 55400°'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'siteRef->temp == 55400°'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- siteRef->temp == 55400°
         SELECT t1.entity
@@ -299,8 +298,8 @@ def test_path_equal_quantity():
 
 
 def test_2path_greater_quantity():
-    filter = 'siteRef->temp >= 55400°'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'siteRef->temp >= 55400°'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- siteRef->temp >= 55400°
         SELECT t1.entity
@@ -319,8 +318,8 @@ def test_2path_greater_quantity():
 
 
 def test_3path_greater_quantity():
-    filter = 'siteRef->ownerRef->temp >= 55400°'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'siteRef->ownerRef->temp >= 55400°'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- siteRef->ownerRef->temp >= 55400°
         SELECT t1.entity
@@ -343,8 +342,8 @@ def test_3path_greater_quantity():
 
 
 def test_path():
-    filter = 'siteRef->geoPostalCode'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'siteRef->geoPostalCode'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- siteRef->geoPostalCode
         SELECT t1.entity
@@ -363,8 +362,8 @@ def test_path():
 
 
 def test_path_and():
-    filter = 'siteRef->geoPostalCode and siteRef->geoCountry'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'siteRef->geoPostalCode and siteRef->geoCountry'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- siteRef->geoPostalCode and siteRef->geoCountry
         SELECT t1.entity
@@ -394,8 +393,8 @@ def test_path_and():
 
 
 def test_path_or():
-    filter = 'siteRef->geoPostalCode or siteRef->geoCountry'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'siteRef->geoPostalCode or siteRef->geoCountry'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- siteRef->geoPostalCode or siteRef->geoCountry
         SELECT t1.entity
@@ -425,8 +424,8 @@ def test_path_or():
 
 
 def test_and_or():
-    filter = '(a or b) and (c or d)'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = '(a or b) and (c or d)'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- (a or b) and (c or d)
         SELECT t1.entity
@@ -445,8 +444,8 @@ def test_and_or():
 
 
 def test_equal_ref():
-    filter = 'a == @id'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a == @id'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a == @id
         SELECT t1.entity
@@ -461,8 +460,8 @@ def test_equal_ref():
 
 
 def test_equal_str():
-    filter = 'a == "abc"'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a == "abc"'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a == "abc"
         SELECT t1.entity
@@ -477,8 +476,8 @@ def test_equal_str():
 
 
 def test_equal_int():
-    filter = 'a == 1'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a == 1'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a == 1
         SELECT t1.entity
@@ -493,8 +492,8 @@ def test_equal_int():
 
 
 def test_equal_float():
-    filter = 'a == 1.0'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a == 1.0'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a == 1.0
         SELECT t1.entity
@@ -509,8 +508,8 @@ def test_equal_float():
 
 
 def test_equal_bool():
-    filter = 'a == true'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a == true'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a == true
         SELECT t1.entity
@@ -525,8 +524,8 @@ def test_equal_bool():
 
 
 def test_equal_datetime():
-    filter = 'a == 1977-04-22T01:00:00-00:00'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a == 1977-04-22T01:00:00-00:00'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a == 1977-04-22T01:00:00-00:00
         SELECT t1.entity
@@ -541,8 +540,8 @@ def test_equal_datetime():
 
 
 def test_equal_time():
-    filter = 'a == 01:00:00'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a == 01:00:00'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a == 01:00:00
         SELECT t1.entity
@@ -557,8 +556,8 @@ def test_equal_time():
 
 
 def test_equal_date():
-    filter = 'a == 1977-04-22'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a == 1977-04-22'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a == 1977-04-22
         SELECT t1.entity
@@ -573,8 +572,8 @@ def test_equal_date():
 
 
 def test_equal_coord():
-    filter = 'a == C(100,100)'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a == C(100,100)'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a == C(100,100)
         SELECT t1.entity
@@ -589,8 +588,8 @@ def test_equal_coord():
 
 
 def test_equal_NA():
-    filter = 'a == NA'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a == NA'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a == NA
         SELECT t1.entity
@@ -605,8 +604,8 @@ def test_equal_NA():
 
 
 def test_equal_Null():
-    filter = 'a == N'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a == N'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a == N
         SELECT t1.entity
@@ -621,8 +620,8 @@ def test_equal_Null():
 
 
 def test_not_equal_Null():
-    filter = 'a != N'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a != N'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a != N
         SELECT t1.entity
@@ -637,8 +636,8 @@ def test_not_equal_Null():
 
 
 def test_equal_Marker():
-    filter = 'a == M'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a == M'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a == M
         SELECT t1.entity
@@ -653,8 +652,8 @@ def test_equal_Marker():
 
 
 def test_equal_uri():
-    filter = 'a == `http://l`'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a == `http://l`'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a == `http://l`
         SELECT t1.entity
@@ -669,8 +668,8 @@ def test_equal_uri():
 
 
 def test_equal_xstr():
-    filter = 'a == hex("deadbeef")'
-    sql_request = sql_filter('haystack', filter, FAKE_NOW, 1, "customer")
+    hs_filter = 'a == hex("deadbeef")'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
     assert sql_request == textwrap.dedent("""\
         -- a == hex("deadbeef")
         SELECT t1.entity

@@ -30,7 +30,7 @@ from datetime import datetime, MAXYEAR, MINYEAR, timedelta
 from io import BytesIO
 from pathlib import Path
 from threading import Lock
-from typing import Optional, Union, Tuple, Dict, Any, Set, List
+from typing import Optional, Union, Tuple, Dict, Any, List
 from urllib.parse import urlparse, ParseResult
 
 import pytz
@@ -62,6 +62,10 @@ class Provider(HaystackInterface):
     Expose an Haystack file via the Haystactk Rest API.
     """
 
+    @property
+    def name(self):
+        return "URL"
+
     def __init__(self):
         self._s3_client = None
         self._lambda_client = None
@@ -74,7 +78,7 @@ class Provider(HaystackInterface):
 
     @overrides
     def values_for_tag(self, tag: str,
-                       date_version: Optional[datetime] = None) -> Set[Any]:
+                       date_version: Optional[datetime] = None) -> List[Any]:
         grid = self._download_grid(self._get_url(), date_version)
         return sorted({row[tag] for row in grid.filter(tag)})
 
@@ -247,7 +251,7 @@ class Provider(HaystackInterface):
             # Manage default cwd
             if not parsed_uri.scheme:
                 uri = Path.cwd().joinpath(parsed_uri.geturl()).as_uri()
-            with urllib.request.urlopen(uri) as response:
+            with urllib.request.urlopen(parsed_uri.geturl()) as response:
                 data = response.read()
         if parsed_uri.path.endswith(".gz"):
             return gzip.decompress(data)
@@ -258,9 +262,7 @@ class Provider(HaystackInterface):
         # Refresh at a rounded period, then all cloud instances refresh data at the same time.
         now = datetime.utcnow().replace(tzinfo=pytz.UTC)
         next_time = now.replace(minute=0, second=0) + timedelta(
-            minutes=(now.minute + PERIODIC_REFRESH)
-                    // PERIODIC_REFRESH
-                    * PERIODIC_REFRESH
+            minutes=(now.minute + PERIODIC_REFRESH) // PERIODIC_REFRESH * PERIODIC_REFRESH
         )
         assert next_time > now
         if parsed_uri.scheme == "s3":
@@ -324,7 +326,6 @@ class Provider(HaystackInterface):
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
         parsed_uri = urlparse(uri, allow_fragments=False)
         self._refresh_versions(parsed_uri)
-        effective_version = None  # The effective date to use
         for version, _ in self._versions[uri].items():
             if not date_version or version <= date_version:
                 return self._download_grid_effective_version(uri, version)

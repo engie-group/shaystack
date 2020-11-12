@@ -544,6 +544,7 @@ def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
         date_version = None
         level = 17
         val = who = duration = None
+        entity_id = None
         if grid_request:
             entity_id = grid_request[0]["id"]
             date_version = grid_request[0].get("version", None)
@@ -587,6 +588,7 @@ def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
     return response
+
 
 def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """Implement the haystack `his_read` operation"""

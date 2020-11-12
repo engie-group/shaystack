@@ -10,7 +10,7 @@ import pytz
 from pyparsing import ParseException
 
 from haystackapi.providers import get_provider
-from haystackapi.providers.db_postgres import sql_filter
+from haystackapi.providers.db_postgres import _sql_filter
 
 FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
@@ -29,7 +29,7 @@ def main():
 
         def do_pg(self, arg):
             try:
-                sql_request = sql_filter("haystack", arg, FAKE_NOW, 1, "customer")
+                sql_request = _sql_filter("haystack", arg, FAKE_NOW, 1, "customer")
                 print(sql_request)
                 cursor.execute(sql_request)
                 conn.rollback()

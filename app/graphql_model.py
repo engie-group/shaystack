@@ -29,7 +29,7 @@ log = logging.getLogger("haystackapi")
 # WARNING: At this time only public endpoints are supported by AWS AppSync
 
 class HSScalar(graphene.Scalar):
-    '''Haystack Scalar'''
+    """Haystack Scalar"""
 
     class Meta:
         name = "AWSJSON" if BOTO3_AVAILABLE else "JSONString"
@@ -217,7 +217,7 @@ class ReadHaystack(graphene.ObjectType):
                          version: Optional[datetime] = None):
         log.debug(f"resolve_entities(parent,info,ids={ids}, query={filter}, limit={limit}, datetime={datetime})")
         if ids:
-            ids = [Ref(ReadHaystack._filter_id(id)) for id in ids]
+            ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]
         grid = get_singleton_provider().read(limit, select, ids, filter, version)
         return grid
 
@@ -226,27 +226,27 @@ class ReadHaystack(graphene.ObjectType):
                           ids: Optional[List[str]] = None,
                           dates_range: Optional[str] = None,
                           version: Optional[datetime] = None):
-        log.debug(f"resolve_histories(parent,info,id={id}, range={range}, datetime={datetime})")
+        log.debug(f"resolve_histories(parent,info,ids={ids}, range={range}, datetime={datetime})")
         grid_date_range = parse_date_range(dates_range)
-        return [get_singleton_provider().his_read(Ref(ReadHaystack._filter_id(id)), grid_date_range, version)
-                for id in ids]
+        return [get_singleton_provider().his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version)
+                for entity_id in ids]
 
     @staticmethod
     def resolve_point_write(parent, info,
-                            id: str,
+                            entity_id: str,
                             version: Optional[datetime] = None):
-        log.debug(f"resolve_point_write(parent,info, id={id}, version={version})")
-        ref = Ref(ReadHaystack._filter_id(id))
+        log.debug(f"resolve_point_write(parent,info, id={entity_id}, version={version})")
+        ref = Ref(ReadHaystack._filter_id(entity_id))
         grid = get_singleton_provider().point_write_read(ref, version)
         return ReadHaystack._conv_list_to_object_type(HSPointWrite, grid)
 
     @staticmethod
-    def _filter_id(id: str) -> str:
-        if id.startswith("r:"):
-            return id[2:]
-        if id.startswith('@'):
-            return id[1:]
-        return id
+    def _filter_id(entity_id: str) -> str:
+        if entity_id.startswith("r:"):
+            return entity_id[2:]
+        if entity_id.startswith('@'):
+            return entity_id[1:]
+        return entity_id
 
     @staticmethod
     def _conv_entity(cls, entity):

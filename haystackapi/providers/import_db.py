@@ -6,25 +6,20 @@ import urllib
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import Optional
+from typing import Optional, cast
 from urllib.parse import urlparse, ParseResult
 
 import click
 
 import hszinc
 from app.graphql_model import BOTO3_AVAILABLE
+from haystackapi.providers import sql
 from .haystack_interface import get_provider
 
-log = logging.getLogger("db_import")
+log = logging.getLogger(__name__)
 
-BOTO3_AVAILABLE = False
-try:
+if BOTO3_AVAILABLE:
     import boto3
-    from botocore.client import BaseClient
-
-    BOTO3_AVAILABLE = True
-except ImportError:
-    pass
 
 
 def _download_uri(parsed_uri: ParseResult) -> bytes:
@@ -44,7 +39,7 @@ def _download_uri(parsed_uri: ParseResult) -> bytes:
         # Manage default cwd
         if not parsed_uri.scheme:
             uri = Path.cwd().joinpath(parsed_uri.geturl()).as_uri()
-        with urllib.request.urlopen(uri) as response:
+        with urllib.request.urlopen(parsed_uri.geturl()) as response:
             data = response.read()
     if parsed_uri.path.endswith(".gz"):
         return gzip.decompress(data)
@@ -73,6 +68,7 @@ def db_import(hs_url: str,
               version: Optional[datetime] = None):
     os.environ["HAYSTACK_DB"] = db
     with get_provider("haystackapi.providers.sql") as provider:
+        provider = cast(sql.Provider, provider)
         if reset:
             provider.purge_db()
         original_grid = provider.export_grid_from_db(customer_id, version)

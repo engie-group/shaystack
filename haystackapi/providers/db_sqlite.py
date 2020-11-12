@@ -7,19 +7,6 @@ from typing import Dict, Any, Optional
 log = logging.getLogger("sql.Provider")
 
 
-def _sql_filter(params: Dict[str, Any],
-                cursor,
-                table_name: str,
-                grid_filter: Optional[str],
-                version: datetime,
-                limit: int = 0,
-                customer_id: Optional[str] = None):
-    if grid_filter is None or grid_filter == '':
-        cursor.execute(params["SELECT_ENTITY"], (version, version, customer_id))
-        return cursor
-    raise NotImplementedError("Complex request not implemented")
-
-
 def _exec_sql_filter(params: Dict[str, Any],
                      cursor,
                      table_name: str,
@@ -31,15 +18,7 @@ def _exec_sql_filter(params: Dict[str, Any],
         cursor.execute(params["SELECT_ENTITY"], (version, version, customer_id))
         return
 
-    sql_request = _sql_filter(
-        table_name,
-        grid_filter,
-        version,
-        limit,
-        customer_id)
-    log.debug(sql_request)
-    cursor.execute(sql_request)
-    return cursor
+    raise NotImplementedError("Complex request not implemented")
 
 
 def get_db_parameters(table_name: str) -> Dict[str, Any]:

@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, date, timedelta
 from importlib import import_module
-from typing import Any, Tuple, Dict, Union, Optional, List, Set
+from typing import Any, Tuple, Dict, Union, Optional, List, cast
 
 from tzlocal import get_localzone
 
@@ -43,7 +43,7 @@ class HaystackInterface(ABC):
     """
 
     def __repr__(self):
-        return repr(self.__class__.__subclasses__())
+        return self.name()
 
     def __str__(self):
         return self.__repr__()
@@ -54,12 +54,15 @@ class HaystackInterface(ABC):
     def __exit__(self, exc_type, exc_value, exc_traceback):
         pass
 
+    def name(self):
+        pass
+
     def get_customer_id(self) -> str:
         """ Override this for multi-tenant"""
         return ''
 
     def values_for_tag(self, tag: str,
-                       date_version: Optional[datetime] = None) -> Set[Any]:
+                       date_version: Optional[datetime] = None) -> List[Any]:
         """
         Return all differents values for a specific tag
         """
@@ -312,7 +315,7 @@ class HaystackInterface(ABC):
     @abstractmethod
     def invoke_action(
             self, entity_id: Ref, action: str, params: Dict[str, Any],
-            date_version: Optional[datetime]
+            date_version: Optional[datetime] = None
 
     ) -> Grid:  # pylint: disable=no-self-use
         """
@@ -324,7 +327,13 @@ class HaystackInterface(ABC):
         """
         raise NotImplementedError()
 
+
 _providers = {}  # TODO Cached providers
+
+
+def no_cache():
+    """ Must be patched in unit test """
+    return False
 
 
 def get_provider(class_str) -> HaystackInterface:
@@ -333,9 +342,11 @@ def get_provider(class_str) -> HaystackInterface:
     and return an instance of this subclass. Then, the 'ops' method can analyse the current instance
     and detect the implemented and abstract methods.
     """
+    if class_str in _providers:
+        return _providers[class_str]
     try:
         if not class_str.endswith(".Provider"):
-            class_str = class_str + ".Provider"
+            class_str += ".Provider"
         if class_str in _providers:
             return _providers[class_str]
 
@@ -444,10 +455,6 @@ def get_provider(class_str) -> HaystackInterface:
 _singleton_provider = None
 
 
-def no_cache():
-    """ Must be patched in unit test """
-    return False
-
 def get_singleton_provider() -> HaystackInterface:
     global _singleton_provider
     assert (
@@ -469,22 +476,21 @@ def parse_date_range(date_range: str) -> Optional[
     if not date_range:
         return None
     if date_range not in ("today", "yesterday"):
-        split_date = [parse_date_format(x) for x in date_range.split(",")]
+        split_date: List[datetime] = [parse_date_format(x) for x in date_range.split(",")]
         if len(split_date) > 1:
             assert type(split_date[0]) == type(  # pylint: disable=C0123
                 split_date[1]
             )
-            return tuple(split_date)
+            return cast(Tuple[datetime, datetime], tuple(split_date))
         else:
             if isinstance(split_date[0], datetime):
                 split_date.append(None)
-                return tuple(split_date)
+                return cast(Tuple[datetime, datetime], tuple(split_date))
             else:
                 return split_date[0]
     else:
         if date_range == "today":
-            return (date.today(),)
+            return date.today(), None
         if date_range == "yesterday":
-            return (date.today() - timedelta(days=1),)
+            return date.today() - timedelta(days=1), None
         raise ValueError(f"date_range {date_range} unknown")
-    return None

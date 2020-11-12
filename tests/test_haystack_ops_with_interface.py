@@ -11,6 +11,7 @@ def test_ops_without_implementation():
     # THEN
     assert len(ops) == 2
 
+
 def test_ops_with_readonly():
     # GIVEN
     provider = get_provider('tests.tstprovider_readonly')

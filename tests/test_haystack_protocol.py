@@ -67,7 +67,7 @@ def test_negociation_zinc_without_content_type() -> None:
     # THEN
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    grid: Grid = hszinc.parse(response.body, mime_type)
+    hszinc.parse(response.body, mime_type)
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})

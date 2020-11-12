@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import Tuple, Any, Dict, Union, Optional, List, Set
+from typing import Tuple, Any, Dict, Union, Optional, List
 
 import pytz
 from overrides import overrides
@@ -24,15 +24,19 @@ PingGrid = Grid(
 class Provider(HaystackInterface):
     """ Simple provider to implement all Haystack operation """
 
+    @property
+    def name(self):
+        return "Ping"
+
     @overrides
     def values_for_tag(self, tag: str,
-                       date_version: Optional[datetime]) -> Set[Any]:
+                       date_version: Optional[datetime]) -> List[Any]:
         return ["value1", "value2"]
 
     @overrides
     def versions(self) -> List[datetime]:
-        return [datetime(2020, 1, 1, tzinfo=pytz.utc).isoformat(),
-                datetime(2020, 2, 1, tzinfo=pytz.utc).isoformat(),
+        return [datetime(2020, 1, 1, tzinfo=pytz.utc),
+                datetime(2020, 2, 1, tzinfo=pytz.utc),
                 ]
 
     @overrides

@@ -2,9 +2,9 @@ from unittest.mock import patch
 
 import haystackapi
 import hszinc
-from haystackapi import Ref
 from haystackapi.ops import HaystackHttpRequest
 from haystackapi.providers import ping
+from hszinc import Ref
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
@@ -22,7 +22,7 @@ def test_invoke_action_with_zinc(mock) -> None:
     request.body = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
 
     # WHEN
-    response = haystackapi.invoke_action(request,"dev")
+    response = haystackapi.invoke_action(request, "dev")
 
     # THEN
     mock.assert_called_once_with(Ref("123"), "doIt", {})
@@ -45,7 +45,7 @@ def test_invoke_action_without_params_with_zinc(mock):
     request.body = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
 
     # WHEN
-    response = haystackapi.invoke_action(request,"dev")
+    response = haystackapi.invoke_action(request, "dev")
 
     # THEN
     mock.assert_called_once_with(Ref("123"), "doIt", {})

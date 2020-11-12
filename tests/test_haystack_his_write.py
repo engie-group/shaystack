@@ -5,10 +5,9 @@ import pytz
 
 import haystackapi
 import hszinc
-from haystackapi import Grid, VER_3_0
 from haystackapi.ops import HaystackHttpRequest, DEFAULT_MIME_TYPE
 from haystackapi.providers import ping
-from hszinc import Ref, parse_date_format
+from hszinc import Ref, parse_date_format, Grid, VER_3_0
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})

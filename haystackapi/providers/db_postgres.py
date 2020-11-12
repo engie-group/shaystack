@@ -1,6 +1,6 @@
 import logging
 import textwrap
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from datetime import datetime
 from textwrap import dedent
@@ -12,7 +12,7 @@ from hszinc.filter_ast import FilterPath, FilterBinary, FilterUnary, FilterNode
 log = logging.getLogger("sql.Provider")
 
 
-class _Root:
+class _Root(ABC):
     pass
 
 
@@ -23,11 +23,16 @@ class _IsMerge(_Root):
 
 
 @dataclass
+class _Path(_Root):
+    paths: List[str]
+
+
+@dataclass
 class _Has(_IsMerge):
     def isMerge(self):
         return len(self.tag.paths) > 1
 
-    tag: str
+    tag: _Path
 
 
 @dataclass
@@ -35,7 +40,7 @@ class _NotHas(_IsMerge):
     def isMerge(self):
         return len(self.tag.paths) > 1
 
-    tag: str
+    tag: _Path
 
 
 @dataclass
@@ -47,9 +52,6 @@ class _AndHasTags(_IsMerge):
     def isMerge(self):
         return False
 
-    def to_sql(self):
-        return f"entity ?& array{self.tag}"
-
 
 @dataclass
 class _OrHasTags(_IsMerge):
@@ -59,9 +61,6 @@ class _OrHasTags(_IsMerge):
 
     def isMerge(self):
         return False
-
-    def to_sql(self):
-        return f"entity ?& array{self.tag}"
 
 
 @dataclass
@@ -74,11 +73,6 @@ class _Intersect(_Root):
 class _Union(_Root):
     left: _Root
     right: _Root
-
-
-@dataclass
-class _Path(_Root):
-    paths: List[str]
 
 
 @dataclass
@@ -124,7 +118,8 @@ def _merge_has_operators(left, right, merged_class):
             and len(right.tag.paths) == 1:
         return merged_class(
             type_left == _NotHas,
-            type_left, [left.tag.paths[0], right.tag.paths[0]])
+            type_left,
+            [left.tag.paths[0], right.tag.paths[0]])
     return None
 
 
@@ -205,10 +200,9 @@ def _select_version(version: datetime, num_table):
 def _generate_path(table_name: str,
                    customer_id: str,
                    node: _Path,
-                   generated_sql: List[Union[str, List[str]]],
+                   generated_sql: List[Union[str, List[Any]]],
                    version: datetime,
-                   num_table: int) -> Tuple[
-    str, int, List[str]]:
+                   num_table: int) -> Tuple[str, int, List[Any]]:
     if len(node.paths) > 1:
         num_table += 1
         prefix = f"INNER JOIN {table_name} AS t{num_table} ON"
@@ -235,10 +229,10 @@ def _generate_path(table_name: str,
 def _generate_filter_in_sql(table_name: str,
                             customer_id: str,
                             node: _Root,
-                            generated_sql: List[Union[str, List[str]]],
+                            generated_sql: List[Union[str, List[Any]]],
                             num_table: int,
                             limit: int,
-                            version: datetime) -> (str, int, List[str]):
+                            version: datetime) -> Tuple[str, int, List[Any]]:
     # Use RootBlock nodes
     prefix = "WHERE"
     if isinstance(node, _Has):
@@ -315,19 +309,22 @@ def _generate_filter_in_sql(table_name: str,
             inner_num_block = num_table
             inners_join.extend([
                 f" INNER JOIN {table_name} as t{inner_num_block + 1} ON\n",
-                ''.join(_generate_sql_block(table_name, customer_id, node.right, [], inner_num_block, "WHERE")),
+                ''.join(_generate_sql_block(table_name, customer_id, node.right, [], inner_num_block, "WHERE",
+                                            version=version)),
                 ' AND\n',
             ])
             generated_sql.append(_select_version(version, num_table))
             inners_join.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
             inners_join.append(
-                f"t{inner_num_block + 1}.entity @? ('$.{last_path} ? (@ == \"r:' || t{inner_num_block}.id ||'\")')::jsonpath\n"
+                f"t{inner_num_block + 1}.entity @? ('$.{last_path} ? "
+                f"(@ == \"r:' || t{inner_num_block}.id ||'\")')::jsonpath\n"
             )
             for path in node.paths[:-1].reverse():
                 inner_num_block += 1
                 inners_join.extend([
                     f"INNER JOIN {table_name} as t{inner_num_block} ON\n",
-                    f"t{inner_num_block + 1}.entity @? ('$.{path} ? (@ == \"r:' || t{inner_num_block}.id ||'\")')::jsonpath\n"
+                    f"t{inner_num_block + 1}.entity @? ('$.{path} ? "
+                    f"(@ == \"r:' || t{inner_num_block}.id ||'\")')::jsonpath\n"
                 ])
             return [dedent("""
                     SELECT t{num_block}.entity 
@@ -361,7 +358,7 @@ def _generate_filter_in_sql(table_name: str,
             generated_sql.append(_select_version(version, num_table))
             generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
             v = jsondumper.dump_scalar(node.value)
-            if v == None:
+            if v is None:
                 if node.operator == '!=':
                     generated_sql.extend([
                         f"t{num_table}.entity->>'{node.path.paths[-1]}' IS NOT NULL\n"
@@ -380,7 +377,7 @@ def _generate_filter_in_sql(table_name: str,
 
 
 def _flatten(l: List[Any]) -> List[Any]:
-    if l == []:
+    if not l:
         return l
     if isinstance(l[0], list):
         return _flatten(l[0]) + _flatten(l[1:])

@@ -16,12 +16,13 @@ def _get_mock_s3():
 
     class MockS3:
         def list_object_versions(self, **args):  # pylint: disable=R0201, W0613
-            return {"Versions":
-                [
-                    {"VersionId": "1", "LastModified": version_1},
-                    {"VersionId": "2", "LastModified": version_2},
-                    {"VersionId": "3", "LastModified": version_3},
-                ]
+            return {
+                "Versions":
+                    [
+                        {"VersionId": "1", "LastModified": version_1},
+                        {"VersionId": "2", "LastModified": version_2},
+                        {"VersionId": "3", "LastModified": version_3},
+                    ]
             }
 
         def download_fileobj(self, bucket, path, stream, **params):  # pylint: disable=R0201, W0613

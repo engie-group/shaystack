@@ -36,12 +36,7 @@ pip install "haystackapi[flask,graphql]"
 from app.blueprint_haystack import haystack_blueprint as haystack_blueprint
 
 app = Flask(__name__)
-cors = CORS(app, resources=
-{
-    r"/api/*": {"origins": "*"},
-    r"/graphql/*": {"origins": "*"}
-},
-            )
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}, r"/graphql/*": {"origins": "*"}}, )
 
 _log_level = os.environ.get("LOG_LEVEL", "WARNING")
 logging.basicConfig(level=_log_level)

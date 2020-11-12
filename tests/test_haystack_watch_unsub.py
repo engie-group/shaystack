@@ -43,14 +43,14 @@ def test_watch_unsub_with_args(mock) -> None:
     request.headers["Accept"] = mime_type
     request.args["watchId"] = "0123456789ABCDEF"
     request.args["close"] = True
-    ids = set(["@id1", "@id2"])
+    ids = {"@id1", "@id2"}
     request.args["ids"] = str(ids)
 
     # WHEN
     response = haystackapi.watch_unsub(request, "dev")
 
     # THEN
-    mock.assert_called_once_with("0123456789ABCDEF", set([Ref("id1"), Ref("id2")]), True)
+    mock.assert_called_once_with("0123456789ABCDEF", {Ref("id1"), Ref("id2")}, True)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert hszinc.parse(response.body, hszinc.MODE_ZINC) is not None

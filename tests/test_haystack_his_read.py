@@ -5,9 +5,9 @@ from mock import patch
 
 import haystackapi
 import hszinc
-from haystackapi import Ref
 from haystackapi.ops import HaystackHttpRequest, DEFAULT_MIME_TYPE
 from haystackapi.providers import ping
+from hszinc import Ref
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
@@ -71,7 +71,7 @@ def test_his_read_with_range_today(mock) -> None:
     response = haystackapi.his_read(request, "dev")
 
     # THEN
-    mock.assert_called_once_with(Ref("1234"), (date.today(),), None)
+    mock.assert_called_once_with(Ref("1234"), (date.today(), None), None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert hszinc.parse(response.body, mime_type) is not None
@@ -94,7 +94,7 @@ def test_his_read_with_range_yesterday(mock) -> None:
     response = haystackapi.his_read(request, "dev")
 
     # THEN
-    mock.assert_called_once_with(Ref("1234"), (date.today() - timedelta(days=1),), None)
+    mock.assert_called_once_with(Ref("1234"), (date.today() - timedelta(days=1), None), None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert hszinc.parse(response.body, mime_type) is not None

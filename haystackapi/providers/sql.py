@@ -15,7 +15,7 @@ import os
 import re
 from datetime import datetime
 from types import ModuleType
-from typing import Optional, Union, Tuple, Dict, Any, Set, List
+from typing import Optional, Union, Tuple, Dict, Any, List, Callable
 from urllib.parse import urlparse
 
 import iso8601
@@ -61,14 +61,14 @@ def _import_db_driver(parsed_db) -> Tuple[ModuleType, str]:
     else:
         dialect = _fix_dialect_alias(parsed_db.scheme)
         driver = _default_driver[dialect][0]
-    return (importlib.import_module(driver), dialect)
+    return importlib.import_module(driver), dialect
 
 
 def _fix_dialect_alias(dialect):
     if dialect == "postgres":
         dialect = "postgresql"
     if dialect == "sqlite":
-        dialect == "sqlite3"
+        dialect = "sqlite3"
     return dialect
 
 
@@ -76,6 +76,10 @@ class Provider(HaystackInterface):
     """
     Expose an Haystack file via the Haystactk Rest API.
     """
+
+    @property
+    def name(self):
+        return "SQL"
 
     def __init__(self):
         self._connect = None
@@ -93,7 +97,6 @@ class Provider(HaystackInterface):
     def create_db(self):
         conn = self.get_connect()
         cursor = conn.cursor()
-        table_name = self._parsed_db.fragment
         # Create table
         cursor.execute(self._sql["CREATE_HAYSTACK_TABLE"])
         # Create index
@@ -105,7 +108,7 @@ class Provider(HaystackInterface):
         conn.commit()
 
     def values_for_tag(self, tag: str,
-                       date_version: Optional[datetime] = None) -> Set[Any]:
+                       date_version: Optional[datetime] = None) -> List[Any]:
         customer_id = self.get_customer_id()
         distinct = self._sql.get("DISTINCT_TAG_VALUES")
         if distinct is None:
@@ -116,7 +119,7 @@ class Provider(HaystackInterface):
                        (customer_id,))
         result = cursor.fetchall()
         conn.commit()
-        return [jsonparser.parse_scalar(x[0]) for x in result if x[0] is not None]
+        return sorted([jsonparser.parse_scalar(x[0]) for x in result if x[0] is not None])
 
     def versions(self) -> List[datetime]:
         """
@@ -169,7 +172,7 @@ class Provider(HaystackInterface):
         sql_type_to_json = self._sql_type_to_json
         if date_version is None:
             date_version = datetime(9999, 12, 31)
-        exec_sql_filter = self._sql["exec_sql_filter"]
+        exec_sql_filter: Callable = self._sql["exec_sql_filter"]
         if entity_ids is None:
             exec_sql_filter(self._sql,
                             cursor,
@@ -186,7 +189,7 @@ class Provider(HaystackInterface):
             return select_grid(grid, select)
         else:
             customer_id = self.get_customer_id()
-            sql_ids = "('" + "','".join([jsondumper.dump_scalar(id) for id in entity_ids]) + "')"
+            sql_ids = "('" + "','".join([jsondumper.dump_scalar(entity_id) for entity_id in entity_ids]) + "')"
             cursor.execute(self._sql["SELECT_ENTITY_WITH_ID"] + sql_ids,
                            (date_version, date_version, customer_id))
 
@@ -196,7 +199,6 @@ class Provider(HaystackInterface):
             conn.commit()
             return select_grid(grid, select)
 
-        raise NotImplementedError()
 
     @overrides
     def his_read(
@@ -316,7 +318,6 @@ class Provider(HaystackInterface):
             version = datetime(9999, 12, 31)
         conn = self.get_connect()
         cursor = conn.cursor()
-        sql_type_to_json = self._sql_type_to_json
         cursor.execute(self._sql["SELECT_META_DATA"],
                        (version, version, customer_id))
 
@@ -363,7 +364,7 @@ class Provider(HaystackInterface):
 
         conn.commit()
 
-    def _dialect_request(self, dialect: str) -> Dict[str, str]:
+    def _dialect_request(self, dialect: str) -> Dict[str, Any]:
         table_name = self._parsed_db.fragment
         if dialect == "sqlite3":
             # Lazy import

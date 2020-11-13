@@ -411,7 +411,7 @@ def _exec_sql_filter(params: Dict[str, Any],
                      limit: int = 0,
                      customer_id: str = ''):
     if grid_filter is None or grid_filter == '':
-        cursor.execute(params["SELECT_ENTITY"], (version, version, customer_id))
+        cursor.execute(params["SELECT_ENTITY"], (version, customer_id))
         return
 
     sql_request = _sql_filter(
@@ -425,6 +425,8 @@ def _exec_sql_filter(params: Dict[str, Any],
     return cursor
 
 
+MAX_DATE = '9999-12-31T23:59:59'
+
 def get_db_parameters(table_name: str) -> Dict[str, Any]:
     return {
         "sql_type_to_json": lambda x: x,
@@ -434,8 +436,8 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
                (
                id text,
                customer_id text NOT NULL,
-               start_datetime timestamp NOT NULL,
-               end_datetime timestamp,
+               start_datetime timestamp WITH TIME ZONE NOT NULL,
+               end_datetime timestamp WITH TIME ZONE NOT NULL,
                entity jsonb NOT NULL
                );
            '''),
@@ -452,8 +454,8 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
            CREATE TABLE IF NOT EXISTS {table_name}_meta_datas
                (
                customer_id text NOT NULL,
-               start_datetime timestamp NOT NULL,
-               end_datetime timestamp,
+               start_datetime timestamp WITH TIME ZONE NOT NULL,
+               end_datetime timestamp WITH TIME ZONE NOT NULL,
                metadata jsonb,
                cols jsonb
                );
@@ -466,34 +468,36 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
             '''),
         "SELECT_META_DATA": textwrap.dedent(f'''
         SELECT metadata,cols from {table_name}_meta_datas
-        WHERE %s >= start_datetime AND (%s < end_datetime or end_datetime is NULL)
+        WHERE %s BETWEEN start_datetime AND end_datetime
         AND customer_id = %s
         '''),
         "CLOSE_META_DATA": textwrap.dedent(f'''
             UPDATE {table_name}_meta_datas  SET end_datetime=%s
-            WHERE end_datetime IS NULL
+            WHERE %s > start_datetime AND end_datetime = '9999-12-31T23:59:59'
             AND customer_id=%s
             '''),
         "UPDATE_META_DATA": textwrap.dedent(f'''
-            INSERT INTO {table_name}_meta_datas VALUES (%s,%s,null,%s,%s)
+            INSERT INTO {table_name}_meta_datas VALUES (%s,%s,'9999-12-31T23:59:59',%s,%s)
             '''),
         "SELECT_ENTITY": textwrap.dedent(f'''
             SELECT entity FROM {table_name}
-            WHERE %s >= start_datetime AND (%s < end_datetime or end_datetime is NULL)
+            WHERE %s BETWEEN start_datetime AND end_datetime
             AND customer_id = %s
             '''),
         "SELECT_ENTITY_WITH_ID": textwrap.dedent(f'''
             SELECT entity FROM {table_name}
-            WHERE %s >= start_datetime AND (%s < end_datetime or end_datetime is NULL)
+            WHERE %s BETWEEN start_datetime AND end_datetime
             AND customer_id = %s
             AND id IN '''),
         "CLOSE_ENTITY": textwrap.dedent(f'''
             UPDATE {table_name} SET end_datetime=%s 
-            WHERE id=%s AND end_datetime IS NULL
+            WHERE 
+            %s BETWEEN start_datetime AND end_datetime
+            AND id=%s 
             AND customer_id=%s
             '''),
         "INSERT_ENTITY": textwrap.dedent(f'''
-            INSERT INTO {table_name} VALUES (%s,%s,%s,null,%s)
+            INSERT INTO {table_name} VALUES (%s,%s,%s,'9999-12-31T23:59:59',%s)
             '''),
         "DISTINCT_VERSION": textwrap.dedent(f'''
             SELECT DISTINCT start_datetime

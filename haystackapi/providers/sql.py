@@ -13,7 +13,7 @@ import json
 import logging
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from types import ModuleType
 from typing import Optional, Union, Tuple, Dict, Any, List, Callable
 from urllib.parse import urlparse
@@ -96,16 +96,16 @@ class Provider(HaystackInterface):
 
     def create_db(self):
         conn = self.get_connect()
-        cursor = conn.cursor()
-        # Create table
-        cursor.execute(self._sql["CREATE_HAYSTACK_TABLE"])
-        # Create index
-        cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_1"])  # On id
-        cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_2"])  # On Json, for @> operator
-        # Create table
-        cursor.execute(self._sql["CREATE_METADATA_TABLE"])
-        # Save (commit) the changes
-        conn.commit()
+        with conn.cursor() as cursor:
+            # Create table
+            cursor.execute(self._sql["CREATE_HAYSTACK_TABLE"])
+            # Create index
+            cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_1"])  # On id
+            cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_2"])  # On Json, for @> operator
+            # Create table
+            cursor.execute(self._sql["CREATE_METADATA_TABLE"])
+            # Save (commit) the changes
+            conn.commit()
 
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -> List[Any]:
@@ -114,26 +114,26 @@ class Provider(HaystackInterface):
         if distinct is None:
             raise NotImplementedError("Not implemented")
         conn = self.get_connect()
-        cursor = conn.cursor()
-        cursor.execute(re.sub(r"\[#]", tag, distinct),
-                       (customer_id,))
-        result = cursor.fetchall()
-        conn.commit()
-        return sorted([jsonparser.parse_scalar(x[0]) for x in result if x[0] is not None])
+        with conn.cursor() as cursor:
+            cursor.execute(re.sub(r"\[#]", tag, distinct),
+                           (customer_id,))
+            result = cursor.fetchall()
+            conn.commit()
+            return sorted([jsonparser.parse_scalar(x[0]) for x in result if x[0] is not None])
 
     def versions(self) -> List[datetime]:
         """
         Return datetime for each versions or empty array if is unknown
         """
         conn = self.get_connect()
-        cursor = conn.cursor()
-        customer_id = self.get_customer_id()
-        cursor.execute(self._sql["DISTINCT_VERSION"], (customer_id,))
-        result = cursor.fetchall()
-        conn.commit()
-        if result and isinstance(result[0], str):
-            return [iso8601.parse_date(x[0], default_timezone=pytz.UTC) for x in result]
-        return [x[0] for x in result]
+        with conn.cursor() as cursor:
+            customer_id = self.get_customer_id()
+            cursor.execute(self._sql["DISTINCT_VERSION"], (customer_id,))
+            result = cursor.fetchall()
+            conn.commit()
+            if result and isinstance(result[0], str):
+                return [iso8601.parse_date(x[0], default_timezone=pytz.UTC) for x in result]
+            return [x[0] for x in result]
 
     @overrides
     def about(self, home: str) -> Grid:  # pylint: disable=no-self-use
@@ -168,37 +168,36 @@ class Provider(HaystackInterface):
             date_version,
         )
         conn = self.get_connect()
-        cursor = conn.cursor()
-        sql_type_to_json = self._sql_type_to_json
-        if date_version is None:
-            date_version = datetime(9999, 12, 31)
-        exec_sql_filter: Callable = self._sql["exec_sql_filter"]
-        if entity_ids is None:
-            exec_sql_filter(self._sql,
-                            cursor,
-                            self._parsed_db.fragment,
-                            grid_filter,
-                            date_version,
-                            limit,
-                            self.get_customer_id(),
-                            )
-            grid = self._init_grid_from_db(date_version)
-            for row in cursor:
-                grid.append(jsonparser.parse_row(sql_type_to_json(row[0]), VER_3_0))
-            conn.commit()
-            return select_grid(grid, select)
-        else:
-            customer_id = self.get_customer_id()
-            sql_ids = "('" + "','".join([jsondumper.dump_scalar(entity_id) for entity_id in entity_ids]) + "')"
-            cursor.execute(self._sql["SELECT_ENTITY_WITH_ID"] + sql_ids,
-                           (date_version, date_version, customer_id))
+        with conn.cursor() as cursor:
+            sql_type_to_json = self._sql_type_to_json
+            if date_version is None:
+                date_version = datetime(9999, 12, 31)
+            exec_sql_filter: Callable = self._sql["exec_sql_filter"]
+            if entity_ids is None:
+                exec_sql_filter(self._sql,
+                                cursor,
+                                self._parsed_db.fragment,
+                                grid_filter,
+                                date_version,
+                                limit,
+                                self.get_customer_id(),
+                                )
+                grid = self._init_grid_from_db(date_version)
+                for row in cursor:
+                    grid.append(jsonparser.parse_row(sql_type_to_json(row[0]), VER_3_0))
+                conn.commit()
+                return select_grid(grid, select)
+            else:
+                customer_id = self.get_customer_id()
+                sql_ids = "('" + "','".join([jsondumper.dump_scalar(entity_id) for entity_id in entity_ids]) + "')"
+                cursor.execute(self._sql["SELECT_ENTITY_WITH_ID"] + sql_ids,
+                               (date_version, customer_id))
 
-            grid = self._init_grid_from_db(date_version)
-            for row in cursor:
-                grid.append(jsonparser.parse_row(sql_type_to_json(row[0]), VER_3_0))
-            conn.commit()
-            return select_grid(grid, select)
-
+                grid = self._init_grid_from_db(date_version)
+                for row in cursor:
+                    grid.append(jsonparser.parse_row(sql_type_to_json(row[0]), VER_3_0))
+                conn.commit()
+                return select_grid(grid, select)
 
     @overrides
     def his_read(
@@ -254,18 +253,18 @@ class Provider(HaystackInterface):
         if version is None:
             version = datetime(9999, 12, 31)
         conn = self.get_connect()
-        cursor = conn.cursor()
-        sql_type_to_json = self._sql_type_to_json
-        cursor.execute(self._sql["SELECT_META_DATA"],
-                       (version, version, customer))
-        grid = Grid(version=VER_3_0)
-        row = cursor.fetchone()
-        if row:
-            meta, cols = row
-            grid.metadata = MetadataObject(jsonparser.parse_metadata(sql_type_to_json(meta), VER_3_0))
-            jsonparser.parse_cols(grid, sql_type_to_json(cols), VER_3_0)
-        conn.commit()
-        return grid
+        with conn.cursor() as cursor:
+            sql_type_to_json = self._sql_type_to_json
+            cursor.execute(self._sql["SELECT_META_DATA"],
+                           (version, customer))
+            grid = Grid(version=VER_3_0)
+            row = cursor.fetchone()
+            if row:
+                meta, cols = row
+                grid.metadata = MetadataObject(jsonparser.parse_metadata(sql_type_to_json(meta), VER_3_0))
+                jsonparser.parse_cols(grid, sql_type_to_json(cols), VER_3_0)
+            conn.commit()
+            return grid
 
     def export_grid_from_db(self,
                             customer: Optional[str],
@@ -274,33 +273,33 @@ class Provider(HaystackInterface):
         if version is None:
             version = datetime(9999, 12, 31)
         conn = self.get_connect()
-        cursor = conn.cursor()
-        sql_type_to_json = self._sql_type_to_json
+        with conn.cursor() as cursor:
+            sql_type_to_json = self._sql_type_to_json
 
-        cursor.execute(self._sql["SELECT_META_DATA"],
-                       (version, version, customer))
-        grid = Grid(version=VER_3_0)
-        row = cursor.fetchone()
-        if row:
-            meta, cols = row
-            grid.metadata = jsonparser.parse_metadata(sql_type_to_json(meta), VER_3_0)
-            jsonparser.parse_cols(grid, sql_type_to_json(cols), VER_3_0)
+            cursor.execute(self._sql["SELECT_META_DATA"],
+                           (version, customer))
+            grid = Grid(version=VER_3_0)
+            row = cursor.fetchone()
+            if row:
+                meta, cols = row
+                grid.metadata = jsonparser.parse_metadata(sql_type_to_json(meta), VER_3_0)
+                jsonparser.parse_cols(grid, sql_type_to_json(cols), VER_3_0)
 
-        cursor.execute(self._sql["SELECT_ENTITY"],
-                       (version, version, customer))
+            cursor.execute(self._sql["SELECT_ENTITY"],
+                           (version, customer))
 
-        for row in cursor:
-            grid.append(jsonparser.parse_row(sql_type_to_json(row[0]), VER_3_0))
-        conn.commit()
-        assert _validate_grid(grid), "Error in grid"
-        return grid
+            for row in cursor:
+                grid.append(jsonparser.parse_row(sql_type_to_json(row[0]), VER_3_0))
+            conn.commit()
+            assert _validate_grid(grid), "Error in grid"
+            return grid
 
     def purge_db(self):
         conn = self.get_connect()
-        cursor = conn.cursor()
-        cursor.execute(self._sql["PURGE_TABLES_HAYSTACK"])
-        cursor.execute(self._sql["PURGE_TABLES_HAYSTACK_META"])
-        conn.commit()
+        with conn.cursor() as cursor:
+            cursor.execute(self._sql["PURGE_TABLES_HAYSTACK"])
+            cursor.execute(self._sql["PURGE_TABLES_HAYSTACK_META"])
+            conn.commit()
 
     def import_diff_grid_in_db(self,
                                diff_grid: Grid,
@@ -313,56 +312,58 @@ class Provider(HaystackInterface):
 
         if now is None:
             now = datetime.now(tz=pytz.UTC)
-
+        end_date = now - timedelta(milliseconds=1)
         if version is None:
             version = datetime(9999, 12, 31)
         conn = self.get_connect()
-        cursor = conn.cursor()
-        cursor.execute(self._sql["SELECT_META_DATA"],
-                       (version, version, customer_id))
+        with conn.cursor() as cursor:
+            cursor.execute(self._sql["SELECT_META_DATA"],
+                           (version, customer_id))
 
-        # Update metadata ?
-        if new_grid.metadata != init_grid.metadata or new_grid.column != init_grid.column:
-            cursor.execute(self._sql["CLOSE_META_DATA"],
-                           (
-                               now,
-                               customer_id
-                           )
-                           )
-            cursor.execute(self._sql["UPDATE_META_DATA"],
-                           (
-                               customer_id,
-                               now,
-                               json.dumps(jsondumper.dump_meta(new_grid.metadata)),
-                               json.dumps(jsondumper.dump_columns(new_grid.column))
-                           )
-                           )
-            log.debug("Update metadatas")
-
-        for row in diff_grid:
-            assert "id" in row, "Can import only entity with id"
-            json_id = jsondumper.dump_scalar(row["id"])
-            cursor.execute(self._sql["CLOSE_ENTITY"],
-                           (
-                               now,
-                               json_id,
-                               customer_id
-                           )
-                           )
-            if "remove_" not in row:
-                cursor.execute(self._sql["INSERT_ENTITY"],
+            # Update metadata ?
+            if new_grid.metadata != init_grid.metadata or new_grid.column != init_grid.column:
+                cursor.execute(self._sql["CLOSE_META_DATA"],
                                (
-                                   json_id,
+                                   end_date,
+                                   now,
+                                   customer_id
+                               )
+                               )
+                cursor.execute(self._sql["UPDATE_META_DATA"],
+                               (
                                    customer_id,
                                    now,
-                                   json.dumps(jsondumper.dump_row(new_grid, new_grid[row["id"]]))
+                                   json.dumps(jsondumper.dump_meta(new_grid.metadata)),
+                                   json.dumps(jsondumper.dump_columns(new_grid.column))
                                )
                                )
-                log.debug("Update %s", row['id'].name)
-            else:
-                log.debug("Remove %s", row['id'].name)
+                log.debug("Update metadatas")
 
-        conn.commit()
+            for row in diff_grid:
+                assert "id" in row, "Can import only entity with id"
+                json_id = jsondumper.dump_scalar(row["id"])
+                cursor.execute(self._sql["CLOSE_ENTITY"],
+                               (
+                                   end_date,
+                                   now,
+                                   json_id,
+                                   customer_id
+                               )
+                               )
+                if "remove_" not in row:
+                    cursor.execute(self._sql["INSERT_ENTITY"],
+                                   (
+                                       json_id,
+                                       customer_id,
+                                       now,
+                                       json.dumps(jsondumper.dump_row(new_grid, new_grid[row["id"]]))
+                                   )
+                                   )
+                    log.debug("Update %s", row['id'].name)
+                else:
+                    log.debug("Remove %s", row['id'].name)
+
+            conn.commit()
 
     def _dialect_request(self, dialect: str) -> Dict[str, Any]:
         table_name = self._parsed_db.fragment

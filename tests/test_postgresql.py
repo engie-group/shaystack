@@ -25,8 +25,8 @@ def check_pg(sql_request: str):
         provider = get_provider("haystackapi.providers.sql")
         if old:
             os.environ['HAYSTACK_DB'] = old
-        cursor = provider.get_connect().cursor()
-        cursor.execute(sql_request)
+        with provider.get_connect().cursor() as cursor:
+            cursor.execute(sql_request)
 
 
 def test_and_ltag_rtag():

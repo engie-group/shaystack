@@ -31,7 +31,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
                 id text, 
                 customer_id text NOT NULL, 
                 start_datetime text NOT NULL, 
-                end_datetime text, 
+                end_datetime text NOT NULL, 
                 entity text NOT NULL
                 );
             '''),
@@ -45,7 +45,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
                (
                 customer_id text NOT NULL, 
                 start_datetime text NOT NULL, 
-                end_datetime text, 
+                end_datetime text NOT NULL, 
                 metadata text,
                 cols text
                );
@@ -58,30 +58,31 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
             '''),
         "SELECT_META_DATA": textwrap.dedent(f'''
             SELECT metadata,cols FROM {table_name}_meta_datas
-            WHERE ? >= DATETIME(start_datetime) AND (? < DATETIME(end_datetime) OR end_datetime IS NULL)
+            WHERE ? BETWEEN start_datetime AND end_datetime
             AND customer_id=?
             '''),
         "CLOSE_META_DATA": textwrap.dedent(f'''
             UPDATE {table_name}_meta_datas  SET end_datetime=?
-            WHERE end_datetime IS NULL
+            WHERE ? > start_datetime AND end_datetime = '9999-12-31T23:59:59'
             AND customer_id=?
             '''),
         "UPDATE_META_DATA": textwrap.dedent(f'''
-            INSERT INTO {table_name}_meta_datas VALUES (?,?,NULL,?,?)
+            INSERT INTO {table_name}_meta_datas VALUES (?,?,'9999-12-31T23:59:59',?,?)
             '''),
         "SELECT_ENTITY": textwrap.dedent(f'''
             SELECT entity FROM {table_name}
-            WHERE ? >= DATETIME(start_datetime) AND (? < DATETIME(end_datetime) OR end_datetime IS NULL)
+            WHERE ? BETWEEN start_datetime AND end_datetime
             AND customer_id = ?
             '''),
         "SELECT_ENTITY_WITH_ID": textwrap.dedent(f'''
             SELECT entity FROM {table_name}
-            WHERE ? >= DATETIME(start_datetime) AND (? < DATETIME(end_datetime) OR end_datetime IS NULL)
+            WHERE ? BETWEEN start_datetime AND end_datetime
             AND customer_id = ?
             AND id IN '''),
         "CLOSE_ENTITY": textwrap.dedent(f'''
             UPDATE {table_name} SET end_datetime=? 
-            WHERE id=? AND end_datetime IS NULL
+            WHERE ? > start_datetime AND end_datetime = '9999-12-31T23:59:59'
+            AND id=? 
             AND customer_id = ?
             '''),
         "INSERT_ENTITY": textwrap.dedent(f'''

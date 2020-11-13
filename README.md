@@ -42,9 +42,9 @@ HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi
 
 ## Deploy server
 - start the api
-    - with flask and Haystack classical API, `HAYSTACK_PROVIDER='<your provider module> haystackapi`
+    - with flask and Haystack classical API, `HAYSTACK_PROVIDER='<your provider module>' haystackapi`
         - `pip install "haystackapi[flask]"`
-    - with flask and Haystack+GraphQL API, `HAYSTACK_PROVIDER='<your provider module> haystackapi`
+    - with flask and Haystack+GraphQL API, `HAYSTACK_PROVIDER='<your provider module>' haystackapi`
         - `pip install "haystackapi[graphql]"`
     - with AWS Lambda
         - `pip install "haystackapi[graphql,lambda]"`
@@ -109,6 +109,17 @@ The `<url>` may have the classic form (`http://...`, `ftp://...`) or can referen
 The time series to manage history must be referenced in the entity, with the `hisURI` tag.
 This URI may be relative and must be in parquet format.
 
+You can use `import_s3` to import an Haystack file in s3 bucket, only if the file is modified
+(to respect the notion of Version with this provider).
+The corresponding `hisURI` time-series files are uploaded too.
+```bash
+python -m haystackapi.providers.import_s3 <haystack file url> <s3 url>
+```
+You can use the parameters: 
+* `--no-compare` if you don't want to download the remote version and compare with the new version to detect an update
+* `--no-time-series` if you don't want to upload the time-series referenced in `hisURI` tags'
+* `--force` to force the upload, and create a new version for all files in the bucket.
+
 Because this provider use a local cache with the parsing version of S3 file,
 it's may be possible to see different versions if AWS use multiple instance of lambda.
 To fixe that, the environment variable `REFRESH` can be set to delay cache refresh
@@ -137,6 +148,12 @@ You can use `import_db` to import an Haystack file in database.
 ```bash
 python -m haystackapi.providers.import_db <haystack file url> <db url>
 ```
+You can use the parameters:
+* `--customer` to set the customer id
+* `--clean` to clean the oldest versions before import a new one
+* `--no-time-series` if you don't want to upload the time-series referenced in `hisURI` tags'
+
+
 After deployment, you can use this provider like any others providers. 
 The haystack filter was automatically converted to Postgres SQL.
 Two table was created:

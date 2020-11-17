@@ -442,9 +442,9 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
                );
            '''),
         "CREATE_HAYSTACK_INDEX_1": textwrap.dedent(f'''
-            CREATE INDEX IF NOT EXISTS {table_name}_index ON {table_name} USING hash
+            CREATE INDEX IF NOT EXISTS {table_name}_index ON {table_name}
             (
-                id
+                id, customer_id
             )
             '''),
         "CREATE_HAYSTACK_INDEX_2": textwrap.dedent(f'''

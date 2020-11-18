@@ -342,14 +342,11 @@ def get_provider(class_str) -> HaystackInterface:
     and return an instance of this subclass. Then, the 'ops' method can analyse the current instance
     and detect the implemented and abstract methods.
     """
-    if class_str in _providers:
-        return _providers[class_str]
     try:
         if not class_str.endswith(".Provider"):
             class_str += ".Provider"
         if class_str in _providers:
             return _providers[class_str]
-
         module_path, class_name = class_str.rsplit(".", 1)
         module = import_module(module_path)
         # Get the abstract class name

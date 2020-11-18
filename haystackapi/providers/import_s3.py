@@ -67,7 +67,6 @@ def _get_hash_of_s3_file(s3_client,
             raise
 
 
-# FIXME: use multithreading or async
 def update_grid_on_s3(parsed_source: ParseResult,
                       parsed_destination: ParseResult,
                       compare_grid: bool,
@@ -204,6 +203,18 @@ def import_in_s3(source: str,
                       )
 
 
+def aws_handler(event, context):
+    """
+    AWS Handler.
+    Set the environment variable HAYSTACK_URL and HAYSTACK_DB
+    """
+    hs_source_url = os.environ.get("HAYSTACK_SOURCE_URL")
+    hs_target_url = os.environ.get("HAYSTACK_URL")
+    assert hs_source_url, "Set `HAYSTACK_SOURCE_URL`"
+    assert hs_target_url, "Set `HAYSTACK_URL`"
+    import_in_s3(hs_source_url, hs_target_url)
+
+
 @click.command(short_help='Import haystack file in database')
 @click.argument('source_url',
                 metavar='<haystack url>',
@@ -218,7 +229,7 @@ def import_in_s3(source: str,
               default=True
               )
 @click.option("--time-series/--no-time-series",
-              help='Compare grid before upload datas',
+              help='Import time-series referenced with hisURI tag',
               default=True
               )
 @click.option("--force/--no-force",

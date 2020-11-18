@@ -42,10 +42,12 @@ HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi
 
 ## Deploy server
 - start the api
-    - with flask and Haystack classical API, `HAYSTACK_PROVIDER='<your provider module>' haystackapi`
+    - with flask and Haystack classical API, 
         - `pip install "haystackapi[flask]"`
-    - with flask and Haystack+GraphQL API, `HAYSTACK_PROVIDER='<your provider module>' haystackapi`
+        - `HAYSTACK_PROVIDER='<your provider module>' haystackapi`
+    - with flask and Haystack+GraphQL API, 
         - `pip install "haystackapi[graphql]"`
+        - `HAYSTACK_PROVIDER='<your provider module>' haystackapi`
     - with AWS Lambda
         - `pip install "haystackapi[graphql,lambda]"`
         - create a file zappa_settings.json with
@@ -65,8 +67,8 @@ HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi
   }
 }
 ```        
-        - update the parameters
-        - `zappa deploy`
+   - update the parameters
+   - `zappa deploy`
 
 # Custom provider
 To create your custom ReadHaystack API
@@ -142,6 +144,10 @@ HAYSTACK_PROVIDER=providers.sql
 HAYSTACK_DB=postgresql://scott:tiger@localhost/mydatabase#haystack
 HAYSTACK_DB=postgresql+psycopg2://scott:tiger@localhost/mydatabase
 ```
+If the password is `secretManager`, and you use AWS lambda,  
+the password is retrieved from the service `secretManager`, 
+with the key, whose name is in the environment variable `SECRET_NAME`.
+
 The methods `/read` was implemented.
 
 You can use `import_db` to import an Haystack file in database. 

@@ -8,6 +8,7 @@ May be:
 - postgresql+psycopg2://scott:tiger@localhost/mydatabase
 - sqlite3://test.db#haystack
 """
+import base64
 import importlib
 import json
 import logging
@@ -27,6 +28,15 @@ from . import select_grid
 from .haystack_interface import HaystackInterface
 
 log = logging.getLogger("sql.Provider")
+
+BOTO3_AVAILABLE = False
+try:
+    import boto3
+    from botocore.client import BaseClient, ClientError
+
+    BOTO3_AVAILABLE = True
+except ImportError:
+    pass
 
 BATCH_SIZE = 25
 
@@ -231,6 +241,9 @@ class Provider(HaystackInterface):
                 port = self._parsed_db.port  # To manage sqlite in memory
             except ValueError:
                 port = 0
+            password = self._parsed_db.password
+            if password == "secretManager":
+                password = self._get_secret_manager_secret()
             params = {
                 "host": self._parsed_db.hostname,
                 "port": port,
@@ -247,6 +260,50 @@ class Provider(HaystackInterface):
                 self._connect = self.db.connect(**filtered)
                 self.create_db()
         return self._connect
+
+    def _get_secret_manager_secret(self) -> str:
+        if not BOTO3_AVAILABLE:
+            return "secretManager"
+
+        secret_name = os.environ['SECRET_NAME']
+        session = boto3.session.Session()
+        client = session.client(
+            service_name='secretsmanager',
+            region_name=os.environ["AWS_REGION"]
+        )
+
+        try:
+            get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+            # Decrypts secret using the associated KMS CMK.
+            # Depending on whether the secret is a string or binary, one of these fields will be populated.
+            if 'SecretString' in get_secret_value_response:
+                secret = get_secret_value_response['SecretString']
+                j = json.loads(secret)
+                return j['password']
+            else:
+                decoded_binary_secret = base64.b64decode(get_secret_value_response['SecretBinary'])
+                return decoded_binary_secret.password
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'DecryptionFailureException':
+                # Secrets Manager can't decrypt the protected secret text using the provided KMS key.
+                # Deal with the exception here, and/or rethrow at your discretion.
+                raise e
+            elif e.response['Error']['Code'] == 'InternalServiceErrorException':
+                # An error occurred on the server side.
+                # Deal with the exception here, and/or rethrow at your discretion.
+                raise e
+            elif e.response['Error']['Code'] == 'InvalidParameterException':
+                # You provided an invalid value for a parameter.
+                # Deal with the exception here, and/or rethrow at your discretion.
+                raise e
+            elif e.response['Error']['Code'] == 'InvalidRequestException':
+                # You provided a parameter value that is not valid for the current state of the resource.
+                # Deal with the exception here, and/or rethrow at your discretion.
+                raise e
+            elif e.response['Error']['Code'] == 'ResourceNotFoundException':
+                # We can't find the resource that you asked for.
+                # Deal with the exception here, and/or rethrow at your discretion.
+                raise e
 
     def _init_grid_from_db(self, version: Optional[datetime]) -> Grid:
         customer = self.get_customer_id()

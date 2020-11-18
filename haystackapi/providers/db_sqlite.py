@@ -63,7 +63,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
             '''),
         "CLOSE_META_DATA": textwrap.dedent(f'''
             UPDATE {table_name}_meta_datas  SET end_datetime=?
-            WHERE ? > start_datetime AND end_datetime = '9999-12-31T23:59:59'
+            WHERE ? >= start_datetime AND end_datetime = '9999-12-31T23:59:59'
             AND customer_id=?
             '''),
         "UPDATE_META_DATA": textwrap.dedent(f'''

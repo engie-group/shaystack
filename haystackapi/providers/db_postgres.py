@@ -192,8 +192,7 @@ def _generate_sql_block(table_name: str,
 
 
 def _select_version(version: datetime, num_table):
-    return f"'{version.isoformat()}' >= t{num_table}.start_datetime AND " \
-           f"('{version.isoformat()}' < t{num_table}.end_datetime or t{num_table}.end_datetime is NULL)\n" \
+    return f"'{version.isoformat()}' BETWEEN t{num_table}.start_datetime AND t{num_table}.end_datetime\n" \
            f"AND\n"
 
 
@@ -473,7 +472,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
         '''),
         "CLOSE_META_DATA": textwrap.dedent(f'''
             UPDATE {table_name}_meta_datas  SET end_datetime=%s
-            WHERE %s > start_datetime AND end_datetime = '9999-12-31T23:59:59'
+            WHERE %s >= start_datetime AND end_datetime = '9999-12-31T23:59:59'
             AND customer_id=%s
             '''),
         "UPDATE_META_DATA": textwrap.dedent(f'''

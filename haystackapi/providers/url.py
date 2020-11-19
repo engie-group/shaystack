@@ -229,7 +229,7 @@ class Provider(HaystackInterface):
         """
         assert parsed_uri
         assert effective_version
-        log.error("_download_uri('%s')", parsed_uri.geturl())
+        log.info("_download_uri('%s')", parsed_uri.geturl())
         if parsed_uri.scheme == "s3":
             assert BOTO3_AVAILABLE, "Use 'pip install boto3'"
             s3_client = self._s3()
@@ -249,9 +249,10 @@ class Provider(HaystackInterface):
             data = stream.getvalue()
         else:
             # Manage default cwd
+            uri = parsed_uri.geturl()
             if not parsed_uri.scheme:
                 uri = Path.cwd().joinpath(parsed_uri.geturl()).as_uri()
-            with urllib.request.urlopen(parsed_uri.geturl()) as response:
+            with urllib.request.urlopen(uri) as response:
                 data = response.read()
         if parsed_uri.path.endswith(".gz"):
             return gzip.decompress(data)
@@ -300,6 +301,7 @@ class Provider(HaystackInterface):
                 self._periodic_refresh_versions, parsed_uri, False
             )
             self._timer = threading.Timer((next_time - now).seconds, partial_refresh)
+            self._timer.daemon = True
             self._timer.start()
 
     def _refresh_versions(self, parsed_uri: ParseResult):
@@ -310,7 +312,7 @@ class Provider(HaystackInterface):
     def _download_grid_effective_version(self, uri: str, effective_version: datetime) -> Grid:
         log.info("_download_grid(%s,%s)", uri, effective_version)
         parsed_uri = urlparse(uri, allow_fragments=False)
-        body = self._download_uri(parsed_uri, effective_version).decode("utf-8")
+        body = self._download_uri(parsed_uri, effective_version).decode("utf-8-sig")
         if body is None:
             raise ValueError("Empty body not supported")
         if uri.endswith(".gz"):
@@ -322,6 +324,13 @@ class Provider(HaystackInterface):
                 "The file extension must be .(json|zinc|csv)[.gz]"
             )
         return hszinc.parse(body, mode)
+
+    def set_lru_size(self, size):
+        self._download_grid_effective_version = functools.lru_cache(size,
+                                                                    Provider._download_grid_effective_version.__wrapped__)
+
+    def cache_clear(self):
+        self._download_grid_effective_version.cache_clear()
 
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
         parsed_uri = urlparse(uri, allow_fragments=False)

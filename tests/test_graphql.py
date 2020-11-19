@@ -1,10 +1,13 @@
+from datetime import datetime
 from unittest.mock import patch
 
+import pytz
 from graphene.test import Client
 
 from app.blueprint_graphql import schema
 from haystackapi.providers import get_provider
 from haystackapi.providers.url import Provider
+from hszinc import Grid, VER_3_0, Uri, Ref, Coordinate, MARKER
 from tests import _get_mock_s3
 
 
@@ -167,8 +170,8 @@ def test_entities_with_id(mock_s3, mock_get_url):
                                {
                                    'entities':
                                        [
-                                           {'id': 'r:id1', 'col': 'n:1.000000'},
-                                           {'id': 'r:id2', 'col': 'n:2.000000'}
+                                           {'id': 'r:id1', 'col': 'n:1.000000', 'hisURI': 's:his0.zinc'},
+                                           {'id': 'r:id2', 'col': 'n:2.000000', 'hisURI': 's:his1.zinc'}
                                        ]
                                }
                        }
@@ -192,7 +195,9 @@ def test_entities_with_filter(mock_s3, mock_get_url):
         }
         ''')
         assert executed == \
-               {'data': {'haystack': {'entities': [{'id': 'r:id1', 'col': 'n:1.000000'}]}}}
+               {'data': {'haystack': {'entities':
+                   [
+                       {'id': 'r:id1', 'col': 'n:1.000000', 'hisURI': 's:his0.zinc', }]}}}
 
 
 @patch.object(Provider, '_get_url')
@@ -232,4 +237,265 @@ def test_entities_with_limit(mock_s3, mock_get_url):
         }
         ''')
         assert executed == \
-               {'data': {'haystack': {'entities': [{'id': 'r:id1', 'col': 'n:1.000000'}]}}}
+               {'data': {'haystack': {'entities':
+                   [
+                       {'id': 'r:id1', 'col': 'n:1.000000', 'hisURI': 's:his0.zinc', }]}}}
+
+
+@patch.object(Provider, '_get_url')
+@patch.object(Provider, '_s3')
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
+def test_his_read_with_boolean(mock_s3, mock_get_url):
+    mock_s3.return_value = _get_mock_s3()
+    his = Grid(version=VER_3_0, columns=["date", "val"])
+    his.extend([{"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": MARKER},
+                {"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": False},
+                {"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": 1},
+                {"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": 1.0},
+                {"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": ""},
+                ]
+               )
+    mock_s3.return_value.history = his
+    mock_get_url.return_value = "s3://bucket/grid.zinc"
+
+    with get_provider("haystackapi.providers.url") as _:
+        client = Client(schema)
+        executed = client.execute('''
+        { 
+            haystack
+            { 
+                histories(ids:"@id1")
+                {
+                    date
+                    val
+                    bool
+                }
+            }
+        }
+        ''')
+        assert executed == \
+               {'data': {'haystack': {'histories':
+                   [[
+                       {'date': '2020-01-01 00:00:00+00:00',
+                        'val': 'm:',
+                        'bool': True,
+                        },
+                       {'date': '2020-01-01 00:00:00+00:00',
+                        'val': False,
+                        'bool': False,
+                        },
+                       {'date': '2020-01-01 00:00:00+00:00',
+                        'val': 'n:1.000000',
+                        'bool': True,
+                        },
+                       {'date': '2020-01-01 00:00:00+00:00',
+                        'val': 'n:1.000000',
+                        'bool': True,
+                        },
+                       {'date': '2020-01-01 00:00:00+00:00',
+                        'val': 's:',
+                        'bool': False,
+                        }
+                   ]]}}}
+
+
+@patch.object(Provider, '_get_url')
+@patch.object(Provider, '_s3')
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
+def test_his_read_with_number(mock_s3, mock_get_url):
+    mock_s3.return_value = _get_mock_s3()
+
+    his = Grid(version=VER_3_0, columns=["date", "val"])
+    his.append({"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": 3.5})
+    mock_s3.return_value.history = his
+    mock_s3.return_value.his_count = 500
+    mock_get_url.return_value = "s3://bucket/grid.zinc"
+
+    with get_provider("haystackapi.providers.url") as provider:
+        provider.cache_clear()
+        client = Client(schema)
+        executed = client.execute('''
+        { 
+            haystack
+            { 
+                histories(ids:"@id1")
+                {
+                    date
+                    val
+                    integer
+                    float
+                    str
+                }
+            }
+        }
+        ''')
+        assert executed == \
+               {'data': {'haystack': {'histories':
+                   [[
+                       {
+                           'date': '2020-01-01 00:00:00+00:00',
+                           'val': 'n:3.500000',
+                           "integer": 3,
+                           "float": 3.5,
+                           "str": "3.5"
+                       }
+                   ]]}}}
+
+
+@patch.object(Provider, '_get_url')
+@patch.object(Provider, '_s3')
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
+def test_his_read_with_uri(mock_s3, mock_get_url):
+    mock_s3.return_value = _get_mock_s3()
+    his = Grid(version=VER_3_0, columns=["date", "val"])
+    his.append({"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": Uri("http://localhost")})
+    mock_s3.return_value.history = his
+    mock_s3.return_value.his_count = 100
+    mock_get_url.return_value = "s3://bucket/grid.zinc"
+
+    with get_provider("haystackapi.providers.url") as provider:
+        provider.cache_clear()
+        client = Client(schema)
+        executed = client.execute('''
+        { 
+            haystack
+            { 
+                histories(ids:"@id1")
+                {
+                    date
+                    val
+                    uri
+                }
+            }
+        }
+        ''')
+        print(executed)
+        assert executed == \
+               {'data': {'haystack': {'histories':
+                   [[
+                       {
+                           'date': '2020-01-01 00:00:00+00:00',
+                           'val': 'u:http://localhost',
+                           'uri': 'http://localhost',
+                       }
+                   ]]}}}
+
+
+@patch.object(Provider, '_get_url')
+@patch.object(Provider, '_s3')
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
+def test_his_read_with_ref(mock_s3, mock_get_url):
+    mock_s3.return_value = _get_mock_s3()
+    his = Grid(version=VER_3_0, columns=["date", "val"])
+    his.append({"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": Ref("id1")})
+    mock_s3.return_value.history = his
+    mock_s3.return_value.his_count = 200
+    mock_get_url.return_value = "s3://bucket/grid.zinc"
+
+    with get_provider("haystackapi.providers.url") as provider:
+        provider.cache_clear()
+        client = Client(schema)
+        executed = client.execute('''
+        { 
+            haystack
+            { 
+                histories(ids:"@id1")
+                {
+                    date
+                    val
+                    ref
+                }
+            }
+        }
+        ''')
+        print(executed)
+        assert executed == \
+               {'data': {'haystack': {'histories':
+                   [[
+                       {
+                           'date': '2020-01-01 00:00:00+00:00',
+                           'val': 'r:id1',
+                           'ref': '@id1',
+                       }
+                   ]]}}}
+
+
+@patch.object(Provider, '_get_url')
+@patch.object(Provider, '_s3')
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
+def test_his_read_with_datetime(mock_s3, mock_get_url):
+    mock_s3.return_value = _get_mock_s3()
+    his = Grid(version=VER_3_0, columns=["date", "val"])
+    his.append({"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": datetime(2020, 1, 1, tzinfo=pytz.utc)})
+    mock_s3.return_value.history = his
+    mock_s3.return_value.his_count = 300
+    mock_get_url.return_value = "s3://bucket/grid.zinc"
+
+    with get_provider("haystackapi.providers.url") as provider:
+        provider.cache_clear()
+        client = Client(schema)
+        executed = client.execute('''
+        { 
+            haystack
+            { 
+                histories(ids:"@id1")
+                {
+                    date
+                    val
+                    date
+                    time
+                    datetime
+                }
+            }
+        }
+        ''')
+        print(executed)
+        assert executed == \
+               {'data': {'haystack': {'histories':
+                   [[
+                       {
+                           'date': '2020-01-01 00:00:00+00:00',
+                           'val': 't:2020-01-01T00:00:00+00:00 UTC',
+                           'datetime': '2020-01-01 00:00:00+00:00',
+                           'time': '00:00:00',
+                       }
+                   ]]}}}
+
+
+@patch.object(Provider, '_get_url')
+@patch.object(Provider, '_s3')
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
+def test_his_read_with_coordinate(mock_s3, mock_get_url):
+    mock_s3.return_value = _get_mock_s3()
+    his = Grid(version=VER_3_0, columns=["date", "val"])
+    his.append({"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": Coordinate(100.0, 150.0)})
+    mock_s3.return_value.history = his
+    mock_s3.return_value.his_count = 400
+    mock_get_url.return_value = "s3://bucket/grid.zinc"
+
+    with get_provider("haystackapi.providers.url") as provider:
+        provider.cache_clear()
+        client = Client(schema)
+        executed = client.execute('''
+        { 
+            haystack
+            { 
+                histories(ids:"@id1")
+                {
+                    date
+                    val
+                    coord { lat long }
+                }
+            }
+        }
+        ''')
+        print(executed)
+        assert executed == \
+               {'data': {'haystack': {'histories':
+                   [[
+                       {
+                           'date': '2020-01-01 00:00:00+00:00',
+                           'val': 'c:100.000000,150.000000',
+                           'coord': {'lat': 100.0, 'long': 150.0},
+                       }
+                   ]]}}}

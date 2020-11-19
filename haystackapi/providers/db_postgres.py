@@ -398,7 +398,6 @@ def _sql_filter(table_name: str,
         version)
     sql_request = f'-- {grid_filter}\n' + \
                   ''.join(_flatten(generated_sql))
-    log.debug(sql_request)
     return sql_request
 
 
@@ -419,7 +418,6 @@ def _exec_sql_filter(params: Dict[str, Any],
         version,
         limit,
         customer_id)
-    log.debug(sql_request)
     cursor.execute(sql_request)
     return cursor
 

@@ -19,6 +19,11 @@ type HSAbout {
   moduleVersion: String!
 }
 
+type HSCoordinate {
+  lat: Float
+  long: Float
+}
+
 type HSOps {
   name: String
   summary: String
@@ -31,13 +36,27 @@ type HSPointWrite {
   who: String
 }
 
+type HSTS {
+  val: AWSJSON
+  integer: Int
+  float: Float
+  str: String
+  bool: Boolean
+  uri: String
+  ref: String
+  date: String
+  time: String
+  datetime: String
+  coord: HSCoordinate
+}
+
 type Haystack {
   about: HSAbout!
   ops: [HSOps!]!
   tagValues(tag: String!, version: String): [String!]!
   versions: [String!]!
   entities(ids: [ID], select: String = "*", limit: Int = 0, filter: String = "", version: String): [AWSJSON!]
-  histories(ids: [ID], datesRange: String, version: String): [[AWSJSON!]!]
+  histories(ids: [ID], datesRange: String, version: String): [[HSTS!]!]
   pointWrite(id: ID!, version: String): [HSPointWrite!]
 }
 

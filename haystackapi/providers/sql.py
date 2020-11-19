@@ -242,14 +242,14 @@ class Provider(HaystackInterface):
             except ValueError:
                 port = 0
             password = self._parsed_db.password
-            if password == "secretManager":
+            if password is None or password == "":
                 password = self._get_secret_manager_secret()
             params = {
                 "host": self._parsed_db.hostname,
                 "port": port,
                 "user": self._parsed_db.username,
-                "passwd": self._parsed_db.password,
-                "password": self._parsed_db.password,
+                "passwd": password,
+                "password": password,
                 "db": self._parsed_db.path[1:],
                 "database": self._parsed_db.path[1:],
                 "dbname": self._parsed_db.path[1:],
@@ -265,7 +265,7 @@ class Provider(HaystackInterface):
         if not BOTO3_AVAILABLE:
             return "secretManager"
 
-        secret_name = os.environ['SECRET_NAME']
+        secret_name = os.environ['HAYSTACK_DB_SECRET']
         session = boto3.session.Session()
         client = session.client(
             service_name='secretsmanager',

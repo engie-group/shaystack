@@ -144,9 +144,10 @@ HAYSTACK_PROVIDER=providers.sql
 HAYSTACK_DB=postgresql://scott:tiger@localhost/mydatabase#haystack
 HAYSTACK_DB=postgresql+psycopg2://scott:tiger@localhost/mydatabase
 ```
-If the password is `secretManager`, and you use AWS lambda,  
+If the password is empty and you use AWS lambda,  
 the password is retrieved from the service `secretManager`, 
-with the key, whose name is in the environment variable `SECRET_NAME`.
+with the key, whose name is in the environment variable `HAYSTACK_DB_SECRET`.
+Use the key `password` to save the password.
 
 The methods `/read` was implemented.
 

@@ -9,6 +9,12 @@ from hszinc.filter_ast import FilterNode, FilterUnary, FilterBinary, FilterPath
 
 log = logging.getLogger("sql.Provider")
 
+def _sql_filter(table_name: str,
+                grid_filter: Optional[str],
+                version: datetime,
+                limit: int = 0,
+                customer_id: str = '') -> str:
+    raise NotImplementedError("Complex request not implemented")
 
 def _generate_path(table_name: str,
                    customer_id: str,

@@ -149,8 +149,6 @@ the password is retrieved from the service `secretManager`,
 with the key, whose name is in the environment variable `HAYSTACK_DB_SECRET`.
 Use the key `password` to save the password.
 
-The methods `/read` was implemented.
-
 You can use `import_db` to import an Haystack file in database. 
 ```bash
 python -m haystackapi.providers.import_db <haystack file url> <db url>
@@ -159,7 +157,6 @@ You can use the parameters:
 * `--customer` to set the customer id
 * `--clean` to clean the oldest versions before import a new one
 * `--no-time-series` if you don't want to upload the time-series referenced in `hisURI` tags'
-
 
 After deployment, you can use this provider like any others providers. 
 The haystack filter was automatically converted to Postgres SQL.
@@ -253,10 +250,14 @@ or use a GraphQL Client with this URL.
         summary
     }
     versions
-    entities(ids:["@elec-16514","@site-434051"])
     byid:entities(ids:["@elec-16514","@site-434051"])
     byfilter:entities(select: "id,dis" filter: "id", limit: 2)
-    histories(ids:["@elec-397691","@elec-434051"])
+    histories(ids:["@car-1","@bicycle-100"])
+    {
+        date
+        val
+        coord { lat long }
+    }
     pointWrite(id:"@elec-16514")
     {
         level

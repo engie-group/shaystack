@@ -43,7 +43,8 @@ requirements = [
     'hszinc',
     'pint',
     'click',
-    'click_pathlib'
+    'click_pathlib',
+    'supersqlite'
 ]
 
 # Extra for a deployment in Flask server

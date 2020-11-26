@@ -4,7 +4,7 @@ from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from datetime import datetime
 from textwrap import dedent
-from typing import List, Type, Any, Tuple, Optional, Dict, Union
+from typing import List, Type, Any, Union, Tuple, Optional, Dict
 
 from hszinc import parse_filter, jsondumper, Quantity
 from hszinc.filter_ast import FilterPath, FilterBinary, FilterUnary, FilterNode
@@ -135,7 +135,8 @@ def _optimize_filter_for_sql(node: FilterNode) -> _Root:
             if merged:
                 return merged
             if isinstance(left, _IsMerge) and left.isMerge() or \
-                    isinstance(right, _IsMerge) and right.isMerge():
+                    isinstance(right, _IsMerge) and right.isMerge() or \
+                    isinstance(left, (_Union, _Intersect)) or isinstance(right, (_Union, _Intersect)):
                 return _Intersect(left, right)
             return _And(left, right)
         if node.operator == "or":
@@ -143,7 +144,8 @@ def _optimize_filter_for_sql(node: FilterNode) -> _Root:
             if merged:
                 return merged
             if isinstance(left, _IsMerge) and left.isMerge() or \
-                    isinstance(right, _IsMerge) and right.isMerge():
+                    isinstance(right, _IsMerge) and right.isMerge() or \
+                    isinstance(left, (_Union, _Intersect)) or isinstance(right, (_Union, _Intersect)):
                 return _Union(left, right)
             return _Or(left, right)
         assert isinstance(left, _Path)
@@ -164,157 +166,175 @@ def _optimize_filter_for_sql(node: FilterNode) -> _Root:
 
 
 # Phase 2: Generate SQL
-
+# TODO: il faut couper "select", "whereclause"
 def _generate_sql_block(table_name: str,
                         customer_id: str,
+                        version: datetime,
+                        limit: int,
                         node: _Root,
-                        generated_sql: List[Union[str, List[str]]],
-                        num_table: int,
-                        limit,
-                        version: datetime) -> List[Union[str, List[str]]]:
-    prefix, new_num_table, lines = _generate_filter_in_sql(table_name,
-                                                           customer_id,
-                                                           node,
-                                                           generated_sql,
-                                                           num_table,
-                                                           limit,
-                                                           version)
-    result = [textwrap.dedent(f"""\
-            SELECT t{num_table}.entity
-            FROM {table_name} as t{num_table}
-            {prefix}
-            """),
-              lines,
-              ]
-    if limit:
-        result.append(f"LIMIT {limit}\n")
-    return result
+                        num_table: int) -> Tuple[int, str]:
+    init_num_table = num_table
+    select = [textwrap.dedent(f"""
+        SELECT t{num_table}.entity
+        FROM {table_name} as t{num_table}
+        """)]
+    where = [_select_version(version, num_table) + \
+             f"AND t{num_table}.customer_id='{customer_id}'\n"
+             f"AND "
+             ]
+    num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
+                                                       select,
+                                                       where,
+                                                       node,
+                                                       num_table
+                                                       )
+
+    generated_sql = "".join(_flatten(select))
+    if init_num_table == num_table:
+        generated_sql += "WHERE\n"
+    generated_sql += "".join(_flatten(where))
+
+    if limit > 0:
+        generated_sql += f"LIMIT {limit}\n"
+    return num_table, generated_sql
 
 
 def _select_version(version: datetime, num_table):
-    return f"'{version.isoformat()}' BETWEEN t{num_table}.start_datetime AND t{num_table}.end_datetime\n" \
-           f"AND\n"
+    return f"'{version.isoformat()}' BETWEEN t{num_table}.start_datetime AND t{num_table}.end_datetime\n"
 
 
 def _generate_path(table_name: str,
                    customer_id: str,
-                   node: _Path,
-                   generated_sql: List[Union[str, List[Any]]],
                    version: datetime,
-                   num_table: int) -> Tuple[str, int, List[Any]]:
-    if len(node.paths) > 1:
-        num_table += 1
-        prefix = f"INNER JOIN {table_name} AS t{num_table} ON"
-    else:
-        prefix = "WHERE"
+                   select: List[Union[str, List[Any]]],
+                   where: List[Union[str, List[Any]]],
+                   node: _Path,
+                   num_table: int) -> Tuple[int, List[Union[str, List[Any]]], List[Union[str, List[Any]]]]:
     if len(node.paths) == 1:
-        return prefix, num_table, generated_sql
+        return num_table, select, where
     first = True
     for path in node.paths[:-1]:
-        if not first:
-            generated_sql.append(
-                f"INNER JOIN {table_name} AS t{num_table} ON\n",
-            )
-        first = False
-        generated_sql.append(_select_version(version, num_table - 1))
-        generated_sql.append(fr"t{num_table - 1}.customer_id='{customer_id}' AND ")
-        generated_sql.append(
-            f"t{num_table - 1}.entity->'{path}' = t{num_table}.entity->'id'\n"
-        )
         num_table += 1
-    return prefix, num_table - 1, generated_sql
+        if first:
+            select.append(f"INNER JOIN {table_name} AS t{num_table} ON\n")
+        else:
+            select.append("".join(_flatten(where)))
+            where = []
+            select.append(f"INNER JOIN {table_name} AS t{num_table} ON\n")
+        where.append(_select_version(version, num_table))
+        where.append(f"AND t{num_table}.customer_id='{customer_id}'\n")
+        first = False
+        where.append(f"AND t{num_table - 1}.entity->'{path}' = t{num_table}.entity->'id'\n")
+    where.append("AND ")
+    return num_table, select, where
 
 
 def _generate_filter_in_sql(table_name: str,
                             customer_id: str,
+                            version: datetime,
+                            select: List[Union[str, List[Any]]],
+                            where: List[Union[str, List[Any]]],
                             node: _Root,
-                            generated_sql: List[Union[str, List[Any]]],
-                            num_table: int,
-                            limit: int,
-                            version: datetime) -> Tuple[str, int, List[Any]]:
+                            num_table: int
+                            ) -> Tuple[int, List[Union[str, List[Any]]], List[Union[str, List[Any]]]]:
     # Use RootBlock nodes
-    prefix = "WHERE"
     if isinstance(node, _Has):
-        l = len(generated_sql)
-        prefix, num_table, generated_sql = \
-            _generate_path(table_name, customer_id, node.tag, generated_sql, version, num_table)
-        if len(generated_sql) != l:
-            generated_sql.append("AND\n")
-        generated_sql.append(_select_version(version, num_table))
-        generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
-        generated_sql.append(f"t{num_table}.entity ? '{node.tag.paths[-1]}'\n")
+        num_table, select, where = \
+            _generate_path(table_name, customer_id, version,
+                           select, where,
+                           node.tag,
+                           num_table)
+        where.append(f"t{num_table}.entity ? '{node.tag.paths[-1]}'\n")
     elif isinstance(node, _NotHas):
-        l = len(generated_sql)
-        prefix, num_table, _ = \
-            _generate_path(table_name, customer_id, node.tag, generated_sql, version, num_table)
-        if len(generated_sql) != l:
-            generated_sql.append("AND\n")
-        generated_sql.append(_select_version(version, num_table))
-        generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
-        generated_sql.append(f"NOT t{num_table}.entity ? '{node.tag.paths[-1]}'\n")
+        num_table, select, where = _generate_path(table_name, customer_id, version,
+                                                  select, where,
+                                                  node.tag,
+                                                  num_table)
+        where.append(f"NOT t{num_table}.entity ? '{node.tag.paths[-1]}'\n")
     elif isinstance(node, _AndHasTags):
-        generated_sql.append(_select_version(version, num_table))
-        generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
         if node.not_op:
-            generated_sql.append("NOT ")
+            where.append("NOT ")
         if len(node.tags) == 1:
-            generated_sql.append(f"t{num_table}.entity ? '{node.tags[0]}'\n")
+            where.append(f"t{num_table}.entity ? '{node.tags[0]}'\n")
         else:
-            generated_sql.append(f"t{num_table}.entity ?& array{node.tags}\n")
+            where.append(f"t{num_table}.entity ?& array{node.tags}\n")
     elif isinstance(node, _OrHasTags):
-        generated_sql.append(_select_version(version, num_table))
-        generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
-        generated_sql.append(f"t{num_table}.entity ?| array{node.tags}\n")
+        where.append(f"t{num_table}.entity ?| array{node.tags}\n")
     elif isinstance(node, _And):
-        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer_id, node.left, generated_sql, num_table,
-                                                       limit,
-                                                       version)
-        generated_sql.append("AND\n")
-        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer_id, node.right, generated_sql, num_table,
-                                                       limit, version)
-    elif isinstance(node, _Intersect):
-        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer_id, node.left, generated_sql, num_table,
-                                                       limit,
-                                                       version)
-        generated_sql.append("INTERSECT\n")
-        num_table += 1
-        generated_sql.append(
-            _generate_sql_block(table_name, customer_id, node.right, [], num_table, 0, version))
+        num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
+                                                           select,
+                                                           where,
+                                                           node.left,
+                                                           num_table)
+        where.append("AND ")
+        num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
+                                                           select,
+                                                           where,
+                                                           node.right,
+                                                           num_table)
     elif isinstance(node, _Or):
-        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer_id, node.left, generated_sql, num_table,
-                                                       limit,
-                                                       version)
-        generated_sql.append("OR\n")
-        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer_id, node.right, generated_sql, num_table,
-                                                       limit, version)
-    elif isinstance(node, _Union):
-        prefix, num_table, _ = _generate_filter_in_sql(table_name, customer_id, node.left, generated_sql, num_table,
-                                                       limit,
-                                                       version)
-        generated_sql.append("UNION\n")
+        num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
+                                                           select,
+                                                           where,
+                                                           node.left,
+                                                           num_table)
+        where.append("OR ")
+        num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
+                                                           select,
+                                                           where,
+                                                           node.right,
+                                                           num_table)
+    elif isinstance(node, _Intersect):
+        generated_sql = []
+        generated_sql.append('\n(')
+        num_table, sql = _generate_sql_block(table_name, customer_id, version,
+                                             0,
+                                             node.left,
+                                             num_table)
+        generated_sql.append(sql)
+        generated_sql.append(")\nINTERSECT\n(")
         num_table += 1
-        generated_sql.append(
-            _generate_sql_block(table_name, customer_id, node.right, [], num_table, 0, version))
+        num_table, sql = _generate_sql_block(table_name, customer_id, version,
+                                             0,
+                                             node.right,
+                                             num_table)
+        generated_sql.append(sql)
+        generated_sql.append(")\n")
+        select = generated_sql
+        where = []
+    elif isinstance(node, _Union):
+        generated_sql = []
+        generated_sql.append('\n(')
+        num_table, sql = _generate_sql_block(table_name, customer_id, version,
+                                             0,
+                                             node.left,
+                                             num_table)
+        generated_sql.append(sql)
+        generated_sql.append(")\nUNION\n(")
+        num_table += 1
+        num_table, sql = _generate_sql_block(table_name, customer_id, version,
+                                             0,
+                                             node.right,
+                                             num_table)
+        generated_sql.append(sql)
+        generated_sql.append(")\n")
+        select = generated_sql
+        where = []
     elif isinstance(node, _Path):
         if len(node.paths) == 1:
             # Simple case
-            generated_sql.append(_select_version(version, num_table))
-            generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
-            generated_sql.append(f" t{num_table}.entity @? '$.{node.paths[0]}\n")
+            where.append(f"t{num_table}.entity @? '$.{node.paths[0]}\n")
         else:
             # Path navigation. Use inner join
             inners_join = []
             last_path = node.paths[-1]
             inner_num_block = num_table
-            inners_join.extend([
-                f" INNER JOIN {table_name} as t{inner_num_block + 1} ON\n",
-                ''.join(_generate_sql_block(table_name, customer_id, node.right, [], inner_num_block, "WHERE",
-                                            version=version)),
-                ' AND\n',
-            ])
-            generated_sql.append(_select_version(version, num_table))
-            inners_join.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
-            inners_join.append(
+            select.append(f" INNER JOIN {table_name} as t{inner_num_block + 1} ON\n")
+            # FIXME
+            num_table, sql = _generate_sql_block(table_name, customer_id, version, 0,
+                                                 node.right,
+                                                 num_table)
+            where.append(
                 f"t{inner_num_block + 1}.entity @? ('$.{last_path} ? "
                 f"(@ == \"r:' || t{inner_num_block}.id ||'\")')::jsonpath\n"
             )
@@ -330,49 +350,36 @@ def _generate_filter_in_sql(table_name: str,
                     FROM {table_name} as t{num_block}
                     """)]
     elif isinstance(node, _Compare):
-        # _generate_filter_in_sql(table_name, node.path, def_filter, num_block)
         value = node.value
         if isinstance(value, Quantity):
             value = value.value
         if isinstance(value, (int, float)) and node.operator not in ('=', '!='):
             # Comparison with numbers. Must remove the header 'n:'
-            l = len(generated_sql)
-            prefix, num_table, generated_sql = \
-                _generate_path(table_name, customer_id, node.path, generated_sql, version, num_table)
-            if len(generated_sql) > l:
-                generated_sql.append("AND\n")
-            generated_sql.append(_select_version(version, num_table))
-            generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
-            generated_sql.extend([
+            num_table, select, where = \
+                _generate_path(table_name, customer_id, version,
+                               select, where,
+                               node.path,
+                               num_table)
+            where.extend([
                 f"substring(t{num_table}.entity->>'{node.path.paths[-1]}' from 3)::float",
                 f" {node.operator} {value}\n",
             ])
         else:
             assert node.operator in ('=', '!='), "Operator not supported for this type"
-            l = len(generated_sql)
-            prefix, num_table, generated_sql = \
-                _generate_path(table_name, customer_id, node.path, generated_sql, version, num_table)
-            if len(generated_sql) > l:
-                generated_sql.append("AND\n")
-            generated_sql.append(_select_version(version, num_table))
-            generated_sql.append(fr"t{num_table}.customer_id='{customer_id}' AND ")
+            num_table, select, where = \
+                _generate_path(table_name, customer_id, version,
+                               select, where,
+                               node.path,
+                               num_table)
             v = jsondumper.dump_scalar(node.value)
             if v is None:
                 if node.operator == '!=':
-                    generated_sql.extend([
-                        f"t{num_table}.entity->>'{node.path.paths[-1]}' IS NOT NULL\n"
-                    ])
+                    where.append(f"t{num_table}.entity->>'{node.path.paths[-1]}' IS NOT NULL\n")
                 else:
-                    generated_sql.extend([
-                        f"t{num_table}.entity->>'{node.path.paths[-1]}' IS NULL\n"
-                    ])
+                    where.append(f"t{num_table}.entity->>'{node.path.paths[-1]}' IS NULL\n")
             else:
-                generated_sql.extend([
-                    f"t{num_table}.entity->>'{node.path.paths[-1]}' {node.operator} '",
-                    str(v),
-                    "'\n"
-                ])
-    return prefix, num_table, generated_sql
+                where.append(f"t{num_table}.entity->>'{node.path.paths[-1]}' {node.operator} '{str(v)}'\n")
+    return num_table, select, where
 
 
 def _flatten(l: List[Any]) -> List[Any]:
@@ -387,17 +394,15 @@ def _sql_filter(table_name: str,
                 grid_filter: Optional[str],
                 version: datetime,
                 limit: int = 0,
-                customer_id: str = ''):
-    generated_sql = _generate_sql_block(
+                customer_id: str = '') -> str:
+    _, sql = _generate_sql_block(
         table_name,
         customer_id,
-        _optimize_filter_for_sql(parse_filter(grid_filter)._head),
-        [],
-        1,
+        version,
         limit,
-        version)
-    sql_request = f'-- {grid_filter}\n' + \
-                  ''.join(_flatten(generated_sql))
+        _optimize_filter_for_sql(parse_filter(grid_filter)._head),
+        num_table=1)
+    sql_request = f'-- {grid_filter}{sql}'
     return sql_request
 
 
@@ -423,6 +428,7 @@ def _exec_sql_filter(params: Dict[str, Any],
 
 
 MAX_DATE = '9999-12-31T23:59:59'
+
 
 def get_db_parameters(table_name: str) -> Dict[str, Any]:
     return {

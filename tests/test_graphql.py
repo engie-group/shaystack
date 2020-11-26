@@ -322,7 +322,7 @@ def test_his_read_with_number(mock_s3, mock_get_url):
                 {
                     date
                     val
-                    integer
+                    int
                     float
                     str
                 }
@@ -335,7 +335,7 @@ def test_his_read_with_number(mock_s3, mock_get_url):
                        {
                            'date': '2020-01-01 00:00:00+00:00',
                            'val': 'n:3.500000',
-                           "integer": 3,
+                           "int": 3,
                            "float": 3.5,
                            "str": "3.5"
                        }
@@ -408,7 +408,6 @@ def test_his_read_with_ref(mock_s3, mock_get_url):
             }
         }
         ''')
-        print(executed)
         assert executed == \
                {'data': {'haystack': {'histories':
                    [[

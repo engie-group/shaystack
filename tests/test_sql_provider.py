@@ -13,7 +13,7 @@ from hszinc import Ref, Grid, VER_3_0
 
 # Set HAYSTACK_DB variable, before running the tests to validate with another database
 # HAYSTACK_DB = 'postgresql://postgres:password@172.17.0.2:5432/postgres#haystack'
-HAYSTACK_DB = os.environ.get("HAYSTACK_DB", 'sqlite3://:memory:/test.db#haystack')
+HAYSTACK_DB = os.environ.get("HAYSTACK_DB", 'sqlite3:///:memory:#haystack')
 
 FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
@@ -146,7 +146,7 @@ def test_read_version_with_filter(caplog):
             assert "id" in result.column
             assert "other" in result.column
     except NotImplementedError:
-        skip("Unsupported with sqlite")
+        skip("Unsupported with standard sqlite. Use supersqlite")
 
 
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
@@ -176,4 +176,4 @@ def test_values_for_tag():
             values = provider.values_for_tag("id")
             assert len(values) > 1
     except NotImplementedError:
-        skip("Unsupported with sqlite")
+        skip("Unsupported with standard sqlite. Use supersqlite")

@@ -38,15 +38,14 @@ try:
 except ImportError:
     pass
 
-BATCH_SIZE = 25
-
 _default_driver = {
+    "sqlite3": ("supersqlite.sqlite3", {"database"}),
+    "supersqlite": ("supersqlite.sqlite3", {"database"}),
     "postgresql": ("psycopg2", {"host", "database", "user", "password"}),
     "postgre": ("psycopg2", {"host", "database", "user", "password"}),
     # "mysql": "mysqldb",  # Not implemented yet
     # "oracle": "cx_oracle",
     # "mssql": "pymssql",
-    "sqlite3": ("sqlite3", {"database"}),
 }
 
 
@@ -71,6 +70,11 @@ def _import_db_driver(parsed_db) -> Tuple[ModuleType, str]:
     else:
         dialect = _fix_dialect_alias(parsed_db.scheme)
         driver = _default_driver[dialect][0]
+    if driver.find('.') != -1:
+        s = driver.split('.')
+        mod = importlib.import_module(s[0])
+        return mod.__dict__[s[1]], dialect
+
     return importlib.import_module(driver), dialect
 
 
@@ -96,8 +100,8 @@ class Provider(HaystackInterface):
         log.info("Use %s", self._get_db())
         self._parsed_db = urlparse(self._get_db())
         # Import DB driver compatible with DB-API2 (PEP-0249)
-        self.db, dialect = _import_db_driver(self._parsed_db)
-        self._sql = self._dialect_request(dialect)
+        self.db, self._dialect = _import_db_driver(self._parsed_db)
+        self._sql = self._dialect_request(self._dialect)
         self._sql_type_to_json = self._sql["sql_type_to_json"]
 
     def _get_db(self):  # pylint: disable=no-self-use
@@ -106,7 +110,9 @@ class Provider(HaystackInterface):
 
     def create_db(self):
         conn = self.get_connect()
-        with conn.cursor() as cursor:
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
             # Create table
             cursor.execute(self._sql["CREATE_HAYSTACK_TABLE"])
             # Create index
@@ -116,6 +122,8 @@ class Provider(HaystackInterface):
             cursor.execute(self._sql["CREATE_METADATA_TABLE"])
             # Save (commit) the changes
             conn.commit()
+        finally:
+            cursor.close()
 
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -> List[Any]:
@@ -124,19 +132,25 @@ class Provider(HaystackInterface):
         if distinct is None:
             raise NotImplementedError("Not implemented")
         conn = self.get_connect()
-        with conn.cursor() as cursor:
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
             cursor.execute(re.sub(r"\[#]", tag, distinct),
                            (customer_id,))
             result = cursor.fetchall()
             conn.commit()
             return sorted([jsonparser.parse_scalar(x[0]) for x in result if x[0] is not None])
+        finally:
+            cursor.close()
 
     def versions(self) -> List[datetime]:
         """
         Return datetime for each versions or empty array if is unknown
         """
         conn = self.get_connect()
-        with conn.cursor() as cursor:
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
             customer_id = self.get_customer_id()
             cursor.execute(self._sql["DISTINCT_VERSION"], (customer_id,))
             result = cursor.fetchall()
@@ -144,6 +158,8 @@ class Provider(HaystackInterface):
             if result and isinstance(result[0], str):
                 return [iso8601.parse_date(x[0], default_timezone=pytz.UTC) for x in result]
             return [x[0] for x in result]
+        finally:
+            cursor.close()
 
     @overrides
     def about(self, home: str) -> Grid:  # pylint: disable=no-self-use
@@ -178,7 +194,9 @@ class Provider(HaystackInterface):
             date_version,
         )
         conn = self.get_connect()
-        with conn.cursor() as cursor:
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
             sql_type_to_json = self._sql_type_to_json
             if date_version is None:
                 date_version = datetime(9999, 12, 31)
@@ -208,6 +226,8 @@ class Provider(HaystackInterface):
                     grid.append(jsonparser.parse_row(sql_type_to_json(row[0]), VER_3_0))
                 conn.commit()
                 return select_grid(grid, select)
+        finally:
+            cursor.close()
 
     @overrides
     def his_read(
@@ -242,7 +262,7 @@ class Provider(HaystackInterface):
             except ValueError:
                 port = 0
             password = self._parsed_db.password
-            if password is None or password == "":
+            if self._parsed_db.username and password is None or password == "":
                 password = self._get_secret_manager_secret()
             params = {
                 "host": self._parsed_db.hostname,
@@ -255,7 +275,7 @@ class Provider(HaystackInterface):
                 "dbname": self._parsed_db.path[1:],
             }
             if _default_driver:
-                _, keys = _default_driver[self._parsed_db.scheme]
+                _, keys = _default_driver[self._dialect]
                 filtered = {key: val for key, val in params.items() if key in keys}
                 self._connect = self.db.connect(**filtered)
                 self.create_db()
@@ -310,7 +330,9 @@ class Provider(HaystackInterface):
         if version is None:
             version = datetime(9999, 12, 31)
         conn = self.get_connect()
-        with conn.cursor() as cursor:
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
             sql_type_to_json = self._sql_type_to_json
             cursor.execute(self._sql["SELECT_META_DATA"],
                            (version, customer))
@@ -322,6 +344,8 @@ class Provider(HaystackInterface):
                 jsonparser.parse_cols(grid, sql_type_to_json(cols), VER_3_0)
             conn.commit()
             return grid
+        finally:
+            cursor.close()
 
     def export_grid_from_db(self,
                             customer: Optional[str],
@@ -330,7 +354,9 @@ class Provider(HaystackInterface):
         if version is None:
             version = datetime(9999, 12, 31)
         conn = self.get_connect()
-        with conn.cursor() as cursor:
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
             sql_type_to_json = self._sql_type_to_json
 
             cursor.execute(self._sql["SELECT_META_DATA"],
@@ -350,13 +376,19 @@ class Provider(HaystackInterface):
             conn.commit()
             assert _validate_grid(grid), "Error in grid"
             return grid
+        finally:
+            cursor.close()
 
     def purge_db(self):
         conn = self.get_connect()
-        with conn.cursor() as cursor:
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
             cursor.execute(self._sql["PURGE_TABLES_HAYSTACK"])
             cursor.execute(self._sql["PURGE_TABLES_HAYSTACK_META"])
             conn.commit()
+        finally:
+            cursor.close()
 
     def import_diff_grid_in_db(self,
                                diff_grid: Grid,
@@ -373,7 +405,9 @@ class Provider(HaystackInterface):
         if version is None:
             version = datetime(9999, 12, 31)
         conn = self.get_connect()
-        with conn.cursor() as cursor:
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
             cursor.execute(self._sql["SELECT_META_DATA"],
                            (version, customer_id))
 
@@ -421,11 +455,16 @@ class Provider(HaystackInterface):
                     log.debug("Remove %s", row['id'].name)
 
             conn.commit()
+        finally:
+            cursor.close()
 
     def _dialect_request(self, dialect: str) -> Dict[str, Any]:
         table_name = self._parsed_db.fragment
         if dialect == "sqlite3":
             # Lazy import
+            from .db_sqlite import get_db_parameters as get_sqlite_parameters
+            return get_sqlite_parameters(table_name)
+        if dialect == "supersqlite":
             from .db_sqlite import get_db_parameters as get_sqlite_parameters
             return get_sqlite_parameters(table_name)
         if dialect == "postgresql":

@@ -98,10 +98,10 @@ class Provider(HaystackInterface):
                               "hisStart": now,
                               "hisEnd": now
                               })
-        grid.append({"date": now,
+        grid.append({"ts": now,
                      "val": Quantity(100, "°")}
                     )
-        grid.append({"data": now,
+        grid.append({"ts": now,
                      "val": Quantity(100, "°")}
                     )
         return grid.extends_columns()

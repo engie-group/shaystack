@@ -1,6 +1,7 @@
 import json
 import logging
 import textwrap
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Any, Optional, List, Tuple, Union
 
@@ -9,12 +10,17 @@ from hszinc.filter_ast import FilterNode, FilterUnary, FilterBinary, FilterPath
 
 log = logging.getLogger("sql.Provider")
 
-def _sql_filter(table_name: str,
-                grid_filter: Optional[str],
-                version: datetime,
-                limit: int = 0,
-                customer_id: str = '') -> str:
-    raise NotImplementedError("Complex request not implemented")
+
+def _use_inner_join(node):
+    """ Return True if the tree must use inner join """
+    if isinstance(node, FilterUnary):
+        return len(node.right.paths) > 1
+    if isinstance(node, FilterBinary):
+        if isinstance(node.left, FilterDate):
+            return False
+        return _use_inner_join(node.left) or _use_inner_join(node.right)
+    return False
+
 
 def _generate_path(table_name: str,
                    customer_id: str,
@@ -31,14 +37,17 @@ def _generate_path(table_name: str,
         if first:
             select.append(f"INNER JOIN {table_name} AS t{num_table} ON\n")
         else:
-            select.append("".join(_flatten(where)))
+            select.append("".join(_flatten(where)) + ")\n")
             where = []
             select.append(f"INNER JOIN {table_name} AS t{num_table} ON\n")
-        where.append(_select_version(version, num_table))
-        where.append(f"AND t{num_table}.customer_id='{customer_id}'\n")
+            where.append('(')
+        where.extend(
+            ['(',
+             _select_version(version, num_table),
+             f"AND t{num_table}.customer_id='{customer_id}'\n",
+             f"AND json_object(json(t{num_table - 1}.entity),'$.{path}') = json_object(json(t{num_table}.entity),'$.id'))\n"
+             ])
         first = False
-        where.append(
-            f"AND json_object(json(t{num_table - 1}.entity),'$.{path}') = json_object(json(t{num_table}.entity),'$.id')\n")
     where.append("AND ")
     return num_table, select, where
 
@@ -52,7 +61,14 @@ def _generate_filter_in_sql(table_name: str,
                             num_table: int
                             ) -> Tuple[int, List[Union[str, List[Any]]], List[Union[str, List[Any]]]]:
     # Use RootBlock nodes
-    if isinstance(node, FilterUnary):
+    if isinstance(node, FilterDate):
+        where.extend(
+            ["(",
+             _select_version(node.version, node.num_table),
+             f"AND t{node.num_table}.customer_id='{node.customer_id}')\n"
+             ])
+
+    elif isinstance(node, FilterUnary):
         if node.operator == "has":
             assert isinstance(node.right, FilterPath)
             num_table, select, where = \
@@ -74,29 +90,54 @@ def _generate_filter_in_sql(table_name: str,
 
     elif isinstance(node, FilterBinary):
         if node.operator in ["and", "or"]:
-            parent_left = isinstance(node.left, FilterBinary) and node.left.operator in ["and", "or"]
-            if parent_left:
-                where.append('(')
-            num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
-                                                               select,
-                                                               where,
-                                                               node.left,
-                                                               num_table)
-            if parent_left:
-                where = ["".join(_flatten(where))[:-1]]
-                where.append(f")\n{node.operator.upper()} ")
+            use_inner = _use_inner_join(node)
+            if use_inner:
+                # FIXME: parenthese union
+                if isinstance(node.left, FilterBinary) and _use_inner_join(node.left):
+                    log.warning("SQLite can not implement this request. Result may be invalid")
+                if isinstance(node.right, FilterBinary) and _use_inner_join(node.right):
+                    log.warning("SQLite can not implement this request. Result may be invalid")
+                generated_sql = []
+                num_table, sql = _generate_sql_block(table_name, customer_id, version,
+                                                     0,
+                                                     node.left,
+                                                     num_table)
+                generated_sql.append(sql)
+                if node.operator == "and":
+                    generated_sql.append("INTERSECT")
+                else:
+                    generated_sql.append("UNION")
+                num_table += 1
+                num_table, sql = _generate_sql_block(table_name, customer_id, version,
+                                                     0,
+                                                     node.right,
+                                                     num_table)
+                generated_sql.append(sql)
+                select = generated_sql
+                where = []
             else:
-                where.append(f"{node.operator.upper()} ")
-            parent_right = isinstance(node.right, FilterBinary) and node.right.operator in ["and", "or"]
-            if parent_right:
                 where.append('(')
-            num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
-                                                               select,
-                                                               where,
-                                                               node.right,
-                                                               num_table)
-            if parent_right:
-                where = ["".join(_flatten(where))[:-1], ")\n"]
+                parent_left = isinstance(node.left, FilterBinary) and node.left.operator in ["and", "or"]
+                num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
+                                                                   select,
+                                                                   where,
+                                                                   node.left,
+                                                                   num_table)
+                if parent_left:
+                    where = \
+                        ["".join(_flatten(where))[:-1],
+                         f"\n{node.operator.upper()} "
+                         ]
+                else:
+                    where.append(f"{node.operator.upper()} ")
+                parent_right = isinstance(node.right, FilterBinary) and node.right.operator in ["and", "or"]
+                num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
+                                                                   select,
+                                                                   where,
+                                                                   node.right,
+                                                                   num_table)
+                if len(where):
+                    where.append(")\n")
         else:
             value = node.right
             if isinstance(value, Quantity):
@@ -145,7 +186,14 @@ def _flatten(l: List[Any]) -> List[Any]:
 
 
 def _select_version(version: datetime, num_table):
-    return f"'{version.isoformat()}' BETWEEN datetime(t{num_table}.start_datetime) AND datetime(t{num_table}.end_datetime)\n"
+    return f"datetime('{version.isoformat()}') BETWEEN datetime(t{num_table}.start_datetime) AND datetime(t{num_table}.end_datetime)\n"
+
+
+@dataclass
+class FilterDate(FilterNode):
+    version: datetime
+    num_table: int
+    customer_id: str
 
 
 def _generate_sql_block(table_name: str,
@@ -159,16 +207,14 @@ def _generate_sql_block(table_name: str,
         SELECT t{num_table}.entity
         FROM {table_name} as t{num_table}
         """)]
-    where = [_select_version(version, num_table) + \
-             f"AND t{num_table}.customer_id='{customer_id}'\n"
-             f"AND "
-             ]
-    num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
-                                                       select,
-                                                       where,
-                                                       node,
-                                                       num_table
-                                                       )
+
+    num_table, select, where = _generate_filter_in_sql(
+        table_name, customer_id, version,
+        select,
+        [],
+        FilterBinary("and", FilterDate(version, num_table, customer_id), node),
+        num_table
+    )
 
     generated_sql = "".join(_flatten(select))
     if init_num_table == num_table:
@@ -267,17 +313,17 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
             '''),
         "SELECT_ENTITY": textwrap.dedent(f'''
             SELECT entity FROM {table_name}
-            WHERE ? BETWEEN datetime(start_datetime) AND datetime(end_datetime)
+            WHERE ? BETWEEN start_datetime AND end_datetime
             AND customer_id = ?
             '''),
         "SELECT_ENTITY_WITH_ID": textwrap.dedent(f'''
             SELECT entity FROM {table_name}
-            WHERE ? BETWEEN datetime(start_datetime) AND datetime(end_datetime)
+            WHERE ? BETWEEN start_datetime AND end_datetime
             AND customer_id = ?
             AND id IN '''),
         "CLOSE_ENTITY": textwrap.dedent(f'''
             UPDATE {table_name} SET end_datetime=? 
-            WHERE ? > datetime(start_datetime) AND end_datetime = '9999-12-31T23:59:59'
+            WHERE ? > start_datetime AND end_datetime = '9999-12-31T23:59:59'
             AND id=? 
             AND customer_id = ?
             '''),
@@ -288,7 +334,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
             SELECT DISTINCT start_datetime
             FROM {table_name}
             WHERE customer_id = ?
-            ORDER BY start_datetime
+            ORDER BY datetime(start_datetime)
             '''),
         "DISTINCT_TAG_VALUES": textwrap.dedent(f'''
             SELECT DISTINCT json_extract(entity,'$.[#]')

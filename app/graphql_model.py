@@ -117,10 +117,9 @@ class HSCoordinate(graphene.ObjectType):
 
 class HSTS(graphene.ObjectType):
     """Result of 'hisRead' haystack operation"""
-    date = graphene.Field(HSDateTime,
-                          description="Date time of event")
-    val = graphene.Field(HSScalar,
-                         description="Haystack JSON format of value")
+    ts = graphene.Field(HSDateTime, description="Date time of event")
+    val = graphene.Field(HSScalar, description="Haystack JSON format of value")
+
     int = graphene.Int(required=False, description="Integer version of the value")
     float = graphene.Float(required=False, description="Float version of the value")
     str = graphene.String(required=False, description="Float version of the value")
@@ -243,11 +242,11 @@ class ReadHaystack(graphene.ObjectType):
         selection = info.field_asts[0].selection_set.selections
         cast_value = HSTS()
         value = entity["val"]
-        cast_value.date = entity["date"]
+        cast_value.ts = entity["ts"]
         cast_value.val = value
         for sel in selection:
             name = sel.name.value
-            if name in ['date', 'val']:
+            if name in ['ts', 'val']:
                 continue
 
             if name == 'int' and isinstance(value, (int, float)):

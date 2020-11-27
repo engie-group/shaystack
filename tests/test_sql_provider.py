@@ -177,3 +177,4 @@ def test_values_for_tag():
             assert len(values) > 1
     except NotImplementedError:
         skip("Unsupported with standard sqlite. Use supersqlite")
+

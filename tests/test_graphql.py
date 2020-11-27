@@ -247,12 +247,12 @@ def test_entities_with_limit(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_boolean(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
-    his = Grid(version=VER_3_0, columns=["date", "val"])
-    his.extend([{"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": MARKER},
-                {"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": False},
-                {"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": 1},
-                {"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": 1.0},
-                {"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": ""},
+    his = Grid(version=VER_3_0, columns=["ts", "val"])
+    his.extend([{"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": MARKER},
+                {"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": False},
+                {"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": 1},
+                {"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": 1.0},
+                {"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": ""},
                 ]
                )
     mock_s3.return_value.history = his
@@ -266,7 +266,7 @@ def test_his_read_with_boolean(mock_s3, mock_get_url):
             { 
                 histories(ids:"@id1")
                 {
-                    date
+                    ts
                     val
                     bool
                 }
@@ -276,23 +276,23 @@ def test_his_read_with_boolean(mock_s3, mock_get_url):
         assert executed == \
                {'data': {'haystack': {'histories':
                    [[
-                       {'date': '2020-01-01 00:00:00+00:00',
+                       {'ts': '2020-01-01 00:00:00+00:00',
                         'val': 'm:',
                         'bool': True,
                         },
-                       {'date': '2020-01-01 00:00:00+00:00',
+                       {'ts': '2020-01-01 00:00:00+00:00',
                         'val': False,
                         'bool': False,
                         },
-                       {'date': '2020-01-01 00:00:00+00:00',
+                       {'ts': '2020-01-01 00:00:00+00:00',
                         'val': 'n:1.000000',
                         'bool': True,
                         },
-                       {'date': '2020-01-01 00:00:00+00:00',
+                       {'ts': '2020-01-01 00:00:00+00:00',
                         'val': 'n:1.000000',
                         'bool': True,
                         },
-                       {'date': '2020-01-01 00:00:00+00:00',
+                       {'ts': '2020-01-01 00:00:00+00:00',
                         'val': 's:',
                         'bool': False,
                         }
@@ -305,8 +305,8 @@ def test_his_read_with_boolean(mock_s3, mock_get_url):
 def test_his_read_with_number(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
 
-    his = Grid(version=VER_3_0, columns=["date", "val"])
-    his.append({"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": 3.5})
+    his = Grid(version=VER_3_0, columns=["ts", "val"])
+    his.append({"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": 3.5})
     mock_s3.return_value.history = his
     mock_s3.return_value.his_count = 500
     mock_get_url.return_value = "s3://bucket/grid.zinc"
@@ -320,7 +320,7 @@ def test_his_read_with_number(mock_s3, mock_get_url):
             { 
                 histories(ids:"@id1")
                 {
-                    date
+                    ts
                     val
                     int
                     float
@@ -333,7 +333,7 @@ def test_his_read_with_number(mock_s3, mock_get_url):
                {'data': {'haystack': {'histories':
                    [[
                        {
-                           'date': '2020-01-01 00:00:00+00:00',
+                           'ts': '2020-01-01 00:00:00+00:00',
                            'val': 'n:3.500000',
                            "int": 3,
                            "float": 3.5,
@@ -347,8 +347,8 @@ def test_his_read_with_number(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_uri(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
-    his = Grid(version=VER_3_0, columns=["date", "val"])
-    his.append({"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": Uri("http://localhost")})
+    his = Grid(version=VER_3_0, columns=["ts", "val"])
+    his.append({"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": Uri("http://localhost")})
     mock_s3.return_value.history = his
     mock_s3.return_value.his_count = 100
     mock_get_url.return_value = "s3://bucket/grid.zinc"
@@ -362,7 +362,7 @@ def test_his_read_with_uri(mock_s3, mock_get_url):
             { 
                 histories(ids:"@id1")
                 {
-                    date
+                    ts
                     val
                     uri
                 }
@@ -374,7 +374,7 @@ def test_his_read_with_uri(mock_s3, mock_get_url):
                {'data': {'haystack': {'histories':
                    [[
                        {
-                           'date': '2020-01-01 00:00:00+00:00',
+                           'ts': '2020-01-01 00:00:00+00:00',
                            'val': 'u:http://localhost',
                            'uri': 'http://localhost',
                        }
@@ -386,8 +386,8 @@ def test_his_read_with_uri(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_ref(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
-    his = Grid(version=VER_3_0, columns=["date", "val"])
-    his.append({"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": Ref("id1")})
+    his = Grid(version=VER_3_0, columns=["ts", "val"])
+    his.append({"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": Ref("id1")})
     mock_s3.return_value.history = his
     mock_s3.return_value.his_count = 200
     mock_get_url.return_value = "s3://bucket/grid.zinc"
@@ -401,7 +401,7 @@ def test_his_read_with_ref(mock_s3, mock_get_url):
             { 
                 histories(ids:"@id1")
                 {
-                    date
+                    ts
                     val
                     ref
                 }
@@ -412,7 +412,7 @@ def test_his_read_with_ref(mock_s3, mock_get_url):
                {'data': {'haystack': {'histories':
                    [[
                        {
-                           'date': '2020-01-01 00:00:00+00:00',
+                           'ts': '2020-01-01 00:00:00+00:00',
                            'val': 'r:id1',
                            'ref': '@id1',
                        }
@@ -424,8 +424,8 @@ def test_his_read_with_ref(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_datetime(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
-    his = Grid(version=VER_3_0, columns=["date", "val"])
-    his.append({"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": datetime(2020, 1, 1, tzinfo=pytz.utc)})
+    his = Grid(version=VER_3_0, columns=["ts", "val"])
+    his.append({"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": datetime(2020, 1, 1, tzinfo=pytz.utc)})
     mock_s3.return_value.history = his
     mock_s3.return_value.his_count = 300
     mock_get_url.return_value = "s3://bucket/grid.zinc"
@@ -439,7 +439,7 @@ def test_his_read_with_datetime(mock_s3, mock_get_url):
             { 
                 histories(ids:"@id1")
                 {
-                    date
+                    ts
                     val
                     date
                     time
@@ -450,15 +450,13 @@ def test_his_read_with_datetime(mock_s3, mock_get_url):
         ''')
         print(executed)
         assert executed == \
-               {'data': {'haystack': {'histories':
-                   [[
-                       {
-                           'date': '2020-01-01 00:00:00+00:00',
-                           'val': 't:2020-01-01T00:00:00+00:00 UTC',
-                           'datetime': '2020-01-01 00:00:00+00:00',
-                           'time': '00:00:00',
-                       }
-                   ]]}}}
+               {'data': {
+                   'haystack': {
+                       'histories': [
+                           [{'ts': '2020-01-01 00:00:00+00:00',
+                             'val': 't:2020-01-01T00:00:00+00:00 UTC',
+                             'date': '2020-01-01 00:00:00+00:00', 'time': '00:00:00',
+                             'datetime': '2020-01-01 00:00:00+00:00'}]]}}}
 
 
 @patch.object(Provider, '_get_url')
@@ -466,8 +464,8 @@ def test_his_read_with_datetime(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_coordinate(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
-    his = Grid(version=VER_3_0, columns=["date", "val"])
-    his.append({"date": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": Coordinate(100.0, 150.0)})
+    his = Grid(version=VER_3_0, columns=["ts", "val"])
+    his.append({"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": Coordinate(100.0, 150.0)})
     mock_s3.return_value.history = his
     mock_s3.return_value.his_count = 400
     mock_get_url.return_value = "s3://bucket/grid.zinc"
@@ -481,7 +479,7 @@ def test_his_read_with_coordinate(mock_s3, mock_get_url):
             { 
                 histories(ids:"@id1")
                 {
-                    date
+                    ts
                     val
                     coord { lat long }
                 }
@@ -493,7 +491,7 @@ def test_his_read_with_coordinate(mock_s3, mock_get_url):
                {'data': {'haystack': {'histories':
                    [[
                        {
-                           'date': '2020-01-01 00:00:00+00:00',
+                           'ts': '2020-01-01 00:00:00+00:00',
                            'val': 'c:100.000000,150.000000',
                            'coord': {'lat': 100.0, 'long': 150.0},
                        }

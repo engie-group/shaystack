@@ -162,8 +162,8 @@ class Provider(HaystackInterface):
                 max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
 
                 for time_serie in history:
-                    min_date = min(min_date, time_serie["date"])
-                    max_date = max(max_date, time_serie["date"])
+                    min_date = min(min_date, time_serie["ts"])
+                    max_date = max(max_date, time_serie["ts"])
 
                 grid.metadata = {
                     "id": entity_id,

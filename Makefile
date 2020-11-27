@@ -15,10 +15,15 @@ ifneq (,$(wildcard .env))
 include .env
 endif
 
+HAYSTACK_PROVIDER?="haystackapi.providers.ping"
+# FIXME HAYSTACK_URL=tests/sample.zinc
+HAYSTACK_DB?="sqlite3:///:memory:#haystack"
+
 # Export all project variables
 export PRJ
 export HAYSTACK_PROVIDER
 export HAYSTACK_URL
+export HAYSTACK_DB
 export LOGLEVEL
 export AWS_PROFILE
 export PYTHON_VERSION
@@ -130,11 +135,12 @@ dump-%:
 
 ## Print project variables
 dump-params:
-	@echo PRJ=$(PRJ)
-	echo HAYSTACK_PROVIDER=$(HAYSTACK_PROVIDER)
-	echo HAYSTACK_URL=$(HAYSTACK_URL)
-	echo AWS_PROFILE=$(AWS_PROFILE)
-	echo AWS_STAGE=$(AWS_STAGE)
+	@echo PRJ="$(PRJ)"
+	echo HAYSTACK_PROVIDER='$(HAYSTACK_PROVIDER)'
+	echo HAYSTACK_URL='$(HAYSTACK_URL)'
+	echo HAYSTACK_DB='$(HAYSTACK_DB)'
+	echo AWS_PROFILE='$(AWS_PROFILE)'
+	echo AWS_STAGE='$(AWS_STAGE)'
 
 # -------------------------------------- GIT
 .git/config: | .git .git/hooks/pre-push # Configure git
@@ -294,6 +300,7 @@ api-hisRead:
 start-api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	@[ -e .start/start-api.pid ] && $(MAKE) async-stop-api || true
+	echo "$(green)Use ${HAYSTACK_PROVIDER}"
 	echo "$(green)Use http://localhost:3000/graphql or http://localhost:3000/haystack$(normal)"
 	FLASK_DEBUG=1 FLASK_ENV=$(AWS_STAGE) \
 	$(CONDA_PYTHON) -m app.__init__
@@ -464,8 +471,6 @@ aws-logs:
 	@$(VALIDATE_VENV)
 	zappa tail
 
-HAYSTACK_PROVIDER="haystackapi.providers.url"
-HAYSTACK_DB="sqlite3:///test.db#haystack"
 # -------------------------------------- Tests
 .PHONY: unit-test
 .make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile .env

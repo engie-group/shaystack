@@ -42,6 +42,7 @@ def test_read_last_without_filter(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("haystackapi.providers.url") as provider:
+        provider.cache_clear()
         result = provider.read(0, None, None, None, None)
         assert result.metadata["v"] == "3"
 
@@ -98,6 +99,7 @@ def test_read_version_with_ids(mock_s3, mock_get_url):
 def test_lru_version(mock):
     mock.return_value = _get_mock_s3()
     with get_provider("haystackapi.providers.url") as provider:
+        provider.cache_clear()
         version_3 = datetime(2020, 10, 1, 0, 0, 3, 0, tzinfo=pytz.UTC)
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
         version_1 = datetime(2020, 10, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)

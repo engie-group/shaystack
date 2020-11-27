@@ -3,7 +3,6 @@ import textwrap
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from datetime import datetime
-from textwrap import dedent
 from typing import List, Type, Any, Union, Tuple, Optional, Dict
 
 from hszinc import parse_filter, jsondumper, Quantity
@@ -30,17 +29,17 @@ class _Path(_Root):
 @dataclass
 class _Has(_IsMerge):
     def isMerge(self):
-        return len(self.tag.paths) > 1
+        return len(self.right.paths) > 1
 
-    tag: _Path
+    right: _Path
 
 
 @dataclass
 class _NotHas(_IsMerge):
     def isMerge(self):
-        return len(self.tag.paths) > 1
+        return len(self.right.paths) > 1
 
-    tag: _Path
+    right: _Path
 
 
 @dataclass
@@ -101,12 +100,12 @@ def _merge_has_operators(left, right, merged_class):
     type_left = type(left)
     type_right = type(right)
     if isinstance(left, merged_class) and left.type == type_right \
-            and len(right.tag.paths) == 1:
-        left.tags.append(right.tag.paths[0])
+            and len(right.right.paths) == 1:
+        left.tags.append(right.right.paths[0])
         return left
     if isinstance(right, merged_class) and right.type == type_left \
-            and len(left.tag.paths) == 1:
-        right.tags.append(left.tag.paths[0])
+            and len(left.right.paths) == 1:
+        right.tags.append(left.right.paths[0])
         return right
     if isinstance(left, merged_class) and isinstance(right, merged_class) \
             and left.type == right.type:
@@ -114,12 +113,12 @@ def _merge_has_operators(left, right, merged_class):
         return left
     if type_left == type_right \
             and type_left in (_Has, _NotHas) \
-            and len(left.tag.paths) == 1 \
-            and len(right.tag.paths) == 1:
+            and len(left.right.paths) == 1 \
+            and len(right.right.paths) == 1:
         return merged_class(
             type_left == _NotHas,
             type_left,
-            [left.tag.paths[0], right.tag.paths[0]])
+            [left.right.paths[0], right.right.paths[0]])
     return None
 
 
@@ -166,7 +165,6 @@ def _optimize_filter_for_sql(node: FilterNode) -> _Root:
 
 
 # Phase 2: Generate SQL
-# TODO: il faut couper "select", "whereclause"
 def _generate_sql_block(table_name: str,
                         customer_id: str,
                         version: datetime,
@@ -242,15 +240,15 @@ def _generate_filter_in_sql(table_name: str,
         num_table, select, where = \
             _generate_path(table_name, customer_id, version,
                            select, where,
-                           node.tag,
+                           node.right,
                            num_table)
-        where.append(f"t{num_table}.entity ? '{node.tag.paths[-1]}'\n")
+        where.append(f"t{num_table}.entity ? '{node.right.paths[-1]}'\n")
     elif isinstance(node, _NotHas):
         num_table, select, where = _generate_path(table_name, customer_id, version,
                                                   select, where,
-                                                  node.tag,
+                                                  node.right,
                                                   num_table)
-        where.append(f"NOT t{num_table}.entity ? '{node.tag.paths[-1]}'\n")
+        where.append(f"NOT t{num_table}.entity ? '{node.right.paths[-1]}'\n")
     elif isinstance(node, _AndHasTags):
         if node.not_op:
             where.append("NOT ")
@@ -261,29 +259,33 @@ def _generate_filter_in_sql(table_name: str,
     elif isinstance(node, _OrHasTags):
         where.append(f"t{num_table}.entity ?| array{node.tags}\n")
     elif isinstance(node, _And):
+        where.append("(")
         num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
                                                            select,
                                                            where,
                                                            node.left,
                                                            num_table)
-        where.append("AND ")
+        where = ["".join(_flatten(where))[:-1], ")\nAND ("]
         num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
                                                            select,
                                                            where,
                                                            node.right,
                                                            num_table)
+        where = ["".join(_flatten(where))[:-1], ")\n"]
     elif isinstance(node, _Or):
+        where.append("(")
         num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
                                                            select,
                                                            where,
                                                            node.left,
                                                            num_table)
-        where.append("OR ")
+        where = ["".join(_flatten(where))[:-1], ")\nOR ("]
         num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
                                                            select,
                                                            where,
                                                            node.right,
                                                            num_table)
+        where = ["".join(_flatten(where))[:-1], ")\n"]
     elif isinstance(node, _Intersect):
         generated_sql = []
         generated_sql.append('\n(')
@@ -320,35 +322,6 @@ def _generate_filter_in_sql(table_name: str,
         generated_sql.append(")\n")
         select = generated_sql
         where = []
-    elif isinstance(node, _Path):
-        if len(node.paths) == 1:
-            # Simple case
-            where.append(f"t{num_table}.entity @? '$.{node.paths[0]}\n")
-        else:
-            # Path navigation. Use inner join
-            inners_join = []
-            last_path = node.paths[-1]
-            inner_num_block = num_table
-            select.append(f" INNER JOIN {table_name} as t{inner_num_block + 1} ON\n")
-            # FIXME
-            num_table, sql = _generate_sql_block(table_name, customer_id, version, 0,
-                                                 node.right,
-                                                 num_table)
-            where.append(
-                f"t{inner_num_block + 1}.entity @? ('$.{last_path} ? "
-                f"(@ == \"r:' || t{inner_num_block}.id ||'\")')::jsonpath\n"
-            )
-            for path in node.paths[:-1].reverse():
-                inner_num_block += 1
-                inners_join.extend([
-                    f"INNER JOIN {table_name} as t{inner_num_block} ON\n",
-                    f"t{inner_num_block + 1}.entity @? ('$.{path} ? "
-                    f"(@ == \"r:' || t{inner_num_block}.id ||'\")')::jsonpath\n"
-                ])
-            return [dedent("""
-                    SELECT t{num_block}.entity 
-                    FROM {table_name} as t{num_block}
-                    """)]
     elif isinstance(node, _Compare):
         value = node.value
         if isinstance(value, Quantity):

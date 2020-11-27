@@ -16,16 +16,14 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 
 # If .env set the HAYSTACK_DB to postgres, check to execute the sql request
-def check_pg(sql_request: str):
-    if os.environ.get('HAYSTACK_DB').startswith("postgres"):
+def _check_pg(sql_request: str):
+    if os.environ.get('HAYSTACK_DB', '').startswith("postgres"):
         provider = get_provider("haystackapi.providers.sql")
         conn = provider.get_connect()
-        cursor = conn.cursor()
         try:
-            cursor.execute(sql_request)
+            conn.execute(sql_request)
         finally:
             conn.rollback()
-            pass  # cursor.close()
 
 
 def test_tag():
@@ -41,7 +39,7 @@ def test_tag():
         AND t1.entity ? \'site\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_not_tag():
@@ -57,7 +55,7 @@ def test_not_tag():
         AND NOT t1.entity ? \'site\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_ref():
@@ -73,7 +71,7 @@ def test_equal_ref():
         AND t1.entity->>\'a\' = \'r:id\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_str():
@@ -89,7 +87,7 @@ def test_equal_str():
         AND t1.entity->>\'a\' = \'s:abc\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_int():
@@ -105,7 +103,7 @@ def test_equal_int():
         AND t1.entity->>\'a\' = \'n:1.000000\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_float():
@@ -121,7 +119,7 @@ def test_equal_float():
         AND t1.entity->>\'a\' = \'n:1.000000\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_bool():
@@ -137,7 +135,7 @@ def test_equal_bool():
         AND t1.entity->>\'a\' = \'True\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_datetime():
@@ -153,7 +151,7 @@ def test_equal_datetime():
         AND t1.entity->>\'a\' = \'t:1977-04-22T01:00:00+00:00 UTC\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_time():
@@ -169,7 +167,7 @@ def test_equal_time():
         AND t1.entity->>\'a\' = \'h:01:00:00\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_date():
@@ -185,7 +183,7 @@ def test_equal_date():
         AND t1.entity->>\'a\' = \'d:1977-04-22\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_coord():
@@ -201,7 +199,7 @@ def test_equal_coord():
         AND t1.entity->>\'a\' = \'c:100.000000,100.000000\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_NA():
@@ -217,7 +215,7 @@ def test_equal_NA():
         AND t1.entity->>\'a\' = \'z:\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_Null():
@@ -233,7 +231,7 @@ def test_equal_Null():
         AND t1.entity->>\'a\' IS NULL
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_not_equal_Null():
@@ -249,7 +247,7 @@ def test_not_equal_Null():
         AND t1.entity->>\'a\' IS NOT NULL
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_Marker():
@@ -265,7 +263,7 @@ def test_equal_Marker():
         AND t1.entity->>\'a\' = \'m:\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_uri():
@@ -281,7 +279,7 @@ def test_equal_uri():
         AND t1.entity->>\'a\' = \'u:http://l\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_xstr():
@@ -297,7 +295,7 @@ def test_equal_xstr():
         AND t1.entity->>\'a\' = \'x:hex:deadbeef\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_and_ltag_rtag():
@@ -313,7 +311,7 @@ def test_and_ltag_rtag():
         AND t1.entity ?& array[\'site\', \'ref\']
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_and_andtag_rtag():
@@ -329,7 +327,7 @@ def test_and_andtag_rtag():
         AND t1.entity ?& array['site', 'ref', 'his']
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_and_ltag_andtag():
@@ -345,7 +343,7 @@ def test_and_ltag_andtag():
         AND t1.entity ?& array['site', 'ref', 'his']
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_and_andtag_andtag():
@@ -361,7 +359,7 @@ def test_and_andtag_andtag():
         AND t1.entity ?& array['his', 'point', 'site', 'ref']
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_and_not_ltag_rtag():
@@ -377,7 +375,7 @@ def test_and_not_ltag_rtag():
         AND NOT t1.entity ?& array[\'site\', \'ref\']
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_and_not_andtag_rtag():
@@ -393,7 +391,7 @@ def test_and_not_andtag_rtag():
         AND NOT t1.entity ?& array[\'site\', \'ref\', \'his\']
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_and_not_ltag_andtag():
@@ -409,7 +407,7 @@ def test_and_not_ltag_andtag():
         AND NOT t1.entity ?& array[\'site\', \'ref\', \'his\']
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_and_not_andtag_andtag():
@@ -425,7 +423,7 @@ def test_and_not_andtag_andtag():
         AND NOT t1.entity ?& array['his', 'point', 'site', 'ref']
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal():
@@ -441,7 +439,7 @@ def test_equal():
         AND t1.entity->>\'geoPostal\' = \'n:78000.000000\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_has_and_equal():
@@ -454,11 +452,11 @@ def test_has_and_equal():
         WHERE
         '2020-10-01T00:00:00+00:00' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer'
-        AND t1.entity ? 'site'
-        AND t1.entity->>'geoPostal' = 'n:78000.000000'
+        AND (t1.entity ? 'site')
+        AND (t1.entity->>'geoPostal' = 'n:78000.000000')
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_and_with_not():
@@ -471,27 +469,11 @@ def test_and_with_not():
         WHERE
         '2020-10-01T00:00:00+00:00' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer'
-        AND t1.entity ?& array['site', 'his']
-        AND NOT t1.entity ? 'geoPostal'
+        AND (t1.entity ?& array['site', 'his'])
+        AND (NOT t1.entity ? 'geoPostal')
         LIMIT 1
         """)
-    check_pg(sql_request)
-
-
-def test_equal_not_a_number():
-    hs_filter = 'geoState=="MN"'
-    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
-    assert sql_request == textwrap.dedent("""\
-        -- geoState=="MN"
-        SELECT t1.entity
-        FROM haystack as t1
-        WHERE
-        \'2020-10-01T00:00:00+00:00\' BETWEEN t1.start_datetime AND t1.end_datetime
-        AND t1.customer_id=\'customer\'
-        AND t1.entity->>\'geoState\' = \'s:MN\'
-        LIMIT 1
-        """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_equal_number():
@@ -507,7 +489,7 @@ def test_equal_number():
         AND t1.entity->>\'geoPostalCode\' = \'n:1111.000000\'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_greater_number():
@@ -523,7 +505,7 @@ def test_greater_number():
         AND substring(t1.entity->>\'geoPostalCode\' from 3)::float > 55400.0
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_greater_or_equal_number():
@@ -539,7 +521,7 @@ def test_greater_or_equal_number():
         AND substring(t1.entity->>\'geoPostalCode\' from 3)::float >= 55400.0
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_lower_number():
@@ -555,7 +537,7 @@ def test_lower_number():
         AND substring(t1.entity->>\'geoPostalCode\' from 3)::float < 55400.0
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_lower_or_equal_number():
@@ -571,7 +553,7 @@ def test_lower_or_equal_number():
         AND substring(t1.entity->>\'geoPostalCode\' from 3)::float <= 55400.0
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_greater_quantity():
@@ -587,7 +569,7 @@ def test_greater_quantity():
         AND substring(t1.entity->>\'temp\' from 3)::float > 55400.0
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_greater_or_equal_quantity():
@@ -603,7 +585,7 @@ def test_greater_or_equal_quantity():
         AND substring(t1.entity->>\'temp\' from 3)::float >= 55400.0
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_path_equal_quantity():
@@ -622,7 +604,7 @@ def test_path_equal_quantity():
         AND t2.entity->>'temp' = 'n:55400.000000 °'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_2path_greater_quantity():
@@ -641,7 +623,7 @@ def test_2path_greater_quantity():
         AND substring(t2.entity->>'temp' from 3)::float >= 55400.0
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_3path_greater_quantity():
@@ -664,7 +646,7 @@ def test_3path_greater_quantity():
         AND substring(t3.entity->>'temp' from 3)::float >= 55400.0
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_4path():
@@ -691,7 +673,7 @@ def test_4path():
         AND t4.entity ? 'b'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_path():
@@ -710,7 +692,7 @@ def test_path():
         AND t2.entity ? 'geoPostalCode'
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_path_and():
@@ -743,7 +725,7 @@ def test_path_and():
         )
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_path_or():
@@ -776,7 +758,7 @@ def test_path_or():
         )
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_and_or():
@@ -789,11 +771,11 @@ def test_and_or():
         WHERE
         '2020-10-01T00:00:00+00:00' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer'
-        AND t1.entity ?| array['a', 'b']
-        AND t1.entity ?| array['c', 'd']
+        AND (t1.entity ?| array['a', 'b'])
+        AND (t1.entity ?| array['c', 'd'])
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_or_and():
@@ -806,11 +788,11 @@ def test_or_and():
         WHERE
         '2020-10-01T00:00:00+00:00' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer'
-        AND t1.entity ? 'site'
-        OR t1.entity ?& array['elect', 'point']
+        AND (t1.entity ? 'site')
+        OR (t1.entity ?& array['elect', 'point'])
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_and_or_and():
@@ -823,12 +805,12 @@ def test_and_or_and():
         WHERE
         '2020-10-01T00:00:00+00:00' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer'
-        AND t1.entity ? 'site'
-        AND t1.entity ?| array['elect', 'point']
-        AND t1.entity ? 'toto'
+        AND ((t1.entity ? 'site')
+        AND (t1.entity ?| array['elect', 'point']))
+        AND (t1.entity ? 'toto')
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_path_or():
@@ -861,7 +843,7 @@ def test_path_or():
         )
         LIMIT 1
     """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_and_or_path():
@@ -922,7 +904,7 @@ def test_and_or_path():
         )
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
 
 
 def test_complex():
@@ -991,4 +973,23 @@ def test_complex():
         )
         LIMIT 1
         """)
-    check_pg(sql_request)
+    _check_pg(sql_request)
+
+
+def test_combine_and():
+    hs_filter = '(a==1 and b==1) or (c==2 and d==3)'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
+    assert sql_request == textwrap.dedent("""\
+        -- (a==1 and b==1) or (c==2 and d==3)
+        SELECT t1.entity
+        FROM haystack as t1
+        WHERE
+        '2020-10-01T00:00:00+00:00' BETWEEN t1.start_datetime AND t1.end_datetime
+        AND t1.customer_id='customer'
+        AND ((t1.entity->>'a' = 'n:1.000000')
+        AND (t1.entity->>'b' = 'n:1.000000'))
+        OR ((t1.entity->>'c' = 'n:2.000000')
+        AND (t1.entity->>'d' = 'n:3.000000'))
+        LIMIT 1
+        """)
+    _check_pg(sql_request)

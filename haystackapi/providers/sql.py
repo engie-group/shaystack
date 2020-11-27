@@ -46,6 +46,9 @@ _default_driver = {
     # "mysql": "mysqldb",  # Not implemented yet
     # "oracle": "cx_oracle",
     # "mssql": "pymssql",
+    "sqlite3": ("supersqlite.sqlite3", {"database"}),
+    # "sqlite3": ("sqlite3", {"database"}),
+    "supersqlite": ("supersqlite.sqlite3", {"database"}),
 }
 
 

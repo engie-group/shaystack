@@ -17,7 +17,7 @@ import re
 from datetime import datetime, timedelta
 from types import ModuleType
 from typing import Optional, Union, Tuple, Dict, Any, List, Callable
-from urllib.parse import urlparse
+from urllib.parse import urlparse, ParseResult
 
 import iso8601
 import pytz
@@ -64,21 +64,21 @@ def _validate_grid(grid: Grid):
     return True
 
 
-def _import_db_driver(parsed_db) -> Tuple[ModuleType, str]:
+def _import_db_driver(parsed_db, default_driver) -> Tuple[ModuleType, str, ParseResult]:
     if not parsed_db.fragment:
-        parsed_db.fragment = "haystack"
+        parsed_db = urlparse(parsed_db.geturl() + "#haystack")
     if parsed_db.scheme.find("+") != -1:
         dialect, driver = parsed_db.scheme.split('+')
         dialect = _fix_dialect_alias(dialect)
     else:
         dialect = _fix_dialect_alias(parsed_db.scheme)
-        driver = _default_driver[dialect][0]
+        driver = default_driver[dialect][0]
     if driver.find('.') != -1:
         s = driver.split('.')
         mod = importlib.import_module(s[0])
-        return mod.__dict__[s[1]], dialect
+        return mod.__dict__[s[1]], dialect, parsed_db
 
-    return importlib.import_module(driver), dialect
+    return importlib.import_module(driver), dialect, parsed_db
 
 
 def _fix_dialect_alias(dialect):
@@ -103,7 +103,11 @@ class Provider(HaystackInterface):
         log.info("Use %s", self._get_db())
         self._parsed_db = urlparse(self._get_db())
         # Import DB driver compatible with DB-API2 (PEP-0249)
-        self.db, self._dialect = _import_db_driver(self._parsed_db)
+        self._dialect = None
+        self._default_driver = _default_driver
+        self.db, self._dialect, self._parsed_db = \
+            _import_db_driver(self._parsed_db,
+                              self._default_driver)
         self._sql = self._dialect_request(self._dialect)
         self._sql_type_to_json = self._sql["sql_type_to_json"]
 
@@ -251,15 +255,12 @@ class Provider(HaystackInterface):
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         conn = self.get_connect()
-        if conn:
-            conn.close()
-            self._connect = False
+        conn.close()
+        self._connect = False
 
-    def __del__(self):
-        self.__exit__(None, None, None)
 
     def get_connect(self):  # PPR: monothread ? No with Zappa
-        if not self._connect:  # Lazy connection
+        if not self._connect and self._dialect:  # Lazy connection
             try:
                 port = self._parsed_db.port  # To manage sqlite in memory
             except ValueError:
@@ -277,11 +278,10 @@ class Provider(HaystackInterface):
                 "database": self._parsed_db.path[1:],
                 "dbname": self._parsed_db.path[1:],
             }
-            if _default_driver:
-                _, keys = _default_driver[self._dialect]
-                filtered = {key: val for key, val in params.items() if key in keys}
-                self._connect = self.db.connect(**filtered)
-                self.create_db()
+            _, keys = self._default_driver[self._dialect]
+            filtered = {key: val for key, val in params.items() if key in keys}
+            self._connect = self.db.connect(**filtered)
+            self.create_db()
         return self._connect
 
     def _get_secret_manager_secret(self) -> str:

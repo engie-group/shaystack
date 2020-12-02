@@ -3,10 +3,10 @@ from unittest.mock import patch
 
 import pytz
 from graphene.test import Client
-
-from app.blueprint_graphql import schema
 from haystackapi.providers import get_provider
 from haystackapi.providers.url import Provider
+
+from app.blueprint_graphql import schema
 from hszinc import Grid, VER_3_0, Uri, Ref, Coordinate, MARKER
 from tests import _get_mock_s3
 
@@ -369,7 +369,6 @@ def test_his_read_with_uri(mock_s3, mock_get_url):
             }
         }
         ''')
-        print(executed)
         assert executed == \
                {'data': {'haystack': {'histories':
                    [[
@@ -448,7 +447,6 @@ def test_his_read_with_datetime(mock_s3, mock_get_url):
             }
         }
         ''')
-        print(executed)
         assert executed == \
                {'data': {
                    'haystack': {
@@ -486,7 +484,6 @@ def test_his_read_with_coordinate(mock_s3, mock_get_url):
             }
         }
         ''')
-        print(executed)
         assert executed == \
                {'data': {'haystack': {'histories':
                    [[

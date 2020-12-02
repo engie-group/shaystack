@@ -92,7 +92,6 @@ def _generate_filter_in_sql(table_name: str,
         if node.operator in ["and", "or"]:
             use_inner = _use_inner_join(node)
             if use_inner:
-                # FIXME: parenthese union
                 if isinstance(node.left, FilterBinary) and _use_inner_join(node.left):
                     log.warning("SQLite can not implement this request. Result may be invalid")
                 if isinstance(node.right, FilterBinary) and _use_inner_join(node.right):

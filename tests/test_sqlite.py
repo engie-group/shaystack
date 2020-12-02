@@ -6,7 +6,6 @@ import os
 import textwrap
 
 import pytz
-
 from haystackapi.providers import get_provider
 from haystackapi.providers.db_sqlite import _sql_filter as sql_filter
 
@@ -439,7 +438,6 @@ def test_and_not_andtag_rtag():
         """)
 
 
-# FIXME 'not his and not (site and ref)
 def test_and_not_ltag_andtag():
     hs_filter = 'not his and (not site and not ref)'
     sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")

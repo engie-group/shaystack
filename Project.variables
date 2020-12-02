@@ -1,9 +1,0 @@
-# Set here, the specific variable for the project
-PRJ=haystackapi
-USE_OKTA=N
-HAYSTACK_PROVIDER=haystackapi.providers.url
-HAYSTACK_URL=
-AWS_PROFILE=default
-AWS_REGION=eu-west-3
-LOGLEVEL=WARNING
-HISREAD_PARAMS=?id=@id1

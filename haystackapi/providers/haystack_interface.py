@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import logging
 import os
+import traceback
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, date, timedelta
@@ -190,7 +191,7 @@ class HaystackInterface(ABC):
         :param grid_filter: A filter to apply. Ignored if entity_ids is set.
         :param date_version: The date to return of the last version.
         """
-        # PPR: Add nextToken to paginate ?
+        # PPR: Add nextToken for paginate ?
         raise NotImplementedError()
 
     @abstractmethod
@@ -328,7 +329,7 @@ class HaystackInterface(ABC):
         raise NotImplementedError()
 
 
-_providers = {}  # TODO Cached providers
+_providers = {}
 
 
 def no_cache():
@@ -446,7 +447,8 @@ def get_provider(class_str) -> HaystackInterface:
         _providers[class_str] = FullInterface()
         return _providers[class_str]
     except (ImportError, AttributeError):
-        raise ImportError(class_str)  # pylint: disable=raise-missing-from
+        traceback.print_exc()
+        raise
 
 
 _singleton_provider = None

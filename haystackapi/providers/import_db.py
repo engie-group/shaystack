@@ -10,10 +10,10 @@ from typing import Optional, cast
 from urllib.parse import urlparse, ParseResult
 
 import click
+from haystackapi.providers import sql
 
 import hszinc
 from app.graphql_model import BOTO3_AVAILABLE
-from haystackapi.providers import sql
 from .haystack_interface import get_provider
 
 log = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ def _download_uri(parsed_uri: ParseResult) -> bytes:
         # Manage default cwd
         uri = parsed_uri.geturl()
         if not parsed_uri.scheme:
-            uri = Path.cwd().joinpath(uri).as_uri()  # FIXME
+            uri = Path.cwd().joinpath(uri).as_uri()
         with urllib.request.urlopen(uri) as response:
             data = response.read()
     if parsed_uri.path.endswith(".gz"):

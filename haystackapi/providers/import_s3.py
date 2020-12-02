@@ -15,9 +15,9 @@ from urllib.parse import ParseResult, urlparse
 import boto3
 import click
 from botocore.exceptions import ClientError
+from haystackapi import EmptyGrid
 
 import hszinc
-from haystackapi import EmptyGrid
 from hszinc.zincparser import ZincParseException
 
 log = logging.getLogger("import_s3")
@@ -46,7 +46,7 @@ def _download_uri(parsed_uri: ParseResult) -> bytes:
         # Manage default cwd
         uri = parsed_uri.geturl()
         if not parsed_uri.scheme:
-            uri = Path.cwd().joinpath(uri).as_uri()  # FIXME
+            uri = Path.cwd().joinpath(uri).as_uri()
         with urllib.request.urlopen(uri) as response:
             data = response.read()
     return data
@@ -73,7 +73,7 @@ def update_grid_on_s3(parsed_source: ParseResult,
                       time_series: bool,
                       force: bool,
                       ) -> None:
-    log.info("update %s", (parsed_source.geturl(),))  # FIXME
+    log.info("update %s", (parsed_source.geturl(),))
     s3_client = boto3.client(
         "s3",
         endpoint_url=os.environ.get("AWS_S3_ENDPOINT", None),

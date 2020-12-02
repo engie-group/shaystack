@@ -9,15 +9,20 @@ $(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
 endif
 endif
 
-include ./Project.variables
+PRJ?=haystackapi
+HAYSTACK_PROVIDER?=haystackapi.providers.ping
+HAYSTACK_URL=tests/carytown.zinc
+HAYSTACK_DB?=sqlite3:///:memory:#haystack
+USE_OKTA?=N
+AWS_PROFILE?=default
+AWS_REGION?=eu-west-3
+LOGLEVEL?=WARNING
+HISREAD_PARAMS=?id=@id1
+
 # Override project variables
 ifneq (,$(wildcard .env))
 include .env
 endif
-
-HAYSTACK_PROVIDER?="haystackapi.providers.ping"
-# FIXME HAYSTACK_URL=tests/sample.zinc
-HAYSTACK_DB?="sqlite3:///:memory:#haystack"
 
 # Export all project variables
 export PRJ
@@ -475,7 +480,7 @@ aws-logs:
 .PHONY: unit-test
 .make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile .env
 	@$(VALIDATE_VENV)
-	PYTHONPATH=./src $(CONDA_PYTHON) -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
+	PYTHONPATH=tests:. $(CONDA_PYTHON) -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
 	date >.make-unit-test
 ## Run unit test
 unit-test: .make-unit-test

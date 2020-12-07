@@ -1,0 +1,5 @@
+recursive-include tests/data *
+
+include MANIFEST.in
+include MANIFEST
+include .travis.yml

@@ -11,7 +11,7 @@ endif
 
 PRJ?=haystackapi
 HAYSTACK_PROVIDER?=haystackapi.providers.ping
-HAYSTACK_URL=tests/carytown.zinc
+HAYSTACK_URL=sample/carytown.zinc
 HAYSTACK_DB?=sqlite3:///:memory:#haystack
 USE_OKTA?=N
 AWS_PROFILE?=default
@@ -307,7 +307,9 @@ api-hisRead:
 start-api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	@[ -e .start/start-api.pid ] && $(MAKE) async-stop-api || true
-	echo "$(green)Use ${HAYSTACK_PROVIDER}"
+	echo "$(green)PROVIDER=${HAYSTACK_PROVIDER}"
+	echo "$(green)URL=${HAYSTACK_URL}"
+	echo "$(green)DB=${HAYSTACK_DB}"
 	echo "$(green)Use http://localhost:3000/graphql or http://localhost:3000/haystack$(normal)"
 	FLASK_DEBUG=1 FLASK_ENV=$(AWS_STAGE) \
 	$(CONDA_PYTHON) -m app.__init__

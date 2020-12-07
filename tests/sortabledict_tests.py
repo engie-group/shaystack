@@ -4,7 +4,7 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
-from hszinc.sortabledict import SortableDict
+from haystackapi.sortabledict import SortableDict
 
 
 def test_set_get():

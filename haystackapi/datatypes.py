@@ -316,7 +316,7 @@ if PINT_AVAILABLE:
         A quantity is a scalar value (floating point) with a unit.
         This object uses Pint feature allowing conversion between units
         for example :
-            a = hszinc.Q_(19, 'degC')
+            a = haystackapi.Q_(19, 'degC')
             a.to('degF')
         See https://pint.readthedocs.io for details
         """

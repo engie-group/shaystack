@@ -14,9 +14,9 @@ from copy import copy, deepcopy
 import six
 from nose.tools import eq_
 
-import hszinc
-from hszinc.datatypes import XStr, Uri, Bin, MARKER, NA, REMOVE
-from hszinc.pintutil import to_haystack, to_pint
+import haystackapi
+from haystackapi.datatypes import XStr, Uri, Bin, MARKER, NA, REMOVE
+from haystackapi.pintutil import to_haystack, to_pint
 from .pint_enable import _enable_pint
 
 
@@ -27,19 +27,19 @@ def check_singleton_deepcopy(a_singleton):
 
 
 def test_marker_deepcopy():
-    check_singleton_deepcopy(hszinc.MARKER)
+    check_singleton_deepcopy(haystackapi.MARKER)
 
 
 def test_marker_hash():
-    assert hash(hszinc.MARKER) == hash(hszinc.MARKER.__class__)
+    assert hash(haystackapi.MARKER) == hash(haystackapi.MARKER.__class__)
 
 
 def test_remove_deepcopy():
-    check_singleton_deepcopy(hszinc.REMOVE)
+    check_singleton_deepcopy(haystackapi.REMOVE)
 
 
 def test_remove_hash():
-    assert hash(hszinc.REMOVE) == hash(hszinc.REMOVE.__class__)
+    assert hash(haystackapi.REMOVE) == hash(haystackapi.REMOVE.__class__)
 
 
 def check_singleton_copy(a_singleton):
@@ -47,79 +47,79 @@ def check_singleton_copy(a_singleton):
 
 
 def test_marker_copy():
-    check_singleton_copy(hszinc.MARKER)
+    check_singleton_copy(haystackapi.MARKER)
 
 
 def test_remove_copy():
-    check_singleton_copy(hszinc.REMOVE)
+    check_singleton_copy(haystackapi.REMOVE)
 
 
 def test_ref_not_ref_eq():
-    ref_1 = hszinc.Ref(name='a.ref')
+    ref_1 = haystackapi.Ref(name='a.ref')
     ref_2 = 'not.a.ref'
     assert ref_1 is not ref_2
     assert not ref_1 == ref_2  # pylint: disable=C0113
 
 
 def test_ref_not_ref_ne():
-    ref_1 = hszinc.Ref(name='a.ref')
+    ref_1 = haystackapi.Ref(name='a.ref')
     ref_2 = 'not.a.ref'
     assert ref_1 is not ref_2
     assert ref_1 != ref_2
 
 
 def test_ref_simple_eq():
-    ref_1 = hszinc.Ref(name='a.ref')
-    ref_2 = hszinc.Ref(name='a.ref')
+    ref_1 = haystackapi.Ref(name='a.ref')
+    ref_2 = haystackapi.Ref(name='a.ref')
     assert ref_1 is not ref_2
     assert ref_1 == ref_2
 
 
 def test_ref_simple_neq_id():
-    ref_1 = hszinc.Ref(name='a.ref')
-    ref_2 = hszinc.Ref(name='another.ref')
+    ref_1 = haystackapi.Ref(name='a.ref')
+    ref_2 = haystackapi.Ref(name='another.ref')
     assert ref_1 is not ref_2
     assert ref_1 != ref_2
 
 
 def test_ref_mixed_neq():
-    ref_1 = hszinc.Ref(name='a.ref')
-    ref_2 = hszinc.Ref(name='a.ref', value='display text')
+    ref_1 = haystackapi.Ref(name='a.ref')
+    ref_2 = haystackapi.Ref(name='a.ref', value='display text')
     assert ref_1 is not ref_2
     assert ref_1 != ref_2
 
 
 def test_ref_with_dis_eq():
-    ref_1 = hszinc.Ref(name='a.ref', value='display text')
-    ref_2 = hszinc.Ref(name='a.ref', value='display text')
+    ref_1 = haystackapi.Ref(name='a.ref', value='display text')
+    ref_2 = haystackapi.Ref(name='a.ref', value='display text')
     assert ref_1 is not ref_2
     assert ref_1 == ref_2
 
 
 def test_ref_with_dis_neq_id():
-    ref_1 = hszinc.Ref(name='a.ref', value='display text')
-    ref_2 = hszinc.Ref(name='another.ref', value='display text')
+    ref_1 = haystackapi.Ref(name='a.ref', value='display text')
+    ref_2 = haystackapi.Ref(name='another.ref', value='display text')
     assert ref_1 is not ref_2
     assert ref_1 != ref_2
 
 
 def test_ref_with_dis_neq_dis():
-    ref_1 = hszinc.Ref(name='a.ref', value='display text')
-    ref_2 = hszinc.Ref(name='a.ref', value='different display text')
+    ref_1 = haystackapi.Ref(name='a.ref', value='display text')
+    ref_2 = haystackapi.Ref(name='a.ref', value='different display text')
     assert ref_1 is not ref_2
     assert ref_1 != ref_2
 
 
 def test_ref_hash():
-    assert hash(hszinc.Ref(name='a.ref', value='display text')) == \
+    assert hash(haystackapi.Ref(name='a.ref', value='display text')) == \
            hash('a.ref') ^ hash('display text') ^ hash(True)
 
 
 def test_ref_std_method():
     if six.PY2:
-        assert str(hszinc.Ref(name='a.ref', value='display text')) == '@a.ref u\'display text\''
+        assert str(haystackapi.Ref(name='a.ref', value='display text')) == '@a.ref u\'display text\''
     else:
-        assert str(hszinc.Ref(name='a.ref', value='display text')) == '@a.ref \'display text\''
+        assert str(haystackapi.Ref(name='a.ref', value='display text')) == '@a.ref \'display text\''
 
 
 def test_qty_unary_ops():
@@ -130,7 +130,7 @@ def test_qty_unary_ops():
     def _check_qty_op(_pint_en, _fn, *vals):
         _enable_pint(_pint_en)
         for val in vals:
-            quantity = hszinc.Quantity(val)
+            quantity = haystackapi.Quantity(val)
             assert _fn(quantity) == a_lambda(quantity.value)
 
     # Try this both without, and with, pint enabled
@@ -169,8 +169,8 @@ def test_qty_hash():
     def _check_qty_hash(_pint_en):
         # Test that independent copies hash to the same value
         def _check_hash(val, unit=None):
-            quantity_a = hszinc.Quantity(val, unit=unit)
-            quantity_b = hszinc.Quantity(val, unit=unit)
+            quantity_a = haystackapi.Quantity(val, unit=unit)
+            quantity_b = haystackapi.Quantity(val, unit=unit)
 
             assert quantity_a is not quantity_b
             assert hash(quantity_a) == hash(quantity_b)
@@ -190,8 +190,8 @@ def test_qty_hash():
 def test_qty_binary_ops():
     def _check_qty_op(_pint_en, _fn, _a, _b):
         _enable_pint(_pint_en)
-        quantity_a = hszinc.Quantity(_a)
-        quantity_b = hszinc.Quantity(_b)
+        quantity_a = haystackapi.Quantity(_a)
+        quantity_b = haystackapi.Quantity(_b)
 
         # Reference value
         ref = _fn(_a, _b)
@@ -289,18 +289,18 @@ def test_qty_cmp():
 
         _enable_pint(_pint_en)
 
-        quantity_1 = hszinc.Quantity(-3)
-        quantity_2 = hszinc.Quantity(432)
-        quantity_3 = hszinc.Quantity(4, unit='A')
-        quantity_4 = hszinc.Quantity(10, unit='A')
-        quantity_5 = hszinc.Quantity(12, unit='V')
+        quantity_1 = haystackapi.Quantity(-3)
+        quantity_2 = haystackapi.Quantity(432)
+        quantity_3 = haystackapi.Quantity(4, unit='A')
+        quantity_4 = haystackapi.Quantity(10, unit='A')
+        quantity_5 = haystackapi.Quantity(12, unit='V')
 
         assert cmp(quantity_1, quantity_2) < 0
         assert cmp(quantity_2, quantity_1) > 0
-        assert cmp(quantity_1, hszinc.Quantity(-3)) == 0
+        assert cmp(quantity_1, haystackapi.Quantity(-3)) == 0
         assert cmp(quantity_3, quantity_4) < 0
         assert cmp(quantity_4, quantity_3) > 0
-        assert cmp(quantity_3, hszinc.Quantity(4, unit='A')) == 0
+        assert cmp(quantity_3, haystackapi.Quantity(4, unit='A')) == 0
 
         try:
             cmp(quantity_3, quantity_5)
@@ -313,12 +313,12 @@ def test_qty_cmp():
 
 def test_qty_std_method():
     def _check_qty_cmp(_pint_en):
-        quantity_repr = repr(hszinc.Quantity(4, unit='A'))
+        quantity_repr = repr(haystackapi.Quantity(4, unit='A'))
         if six.PY2:
             assert quantity_repr in ("BasicQuantity(4, u\'A\')", "PintQuantity(4, u\'A\')")
         else:
             assert quantity_repr in ("BasicQuantity(4, \'A\')", "PintQuantity(4, \'A\')")
-            assert str(hszinc.Quantity(4, unit='A')) == '4 A'
+            assert str(haystackapi.Quantity(4, unit='A')) == '4 A'
 
         yield _check_qty_cmp, True
         yield _check_qty_cmp, False
@@ -326,7 +326,7 @@ def test_qty_std_method():
 
 class MyCoordinate:
     """
-    A dummy class that can compare itself to a Coordinate from hszinc.
+    A dummy class that can compare itself to a Coordinate from haystackapi.
     """
 
     def __init__(self, lat, lng):
@@ -334,56 +334,56 @@ class MyCoordinate:
         self.lng = lng
 
     def __eq__(self, other):
-        if isinstance(other, hszinc.Coordinate):
+        if isinstance(other, haystackapi.Coordinate):
             return (self.lat == other.latitude) and (self.lng == other.longitude)
         return NotImplemented
 
     def __ne__(self, other):
-        if isinstance(other, hszinc.Coordinate):
+        if isinstance(other, haystackapi.Coordinate):
             return (self.lat != other.latitude) and (self.lng != other.longitude)
         return NotImplemented
 
 
 def test_coord_eq():
-    assert hszinc.Coordinate(latitude=33.77, longitude=-77.45) \
-           == hszinc.Coordinate(latitude=33.77, longitude=-77.45)
+    assert haystackapi.Coordinate(latitude=33.77, longitude=-77.45) \
+           == haystackapi.Coordinate(latitude=33.77, longitude=-77.45)
 
 
 def test_coord_eq_not_coord():
-    assert not hszinc.Coordinate(latitude=33.77, longitude=-77.45) == (33.77, -77.45)  # pylint: disable=C0113
+    assert not haystackapi.Coordinate(latitude=33.77, longitude=-77.45) == (33.77, -77.45)  # pylint: disable=C0113
 
 
 def test_coord_eq_my_coord():
-    hsc = hszinc.Coordinate(latitude=33.77, longitude=-77.45)
+    hsc = haystackapi.Coordinate(latitude=33.77, longitude=-77.45)
     my_coordinate = MyCoordinate(33.77, -77.45)
     assert hsc == my_coordinate
     assert my_coordinate == hsc
 
 
 def test_coord_ne():
-    assert hszinc.Coordinate(latitude=-33.77, longitude=77.45) \
-           != hszinc.Coordinate(latitude=33.77, longitude=-77.45)
+    assert haystackapi.Coordinate(latitude=-33.77, longitude=77.45) \
+           != haystackapi.Coordinate(latitude=33.77, longitude=-77.45)
 
 
 def test_coord_ne_not_coord():
-    assert (hszinc.Coordinate(latitude=33.77, longitude=-77.45)
+    assert (haystackapi.Coordinate(latitude=33.77, longitude=-77.45)
             != (33.77, -77.45))
 
 
 def test_coord_ne_my_coord():
-    hsc = hszinc.Coordinate(latitude=33.77, longitude=-77.45)
+    hsc = haystackapi.Coordinate(latitude=33.77, longitude=-77.45)
     my_coordinate = MyCoordinate(-33.77, 77.45)
     assert hsc != my_coordinate
     assert my_coordinate != hsc
 
 
 def test_coord_hash():
-    assert hash(hszinc.Coordinate(latitude=33.77, longitude=-77.45)) == \
+    assert hash(haystackapi.Coordinate(latitude=33.77, longitude=-77.45)) == \
            hash(33.77) ^ hash(-77.45)
 
 
 def test_coord_default_method():
-    coord = hszinc.Coordinate(latitude=33.77, longitude=-77.45)
+    coord = haystackapi.Coordinate(latitude=33.77, longitude=-77.45)
     ref_str = u'33.770000° lat -77.450000° long'
     if six.PY2:
         ref_str = ref_str.encode('utf-8')
@@ -395,19 +395,19 @@ def test_coord_default_method():
 def test_xstr_hex():
     assert XStr("hex", "deadbeef").data == b'\xde\xad\xbe\xef'
     b_array = bytearray(random.getrandbits(8) for _ in range(10))
-    assert b_array == hszinc.XStr("hex", binascii.hexlify(b_array).decode("ascii")).data
+    assert b_array == haystackapi.XStr("hex", binascii.hexlify(b_array).decode("ascii")).data
 
 
 def test_xstr_other():
     assert XStr("other", "hello word").data == "hello word"
     b_array = bytearray(random.getrandbits(8) for _ in range(10))
-    assert b_array == hszinc.XStr("other", b_array).data
+    assert b_array == haystackapi.XStr("other", b_array).data
 
 
 def test_xstr_b64():
     assert XStr("b64", '3q2+7w==').data == b'\xde\xad\xbe\xef'
     b_array = bytearray(random.getrandbits(8) for _ in range(10))
-    assert b_array == hszinc.XStr("b64", binascii.b2a_base64(b_array)).data
+    assert b_array == haystackapi.XStr("b64", binascii.b2a_base64(b_array)).data
 
 
 def test_xstr_equal():

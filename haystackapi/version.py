@@ -149,7 +149,7 @@ class Version:
             # If we have not seen a better candidate, and this is older
             # then we may have to settle for that.
             if (best is None) and (candidate < ver):
-                warnings.warn('This version of hszinc does not yet '
+                warnings.warn('This version of haystackapi does not yet '
                               'support version %s, please seek a newer version '
                               'or file a bug.  Closest (older) version supported is %s.'
                               % (ver, candidate))
@@ -161,7 +161,7 @@ class Version:
 
         # Unhappy path, no best option?  This should not happen.
         assert best is not None
-        warnings.warn('This version of hszinc does not yet '
+        warnings.warn('This version of haystackapi does not yet '
                       'support version %s, please seek a newer version '
                       'or file a bug.  Closest (newer) version supported is %s.'
                       % (ver, best))

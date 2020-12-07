@@ -6,7 +6,7 @@ except ImportError:
     # Try backported to PY<37 `importlib_resources`.
     import importlib_resources as pkg_resources
 
-import hszinc
+import haystackapi
 
 from .pint_enable import _enable_pint
 
@@ -35,7 +35,7 @@ def test_all_units():
         try:
             # if to_haystack(each) != each:
             #     assert to_pint(to_haystack(each)) == each
-            quantity = hszinc.Quantity(1, each)
+            quantity = haystackapi.Quantity(1, each)
             defined.append(each)
             print(each, quantity)
         except UndefinedUnitError as error:

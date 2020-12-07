@@ -6,10 +6,10 @@ from datetime import time, date, datetime
 
 from iso8601 import iso8601
 
-from hszinc import Grid, Uri, Ref, Coordinate, MARKER, XStr
-from hszinc.filter_ast import FilterUnary, FilterBinary, FilterPath, FilterAST
-from hszinc.grid_filter import hs_filter, _FnWrapper, filter_function
-from hszinc.zoneinfo import timezone
+from haystackapi import Grid, Uri, Ref, Coordinate, MARKER, XStr
+from haystackapi.filter_ast import FilterUnary, FilterBinary, FilterPath, FilterAST
+from haystackapi.grid_filter import hs_filter, _FnWrapper, filter_function
+from haystackapi.zoneinfo import timezone
 
 
 def test_filter_ast():
@@ -258,14 +258,14 @@ def test_grid_specification_filter_sample():
 
 def test_if_generated_function_removed():
     # Check if the generated function will be removed
-    import hszinc.grid_filter
+    import haystackapi.grid_filter
     wrapper = _FnWrapper("_acme", "def _acme(): pass")
-    assert hszinc.grid_filter._acme  # pylint: disable=E1101
+    assert haystackapi.grid_filter._acme  # pylint: disable=E1101
     if wrapper:
         del wrapper
     gc.collect()
     try:
-        assert hszinc.grid_filter._acme is not None
+        assert haystackapi.grid_filter._acme is not None
         assert False
     except AttributeError:
         pass

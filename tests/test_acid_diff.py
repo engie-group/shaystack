@@ -5,8 +5,8 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 import random
 
-from hszinc import Grid, REMOVE
-from hszinc.grid_diff import grid_diff, grid_merge
+from haystackapi import Grid, REMOVE
+from haystackapi.grid_diff import grid_diff, grid_merge
 from .test_acid import gen_random_grid, gen_random_scalar, gen_random_str
 
 GENERATION_NUMBER, \

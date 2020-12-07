@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
-from hszinc import Grid, REMOVE, VER_2_0, VER_3_0, Ref
-from hszinc.grid_diff import grid_diff, grid_merge
+from haystackapi import Grid, REMOVE, VER_2_0, VER_3_0, Ref
+from haystackapi.grid_diff import grid_diff, grid_merge
 
 
 def test_diff_version():

@@ -9,8 +9,8 @@ import random
 import string
 import sys
 
-import hszinc
-from hszinc import VER_3_0, MODE_ZINC, MODE_JSON, XStr, MetadataObject, MODE_CSV
+import haystackapi
+from haystackapi import VER_3_0, MODE_ZINC, MODE_JSON, XStr, MetadataObject, MODE_CSV
 from .pint_enable import to_pint
 
 STR_CHARSET = string.ascii_letters + string.digits + '\n\r\t\f\b'
@@ -20,7 +20,7 @@ GENERATION_NUMBER, GENERATION_COLUMN, GENERATION_ROW, PERCENT_GEN_ID, PERCENT_RE
 
 
 def gen_random_const():
-    return random.choice([True, False, hszinc.MARKER, hszinc.REMOVE, hszinc.NA])
+    return random.choice([True, False, haystackapi.MARKER, haystackapi.REMOVE, haystackapi.NA])
 
 
 def gen_random_ref():
@@ -31,12 +31,12 @@ def gen_random_ref():
     else:
         value = None
 
-    return hszinc.Ref(name, value)
+    return haystackapi.Ref(name, value)
 
 
 def gen_random_bin():
     # Generate a randomized binary
-    return hszinc.Bin(random.choice([
+    return haystackapi.Bin(random.choice([
         'text/plain',
         'text/html',
         'text/zinc',
@@ -59,7 +59,7 @@ def gen_random_xstr():
 
 
 def gen_random_uri():
-    return hszinc.Uri(gen_random_str(charset=string.ascii_letters + string.digits))
+    return haystackapi.Uri(gen_random_str(charset=string.ascii_letters + string.digits))
 
 
 def gen_random_str(min_length=1, max_length=20, charset=STR_CHARSET):
@@ -84,14 +84,14 @@ def gen_random_time():
 
 def gen_random_date_time():
     # Pick a random timezone
-    tz_name = random.choice(list(hszinc.zoneinfo.get_tz_map().keys()))
-    time_zone = hszinc.zoneinfo.timezone(tz_name)
+    tz_name = random.choice(list(haystackapi.zoneinfo.get_tz_map().keys()))
+    time_zone = haystackapi.zoneinfo.timezone(tz_name)
     return time_zone.localize(datetime.datetime.combine(
         gen_random_date(), gen_random_time()))
 
 
 def gen_random_coordinate():
-    return hszinc.Coordinate(
+    return haystackapi.Coordinate(
         round(gen_random_num(360) - 180.0, 2),
         round(gen_random_num(360) - 180.0, 2))
 
@@ -101,8 +101,8 @@ def gen_random_num(scale=1000, digits=2):
 
 
 def gen_random_quantity():
-    return hszinc.Quantity(gen_random_num(),
-                           to_pint('percent'))
+    return haystackapi.Quantity(gen_random_num(),
+                                to_pint('percent'))
 
 
 def gen_random_list():
@@ -138,7 +138,7 @@ def gen_random_name(existing=None):
 
 
 def gen_random_meta():
-    meta = hszinc.MetadataObject()
+    meta = haystackapi.MetadataObject()
     names = set()
     for _ in range(0, random.randint(1, 5)):
         name = gen_random_name(existing=names)
@@ -150,7 +150,7 @@ def gen_random_meta():
 
 def gen_random_grid(metadata=True):
     # Generate a randomised grid of values and try parsing it back.
-    grid = hszinc.Grid(version=VER_3_0)
+    grid = haystackapi.Grid(version=VER_3_0)
     if metadata:
         grid.metadata.extend(gen_random_meta())
 
@@ -206,7 +206,7 @@ def dump_grid(grid):
 def _try_dump_parse(ref_grid, mode):
     try:
         # Dump the randomised grid to a string
-        grid_str = hszinc.dump(ref_grid, mode=mode)
+        grid_str = haystackapi.dump(ref_grid, mode=mode)
     except:  # noqa: E722
         # Dump some detail about the grid
         print('Failed to dump grid.')
@@ -215,7 +215,7 @@ def _try_dump_parse(ref_grid, mode):
 
     # Parse the grid string
     try:
-        grid = hszinc.parse(grid_str, mode=mode)
+        grid = haystackapi.parse(grid_str, mode=mode)
     except:  # noqa: E722
         print('Failed to parse dumped grid')
         dump_grid(ref_grid)

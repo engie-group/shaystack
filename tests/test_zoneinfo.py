@@ -12,7 +12,7 @@ import datetime
 import iso8601
 import pytz
 
-from hszinc import zoneinfo
+from haystackapi import zoneinfo
 
 
 def test_get_tz_map():

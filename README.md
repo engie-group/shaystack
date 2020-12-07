@@ -4,19 +4,20 @@ Haystackapi is a skeleton to implement [ReadHaystack Rest API](https://project-h
 It's compatible with AWS Lambda or Flask server.
 
 ## Summary
-This project contains source code and supporting files for a Haystack server application 
-that you can deploy with `make aws-deploy` 
+This project contains source code and supporting files for a Haystack server application that you can deploy with Flask
+or AWS Lambda.
 
 This implementation propose two API endpoint:
 - Classical Haystack API
 - GraphQL API
 
 # Classical Haystack API
-Theses API can negotiate:
+
+These API can negotiate:
 - Request format (`Content-Type: text/zinc`, `application/json` or `text/csv`)
 - Response format (`Accept: text/zinc, application/json, text/csv`)
 
-The code implements all ReadHaystack [operations](https://project-haystack.org/doc/Rest):
+The code implements all [operations](https://project-haystack.org/doc/Rest):
 - [about](https://project-haystack.org/doc/Ops#about)
 - [ops](https://project-haystack.org/doc/Ops#ops)
 - [formats](https://project-haystack.org/doc/Ops#formats)
@@ -31,8 +32,8 @@ The code implements all ReadHaystack [operations](https://project-haystack.org/d
 - [invokeAction](https://project-haystack.org/doc/Ops#invokeAction)
 
 # GraphQL Haystack API
-This API use the `http://<host>:<port>/graphql` url and was conform to the schema
-describe in file `schema.graphql`.
+
+This API use the `http://<host>:<port>/graphql` url and was conforms to the schema describe in file `schema.graphql`.
 
 ## Quick local installation
 ```bash
@@ -42,15 +43,15 @@ HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi
 
 ## Deploy server
 - start the api
-    - with flask and Haystack classical API, 
+    - with [Flask](https://flask.palletsprojects.com/en/1.1.x/) and Haystack classical API,
         - `pip install "haystackapi[flask]"`
         - `HAYSTACK_PROVIDER='<your provider module>' haystackapi`
-    - with flask and Haystack+GraphQL API, 
-        - `pip install "haystackapi[graphql]"`
+    - with Flask and Haystack+GraphQL API,
+        - `pip install "haystackapi[flask,graphql]"`
         - `HAYSTACK_PROVIDER='<your provider module>' haystackapi`
     - with AWS Lambda
         - `pip install "haystackapi[graphql,lambda]"`
-        - create a file zappa_settings.json with
+        - create a file `zappa_settings.json` with
 ```json
 {
   "dev": {
@@ -67,26 +68,16 @@ HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi
   }
 }
 ```        
-   - update the parameters
-   - `zappa deploy`
+
+- update the parameters
+- and `zappa deploy`
 
 # Custom provider
-To create your custom ReadHaystack API
+
+To create your custom Haystack API
 - create a project
 - In a module, create a subclass of `HaystackInterface` with the name `Provider`
 - add parameter `HAYSTACK_PROVIDER` with the name of the package 
-
-# Organization
-The project includes the following files and folders:
-- `app` - Code for the application's Flask and Lambda function.
-- `haystackapi` - The generic wrapper between technology and implementation
-- `haystackapi/providers` - Sample of providers.
-- `tests` - Unit tests for the application code. 
-- `hszinc` - Git submodule to extend the hszinc project. 
-- `*.postman*.json` - script to invoke API with postman
-- `Makefile` - All tools to manage the project (Use `make help`'`)
-
-You can add some environment variable in `.env` file.
 
 ## Providers
 Different sample of provider are proposed. You can add a new one with a subclass of 
@@ -134,22 +125,31 @@ If you limit the concurrency of lambda to 1, this synchronisation between lambda
 is not activate. 
 
 ### Provider SQL
-This provider use an ontology imported in SQL database. Each entity is saved in a row
-in the JSON format.
-Use `HAYSTACK_PROVIDER=providers.sql` to use this provider.
-Add the variable `HAYSTACK_DB` to describe the link to the table. 
-At this time, only Postgresql was supported.
+
+This provider use an ontology imported in SQL database. Each entity is saved in a row in the JSON format.
+Use `HAYSTACK_PROVIDER=providers.sql` to use this provider. Add the variable `HAYSTACK_DB` to describe the link to the
+table. At this time, only SuperSQLite and Postgresql was supported.
+
 ```bash
 HAYSTACK_PROVIDER=providers.sql
+HAYSTACK_DB=sqlite3:///test.db#haystack
 HAYSTACK_DB=postgresql://scott:tiger@localhost/mydatabase#haystack
 HAYSTACK_DB=postgresql+psycopg2://scott:tiger@localhost/mydatabase
 ```
-If the password is empty and you use AWS lambda,  
-the password is retrieved from the service `secretManager`, 
-with the key, whose name is in the environment variable `HAYSTACK_DB_SECRET`.
-Use the key `password` to save the password.
 
-You can use `import_db` to import an Haystack file in database. 
+Install the corresponding driver:
+
+| Database | Driver                    |
+| -------- | ------------------------- |
+| sqlite   | `pip install supersqlite` |
+| postgres | `pip install psycopg2`    |
+
+If the password is empty and you use AWS lambda,  
+the password is retrieved from the service [`secretManagers`](https://aws.amazon.com/secrets-manager/), with the key,
+whose name is in the environment variable `HAYSTACK_DB_SECRET`. Use the key `password` to save the password.
+
+You can use `import_db` to import an Haystack file in database.
+
 ```bash
 python -m haystackapi.providers.import_db <haystack file url> <db url>
 ```
@@ -163,24 +163,43 @@ The haystack filter was automatically converted to Postgres SQL.
 Two table was created:
 - <table_name> (haystack by default)
 - <table_name>_meta_datas
-and some index.
-The column `entity` use a json version of haystack entity 
-(See [here](https://project-haystack.org/doc/Json)).
+  and some index. The column `entity` use a json version of haystack entity
+  (See [here](https://project-haystack.org/doc/Json)).
 
 To manage the multi-tenancy, it's possible to use different approach:
+
 - Overload the method `get_customer_id()` to return the name of customer, deduce by the user logging
 - Use different table (change the table name, ...#haystack_customer1, ...#haystack_customer2)
 
 ### Using with Excel or PowerBI
+
 Because the default negotiated format is CSV, you can call theses API with PowerQuery/
 
+# Contribute
+
+## Organization
+
+The project includes the following files and folders:
+
+- `app` - Code for the application's Flask, GraphQL and Lambda function.
+- `haystackapi` - The generic wrapper between technology and implementation
+- `haystackapi/providers` - Sample of providers.
+- `tests` - Unit tests for the application code.
+- `hszinc` - Git submodule to extend the hszinc project.
+- `*.postman*.json` - script to invoke API with postman
+- `Makefile` - All tools to manage the project (Use `make help`'`)
+
+You can add some environment variable in `.env` file (See `.env.template`).
+
 ## Build the application
+
 This project use a `Makefile` (>4.0) to integrate all tools
 and [Conda](https://docs.conda.io/projects/conda/en/latest/index.html)
 to manage dependencies and others tools.
 
-To initialise the Conda environment, use `make configure` and activate the conda environment.
-Then, it's possible to `test`, `start-api`, etc. See `make help` to print all major target.
+To initialise the Conda environment, use `make configure` and activate the conda environment. Then, it's possible
+to `test`, `start-api`, etc. See `make help` to print all major target.
+
 ```bash
 git clone --recurse-submodules http://github.com/pprados/haystackapi.git 
 make configure
@@ -220,7 +239,7 @@ To print the local API URL:
 make api
 ```
 
-### Invoke GraphQL API
+### GraphQL API
 To print the local GraphQL API URL:
 ```bash
 make graphql-api
@@ -230,17 +249,18 @@ To test the GraphQL API, open this URL with a web browser
 or use a GraphQL Client with this URL.
 
 ```GraphQL
-{ haystack {
-    about
-    {
-        haystackVersion
-        tz
-        serverName
-        serverTime
-        serverBootTime
-        productName
-        productUri
-        productVersion
+{
+    haystack {
+        about
+        {
+            haystackVersion
+            tz
+            serverName
+            serverTime
+            serverBootTime
+            productName
+            productUri
+            productVersion
         moduleName
         moduleVersion
     }
@@ -254,19 +274,20 @@ or use a GraphQL Client with this URL.
     byfilter:entities(select: "id,dis" filter: "id", limit: 2)
     histories(ids:["@car-1","@bicycle-100"])
     {
-        date
+        ts
         val
         coord { lat long }
     }
-    pointWrite(id:"@elec-16514")
-    {
-        level
-        levelDis
-        val
-        who
+        pointWrite(id:"@elec-16514")
+        {
+            level
+            levelDis
+            val
+            who
+        }
+        country:tagValues(tag:"geoCountry")
     }
-    country:values(tag:"geoCountry")
-} }
+}
 ```
 #### Merge GraphQL API 
 To integrate Haystack GraphQL API inside another GraphQL API,
@@ -274,8 +295,9 @@ To integrate Haystack GraphQL API inside another GraphQL API,
 ```bash
 make graphql-schema
 ```
+
 - Insert this schema without the `Query`
-- In you query, insert a link to app/graphql_model.py!ReadHaystack
+- In you query, insert a link to `app/graphql_model.py!ReadHaystack`
 - And deploy your application
 
 #### Use AWS AppSync
@@ -319,17 +341,22 @@ make aws-api
 ```
 
 ### Customize environment variable
-Copy `.env.template` to `.env` and update your local variables
-Theses variables are used in `Makefile`, when we start the api, etc.
+
+Copy `.env.template` to `.env` and update your local variables These variables are used in `Makefile`, when we start the
+api, etc.
 
 The project variable are in `Project.variables` file.
 
 ## Cleanup
-To cleanup the project, use `make clean`.
+
+To clean the project, use `make clean`.
 
 ## Tips
 If you use Okta technology, you can set in `.env`
+
+```bash
 GIMME="echo 0 | gimme-aws-creds --username XXXX"
+```
 
 ## Resources
 [Zappa](https://github.com/Miserlou/Zappa) framework

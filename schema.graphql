@@ -37,9 +37,10 @@ type HSPointWrite {
 }
 
 type HSTS {
-  val: AWSJSON
-  integer: Int
-  float: Float
+  ts: String
+    val: AWSJSON
+    int: Int
+    float: Float
   str: String
   bool: Boolean
   uri: String

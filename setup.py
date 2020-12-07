@@ -33,19 +33,23 @@ def _git_http_url() -> str:
 
 
 # See setup.cfg
-install_requirements = [
-]
 
-requirements = [
+install_requirements = [
     'accept_types',
     'overrides',
     'tzlocal',
-    'hszinc',
+    'pytz',
+    #    'hszinc',  # See dependency_links
     'pint',
     'click',
     'click_pathlib',
-    'supersqlite'
+    'supersqlite',  # FIXME
 ]
+
+requirements = install_requirements
+
+dependency_links = ['git+https://github.com/pprados/hszinc.git@diff']  # FIXME
+# dependency_links = ['git+https://github.com/pprados/hszinc.git#egg=ppr-4.0'], # FIXME
 
 # Extra for a deployment in Flask server
 flask_requirements = [
@@ -76,11 +80,14 @@ dev_requirements = [
     'pylint',
     'pytest',
     'twine',
-    'mock'
+    'mock',
+    'supersqlite'
 ]
 
 setup(name='haystackapi',
       url=_git_http_url(),
+      setup_requires=['setuptools_scm'],
+      use_scm_version=True,
       description='Implementation of Haystack REST API',
       long_description=open('README.md', mode='r', encoding='utf-8').read(),
       long_description_content_type='text/markdown',
@@ -101,7 +108,6 @@ setup(name='haystackapi',
           'Topic :: Scientific/Engineering',
           'Topic :: Scientific/Engineering :: Information Analysis',
       ],
-      requires=requirements,
       python_requires='>=3',
       extras_require={
           'dev': dev_requirements,
@@ -111,12 +117,13 @@ setup(name='haystackapi',
           # 'azure': azure_requirements,
       },
       install_requires=install_requirements,
+      requires=install_requirements,
+      dependency_links=dependency_links,
       entry_points={
           "console_scripts": [
               'haystackapi = app.__init__:main'
           ]
       },
-      dependency_links=['git+https://github.com/pprados/hszinc.git#egg=hszinc-4.0'],
       project_urls={
           'Documentation': ROOT,
           'Source': ROOT,

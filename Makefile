@@ -201,7 +201,7 @@ requirements: $(REQUIREMENTS)
 dependencies: requirements
 
 # Rule to update the current venv, with the dependencies describe in `setup.py`
-$(PIP_PACKAGE): $(CONDA_PYTHON) | .git # Install pip dependencies
+$(PIP_PACKAGE): $(CONDA_PYTHON) setup.py | .git # Install pip dependencies
 	@$(VALIDATE_VENV)
 	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"
 ifeq ($(USE_OKTA),Y)
@@ -210,9 +210,11 @@ endif
 	conda install -c conda-forge -c anaconda -y \
 		make jq
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
+	echo -e "$(cyan)pip install -e .$(normal)"
 	pip install -e .
-	pip install file://$$(pwd)#egg=foo[dev]
-	pip install file://$$(pwd)#egg=foo[lambda]
+	pip install -e hszinc
+	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"
+	pip install -e "file://$$(pwd)#egg=haystackapi[dev,flask,graphql,lambda]"
 	@touch $(PIP_PACKAGE)
 
 # All dependencies of the project must be here
@@ -316,14 +318,14 @@ async-start-api: $(REQUIREMENTS)
 	[ -e .start/start-api.pid ] && echo -e "$(yellow)Local API was allready started$(normal)" && exit
 	mkdir -p .start
 	FLASK_DEBUG=1 FLASK_APP=app.run FLASK_ENV=$(AWS_STAGE) \
-	nohup flask run >.start/start-api.log 2>&1 &
+	nohup $(CONDA_PYTHON) -m app.__init__ >.start/start-api.log 2>&1 &
 	echo $$! >.start/start-api.pid
 	sleep 0.5
 	tail .start/start-api.log
 	echo -e "$(yellow)Local API started$(normal)"
 
 # Stop local api emulator in background
-async-stop-api: pg-stop pg-stop-pgadmin
+async-stop-api:
 	@$(VALIDATE_VENV)
 	@[ -e .start/start-api.pid ] && kill `cat .start/start-api.pid` || true && echo -e "$(green)Local API stopped$(normal)"
 	rm -f .start/start-api.pid

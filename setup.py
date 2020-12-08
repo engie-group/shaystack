@@ -35,21 +35,19 @@ def _git_http_url() -> str:
 # See setup.cfg
 
 install_requirements = [
+    'pyparsing',
+    'pytz',
+    'iso8601',
+    'six',
     'accept_types',
     'overrides',
     'tzlocal',
-    'pytz',
-    #    'hszinc',  # See dependency_links
     'pint',
     'click',
     'click_pathlib',
-    'supersqlite',  # FIXME
 ]
 
 requirements = install_requirements
-
-dependency_links = ['git+https://github.com/pprados/hszinc.git@diff']  # FIXME
-# dependency_links = ['git+https://github.com/pprados/hszinc.git#egg=ppr-4.0'], # FIXME
 
 # Extra for a deployment in Flask server
 flask_requirements = [
@@ -78,10 +76,11 @@ dev_requirements = [
     'ninja',
     'flake8',
     'pylint',
-    'pytest',
+    'nose',
     'twine',
     'mock',
-    'supersqlite'
+    'supersqlite',
+    'nose'
 ]
 
 setup(name='haystackapi',
@@ -102,11 +101,14 @@ setup(name='haystackapi',
           'Development Status :: 4 - Beta',
           'Environment :: Web Environment',
           'Intended Audience :: Developers',
-          'License :: OSI Approved :: Apache Software License',
+          'License :: OSI Approved :: BSD License',
           'Programming Language :: Python',
+          'Programming Language :: Python :: 3.7',
           'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python :: 3.9',
           'Topic :: Scientific/Engineering',
           'Topic :: Scientific/Engineering :: Information Analysis',
+          'Topic :: Software Development :: Libraries :: Python Modules',
       ],
       python_requires='>=3',
       extras_require={
@@ -118,7 +120,6 @@ setup(name='haystackapi',
       },
       install_requires=install_requirements,
       requires=install_requirements,
-      dependency_links=dependency_links,
       entry_points={
           "console_scripts": [
               'haystackapi = app.__init__:main'

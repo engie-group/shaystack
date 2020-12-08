@@ -3,10 +3,10 @@ from unittest.mock import patch
 
 import pytz
 
+from haystackapi import MetadataObject
+from haystackapi import Ref
 from haystackapi.providers import get_provider
 from haystackapi.providers.url import Provider
-from hszinc import MetadataObject
-from hszinc import Ref
 from tests import _get_mock_s3
 
 

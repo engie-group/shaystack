@@ -589,10 +589,11 @@ def test_greater_or_equal_quantity():
 
 
 def test_path_equal_quantity():
-    hs_filter = 'siteRef->temp == 55400°'
+    hs_filter = 'siteRef->temp == 55400deg'
     sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
+    print(sql_request)
     assert sql_request == textwrap.dedent("""\
-        -- siteRef->temp == 55400°
+        -- siteRef->temp == 55400deg
         SELECT t1.entity
         FROM haystack as t1
         INNER JOIN haystack AS t2 ON
@@ -601,7 +602,7 @@ def test_path_equal_quantity():
         AND '2020-10-01T00:00:00+00:00' BETWEEN t2.start_datetime AND t2.end_datetime
         AND t2.customer_id='customer'
         AND t1.entity->'siteRef' = t2.entity->'id'
-        AND t2.entity->>'temp' = 'n:55400.000000 °'
+        AND t2.entity->>'temp' = 'n:55400.000000 deg'
         LIMIT 1
         """)
     _check_pg(sql_request)

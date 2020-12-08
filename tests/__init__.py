@@ -2,8 +2,8 @@ from datetime import datetime
 
 import pytz
 
-import hszinc
-from hszinc import MODE_ZINC, VER_3_0, Ref, Grid
+import haystackapi
+from haystackapi import MODE_ZINC, VER_3_0, Ref, Grid
 
 
 def _get_mock_s3():
@@ -39,8 +39,8 @@ def _get_mock_s3():
                 for row in grid:
                     row["hisURI"] = f"his{self.his_count}.zinc"
                     self.his_count += 1
-                return stream.write(hszinc.dump(grid, mode=MODE_ZINC).encode("utf-8"))
+                return stream.write(haystackapi.dump(grid, mode=MODE_ZINC).encode("utf-8"))
             else:
-                return stream.write(hszinc.dump(self.history, mode=MODE_ZINC).encode("utf-8"))
+                return stream.write(haystackapi.dump(self.history, mode=MODE_ZINC).encode("utf-8"))
 
     return MockS3()

@@ -106,5 +106,6 @@ def _validate_grid(grid):
 
 
 def test_multiple_diff():
+    random.seed(0)
     for _ in range(0, GENERATION_NUMBER):
         _try_diff()

@@ -8,13 +8,10 @@ except ImportError:
 
 import haystackapi
 
-from .pint_enable import _enable_pint
-
 units = []
 
 
 def get_units():
-    _enable_pint(True)
     with pkg_resources.open_text(__package__, 'project_haystack_units.txt', encoding='UTF-8') as file:
         for line in file:
             if '--' not in line and line != '':
@@ -27,7 +24,6 @@ def get_units():
 
 
 def test_all_units():
-    _enable_pint(True)
     get_units()
     not_defined = []
     defined = []

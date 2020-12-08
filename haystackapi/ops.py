@@ -22,8 +22,8 @@ from typing import Tuple, Dict
 
 from accept_types import AcceptableType, get_best_match
 
-import hszinc
-from hszinc import (
+import haystackapi
+from haystackapi import (
     Grid,
     VER_3_0,
     parse_scalar,
@@ -37,9 +37,9 @@ from .providers.haystack_interface import (
     HttpError, get_singleton_provider, parse_date_range,
 )
 
-_DEFAULT_VERSION = hszinc.VER_3_0
-DEFAULT_MIME_TYPE: str = hszinc.MODE_CSV
-_DEFAULT_MIME_TYPE_WITH_METADATA = hszinc.MODE_ZINC
+_DEFAULT_VERSION = haystackapi.VER_3_0
+DEFAULT_MIME_TYPE: str = haystackapi.MODE_CSV
+_DEFAULT_MIME_TYPE_WITH_METADATA = haystackapi.MODE_ZINC
 
 log = logging.getLogger("haystackapi")
 
@@ -181,7 +181,7 @@ def _get_weight(tail):
     return Decimal(1)
 
 
-def _parse_body(request: HaystackHttpRequest) -> hszinc.Grid:
+def _parse_body(request: HaystackHttpRequest) -> haystackapi.Grid:
     if "Content-Encoding" in request.headers and request.is_base64:
         content_encoding = request.headers["Content-Encoding"]
         if content_encoding != "gzip":
@@ -191,11 +191,11 @@ def _parse_body(request: HaystackHttpRequest) -> hszinc.Grid:
         request.body = gzip.decompress(base64.b64decode(body)).decode("utf-8")
         request.isBase64Encoded = False
     if "Content-Type" not in request.headers:
-        grid = hszinc.parse(request.body, mode=DEFAULT_MIME_TYPE)
+        grid = haystackapi.parse(request.body, mode=DEFAULT_MIME_TYPE)
     else:
         content_type = request.headers["Content-Type"]
-        if hszinc.mode_to_suffix(content_type):
-            grid = hszinc.parse(request.body, mode=content_type)
+        if haystackapi.mode_to_suffix(content_type):
+            grid = haystackapi.parse(request.body, mode=content_type)
         elif request.body:
             raise HttpError(406, f"Content-Type '{content_type}' not supported")
         else:
@@ -207,7 +207,7 @@ def _parse_body(request: HaystackHttpRequest) -> hszinc.Grid:
 
 def _format_response(
         headers: Dict[str, str],
-        grid_response: hszinc.Grid,
+        grid_response: haystackapi.Grid,
         status_code: int,
         status_msg: str,
         default=None,
@@ -224,36 +224,36 @@ def _format_response(
 
 
 def _dump_response(
-        accept: str, grid: hszinc.Grid, default: Optional[str] = None
+        accept: str, grid: haystackapi.Grid, default: Optional[str] = None
 ) -> Tuple[str, str]:
     accept_type = get_best_match(
-        accept, ["*/*", hszinc.MODE_CSV, hszinc.MODE_ZINC, hszinc.MODE_JSON]
+        accept, ["*/*", haystackapi.MODE_CSV, haystackapi.MODE_ZINC, haystackapi.MODE_JSON]
     )
     if accept_type:
         if accept_type in (DEFAULT_MIME_TYPE, "*/*"):
             return (
                 DEFAULT_MIME_TYPE + "; charset=utf-8",
-                hszinc.dump(grid, mode=DEFAULT_MIME_TYPE),
+                haystackapi.dump(grid, mode=DEFAULT_MIME_TYPE),
             )
-        if accept_type == hszinc.MODE_ZINC:
+        if accept_type == haystackapi.MODE_ZINC:
             return (
-                hszinc.MODE_ZINC + "; charset=utf-8",
-                hszinc.dump(grid, mode=hszinc.MODE_ZINC),
+                haystackapi.MODE_ZINC + "; charset=utf-8",
+                haystackapi.dump(grid, mode=haystackapi.MODE_ZINC),
             )
-        if accept_type == hszinc.MODE_JSON:
+        if accept_type == haystackapi.MODE_JSON:
             return (
-                hszinc.MODE_JSON + "; charset=utf-8",
-                hszinc.dump(grid, mode=hszinc.MODE_JSON),
+                haystackapi.MODE_JSON + "; charset=utf-8",
+                haystackapi.dump(grid, mode=haystackapi.MODE_JSON),
             )
-        if accept_type == hszinc.MODE_CSV:
+        if accept_type == haystackapi.MODE_CSV:
             return (
-                hszinc.MODE_CSV + "; charset=utf-8",
-                hszinc.dump(grid, mode=hszinc.MODE_CSV),
+                haystackapi.MODE_CSV + "; charset=utf-8",
+                haystackapi.dump(grid, mode=haystackapi.MODE_CSV),
             )
     if default:
         return (
             default + "; charset=utf-8",
-            hszinc.dump(grid, mode=default),
+            haystackapi.dump(grid, mode=default),
         )  # Return HTTP 403 ?
 
     raise HttpError(406, f"Accept '{accept}' not supported")
@@ -263,10 +263,10 @@ def _manage_exception(
         headers: Dict[str, str], ex: Exception, stage: str
 ) -> HaystackHttpResponse:
     log.error(traceback.format_exc())
-    error_grid = hszinc.Grid(
+    error_grid = haystackapi.Grid(
         version=_DEFAULT_VERSION,
         metadata={
-            "err": hszinc.MARKER,
+            "err": haystackapi.MARKER,
             "id": "badId",
             "errTrace": traceback.format_exc() if stage == "dev" else "",
         },
@@ -326,7 +326,7 @@ def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         provider = get_singleton_provider()
         grid_response = provider.formats()
         if grid_response is None:
-            grid_response = hszinc.Grid(
+            grid_response = haystackapi.Grid(
                 version=_DEFAULT_VERSION,
                 columns={
                     "mime": {},
@@ -337,19 +337,19 @@ def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             grid_response.extend(
                 [
                     {
-                        "mime": hszinc.MODE_ZINC,
-                        "receive": hszinc.MARKER,
-                        "send": hszinc.MARKER,
+                        "mime": haystackapi.MODE_ZINC,
+                        "receive": haystackapi.MARKER,
+                        "send": haystackapi.MARKER,
                     },
                     {
-                        "mime": hszinc.MODE_JSON,
-                        "receive": hszinc.MARKER,
-                        "send": hszinc.MARKER,
+                        "mime": haystackapi.MODE_JSON,
+                        "receive": haystackapi.MARKER,
+                        "send": haystackapi.MARKER,
                     },
                     {
-                        "mime": hszinc.MODE_CSV,
-                        "receive": hszinc.MARKER,
-                        "send": hszinc.MARKER,
+                        "mime": haystackapi.MODE_CSV,
+                        "receive": haystackapi.MARKER,
+                        "send": haystackapi.MARKER,
                     },
                 ]
             )

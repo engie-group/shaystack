@@ -1,10 +1,9 @@
 from unittest.mock import patch
 
 import haystackapi
-import hszinc
+from haystackapi import Grid
 from haystackapi.ops import HaystackHttpRequest
 from haystackapi.providers import ping
-from hszinc import Grid
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
@@ -14,7 +13,7 @@ def test_about_with_zinc(mock, no_cache) -> None:
     # GIVEN
     no_cache.return_value = True
     mock.return_value = ping.PingGrid
-    mime_type = hszinc.MODE_ZINC
+    mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     request.headers["Content-Type"] = mime_type
     request.headers["Accept"] = mime_type
@@ -26,7 +25,7 @@ def test_about_with_zinc(mock, no_cache) -> None:
     mock.assert_called_once_with("https://localhost/dev")
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    assert hszinc.parse(response.body, mime_type) is not None
+    assert haystackapi.parse(response.body, mime_type) is not None
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
@@ -37,7 +36,7 @@ def test_about_without_headers(mock, no_cache) -> None:
     no_cache.return_value = True
     mock.return_value = Grid(columns=["a"])
     mock.return_value.append({"a": 1})
-    mime_type = hszinc.MODE_CSV
+    mime_type = haystackapi.MODE_CSV
     request = HaystackHttpRequest()
 
     # WHEN
@@ -47,7 +46,7 @@ def test_about_without_headers(mock, no_cache) -> None:
     mock.assert_called_once_with("https://localhost/dev")
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    assert hszinc.parse(response.body, mime_type) is not None
+    assert haystackapi.parse(response.body, mime_type) is not None
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
@@ -57,7 +56,7 @@ def test_about_with_multivalues_headers(mock, no_cache) -> None:
     # GIVEN
     no_cache.return_value = True
     mock.return_value = ping.PingGrid
-    mime_type = hszinc.MODE_ZINC
+    mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     request.headers["Accept"] = "text/zinc, application/json"
 
@@ -68,4 +67,4 @@ def test_about_with_multivalues_headers(mock, no_cache) -> None:
     mock.assert_called_once_with("https://localhost/dev")
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    assert hszinc.parse(response.body, mime_type) is not None
+    assert haystackapi.parse(response.body, mime_type) is not None

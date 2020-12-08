@@ -15,10 +15,10 @@ from urllib.parse import ParseResult, urlparse
 import boto3
 import click
 from botocore.exceptions import ClientError
-from haystackapi import EmptyGrid
 
-import hszinc
-from hszinc.zincparser import ZincParseException
+import haystackapi
+from haystackapi import EmptyGrid
+from haystackapi.zincparser import ZincParseException
 
 log = logging.getLogger("import_s3")
 
@@ -115,14 +115,16 @@ def update_grid_on_s3(parsed_source: ParseResult,
 
             try:
                 with lock:
-                    source_grid = hszinc.parse(unzipped_source_data.decode("utf-8-sig"), hszinc.suffix_to_mode(suffix))
+                    source_grid = haystackapi.parse(unzipped_source_data.decode("utf-8-sig"),
+                                                    haystackapi.suffix_to_mode(suffix))
                 destination_data = s3_client.get_object(Bucket=parsed_destination.hostname,
                                                         Key=parsed_destination.path[1:],
                                                         IfNoneMatch=source_etag)['Body'].read()
                 if parsed_source.path.endswith(".gz"):
                     destination_data = gzip.decompress(destination_data)
                 with lock:
-                    destination_grid = hszinc.parse(destination_data.decode("utf-8-sig"), hszinc.suffix_to_mode(suffix))
+                    destination_grid = haystackapi.parse(destination_data.decode("utf-8-sig"),
+                                                         haystackapi.suffix_to_mode(suffix))
 
             except ClientError as ex:
                 if ex.response['Error']['Code'] == 'NoSuchKey':

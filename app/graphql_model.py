@@ -10,9 +10,9 @@ import graphene
 from graphql import ResolveInfo
 from graphql.language import ast
 
-import hszinc
+import haystackapi
+from haystackapi import Ref, Uri, Coordinate
 from haystackapi.providers.haystack_interface import get_singleton_provider, parse_date_range
-from hszinc import Ref, Uri, Coordinate
 
 BOTO3_AVAILABLE = False
 try:
@@ -37,7 +37,7 @@ class HSScalar(graphene.Scalar):
 
     @staticmethod
     def serialize(hs_scalar):
-        return hszinc.dump_scalar(hs_scalar, hszinc.MODE_JSON, version=hszinc.VER_3_0)
+        return haystackapi.dump_scalar(hs_scalar, haystackapi.MODE_JSON, version=haystackapi.VER_3_0)
 
     @staticmethod
     # Parse from AST See https://tinyurl.com/y3fr76a4

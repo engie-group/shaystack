@@ -13,11 +13,8 @@ from abc import ABCMeta
 
 import six
 
-from . import PINT_AVAILABLE
-
-if PINT_AVAILABLE:
-    from . import unit_reg
-    from .pintutil import to_pint
+from . import unit_reg
+from .pintutil import to_pint
 
 STR_SUB = [
     ('\b', '\\b'),
@@ -27,30 +24,12 @@ STR_SUB = [
     ('\t', '\\t'),
 ]
 
+
 # Will keep in memory the way we want Quantity being created
-MODE_PINT = False
-
-
-def use_pint(val=True):
-    global MODE_PINT
-    if val:
-        # print('Switching to Pint')
-        if PINT_AVAILABLE:
-            MODE_PINT = True
-        else:  # pragma: no cover
-            # Really difficult to test this case in CI
-            raise ImportError(
-                'Pint not installed. Use pip install pint if needed')
-    else:  # pragma: no cover
-        # print('Back to default Quantity')
-        MODE_PINT = False
-
 
 class Quantity(six.with_metaclass(ABCMeta, object)):
     def __new__(cls, value, unit=None):
-        if MODE_PINT:
-            return PintQuantity(value, to_pint(unit))
-        return BasicQuantity(value, unit)
+        return PintQuantity(value, to_pint(unit))  # FIXME
 
     # Fake ctr to help audit tools
     def __init__(self, value, unit=None):
@@ -302,31 +281,21 @@ class Qty:
         return hash((self.value, self.unit))
 
 
-class BasicQuantity(Qty):
+class PintQuantity(Qty, unit_reg.Quantity):
     """
-    Default class to be used to define Quantity.
+    A quantity is a scalar value (floating point) with a unit.
+    This object uses Pint feature allowing conversion between units
+    for example :
+        a = haystackapi.Q_(19, 'degC')
+        a.to('degF')
+    See https://pint.readthedocs.io for details
     """
 
-
-Quantity.register(BasicQuantity)
-
-if PINT_AVAILABLE:
-    class PintQuantity(Qty, unit_reg.Quantity):
-        """
-        A quantity is a scalar value (floating point) with a unit.
-        This object uses Pint feature allowing conversion between units
-        for example :
-            a = haystackapi.Q_(19, 'degC')
-            a.to('degF')
-        See https://pint.readthedocs.io for details
-        """
+    def __init__(self, value, unit):
+        super().__init__(value, unit)
 
 
-    Quantity.register(PintQuantity)  # noqa: E303
-else:  # pragma: no cover
-    # If things turn really bad...just in case.
-    PintQuantity = BasicQuantity
-    to_pint = lambda unit: unit  # noqa: F811, E261, E731
+Quantity.register(PintQuantity)  # noqa: E303
 
 
 class Coordinate:

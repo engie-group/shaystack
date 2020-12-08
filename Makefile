@@ -212,7 +212,6 @@ endif
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	echo -e "$(cyan)pip install -e .$(normal)"
 	pip install -e .
-	pip install -e hszinc
 	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"
 	pip install -e "file://$$(pwd)#egg=haystackapi[dev,flask,graphql,lambda]"
 	@touch $(PIP_PACKAGE)
@@ -484,7 +483,7 @@ aws-logs:
 .PHONY: unit-test
 .make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile .env
 	@$(VALIDATE_VENV)
-	PYTHONPATH=tests:. $(CONDA_PYTHON) -m pytest -m "not functional" -s tests $(PYTEST_ARGS)
+	PYTHONPATH=tests:. $(CONDA_PYTHON) -m nosetests -s tests $(NOSETESTS_ARGS)
 	date >.make-unit-test
 ## Run unit test
 unit-test: .make-unit-test
@@ -496,8 +495,8 @@ unit-test: .make-unit-test
 test: .make-test
 
 
-# -------------------------------------- hszinc submodule
-hszinc/dist/hszinc-*.whl: hszinc/hszinc/*.py
+# -------------------------------------- haystackapi submodule
+hszinc/dist/hszinc-*.whl: hszinc/haystackapi
 	cd hszinc
 	$(CONDA_PYTHON) setup.py bdist_wheel
 

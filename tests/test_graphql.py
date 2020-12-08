@@ -3,11 +3,11 @@ from unittest.mock import patch
 
 import pytz
 from graphene.test import Client
-from haystackapi.providers import get_provider
-from haystackapi.providers.url import Provider
 
 from app.blueprint_graphql import schema
-from hszinc import Grid, VER_3_0, Uri, Ref, Coordinate, MARKER
+from haystackapi import Grid, VER_3_0, Uri, Ref, Coordinate, MARKER
+from haystackapi.providers import get_provider
+from haystackapi.providers.url import Provider
 from tests import _get_mock_s3
 
 

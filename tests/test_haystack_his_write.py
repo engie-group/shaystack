@@ -4,10 +4,9 @@ from unittest.mock import patch
 import pytz
 
 import haystackapi
-import hszinc
+from haystackapi import Ref, parse_date_format, Grid, VER_3_0
 from haystackapi.ops import HaystackHttpRequest, DEFAULT_MIME_TYPE
 from haystackapi.providers import ping
-from hszinc import Ref, parse_date_format, Grid, VER_3_0
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
@@ -15,13 +14,13 @@ from hszinc import Ref, parse_date_format, Grid, VER_3_0
 def test_his_write_with_zinc(mock):
     # GIVEN
     mock.return_value = ping.PingGrid
-    mime_type = hszinc.MODE_ZINC
+    mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
-    grid = hszinc.Grid(columns={'id': {}})
+    grid = haystackapi.Grid(columns={'id': {}})
     grid.append({"id": Ref("1234")})
     request.headers["Content-Type"] = mime_type
     request.headers["Accept"] = mime_type
-    request.body = hszinc.dump(grid, mode=mime_type)
+    request.body = haystackapi.dump(grid, mode=mime_type)
 
     # WHEN
     response = haystackapi.his_write(request, "dev")
@@ -30,7 +29,7 @@ def test_his_write_with_zinc(mock):
     mock.assert_called_once_with(None, grid, None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    assert hszinc.parse(response.body, mime_type) is not None
+    assert haystackapi.parse(response.body, mime_type) is not None
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
@@ -55,4 +54,4 @@ def test_his_write_with_args(mock):
     mock.assert_called_once_with(Ref("1234"), result_ts, None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    assert hszinc.parse(response.body, mime_type) is not None
+    assert haystackapi.parse(response.body, mime_type) is not None

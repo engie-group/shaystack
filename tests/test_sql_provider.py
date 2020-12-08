@@ -1,15 +1,14 @@
 import copy
 import datetime
-import logging
 import os
 from pathlib import Path
 from unittest.mock import patch
 
 import pytz
-from pytest import skip
+from nose import SkipTest
 
+from haystackapi import Ref, Grid, VER_3_0
 from haystackapi.providers import get_provider
-from hszinc import Ref, Grid, VER_3_0
 
 # Set HAYSTACK_DB variable, before running the tests to validate with another database
 # HAYSTACK_DB = 'postgresql://postgres:password@172.17.0.2:5432/postgres#haystack'
@@ -17,6 +16,9 @@ HAYSTACK_DB = os.environ.get("HAYSTACK_DB", 'sqlite3:///:memory:#haystack')
 
 FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
+
+def skip(msg: str) -> None:
+    raise SkipTest(msg)
 
 def _get_grids():
     sample_grid = Grid(version=VER_3_0, columns=["id", "col"])
@@ -136,9 +138,9 @@ def test_read_version_with_filter():
 
 
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
-def test_read_version_with_filter(caplog):
+def test_read_version_with_filter():
     try:
-        caplog.set_level(logging.DEBUG)
+        # caplog.set_level(logging.DEBUG)
         with get_provider("haystackapi.providers.sql") as provider:
             _populate_db(provider)
             version_2 = datetime.datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)

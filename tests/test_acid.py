@@ -11,7 +11,6 @@ import sys
 
 import haystackapi
 from haystackapi import VER_3_0, MODE_ZINC, MODE_JSON, XStr, MetadataObject, MODE_CSV
-from .pint_enable import to_pint
 
 STR_CHARSET = string.ascii_letters + string.digits + '\n\r\t\f\b'
 
@@ -101,8 +100,7 @@ def gen_random_num(scale=1000, digits=2):
 
 
 def gen_random_quantity():
-    return haystackapi.Quantity(gen_random_num(),
-                                to_pint('percent'))
+    return haystackapi.Quantity(gen_random_num(), 'degree')
 
 
 def gen_random_list():

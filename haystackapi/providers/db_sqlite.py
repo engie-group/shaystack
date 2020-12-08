@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Any, Optional, List, Tuple, Union
 
-from hszinc import parse_filter, jsondumper, Quantity
-from hszinc.filter_ast import FilterNode, FilterUnary, FilterBinary, FilterPath
+from haystackapi import parse_filter, jsondumper, Quantity
+from haystackapi.filter_ast import FilterNode, FilterUnary, FilterBinary, FilterPath
 
 log = logging.getLogger("sql.Provider")
 

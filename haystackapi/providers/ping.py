@@ -11,7 +11,7 @@ from typing import Tuple, Any, Dict, Union, Optional, List
 import pytz
 from overrides import overrides
 
-from hszinc import Grid, VER_3_0, Ref, Quantity, MARKER
+from haystackapi import Grid, VER_3_0, Ref, Quantity, MARKER
 from .haystack_interface import HaystackInterface
 
 log = logging.getLogger("ping.Provider")

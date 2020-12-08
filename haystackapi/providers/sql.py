@@ -23,7 +23,7 @@ import iso8601
 import pytz
 from overrides import overrides
 
-from hszinc import Grid, Ref, jsondumper, jsonparser, VER_3_0, MetadataObject
+from haystackapi import Grid, Ref, jsondumper, jsonparser, VER_3_0, MetadataObject
 from . import select_grid
 from .haystack_interface import HaystackInterface
 

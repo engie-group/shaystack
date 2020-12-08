@@ -10,10 +10,10 @@ from typing import Optional, cast
 from urllib.parse import urlparse, ParseResult
 
 import click
-from haystackapi.providers import sql
 
-import hszinc
+import haystackapi
 from app.graphql_model import BOTO3_AVAILABLE
+from haystackapi.providers import sql
 from .haystack_interface import get_provider
 
 log = logging.getLogger(__name__)
@@ -55,8 +55,8 @@ def _read_grid(uri):
     if suffix == ".gz":
         suffix = Path(parsed_uri.path).suffixes[-2]
 
-    input_mode = hszinc.suffix_to_mode(suffix)
-    grid = hszinc.parse(data.decode("utf-8-sig"), input_mode)
+    input_mode = haystackapi.suffix_to_mode(suffix)
+    grid = haystackapi.parse(data.decode("utf-8-sig"), input_mode)
     return grid
 
 

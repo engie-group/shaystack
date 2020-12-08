@@ -1,17 +1,15 @@
 language: python
 python:
-  - "2.7"
-  - "3.6"
   - "3.7"
   - "3.8"
-  - "pypy"
+  - "3.9"
   - "pypy3"
 # command to install dependencies
 install:
   - CRYPTOGRAPHY_ALLOW_OPENSSL_102=1 pip install -r requirements.txt
   - CRYPTOGRAPHY_ALLOW_OPENSSL_102=1 pip install pint
 # command to run tests
-script: 
-  - nosetests --with-coverage --cover-package=hszinc --where=tests
+script:
+  - nosetests --with-coverage --cover-package=haystackapi --where=tests
 after_success:
   - coveralls

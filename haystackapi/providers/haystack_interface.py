@@ -14,8 +14,8 @@ from typing import Any, Tuple, Dict, Union, Optional, List, cast
 
 from tzlocal import get_localzone
 
-import hszinc
-from hszinc import Grid, VER_3_0, Uri, Ref, Quantity, parse_date_format
+import haystackapi
+from haystackapi import Grid, VER_3_0, Uri, Ref, Quantity, parse_date_format
 
 log = logging.getLogger("haystackapi")
 
@@ -83,7 +83,7 @@ class HaystackInterface(ABC):
         Return the default 'about' grid.
         Must be completed with "productUri", "productVersion", "moduleName" abd "moduleVersion"
         """
-        grid = hszinc.Grid(
+        grid = haystackapi.Grid(
             version=VER_3_0,
             columns=[
                 "haystackVersion",  # Str version of REST implementation
@@ -121,7 +121,7 @@ class HaystackInterface(ABC):
     def ops(self) -> Grid:
         """ Implement the Haystack 'ops' ops """
         # Automatically calculate the implemented version.
-        grid = hszinc.Grid(
+        grid = haystackapi.Grid(
             version=VER_3_0,
             columns={
                 "name": {},

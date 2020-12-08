@@ -3,8 +3,8 @@ Implementation of Haystack API
 """
 import re
 
-from hszinc import Grid, MetadataObject
-from hszinc.sortabledict import SortableDict
+from haystackapi import Grid, MetadataObject
+from haystackapi.sortabledict import SortableDict
 from .haystack_interface import HaystackInterface, get_provider
 
 __all__ = ["HaystackInterface", "get_provider"]

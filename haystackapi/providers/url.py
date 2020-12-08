@@ -36,8 +36,8 @@ from urllib.parse import urlparse, ParseResult
 import pytz
 from overrides import overrides
 
-import hszinc
-from hszinc import Grid, suffix_to_mode, Ref
+import haystackapi
+from haystackapi import Grid, suffix_to_mode, Ref
 from . import select_grid
 from .haystack_interface import HaystackInterface
 
@@ -323,7 +323,7 @@ class Provider(HaystackInterface):
             raise ValueError(
                 "The file extension must be .(json|zinc|csv)[.gz]"
             )
-        return hszinc.parse(body, mode)
+        return haystackapi.parse(body, mode)
 
     def set_lru_size(self, size):
         self._download_grid_effective_version = functools.lru_cache(size,

@@ -17,7 +17,6 @@ from nose.tools import eq_
 import haystackapi
 from haystackapi.datatypes import XStr, Uri, Bin, MARKER, NA, REMOVE
 from haystackapi.pintutil import to_haystack, to_pint
-from .pint_enable import _enable_pint
 
 
 def check_singleton_deepcopy(a_singleton):
@@ -127,37 +126,35 @@ def test_qty_unary_ops():
     # applied to the Quantity object matches what
     # would be returned for the same operation applied
     # to the raw value.
-    def _check_qty_op(_pint_en, _fn, *vals):
-        _enable_pint(_pint_en)
+    def _check_qty_op(_fn, *vals):
         for val in vals:
             quantity = haystackapi.Quantity(val)
             assert _fn(quantity) == a_lambda(quantity.value)
 
     # Try this both without, and with, pint enabled
-    for pint_en in (False, True):
-        # These work for floats
-        for a_lambda in (
-                int,
-                complex,
-                float,
-                lambda v: -v,
-                lambda v: +v,
-                abs):
-            yield _check_qty_op, pint_en, a_lambda, 123.45, -123.45
+    # These work for floats
+    for a_lambda in (
+            int,
+            complex,
+            float,
+            lambda v: -v,
+            lambda v: +v,
+            abs):
+        yield _check_qty_op, a_lambda, 123.45, -123.45
 
-        # These work for integers
-        for a_lambda in (
-                oct,
-                hex,
-                lambda v: v.__index__(),
-                int,
-                complex,
-                float,
-                lambda v: -v,
-                lambda v: +v,
-                abs,
-                lambda v: ~v,):
-            yield _check_qty_op, pint_en, a_lambda, 123, -123
+    # These work for integers
+    for a_lambda in (
+            oct,
+            hex,
+            lambda v: v.__index__(),
+            int,
+            complex,
+            float,
+            lambda v: -v,
+            lambda v: +v,
+            abs,
+            lambda v: ~v,):
+        yield _check_qty_op, a_lambda, 123, -123
 
         # This only works with Python 2.
         if six.PY2:  # pragma: no cover
@@ -166,30 +163,23 @@ def test_qty_unary_ops():
 
 
 def test_qty_hash():
-    def _check_qty_hash(_pint_en):
-        # Test that independent copies hash to the same value
-        def _check_hash(val, unit=None):
-            quantity_a = haystackapi.Quantity(val, unit=unit)
-            quantity_b = haystackapi.Quantity(val, unit=unit)
+    # Test that independent copies hash to the same value
+    def _check_hash(val, unit=None):
+        quantity_a = haystackapi.Quantity(val, unit=unit)
+        quantity_b = haystackapi.Quantity(val, unit=unit)
 
-            assert quantity_a is not quantity_b
-            assert hash(quantity_a) == hash(quantity_b)
+        assert quantity_a is not quantity_b
+        assert hash(quantity_a) == hash(quantity_b)
 
-        _enable_pint(_pint_en)
-
-        _check_hash(123.45)
-        _check_hash(-123.45)
-        _check_hash(12345)
-        _check_hash(-12345)
-        _check_hash(50, 'Hz')
-
-    for pint_en in (False, True):
-        yield _check_qty_hash, pint_en
+    _check_hash(123.45)
+    _check_hash(-123.45)
+    _check_hash(12345)
+    _check_hash(-12345)
+    _check_hash(50, 'Hz')
 
 
 def test_qty_binary_ops():
-    def _check_qty_op(_pint_en, _fn, _a, _b):
-        _enable_pint(_pint_en)
+    def _check_qty_op(_fn, _a, _b):
         quantity_a = haystackapi.Quantity(_a)
         quantity_b = haystackapi.Quantity(_b)
 
@@ -200,128 +190,117 @@ def test_qty_binary_ops():
         assert _fn(quantity_a, _b) == ref
         assert _fn(_a, quantity_b) == ref
 
-    for pint_en in (False, True):
-        # Try some float values
-        floats = (1.12, 2.23, -4.56, 141.2, -399.5)
-        for small_int_left in floats:
-            for small_int_right in floats:
-                if small_int_left == small_int_right:
-                    continue
+    # Try some float values
+    floats = (1.12, 2.23, -4.56, 141.2, -399.5)
+    for small_int_left in floats:
+        for small_int_right in floats:
+            if small_int_left == small_int_right:
+                continue
 
-                for a_lambda in (lambda a, b: a + b,
-                                 lambda a, b: a - b,
-                                 lambda a, b: a * b,
-                                 lambda a, b: a / b,
-                                 lambda a, b: a // b,
-                                 lambda a, b: a % b,
-                                 divmod,
-                                 lambda a, b: a < b,
-                                 lambda a, b: a <= b,
-                                 lambda a, b: a == b,
-                                 lambda a, b: a != b,
-                                 lambda a, b: a >= b,
-                                 lambda a, b: a > b):
-                    yield _check_qty_op, pint_en, a_lambda, small_int_left, small_int_right
+            for a_lambda in (lambda a, b: a + b,
+                             lambda a, b: a - b,
+                             lambda a, b: a * b,
+                             lambda a, b: a / b,
+                             lambda a, b: a // b,
+                             lambda a, b: a % b,
+                             divmod,
+                             lambda a, b: a < b,
+                             lambda a, b: a <= b,
+                             lambda a, b: a == b,
+                             lambda a, b: a != b,
+                             lambda a, b: a >= b,
+                             lambda a, b: a > b):
+                yield _check_qty_op, a_lambda, small_int_left, small_int_right
 
-        # Exponentiation, we can't use all the values above
-        # as some go out of dates_range.
-        small_floats = tuple(filter(lambda f: abs(f) < 10, floats))
-        for small_int_left in small_floats:
-            for small_int_right in small_floats:
-                if small_int_left == small_int_right:
-                    continue
+    # Exponentiation, we can't use all the values above
+    # as some go out of dates_range.
+    small_floats = tuple(filter(lambda f: abs(f) < 10, floats))
+    for small_int_left in small_floats:
+        for small_int_right in small_floats:
+            if small_int_left == small_int_right:
+                continue
 
-                # Python2 won't allow raising negative numbers
-                # to a fractional power
-                if small_int_left < 0:
-                    continue
+            # Python2 won't allow raising negative numbers
+            # to a fractional power
+            if small_int_left < 0:
+                continue
 
-                yield _check_qty_op, pint_en, lambda a, b: a ** b, small_int_left, small_int_right
+            yield _check_qty_op, lambda a, b: a ** b, small_int_left, small_int_right
 
-        # Try some integer values
-        ints = (1, 2, -4, 141, -399, 0x10, 0xff, 0x55)
-        for small_int_left in ints:
-            for small_int_right in ints:
-                if small_int_left == small_int_right:
-                    continue
+    # Try some integer values
+    ints = (1, 2, -4, 141, -399, 0x10, 0xff, 0x55)
+    for small_int_left in ints:
+        for small_int_right in ints:
+            if small_int_left == small_int_right:
+                continue
 
-                for a_lambda in (lambda a, b: a + b,
-                                 lambda a, b: a - b,
-                                 lambda a, b: a * b,
-                                 lambda a, b: a / b,
-                                 lambda a, b: a // b,
-                                 lambda a, b: a % b,
-                                 divmod,
-                                 lambda a, b: a & b,
-                                 lambda a, b: a ^ b,
-                                 lambda a, b: a | b,
-                                 lambda a, b: a < b,
-                                 lambda a, b: a <= b,
-                                 lambda a, b: a == b,
-                                 lambda a, b: a != b,
-                                 lambda a, b: a >= b,
-                                 lambda a, b: a > b):
-                    yield _check_qty_op, pint_en, a_lambda, small_int_left, small_int_right
+            for a_lambda in (lambda a, b: a + b,
+                             lambda a, b: a - b,
+                             lambda a, b: a * b,
+                             lambda a, b: a / b,
+                             lambda a, b: a // b,
+                             lambda a, b: a % b,
+                             divmod,
+                             lambda a, b: a & b,
+                             lambda a, b: a ^ b,
+                             lambda a, b: a | b,
+                             lambda a, b: a < b,
+                             lambda a, b: a <= b,
+                             lambda a, b: a == b,
+                             lambda a, b: a != b,
+                             lambda a, b: a >= b,
+                             lambda a, b: a > b):
+                yield _check_qty_op, a_lambda, small_int_left, small_int_right
 
-                if small_int_right >= 0:
-                    for a_lambda in (lambda a, b: a << b,
-                                     lambda a, b: a >> b):
-                        yield _check_qty_op, pint_en, a_lambda, small_int_left, small_int_right
+            if small_int_right >= 0:
+                for a_lambda in (lambda a, b: a << b,
+                                 lambda a, b: a >> b):
+                    yield _check_qty_op, a_lambda, small_int_left, small_int_right
 
-        # Exponentiation, we can't use all the values above
-        # as some go out of dates_range.
-        small_ints = tuple(filter(lambda f: abs(f) < 10, ints))
-        for small_int_left in small_ints:
-            for small_int_right in small_ints:
-                if small_int_left == small_int_right:
-                    continue
+    # Exponentiation, we can't use all the values above
+    # as some go out of dates_range.
+    small_ints = tuple(filter(lambda f: abs(f) < 10, ints))
+    for small_int_left in small_ints:
+        for small_int_right in small_ints:
+            if small_int_left == small_int_right:
+                continue
 
-                yield _check_qty_op, pint_en, lambda a, b: a ** b, small_int_left, small_int_right
+            yield _check_qty_op, lambda a, b: a ** b, small_int_left, small_int_right
 
 
 def test_qty_cmp():
-    def _check_qty_cmp(_pint_en):
-        if 'cmp' not in set(locals().keys()):
-            def cmp(_a, _b):
-                return _a.__cmp__(_b)
-        else:
-            cmd = locals()['cmp']  # pylint: disable=W0612
+    if 'cmp' not in set(locals().keys()):
+        def cmp(_a, _b):
+            return _a.__cmp__(_b)
+    else:
+        cmd = locals()['cmp']  # pylint: disable=W0612
 
-        _enable_pint(_pint_en)
+    quantity_1 = haystackapi.Quantity(-3)
+    quantity_2 = haystackapi.Quantity(432)
+    quantity_3 = haystackapi.Quantity(4, unit='A')
+    quantity_4 = haystackapi.Quantity(10, unit='A')
+    quantity_5 = haystackapi.Quantity(12, unit='V')
 
-        quantity_1 = haystackapi.Quantity(-3)
-        quantity_2 = haystackapi.Quantity(432)
-        quantity_3 = haystackapi.Quantity(4, unit='A')
-        quantity_4 = haystackapi.Quantity(10, unit='A')
-        quantity_5 = haystackapi.Quantity(12, unit='V')
+    assert cmp(quantity_1, quantity_2) < 0
+    assert cmp(quantity_2, quantity_1) > 0
+    assert cmp(quantity_1, haystackapi.Quantity(-3)) == 0
+    assert cmp(quantity_3, quantity_4) < 0
+    assert cmp(quantity_4, quantity_3) > 0
+    assert cmp(quantity_3, haystackapi.Quantity(4, unit='A')) == 0
 
-        assert cmp(quantity_1, quantity_2) < 0
-        assert cmp(quantity_2, quantity_1) > 0
-        assert cmp(quantity_1, haystackapi.Quantity(-3)) == 0
-        assert cmp(quantity_3, quantity_4) < 0
-        assert cmp(quantity_4, quantity_3) > 0
-        assert cmp(quantity_3, haystackapi.Quantity(4, unit='A')) == 0
-
-        try:
-            cmp(quantity_3, quantity_5)
-        except TypeError as ex:
-            assert str(ex) == 'Quantity units differ: A vs V'
-
-    for pint_en in (False, True):
-        yield _check_qty_cmp, pint_en
+    try:
+        cmp(quantity_3, quantity_5)
+    except TypeError as ex:
+        assert str(ex) == 'Quantity units differ: A vs V'
 
 
 def test_qty_std_method():
-    def _check_qty_cmp(_pint_en):
-        quantity_repr = repr(haystackapi.Quantity(4, unit='A'))
-        if six.PY2:
-            assert quantity_repr in ("BasicQuantity(4, u\'A\')", "PintQuantity(4, u\'A\')")
-        else:
-            assert quantity_repr in ("BasicQuantity(4, \'A\')", "PintQuantity(4, \'A\')")
-            assert str(haystackapi.Quantity(4, unit='A')) == '4 A'
-
-        yield _check_qty_cmp, True
-        yield _check_qty_cmp, False
+    quantity_repr = repr(haystackapi.Quantity(4, unit='A'))
+    if six.PY2:
+        assert quantity_repr in ("BasicQuantity(4, u\'A\')", "PintQuantity(4, u\'A\')")
+    else:
+        assert quantity_repr in ("BasicQuantity(4, \'A\')", "PintQuantity(4, \'A\')")
+        assert str(haystackapi.Quantity(4, unit='A')) == '4 A'
 
 
 class MyCoordinate:

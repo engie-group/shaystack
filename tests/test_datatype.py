@@ -11,12 +11,10 @@ import binascii
 import random
 from copy import copy, deepcopy
 
-import six
-from nose.tools import eq_
-
 import haystackapi
 from haystackapi.datatypes import XStr, Uri, Bin, MARKER, NA, REMOVE
 from haystackapi.pintutil import to_haystack, to_pint
+from nose.tools import eq_
 
 
 def check_singleton_deepcopy(a_singleton):
@@ -115,10 +113,7 @@ def test_ref_hash():
 
 
 def test_ref_std_method():
-    if six.PY2:
-        assert str(haystackapi.Ref(name='a.ref', value='display text')) == '@a.ref u\'display text\''
-    else:
-        assert str(haystackapi.Ref(name='a.ref', value='display text')) == '@a.ref \'display text\''
+    assert str(haystackapi.Ref(name='a.ref', value='display text')) == '@a.ref \'display text\''
 
 
 def test_qty_unary_ops():
@@ -155,11 +150,6 @@ def test_qty_unary_ops():
             abs,
             lambda v: ~v,):
         yield _check_qty_op, a_lambda, 123, -123
-
-        # This only works with Python 2.
-        if six.PY2:  # pragma: no cover
-            a_lambda = long
-            yield _check_qty_op, pint_en, a_lambda, 123.45, -123.45
 
 
 def test_qty_hash():
@@ -296,11 +286,8 @@ def test_qty_cmp():
 
 def test_qty_std_method():
     quantity_repr = repr(haystackapi.Quantity(4, unit='A'))
-    if six.PY2:
-        assert quantity_repr in ("BasicQuantity(4, u\'A\')", "PintQuantity(4, u\'A\')")
-    else:
-        assert quantity_repr in ("BasicQuantity(4, \'A\')", "PintQuantity(4, \'A\')")
-        assert str(haystackapi.Quantity(4, unit='A')) == '4 A'
+    assert quantity_repr in ("BasicQuantity(4, \'A\')", "PintQuantity(4, \'A\')")
+    assert str(haystackapi.Quantity(4, unit='A')) == '4 A'
 
 
 class MyCoordinate:
@@ -364,8 +351,6 @@ def test_coord_hash():
 def test_coord_default_method():
     coord = haystackapi.Coordinate(latitude=33.77, longitude=-77.45)
     ref_str = u'33.770000° lat -77.450000° long'
-    if six.PY2:
-        ref_str = ref_str.encode('utf-8')
 
     eq_(repr(coord), 'Coordinate(33.77, -77.45)')
     eq_(str(coord), ref_str)
@@ -396,19 +381,13 @@ def test_xstr_equal():
 def test_uri():
     uri = Uri("abc")
     assert uri == Uri("abc")
-    if six.PY2:
-        assert repr(uri) == 'Uri(u\'abc\')'
-    else:
-        assert repr(uri) == 'Uri(\'abc\')'
+    assert repr(uri) == 'Uri(\'abc\')'
     assert str(uri) == 'abc'
 
 
 def test_bin():
     hs_bin = Bin("text/plain")
-    if six.PY2:
-        assert repr(hs_bin) == 'Bin(u\'text/plain\')'
-    else:
-        assert repr(hs_bin) == 'Bin(\'text/plain\')'
+    assert repr(hs_bin) == 'Bin(\'text/plain\')'
     assert str(hs_bin) == 'text/plain'
 
 

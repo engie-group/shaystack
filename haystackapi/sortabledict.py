@@ -82,7 +82,7 @@ class SortableDict(col.MutableMapping):
         if pos_key is not None:
             try:
                 index = self.index(pos_key)
-            except ValueError:
+            except ValueError as e:
                 six.reraise(KeyError,
                             KeyError('%r not found' % pos_key),
                             sys.exc_info()[2])

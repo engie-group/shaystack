@@ -11,8 +11,6 @@ import datetime
 import functools
 import re
 
-import six
-
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
     MARKER, NA, REMOVE, STR_SUB, XStr
 from .grid import Grid
@@ -141,7 +139,7 @@ def dump_scalar(scalar, version=LATEST_VER):
         return dump_xstr(scalar)
     if isinstance(scalar, Uri):
         return dump_uri(scalar)
-    if isinstance(scalar, six.string_types):
+    if isinstance(scalar, str):
         return dump_str(scalar)
     if isinstance(scalar, datetime.datetime):
         return dump_date_time(scalar)

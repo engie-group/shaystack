@@ -12,7 +12,6 @@ import re
 import sys
 
 import iso8601
-import six
 
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
     MARKER, NA, REMOVE, XStr
@@ -49,7 +48,7 @@ STR_ESC_RE = re.compile(r'\\([bfnrt"\\$]|u[0-9a-fA-F]{4})')
 
 def parse_grid(grid_str):
     # Grab the metadata
-    if isinstance(grid_str, six.string_types):
+    if isinstance(grid_str, str):
         parsed = json.loads(grid_str)
     else:
         parsed = copy.deepcopy(grid_str)
@@ -138,7 +137,7 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
         return float('nan')
     # Conversion to dict of float value turn them into float
     # so regex won't work... better just return them
-    if isinstance(scalar, (float, six.integer_types)):
+    if isinstance(scalar, (float, int)):
         return scalar
 
     # Is it a number?
@@ -230,7 +229,7 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
 
 def parse_scalar(scalar, version=LATEST_VER):
     # If we're given a string, decode the JSON data.
-    if isinstance(scalar, six.text_type) and \
+    if isinstance(scalar, str) and \
             (len(scalar) >= 2) and \
             (scalar[0] in ('"', '[', '{')) and \
             (scalar[-1] in ('"', ']', '}')):

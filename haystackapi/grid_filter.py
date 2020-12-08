@@ -4,7 +4,6 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 from datetime import datetime
 
-import six
 from iso8601 import iso8601
 from pyparsing import Word, ZeroOrMore, Literal, Forward, Combine, Optional, Regex, OneOrMore, \
     CaselessLiteral, Suppress, Group
@@ -38,8 +37,7 @@ hs_decimal = Combine(
     lambda toks: float(toks[0])
 )
 hs_unitChar = hs_alpha | Word(u'%_/$' + u''.join([
-    six.unichr(c)
-    for c in range(0x0080, 0xffff)
+    chr(c) for c in range(0x0080, 0xffff)
 ]), exact=1)
 hs_unit = Combine(OneOrMore(hs_unitChar))
 hs_digit = Regex(r'\d')

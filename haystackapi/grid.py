@@ -12,12 +12,11 @@ import logging
 import numbers
 
 import pytz
-import six
 
 from .datatypes import NA, Quantity, Coordinate, Ref
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
-from .version import Version, VER_3_0, VER_2_0
+from .version import Version, VER_3_0
 
 log = logging.getLogger("ping.Provider")
 
@@ -45,8 +44,7 @@ class Grid(col.MutableSequence):
         if version_given:
             version = Version(version)
         else:
-            version = VER_2_0
-            # version = VER_3_0  # TODO: set default version to 3
+            version = VER_3_0
         self._version = version
         self._version_given = version_given
 
@@ -88,8 +86,7 @@ class Grid(col.MutableSequence):
             return abs(version_1 - version_2) < 0.000001
         # pylint: disable=C0123
         if type(version_1) != type(version_2) and \
-                not (isinstance(version_1, six.string_types) and isinstance(version_2,
-                                                                            six.string_types)):
+                not (isinstance(version_1, str) and isinstance(version_2, str)):
             return False
         # pylint: enable=C0123
         if isinstance(version_1, datetime.time):

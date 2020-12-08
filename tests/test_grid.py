@@ -116,13 +116,13 @@ def test_grid_append_v2_list_fail():
 
 def test_grid_append_nover_list():
     grid = Grid(version=None)
-    assert grid.version == Version('2.0')
+    assert grid.version == Version('3.0')
     grid.column['test'] = {}
 
     row_1 = {'test': 'This is a test'}
     row_2 = {'test': ['This should fail']}
     grid.append(row_1)
-    assert grid.version == Version('2.0')
+    assert grid.version == Version('3.0')
     grid.append(row_2)
     assert grid.version == Version('3.0')
 

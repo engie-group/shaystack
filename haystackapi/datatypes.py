@@ -6,9 +6,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 import base64
 import binascii
-import locale
 import re
-import sys
 from abc import ABCMeta
 
 import six
@@ -67,11 +65,6 @@ class Qty:
 
     def __int__(self):  # pragma: no cover
         return int(self.value)
-
-    if six.PY2:  # pragma: no cover
-        # Python 3 doesn't have 'long'
-        def __long__(self):
-            return long(self.value)  # noqa: F821
 
     def __complex__(self):
         return complex(self.value)
@@ -313,11 +306,6 @@ class Coordinate:
         )
 
     def __str__(self):
-        if six.PY2:  # pragma: no cover
-            return u'%f\N{DEGREE SIGN} lat %f\N{DEGREE SIGN} long'.encode(
-                locale.getpreferredencoding()) % (
-                       round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
-                   )
         return (u'%f\N{DEGREE SIGN} lat %f\N{DEGREE SIGN} long' % (
             round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
         ))
@@ -337,7 +325,7 @@ class Coordinate:
         return hash(self.latitude) ^ hash(self.longitude)
 
 
-class Uri(six.text_type):
+class Uri(str):
     """
     A convenience class to allow identification of a URI from other string
     types.
@@ -353,7 +341,7 @@ class Uri(six.text_type):
         return super(Uri, self).__eq__(other)
 
 
-class Bin(six.text_type):
+class Bin(str):
     """
     A convenience class to allow identification of a Bin from other string
     types.
@@ -377,15 +365,9 @@ class XStr:
     def __init__(self, encoding, data):
         self.encoding = encoding
         if encoding == "hex":
-            if six.PY2:  # pragma: no cover
-                self.data = binascii.a2b_hex(data)
-            else:
-                self.data = bytearray.fromhex(data)
+            self.data = bytearray.fromhex(data)
         elif encoding == "b64":
-            if six.PY2:  # pragma: no cover
-                self.data = data.decode('base64')
-            else:
-                self.data = base64.b64decode(data)
+            self.data = base64.b64decode(data)
         else:
             self.data = data  # Not decoded
 
@@ -393,10 +375,6 @@ class XStr:
         if self.encoding == "hex":
             return binascii.b2a_hex(self.data).decode("ascii")
         if self.encoding == "b64":
-            if six.PY2:  # pragma: no cover
-                return binascii.b2a_base64(self.data)[:-1]
-            if sys.version_info[0:2] <= (3, 6):
-                return binascii.b2a_base64(self.data).decode("ascii").replace('\n', '')
             return binascii.b2a_base64(self.data, newline=False).decode("ascii")
         return self.data
 
@@ -466,7 +444,7 @@ class Ref:
     # distinct from the reference name itself immediately following the @
     # symbol.  I'm guessing it's some kind of value.
     def __init__(self, name, value=None, has_value=False):
-        assert isinstance(name, six.string_types) and re.match("^[a-zA-Z0-9_:\\-.~]+$", name)
+        assert isinstance(name, str) and re.match("^[a-zA-Z0-9_:\\-.~]+$", name)
         self.name = name
         self.value = value
         self.has_value = has_value or (value is not None)

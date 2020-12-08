@@ -9,8 +9,6 @@ import json
 import logging
 import re
 
-import six
-
 from .csvparser import parse_grid as parse_csv_grid
 from .csvparser import parse_scalar as parse_csv_scalar
 from .jsonparser import parse_grid as parse_json_grid, \
@@ -85,7 +83,7 @@ def parse(grid_str, mode=MODE_ZINC, charset='utf-8', single=True):
     mode = _parse_mode(mode)
 
     # Decode incoming text (or python3 will whine!)
-    if isinstance(grid_str, six.binary_type):
+    if isinstance(grid_str, bytes):
         grid_str = grid_str.decode(encoding=charset)
 
     # Split the separate grids up, the grammar definition has trouble splitting
@@ -94,7 +92,7 @@ def parse(grid_str, mode=MODE_ZINC, charset='utf-8', single=True):
     _parse = functools.partial(parse_grid, mode=mode,
                                charset=charset)
     if mode == MODE_JSON:
-        if isinstance(grid_str, six.string_types):
+        if isinstance(grid_str, str):
             grid_data = json.loads(grid_str)
         else:
             grid_data = grid_str
@@ -124,7 +122,7 @@ def parse_grid(grid_str, mode=MODE_ZINC, charset='utf-8'):
     mode = _parse_mode(mode)
 
     # Decode incoming text
-    if isinstance(grid_str, six.binary_type):  # pragma: no cover
+    if isinstance(grid_str, bytes):  # pragma: no cover
         # No coverage here, because it *should* be handled above unless the user
         # is preempting us by calling `parse_grid` directly.
         grid_str = grid_str.decode(encoding=charset)
@@ -147,7 +145,7 @@ def parse_scalar(scalar, mode=MODE_ZINC, version=LATEST_VER, charset='utf-8'):
         version = Version(version)
 
     # Decode incoming text
-    if isinstance(scalar, six.binary_type):
+    if isinstance(scalar, bytes):
         scalar = scalar.decode(encoding=charset)
 
     if mode == MODE_ZINC:

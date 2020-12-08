@@ -43,7 +43,7 @@ CHAR_NUM_RE = re.compile(r' *\(at char \d+\),')
 
 
 def reformat_exception(ex_msg, line_num=None):
-    msg = CHAR_NUM_RE.sub(u'', six.text_type(ex_msg))
+    msg = CHAR_NUM_RE.sub(u'', str(ex_msg))
     if line_num is not None:
         return msg.replace(u'line:1', u'line:%d' % line_num)
     return msg
@@ -172,7 +172,7 @@ def _unescape(a_string, uri=False):
 
             if esc_c in ('u', 'U'):
                 # Unicode escape
-                out += six.unichr(int(a_string[2:6], base=16))
+                out += chr(int(a_string[2:6], base=16))
                 a_string = a_string[6:]
                 continue
             if esc_c == 'b':
@@ -334,7 +334,7 @@ hs_dateTime = And([
 hs_unitChar = Or([
     hs_alpha,
     Word(u'%_/$' + u''.join([
-        six.unichr(c)
+        chr(c)
         for c in range(0x0080, 0xffff)
     ]), exact=1)
 ])
@@ -485,7 +485,7 @@ def to_dict(token_list):
             next(iterator)
             next(iterator)
         else:
-            if isinstance(tok, six.string_types):
+            if isinstance(tok, str):
                 result[tok] = MARKER
             elif isinstance(tok, tuple):
                 result[tok[0]] = tok[1]
@@ -498,7 +498,7 @@ def to_dict(token_list):
 # def to_dict(token_list):
 #     result = {}
 #     for i, tok in enumerate(token_list):
-#         if isinstance(tok, six.string_types):
+#         if isinstance(tok, str):
 #             result[tok] = MARKER
 #         else:
 #             result[tok[0]] = tok[1]

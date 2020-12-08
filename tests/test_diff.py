@@ -294,7 +294,6 @@ def test_diff_remove_record_without_id():
     right.append({"a": 5, "b": 6})
 
     diff = grid_diff(left, right)
-    print(diff)
     assert len(diff) == 3
     assert len(diff[0].keys()) == 3
     assert diff[0]['a'] == 1

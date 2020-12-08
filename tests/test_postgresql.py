@@ -591,7 +591,6 @@ def test_greater_or_equal_quantity():
 def test_path_equal_quantity():
     hs_filter = 'siteRef->temp == 55400deg'
     sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
-    print(sql_request)
     assert sql_request == textwrap.dedent("""\
         -- siteRef->temp == 55400deg
         SELECT t1.entity

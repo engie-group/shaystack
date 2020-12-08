@@ -148,6 +148,9 @@ dump-params:
 	echo AWS_STAGE='$(AWS_STAGE)'
 
 # -------------------------------------- GIT
+.env:
+	touch .env
+
 .git/config: | .git .git/hooks/pre-push # Configure git
 	@git config --local core.autocrlf input
 	# Set tabulation to 4 when use 'git diff'
@@ -481,9 +484,9 @@ aws-logs:
 
 # -------------------------------------- Tests
 .PHONY: unit-test
-.make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile .env
+.make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile | .env
 	@$(VALIDATE_VENV)
-	PYTHONPATH=tests:. $(CONDA_PYTHON) -m nosetests -s tests $(NOSETESTS_ARGS)
+	PYTHONPATH=tests:. $(CONDA_PYTHON) -m nose -s tests $(NOSETESTS_ARGS)
 	date >.make-unit-test
 ## Run unit test
 unit-test: .make-unit-test

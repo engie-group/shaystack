@@ -33,7 +33,6 @@ def test_all_units():
             #     assert to_pint(to_haystack(each)) == each
             quantity = haystackapi.Quantity(1, each)
             defined.append(each)
-            print(each, quantity)
         except UndefinedUnitError as error:
             not_defined.append(each)
             print(error, each)

@@ -352,7 +352,7 @@ def test_oddball_version_zinc():
 
 def test_unsupported_bleedingedge_zinc():
     with warnings.catch_warnings(record=True):
-        warnings.simplefilter("always")
+        warnings.simplefilter("ignore", category=DeprecationWarning)
         grid = haystackapi.parse(textwrap.dedent('''
             ver:"9999.9999"
             comment

@@ -258,3 +258,4 @@ PPR*
 *.zip
 zappa_haystackapi.json
 tests/data/
+.okta_aws_login_config

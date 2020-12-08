@@ -11,7 +11,7 @@ endif
 
 PRJ?=haystackapi
 HAYSTACK_PROVIDER?=haystackapi.providers.ping
-HAYSTACK_URL=sample/carytown.zinc
+HAYSTACK_URL?=sample/carytown.zinc
 HAYSTACK_DB?=sqlite3:///:memory:#haystack
 USE_OKTA?=N
 AWS_PROFILE?=default
@@ -262,7 +262,6 @@ clean-zappa:
 ## Clean project
 clean: async-stop clean-zappa
 	@rm -rf bin/* .mypy_cache .pytest_cache .start build nohup.out dist .make-* .pytype out.json
-	@rm test/
 
 .PHONY: clean-all
 # Clean all environments

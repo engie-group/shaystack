@@ -65,6 +65,7 @@ def _read_grid(uri):
 def import_in_db(source: str,
                  destination: str,
                  customer_id: str = '',
+                 time_series: bool = True,
                  reset: bool = False,
                  version: Optional[datetime] = None):
     os.environ["HAYSTACK_DB"] = destination
@@ -102,13 +103,13 @@ def aws_handler(event, context):
 @click.option("--customer",
               help='Data for a dedicated customer',
               )
-@click.option("--clean",
-              help='Clean the database before import the first version',
-              is_flag=True)
 @click.option("--time-series/--no-time-series",
               help='Compare grid before upload datas',
               default=True
               )
+@click.option("--clean",
+              help='Clean the database before import the first version',
+              is_flag=True)
 def main(haystack_url: str, database_url: str, customer: Optional[str], clean: bool, time_series: bool) -> int:
     """
     Import haystack file for file or URL, to database, to be used with sql provider.
@@ -118,7 +119,7 @@ def main(haystack_url: str, database_url: str, customer: Optional[str], clean: b
         customer = ''
     if clean is None:
         clean = False
-    import_in_db(haystack_url, database_url, customer, clean)
+    import_in_db(haystack_url, database_url, customer, time_series, clean)
     print(f"{haystack_url} imported in {database_url}")
     return 0
 

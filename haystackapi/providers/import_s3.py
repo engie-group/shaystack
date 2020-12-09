@@ -1,5 +1,6 @@
 import base64
 import gzip
+import gzip as gz
 import logging
 import os
 import sys
@@ -10,6 +11,7 @@ from multiprocessing.dummy import freeze_support
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from threading import Lock
+from typing import Tuple
 from urllib.parse import ParseResult, urlparse
 
 import boto3
@@ -17,7 +19,7 @@ import click
 from botocore.exceptions import ClientError
 
 import haystackapi
-from haystackapi import EmptyGrid
+from haystackapi import EmptyGrid, Grid
 from haystackapi.zincparser import ZincParseException
 
 log = logging.getLogger("import_s3")
@@ -67,18 +69,49 @@ def _get_hash_of_s3_file(s3_client,
             raise
 
 
+def merge_timeseries(source_grid: Grid,
+                     destination_grid: Grid,
+                     mode: str,
+                     compress: bool) -> Tuple[bytes, str]:
+    """ Merge time series.
+        If the destination time series has older values, insert these values at the beginning
+        of the current time series.
+        It is not to forget values
+    """
+    assert 'ts' in source_grid.column, "The source grid must have ts,value columns"
+    if 'ts' in destination_grid.column:
+        # destination_grid = destination_grid.copy()  # FIXME
+        # destination_grid[0]['ts'] = destination_grid[0]['ts'] - timedelta(seconds=20)  # FIXME: Bug injecté
+        if id(destination_grid) != id(source_grid):
+            destination_grid.sort('ts')
+            source_grid.sort('ts')
+            start_source = source_grid[0]['ts']
+            source_grid.extend(filter(lambda row: row['ts'] < start_source, destination_grid))
+            source_grid.sort('ts')
+
+    source_data = haystackapi.dump(source_grid, mode).encode('UTF8')
+    if compress:
+        source_data = gz.compress(source_data)
+    md5_digest = md5(source_data)
+    b64_digest = base64.b64encode(md5_digest.digest()).decode("UTF8")
+    return source_data, b64_digest
+
+
 def update_grid_on_s3(parsed_source: ParseResult,
                       parsed_destination: ParseResult,
                       compare_grid: bool,
                       time_series: bool,
                       force: bool,
+                      merge_ts: bool,
+                      use_thread: bool = True
                       ) -> None:
-    log.info("update %s", (parsed_source.geturl(),))
+    log.debug("update %s", (parsed_source.geturl(),))
     s3_client = boto3.client(
         "s3",
         endpoint_url=os.environ.get("AWS_S3_ENDPOINT", None),
     )
     suffix = Path(parsed_source.path).suffix
+    gz = False
     if parsed_source.scheme == 's3' and not compare_grid:
         if time_series:
             source_data = _download_uri(parsed_source)
@@ -107,9 +140,10 @@ def update_grid_on_s3(parsed_source: ParseResult,
         source_etag = ''
         if not force:
             source_etag = md5_digest.hexdigest()
-        if time_series or compare_grid:
+        if time_series or compare_grid or merge_ts:
             unzipped_source_data = source_data
             if suffix == ".gz":
+                gz = True
                 unzipped_source_data = gzip.decompress(source_data)
                 suffix = Path(parsed_source.path).suffixes[-2]
 
@@ -142,6 +176,10 @@ def update_grid_on_s3(parsed_source: ParseResult,
                 destination_grid = EmptyGrid
 
         if force or not compare_grid or len(destination_grid - source_grid):
+            if not force and merge_ts:
+                source_data, b64_digest = merge_timeseries(source_grid,
+                                                           destination_grid,
+                                                           haystackapi.suffix_to_mode(suffix), gz)
             s3_client.put_object(Body=source_data,
                                  Bucket=parsed_destination.hostname,
                                  Key=parsed_destination.path[1:],
@@ -152,7 +190,6 @@ def update_grid_on_s3(parsed_source: ParseResult,
             log.debug("%s not modified (same grid)", parsed_source.geturl())
 
     # Now, it's time to upload the referenced time-series
-    THREAD = True
     if time_series:
         source_url = parsed_source.geturl()
         source_home = source_url[0:source_url.rfind('/') + 1]
@@ -163,20 +200,22 @@ def update_grid_on_s3(parsed_source: ParseResult,
             if "hisURI" in row:
                 source_time_serie = source_home + row["hisURI"]
                 destination_time_serie = destination_home + row["hisURI"]
-                if THREAD:
+                if use_thread:
                     requests.append((
                         urlparse(source_time_serie),
                         urlparse(destination_time_serie),
                         False,
                         False,
-                        force))
+                        force,
+                        True))
                 else:
                     update_grid_on_s3(
                         urlparse(source_time_serie),
                         urlparse(destination_time_serie),
                         compare_grid=False,
                         time_series=False,
-                        force=force)
+                        force=force,
+                        merge_ts=True)
         if requests:
             with ThreadPool(processes=POOL_SIZE) as pool:
                 pool.starmap(update_grid_on_s3, requests)
@@ -202,6 +241,7 @@ def import_in_s3(source: str,
                       compare,
                       time_series,
                       force,
+                      merge_ts=False
                       )
 
 
@@ -235,13 +275,15 @@ def aws_handler(event, context):
               default=True
               )
 @click.option("--force/--no-force",
-              help='Force to upload datas',
+              help='Force to upload data without verifications or update',
               default=False
               )
 def main(source_url: str, target_url: str, compare: bool, time_series: bool, force: bool) -> int:
     """
-    Import haystack file for file or URL, to database, to be used with sql provider.
+    Import haystack file for file or URL, to s3 bucket.
     Only the difference was imported, with a new version of ontology.
+    If the destination time series exists, and old values are present, they are recovered
+    at the beginning of the grid.
     """
     try:
         import_in_s3(source_url, target_url, compare, time_series, force)

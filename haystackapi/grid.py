@@ -390,6 +390,9 @@ class Grid(col.MutableSequence):
                 self._index[item["id"]] = item
         return self
 
+    def sort(self, tag):
+        self._row = sorted(self._row, key=lambda row: row[tag])
+
     def copy(self):
         a_copy = copy.deepcopy(self)
         a_copy._index = None  # Remove index

@@ -45,6 +45,7 @@ __author__ = 'Ph. Prados, VRT Systems'
 __copyright__ = 'Copyright 2016-2020, Ph. Prados & VRT System'
 __credits__ = ['Philippe PRADOS',
                'VRT Systems',
+               'Engie digital'
                'Christian Tremblay',
                'SamuelToh',
                'Stuart Longland',
@@ -52,5 +53,5 @@ __credits__ = ['Philippe PRADOS',
                ]
 __license__ = 'BSD'
 __version__ = '0.1'
-__maintainer__ = 'Ph. PRADOS'
+__maintainer__ = 'Philippe PRADOS'
 __email__ = 'haystackapi@prados.fr'

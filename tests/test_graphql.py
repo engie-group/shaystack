@@ -134,16 +134,11 @@ def test_versions(mock_s3, mock_get_url):
         ''')
         assert executed == \
                {'data':
-                   {'haystack':
-                       {'versions':
-                           [
-                               '2020-10-01 00:00:03+00:00',
-                               '2020-10-01 00:00:02+00:00',
-                               '2020-10-01 00:00:01+00:00'
-                           ]
-                       }
-                   }
-               }
+                    {'haystack':
+                         {'versions':
+                              ['2020-10-01T00:00:03+00:00 UTC',
+                               '2020-10-01T00:00:02+00:00 UTC',
+                               '2020-10-01T00:00:01+00:00 UTC']}}}
 
 
 @patch.object(Provider, '_get_url')
@@ -274,29 +269,16 @@ def test_his_read_with_boolean(mock_s3, mock_get_url):
         }
         ''')
         assert executed == \
-               {'data': {'haystack': {'histories':
-                   [[
-                       {'ts': '2020-01-01 00:00:00+00:00',
-                        'val': 'm:',
-                        'bool': True,
-                        },
-                       {'ts': '2020-01-01 00:00:00+00:00',
-                        'val': False,
-                        'bool': False,
-                        },
-                       {'ts': '2020-01-01 00:00:00+00:00',
-                        'val': 'n:1.000000',
-                        'bool': True,
-                        },
-                       {'ts': '2020-01-01 00:00:00+00:00',
-                        'val': 'n:1.000000',
-                        'bool': True,
-                        },
-                       {'ts': '2020-01-01 00:00:00+00:00',
-                        'val': 's:',
-                        'bool': False,
-                        }
-                   ]]}}}
+               {'data': {'haystack':
+                             {'histories': [[{'ts': '2020-01-01T00:00:00+00:00 UTC', 'val': 'm:', 'bool': True},
+                                             {'ts': '2020-01-01T00:00:00+00:00 UTC', 'val': False,
+                                              'bool': False},
+                                             {'ts': '2020-01-01T00:00:00+00:00 UTC', 'val': 'n:1.000000',
+                                              'bool': True},
+                                             {'ts': '2020-01-01T00:00:00+00:00 UTC', 'val': 'n:1.000000',
+                                              'bool': True},
+                                             {'ts': '2020-01-01T00:00:00+00:00 UTC', 'val': 's:',
+                                              'bool': False}]]}}}
 
 
 @patch.object(Provider, '_get_url')
@@ -330,16 +312,15 @@ def test_his_read_with_number(mock_s3, mock_get_url):
         }
         ''')
         assert executed == \
-               {'data': {'haystack': {'histories':
-                   [[
-                       {
-                           'ts': '2020-01-01 00:00:00+00:00',
-                           'val': 'n:3.500000',
-                           "int": 3,
-                           "float": 3.5,
-                           "str": "3.5"
-                       }
-                   ]]}}}
+               {'data':
+                   {'haystack':
+                       {'histories':
+                           [[
+                               {'ts': '2020-01-01T00:00:00+00:00 UTC',
+                                'val': 'n:3.500000',
+                                'int': 3,
+                                'float': 3.5,
+                                'str': '3.5'}]]}}}
 
 
 @patch.object(Provider, '_get_url')
@@ -370,14 +351,11 @@ def test_his_read_with_uri(mock_s3, mock_get_url):
         }
         ''')
         assert executed == \
-               {'data': {'haystack': {'histories':
-                   [[
-                       {
-                           'ts': '2020-01-01 00:00:00+00:00',
-                           'val': 'u:http://localhost',
-                           'uri': 'http://localhost',
-                       }
-                   ]]}}}
+               {'data':
+                    {'haystack':
+                         {'histories':
+                              [[{'ts': '2020-01-01T00:00:00+00:00 UTC',
+                                 'val': 'u:http://localhost', 'uri': 'http://localhost'}]]}}}
 
 
 @patch.object(Provider, '_get_url')
@@ -408,14 +386,12 @@ def test_his_read_with_ref(mock_s3, mock_get_url):
         }
         ''')
         assert executed == \
-               {'data': {'haystack': {'histories':
-                   [[
-                       {
-                           'ts': '2020-01-01 00:00:00+00:00',
-                           'val': 'r:id1',
-                           'ref': '@id1',
-                       }
-                   ]]}}}
+               {'data':
+                    {'haystack':
+                         {'histories':
+                              [[{'ts': '2020-01-01T00:00:00+00:00 UTC',
+                                 'val': 'r:id1',
+                                 'ref': '@id1'}]]}}}
 
 
 @patch.object(Provider, '_get_url')
@@ -424,7 +400,8 @@ def test_his_read_with_ref(mock_s3, mock_get_url):
 def test_his_read_with_datetime(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     his = Grid(version=VER_3_0, columns=["ts", "val"])
-    his.append({"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": datetime(2020, 1, 1, tzinfo=pytz.utc)})
+    his.append({"ts": datetime(2020, 1, 1, tzinfo=pytz.utc),
+                "val": datetime(2020, 1, 1, tzinfo=pytz.utc)})
     mock_s3.return_value.history = his
     mock_s3.return_value.his_count = 300
     mock_get_url.return_value = "s3://bucket/grid.zinc"
@@ -442,19 +419,19 @@ def test_his_read_with_datetime(mock_s3, mock_get_url):
                     val
                     date
                     time
-                    datetime
+                    #datetime
                 }
             }
         }
         ''')
         assert executed == \
-               {'data': {
-                   'haystack': {
-                       'histories': [
-                           [{'ts': '2020-01-01 00:00:00+00:00',
-                             'val': 't:2020-01-01T00:00:00+00:00 UTC',
-                             'date': '2020-01-01 00:00:00+00:00', 'time': '00:00:00',
-                             'datetime': '2020-01-01 00:00:00+00:00'}]]}}}
+               {'data':
+                    {'haystack':
+                         {'histories':
+                              [[{'ts': '2020-01-01T00:00:00+00:00 UTC',
+                                 'val': 't:2020-01-01T00:00:00+00:00 UTC',
+                                 'date': '2020-01-01T00:00:00+00:00',
+                                 'time': '00:00:00'}]]}}}
 
 
 @patch.object(Provider, '_get_url')
@@ -485,11 +462,8 @@ def test_his_read_with_coordinate(mock_s3, mock_get_url):
         }
         ''')
         assert executed == \
-               {'data': {'haystack': {'histories':
-                   [[
-                       {
-                           'ts': '2020-01-01 00:00:00+00:00',
-                           'val': 'c:100.000000,150.000000',
-                           'coord': {'lat': 100.0, 'long': 150.0},
-                       }
-                   ]]}}}
+               {'data':
+                    {'haystack':
+                         {'histories':
+                              [[{'ts': '2020-01-01T00:00:00+00:00 UTC', 'val': 'c:100.000000,150.000000',
+                                 'coord': {'lat': 100.0, 'long': 150.0}}]]}}}

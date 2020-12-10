@@ -464,9 +464,7 @@ class Ref:
     def __eq__(self, other):
         if not isinstance(other, Ref):
             return NotImplemented
-        return (self.name == other.name) and \
-               (self.has_value == other.has_value) and \
-               (self.value == other.value)
+        return (self.name == other.name)
 
     def __ne__(self, other):
         if not isinstance(other, Ref):
@@ -486,4 +484,4 @@ class Ref:
         return self.name.__ge__(other.name)
 
     def __hash__(self):
-        return hash(self.name) ^ hash(self.value) ^ hash(self.has_value)
+        return hash(self.name)

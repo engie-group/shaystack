@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Any, Optional, List, Tuple, Union
 
+import pytz
+
 from haystackapi import parse_filter, jsondumper, Quantity
 from haystackapi.filter_ast import FilterNode, FilterUnary, FilterBinary, FilterPath
 
@@ -266,6 +268,11 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
     return {
         "sql_type_to_json": lambda x: json.loads(x),
         "exec_sql_filter": _exec_sql_filter,
+        "field_to_datetime_tz": lambda val:
+        datetime.strptime(val, "%Y-%m-%d %H:%M:%S").replace(tzinfo=pytz.utc),
+        "datetime_tz_to_field": lambda dt: datetime(dt.year, dt.month, dt.day,
+                                                    dt.hour, dt.minute, dt.second, dt.microsecond,
+                                                    tzinfo=dt.tzinfo).replace(tzinfo=pytz.utc).isoformat(),
         "CREATE_HAYSTACK_TABLE": textwrap.dedent(f'''
             CREATE TABLE IF NOT EXISTS {table_name}
                 (
@@ -277,7 +284,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
                 );
             '''),
         "CREATE_HAYSTACK_INDEX_1": textwrap.dedent(f'''
-            CREATE INDEX IF NOT EXISTS {table_name}_index ON {table_name}(id)
+            CREATE INDEX IF NOT EXISTS {table_name}_index ON {table_name}(id, customer_id)
             '''),
         "CREATE_HAYSTACK_INDEX_2": textwrap.dedent(f'''
             '''),
@@ -312,17 +319,17 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
             '''),
         "SELECT_ENTITY": textwrap.dedent(f'''
             SELECT entity FROM {table_name}
-            WHERE ? BETWEEN start_datetime AND end_datetime
+            WHERE datetime(?) BETWEEN datetime(start_datetime) AND datetime(end_datetime)
             AND customer_id = ?
             '''),
         "SELECT_ENTITY_WITH_ID": textwrap.dedent(f'''
             SELECT entity FROM {table_name}
-            WHERE ? BETWEEN start_datetime AND end_datetime
+            WHERE datetime(?) BETWEEN datetime(start_datetime) AND datetime(end_datetime)
             AND customer_id = ?
             AND id IN '''),
         "CLOSE_ENTITY": textwrap.dedent(f'''
             UPDATE {table_name} SET end_datetime=? 
-            WHERE ? > start_datetime AND end_datetime = '9999-12-31T23:59:59'
+            WHERE datetime(?) > datetime(start_datetime) AND end_datetime = '9999-12-31T23:59:59'
             AND id=? 
             AND customer_id = ?
             '''),
@@ -330,7 +337,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
             INSERT INTO {table_name} VALUES (?,?,?,'9999-12-31T23:59:59',json(?))
             '''),
         "DISTINCT_VERSION": textwrap.dedent(f'''
-            SELECT DISTINCT start_datetime
+            SELECT DISTINCT datetime(start_datetime)
             FROM {table_name}
             WHERE customer_id = ?
             ORDER BY datetime(start_datetime)
@@ -339,5 +346,35 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
             SELECT DISTINCT json_extract(entity,'$.[#]')
             FROM {table_name}
             WHERE customer_id = ?
+            '''),
+
+        "CREATE_TS_TABLE": textwrap.dedent(f'''
+            CREATE TABLE IF NOT EXISTS {table_name}_ts
+                (
+                id TEXT NOT NULL, 
+                customer_id TEXT NOT NULL, 
+                date_time TEXT NOT NULL, 
+                val JSON NOT NULL
+                );
+            '''),
+        "CREATE_TS_INDEX": textwrap.dedent(f'''
+            CREATE INDEX IF NOT EXISTS {table_name}_ts_index ON {table_name}_ts(id,customer_id)
+            '''),
+        "CLEAN_TS": textwrap.dedent(f'''
+            DELETE FROM {table_name}_ts
+            WHERE customer_id = ?
+            AND id = ?
+            AND datetime(date_time) BETWEEN datetime(?) AND datetime(?)
+            '''),
+        "INSERT_TS": textwrap.dedent(f'''
+            INSERT INTO {table_name}_ts
+            VALUES(?,?,datetime(?),json(?))
+            '''),
+        "SELECT_TS": textwrap.dedent(f'''
+            SELECT date_time,val FROM {table_name}_ts
+            WHERE customer_id = ?
+            AND id = ?
+            AND datetime(date_time) <= datetime(?)
+            ORDER BY datetime(date_time)
             '''),
     }

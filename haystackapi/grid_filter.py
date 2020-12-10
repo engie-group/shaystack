@@ -356,5 +356,6 @@ def filter_function(grid_filter):
     return _filter_function(grid_filter).get()
 
 
-def parse_date_format(date_str):
+# FIXME: avec graphql, les dates sont au format "YYYY-MM-DD HH:MM" avec espace. Pb de conv.
+def parse_hs_date_format(date_str) -> datetime:
     return hs_all_date.parseString(date_str, parseAll=True)[0]

@@ -142,11 +142,11 @@ def dump_scalar(scalar, version=LATEST_VER):
     if isinstance(scalar, str):
         return dump_str(scalar)
     if isinstance(scalar, datetime.datetime):
-        return dump_date_time(scalar)
+        return dump_hs_date_time(scalar)
     if isinstance(scalar, datetime.time):
-        return dump_time(scalar)
+        return dump_hs_time(scalar)
     if isinstance(scalar, datetime.date):
-        return dump_date(scalar)
+        return dump_hs_date(scalar)
     if isinstance(scalar, Coordinate):
         return dump_coord(scalar)
     if isinstance(scalar, Quantity):
@@ -213,14 +213,14 @@ def dump_ref(ref):
     return '@%s' % ref.name
 
 
-def dump_date(date):
+def dump_hs_date(date):
     return date.isoformat()
 
 
-def dump_time(time):
+def dump_hs_time(time):
     return time.isoformat()
 
 
-def dump_date_time(date_time):
+def dump_hs_date_time(date_time):
     tz_name = timezone_name(date_time)
     return '%s %s' % (date_time.isoformat(), tz_name)

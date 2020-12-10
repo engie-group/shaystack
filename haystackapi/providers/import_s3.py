@@ -176,7 +176,7 @@ def update_grid_on_s3(parsed_source: ParseResult,
                 destination_grid = EmptyGrid
 
         if force or not compare_grid or len(destination_grid - source_grid):
-            if not force and merge_ts:
+            if not force and merge_ts:  # PPR: if TS, limite the number of AWS versions ?
                 source_data, b64_digest = merge_timeseries(source_grid,
                                                            destination_grid,
                                                            haystackapi.suffix_to_mode(suffix), gz)

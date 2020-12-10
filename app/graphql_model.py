@@ -4,15 +4,16 @@ See the blueprint_graphql to see how to integrate this part of global GraphQL mo
 """
 import logging
 from datetime import datetime, date, time
-from typing import Optional, List, Any, Dict
+from typing import Optional, List, Any, Dict, Union
 
 import graphene
 from graphql import ResolveInfo
 from graphql.language import ast
 
 import haystackapi
-from haystackapi import Ref, Uri, Coordinate
+from haystackapi import Ref, Uri, Coordinate, parse_hs_date_format
 from haystackapi.providers.haystack_interface import get_singleton_provider, parse_date_range
+from haystackapi.zincdumper import dump_hs_date_time, dump_hs_time, dump_hs_date
 
 BOTO3_AVAILABLE = False
 try:
@@ -51,27 +52,82 @@ class HSScalar(graphene.Scalar):
         return f"parse_value={value}"  # FIXME: parse_value in GraphQL API
 
 
-class HSDate(graphene.String):
-    class Meta:
-        name = "AWSDate" if BOTO3_AVAILABLE else "Date"
+class HSDateTime(graphene.String):
+    # class Meta:
+    #     name = "String"
+    @staticmethod
+    def serialize(dt):
+        assert isinstance(
+            dt, (datetime, date)
+        ), 'Received not compatible datetime "{}"'.format(repr(dt))
+        return dump_hs_date_time(dt)
 
-    pass
+    @classmethod
+    def parse_literal(cls, node):
+        if isinstance(node, ast.StringValue):
+            return cls.parse_value(node.value)
+
+    @staticmethod
+    def parse_value(value: str) -> Optional[datetime]:
+        try:
+            if isinstance(value, datetime):
+                return value
+            elif isinstance(value, str):
+                return parse_hs_date_format(value)
+        except ValueError:
+            return None
+
+
+class HSDate(graphene.String):
+    # class Meta:
+    #     name = "AWSDateTime" if BOTO3_AVAILABLE else "DateTime"
+    @staticmethod
+    def serialize(dt):
+        assert isinstance(
+            dt, (datetime, date)
+        ), 'Received not compatible date "{}"'.format(repr(dt))
+        return dump_hs_date(dt)
+
+    @classmethod
+    def parse_literal(cls, node):
+        if isinstance(node, ast.StringValue):
+            return cls.parse_value(node.value)
+
+    @staticmethod
+    def parse_value(value: str) -> Optional[date]:
+        try:
+            if isinstance(value, date):
+                return value
+            elif isinstance(value, str):
+                return parse_hs_date_format(value)
+        except ValueError:
+            return None
 
 
 class HSTime(graphene.String):
-    class Meta:
-        name = "AWSTime" if BOTO3_AVAILABLE else "HSTime"
-
-    pass
-
-
-class HSDateTime(graphene.String):
     # class Meta:
-    #     name = "AWSDateTime" if BOTO3_AVAILABLE else "DateTime"
-    class Meta:
-        name = "String"
+    #     name = "String"
+    @staticmethod
+    def serialize(dt):
+        assert isinstance(
+            dt, (datetime, time)
+        ), 'Received not compatible time "{}"'.format(repr(dt))
+        return dump_hs_time(dt)
 
-    pass
+    @classmethod
+    def parse_literal(cls, node):
+        if isinstance(node, ast.StringValue):
+            return cls.parse_value(node.value)
+
+    @staticmethod
+    def parse_value(value: str) -> Optional[date]:
+        try:
+            if isinstance(value, time):
+                return value
+            elif isinstance(value, str):
+                return parse_hs_date_format(value)
+        except ValueError:
+            return None
 
 
 class HSUri(graphene.String):
@@ -126,9 +182,9 @@ class HSTS(graphene.ObjectType):
     bool = graphene.Boolean(required=False, description="Boolean version of the value")
     uri = graphene.String(required=False, description="URI version of the value")
     ref = graphene.String(required=False, description="Reference version of the value")
-    date = graphene.String(required=False, description="Date version of the value")
-    time = graphene.String(required=False, description="Time version of the value")
-    datetime = graphene.String(required=False, description="Date time version of the value")
+    date = HSDate(required=False, description="Date version of the value")
+    time = HSTime(required=False, description="Time version of the value")
+    datetime = HSDateTime(required=False, description="Date time version of the value")
     coord = graphene.Field(HSCoordinate,
                            description="Geographic Coordinate")
 
@@ -200,7 +256,8 @@ class ReadHaystack(graphene.ObjectType):
     )
 
     @staticmethod
-    def resolve_about(parent: 'ReadHaystack', info: ResolveInfo):
+    def resolve_about(parent: 'ReadHaystack',
+                      info: ResolveInfo):
         log.debug(f"resolve_about(parent,info)")
         grid = get_singleton_provider().about("http://localhost")
         rc = ReadHaystack._conv_entity(HSAbout, grid[0])
@@ -209,36 +266,71 @@ class ReadHaystack(graphene.ObjectType):
         return rc
 
     @staticmethod
-    def resolve_ops(parent: 'ReadHaystack', info: ResolveInfo):
+    def resolve_ops(parent: 'ReadHaystack',
+                    info: ResolveInfo):
         log.debug(f"resolve_about(parent,info)")
         grid = get_singleton_provider().ops()
         return ReadHaystack._conv_list_to_object_type(HSOps, grid)
 
     @staticmethod
-    def resolve_tag_values(parent: 'ReadHaystack', info: ResolveInfo, tag: str, version: Optional[datetime] = None):
+    def resolve_tag_values(parent: 'ReadHaystack',
+                           info: ResolveInfo,
+                           tag: str,
+                           version: Optional[HSDateTime] = None):
         log.debug("resolve_values(parent,info,%s)", tag)
         return get_singleton_provider().values_for_tag(tag, version)
 
     @staticmethod
-    def resolve_versions(parent: 'ReadHaystack', info: ResolveInfo):
+    def resolve_versions(parent: 'ReadHaystack',
+                         info: ResolveInfo):
         log.debug("resolve_versions(parent,info)")
         return get_singleton_provider().versions()
 
     @staticmethod
-    def resolve_entities(parent: 'ReadHaystack', info: ResolveInfo,
+    def resolve_entities(parent: 'ReadHaystack',
+                         info: ResolveInfo,
                          ids: Optional[List[str]] = None,
                          select: str = '*',
                          filter: str = '',
                          limit: int = 0,
-                         version: Optional[datetime] = None):
-        log.debug(f"resolve_entities(parent,info,ids={ids}, query={filter}, limit={limit}, datetime={datetime})")
+                         version: Optional[HSDateTime] = None):
+        log.debug(
+            f"resolve_entities(parent,info,ids={ids}, select={select}, filter={filter}, limit={limit}, version={version})")
         if ids:
             ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]
         grid = get_singleton_provider().read(limit, select, ids, filter, version)
         return grid
 
     @staticmethod
-    def _conv_value(entity: Dict[str, Any], info: ResolveInfo) -> HSTS:
+    def resolve_histories(parent: 'ReadHaystack',
+                          info: ResolveInfo,
+                          ids: Optional[List[str]] = None,
+                          dates_range: Optional[str] = None,
+                          version: Union[str, datetime, None] = None):
+        if version:
+            version = HSDateTime.parse_value(version)
+        log.debug(f"resolve_histories(parent,info,ids={ids}, range={dates_range}, version={version})")
+        grid_date_range = parse_date_range(dates_range)
+        return [ReadHaystack._conv_history(
+            get_singleton_provider().his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version),
+            info
+        )
+            for entity_id in ids]
+
+    @staticmethod
+    def resolve_point_write(parent: 'ReadHaystack', info: ResolveInfo,
+                            entity_id: str,
+                            version: Union[datetime, str, None] = None):
+        if version:
+            version = HSDateTime.parse_value(version)
+        log.debug(f"resolve_point_write(parent,info, entity_id={entity_id}, version={version})")
+        ref = Ref(ReadHaystack._filter_id(entity_id))
+        grid = get_singleton_provider().point_write_read(ref, version)
+        return ReadHaystack._conv_list_to_object_type(HSPointWrite, grid)
+
+    @staticmethod
+    def _conv_value(entity: Dict[str, Any],
+                    info: ResolveInfo) -> HSTS:
         selection = info.field_asts[0].selection_set.selections
         cast_value = HSTS()
         value = entity["val"]
@@ -278,28 +370,6 @@ class ReadHaystack(graphene.ObjectType):
     @staticmethod
     def _conv_history(entities, info: ResolveInfo):
         return [ReadHaystack._conv_value(entity, info) for entity in entities]
-
-    @staticmethod
-    def resolve_histories(parent: 'ReadHaystack', info: ResolveInfo,
-                          ids: Optional[List[str]] = None,
-                          dates_range: Optional[str] = None,
-                          version: Optional[datetime] = None):
-        log.debug(f"resolve_histories(parent,info,ids={ids}, range={range}, datetime={datetime})")
-        grid_date_range = parse_date_range(dates_range)
-        return [ReadHaystack._conv_history(
-            get_singleton_provider().his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version),
-            info
-        )
-            for entity_id in ids]
-
-    @staticmethod
-    def resolve_point_write(parent: 'ReadHaystack', info: ResolveInfo,
-                            entity_id: str,
-                            version: Optional[datetime] = None):
-        log.debug(f"resolve_point_write(parent,info, id={entity_id}, version={version})")
-        ref = Ref(ReadHaystack._filter_id(entity_id))
-        grid = get_singleton_provider().point_write_read(ref, version)
-        return ReadHaystack._conv_list_to_object_type(HSPointWrite, grid)
 
     @staticmethod
     def _filter_id(entity_id: str) -> str:

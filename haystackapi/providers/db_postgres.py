@@ -407,6 +407,8 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
     return {
         "sql_type_to_json": lambda x: x,
         "exec_sql_filter": _exec_sql_filter,
+        "field_to_datetime_tz": lambda val: val,
+        "datetime_tz_to_field": lambda dt: dt,
         "CREATE_HAYSTACK_TABLE": textwrap.dedent(f'''
            CREATE TABLE IF NOT EXISTS {table_name}
                (
@@ -430,10 +432,10 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
            CREATE TABLE IF NOT EXISTS {table_name}_meta_datas
                (
                customer_id text NOT NULL,
-               start_datetime timestamp WITH TIME ZONE NOT NULL,
-               end_datetime timestamp WITH TIME ZONE NOT NULL,
-               metadata jsonb,
-               cols jsonb
+               start_datetime TIMESTAMP WITH TIME ZONE NOT NULL,
+               end_datetime TIMESTAMP WITH TIME ZONE NOT NULL,
+               metadata JSONB,
+               cols JSONB
                );
                '''),
         "PURGE_TABLES_HAYSTACK": textwrap.dedent(f'''
@@ -485,5 +487,35 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
             SELECT DISTINCT entity->'[#]'
             FROM {table_name}
             WHERE customer_id = %s
+            '''),
+
+        "CREATE_TS_TABLE": textwrap.dedent(f'''
+            CREATE TABLE IF NOT EXISTS {table_name}_ts
+                (
+                id TEXT NOT NULL, 
+                customer_id TEXT NOT NULL, 
+                date_time TIMESTAMP WITH TIME ZONE NOT NULL, 
+                val JSONB NOT NULL
+                );
+        '''),
+        "CREATE_TS_INDEX": textwrap.dedent(f'''
+            CREATE INDEX IF NOT EXISTS {table_name}_ts_index ON {table_name}_ts(id,customer_id)
+            '''),
+        "CLEAN_TS": textwrap.dedent(f'''
+            DELETE FROM {table_name}_ts
+            WHERE customer_id = %s
+            AND id = %s
+            AND date_time BETWEEN %s AND %s
+            '''),
+        "INSERT_TS": textwrap.dedent(f'''
+            INSERT INTO {table_name}_ts
+            VALUES(%s,%s,%s,%s)
+            '''),
+        "SELECT_TS": textwrap.dedent(f'''
+            SELECT date_time,val FROM {table_name}_ts
+            WHERE customer_id = %s
+            AND id = %s
+            AND date_time <= %s
+            ORDER BY date_time
             '''),
     }

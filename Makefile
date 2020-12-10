@@ -497,6 +497,29 @@ unit-test: .make-unit-test
 test: .make-test
 
 
+functional-url-local:
+	HAYSTACK_PROVIDER=haystackapi.provider.url \
+	HAYSTACK_URL=sample/carytown.zinc \
+	make async-start-api
+	PYTHONPATH=tests:. $(CONDA_PYTHON) tests_integration
+	make async-stop-api
+
+functional-db-sqlite:
+	HAYSTACK_PROVIDER=haystackapi.provider.sql \
+	HAYSTACK_DB=sqlite3://localhost/test.db \
+	$(MAKE) async-start-api
+	PYTHONPATH=tests:. $(CONDA_PYTHON) tests_integration
+	make async-stop-api
+
+functional-db-sqlite:
+	HAYSTACK_PROVIDER=haystackapi.provider.sql \
+	HAYSTACK_DB=postgres://postgres:password@172.17.0.2:5432/postgres \
+	$(MAKE) start-pg async-start-api
+	PYTHONPATH=tests:. $(CONDA_PYTHON) tests_integration
+	make async-stop-api
+
+functional-test: functional-url-local functional-db-sqlite functional-db-sqlite
+
 # -------------------------------------- haystackapi submodule
 hszinc/dist/hszinc-*.whl: hszinc/haystackapi
 	cd hszinc
@@ -639,12 +662,12 @@ PGADMIN_PASSWORD?=password
 start-pgadmin:
 	@docker start pgadmin || docker run \
 	--name pgadmin \
-	-p 80:80 \
+	-p 8082:80 \
 	--link postgres \
     -e 'PGADMIN_DEFAULT_EMAIL=$(PGADMIN_USER)' \
     -e 'PGADMIN_DEFAULT_PASSWORD=$(PGADMIN_PASSWORD)' \
     -d dpage/pgadmin4
-	echo -e "$(yellow)PGAdmin started. Use $(cyan)$(PGADMIN_USER)$(yellow) and $(cyan)$(PGADMIN_PASSWORD)$(yellow) $(normal)"
+	echo -e "$(yellow)PGAdmin started (http://localhost:8082). Use $(cyan)$(PGADMIN_USER)$(yellow) and $(cyan)$(PGADMIN_PASSWORD)$(yellow) $(normal)"
 
 ## Stop PGAdmin
 stop-pgadmin:

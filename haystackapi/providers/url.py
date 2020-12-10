@@ -28,6 +28,7 @@ import urllib.request
 from collections import OrderedDict
 from datetime import datetime, MAXYEAR, MINYEAR, timedelta
 from io import BytesIO
+from os.path import dirname
 from pathlib import Path
 from threading import Lock
 from typing import Optional, Union, Tuple, Dict, Any, List
@@ -143,7 +144,8 @@ class Provider(HaystackInterface):
             dates_range,
             date_version,
         )
-
+        if not date_version:
+            date_version = datetime(9999, 12, 31, 23, 59, 59, 99, tzinfo=pytz.UTC)  # TODO: manage range
         grid = self._download_grid(self._get_url(), date_version)
         if entity_id in grid:
             entity = grid[entity_id]
@@ -151,13 +153,21 @@ class Provider(HaystackInterface):
             # 1. use a file in the dir(HAYSTACK_URL)+entity['hisURI']
             if "hisURI" in entity:
                 his_uri = str(entity["hisURI"])
-                base = self._get_url()
+                base = dirname(self._get_url())
                 parsed_relative = urlparse(his_uri, allow_fragments=False)
+                if his_uri.find(':') <= 3:
+                    his_uri = base + '/' + his_uri
                 if not parsed_relative.scheme:
                     his_uri = base[: base.rfind("/")] + "/" + his_uri
 
                 history = self._download_grid(his_uri, date_version)
-
+                # assert history is sorted by date time
+                # Remove data after the date_version
+                for idx, row in enumerate(history):
+                    if row['ts'] > date_version:
+                        history = history[0:history.index(row)]
+                        break
+                # TODO: manage range
                 min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
                 max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
 
@@ -165,6 +175,7 @@ class Provider(HaystackInterface):
                     min_date = min(min_date, time_serie["ts"])
                     max_date = max(max_date, time_serie["ts"])
 
+                # TODO: filter suivant version MAX
                 grid.metadata = {
                     "id": entity_id,
                     "hisStart": min_date,
@@ -294,7 +305,7 @@ class Provider(HaystackInterface):
             self._versions[parsed_uri.geturl()] = all_versions  # Lru and versions)
             self._lock.release()
         else:
-            self._versions[parsed_uri.geturl()] = {datetime.min: "direct_file"}
+            self._versions[parsed_uri.geturl()] = {datetime(1, 1, 1, tzinfo=pytz.UTC): "direct_file"}
 
         if PERIODIC_REFRESH:
             partial_refresh = functools.partial(

@@ -5,6 +5,7 @@ import sys
 import urllib
 from datetime import datetime
 from io import BytesIO
+from os.path import dirname
 from pathlib import Path
 from typing import Optional, cast
 from urllib.parse import urlparse, ParseResult
@@ -71,11 +72,23 @@ def import_in_db(source: str,
     os.environ["HAYSTACK_DB"] = destination
     with get_provider("haystackapi.providers.sql") as provider:
         provider = cast(sql.Provider, provider)
+        provider.create_db()
         if reset:
             provider.purge_db()
         original_grid = provider.export_grid_from_db(customer_id, version)
         target_grid = _read_grid(source)
         provider.import_diff_grid_in_db(target_grid - original_grid, customer_id, version)
+        log.info("%s imported", source)
+
+        if time_series:
+            dir_name = dirname(source)
+            for row in target_grid:
+                if "hisURI" in row:
+                    assert "id" in row, "TS must have an id"
+                    uri = dir_name + '/' + row['hisURI']
+                    ts_grid = _read_grid(uri)
+                    provider.import_ts_in_db(ts_grid, row["id"], customer_id)
+                    log.info("%s imported", uri)
 
 
 def aws_handler(event, context):

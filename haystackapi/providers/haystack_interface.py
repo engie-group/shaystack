@@ -15,7 +15,7 @@ from typing import Any, Tuple, Dict, Union, Optional, List, cast
 from tzlocal import get_localzone
 
 import haystackapi
-from haystackapi import Grid, VER_3_0, Uri, Ref, Quantity, parse_date_format
+from haystackapi import Grid, VER_3_0, Uri, Ref, Quantity, parse_hs_date_format
 
 log = logging.getLogger("haystackapi")
 
@@ -475,7 +475,7 @@ def parse_date_range(date_range: str) -> Optional[
     if not date_range:
         return None
     if date_range not in ("today", "yesterday"):
-        split_date: List[datetime] = [parse_date_format(x) for x in date_range.split(",")]
+        split_date: List[datetime] = [parse_hs_date_format(x) for x in date_range.split(",")]
         if len(split_date) > 1:
             assert type(split_date[0]) == type(  # pylint: disable=C0123
                 split_date[1]

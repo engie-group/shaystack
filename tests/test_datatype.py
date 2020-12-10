@@ -11,10 +11,11 @@ import binascii
 import random
 from copy import copy, deepcopy
 
+from nose.tools import eq_
+
 import haystackapi
 from haystackapi.datatypes import XStr, Uri, Bin, MARKER, NA, REMOVE
 from haystackapi.pintutil import to_haystack, to_pint
-from nose.tools import eq_
 
 
 def check_singleton_deepcopy(a_singleton):
@@ -83,7 +84,7 @@ def test_ref_mixed_neq():
     ref_1 = haystackapi.Ref(name='a.ref')
     ref_2 = haystackapi.Ref(name='a.ref', value='display text')
     assert ref_1 is not ref_2
-    assert ref_1 != ref_2
+    assert ref_1 == ref_2
 
 
 def test_ref_with_dis_eq():
@@ -104,12 +105,12 @@ def test_ref_with_dis_neq_dis():
     ref_1 = haystackapi.Ref(name='a.ref', value='display text')
     ref_2 = haystackapi.Ref(name='a.ref', value='different display text')
     assert ref_1 is not ref_2
-    assert ref_1 != ref_2
+    assert ref_1 == ref_2
 
 
 def test_ref_hash():
     assert hash(haystackapi.Ref(name='a.ref', value='display text')) == \
-           hash('a.ref') ^ hash('display text') ^ hash(True)
+           hash('a.ref')
 
 
 def test_ref_std_method():

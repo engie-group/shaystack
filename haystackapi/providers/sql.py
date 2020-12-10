@@ -14,18 +14,19 @@ import json
 import logging
 import os
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, MAXYEAR, MINYEAR
 from types import ModuleType
 from typing import Optional, Union, Tuple, Dict, Any, List, Callable
 from urllib.parse import urlparse, ParseResult
 
-import iso8601
 import pytz
 from overrides import overrides
 
 from haystackapi import Grid, Ref, jsondumper, jsonparser, VER_3_0, MetadataObject
 from . import select_grid
 from .haystack_interface import HaystackInterface
+from ..jsondumper import dump_scalar
+from ..jsonparser import parse_scalar
 
 log = logging.getLogger("sql.Provider")
 
@@ -127,6 +128,9 @@ class Provider(HaystackInterface):
             cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_2"])  # On Json, for @> operator
             # Create table
             cursor.execute(self._sql["CREATE_METADATA_TABLE"])
+            # Create ts table
+            cursor.execute(self._sql["CREATE_TS_TABLE"])
+            cursor.execute(self._sql["CREATE_TS_INDEX"])  # On id
             # Save (commit) the changes
             conn.commit()
         finally:
@@ -139,7 +143,6 @@ class Provider(HaystackInterface):
         if distinct is None:
             raise NotImplementedError("Not implemented")
         conn = self.get_connect()
-        # with conn.cursor() as cursor:
         cursor = conn.cursor()
         try:
             cursor.execute(re.sub(r"\[#]", tag, distinct),
@@ -162,8 +165,8 @@ class Provider(HaystackInterface):
             cursor.execute(self._sql["DISTINCT_VERSION"], (customer_id,))
             result = cursor.fetchall()
             conn.commit()
-            if result and isinstance(result[0], str):
-                return [iso8601.parse_date(x[0], default_timezone=pytz.UTC) for x in result]
+            if result and isinstance(result[0][0], str):
+                return [datetime.strptime(x[0], "%Y-%m-%d %H:%M:%S").replace(tzinfo=pytz.utc) for x in result]
             return [x[0] for x in result]
         finally:
             cursor.close()
@@ -219,7 +222,7 @@ class Provider(HaystackInterface):
                                 )
                 grid = self._init_grid_from_db(date_version)
                 for row in cursor:
-                    grid.append(jsonparser.parse_row(sql_type_to_json(row[0]), VER_3_0))
+                    grid.append(jsonparser.parse_row(sql_type_to_json(row[0]), VER_3_0))  # FIXME: sql_type ?
                 conn.commit()
                 return select_grid(grid, select)
             else:
@@ -250,14 +253,44 @@ class Provider(HaystackInterface):
             dates_range,
             date_version,
         )
+        conn = self.get_connect()
+        cursor = conn.cursor()
+        customer_id = self.get_customer_id()
+        history = Grid(columns=["ts", "val"])
+        field_to_datetime_tz = self._sql["field_to_datetime_tz"]
+        try:
+            if not date_version:
+                date_version = datetime(9999, 12, 31, 23, 59, 59, 99, tzinfo=pytz.UTC)  # TODO: manage range
+            cursor.execute(self._sql["SELECT_TS"], (customer_id, entity_id.name, date_version))
+            for row in cursor:
+                history.append(
+                    {
+                        "ts": field_to_datetime_tz(row[0]),
+                        "val": parse_scalar(row[1])
+                    }
+                )
+            min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
+            max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
 
-        raise NotImplementedError()
+            for time_serie in history:
+                min_date = min(min_date, time_serie["ts"])
+                max_date = max(max_date, time_serie["ts"])
+
+            history.metadata = {
+                "id": entity_id,
+                "hisStart": min_date,
+                "hisEnd": max_date,
+            }
+            return history
+
+        finally:
+            cursor.close()
+        pass
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         conn = self.get_connect()
         conn.close()
         self._connect = False
-
 
     def get_connect(self):  # PPR: monothread ? No with Zappa
         if not self._connect and self._dialect:  # Lazy connection
@@ -460,6 +493,45 @@ class Provider(HaystackInterface):
             conn.commit()
         finally:
             cursor.close()
+
+    def import_ts_in_db(self, ts: Grid, id: Ref, customer_id: str):
+        assert 'ts' in ts.column, "TS must have a column 'ts'"
+        conn = self.get_connect()
+        begin_datetime = ts.metadata.get("hisStart")
+        end_datetime = ts.metadata.get("hisStart")
+        if len(ts) and not begin_datetime:
+            begin_datetime = ts[0]['ts']
+        if len(ts) and not end_datetime:
+            end_datetime = ts[-1]['ts']
+        if not begin_datetime:
+            begin_datetime = datetime.min
+        if not end_datetime:
+            end_datetime = datetime.max
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        datetime_tz_to_field = self._sql["datetime_tz_to_field"]
+        try:
+            # Clean only the period
+            cursor.execute(self._sql["CLEAN_TS"],
+                           (
+                               customer_id,
+                               id.name,
+                               datetime_tz_to_field(begin_datetime),
+                               datetime_tz_to_field(end_datetime)
+                           )
+                           )
+
+            # Add add new values
+            cursor.executemany(self._sql["INSERT_TS"],
+                               [(id.name,
+                                 customer_id,
+                                 datetime_tz_to_field(row['ts']),
+                                 json.dumps(dump_scalar(row['val']))) for row in ts]
+                               )
+            cursor.close()
+            conn.commit()
+        finally:
+            pass
 
     def _dialect_request(self, dialect: str) -> Dict[str, Any]:
         table_name = self._parsed_db.fragment

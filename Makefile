@@ -329,8 +329,8 @@ async-start-api: $(REQUIREMENTS)
 
 # Stop local api emulator in background
 async-stop-api:
-	@$(VALIDATE_VENV)
-	@[ -e .start/start-api.pid ] && kill `cat .start/start-api.pid` || true && echo -e "$(green)Local API stopped$(normal)"
+	$(VALIDATE_VENV)
+	@[ -e .start/start-api.pid ] && kill `cat .start/start-api.pid` 2>/dev/null >/dev/null || true && echo -e "$(green)Local API stopped$(normal)"
 	rm -f .start/start-api.pid
 
 # -------------------------------------- GraphQL
@@ -371,7 +371,7 @@ start-minio: .minio $(REQUIREMENTS)
 
 async-stop-minio:
 	@$(VALIDATE_VENV)
-	[ -e .start/start-minio.pid ] && kill `cat .start/start-minio.pid` >/dev/null || true && echo -e "$(green)Local Minio stopped$(normal)"
+	[ -e .start/start-minio.pid ] && kill `cat .start/start-minio.pid` 2>/dev/null >/dev/null || true && echo -e "$(green)Local Minio stopped$(normal)"
 	rm -f .start/start-minio.pid
 
 async-start-minio: .minio $(REQUIREMENTS)
@@ -498,27 +498,34 @@ test: .make-test
 
 
 functional-url-local:
+	@$(MAKE) async-stop-api >/dev/null
 	HAYSTACK_PROVIDER=haystackapi.provider.url \
 	HAYSTACK_URL=sample/carytown.zinc \
-	make async-start-api
-	PYTHONPATH=tests:. $(CONDA_PYTHON) tests_integration
-	make async-stop-api
+	$(MAKE) async-start-api >/dev/null
+	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/client_graphql.py
+	echo -e "$(green)Test with local url serveur OK$(normal)"
+	$(MAKE) async-stop-api >/dev/null
 
 functional-db-sqlite:
+	@$(MAKE) async-stop-api >/dev/null
 	HAYSTACK_PROVIDER=haystackapi.provider.sql \
 	HAYSTACK_DB=sqlite3://localhost/test.db \
-	$(MAKE) async-start-api
-	PYTHONPATH=tests:. $(CONDA_PYTHON) tests_integration
-	make async-stop-api
+	$(MAKE) async-start-api >/dev/null
+	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/client_graphql.py
+	echo -e "$(green)Test with local SQLite serveur OK$(normal)"
+	$(MAKE) async-stop-api >/dev/null
 
-functional-db-sqlite:
+functional-db-postgres:
+	@$(MAKE) async-stop-api >/dev/null
 	HAYSTACK_PROVIDER=haystackapi.provider.sql \
 	HAYSTACK_DB=postgres://postgres:password@172.17.0.2:5432/postgres \
-	$(MAKE) start-pg async-start-api
-	PYTHONPATH=tests:. $(CONDA_PYTHON) tests_integration
-	make async-stop-api
+	$(MAKE) start-pg async-start-api >/dev/null
+	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/client_graphql.py
+	echo -e "$(green)Test with local Postgres serveur OK$(normal)"
+	$(MAKE) async-stop-api >/dev/null
 
-functional-test: functional-url-local functional-db-sqlite functional-db-sqlite
+## Test graphql client with differents providers
+functional-test: functional-url-local functional-db-sqlite functional-db-postgres
 
 # -------------------------------------- haystackapi submodule
 hszinc/dist/hszinc-*.whl: hszinc/haystackapi

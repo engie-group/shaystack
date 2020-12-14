@@ -50,6 +50,8 @@ class Version:
             # We should have a nice friendly dotted decimal, followed
             # by anything else not recognised.  Parse out the first bit.
             (version_nums, version_extra) = match.groups()
+            if not version_nums:
+                raise ValueError('Not a valid version string: %r' % ver_str)
             self.version_nums = tuple([int(p or 0)
                                        for p in version_nums.split('.')])
             self.version_extra = version_extra

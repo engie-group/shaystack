@@ -170,7 +170,7 @@ def to_pint(unit):
     return unit
 
 
-def define_haystack_units():
+def define_haystack_units() -> UnitRegistry:
     """
     Missing units found in project-haystack
     Added to the registry
@@ -238,3 +238,6 @@ def define_haystack_units():
     # See https://pint.readthedocs.io/en/stable/defining.html
 
     return unit_ureg
+
+
+unit_reg = define_haystack_units()

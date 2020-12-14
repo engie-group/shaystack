@@ -123,7 +123,7 @@ def _merge_has_operators(left, right, merged_class):
 
 
 # Phase 1 : reorganize AST
-def _optimize_filter_for_sql(node: FilterNode) -> _Root:
+def _optimize_filter_for_sql(node: FilterNode) -> FilterNode:
     if isinstance(node, FilterPath):
         return _Path(node.paths)
     elif isinstance(node, FilterBinary):
@@ -169,7 +169,7 @@ def _generate_sql_block(table_name: str,
                         customer_id: str,
                         version: datetime,
                         limit: int,
-                        node: _Root,
+                        node: FilterNode,
                         num_table: int) -> Tuple[int, str]:
     init_num_table = num_table
     select = [textwrap.dedent(f"""
@@ -232,7 +232,7 @@ def _generate_filter_in_sql(table_name: str,
                             version: datetime,
                             select: List[Union[str, List[Any]]],
                             where: List[Union[str, List[Any]]],
-                            node: _Root,
+                            node: FilterNode,
                             num_table: int
                             ) -> Tuple[int, List[Union[str, List[Any]]], List[Union[str, List[Any]]]]:
     # Use RootBlock nodes

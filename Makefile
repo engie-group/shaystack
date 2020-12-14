@@ -497,7 +497,7 @@ unit-test: .make-unit-test
 test: .make-test
 
 
-functional-url-local:
+functional-url-local: $(REQUIREMENTS)
 	@$(MAKE) async-stop-api >/dev/null
 	export HAYSTACK_PROVIDER=haystackapi.provider.url
 	export HAYSTACK_URL=sample/carytown.zinc
@@ -507,7 +507,7 @@ functional-url-local:
 	$(MAKE) async-stop-api >/dev/null
 
 # Clean DB, Start API, and try with SQLite
-functional-db-sqlite:
+functional-db-sqlite: $(REQUIREMENTS)
 	@$(MAKE) async-stop-api>/dev/null
 	rm -f test.db
 	export HAYSTACK_PROVIDER=haystackapi.provider.sql
@@ -520,7 +520,7 @@ functional-db-sqlite:
 	$(MAKE) async-stop-api >/dev/null
 
 # Start Postgres, Clean DB, Start API and try
-functional-db-postgres: clean-pg
+functional-db-postgres: $(REQUIREMENTS) clean-pg
 	@$(MAKE) async-stop-api >/dev/null
 	export HAYSTACK_PROVIDER=haystackapi.provider.sql
 	export HAYSTACK_DB=postgres://postgres:password@172.17.0.2:5432/postgres
@@ -532,8 +532,11 @@ functional-db-postgres: clean-pg
 	echo -e "$(green)Test with local Postgres serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 
-## Test graphql client with differents providers
-functional-test: functional-url-local functional-db-sqlite functional-db-postgres
+.make-functional-test: functional-url-local functional-db-sqlite functional-db-postgres
+	touch .make-functional-test
+
+## Test graphql client with different providers
+functional-test: .make-functional-test
 
 # -------------------------------------- haystackapi submodule
 hszinc/dist/hszinc-*.whl: hszinc/haystackapi
@@ -550,7 +553,7 @@ pytype.cfg: $(CONDA_PREFIX)/bin/pytype
 .make-typing: $(REQUIREMENTS) $(CONDA_PREFIX)/bin/pytype pytype.cfg $(PYTHON_SRC)
 	$(VALIDATE_VENV)
 	@echo -e "$(cyan)Check typing...$(normal)"
-	pytype -V $(PYTHON_VERSION) haystackapi app
+	MYPYPATH=stubs pytype -V $(PYTHON_VERSION) haystackapi app
 	touch .make-typing
 
 ## Check python typing
@@ -574,7 +577,7 @@ lint: .make-lint
 
 
 .PHONY: validate
-.make-validate: build .make-typing .make-lint .make-test
+.make-validate: build .make-typing .make-lint .make-test .make-functional-test
 	@date >.make-validate
 
 ## Validate the project

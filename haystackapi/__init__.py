@@ -4,20 +4,17 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
-from .pintutil import define_haystack_units
-
-unit_reg = define_haystack_units()
-
-from .grid import Grid
-from .dumper import dump, dump_scalar
-from .parser import parse, parse_scalar, MODE_JSON, MODE_ZINC, MODE_CSV, suffix_to_mode, mode_to_suffix
-from .grid_filter import parse_filter, parse_hs_date_format
-from .metadata import MetadataObject
 from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, NA, \
     REMOVE, Ref, XStr
-from .version import Version, VER_2_0, VER_3_0, LATEST_VER
+from .dumper import dump, dump_scalar
+from .grid import Grid
+from .grid_filter import parse_filter, parse_hs_date_format
+from .metadata import MetadataObject
 from .ops import *
+from .parser import parse, parse_scalar, MODE_JSON, MODE_ZINC, MODE_CSV, suffix_to_mode, mode_to_suffix
+from .pintutil import unit_reg
 from .providers import HaystackInterface
+from .version import Version, VER_2_0, VER_3_0, LATEST_VER
 
 __all__ = ['Grid', 'dump', 'parse', 'dump_scalar', 'parse_scalar', 'parse_filter',
            'MetadataObject', 'unit_reg', 'zoneinfo',

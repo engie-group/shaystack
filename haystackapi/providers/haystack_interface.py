@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, date, timedelta, tzinfo
 from importlib import import_module
-from typing import Any, Tuple, Dict, Union, Optional, List, cast
+from typing import Any, Tuple, Dict, Optional, List, cast
 
 import pytz
 from tzlocal import get_localzone
@@ -457,9 +457,7 @@ def get_singleton_provider() -> HaystackInterface:
     return _singleton_provider
 
 
-def parse_date_range(date_range: str, tz: tzinfo) -> Optional[
-    Union[datetime, datetime],
-]:
+def parse_date_range(date_range: str, tz: tzinfo) -> Optional[Tuple[datetime, datetime]]:
     if not date_range:
         return datetime.min.replace(tzinfo=pytz.UTC), \
                datetime.max.replace(tzinfo=pytz.UTC)

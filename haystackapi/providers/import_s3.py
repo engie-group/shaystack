@@ -138,6 +138,7 @@ def update_grid_on_s3(parsed_source: ParseResult,
         md5_digest = md5(source_data)
         b64_digest = base64.b64encode(md5_digest.digest()).decode("UTF8")
         source_etag = ''
+        source_grid = None
         if not force:
             source_etag = md5_digest.hexdigest()
         if time_series or compare_grid or merge_ts:
@@ -166,8 +167,10 @@ def update_grid_on_s3(parsed_source: ParseResult,
                     destination_grid = EmptyGrid
                 elif ex.response['Error']['Code'] == '304':
                     # Target not modified
-                    destination_grid = source_grid
-                    pass
+                    if source_grid:
+                        destination_grid = source_grid
+                    else:
+                        raise
                 else:
                     raise
             except ZincParseException as ex:

@@ -16,7 +16,7 @@ import os
 import re
 from datetime import datetime, timedelta
 from types import ModuleType
-from typing import Optional, Tuple, Dict, Any, List, Callable
+from typing import Optional, Tuple, Dict, Any, List, Callable, Iterable, Iterator
 from urllib.parse import urlparse, ParseResult
 
 import pytz
@@ -29,6 +29,29 @@ from ..jsondumper import dump_scalar
 from ..jsonparser import parse_scalar
 
 log = logging.getLogger("sql.Provider")
+
+
+class DBCursor:
+    def execute(self, cmd: str, args: Optional[Tuple] = None) -> None: ...
+
+    def fetchall(self) -> List[List]: return []
+
+    def fetchone(self) -> Iterable: return []
+
+    def executemany(self, sql: str, params: Iterable) -> None: ...
+
+    def close(self) -> None: ...
+
+    def __iter__(self) -> Iterator[List]: return [].__iter__()
+
+
+class DBConnection:
+    def cursor(self) -> DBCursor: return DBCursor()
+
+    def commit(self) -> None: ...
+
+    def close(self) -> None: ...
+
 
 BOTO3_AVAILABLE = False
 try:
@@ -297,7 +320,7 @@ class Provider(HaystackInterface):
         conn.close()
         self._connect = False
 
-    def get_connect(self):  # PPR: monothread ? No with Zappa
+    def get_connect(self) -> DBConnection:  # PPR: monothread ? No with Zappa
         if not self._connect and self._dialect:  # Lazy connection
             try:
                 port = self._parsed_db.port  # To manage sqlite in memory
@@ -318,8 +341,11 @@ class Provider(HaystackInterface):
             }
             _, keys = self._default_driver[self._dialect]
             filtered = {key: val for key, val in params.items() if key in keys}
-            self._connect = self.db.connect(**filtered)
+            connect: DBConnection = self.db.connect(**filtered)
+            self._connect = connect
             self.create_db()
+        if not self._connect:
+            raise ValueError("Inconnect database url")
         return self._connect
 
     def _get_secret_manager_secret(self) -> str:
@@ -342,8 +368,8 @@ class Provider(HaystackInterface):
                 j = json.loads(secret)
                 return j['password']
             else:
-                decoded_binary_secret = base64.b64decode(get_secret_value_response['SecretBinary'])
-                return decoded_binary_secret.password
+                decoded_binary_secret = base64.b64decode(get_secret_value_response['SecretBinary']).decode("UTF8")
+                return decoded_binary_secret
         except ClientError as e:
             if e.response['Error']['Code'] == 'DecryptionFailureException':
                 # Secrets Manager can't decrypt the protected secret text using the provided KMS key.
@@ -365,6 +391,7 @@ class Provider(HaystackInterface):
                 # We can't find the resource that you asked for.
                 # Deal with the exception here, and/or rethrow at your discretion.
                 raise e
+            raise e
 
     def _init_grid_from_db(self, version: Optional[datetime]) -> Grid:
         customer = self.get_customer_id()

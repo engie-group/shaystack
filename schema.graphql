@@ -7,58 +7,64 @@ scalar AWSJSON
 scalar AWSURL
 
 type HSAbout {
-  haystackVersion: String!
-  tz: String!
-  serverName: String!
-  serverTime: String!
-  serverBootTime: String!
-  productName: String!
-  productUri: AWSURL!
-  productVersion: String!
-  moduleName: String!
-  moduleVersion: String!
+    haystackVersion: String!
+    tz: String!
+    serverName: String!
+    serverTime: HSDateTime!
+    serverBootTime: HSDateTime!
+    productName: String!
+    productUri: AWSURL!
+    productVersion: String!
+    moduleName: String!
+    moduleVersion: String!
 }
 
 type HSCoordinate {
-  lat: Float
-  long: Float
+    lat: Float
+    long: Float
 }
 
+scalar HSDate
+
+scalar HSDateTime
+
 type HSOps {
-  name: String
-  summary: String
+    name: String
+    summary: String
 }
 
 type HSPointWrite {
-  level: Int
-  levelDis: String
-  val: AWSJSON
+    level: Int
+    levelDis: String
+    val: AWSJSON
   who: String
 }
 
 type HSTS {
-  ts: String
+    ts: HSDateTime
     val: AWSJSON
     int: Int
     float: Float
-  str: String
-  bool: Boolean
-  uri: String
-  ref: String
-  date: String
-  time: String
-  datetime: String
-  coord: HSCoordinate
+    str: String
+    bool: Boolean
+    uri: String
+    ref: String
+    date: HSDate
+    time: HSTime
+    datetime: HSDateTime
+    coord: HSCoordinate
 }
 
+scalar HSTime
+
 type Haystack {
-  about: HSAbout!
-  ops: [HSOps!]!
-  tagValues(tag: String!, version: String): [String!]!
-  versions: [String!]!
-  entities(ids: [ID], select: String = "*", limit: Int = 0, filter: String = "", version: String): [AWSJSON!]
-  histories(ids: [ID], datesRange: String, version: String): [[HSTS!]!]
-  pointWrite(id: ID!, version: String): [HSPointWrite!]
+    about: HSAbout!
+    ops: [HSOps!]!
+    tagValues(tag: String!, version: HSDateTime): [String!]!
+    versions: [HSDateTime!]!
+    entities(ids: [ID], select: String = "*", limit: Int = 0, filter: String = "", version: HSDateTime): [AWSJSON!]
+    histories(ids: [ID], datesRange: String, version: HSDateTime): [[HSTS!]!]
+    pointWrite(id: ID!, version: HSDateTime): [HSPointWrite!]
 }
 
 type Query {

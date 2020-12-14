@@ -309,7 +309,7 @@ def _parse_datetime(toks):
 
     if (isodt.tzinfo is None) and bool(tzname):  # pragma: no cover
         # This technically shouldn't happen according to Zinc specs
-        return [timezone(tzname).localise(isodt)]
+        return [timezone(tzname).localize(isodt)]
     if bool(tzname):
         try:
             return [isodt.astimezone(timezone(tzname))]

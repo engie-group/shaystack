@@ -337,8 +337,9 @@ class Provider(HaystackInterface):
         return haystackapi.parse(body, mode)
 
     def set_lru_size(self, size):
-        self._download_grid_effective_version = functools.lru_cache(size,
-                                                                    Provider._download_grid_effective_version.__wrapped__)
+        self._download_grid_effective_version = \
+            functools.lru_cache(size,  # type: ignore
+                                Provider._download_grid_effective_version.__wrapped__)
 
     def cache_clear(self):
         self._download_grid_effective_version.cache_clear()

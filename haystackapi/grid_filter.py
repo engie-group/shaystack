@@ -3,6 +3,7 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 from datetime import datetime
+from functools import lru_cache
 
 from iso8601 import iso8601
 from pyparsing import Word, ZeroOrMore, Literal, Forward, Combine, Optional, Regex, OneOrMore, \
@@ -10,12 +11,6 @@ from pyparsing import Word, ZeroOrMore, Literal, Forward, Combine, Optional, Reg
 
 from .datatypes import REMOVE, MARKER, Coordinate, NA, Bin, Ref, XStr, Uri, Quantity
 from .filter_ast import FilterPath, FilterBinary, FilterUnary, FilterAST
-
-try:
-    from functools import lru_cache
-except ImportError:  # pragma: no cover
-    from backports.functools_lru_cache import lru_cache
-
 from .zincparser import DelimitedList, to_dict
 from .zoneinfo import timezone
 
@@ -154,7 +149,7 @@ def _parse_datetime(toks):
 
     if (isodt.tzinfo is None) and bool(tzname):  # pragma: no cover
         # This technically shouldn't happen according to Zinc specs
-        return [timezone(tzname).localise(isodt)]
+        return [timezone(tzname).localize(isodt)]
     if bool(tzname):
         try:
             return [isodt.astimezone(timezone(tzname))]
@@ -349,7 +344,7 @@ def filter_set_lru_size(lru_size):
     """ Change the lru size for the compiled filter functions """
     global _filter_function  # pylint: disable=W0601, C0103
     original_function = _filter_function.__wrapped__  # pylint: disable=E1101
-    _filter_function = lru_cache(lru_size, original_function)
+    _filter_function = lru_cache(lru_size, original_function)  # type: ignore
 
 
 def filter_function(grid_filter):

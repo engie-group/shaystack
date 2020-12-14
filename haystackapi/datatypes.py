@@ -11,8 +11,7 @@ from abc import ABCMeta
 
 import six
 
-from . import unit_reg
-from .pintutil import to_pint
+from .pintutil import to_pint, unit_reg
 
 STR_SUB = [
     ('\b', '\\b'),

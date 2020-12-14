@@ -2,6 +2,7 @@ from datetime import datetime, date, timedelta
 
 import pytz
 from mock import patch
+from tzlocal.unix import get_localzone
 
 import haystackapi
 from haystackapi import Ref
@@ -28,7 +29,9 @@ def test_his_read_with_zinc(mock, no_cache) -> None:
     response = haystackapi.his_read(request, "dev")
 
     # THEN
-    mock.assert_called_once_with(Ref("1234"), None, None)
+    mock.assert_called_once_with(Ref("1234"),
+                                 (datetime.min.replace(tzinfo=pytz.UTC),
+                                  datetime.max.replace(tzinfo=pytz.UTC)), None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert haystackapi.parse(response.body, mime_type) is not None
@@ -47,7 +50,10 @@ def test_his_read_with_args(mock) -> None:
     response = haystackapi.his_read(request, "dev")
 
     # THEN
-    mock.assert_called_once_with(Ref("1234"), None, None)
+    mock.assert_called_once_with(Ref("1234"),
+                                 (datetime.min.replace(tzinfo=pytz.UTC),
+                                  datetime.max.replace(tzinfo=pytz.UTC)),
+                                 None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert haystackapi.parse(response.body, mime_type) is not None
@@ -70,7 +76,11 @@ def test_his_read_with_range_today(mock) -> None:
     response = haystackapi.his_read(request, "dev")
 
     # THEN
-    mock.assert_called_once_with(Ref("1234"), (date.today(), None), None)
+    today = datetime.combine(date.today(), datetime.min.time()).replace(tzinfo=get_localzone())
+    mock.assert_called_once_with(Ref("1234"),
+                                 (today,
+                                  today + timedelta(days=1, milliseconds=-1)
+                                  ), None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert haystackapi.parse(response.body, mime_type) is not None
@@ -93,7 +103,9 @@ def test_his_read_with_range_yesterday(mock) -> None:
     response = haystackapi.his_read(request, "dev")
 
     # THEN
-    mock.assert_called_once_with(Ref("1234"), (date.today() - timedelta(days=1), None), None)
+    yesterday = datetime.combine(date.today() - timedelta(days=1), datetime.min.time()) \
+        .replace(tzinfo=get_localzone())
+    mock.assert_called_once_with(Ref("1234"), (yesterday, yesterday + timedelta(days=1, milliseconds=-1)), None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert haystackapi.parse(response.body, mime_type) is not None
@@ -142,7 +154,11 @@ def test_his_read_with_range_one_datetime(mock) -> None:
     response = haystackapi.his_read(request, "dev")
 
     # THEN
-    mock.assert_called_once_with(Ref("1234"), (datetime_1, None), None)
+    cur_datetime = datetime.combine(datetime_1, datetime.min.time()).replace(tzinfo=pytz.UTC)
+    mock.assert_called_once_with(Ref("1234"),
+                                 (cur_datetime,
+                                  cur_datetime + timedelta(days=1, milliseconds=-1)
+                                  ), None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert haystackapi.parse(response.body, mime_type) is not None
@@ -157,7 +173,7 @@ def test_his_read_with_range_two_date(mock) -> None:
     request = HaystackHttpRequest()
     grid = haystackapi.Grid(columns=['id', 'range'])
     date_1 = date(2020, 1, 1)
-    date_2 = date(2020, 1, 1)
+    date_2 = date(2020, 1, 2)
     grid.append({"id": Ref("1234"), "range": date_1.isoformat() + ',' + date_2.isoformat()})
     request.headers["Content-Type"] = mime_type
     request.headers["Accept"] = mime_type
@@ -167,7 +183,11 @@ def test_his_read_with_range_two_date(mock) -> None:
     response = haystackapi.his_read(request, "dev")
 
     # THEN
-    mock.assert_called_once_with(Ref("1234"), (date_1, date_2), None)
+    cur_datetime = datetime.combine(date_1, datetime.min.time()).replace(tzinfo=get_localzone())
+    mock.assert_called_once_with(Ref("1234"),
+                                 (datetime(2020, 1, 1).replace(tzinfo=get_localzone()),
+                                  datetime(2020, 1, 2).replace(tzinfo=get_localzone())
+                                  ), None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert haystackapi.parse(response.body, mime_type) is not None
@@ -191,7 +211,12 @@ def test_his_read_with_range_one_date(mock) -> None:
     response = haystackapi.his_read(request, "dev")
 
     # THEN
-    mock.assert_called_once_with(Ref("1234"), date_1, None)
+    cur_datetime = datetime.combine(date_1, datetime.min.time()).replace(tzinfo=get_localzone())
+    mock.assert_called_once_with(Ref("1234"),
+                                 (cur_datetime,
+                                  cur_datetime + timedelta(days=1, milliseconds=-1)
+                                  ), None)
+
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert haystackapi.parse(response.body, mime_type) is not None

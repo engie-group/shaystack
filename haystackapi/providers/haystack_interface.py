@@ -8,10 +8,11 @@ import os
 import traceback
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, tzinfo
 from importlib import import_module
 from typing import Any, Tuple, Dict, Union, Optional, List, cast
 
+import pytz
 from tzlocal import get_localzone
 
 import haystackapi
@@ -57,6 +58,9 @@ class HaystackInterface(ABC):
 
     def name(self):
         pass
+
+    def get_tz(self):
+        return get_localzone()
 
     def get_customer_id(self) -> str:
         """ Override this for multi-tenant"""
@@ -105,8 +109,8 @@ class HaystackInterface(ABC):
                 "haystackVersion": str(VER_3_0),
                 "tz": str(get_localzone()),
                 "serverName": "haystack_" + os.environ.get("AWS_REGION", "local"),
-                "serverTime": datetime.now(tz=get_localzone()).replace(microsecond=0),
-                "serverBootTime": datetime.now(tz=get_localzone()).replace(
+                "serverTime": datetime.now(tz=self.get_tz()).replace(microsecond=0),
+                "serverBootTime": datetime.now(tz=self.get_tz()).replace(
                     microsecond=0
                 ),
                 "productName": "AWS Lamdda Haystack Provider",
@@ -282,13 +286,7 @@ class HaystackInterface(ABC):
     def his_read(
             self,
             entity_id: Ref,
-            dates_range: Optional[
-                Union[
-                    Union[datetime, str],
-                    Tuple[datetime, Optional[datetime]],
-                    Tuple[date, Optional[date]],
-                ]
-            ],
+            dates_range: Optional[Tuple[datetime, datetime]],
             date_version: Optional[datetime],
     ) -> Grid:  # pylint: disable=no-self-use
         """
@@ -420,13 +418,7 @@ def get_provider(class_str) -> HaystackInterface:
             def his_read(  # pylint: disable=missing-function-docstring,useless-super-delegation
                     self,
                     entity_id: Ref,
-                    date_range: Optional[
-                        Union[
-                            Union[datetime, str],
-                            Tuple[datetime, Optional[datetime]],
-                            Tuple[date, Optional[date]],
-                        ]
-                    ],
+                    date_range: Optional[Tuple[datetime, datetime]],
                     date_version: Optional[datetime],
             ) -> Grid:
                 return super().his_read(entity_id, date_range, date_version)
@@ -465,31 +457,37 @@ def get_singleton_provider() -> HaystackInterface:
     return _singleton_provider
 
 
-def parse_date_range(date_range: str) -> Optional[
-    Union[
-        Union[datetime, str],
-        Tuple[datetime, Optional[datetime]],
-        Tuple[date, Optional[date]],
-    ]
+def parse_date_range(date_range: str, tz: tzinfo) -> Optional[
+    Union[datetime, datetime],
 ]:
     if not date_range:
-        return None
+        return datetime.min.replace(tzinfo=pytz.UTC), \
+               datetime.max.replace(tzinfo=pytz.UTC)
     if date_range not in ("today", "yesterday"):
-        split_date: List[datetime] = [parse_hs_date_format(x) for x in date_range.split(",")]
+        split_date = [parse_hs_date_format(x) for x in date_range.split(",")]
         if len(split_date) > 1:
             assert type(split_date[0]) == type(  # pylint: disable=C0123
                 split_date[1]
             )
-            return cast(Tuple[datetime, datetime], tuple(split_date))
-        else:
             if isinstance(split_date[0], datetime):
-                split_date.append(None)
                 return cast(Tuple[datetime, datetime], tuple(split_date))
             else:
-                return split_date[0]
+                return \
+                    (datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=tz),
+                     datetime.combine(split_date[1], datetime.min.time()).replace(tzinfo=tz))
+        else:
+            if isinstance(split_date[0], datetime):
+                return (split_date[0], split_date[0] + timedelta(days=1, milliseconds=-1))
+            else:
+                tzdate = datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=tz)
+                return tzdate, tzdate + timedelta(days=1, milliseconds=-1)
     else:
         if date_range == "today":
-            return date.today(), None
+            today = datetime.combine(date.today(), datetime.min.time()) \
+                .replace(tzinfo=tz)
+            return today, today + timedelta(days=1, milliseconds=-1)
         if date_range == "yesterday":
-            return date.today() - timedelta(days=1), None
+            yesterday = datetime.combine(date.today() - timedelta(days=1), datetime.min.time()) \
+                .replace(tzinfo=tz)
+            return yesterday, yesterday + timedelta(days=1, milliseconds=-1)
         raise ValueError(f"date_range {date_range} unknown")

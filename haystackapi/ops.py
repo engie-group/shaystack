@@ -616,7 +616,7 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             if "version" in args:
                 date_version = parse_hs_date_format(args["version"])
 
-        grid_date_range = parse_date_range(date_range)
+        grid_date_range = parse_date_range(date_range, provider.get_tz())
         log.debug(
             "id=%s range=%s, date_version=%s", entity_id, grid_date_range, date_version
         )

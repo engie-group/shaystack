@@ -515,7 +515,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
             SELECT date_time,val FROM {table_name}_ts
             WHERE customer_id = %s
             AND id = %s
-            AND date_time <= %s
+            AND date_time BETWEEN %s AND %s
             ORDER BY date_time
             '''),
     }

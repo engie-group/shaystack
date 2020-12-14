@@ -261,8 +261,8 @@ class ReadHaystack(graphene.ObjectType):
         log.debug(f"resolve_about(parent,info)")
         grid = get_singleton_provider().about("http://localhost")
         rc = ReadHaystack._conv_entity(HSAbout, grid[0])
-        rc.serverTime = grid[0]["serverTime"].isoformat()
-        rc.bootTime = grid[0]["serverBootTime"].isoformat()
+        rc.serverTime = grid[0]["serverTime"]
+        rc.bootTime = grid[0]["serverBootTime"]
         return rc
 
     @staticmethod
@@ -310,9 +310,10 @@ class ReadHaystack(graphene.ObjectType):
         if version:
             version = HSDateTime.parse_value(version)
         log.debug(f"resolve_histories(parent,info,ids={ids}, range={dates_range}, version={version})")
-        grid_date_range = parse_date_range(dates_range)
+        provider = get_singleton_provider()
+        grid_date_range = parse_date_range(dates_range, provider.get_tz())
         return [ReadHaystack._conv_history(
-            get_singleton_provider().his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version),
+            provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version),
             info
         )
             for entity_id in ids]

@@ -14,9 +14,9 @@ import json
 import logging
 import os
 import re
-from datetime import datetime, timedelta, MAXYEAR, MINYEAR
+from datetime import datetime, timedelta
 from types import ModuleType
-from typing import Optional, Union, Tuple, Dict, Any, List, Callable
+from typing import Optional, Tuple, Dict, Any, List, Callable
 from urllib.parse import urlparse, ParseResult
 
 import pytz
@@ -209,7 +209,7 @@ class Provider(HaystackInterface):
         try:
             sql_type_to_json = self._sql_type_to_json
             if date_version is None:
-                date_version = datetime(9999, 12, 31)
+                date_version = datetime.max.replace(tzinfo=pytz.UTC)
             exec_sql_filter: Callable = self._sql["exec_sql_filter"]
             if entity_ids is None:
                 exec_sql_filter(self._sql,
@@ -243,7 +243,7 @@ class Provider(HaystackInterface):
     def his_read(
             self,
             entity_id: Ref,
-            dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+            dates_range: Optional[Tuple[datetime, datetime]],
             date_version: Optional[datetime],
     ) -> Grid:
         """ Implement Haystack 'hisRead' """
@@ -260,8 +260,13 @@ class Provider(HaystackInterface):
         field_to_datetime_tz = self._sql["field_to_datetime_tz"]
         try:
             if not date_version:
-                date_version = datetime(9999, 12, 31, 23, 59, 59, 99, tzinfo=pytz.UTC)  # TODO: manage range
-            cursor.execute(self._sql["SELECT_TS"], (customer_id, entity_id.name, date_version))
+                date_version = datetime.max.replace(tzinfo=pytz.UTC)
+            if dates_range[1] > date_version:
+                dates_range = list(dates_range)
+                dates_range[1] = date_version
+
+            cursor.execute(self._sql["SELECT_TS"], (customer_id, entity_id.name,
+                                                    dates_range[0], dates_range[1]))
             for row in cursor:
                 history.append(
                     {
@@ -269,8 +274,8 @@ class Provider(HaystackInterface):
                         "val": parse_scalar(row[1])
                     }
                 )
-            min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
-            max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
+            min_date = datetime.max.replace(tzinfo=pytz.UTC)
+            max_date = datetime.min.replace(tzinfo=pytz.UTC)
 
             for time_serie in history:
                 min_date = min(min_date, time_serie["ts"])
@@ -364,7 +369,7 @@ class Provider(HaystackInterface):
     def _init_grid_from_db(self, version: Optional[datetime]) -> Grid:
         customer = self.get_customer_id()
         if version is None:
-            version = datetime(9999, 12, 31)
+            version = datetime.max.replace(tzinfo=pytz.UTC)
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -388,7 +393,7 @@ class Provider(HaystackInterface):
                             version: Optional[datetime]) -> Grid:
         """ Read haystack data from database and return a Grid"""
         if version is None:
-            version = datetime(9999, 12, 31)
+            version = datetime.max.replace(tzinfo=pytz.UTC)
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -439,7 +444,7 @@ class Provider(HaystackInterface):
             now = datetime.now(tz=pytz.UTC)
         end_date = now - timedelta(milliseconds=1)
         if version is None:
-            version = datetime(9999, 12, 31)
+            version = datetime.max.replace(tzinfo=pytz.UTC)
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()

@@ -499,27 +499,35 @@ test: .make-test
 
 functional-url-local:
 	@$(MAKE) async-stop-api >/dev/null
-	HAYSTACK_PROVIDER=haystackapi.provider.url \
-	HAYSTACK_URL=sample/carytown.zinc \
+	export HAYSTACK_PROVIDER=haystackapi.provider.url
+	export HAYSTACK_URL=sample/carytown.zinc
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/client_graphql.py
 	echo -e "$(green)Test with local url serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 
+# Clean DB, Start API, and try with SQLite
 functional-db-sqlite:
-	@$(MAKE) async-stop-api >/dev/null
-	HAYSTACK_PROVIDER=haystackapi.provider.sql \
-	HAYSTACK_DB=sqlite3://localhost/test.db \
+	@$(MAKE) async-stop-api>/dev/null
+	rm -f test.db
+	export HAYSTACK_PROVIDER=haystackapi.provider.sql
+	export HAYSTACK_DB=sqlite3://localhost/test.db
+	$(CONDA_PYTHON) -m haystackapi.providers.import_db sample/carytown.zinc $${HAYSTACK_DB}
+	echo -e "$(green)Data imported in SQLite$(normal)"
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/client_graphql.py
 	echo -e "$(green)Test with local SQLite serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 
-functional-db-postgres:
+# Start Postgres, Clean DB, Start API and try
+functional-db-postgres: clean-pg
 	@$(MAKE) async-stop-api >/dev/null
-	HAYSTACK_PROVIDER=haystackapi.provider.sql \
-	HAYSTACK_DB=postgres://postgres:password@172.17.0.2:5432/postgres \
+	export HAYSTACK_PROVIDER=haystackapi.provider.sql
+	export HAYSTACK_DB=postgres://postgres:password@172.17.0.2:5432/postgres
+	$(CONDA_PYTHON) -m haystackapi.providers.import_db sample/carytown.zinc $${HAYSTACK_DB}
+	echo -e "$(green)Data imported in Postgres$(normal)"
 	$(MAKE) start-pg async-start-api >/dev/null
+
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/client_graphql.py
 	echo -e "$(green)Test with local Postgres serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
@@ -654,12 +662,18 @@ stop-pg:
 	echo -e "$(green)Postgres stopped$(normal)"
 
 ## Print postgres db url connection
-pg-url:
+pg-url: start-pg
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
 	@echo "postgres://postgres:password@$$IP:5432/postgres#haystack"
 
 pg-shell:
-	@docker exec -it postgres psql -U postgres -h $(shell make postgres-ip)
+	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
+	docker exec -e PGPASSWORD=password -it postgres psql -U postgres -h $$IP
+
+clean-pg: start-pg
+	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
+	docker exec -e PGPASSWORD=password -it postgres psql -U postgres -h $$IP \
+	-c 'drop table if exists haystack;drop table if exists haystack_meta_datas;drop table if exists haystack_ts;'
 
 # You can change the password in .env
 PGADMIN_USER?=$(USER)@domain.com
@@ -682,4 +696,4 @@ stop-pgadmin:
 	echo -e "$(green)PGAdmin stopped$(normal)"
 
 ## Print all URL
-info: aws-api api  pg-url
+info: api pg-url aws-api

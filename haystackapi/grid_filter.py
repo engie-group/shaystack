@@ -2,6 +2,11 @@
 # -*- coding: utf-8 -*-
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+
+"""
+Parse the filter syntax to produce a FilterAST.
+See https://www.project-haystack.org/doc/Filters
+"""
 from datetime import datetime
 from functools import lru_cache
 
@@ -28,7 +33,8 @@ hs_valueSep = Regex(r' *, *')
 hs_plusMinus = Literal('+') | Literal('-')
 hs_exp = Combine(CaselessLiteral('e') + Optional(hs_plusMinus) + hs_digits)
 hs_decimal = Combine(
-    Optional(Literal('-')) + hs_digits + Optional(Literal('.') + hs_digits) + Optional(hs_exp)).setParseAction(
+    Optional(Literal('-')) + hs_digits + Optional(Literal('.') + hs_digits) +
+    Optional(hs_exp)).setParseAction(
     lambda toks: float(toks[0])
 )
 hs_unitChar = hs_alpha | Word(u'%_/$' + u''.join([
@@ -153,7 +159,7 @@ def _parse_datetime(toks):
     if bool(tzname):
         try:
             return [isodt.astimezone(timezone(tzname))]
-        except:  # noqa: E722 pragma: no cover
+        except  ValueError:  # noqa: E722 pragma: no cover
             # Unlikely to occur, might do though if Project Haystack changes
             # its timezone list or if a system doesn't recognise a particular
             # timezone.
@@ -331,8 +337,9 @@ class _FnWrapper:
 
 @lru_cache(maxsize=FILTER_CACHE_LRU_SIZE)
 def _filter_function(grid_filter):
-    global _id_function  # pylint: disable=C0103
-    def_filter = _generate_filter_in_python(parse_filter(grid_filter)._head, [])
+    global _id_function  # pylint: disable=global-statement
+    def_filter = _generate_filter_in_python(
+        parse_filter(grid_filter).head, [])  # pylint: disable=protected-access
     fun_name = "_gen_hsfilter_" + str(_id_function)
     function_template = "def %s(_grid, _entity):\n  return " % fun_name + "".join(def_filter)
     # print("\nGenerate:\n# " + grid_filter + "\n" + function_template)  # For debug

@@ -553,7 +553,7 @@ pytype.cfg: $(CONDA_PREFIX)/bin/pytype
 .make-typing: $(REQUIREMENTS) $(CONDA_PREFIX)/bin/pytype pytype.cfg $(PYTHON_SRC)
 	$(VALIDATE_VENV)
 	@echo -e "$(cyan)Check typing...$(normal)"
-	MYPYPATH=stubs pytype -V $(PYTHON_VERSION) haystackapi app
+	MYPYPATH=stubs pytype -V $(PYTHON_VERSION) haystackapi app tests
 	touch .make-typing
 
 ## Check python typing
@@ -568,7 +568,7 @@ typing: .make-typing
 .make-lint: $(REQUIREMENTS) $(PYTHON_SRC) | .pylintrc .pylintrc-test
 	$(VALIDATE_VENV)
 	@echo -e "$(cyan)Check lint...$(normal)"
-	@pylint app haystackapi
+	@pylint -d duplicate-code app haystackapi
 	@pylint --rcfile=.pylintrc-test tests
 	touch .make-lint
 

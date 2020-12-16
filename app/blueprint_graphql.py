@@ -17,7 +17,12 @@ log = logging.getLogger("haystackapi")
 
 
 class Query(graphene.ObjectType):
-    class Meta:
+    """
+    GraphQL haystack query.
+    To integrate the haystack Graphql API with other GraphQL API, see `aws appsync`.
+    """
+
+    class Meta:  # pylint: disable=missing-class-docstring
         description = "Root for haystack api"
 
     haystack = graphene.Field(graphene.NonNull(ReadHaystack))
@@ -46,7 +51,7 @@ def _dump_haystack_schema():
     Print haystack schema to insert in another global schema.
     """
     # Print only haystack schema
-    from graphql.utils import schema_printer
+    from graphql.utils import schema_printer  # pylint: disable=import-outside-toplevel
     print(schema_printer.print_schema(schema))
 
 

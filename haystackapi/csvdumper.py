@@ -5,6 +5,10 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
+"""
+Save a `Grid` in CSV file, conform with the specification describe
+here (https://www.project-haystack.org/doc/Csv)
+"""
 from __future__ import unicode_literals
 
 import datetime

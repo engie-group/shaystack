@@ -1,3 +1,7 @@
+"""
+Save Haystack ontology in Postgres database (use JSon type).
+Convert the haystack filter to postgres SQL equivalent syntax.
+"""
 import logging
 import textwrap
 from abc import abstractmethod, ABC
@@ -5,19 +9,20 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Type, Any, Union, Tuple, Optional, Dict
 
-from haystackapi import parse_filter, jsondumper, Quantity
-from haystackapi.filter_ast import FilterPath, FilterBinary, FilterUnary, FilterNode
+from .sqldb import DBCursor
+from .. import parse_filter, jsondumper, Quantity
+from ..filter_ast import FilterPath, FilterBinary, FilterUnary, FilterNode
 
 log = logging.getLogger("sql.Provider")
 
 
-class _Root(ABC):
+class _Root(ABC):  # pylint: disable=missing-module-docstring
     pass
 
 
 class _IsMerge(_Root):
     @abstractmethod
-    def isMerge(self):
+    def is_merge(self) -> bool:
         pass
 
 
@@ -28,7 +33,7 @@ class _Path(_Root):
 
 @dataclass
 class _Has(_IsMerge):
-    def isMerge(self):
+    def is_merge(self) -> bool:
         return len(self.right.paths) > 1
 
     right: _Path
@@ -36,31 +41,30 @@ class _Has(_IsMerge):
 
 @dataclass
 class _NotHas(_IsMerge):
-    def isMerge(self):
+    def is_merge(self) -> bool:
         return len(self.right.paths) > 1
 
     right: _Path
 
 
 @dataclass
-class _AndHasTags(_IsMerge):
+class _TypesHasTags(_IsMerge):
     not_op: bool
     type: Type  # HasBlock or NotHasBloc
     tags: List[str]
 
-    def isMerge(self):
+    def is_merge(self) -> bool:
         return False
 
 
 @dataclass
-class _OrHasTags(_IsMerge):
-    not_op: bool
-    type: Type  # HasBlock or NotHasBloc
-    tags: List[str]
+class _AndHasTags(_TypesHasTags):
+    pass
 
-    def isMerge(self):
-        return False
 
+@dataclass
+class _OrHasTags(_TypesHasTags):
+    pass
 
 @dataclass
 class _Intersect(_Root):
@@ -76,7 +80,7 @@ class _Union(_Root):
 
 @dataclass
 class _Compare(_Root):
-    def isMerge(self):
+    def is_merge(self) -> bool:  # pylint: disable=no-self-use
         return False
 
     operator: str
@@ -96,7 +100,7 @@ class _Or(_Root):
     right: _Root
 
 
-def _merge_has_operators(left, right, merged_class):
+def _merge_has_operators(left, right, merged_class: Type) -> Optional[_Root]:
     type_left = type(left)
     type_right = type(right)
     if isinstance(left, merged_class) and left.type == type_right \
@@ -126,25 +130,27 @@ def _merge_has_operators(left, right, merged_class):
 def _optimize_filter_for_sql(node: FilterNode) -> FilterNode:
     if isinstance(node, FilterPath):
         return _Path(node.paths)
-    elif isinstance(node, FilterBinary):
+    if isinstance(node, FilterBinary):
         left = _optimize_filter_for_sql(node.left)
         right = _optimize_filter_for_sql(node.right)
         if node.operator == "and":
             merged = _merge_has_operators(left, right, _AndHasTags)
             if merged:
                 return merged
-            if isinstance(left, _IsMerge) and left.isMerge() or \
-                    isinstance(right, _IsMerge) and right.isMerge() or \
-                    isinstance(left, (_Union, _Intersect)) or isinstance(right, (_Union, _Intersect)):
+            if isinstance(left, _IsMerge) and left.is_merge() or \
+                    isinstance(right, _IsMerge) and right.is_merge() or \
+                    isinstance(left, (_Union, _Intersect)) \
+                    or isinstance(right, (_Union, _Intersect)):  # pylint: disable=too-many-boolean-expressions
                 return _Intersect(left, right)
             return _And(left, right)
         if node.operator == "or":
             merged = _merge_has_operators(left, right, _OrHasTags)
             if merged:
                 return merged
-            if isinstance(left, _IsMerge) and left.isMerge() or \
-                    isinstance(right, _IsMerge) and right.isMerge() or \
-                    isinstance(left, (_Union, _Intersect)) or isinstance(right, (_Union, _Intersect)):
+            if isinstance(left, _IsMerge) and left.is_merge() or \
+                    isinstance(right, _IsMerge) and right.is_merge() or \
+                    isinstance(left, (_Union, _Intersect)) or \
+                    isinstance(right, (_Union, _Intersect)):  # pylint: disable=too-many-boolean-expressions
                 return _Union(left, right)
             return _Or(left, right)
         assert isinstance(left, _Path)
@@ -152,14 +158,13 @@ def _optimize_filter_for_sql(node: FilterNode) -> FilterNode:
         if operator == "==":
             operator = "="
         return _Compare(operator, left, right)
-    elif isinstance(node, FilterUnary):
+    if isinstance(node, FilterUnary):
         if node.operator == "has":
             # right = _optimize_filter_for_sql(node.right)
             return _Has(_Path(node.right.paths))
-        elif node.operator == "not":
+        if node.operator == "not":
             return _NotHas(_Path(node.right.paths))
-        else:  # pragma: no cover
-            assert 0, "Invalid operator"
+        assert 0, "Invalid operator"
     else:
         return node  # Value
 
@@ -197,7 +202,7 @@ def _generate_sql_block(table_name: str,
     return num_table, generated_sql
 
 
-def _select_version(version: datetime, num_table):
+def _select_version(version: datetime, num_table: int) -> str:
     return f"'{version.isoformat()}' BETWEEN t{num_table}.start_datetime AND t{num_table}.end_datetime\n"
 
 
@@ -344,23 +349,24 @@ def _generate_filter_in_sql(table_name: str,
                                select, where,
                                node.path,
                                num_table)
-            v = jsondumper.dump_scalar(node.value)
-            if v is None:
+            value = jsondumper.dump_scalar(node.value)
+            if value is None:
                 if node.operator == '!=':
                     where.append(f"t{num_table}.entity->>'{node.path.paths[-1]}' IS NOT NULL\n")
                 else:
                     where.append(f"t{num_table}.entity->>'{node.path.paths[-1]}' IS NULL\n")
             else:
-                where.append(f"t{num_table}.entity->>'{node.path.paths[-1]}' {node.operator} '{str(v)}'\n")
+                where.append(f"t{num_table}.entity->>'{node.path.paths[-1]}' "
+                             f"{node.operator} '{str(value)}'\n")
     return num_table, select, where
 
 
-def _flatten(l: List[Any]) -> List[Any]:
-    if not l:
-        return l
-    if isinstance(l[0], list):
-        return _flatten(l[0]) + _flatten(l[1:])
-    return l[:1] + _flatten(l[1:])
+def _flatten(a_list: List[Any]) -> List[Any]:
+    if not a_list:
+        return a_list
+    if isinstance(a_list[0], list):
+        return _flatten(a_list[0]) + _flatten(a_list[1:])
+    return a_list[:1] + _flatten(a_list[1:])
 
 
 def _sql_filter(table_name: str,
@@ -373,7 +379,7 @@ def _sql_filter(table_name: str,
         customer_id,
         version,
         limit,
-        _optimize_filter_for_sql(parse_filter(grid_filter)._head),
+        _optimize_filter_for_sql(parse_filter(grid_filter).head),  # pytlint: disable=protected-access
         num_table=1)
     sql_request = f'-- {grid_filter}{sql}'
     return sql_request
@@ -385,10 +391,10 @@ def _exec_sql_filter(params: Dict[str, Any],
                      grid_filter: Optional[str],
                      version: datetime,
                      limit: int = 0,
-                     customer_id: str = ''):
+                     customer_id: str = '') -> DBCursor:
     if grid_filter is None or grid_filter == '':
         cursor.execute(params["SELECT_ENTITY"], (version, customer_id))
-        return
+        return cursor
 
     sql_request = _sql_filter(
         table_name,

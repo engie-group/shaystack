@@ -1,6 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+"""
+Module to compare two grid.
+Calculate a new with only the differences.
+A removed tag must be set to REMOVE.
+A removed entity must have a tag `remove_'
+"""
 from copy import deepcopy
 
 from .datatypes import REMOVE, MARKER
@@ -9,7 +15,7 @@ from .metadata import MetadataObject
 from .sortabledict import SortableDict
 
 
-def grid_diff(left, right):
+def grid_diff(left: Grid, right: Grid) -> Grid:  # pylint: disable=too-many-nested-blocks,too-many-locals
     diff = Grid(version=right.version, metadata={})
     metadata = diff.metadata
     metadata["diff_"] = MARKER  # Mark the grid to be a difference between grid
@@ -95,7 +101,7 @@ def grid_diff(left, right):
                 for col in right.column:
                     if col not in left.column and col in right_row:
                         diff_row[col] = right_row[col]
-                if len(diff_row):
+                if diff_row:
                     diff_row["id"] = left_id
                     diff.append(diff_row)
             else:
@@ -145,7 +151,7 @@ def grid_diff(left, right):
     return diff
 
 
-def grid_merge(orig_grid, diff):
+def grid_merge(orig_grid: Grid, diff: Grid) -> Grid:  # pylint: disable=too-many-nested-blocks
     orig_grid._version = diff.version
 
     # Apply diff of metadata

@@ -4,6 +4,12 @@
 # (C) 2016 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+
+"""
+Parse Zinc file conform with the specification describe here (https://www.project-haystack.org/doc/Zinc)
+and produce a `Grid` instance.
+"""
+
 import datetime
 import logging
 import re
@@ -111,14 +117,14 @@ class ZincParseException(ValueError):
 
             # Append to message
             message += u'\n%s' % u'\n'.join(formatted_lines)
-        except:  # pragma: no cover
+        except ValueError:  # pragma: no cover
             # We should not get here.
             LOG.exception('Exception encountered formatting log message')
 
-        super(ZincParseException, self).__init__(message)
+        super().__init__(message)
 
 
-class NearestMatch:
+class NearestMatch:  # pylint: disable=global-statement
     """
     This class returns the nearest matching grammar for the given version.
     """
@@ -313,7 +319,7 @@ def _parse_datetime(toks):
     if bool(tzname):
         try:
             return [isodt.astimezone(timezone(tzname))]
-        except:  # pragma: no cover
+        except ValueError:  # pragma: no cover
             # Unlikely to occur, might do though if Project Haystack changes
             # its timezone list or if a system doesn't recognise a particular
             # timezone.
@@ -529,7 +535,8 @@ hs_scalar_2_0 <<= Or([hs_ref, hs_bin, hs_str, hs_uri, hs_dateTime,
                       hs_remove, hs_bool]).setName('scalar')
 hs_scalar_3_0 <<= Or([hs_ref, hs_xstr, hs_str, hs_uri, hs_dateTime,
                       hs_date, hs_time, hs_coord, hs_number, hs_na, hs_null, hs_marker,
-                      hs_remove, hs_bool, hs_list[VER_3_0], hs_dict[VER_3_0], hs_inner_grid[VER_3_0]]).setName('scalar')
+                      hs_remove, hs_bool, hs_list[VER_3_0], hs_dict[VER_3_0],
+                      hs_inner_grid[VER_3_0]]).setName('scalar')
 
 hs_nl = Combine(And([Optional(Literal('\r')), Literal('\n')]))
 
@@ -660,7 +667,7 @@ def parse_grid(grid_data, parse_all=True):
                         grid_data, parse_exception.lineno, parse_exception.col),
                     sys.exc_info()[2])
 
-    except:
+    except ValueError:
         LOG.debug('Failing grid: %r', grid_data)
         six.reraise(ZincParseException,
                     ZincParseException(

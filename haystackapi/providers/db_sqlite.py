@@ -1,3 +1,7 @@
+"""
+Save Haystack ontology in SQLite database with JSon extension.
+Convert the haystack filter to sqlite SQL equivalent syntax.
+"""
 import json
 import logging
 import textwrap
@@ -7,18 +11,19 @@ from typing import Dict, Any, Optional, List, Tuple, Union
 
 import pytz
 
-from haystackapi import parse_filter, jsondumper, Quantity
-from haystackapi.filter_ast import FilterNode, FilterUnary, FilterBinary, FilterPath
+from .sqldb import DBCursor
+from .. import parse_filter, jsondumper, Quantity
+from ..filter_ast import FilterNode, FilterUnary, FilterBinary, FilterPath
 
 log = logging.getLogger("sql.Provider")
 
 
-def _use_inner_join(node):
+def _use_inner_join(node: FilterNode) -> bool:
     """ Return True if the tree must use inner join """
     if isinstance(node, FilterUnary):
         return len(node.right.paths) > 1
     if isinstance(node, FilterBinary):
-        if isinstance(node.left, FilterDate):
+        if isinstance(node.left, _FilterDate):
             return False
         return _use_inner_join(node.left) or _use_inner_join(node.right)
     return False
@@ -47,7 +52,8 @@ def _generate_path(table_name: str,
             ['(',
              _select_version(version, num_table),
              f"AND t{num_table}.customer_id='{customer_id}'\n",
-             f"AND json_object(json(t{num_table - 1}.entity),'$.{path}') = json_object(json(t{num_table}.entity),'$.id'))\n"
+             f"AND json_object(json(t{num_table - 1}.entity),'$.{path}') = "
+             f"json_object(json(t{num_table}.entity),'$.id'))\n"
              ])
         first = False
     where.append("AND ")
@@ -63,7 +69,7 @@ def _generate_filter_in_sql(table_name: str,
                             num_table: int
                             ) -> Tuple[int, List[Union[str, List[Any]]], List[Union[str, List[Any]]]]:
     # Use RootBlock nodes
-    if isinstance(node, FilterDate):
+    if isinstance(node, _FilterDate):
         where.extend(
             ["(",
              _select_version(node.version, node.num_table),
@@ -131,13 +137,12 @@ def _generate_filter_in_sql(table_name: str,
                          ]
                 else:
                     where.append(f"{node.operator.upper()} ")
-                parent_right = isinstance(node.right, FilterBinary) and node.right.operator in ["and", "or"]
                 num_table, select, where = _generate_filter_in_sql(table_name, customer_id, version,
                                                                    select,
                                                                    where,
                                                                    node.right,
                                                                    num_table)
-                if len(where):
+                if where:
                     where.append(")\n")
         else:
             value = node.right
@@ -151,7 +156,8 @@ def _generate_filter_in_sql(table_name: str,
                                    node.left,
                                    num_table)
                 where.extend([
-                    f"CAST(substr(json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}'),3) AS REAL)",
+                    f"CAST(substr(json_extract(json(t{num_table}.entity),"
+                    f"'$.{node.left.paths[-1]}'),3) AS REAL)",
                     f" {node.operator} {value}\n",
                 ])
             else:
@@ -161,37 +167,42 @@ def _generate_filter_in_sql(table_name: str,
                                    select, where,
                                    node.left,
                                    num_table)
-                v = jsondumper.dump_scalar(value)
-                if v is None:
+                value = jsondumper.dump_scalar(value)
+                if value is None:
                     if node.operator == '!=':
                         where.append(
-                            f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') IS NOT NULL\n")
+                            f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
+                            f"IS NOT NULL\n")
                     else:
                         where.append(
-                            f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') IS NULL\n")
+                            f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
+                            f"IS NULL\n")
                 else:
                     where.append(
-                        f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') {node.operator} '{str(v)}'\n")
+                        f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
+                        f"{node.operator} '{str(value)}'\n")
 
     else:
         assert False, "Invalid node"
     return num_table, select, where
 
 
-def _flatten(l: List[Any]) -> List[Any]:
-    if not l:
-        return l
-    if isinstance(l[0], list):
-        return _flatten(l[0]) + _flatten(l[1:])
-    return l[:1] + _flatten(l[1:])
+def _flatten(a_list: List[Any]) -> List[Any]:
+    if not a_list:
+        return a_list
+    if isinstance(a_list[0], list):
+        return _flatten(a_list[0]) + _flatten(a_list[1:])
+    return a_list[:1] + _flatten(a_list[1:])
 
 
-def _select_version(version: datetime, num_table):
-    return f"datetime('{version.isoformat()}') BETWEEN datetime(t{num_table}.start_datetime) AND datetime(t{num_table}.end_datetime)\n"
+def _select_version(version: datetime, num_table: int) -> str:
+    return f"datetime('{version.isoformat()}') " \
+           f"BETWEEN datetime(t{num_table}.start_datetime) " \
+           f"AND datetime(t{num_table}.end_datetime)\n"
 
 
 @dataclass
-class FilterDate(FilterNode):
+class _FilterDate(FilterNode):
     version: datetime
     num_table: int
     customer_id: str
@@ -213,7 +224,7 @@ def _generate_sql_block(table_name: str,
         table_name, customer_id, version,
         select,
         [],
-        FilterBinary("and", FilterDate(version, num_table, customer_id), node),
+        FilterBinary("and", _FilterDate(version, num_table, customer_id), node),
         num_table
     )
 
@@ -237,7 +248,7 @@ def _sql_filter(table_name: str,
         customer_id,
         version,
         limit,
-        parse_filter(grid_filter)._head,
+        parse_filter(grid_filter).head,
         num_table=1)
     sql_request = f'-- {grid_filter}{sql}'
     return sql_request
@@ -249,10 +260,10 @@ def _exec_sql_filter(params: Dict[str, Any],
                      grid_filter: Optional[str],
                      version: datetime,
                      limit: int = 0,
-                     customer_id: Optional[str] = None):
+                     customer_id: Optional[str] = None) -> DBCursor:
     if grid_filter is None or grid_filter == '':
         cursor.execute(params["SELECT_ENTITY"], (version, customer_id))
-        return
+        return cursor
 
     sql_request = _sql_filter(
         table_name,
@@ -266,7 +277,7 @@ def _exec_sql_filter(params: Dict[str, Any],
 
 def get_db_parameters(table_name: str) -> Dict[str, Any]:
     return {
-        "sql_type_to_json": lambda x: json.loads(x),
+        "sql_type_to_json": json.loads,
         "exec_sql_filter": _exec_sql_filter,
         "field_to_datetime_tz": lambda val:
         datetime.strptime(val, "%Y-%m-%d %H:%M:%S").replace(tzinfo=pytz.utc),
@@ -286,7 +297,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
         "CREATE_HAYSTACK_INDEX_1": textwrap.dedent(f'''
             CREATE INDEX IF NOT EXISTS {table_name}_index ON {table_name}(id, customer_id)
             '''),
-        "CREATE_HAYSTACK_INDEX_2": textwrap.dedent(f'''
+        "CREATE_HAYSTACK_INDEX_2": textwrap.dedent('''
             '''),
         "CREATE_METADATA_TABLE": textwrap.dedent(f'''
             CREATE TABLE IF NOT EXISTS {table_name}_meta_datas

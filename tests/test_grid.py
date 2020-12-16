@@ -135,7 +135,7 @@ def test_grid_setitem_notdict():
     grid.append(row)
 
     try:
-        grid[0] = 'This is not a dict'
+        grid[0] = 'This is not a dict'  # type: ignore
         assert False, 'Accepted a string'
     except TypeError:
         pass

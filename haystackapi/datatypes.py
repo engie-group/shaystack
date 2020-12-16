@@ -4,6 +4,11 @@
 # (C) 2016 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+
+"""
+Implementation of all haystack types.
+See https://www.project-haystack.org/doc/TagModel#tagKinds
+"""
 import base64
 import binascii
 import re
@@ -24,7 +29,11 @@ STR_SUB = [
 
 # Will keep in memory the way we want Quantity being created
 
-class Quantity(six.with_metaclass(ABCMeta, object)):
+class Quantity(six.with_metaclass(ABCMeta, object)):  # pylint: disable=too-few-public-methods
+    """
+    A float value with with pint unit.
+    """
+
     def __new__(cls, value, unit=None):
         return PintQuantity(value, to_pint(unit))  # FIXME
 
@@ -283,9 +292,6 @@ class PintQuantity(Qty, unit_reg.Quantity):
     See https://pint.readthedocs.io for details
     """
 
-    def __init__(self, value, unit):
-        super().__init__(value, unit)
-
 
 Quantity.register(PintQuantity)  # noqa: E303
 
@@ -332,12 +338,12 @@ class Uri(str):
 
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__,
-                           super(Uri, self).__repr__())
+                           super().__repr__())
 
     def __eq__(self, other):
         if not isinstance(other, Uri):
             return NotImplemented
-        return super(Uri, self).__eq__(other)
+        return super().__eq__(other)
 
 
 class Bin(str):
@@ -348,12 +354,12 @@ class Bin(str):
 
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__,
-                           super(Bin, self).__repr__())
+                           super().__repr__())
 
     def __eq__(self, other):
         if not isinstance(other, Bin):
             return NotImplemented
-        return super(Bin, self).__eq__(other)
+        return super().__eq__(other)
 
 
 class XStr:
@@ -386,7 +392,7 @@ class XStr:
         return self.data == other.data  # Check only binary data
 
 
-class Singleton:
+class _Singleton:
     def __copy__(self):
         return self
 
@@ -397,7 +403,7 @@ class Singleton:
         return hash(self.__class__)
 
 
-class MarkerType(Singleton):
+class MarkerType(_Singleton):
     """
     A singleton class representing a Marker.
     """
@@ -409,7 +415,7 @@ class MarkerType(Singleton):
 MARKER = MarkerType()
 
 
-class NAType(Singleton):
+class NAType(_Singleton):
     """
     A singleton class representing a NA.
     """
@@ -421,7 +427,7 @@ class NAType(Singleton):
 NA = NAType()
 
 
-class RemoveType(Singleton):
+class RemoveType(_Singleton):
     """
     A singleton class representing a Remove.
     """
@@ -463,7 +469,7 @@ class Ref:
     def __eq__(self, other):
         if not isinstance(other, Ref):
             return NotImplemented
-        return (self.name == other.name)
+        return self.name == other.name
 
     def __ne__(self, other):
         if not isinstance(other, Ref):

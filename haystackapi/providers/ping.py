@@ -6,13 +6,14 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import Tuple, Any, Dict, Union, Optional, List
+from typing import Tuple, Any, Dict, Union, Optional, List, cast
 
 import pytz
 from overrides import overrides
 
-from haystackapi import Grid, VER_3_0, Ref, Quantity, MARKER
 from .haystack_interface import HaystackInterface
+from ..datatypes import MARKER
+from ..grid import Grid, VER_3_0, Ref, Quantity
 
 log = logging.getLogger("ping.Provider")
 
@@ -25,12 +26,12 @@ class Provider(HaystackInterface):
     """ Simple provider to implement all Haystack operation """
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "Ping"
 
     @overrides
     def values_for_tag(self, tag: str,
-                       date_version: Optional[datetime]) -> List[Any]:
+                       date_version: Optional[datetime] = None) -> List[Any]:
         return ["value1", "value2"]
 
     @overrides
@@ -44,7 +45,7 @@ class Provider(HaystackInterface):
         """ Implement the Haystack 'about' ops """
         log.info("about()")
         grid = super().about(home)
-        grid_row = grid[0]
+        grid_row = cast(Dict[str, Any], grid[0])
         grid_row.update(
             {  # pylint: disable=no-member
                 "productVersion": "1.0",
@@ -81,7 +82,7 @@ class Provider(HaystackInterface):
     @overrides
     def his_read(
             self,
-            entity_id: Ref,  # pylint: disable=no-self-use, unused-argument
+            entity_id: Ref,
             dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
             date_version: Optional[datetime],
     ) -> Grid:
@@ -153,7 +154,6 @@ class Provider(HaystackInterface):
         log.info(
             'watch_unsub(watch_id="%s", ids=%s, close_all=%s)', watch_id, ids, close
         )
-        return PingGrid
 
     @overrides
     def watch_poll(
@@ -191,12 +191,11 @@ class Provider(HaystackInterface):
         """ Return EmptyGrid """
         log.info('point_write_write(id=%s, level=%s, val=%s, duration=%s, who=%s, date_version=%s")',
                  entity_id, level, val, duration, who, date_version)
-        return PingGrid
 
     @overrides
     def invoke_action(
             self, entity_id: Ref, action: str, params: Dict[str, Any],
-            date_version: Optional[datetime]
+            date_version: Optional[datetime] = None
     ) -> Grid:  # pylint: disable=no-self-use
         """ Return EmptyGrid """
         log.info(

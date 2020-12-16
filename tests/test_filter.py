@@ -260,12 +260,12 @@ def test_if_generated_function_removed():
     # Check if the generated function will be removed
     import haystackapi.grid_filter
     wrapper = _FnWrapper("_acme", "def _acme(): pass")
-    assert haystackapi.grid_filter._acme  # pylint: disable=E1101
+    assert haystackapi.grid_filter._acme  # type: ignore
     if wrapper:
         del wrapper
     gc.collect()
     try:
-        assert haystackapi.grid_filter._acme is not None
+        assert haystackapi.grid_filter._acme is not None  # type: ignore
         assert False
     except AttributeError:
         pass

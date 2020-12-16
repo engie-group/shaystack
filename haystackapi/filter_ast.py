@@ -2,11 +2,18 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
-class FilterNode:
-    pass
+"""
+Abstract Syntax Tree for the filter syntax (See https://www.project-haystack.org/doc/Filters)
+"""
 
 
-class FilterPath(FilterNode):
+class FilterNode:  # pylint: disable=too-few-public-methods
+    """ Top type of all filter nodes. """
+
+
+class FilterPath(FilterNode):  # pylint: disable=too-few-public-methods
+    """ A filter path (a->b->c) """
+
     def __init__(self, paths):
         self.paths = paths
 
@@ -14,7 +21,9 @@ class FilterPath(FilterNode):
         return "->".join(self.paths)
 
 
-class FilterBinary(FilterNode):
+class FilterBinary(FilterNode):  # pylint: disable=too-few-public-methods
+    """ A filter binary operator """
+
     def __init__(self, operator, left, right):
         self.operator = operator
         self.left = left
@@ -24,7 +33,9 @@ class FilterBinary(FilterNode):
         return "%s %s %s" % (self.left, self.operator, self.right)
 
 
-class FilterUnary(FilterNode):
+class FilterUnary(FilterNode):  # pylint: disable=too-few-public-methods
+    """ A filter unary operator """
+
     def __init__(self, operator, right):
         self.operator = operator
         self.right = right
@@ -33,9 +44,11 @@ class FilterUnary(FilterNode):
         return "%s %s" % (self.operator, self.right)
 
 
-class FilterAST:
+class FilterAST:  # pylint: disable=too-few-public-methods
+    """ The root of AST """
+
     def __init__(self, head):
-        self._head = head
+        self.head = head
 
     def __repr__(self):
-        return "AST:" + repr(self._head)
+        return "AST:" + repr(self.head)

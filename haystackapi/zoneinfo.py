@@ -5,14 +5,17 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
+"""
+A support of Haystack timezone
+"""
 import datetime
 import sys
 
 import pytz
-# The official list of timezones as of 6th Jan 2016:
-# Yes, that's *without* the usual country prefix.
 import six
 
+# The official list of timezones as of 6th Jan 2016:
+# Yes, that's *without* the usual country prefix.
 HAYSTACK_TIMEZONES = """Abidjan
 Accra
 Adak
@@ -441,8 +444,8 @@ def _map_timezones():
 
 
 def _gen_map():
-    global _TZ_MAP
-    global _TZ_RMAP
+    global _TZ_MAP  # pylint: disable=global-statement
+    global _TZ_RMAP  # pylint: disable=global-statement
     if (_TZ_MAP is None) or (_TZ_RMAP is None):
         _TZ_MAP = _map_timezones()
         _TZ_RMAP = {z: n for (n, z) in list(_TZ_MAP.items())}

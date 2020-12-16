@@ -3,7 +3,9 @@
 # Pint integration helpers
 # (C) 2016 VRT Systems
 #
-
+"""
+Tools to convert haystack unit to pint unit.
+"""
 from pint import UnitRegistry
 
 HAYSTACK_CONVERSION = [
@@ -130,15 +132,15 @@ def to_haystack(unit):
     """
     Some parsing tweaks to fit pint units / handling of edge cases.
     """
-    global HAYSTACK_CONVERSION
-    global PINT_CONVERSION
+    global HAYSTACK_CONVERSION  # pylint: disable=global-statement
+    global PINT_CONVERSION  # pylint: disable=global-statement
     if unit == u'per_minute' or \
             unit == u'/min' or \
             unit == u'per_second' or \
             unit == u'/s' or \
             unit == u'per_hour' or \
             unit == u'/h' or \
-            unit is None:
+            unit is None:  # pylint: disable=too-many-boolean-expressions
         return u''
         # Those units are not units... they are impossible to fit anywhere in Pint
 
@@ -155,7 +157,7 @@ def to_pint(unit):
     """
     Some parsing tweaks to fit pint units / handling of edge cases.
     """
-    global HAYSTACK_CONVERSION
+    global HAYSTACK_CONVERSION  # pylint: disable=global-statement
     if unit == u'per_minute' or \
             unit == u'/min' or \
             unit == u'per_second' or \

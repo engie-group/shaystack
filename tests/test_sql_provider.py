@@ -1,7 +1,7 @@
 import copy
 import datetime
 import os
-from pathlib import Path
+from typing import cast
 from unittest.mock import patch
 
 import pytz
@@ -9,6 +9,7 @@ from nose import SkipTest
 
 from haystackapi import Ref, Grid, VER_3_0
 from haystackapi.providers import get_provider
+from haystackapi.providers.sql import Provider as SQLProvider
 
 # Set HAYSTACK_DB variable, before running the tests to validate with another database
 # HAYSTACK_DB = 'postgresql://postgres:password@172.17.0.2:5432/postgres#haystack'
@@ -45,26 +46,21 @@ def _get_grids():
     ]
 
 
-def _populate_db(provider):
+def _populate_db(provider: SQLProvider) -> None:
     provider.purge_db()
     for grid, version in _get_grids():
         provider.import_diff_grid_in_db(grid, "", None, version)
 
 
-def setup_function(fun):
-    # Remove database
-    Path("tests/test.db").unlink(missing_ok=True)
-
-
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 def test_create_db():
-    with get_provider("haystackapi.providers.sql") as provider:
+    with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
         provider.create_db()
 
 
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 def test_import_grid_in_db():
-    with get_provider("haystackapi.providers.sql") as provider:
+    with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
         provider.create_db()
         grid = Grid(metadata={"dis": "hello"},
                     columns=[("id", {}), ("a", {"dis": "a"}), ("b", {"dis": "b"})])
@@ -75,7 +71,7 @@ def test_import_grid_in_db():
 
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 def test_import_diff_grid_in_db():
-    with get_provider("haystackapi.providers.sql") as provider:
+    with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
         provider.create_db()
         provider.purge_db()
         left = Grid(columns={"id": {}, "a": {}, "b": {}, "c": {}})
@@ -111,7 +107,7 @@ def test_about():
 
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 def test_read_last_without_filter():
-    with get_provider("haystackapi.providers.sql") as provider:
+    with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
         _populate_db(provider)
         result = provider.read(0, None, None, None, None)
         assert result.metadata["v"] == "last"
@@ -119,7 +115,7 @@ def test_read_last_without_filter():
 
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 def test_read_version_without_filter():
-    with get_provider("haystackapi.providers.sql") as provider:
+    with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
         _populate_db(provider)
         version_2 = datetime.datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, None, None, date_version=version_2)
@@ -128,7 +124,7 @@ def test_read_version_without_filter():
 
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 def test_read_version_with_filter():
-    with get_provider("haystackapi.providers.sql") as provider:
+    with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
         _populate_db(provider)
         version_2 = datetime.datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, None, "id==@id1", version_2)
@@ -141,7 +137,7 @@ def test_read_version_with_filter():
 def test_read_version_with_filter():
     try:
         # caplog.set_level(logging.DEBUG)
-        with get_provider("haystackapi.providers.sql") as provider:
+        with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
             _populate_db(provider)
             version_2 = datetime.datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
             result = provider.read(0, "id,other", None, "id==@id1", version_2)
@@ -153,7 +149,7 @@ def test_read_version_with_filter():
 
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 def test_read_version_with_ids():
-    with get_provider("haystackapi.providers.sql") as provider:
+    with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
         _populate_db(provider)
         version_2 = datetime.datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, [Ref("id1")], None, version_2)
@@ -164,7 +160,7 @@ def test_read_version_with_ids():
 
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 def test_version():
-    with get_provider("haystackapi.providers.sql") as provider:
+    with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
         _populate_db(provider)
         versions = provider.versions()
         assert len(versions) == 3
@@ -173,7 +169,7 @@ def test_version():
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 def test_values_for_tag():
     try:
-        with get_provider("haystackapi.providers.sql") as provider:
+        with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
             _populate_db(provider)
             values = provider.values_for_tag("id")
             assert len(values) > 1

@@ -12,7 +12,7 @@ class Provider(HaystackInterface):
     def point_write_read(self,
                          entity_id: Ref,
                          date_version: Optional[datetime]) -> Grid:
-        pass
+        raise NotImplementedError()
 
     @overrides
     def point_write_write(self,
@@ -22,11 +22,11 @@ class Provider(HaystackInterface):
                           duration: Quantity,
                           who: Optional[str],
                           date_version: Optional[datetime]) -> None:
-        pass
+        raise NotImplementedError()
 
     @overrides
     def his_write(self,
                   entity_id: Ref,
                   time_serie: Grid,
                   date_version: Optional[datetime]) -> Grid:
-        pass
+        raise NotImplementedError()

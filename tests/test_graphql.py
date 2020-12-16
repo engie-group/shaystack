@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import cast
 from unittest.mock import patch
 
 import pytz
@@ -8,6 +9,7 @@ from app.blueprint_graphql import schema
 from haystackapi import Grid, VER_3_0, Uri, Ref, Coordinate, MARKER
 from haystackapi.providers import get_provider
 from haystackapi.providers.url import Provider
+from haystackapi.providers.url import Provider as URLProvider
 from tests import _get_mock_s3
 
 
@@ -293,7 +295,7 @@ def test_his_read_with_number(mock_s3, mock_get_url):
     mock_s3.return_value.his_count = 500
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
-    with get_provider("haystackapi.providers.url") as provider:
+    with cast(URLProvider, get_provider("haystackapi.providers.url")) as provider:
         provider.cache_clear()
         client = Client(schema)
         executed = client.execute('''
@@ -334,7 +336,7 @@ def test_his_read_with_uri(mock_s3, mock_get_url):
     mock_s3.return_value.his_count = 100
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
-    with get_provider("haystackapi.providers.url") as provider:
+    with cast(URLProvider, get_provider("haystackapi.providers.url")) as provider:
         provider.cache_clear()
         client = Client(schema)
         executed = client.execute('''
@@ -369,7 +371,7 @@ def test_his_read_with_ref(mock_s3, mock_get_url):
     mock_s3.return_value.his_count = 200
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
-    with get_provider("haystackapi.providers.url") as provider:
+    with cast(URLProvider, get_provider("haystackapi.providers.url")) as provider:
         provider.cache_clear()
         client = Client(schema)
         executed = client.execute('''
@@ -406,7 +408,7 @@ def test_his_read_with_datetime(mock_s3, mock_get_url):
     mock_s3.return_value.his_count = 300
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
-    with get_provider("haystackapi.providers.url") as provider:
+    with cast(URLProvider, get_provider("haystackapi.providers.url")) as provider:
         provider.cache_clear()
         client = Client(schema)
         executed = client.execute('''
@@ -445,7 +447,7 @@ def test_his_read_with_coordinate(mock_s3, mock_get_url):
     mock_s3.return_value.his_count = 400
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
-    with get_provider("haystackapi.providers.url") as provider:
+    with cast(URLProvider, get_provider("haystackapi.providers.url")) as provider:
         provider.cache_clear()
         client = Client(schema)
         executed = client.execute('''

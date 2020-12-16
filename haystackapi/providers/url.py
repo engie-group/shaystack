@@ -31,16 +31,18 @@ from io import BytesIO
 from os.path import dirname
 from pathlib import Path
 from threading import Lock
-from typing import Optional, Union, Tuple, Dict, Any, List
+from typing import Optional, Union, Tuple, Dict, Any, List, cast
 from urllib.parse import urlparse, ParseResult
 
 import pytz
 from overrides import overrides
 
-import haystackapi
-from haystackapi import Grid, suffix_to_mode, Ref
 from . import select_grid
 from .haystack_interface import HaystackInterface
+from ..datatypes import Ref
+from ..grid import Grid
+from ..parser import parse
+from ..parser import suffix_to_mode
 
 BOTO3_AVAILABLE = False
 try:
@@ -58,13 +60,13 @@ log = logging.getLogger("url.Provider")
 LRU_SIZE, PERIODIC_REFRESH = 15, int(os.environ.get("REFRESH", "15"))
 
 
-class Provider(HaystackInterface):
+class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attributes
     """
     Expose an Haystack file via the Haystactk Rest API.
     """
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "URL"
 
     def __init__(self):
@@ -93,7 +95,7 @@ class Provider(HaystackInterface):
     def about(self, home: str) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'about' operation """
         grid = super().about(home)
-        about_data: Dict[str, Any] = grid[0]
+        about_data = cast(Dict[str, Any], grid[0])
         about_data.update(
             {  # pylint: disable=no-member
                 "productVersion": "1.0",
@@ -111,7 +113,7 @@ class Provider(HaystackInterface):
             entity_ids: Optional[Grid] = None,
             grid_filter: Optional[str] = None,
             date_version: Optional[datetime] = None,
-    ) -> Grid:  # pylint: disable=unused-argument
+    ) -> Grid:
         """ Implement Haystack 'read' """
         log.debug(
             "----> Call read(limit=%s, select='%s', ids=%s grid_filter='%s' date_version=%s)",
@@ -163,7 +165,7 @@ class Provider(HaystackInterface):
                 history = self._download_grid(his_uri, date_version)
                 # assert history is sorted by date time
                 # Remove data after the date_version
-                for idx, row in enumerate(history):
+                for row in history:
                     if row['ts'] > date_version:
                         history = history[0:history.index(row)]
                         break
@@ -196,7 +198,7 @@ class Provider(HaystackInterface):
     def __del__(self):
         self.__exit__(None, None, None)
 
-    def _get_url(self):  # pylint: disable=no-self-use
+    def _get_url(self) -> str:  # pylint: disable=no-self-use
         """ Return the url to the file to expose. """
         return os.environ.get("HAYSTACK_URL", "")
 
@@ -209,7 +211,7 @@ class Provider(HaystackInterface):
                                                )
         return self._lambda_client
 
-    def _function_concurrency(self) -> int:
+    def _function_concurrency(self) -> int:  # pylint: disable=no-self-use
         # if not self._concurrency:
         #     try:
         #         self._concurrency = self._lambda().get_function_concurrency(
@@ -269,7 +271,7 @@ class Provider(HaystackInterface):
             return gzip.decompress(data)
         return data
 
-    def _periodic_refresh_versions(self, parsed_uri: ParseResult, first_time: bool):
+    def _periodic_refresh_versions(self, parsed_uri: ParseResult, first_time: bool) -> None:
         """ Refresh list of versions """
         # Refresh at a rounded period, then all cloud instances refresh data at the same time.
         now = datetime.utcnow().replace(tzinfo=pytz.UTC)
@@ -279,7 +281,8 @@ class Provider(HaystackInterface):
         assert next_time > now
         if parsed_uri.scheme == "s3":
             assert BOTO3_AVAILABLE, "Use 'pip install boto3'"
-            start_of_current_period = (next_time - timedelta(minutes=PERIODIC_REFRESH)).replace(tzinfo=pytz.UTC)
+            start_of_current_period = \
+                (next_time - timedelta(minutes=PERIODIC_REFRESH)).replace(tzinfo=pytz.UTC)
             s3_client = self._s3()
             obj_versions = [
                 (v["LastModified"], v["VersionId"])
@@ -315,12 +318,13 @@ class Provider(HaystackInterface):
             self._timer.daemon = True
             self._timer.start()
 
-    def _refresh_versions(self, parsed_uri: ParseResult):
+    def _refresh_versions(self, parsed_uri: ParseResult) -> None:
         if not PERIODIC_REFRESH or parsed_uri.geturl() not in self._versions:
             self._periodic_refresh_versions(parsed_uri, True)
 
     @functools.lru_cache
-    def _download_grid_effective_version(self, uri: str, effective_version: datetime) -> Grid:
+    def _download_grid_effective_version(self, uri: str,  # pylint: disable=method-hidden
+                                         effective_version: datetime) -> Grid:
         log.info("_download_grid(%s,%s)", uri, effective_version)
         parsed_uri = urlparse(uri, allow_fragments=False)
         body = self._download_uri(parsed_uri, effective_version).decode("utf-8-sig")
@@ -334,14 +338,15 @@ class Provider(HaystackInterface):
             raise ValueError(
                 "The file extension must be .(json|zinc|csv)[.gz]"
             )
-        return haystackapi.parse(body, mode)
+        return parse(body, mode)
 
-    def set_lru_size(self, size):
-        self._download_grid_effective_version = \
-            functools.lru_cache(size,  # type: ignore
-                                Provider._download_grid_effective_version.__wrapped__)
+    # FIXME: bug avec typing
+    # def set_lru_size(self, size:int) -> None:
+    #     self._download_grid_effective_version = \
+    #         functools.lru_cache(size,  # pylint: disable=no-member
+    #                             Provider._download_grid_effective_version.__wrapped__)
 
-    def cache_clear(self):
+    def cache_clear(self) -> None:
         self._download_grid_effective_version.cache_clear()
 
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:

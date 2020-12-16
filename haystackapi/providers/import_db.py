@@ -1,3 +1,6 @@
+"""
+Import haystack file in SQL database.
+"""
 import gzip
 import logging
 import os
@@ -12,10 +15,10 @@ from urllib.parse import urlparse, ParseResult
 
 import click
 
-import haystackapi
 from app.graphql_model import BOTO3_AVAILABLE
-from haystackapi.providers import sql
+from . import sql
 from .haystack_interface import get_provider
+from .. import suffix_to_mode, parse
 
 log = logging.getLogger(__name__)
 
@@ -56,8 +59,8 @@ def _read_grid(uri):
     if suffix == ".gz":
         suffix = Path(parsed_uri.path).suffixes[-2]
 
-    input_mode = haystackapi.suffix_to_mode(suffix)
-    grid = haystackapi.parse(data.decode("utf-8-sig"), input_mode)
+    input_mode = suffix_to_mode(suffix)
+    grid = parse(data.decode("utf-8-sig"), input_mode)
     return grid
 
 
@@ -97,11 +100,11 @@ def aws_handler(event, context):
     Set the environment variable HAYSTACK_URL and HAYSTACK_DB
     """
     hs_url = os.environ.get("HAYSTACK_URL")
-    db = os.environ.get("HAYSTACK_DB")
+    database = os.environ.get("HAYSTACK_DB")
     customer = event.get("CUSTOMER")
     assert hs_url, "Set `HAYSTACK_URL`"
-    assert db, "Set `HAYSTACK_DB`"
-    import_in_db(hs_url, db, customer)
+    assert database, "Set `HAYSTACK_DB`"
+    import_in_db(hs_url, database, customer)
 
 
 @click.command(short_help='Import haystack file in database')
@@ -123,7 +126,11 @@ def aws_handler(event, context):
 @click.option("--clean",
               help='Clean the database before import the first version',
               is_flag=True)
-def main(haystack_url: str, database_url: str, customer: Optional[str], clean: bool, time_series: bool) -> int:
+def main(haystack_url: str,
+         database_url: str,
+         customer: Optional[str],
+         clean: bool,
+         time_series: bool) -> int:
     """
     Import haystack file for file or URL, to database, to be used with sql provider.
     Only the difference was imported, with a new version of ontology.
@@ -139,4 +146,4 @@ def main(haystack_url: str, database_url: str, customer: Optional[str], clean: b
 
 if __name__ == '__main__':
     logging.basicConfig(level=os.environ.get("LOG_LEVEL", "ERROR"))
-    sys.exit(main())
+    sys.exit(main())  # pylint: disable=no-value-for-parameter

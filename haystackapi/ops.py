@@ -22,24 +22,19 @@ from typing import Tuple, Dict
 
 from accept_types import AcceptableType, get_best_match
 
-import haystackapi
-from haystackapi import (
-    Grid,
-    VER_3_0,
-    parse_scalar,
-    MODE_ZINC,
-    parse_hs_date_format,
-    Ref,
-    Quantity,
-)
+from .datatypes import Ref, Quantity, MARKER
+from .dumper import dump
+from .grid import Grid, VER_3_0
+from .grid_filter import parse_hs_date_format
+from .parser import MODE_ZINC, MODE_CSV, MODE_JSON, parse_scalar, parse, mode_to_suffix
 from .providers.haystack_interface import (
     EmptyGrid,
     HttpError, get_singleton_provider, parse_date_range,
 )
 
-_DEFAULT_VERSION = haystackapi.VER_3_0
-DEFAULT_MIME_TYPE: str = haystackapi.MODE_CSV
-_DEFAULT_MIME_TYPE_WITH_METADATA = haystackapi.MODE_ZINC
+_DEFAULT_VERSION = VER_3_0
+DEFAULT_MIME_TYPE: str = MODE_CSV
+_DEFAULT_MIME_TYPE_WITH_METADATA = MODE_ZINC
 
 log = logging.getLogger("haystackapi")
 
@@ -181,7 +176,7 @@ def _get_weight(tail):
     return Decimal(1)
 
 
-def _parse_body(request: HaystackHttpRequest) -> haystackapi.Grid:
+def _parse_body(request: HaystackHttpRequest) -> Grid:
     if "Content-Encoding" in request.headers and request.is_base64:
         content_encoding = request.headers["Content-Encoding"]
         if content_encoding != "gzip":
@@ -191,11 +186,11 @@ def _parse_body(request: HaystackHttpRequest) -> haystackapi.Grid:
         request.body = gzip.decompress(base64.b64decode(body)).decode("utf-8")
         request.isBase64Encoded = False
     if "Content-Type" not in request.headers:
-        grid = haystackapi.parse(request.body, mode=DEFAULT_MIME_TYPE)
+        grid = parse(request.body, mode=DEFAULT_MIME_TYPE)
     else:
         content_type = request.headers["Content-Type"]
-        if haystackapi.mode_to_suffix(content_type):
-            grid = haystackapi.parse(request.body, mode=content_type)
+        if mode_to_suffix(content_type):
+            grid = parse(request.body, mode=content_type)
         elif request.body:
             raise HttpError(406, f"Content-Type '{content_type}' not supported")
         else:
@@ -207,7 +202,7 @@ def _parse_body(request: HaystackHttpRequest) -> haystackapi.Grid:
 
 def _format_response(
         headers: Dict[str, str],
-        grid_response: haystackapi.Grid,
+        grid_response: Grid,
         status_code: int,
         status_msg: str,
         default=None,
@@ -224,36 +219,36 @@ def _format_response(
 
 
 def _dump_response(
-        accept: str, grid: haystackapi.Grid, default: Optional[str] = None
+        accept: str, grid: Grid, default: Optional[str] = None
 ) -> Tuple[str, str]:
     accept_type = get_best_match(
-        accept, ["*/*", haystackapi.MODE_CSV, haystackapi.MODE_ZINC, haystackapi.MODE_JSON]
+        accept, ["*/*", MODE_CSV, MODE_ZINC, MODE_JSON]
     )
     if accept_type:
         if accept_type in (DEFAULT_MIME_TYPE, "*/*"):
             return (
                 DEFAULT_MIME_TYPE + "; charset=utf-8",
-                haystackapi.dump(grid, mode=DEFAULT_MIME_TYPE),
+                dump(grid, mode=DEFAULT_MIME_TYPE),
             )
-        if accept_type == haystackapi.MODE_ZINC:
+        if accept_type == MODE_ZINC:
             return (
-                haystackapi.MODE_ZINC + "; charset=utf-8",
-                haystackapi.dump(grid, mode=haystackapi.MODE_ZINC),
+                MODE_ZINC + "; charset=utf-8",
+                dump(grid, mode=MODE_ZINC),
             )
-        if accept_type == haystackapi.MODE_JSON:
+        if accept_type == MODE_JSON:
             return (
-                haystackapi.MODE_JSON + "; charset=utf-8",
-                haystackapi.dump(grid, mode=haystackapi.MODE_JSON),
+                MODE_JSON + "; charset=utf-8",
+                dump(grid, mode=MODE_JSON),
             )
-        if accept_type == haystackapi.MODE_CSV:
+        if accept_type == MODE_CSV:
             return (
-                haystackapi.MODE_CSV + "; charset=utf-8",
-                haystackapi.dump(grid, mode=haystackapi.MODE_CSV),
+                MODE_CSV + "; charset=utf-8",
+                dump(grid, mode=MODE_CSV),
             )
     if default:
         return (
             default + "; charset=utf-8",
-            haystackapi.dump(grid, mode=default),
+            dump(grid, mode=default),
         )  # Return HTTP 403 ?
 
     raise HttpError(406, f"Accept '{accept}' not supported")
@@ -263,10 +258,10 @@ def _manage_exception(
         headers: Dict[str, str], ex: Exception, stage: str
 ) -> HaystackHttpResponse:
     log.error(traceback.format_exc())
-    error_grid = haystackapi.Grid(
+    error_grid = Grid(
         version=_DEFAULT_VERSION,
         metadata={
-            "err": haystackapi.MARKER,
+            "err": MARKER,
             "id": "badId",
             "errTrace": traceback.format_exc() if stage == "dev" else "",
         },
@@ -326,7 +321,7 @@ def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         provider = get_singleton_provider()
         grid_response = provider.formats()
         if grid_response is None:
-            grid_response = haystackapi.Grid(
+            grid_response = Grid(
                 version=_DEFAULT_VERSION,
                 columns={
                     "mime": {},
@@ -337,19 +332,19 @@ def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             grid_response.extend(
                 [
                     {
-                        "mime": haystackapi.MODE_ZINC,
-                        "receive": haystackapi.MARKER,
-                        "send": haystackapi.MARKER,
+                        "mime": MODE_ZINC,
+                        "receive": MARKER,
+                        "send": MARKER,
                     },
                     {
-                        "mime": haystackapi.MODE_JSON,
-                        "receive": haystackapi.MARKER,
-                        "send": haystackapi.MARKER,
+                        "mime": MODE_JSON,
+                        "receive": MARKER,
+                        "send": MARKER,
                     },
                     {
-                        "mime": haystackapi.MODE_CSV,
-                        "receive": haystackapi.MARKER,
-                        "send": haystackapi.MARKER,
+                        "mime": MODE_CSV,
+                        "receive": MARKER,
+                        "send": MARKER,
                     },
                 ]
             )
@@ -673,7 +668,7 @@ def invoke_action(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespo
             if "id" in args:
                 entity_id = Ref(args["id"][1:])
             if "action" in args:
-                entity_id = args["action"]
+                action = args["action"]
         params = grid_request[0] if grid_request else {}
         grid_response = provider.invoke_action(entity_id, action, params)
         assert grid_response is not None

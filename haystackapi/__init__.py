@@ -1,9 +1,21 @@
 # -*- coding: utf-8 -*-
 # Zinc dumping and parsing module
-# (C) 2016 VRT Systems
+# (C) 2016 VRT Systems and Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+"""
+Implementation of Haystack project https://www.project-haystack.org/
+Propose API :
+- to read or write Haystack file (Zinc, JSon, CSV)
+- to manipulate ontology in memory (Grid class)
+- to implement REST API (https://www.project-haystack.org/doc/Rest)
+- to implement GraphQL API
 
+With some sample provider:
+- Import ontology on S3 bucket
+- Import ontology on SQLite or Postgres
+- and expose the data via Flask or AWS Lambda
+"""
 from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, NA, \
     REMOVE, Ref, XStr
 from .dumper import dump, dump_scalar
@@ -11,7 +23,8 @@ from .grid import Grid
 from .grid_filter import parse_filter, parse_hs_date_format
 from .metadata import MetadataObject
 from .ops import *
-from .parser import parse, parse_scalar, MODE_JSON, MODE_ZINC, MODE_CSV, suffix_to_mode, mode_to_suffix
+from .parser import parse, parse_scalar, MODE_JSON, MODE_ZINC, MODE_CSV, \
+    suffix_to_mode, mode_to_suffix
 from .pintutil import unit_reg
 from .providers import HaystackInterface
 from .version import Version, VER_2_0, VER_3_0, LATEST_VER

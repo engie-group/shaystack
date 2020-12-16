@@ -4,10 +4,13 @@ import datetime
 import logging
 import os
 import textwrap
+from typing import cast
 
 import pytz
+
 from haystackapi.providers import get_provider
 from haystackapi.providers.db_sqlite import _sql_filter as sql_filter
+from haystackapi.providers.sql import Provider as SQLProvider
 
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "WARNING"))
 
@@ -15,9 +18,9 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 
 # If .env set the HAYSTACK_DB to postgres, check to execute the sql request
-def _check_sqlite(sql_request: str):
+def _check_sqlite(sql_request: str) -> None:
     if os.environ.get('HAYSTACK_DB', '').startswith("sqlite"):
-        provider = get_provider("haystackapi.providers.sql")
+        provider = cast(SQLProvider, get_provider("haystackapi.providers.sql"))
         conn = provider.get_connect()
         try:
             conn.execute(sql_request)

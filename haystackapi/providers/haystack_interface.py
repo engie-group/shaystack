@@ -13,10 +13,12 @@ from importlib import import_module
 from typing import Any, Tuple, Dict, Optional, List, cast
 
 import pytz
+from pytz import BaseTzInfo
 from tzlocal import get_localzone
 
-import haystackapi
-from haystackapi import Grid, VER_3_0, Uri, Ref, Quantity, parse_hs_date_format
+from ..datatypes import Ref, Quantity, Uri
+from ..grid import Grid, VER_3_0
+from ..grid_filter import parse_hs_date_format
 
 log = logging.getLogger("haystackapi")
 
@@ -44,10 +46,15 @@ class HaystackInterface(ABC):
     the code detect that, and can calculate the set of implemented operations.
     """
 
-    def __repr__(self):
-        return self.name()
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        raise NotImplementedError()
 
-    def __str__(self):
+    def __repr__(self) -> str:
+        return self.name
+
+    def __str__(self) -> str:
         return self.__repr__()
 
     def __enter__(self):
@@ -56,13 +63,10 @@ class HaystackInterface(ABC):
     def __exit__(self, exc_type, exc_value, exc_traceback):
         pass
 
-    def name(self):
-        pass
-
-    def get_tz(self):
+    def get_tz(self) -> BaseTzInfo:  # pylint: disable=no-self-use
         return get_localzone()
 
-    def get_customer_id(self) -> str:
+    def get_customer_id(self) -> str:  # pylint: disable=no-self-use
         """ Override this for multi-tenant"""
         return ''
 
@@ -73,7 +77,7 @@ class HaystackInterface(ABC):
         """
         raise NotImplementedError()
 
-    def versions(self) -> List[datetime]:
+    def versions(self) -> List[datetime]:  # pylint: disable=no-self-use
         """
         Return datetime for each versions or empty array if is unknown
         """
@@ -87,7 +91,7 @@ class HaystackInterface(ABC):
         Return the default 'about' grid.
         Must be completed with "productUri", "productVersion", "moduleName" abd "moduleVersion"
         """
-        grid = haystackapi.Grid(
+        grid = Grid(
             version=VER_3_0,
             columns=[
                 "haystackVersion",  # Str version of REST implementation
@@ -125,7 +129,7 @@ class HaystackInterface(ABC):
     def ops(self) -> Grid:
         """ Implement the Haystack 'ops' ops """
         # Automatically calculate the implemented version.
-        grid = haystackapi.Grid(
+        grid = Grid(
             version=VER_3_0,
             columns={
                 "name": {},
@@ -176,14 +180,14 @@ class HaystackInterface(ABC):
     # Implement this method, only if you want to limited the format negociation
     def formats(self) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'formats' ops """
-        return None
+        raise NotImplementedError()
 
     @abstractmethod
     def read(
             self,
             limit: int,
             select: Optional[str],
-            entity_ids: Optional[Grid],
+            entity_ids: Optional[List[Ref]],
             grid_filter: Optional[str],
             date_version: Optional[datetime],
     ) -> Grid:  # pylint: disable=no-self-use
@@ -223,7 +227,7 @@ class HaystackInterface(ABC):
     @abstractmethod
     def watch_unsub(
             self, watch_id: str, ids: List[Ref], close: bool
-    ) -> None:  # pylint: disable=no-self-use
+    ) -> Grid:  # pylint: disable=no-self-use
         """
         Implement the Haystack 'watchUnsub' ops
         :param watch_id: The user watch_id to update or None
@@ -300,7 +304,9 @@ class HaystackInterface(ABC):
 
     @abstractmethod
     def his_write(
-            self, entity_id: Ref, time_serie: Grid,
+            self,
+            entity_id: Ref,
+            time_serie: Grid,
             date_version: Optional[datetime]
     ) -> Grid:  # pylint: disable=no-self-use
         """
@@ -313,9 +319,11 @@ class HaystackInterface(ABC):
 
     @abstractmethod
     def invoke_action(
-            self, entity_id: Ref, action: str, params: Dict[str, Any],
+            self,
+            entity_id: Ref,
+            action: str,
+            params: Dict[str, Any],
             date_version: Optional[datetime] = None
-
     ) -> Grid:  # pylint: disable=no-self-use
         """
         Implement the Haystack 'invokeAction' ops
@@ -335,7 +343,7 @@ def no_cache():
     return False
 
 
-def get_provider(class_str) -> HaystackInterface:
+def get_provider(class_str: str) -> HaystackInterface:
     """Return an instance of the provider.
     If the provider is an abstract class, create a sub class with all the implementation
     and return an instance of this subclass. Then, the 'ops' method can analyse the current instance
@@ -358,6 +366,9 @@ def get_provider(class_str) -> HaystackInterface:
             def __init__(self):
                 super().__init__()
 
+            def name(self) -> str:
+                return super().name()
+
             def about(
                     self, home: str
             ) -> Grid:  # pylint: disable=missing-function-docstring,useless-super-delegation
@@ -367,7 +378,7 @@ def get_provider(class_str) -> HaystackInterface:
                     self,
                     limit: int,
                     select: Optional[str],
-                    entity_id: Optional[Grid],
+                    entity_id: Optional[List[Ref]],
                     grid_filter: Optional[str],
                     date_version: Optional[datetime],
             ) -> Grid:
@@ -443,21 +454,21 @@ def get_provider(class_str) -> HaystackInterface:
         raise
 
 
-_singleton_provider = None
+singleton_provider = None
 
 
 def get_singleton_provider() -> HaystackInterface:
-    global _singleton_provider
+    global singleton_provider  # pylint: disable=global-statement
     assert (
             "HAYSTACK_PROVIDER" in os.environ
     ), "Set 'HAYSTACK_PROVIDER' environment variable"
-    if not _singleton_provider or no_cache():
+    if not singleton_provider or no_cache():
         log.debug("Provider=%s", os.environ["HAYSTACK_PROVIDER"])
-        _singleton_provider = get_provider(os.environ["HAYSTACK_PROVIDER"])
-    return _singleton_provider
+        singleton_provider = get_provider(os.environ["HAYSTACK_PROVIDER"])
+    return singleton_provider
 
 
-def parse_date_range(date_range: str, tz: tzinfo) -> Optional[Tuple[datetime, datetime]]:
+def parse_date_range(date_range: str, timezone: tzinfo) -> Tuple[datetime, datetime]:
     if not date_range:
         return datetime.min.replace(tzinfo=pytz.UTC), \
                datetime.max.replace(tzinfo=pytz.UTC)
@@ -469,23 +480,19 @@ def parse_date_range(date_range: str, tz: tzinfo) -> Optional[Tuple[datetime, da
             )
             if isinstance(split_date[0], datetime):
                 return cast(Tuple[datetime, datetime], tuple(split_date))
-            else:
-                return \
-                    (datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=tz),
-                     datetime.combine(split_date[1], datetime.min.time()).replace(tzinfo=tz))
-        else:
-            if isinstance(split_date[0], datetime):
-                return (split_date[0], split_date[0] + timedelta(days=1, milliseconds=-1))
-            else:
-                tzdate = datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=tz)
-                return tzdate, tzdate + timedelta(days=1, milliseconds=-1)
-    else:
-        if date_range == "today":
-            today = datetime.combine(date.today(), datetime.min.time()) \
-                .replace(tzinfo=tz)
-            return today, today + timedelta(days=1, milliseconds=-1)
-        if date_range == "yesterday":
-            yesterday = datetime.combine(date.today() - timedelta(days=1), datetime.min.time()) \
-                .replace(tzinfo=tz)
-            return yesterday, yesterday + timedelta(days=1, milliseconds=-1)
-        raise ValueError(f"date_range {date_range} unknown")
+            return \
+                (datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=timezone),
+                 datetime.combine(split_date[1], datetime.min.time()).replace(tzinfo=timezone))
+        if isinstance(split_date[0], datetime):
+            return (split_date[0], split_date[0] + timedelta(days=1, milliseconds=-1))
+        tzdate = datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=timezone)
+        return tzdate, tzdate + timedelta(days=1, milliseconds=-1)
+    if date_range == "today":
+        today = datetime.combine(date.today(), datetime.min.time()) \
+            .replace(tzinfo=timezone)
+        return today, today + timedelta(days=1, milliseconds=-1)
+    if date_range == "yesterday":
+        yesterday = datetime.combine(date.today() - timedelta(days=1), datetime.min.time()) \
+            .replace(tzinfo=timezone)
+        return yesterday, yesterday + timedelta(days=1, milliseconds=-1)
+    raise ValueError(f"date_range {date_range} unknown")

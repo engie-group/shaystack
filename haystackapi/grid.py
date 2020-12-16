@@ -5,11 +5,18 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
+"""
+An entire ontology in memory.
+It's like a list of dict.
+"""
 
 import copy
 import datetime
 import logging
 import numbers
+from collections import MutableSequence
+from collections.abc import Sequence
+from typing import Union, Dict, Iterable, Any, Optional, KeysView, Tuple
 
 import pytz
 
@@ -20,22 +27,20 @@ from .version import Version, VER_3_0
 
 log = logging.getLogger("ping.Provider")
 
-try:
-    import collections.abc as col
-    from collections.abc import Sequence
-except ImportError:  # pragma: no cover
-    import collections as col
-    from collections import Sequence
 
-
-class Grid(col.MutableSequence):
+class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
     """
     A grid is basically a series of tabular records.  The grid has a header
     which describes some metadata about the grid and its columns.  This is
     followed by zero or more rows.
     """
 
-    def __init__(self, version=None, metadata=None, columns=None):
+    def __init__(self, version: Union[str, Version, None] = None,
+                 metadata: Optional[Dict[str, Any]] = None,
+                 columns: Union[None,
+                                Dict[str, Any],
+                                Iterable[Union[Tuple[str, Any], str]],
+                                SortableDict] = None):
         """
         Create a new Grid.
         """
@@ -80,7 +85,7 @@ class Grid(col.MutableSequence):
                 self.column.add_item(col_id, metadata_object)
 
     @staticmethod
-    def _approx_check(version_1, version_2):
+    def _approx_check(version_1: 'Grid', version_2: 'Grid'):
         # Check types match
         if isinstance(version_1, numbers.Number) and isinstance(version_2, numbers.Number):
             return abs(version_1 - version_2) < 0.000001
@@ -110,7 +115,7 @@ class Grid(col.MutableSequence):
             return True
         return version_1 == version_2
 
-    def __eq__(self, other):
+    def __eq__(self, other: 'Grid') -> bool:
         if not isinstance(other, Grid):
             return False
         if set(self.metadata.keys()) != set(other.metadata.keys()):
@@ -154,13 +159,14 @@ class Grid(col.MutableSequence):
 
         return True
 
-    def __sub__(self, other):
+    def __sub__(self, other: 'Grid') -> 'Grid':
         """
         Calculate the difference between two grid.
         The result is a grid with only the attributs to update (change value, delete, etc)
         If a row with id must be removed,
         - if the row has an id, the result add a row with this id, and a tag 'remove_'
-        - if the row has not an id, the result add a row with all values of the original row, and a tag 'remove_'
+        - if the row has not an id, the result add a row with all values of the
+        original row, and a tag 'remove_'
 
         It's possible to update all metadatas, the order of columns, add, remove or update some rows
 
@@ -168,10 +174,10 @@ class Grid(col.MutableSequence):
         At all time, with gridA and gridB, gridA + (gridB - gridA) == gridB
         """
         assert isinstance(other, Grid)
-        from .grid_diff import grid_diff
+        from .grid_diff import grid_diff  # pylint: disable: import-outside-toplevel
         return grid_diff(other, self)
 
-    def __add__(self, other):
+    def __add__(self, other: 'Grid') -> 'Grid':
         """
         Merge two grid.
         The metadata can be modified with the values from other.
@@ -182,27 +188,27 @@ class Grid(col.MutableSequence):
         At all time, with gridA and gridB, gridA + (gridB - gridA) == gridB
         """
         assert isinstance(other, Grid)
-        from .grid_diff import grid_merge
+        from .grid_diff import grid_merge  # pylint: disable: import-outside-toplevel
         if 'diff_' in self.metadata:
             return grid_merge(other.copy(), self)
         return grid_merge(self.copy(), other)
 
     @property
-    def version(self):  # pragma: no cover
+    def version(self) -> Version:  # pragma: no cover
         # Trivial function
         return self._version
 
     @property
-    def nearest_version(self):  # pragma: no cover
+    def nearest_version(self) -> Version:  # pragma: no cover
         # Trivial function
         return Version.nearest(self._version)
 
     @property
-    def ver_str(self):  # pragma: no cover
+    def ver_str(self) -> str:  # pragma: no cover
         # Trivial function
         return str(self.version)
 
-    def __repr__(self):  # pragma: no cover
+    def __repr__(self) -> str:  # pragma: no cover
         # Not critical to the operation of the library.
         """
         Return a representation of this grid.
@@ -241,7 +247,7 @@ class Grid(col.MutableSequence):
             class_name, u'\n'.join(parts), class_name
         )
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, Ref, slice]) -> Union[Dict[str, Any], 'Grid']:
         """
         Retrieve the row at index.
         """
@@ -250,37 +256,37 @@ class Grid(col.MutableSequence):
             result._row = self._row[key]
             result._index = None
             return result
-        if isinstance(key, numbers.Number):
+        if isinstance(key, int):
             return self._row[key]
         assert isinstance(key, Ref), "The 'id' tag must be a Ref"
         if not self._index:
             self.reindex()
         return self._index[key]
 
-    def __contains__(self, key):
-        if isinstance(key, numbers.Number):
+    def __contains__(self, key: Union[int, Ref]) -> bool:
+        if isinstance(key, int):
             return 0 <= key < len(self._row)
         if not self._index:
             self.reindex()
         return key in self._index
 
-    def get(self, index, default=None):
+    def get(self, index: Ref, default=None) -> Dict[str, Any]:
         if not self._index:
             self.reindex()
         return self._index.get(index, default)
 
-    def keys(self):
+    def keys(self) -> KeysView[Ref]:
         if not self._index:
             self.reindex()
         return self._index.keys()
 
-    def __len__(self):
+    def __len__(self) -> int:
         """
         Return the number of rows in the grid.
         """
         return len(self._row)
 
-    def __setitem__(self, index, value):
+    def __setitem__(self, index: Union[int, Ref], value: Dict[str, Any]) -> 'Grid':
         """
         Replace the row at index.
         """
@@ -303,14 +309,15 @@ class Grid(col.MutableSequence):
             self._row[idx] = value
             if "id" in value:
                 self._index[value["id"]] = value
+        return self
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: Union[int, Ref]) -> Optional[Dict]:
         """
         Delete the row at index.
         """
         return self.pop(key)
 
-    def pop(self, *index):  # pylint: disable=W0222
+    def pop(self, *index) -> Optional[Dict[str, Any]]:  # pylint: disable=W0222
         """
         Delete the row at index or with specified Ref id.
         If multiple index/key was specified, all row was removed.
@@ -336,7 +343,7 @@ class Grid(col.MutableSequence):
                     ret_value = self._index.pop(key)
         return ret_value
 
-    def insert(self, index, value):
+    def insert(self, index: int, value: Dict[str, Any]):
         """
         Insert a new row before index.
         """
@@ -351,7 +358,7 @@ class Grid(col.MutableSequence):
             self._index[value["id"]] = value
         return self
 
-    def reindex(self):
+    def reindex(self) -> 'Grid':
         """
         Reindex the grid if a user, update directly an id of a row
         """
@@ -362,7 +369,7 @@ class Grid(col.MutableSequence):
                 self._index[item["id"]] = item
         return self
 
-    def pack_columns(self):
+    def pack_columns(self) -> 'Grid':
         using_columns = set()
         columns_keys = self.column.keys()
         for row in self._row:
@@ -370,10 +377,11 @@ class Grid(col.MutableSequence):
                 if col_name in row:
                     using_columns.add(col_name)
                 if len(using_columns) == len(columns_keys):  # All columns was found
-                    return
+                    return self
         self.column = {k: self.column[k] for k in using_columns}
+        return self
 
-    def extends_columns(self):
+    def extends_columns(self) -> 'Grid':
         new_cols = self.column.copy()
         for row in self._row:
             for k in row.keys():
@@ -382,30 +390,30 @@ class Grid(col.MutableSequence):
         self.column = new_cols
         return self
 
-    def extend(self, values):
-        super(Grid, self).extend(values)  # Python 2 compatible :-(
-        # super().extend(values)  # Python 3+ :-)
+    def extend(self, values: Iterable[Dict[str, Any]]) -> 'Grid':
+        super().extend(values)
         for item in self._row:
             if "id" in item:
                 self._index[item["id"]] = item
         return self
 
-    def sort(self, tag):
+    def sort(self, tag: str) -> 'Grid':
         self._row = sorted(self._row, key=lambda row: row[tag])
+        return self
 
-    def copy(self):
+    def copy(self) -> 'Grid':
         a_copy = copy.deepcopy(self)
-        a_copy._index = None  # Remove index
+        a_copy._index = None  # Remove index pylint: disable=protected-access
         return a_copy
 
-    def filter(self, grid_filter, limit=0):
+    def filter(self, grid_filter: str, limit: int = 0) -> 'Grid':
         """
         Return a filter version of this grid.
         Warning, use a grid.filter(...).deepcopy() if you not whant to share metadata, columns and rows)
         """
-        assert isinstance(limit, numbers.Number)
+        assert isinstance(limit, int)
         assert limit >= 0
-        from .grid_filter import filter_function
+        from .grid_filter import filter_function  # pylint: disable: import-outside-toplevel
         if grid_filter is None or grid_filter.strip() == '':
             if limit == 0:
                 return self
@@ -422,7 +430,7 @@ class Grid(col.MutableSequence):
                 break
         return result
 
-    def _detect_or_validate(self, val):
+    def _detect_or_validate(self, val: Any) -> None:
         """
         Detect the version used from the row content, or validate against
         the version if given.
@@ -432,7 +440,7 @@ class Grid(col.MutableSequence):
             # Project Haystack 3.0 type.
             self._assert_version(VER_3_0)
 
-    def _assert_version(self, version):
+    def _assert_version(self, version: Version) -> None:
         """
         Assert that the grid version is equal to or above the given value.
         If no version is set, set the version.

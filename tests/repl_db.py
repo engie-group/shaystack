@@ -14,7 +14,7 @@ from pyparsing import ParseException
 from haystackapi.providers import get_provider
 from haystackapi.providers.db_postgres import _sql_filter as pg_sql_filter
 from haystackapi.providers.db_sqlite import _sql_filter as sqlite_sql_filter
-from haystackapi.providers.sql import Provider
+from haystackapi.providers.sql import Provider as SQLProvider
 
 FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
@@ -22,7 +22,7 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 def main():
     """ Loop to test the postgres generation with REPL """
     provider = get_provider("haystackapi.providers.sql")
-    conn = cast(Provider, provider).get_connect()
+    conn = cast(SQLProvider, provider).get_connect()
     scheme = urlparse(os.environ["HAYSTACK_DB"]).scheme
 
     class TstRequest(cmd.Cmd):
@@ -38,11 +38,10 @@ def main():
                     cursor = self.conn.cursor()
                     cursor.execute(sql_request)
                     cursor.close()
-            except (psycopg2.errors.SyntaxError, ParseException, Exception):
+            except (psycopg2.errors.SyntaxError, ParseException):
                 traceback.print_exc()
             finally:
                 conn.rollback()
-                pass
 
         def do_sqlite(self, arg):
             try:
@@ -56,7 +55,6 @@ def main():
                 traceback.print_exc()
             finally:
                 conn.rollback()
-                pass
 
         def do_bye(self, arg):
             self.close()

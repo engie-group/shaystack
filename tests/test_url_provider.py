@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import cast
 from unittest.mock import patch
 
 import pytz
@@ -6,12 +7,12 @@ import pytz
 from haystackapi import MetadataObject
 from haystackapi import Ref
 from haystackapi.providers import get_provider
-from haystackapi.providers.url import Provider
+from haystackapi.providers.url import Provider as URLProvider
 from tests import _get_mock_s3
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 def test_values_for_tag(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
@@ -28,7 +29,7 @@ def test_ops():
     assert len(result) == 5
 
 
-@patch.object(Provider, '_get_url')
+@patch.object(URLProvider, '_get_url')
 def test_about(mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("haystackapi.providers.url") as provider:
@@ -36,19 +37,19 @@ def test_about(mock_get_url):
         assert result[0]['moduleName'] == 'URLProvider'
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 def test_read_last_without_filter(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
-    with get_provider("haystackapi.providers.url") as provider:
+    with cast(URLProvider, get_provider("haystackapi.providers.url")) as provider:
         provider.cache_clear()
         result = provider.read(0, None, None, None, None)
         assert result.metadata["v"] == "3"
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 def test_read_version_without_filter(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
@@ -58,8 +59,8 @@ def test_read_version_without_filter(mock_s3, mock_get_url):
         assert result.metadata["v"] == "2"
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 def test_read_version_with_filter(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
@@ -71,8 +72,8 @@ def test_read_version_with_filter(mock_s3, mock_get_url):
         assert result[0]['id'] == Ref("id1")
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 def test_read_version_with_filter(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
@@ -82,8 +83,8 @@ def test_read_version_with_filter(mock_s3, mock_get_url):
         assert result.column == {"id": MetadataObject(), "other": MetadataObject()}
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 def test_read_version_with_ids(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
@@ -95,10 +96,10 @@ def test_read_version_with_ids(mock_s3, mock_get_url):
         assert result[0]['id'] == Ref("id1")
 
 
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_s3')
 def test_lru_version(mock):
     mock.return_value = _get_mock_s3()
-    with get_provider("haystackapi.providers.url") as provider:
+    with cast(URLProvider, get_provider("haystackapi.providers.url")) as provider:
         provider.cache_clear()
         version_3 = datetime(2020, 10, 1, 0, 0, 3, 0, tzinfo=pytz.UTC)
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
@@ -118,8 +119,8 @@ def test_lru_version(mock):
             pass
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 def test_version(mock, mock_get_url):
     mock.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"

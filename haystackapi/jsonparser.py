@@ -4,12 +4,20 @@
 # (C) 2018 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+
+"""
+Parse Json file conform with the specification describe
+here (https://www.project-haystack.org/doc/Json)
+and produce a `Grid` instance.
+"""
+
 import copy
 import datetime
 import functools
 import json
 import re
 import sys
+from typing import Any
 
 import iso8601
 
@@ -99,7 +107,7 @@ def parse_row(row, version):
     return parsed_row
 
 
-def parse_embedded_scalar(scalar, version=LATEST_VER):
+def parse_embedded_scalar(scalar, version=LATEST_VER) -> Any:  # pylint: disable=too-many-locals
     # Simple cases
     if scalar is None:
         return None
@@ -205,7 +213,7 @@ def parse_embedded_scalar(scalar, version=LATEST_VER):
         try:
             time_zone = timezone(tzname)
             return iso_date.astimezone(time_zone)
-        except:  # noqa: E722 pragma: no cover
+        except TypeError:  # noqa: E722 pragma: no cover
             # Unlikely code path.
             return iso_date
 
@@ -236,4 +244,3 @@ def parse_scalar(scalar, version=LATEST_VER):
         scalar = json.loads(scalar)
 
     return parse_embedded_scalar(scalar, version=version)
-

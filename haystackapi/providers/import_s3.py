@@ -1,6 +1,8 @@
+"""
+Import haystack file in S3 bucket. Manage the versions of files.
+"""
 import base64
 import gzip
-import gzip as gz
 import logging
 import os
 import sys
@@ -18,16 +20,18 @@ import boto3
 import click
 from botocore.exceptions import ClientError
 
-import haystackapi
-from haystackapi import EmptyGrid, Grid
-from haystackapi.zincparser import ZincParseException
+from .haystack_interface import EmptyGrid
+from ..dumper import dump
+from ..grid import Grid
+from ..parser import parse, suffix_to_mode
+from ..zincparser import ZincParseException
 
 log = logging.getLogger("import_s3")
 
 VERIFY = True
 POOL_SIZE = 20
 
-pool = None
+POOL = None
 
 lock = Lock()
 
@@ -65,8 +69,7 @@ def _get_hash_of_s3_file(s3_client,
         if ex.response['Error']['Code'] == 'NoSuchKey':
             # Target key not found
             return ''
-        else:
-            raise
+        raise
 
 
 def merge_timeseries(source_grid: Grid,
@@ -89,9 +92,9 @@ def merge_timeseries(source_grid: Grid,
             source_grid.extend(filter(lambda row: row['ts'] < start_source, destination_grid))
             source_grid.sort('ts')
 
-    source_data = haystackapi.dump(source_grid, mode).encode('UTF8')
+    source_data = dump(source_grid, mode).encode('UTF8')
     if compress:
-        source_data = gz.compress(source_data)
+        source_data = gzip.compress(source_data)
     md5_digest = md5(source_data)
     b64_digest = base64.b64encode(md5_digest.digest()).decode("UTF8")
     return source_data, b64_digest
@@ -104,14 +107,14 @@ def update_grid_on_s3(parsed_source: ParseResult,
                       force: bool,
                       merge_ts: bool,
                       use_thread: bool = True
-                      ) -> None:
+                      ) -> None:  # pylint: disable=too-many-locals
     log.debug("update %s", (parsed_source.geturl(),))
     s3_client = boto3.client(
         "s3",
         endpoint_url=os.environ.get("AWS_S3_ENDPOINT", None),
     )
     suffix = Path(parsed_source.path).suffix
-    gz = False
+    use_gzip = False
     if parsed_source.scheme == 's3' and not compare_grid:
         if time_series:
             source_data = _download_uri(parsed_source)
@@ -144,22 +147,22 @@ def update_grid_on_s3(parsed_source: ParseResult,
         if time_series or compare_grid or merge_ts:
             unzipped_source_data = source_data
             if suffix == ".gz":
-                gz = True
+                use_gzip = True
                 unzipped_source_data = gzip.decompress(source_data)
                 suffix = Path(parsed_source.path).suffixes[-2]
 
             try:
                 with lock:
-                    source_grid = haystackapi.parse(unzipped_source_data.decode("utf-8-sig"),
-                                                    haystackapi.suffix_to_mode(suffix))
+                    source_grid = parse(unzipped_source_data.decode("utf-8-sig"),
+                                        suffix_to_mode(suffix))
                 destination_data = s3_client.get_object(Bucket=parsed_destination.hostname,
                                                         Key=parsed_destination.path[1:],
                                                         IfNoneMatch=source_etag)['Body'].read()
                 if parsed_source.path.endswith(".gz"):
                     destination_data = gzip.decompress(destination_data)
                 with lock:
-                    destination_grid = haystackapi.parse(destination_data.decode("utf-8-sig"),
-                                                         haystackapi.suffix_to_mode(suffix))
+                    destination_grid = parse(destination_data.decode("utf-8-sig"),
+                                             suffix_to_mode(suffix))
 
             except ClientError as ex:
                 if ex.response['Error']['Code'] == 'NoSuchKey':
@@ -178,11 +181,11 @@ def update_grid_on_s3(parsed_source: ParseResult,
                 log.warning("Zinc parser exception with %s", (parsed_destination.geturl()))
                 destination_grid = EmptyGrid
 
-        if force or not compare_grid or len(destination_grid - source_grid):
+        if force or not compare_grid or (destination_grid - source_grid):
             if not force and merge_ts:  # PPR: if TS, limite the number of AWS versions ?
                 source_data, b64_digest = merge_timeseries(source_grid,
                                                            destination_grid,
-                                                           haystackapi.suffix_to_mode(suffix), gz)
+                                                           suffix_to_mode(suffix), use_gzip)
             s3_client.put_object(Body=source_data,
                                  Bucket=parsed_destination.hostname,
                                  Key=parsed_destination.path[1:],
@@ -220,7 +223,7 @@ def update_grid_on_s3(parsed_source: ParseResult,
                         force=force,
                         merge_ts=True)
         if requests:
-            with ThreadPool(processes=POOL_SIZE) as pool:
+            with ThreadPool(processes=POOL_SIZE) as pool:  # FIXME: pool global ou local ?
                 pool.starmap(update_grid_on_s3, requests)
 
 
@@ -303,4 +306,4 @@ def main(source_url: str, target_url: str, compare: bool, time_series: bool, for
 if __name__ == '__main__':
     freeze_support()
     logging.basicConfig(level=os.environ.get("LOG_LEVEL", "ERROR"))
-    sys.exit(main())
+    sys.exit(main())  # pylint: disable=no-value-for-parameter

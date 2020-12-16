@@ -3,14 +3,15 @@ Implementation of Haystack API
 """
 import re
 
-from haystackapi import Grid, MetadataObject
-from haystackapi.sortabledict import SortableDict
 from .haystack_interface import HaystackInterface, get_provider
+from ..grid import Grid
+from ..metadata import MetadataObject
+from ..sortabledict import SortableDict
 
 __all__ = ["HaystackInterface", "get_provider"]
 
 
-def select_grid(grid, select) -> Grid:
+def select_grid(grid: Grid, select: str) -> Grid:
     if select:
         select = select.strip()
         if select not in ["*", '']:

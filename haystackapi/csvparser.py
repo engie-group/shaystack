@@ -3,18 +3,17 @@
 # (C) 2020 Philippe PRADOS
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
-import sys
+"""
+Parse CSV file conform with the specification describe here (https://www.project-haystack.org/doc/Csv)
+and produce a `Grid` instance.
+"""
+from csv import reader
 from io import StringIO
 
 from .datatypes import MARKER, Ref
 from .grid import Grid
 from .version import VER_3_0
 from .zincparser import parse_scalar as zinc_parse_scalar, ZincParseException
-
-if sys.version_info[0] == 2:
-    from csv23 import reader
-else:
-    from csv import reader
 
 
 def parse_grid(grid_str):

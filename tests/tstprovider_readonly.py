@@ -14,7 +14,7 @@ class Provider(HaystackInterface):
              entity_ids: Optional[Grid] = None,
              grid_filter: Optional[str] = None,
              date_version: Optional[datetime] = None) -> Grid:
-        pass
+        raise NotImplementedError()
 
     @overrides
     def his_read(self, entity_id: Ref,
@@ -22,4 +22,4 @@ class Provider(HaystackInterface):
                                              Tuple[datetime, Optional[datetime]],
                                              Tuple[date, Optional[date]]]],
                  date_version: Optional[datetime]) -> Grid:
-        pass
+        raise NotImplementedError()

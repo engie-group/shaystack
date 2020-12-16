@@ -4,15 +4,15 @@
 # (C) 2016 VRT Systems
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+
+"""
+A sortable dictionary
+"""
+import collections.abc as col
 import copy
 import sys
 
 import six
-
-try:
-    import collections.abc as col
-except ImportError:  # pragma: no cover
-    import collections as col
 
 
 class SortableDict(col.MutableMapping):
@@ -24,7 +24,7 @@ class SortableDict(col.MutableMapping):
         self._values = {}
         self._order = []
         self._validate_fn = validate_fn
-        super(SortableDict, self).__init__()
+        super().__init__()
 
         # Copy initial values into dict.
         if initial is not None:
@@ -82,7 +82,7 @@ class SortableDict(col.MutableMapping):
         if pos_key is not None:
             try:
                 index = self.index(pos_key)
-            except ValueError as e:
+            except ValueError:
                 six.reraise(KeyError,
                             KeyError('%r not found' % pos_key),
                             sys.exc_info()[2])

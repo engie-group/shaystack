@@ -13,4 +13,4 @@ class Provider(HaystackInterface):
     def invoke_action(self, entity_id: Ref, action: str,
                       params: Dict[str, Any],
                       date_version: Optional[datetime]) -> Grid:
-        pass
+        raise NotImplementedError()

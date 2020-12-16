@@ -8,6 +8,9 @@ import sys
 import click
 from flask_cors import CORS
 
+from app.blueprint_graphql import graphql_blueprint
+from app.blueprint_haystack import haystack_blueprint
+
 try:
     from flask import Flask, send_from_directory
 except ImportError:
@@ -23,8 +26,7 @@ HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi
 
 USE_GRAPHQL = False
 try:
-    import graphene
-    from app.blueprint_graphql import graphql_blueprint
+    import graphene  # pylint: disable=ungrouped-imports
 
     USE_GRAPHQL = True
 except ImportError:
@@ -33,14 +35,12 @@ To use GraphQL,use
 pip install "haystackapi[flask,graphql]"  
 """, file=sys.stderr)
 
-from app.blueprint_haystack import haystack_blueprint as haystack_blueprint
-
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}, r"/graphql/*": {"origins": "*"}}, )
 
 _log_level = os.environ.get("LOG_LEVEL", "WARNING")
 logging.basicConfig(level=_log_level)
-app.logger.setLevel(_log_level)
+app.logger.setLevel(_log_level)  # pylint: disable=no-member
 app.register_blueprint(haystack_blueprint)
 if USE_GRAPHQL:
     app.register_blueprint(graphql_blueprint)

@@ -14,49 +14,37 @@ import json
 import logging
 import os
 import re
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from types import ModuleType
-from typing import Optional, Tuple, Dict, Any, List, Callable, Iterable, Iterator
+from typing import Optional, Tuple, Dict, Any, List, Callable, Set, cast
 from urllib.parse import urlparse, ParseResult
 
 import pytz
 from overrides import overrides
 
-from haystackapi import Grid, Ref, jsondumper, jsonparser, VER_3_0, MetadataObject
 from . import select_grid
 from .haystack_interface import HaystackInterface
-from ..jsondumper import dump_scalar
-from ..jsonparser import parse_scalar
+from .sqldb import DBConnection
+from ..datatypes import Ref
+from ..grid import Grid
+from ..jsondumper import dump_scalar, dump_meta, dump_columns, dump_row
+from ..jsonparser import parse_scalar, parse_row, parse_metadata, parse_cols
+from ..metadata import MetadataObject
+from ..version import VER_3_0
+
+try:
+    from botocore.exceptions import ClientError
+except ImportError:
+    @dataclass
+    class ClientError(Exception):
+        response: List[Any]
 
 log = logging.getLogger("sql.Provider")
-
-
-class DBCursor:
-    def execute(self, cmd: str, args: Optional[Tuple] = None) -> None: ...
-
-    def fetchall(self) -> List[List]: return []
-
-    def fetchone(self) -> Iterable: return []
-
-    def executemany(self, sql: str, params: Iterable) -> None: ...
-
-    def close(self) -> None: ...
-
-    def __iter__(self) -> Iterator[List]: return [].__iter__()
-
-
-class DBConnection:
-    def cursor(self) -> DBCursor: return DBCursor()
-
-    def commit(self) -> None: ...
-
-    def close(self) -> None: ...
-
 
 BOTO3_AVAILABLE = False
 try:
     import boto3
-    from botocore.client import BaseClient, ClientError
 
     BOTO3_AVAILABLE = True
 except ImportError:
@@ -70,9 +58,6 @@ _default_driver = {
     # "mysql": "mysqldb",  # Not implemented yet
     # "oracle": "cx_oracle",
     # "mssql": "pymssql",
-    "sqlite3": ("supersqlite.sqlite3", {"database"}),
-    # "sqlite3": ("sqlite3", {"database"}),
-    "supersqlite": ("supersqlite.sqlite3", {"database"}),
 }
 
 
@@ -88,7 +73,9 @@ def _validate_grid(grid: Grid):
     return True
 
 
-def _import_db_driver(parsed_db, default_driver) -> Tuple[ModuleType, str, ParseResult]:
+def _import_db_driver(parsed_db: ParseResult,
+                      default_driver: Dict[str, Tuple[str, Set[str]]]) \
+        -> Tuple[ModuleType, str, ParseResult]:
     if not parsed_db.fragment:
         parsed_db = urlparse(parsed_db.geturl() + "#haystack")
     if parsed_db.scheme.find("+") != -1:
@@ -105,7 +92,7 @@ def _import_db_driver(parsed_db, default_driver) -> Tuple[ModuleType, str, Parse
     return importlib.import_module(driver), dialect, parsed_db
 
 
-def _fix_dialect_alias(dialect):
+def _fix_dialect_alias(dialect: str) -> str:
     if dialect == "postgres":
         dialect = "postgresql"
     if dialect == "sqlite":
@@ -119,7 +106,7 @@ class Provider(HaystackInterface):
     """
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "SQL"
 
     def __init__(self):
@@ -135,11 +122,11 @@ class Provider(HaystackInterface):
         self._sql = self._dialect_request(self._dialect)
         self._sql_type_to_json = self._sql["sql_type_to_json"]
 
-    def _get_db(self):  # pylint: disable=no-self-use
+    def _get_db(self) -> str:  # pylint: disable=no-self-use
         """ Return the url to the file to expose. """
         return os.environ["HAYSTACK_DB"]
 
-    def create_db(self):
+    def create_db(self) -> None:
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -172,7 +159,7 @@ class Provider(HaystackInterface):
                            (customer_id,))
             result = cursor.fetchall()
             conn.commit()
-            return sorted([jsonparser.parse_scalar(x[0]) for x in result if x[0] is not None])
+            return sorted([parse_scalar(x[0]) for x in result if x[0] is not None])
         finally:
             cursor.close()
 
@@ -198,7 +185,7 @@ class Provider(HaystackInterface):
     def about(self, home: str) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'about' operation """
         grid = super().about(home)
-        about_data: Dict[str, Any] = grid[0]
+        about_data = cast(Dict[str, Any], grid[0])
         about_data.update(
             {  # pylint: disable=no-member
                 "productVersion": "1.0",
@@ -216,7 +203,7 @@ class Provider(HaystackInterface):
             entity_ids: Optional[Grid] = None,
             grid_filter: Optional[str] = None,
             date_version: Optional[datetime] = None,
-    ) -> Grid:  # pylint: disable=unused-argument
+    ) -> Grid:
         """ Implement Haystack 'read' """
         log.debug(
             "----> Call read(limit=%s, select='%s', ids=%s grid_filter='%s' date_version=%s)",
@@ -245,20 +232,20 @@ class Provider(HaystackInterface):
                                 )
                 grid = self._init_grid_from_db(date_version)
                 for row in cursor:
-                    grid.append(jsonparser.parse_row(sql_type_to_json(row[0]), VER_3_0))  # FIXME: sql_type ?
+                    grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))  # FIXME: sql_type ?
                 conn.commit()
                 return select_grid(grid, select)
-            else:
-                customer_id = self.get_customer_id()
-                sql_ids = "('" + "','".join([jsondumper.dump_scalar(entity_id) for entity_id in entity_ids]) + "')"
-                cursor.execute(self._sql["SELECT_ENTITY_WITH_ID"] + sql_ids,
-                               (date_version, customer_id))
+            customer_id = self.get_customer_id()
+            sql_ids = "('" + "','".join([dump_scalar(entity_id)
+                                         for entity_id in entity_ids]) + "')"
+            cursor.execute(self._sql["SELECT_ENTITY_WITH_ID"] + sql_ids,
+                           (date_version, customer_id))
 
-                grid = self._init_grid_from_db(date_version)
-                for row in cursor:
-                    grid.append(jsonparser.parse_row(sql_type_to_json(row[0]), VER_3_0))
-                conn.commit()
-                return select_grid(grid, select)
+            grid = self._init_grid_from_db(date_version)
+            for row in cursor:
+                grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
+            conn.commit()
+            return select_grid(grid, select)
         finally:
             cursor.close()
 
@@ -313,7 +300,6 @@ class Provider(HaystackInterface):
 
         finally:
             cursor.close()
-        pass
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         conn = self.get_connect()
@@ -348,7 +334,7 @@ class Provider(HaystackInterface):
             raise ValueError("Inconnect database url")
         return self._connect
 
-    def _get_secret_manager_secret(self) -> str:
+    def _get_secret_manager_secret(self) -> str:  # pylint: disable=no-self-use
         if not BOTO3_AVAILABLE:
             return "secretManager"
 
@@ -362,36 +348,37 @@ class Provider(HaystackInterface):
         try:
             get_secret_value_response = client.get_secret_value(SecretId=secret_name)
             # Decrypts secret using the associated KMS CMK.
-            # Depending on whether the secret is a string or binary, one of these fields will be populated.
+            # Depending on whether the secret is a string or binary,
+            # one of these fields will be populated.
             if 'SecretString' in get_secret_value_response:
                 secret = get_secret_value_response['SecretString']
                 j = json.loads(secret)
                 return j['password']
-            else:
-                decoded_binary_secret = base64.b64decode(get_secret_value_response['SecretBinary']).decode("UTF8")
-                return decoded_binary_secret
-        except ClientError as e:
-            if e.response['Error']['Code'] == 'DecryptionFailureException':
+            decoded_binary_secret = base64.b64decode(
+                get_secret_value_response['SecretBinary']).decode("UTF8")
+            return decoded_binary_secret
+        except ClientError as ex:
+            if ex.response['Error']['Code'] == 'DecryptionFailureException':
                 # Secrets Manager can't decrypt the protected secret text using the provided KMS key.
                 # Deal with the exception here, and/or rethrow at your discretion.
-                raise e
-            elif e.response['Error']['Code'] == 'InternalServiceErrorException':
+                raise ex
+            if ex.response['Error']['Code'] == 'InternalServiceErrorException':
                 # An error occurred on the server side.
                 # Deal with the exception here, and/or rethrow at your discretion.
-                raise e
-            elif e.response['Error']['Code'] == 'InvalidParameterException':
+                raise ex
+            if ex.response['Error']['Code'] == 'InvalidParameterException':
                 # You provided an invalid value for a parameter.
                 # Deal with the exception here, and/or rethrow at your discretion.
-                raise e
-            elif e.response['Error']['Code'] == 'InvalidRequestException':
+                raise ex
+            if ex.response['Error']['Code'] == 'InvalidRequestException':
                 # You provided a parameter value that is not valid for the current state of the resource.
                 # Deal with the exception here, and/or rethrow at your discretion.
-                raise e
-            elif e.response['Error']['Code'] == 'ResourceNotFoundException':
+                raise ex
+            if ex.response['Error']['Code'] == 'ResourceNotFoundException':
                 # We can't find the resource that you asked for.
                 # Deal with the exception here, and/or rethrow at your discretion.
-                raise e
-            raise e
+                raise ex
+            raise ex
 
     def _init_grid_from_db(self, version: Optional[datetime]) -> Grid:
         customer = self.get_customer_id()
@@ -408,8 +395,8 @@ class Provider(HaystackInterface):
             row = cursor.fetchone()
             if row:
                 meta, cols = row
-                grid.metadata = MetadataObject(jsonparser.parse_metadata(sql_type_to_json(meta), VER_3_0))
-                jsonparser.parse_cols(grid, sql_type_to_json(cols), VER_3_0)
+                grid.metadata = MetadataObject(parse_metadata(sql_type_to_json(meta), VER_3_0))
+                parse_cols(grid, sql_type_to_json(cols), VER_3_0)
             conn.commit()
             return grid
         finally:
@@ -433,21 +420,21 @@ class Provider(HaystackInterface):
             row = cursor.fetchone()
             if row:
                 meta, cols = row
-                grid.metadata = jsonparser.parse_metadata(sql_type_to_json(meta), VER_3_0)
-                jsonparser.parse_cols(grid, sql_type_to_json(cols), VER_3_0)
+                grid.metadata = parse_metadata(sql_type_to_json(meta), VER_3_0)
+                parse_cols(grid, sql_type_to_json(cols), VER_3_0)
 
             cursor.execute(self._sql["SELECT_ENTITY"],
                            (version, customer))
 
             for row in cursor:
-                grid.append(jsonparser.parse_row(sql_type_to_json(row[0]), VER_3_0))
+                grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
             conn.commit()
             assert _validate_grid(grid), "Error in grid"
             return grid
         finally:
             cursor.close()
 
-    def purge_db(self):
+    def purge_db(self) -> None:
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -462,7 +449,7 @@ class Provider(HaystackInterface):
                                diff_grid: Grid,
                                customer_id: Optional[str],
                                version: Optional[datetime],
-                               now: Optional[datetime] = None):
+                               now: Optional[datetime] = None) -> None:
 
         init_grid = self._init_grid_from_db(version)
         new_grid = init_grid + diff_grid
@@ -492,15 +479,15 @@ class Provider(HaystackInterface):
                                (
                                    customer_id,
                                    now,
-                                   json.dumps(jsondumper.dump_meta(new_grid.metadata)),
-                                   json.dumps(jsondumper.dump_columns(new_grid.column))
+                                   json.dumps(dump_meta(new_grid.metadata)),
+                                   json.dumps(dump_columns(new_grid.column))
                                )
                                )
                 log.debug("Update metadatas")
 
             for row in diff_grid:
                 assert "id" in row, "Can import only entity with id"
-                json_id = jsondumper.dump_scalar(row["id"])
+                json_id = dump_scalar(row["id"])
                 cursor.execute(self._sql["CLOSE_ENTITY"],
                                (
                                    end_date,
@@ -515,7 +502,7 @@ class Provider(HaystackInterface):
                                        json_id,
                                        customer_id,
                                        now,
-                                       json.dumps(jsondumper.dump_row(new_grid, new_grid[row["id"]]))
+                                       json.dumps(dump_row(new_grid, new_grid[row["id"]]))
                                    )
                                    )
                     log.debug("Update %s", row['id'].name)
@@ -526,15 +513,15 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
-    def import_ts_in_db(self, ts: Grid, id: Ref, customer_id: str):
-        assert 'ts' in ts.column, "TS must have a column 'ts'"
+    def import_ts_in_db(self, time_series: Grid, entity_id: Ref, customer_id: str) -> None:
+        assert 'ts' in time_series.column, "TS must have a column 'ts'"
         conn = self.get_connect()
-        begin_datetime = ts.metadata.get("hisStart")
-        end_datetime = ts.metadata.get("hisStart")
-        if len(ts) and not begin_datetime:
-            begin_datetime = ts[0]['ts']
-        if len(ts) and not end_datetime:
-            end_datetime = ts[-1]['ts']
+        begin_datetime = time_series.metadata.get("hisStart")
+        end_datetime = time_series.metadata.get("hisStart")
+        if time_series and not begin_datetime:
+            begin_datetime = time_series[0]['ts']
+        if time_series and not end_datetime:
+            end_datetime = time_series[-1]['ts']
         if not begin_datetime:
             begin_datetime = datetime.min
         if not end_datetime:
@@ -547,7 +534,7 @@ class Provider(HaystackInterface):
             cursor.execute(self._sql["CLEAN_TS"],
                            (
                                customer_id,
-                               id.name,
+                               entity_id.name,
                                datetime_tz_to_field(begin_datetime),
                                datetime_tz_to_field(end_datetime)
                            )
@@ -555,10 +542,10 @@ class Provider(HaystackInterface):
 
             # Add add new values
             cursor.executemany(self._sql["INSERT_TS"],
-                               [(id.name,
+                               [(entity_id.name,
                                  customer_id,
                                  datetime_tz_to_field(row['ts']),
-                                 json.dumps(dump_scalar(row['val']))) for row in ts]
+                                 json.dumps(dump_scalar(row['val']))) for row in time_series]
                                )
             cursor.close()
             conn.commit()
@@ -569,12 +556,13 @@ class Provider(HaystackInterface):
         table_name = self._parsed_db.fragment
         if dialect == "sqlite3":
             # Lazy import
-            from .db_sqlite import get_db_parameters as get_sqlite_parameters
+            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
             return get_sqlite_parameters(table_name)
         if dialect == "supersqlite":
-            from .db_sqlite import get_db_parameters as get_sqlite_parameters
+            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
             return get_sqlite_parameters(table_name)
         if dialect == "postgresql":
-            from .db_postgres import get_db_parameters as get_postgres_parameters
+            from .db_postgres import \
+                get_db_parameters as get_postgres_parameters  # pylint: disable=import-outside-toplevel
             return get_postgres_parameters(table_name)
         raise ValueError("Dialog not implemented")

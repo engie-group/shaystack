@@ -57,7 +57,7 @@ class Provider(HaystackInterface):
         return grid
 
     # pylint: disable=RP0801
-    @overrides
+    @overrides  # FIXME: a tester en curl http://localhost:3000/haystack/read
     def read(
             self,
             limit: int,

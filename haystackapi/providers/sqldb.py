@@ -1,3 +1,6 @@
+"""
+Typing wrapper for sql drivers
+"""
 # Typing for DB driver
 from typing import Tuple, Optional, List, Iterable, Iterator
 

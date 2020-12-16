@@ -152,7 +152,7 @@ def grid_diff(left: Grid, right: Grid) -> Grid:  # pylint: disable=too-many-nest
 
 
 def grid_merge(orig_grid: Grid, diff: Grid) -> Grid:  # pylint: disable=too-many-nested-blocks
-    orig_grid._version = diff.version
+    orig_grid._version = diff.version  # pylint: disable=protected-access
 
     # Apply diff of metadata
     left_metadata = orig_grid.metadata

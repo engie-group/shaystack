@@ -140,7 +140,7 @@ def _optimize_filter_for_sql(node: FilterNode) -> FilterNode:
             if isinstance(left, _IsMerge) and left.is_merge() or \
                     isinstance(right, _IsMerge) and right.is_merge() or \
                     isinstance(left, (_Union, _Intersect)) \
-                    or isinstance(right, (_Union, _Intersect)):  # pylint: disable=too-many-boolean-expressions
+                    or isinstance(right, (_Union, _Intersect)):
                 return _Intersect(left, right)
             return _And(left, right)
         if node.operator == "or":

@@ -14,7 +14,7 @@ import copy
 import datetime
 import logging
 import numbers
-from collections import MutableSequence
+from collections import MutableSequence  # pylint: disable=no-name-in-module
 from collections.abc import Sequence
 from typing import Union, Dict, Iterable, Any, Optional, KeysView, Tuple
 
@@ -35,8 +35,9 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
     followed by zero or more rows.
     """
 
-    def __init__(self, version: Union[str, Version, None] = None,
-                 metadata: Optional[Dict[str, Any]] = None,
+    def __init__(self,
+                 version: Union[str, Version, None] = None,
+                 metadata: Union[None, Dict[str, Any], MetadataObject, SortableDict] = None,
                  columns: Union[None,
                                 Dict[str, Any],
                                 Iterable[Union[Tuple[str, Any], str]],
@@ -44,7 +45,6 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """
         Create a new Grid.
         """
-        # Version
         version_given = version is not None
         if version_given:
             version = Version(version)

@@ -454,18 +454,18 @@ def get_provider(class_str: str) -> HaystackInterface:
         raise
 
 
-singleton_provider = None
+SINGLETON_PROVIDER = None
 
 
 def get_singleton_provider() -> HaystackInterface:
-    global singleton_provider  # pylint: disable=global-statement
+    global SINGLETON_PROVIDER  # pylint: disable=global-statement
     assert (
             "HAYSTACK_PROVIDER" in os.environ
     ), "Set 'HAYSTACK_PROVIDER' environment variable"
-    if not singleton_provider or no_cache():
+    if not SINGLETON_PROVIDER or no_cache():
         log.debug("Provider=%s", os.environ["HAYSTACK_PROVIDER"])
-        singleton_provider = get_provider(os.environ["HAYSTACK_PROVIDER"])
-    return singleton_provider
+        SINGLETON_PROVIDER = get_provider(os.environ["HAYSTACK_PROVIDER"])
+    return SINGLETON_PROVIDER
 
 
 def parse_date_range(date_range: str, timezone: tzinfo) -> Tuple[datetime, datetime]:

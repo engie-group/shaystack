@@ -8,7 +8,6 @@ from typing import Optional, List, Any, Dict, Union, Type
 
 import graphene
 from graphql import ResolveInfo
-from graphql.language import ast
 
 import haystackapi
 from haystackapi import Ref, Uri, Coordinate, parse_hs_date_format, Grid
@@ -46,8 +45,7 @@ class HSScalar(graphene.Scalar):
     @staticmethod
     def parse_literal(node):
         # Parse from AST See https://tinyurl.com/y3fr76a4
-        if isinstance(node, ast.StringValue):  # FIXME: parse_literal in GraphQL API
-            return f"node={node}"
+        return f"node={node}"
 
     @staticmethod
     def parse_value(value):
@@ -274,7 +272,7 @@ class ReadHaystack(graphene.ObjectType):
         grid = get_singleton_provider().about("http://localhost")
         result = ReadHaystack._conv_entity(HSAbout, grid[0])
         result.serverTime = grid[0]["serverTime"]  # pylint: disable=invalid-name
-        result.bootTime = grid[0]["serverBootTime"]  # pylint: disable=invalid-name
+        result.bootTime = grid[0]["serverBootTime"]  # pylint: disable=invalid-name, attribute-defined-outside-init
         return result
 
     @staticmethod

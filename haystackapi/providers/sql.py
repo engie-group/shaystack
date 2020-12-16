@@ -37,7 +37,7 @@ try:
     from botocore.exceptions import ClientError
 except ImportError:
     @dataclass
-    class ClientError(Exception):
+    class ClientError(Exception):  # pylint: disable=missing-class-docstring
         response: List[Any]
 
 log = logging.getLogger("sql.Provider")
@@ -85,9 +85,9 @@ def _import_db_driver(parsed_db: ParseResult,
         dialect = _fix_dialect_alias(parsed_db.scheme)
         driver = default_driver[dialect][0]
     if driver.find('.') != -1:
-        s = driver.split('.')
-        mod = importlib.import_module(s[0])
-        return mod.__dict__[s[1]], dialect, parsed_db
+        splitted = driver.split('.')
+        mod = importlib.import_module(splitted[0])
+        return mod.__dict__[splitted[1]], dialect, parsed_db
 
     return importlib.import_module(driver), dialect, parsed_db
 
@@ -116,7 +116,7 @@ class Provider(HaystackInterface):
         # Import DB driver compatible with DB-API2 (PEP-0249)
         self._dialect = None
         self._default_driver = _default_driver
-        self.db, self._dialect, self._parsed_db = \
+        self.database, self._dialect, self._parsed_db = \
             _import_db_driver(self._parsed_db,
                               self._default_driver)
         self._sql = self._dialect_request(self._dialect)
@@ -327,7 +327,7 @@ class Provider(HaystackInterface):
             }
             _, keys = self._default_driver[self._dialect]
             filtered = {key: val for key, val in params.items() if key in keys}
-            connect: DBConnection = self.db.connect(**filtered)
+            connect: DBConnection = self.database.connect(**filtered)
             self._connect = connect
             self.create_db()
         if not self._connect:

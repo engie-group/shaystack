@@ -253,7 +253,7 @@ def parse_filter(grid_filter):
 
 # --- Generate python to apply filter
 FILTER_CACHE_LRU_SIZE = 500
-_id_function = 0  # pylint: disable=C0103
+_ID_FUNCTION = 0  # pylint: disable=C0103
 
 
 class _NotFoundValue:
@@ -337,13 +337,13 @@ class _FnWrapper:
 
 @lru_cache(maxsize=FILTER_CACHE_LRU_SIZE)
 def _filter_function(grid_filter):
-    global _id_function  # pylint: disable=global-statement
+    global _ID_FUNCTION  # pylint: disable=global-statement
     def_filter = _generate_filter_in_python(
         parse_filter(grid_filter).head, [])  # pylint: disable=protected-access
-    fun_name = "_gen_hsfilter_" + str(_id_function)
+    fun_name = "_gen_hsfilter_" + str(_ID_FUNCTION)
     function_template = "def %s(_grid, _entity):\n  return " % fun_name + "".join(def_filter)
     # print("\nGenerate:\n# " + grid_filter + "\n" + function_template)  # For debug
-    _id_function += 1
+    _ID_FUNCTION += 1
     return _FnWrapper(fun_name, function_template)
 
 

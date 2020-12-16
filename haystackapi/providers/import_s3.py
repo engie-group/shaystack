@@ -100,14 +100,14 @@ def merge_timeseries(source_grid: Grid,
     return source_data, b64_digest
 
 
-def update_grid_on_s3(parsed_source: ParseResult,
+def update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-locals
                       parsed_destination: ParseResult,
                       compare_grid: bool,
                       time_series: bool,
                       force: bool,
                       merge_ts: bool,
                       use_thread: bool = True
-                      ) -> None:  # pylint: disable=too-many-locals
+                      ) -> None:
     log.debug("update %s", (parsed_source.geturl(),))
     s3_client = boto3.client(
         "s3",

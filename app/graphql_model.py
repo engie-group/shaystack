@@ -8,18 +8,18 @@ from typing import Optional, List, Any, Dict, Union, Type
 
 import graphene
 from graphql import ResolveInfo
+from graphql.language.ast import StringValue, IntValue, FloatValue, BooleanValue, EnumValue
 
 import haystackapi
-from haystackapi import Ref, Uri, Coordinate, parse_hs_date_format, Grid
+from haystackapi import Ref, Uri, Coordinate, parse_hs_datetime_format, Grid
+from haystackapi.grid_filter import parse_hs_time_format, parse_hs_date_format
 from haystackapi.providers.haystack_interface import get_singleton_provider, parse_date_range
 from haystackapi.zincdumper import dump_hs_date_time, dump_hs_time, dump_hs_date
 
 BOTO3_AVAILABLE = False
 try:
-    # Check present of boto3
+    # Check the presence of boto3
     import boto3  # pylint: disable=unused-import
-
-    # FIXME from botocore.client import BaseClient
 
     BOTO3_AVAILABLE = True
 except ImportError:
@@ -29,8 +29,6 @@ log = logging.getLogger("haystackapi")
 
 
 # PPR: see the batch approach
-# WARNING: At this time only public endpoints are supported by AWS AppSync
-
 class HSScalar(graphene.Scalar):
     """Haystack Scalar"""
 
@@ -39,18 +37,20 @@ class HSScalar(graphene.Scalar):
         name = "AWSJSON" if BOTO3_AVAILABLE else "JSONString"
 
     @staticmethod
-    def serialize(hs_scalar):
+    def serialize(hs_scalar: Any) -> Any:
         return haystackapi.dump_scalar(hs_scalar, haystackapi.MODE_JSON, version=haystackapi.VER_3_0)
 
     @staticmethod
-    def parse_literal(node):
-        # Parse from AST See https://tinyurl.com/y3fr76a4
-        return f"node={node}"
+    def parse_literal(node: Union[IntValue, FloatValue, StringValue, BooleanValue, EnumValue]) -> Any:
+        if isinstance(node, StringValue):
+            s = node.value
+            if len(s) >= 2 and s[1] == ':':
+                return haystackapi.parse_scalar(node.value, haystackapi.MODE_JSON, version=haystackapi.VER_3_0)
+        return node.value
 
     @staticmethod
-    def parse_value(value):
-        # Parse form json
-        return f"parse_value={value}"  # FIXME: parse_value in GraphQL API
+    def parse_value(value: Any) -> Any:
+        return haystackapi.parse_scalar(value, haystackapi.MODE_JSON, version=haystackapi.VER_3_0)
 
 
 class HSDateTime(graphene.String):
@@ -59,25 +59,21 @@ class HSDateTime(graphene.String):
     """
 
     @staticmethod
-    def serialize(date_time):
-        assert isinstance(
-            date_time, (datetime, date)
-        ), 'Received not compatible datetime "{}"'.format(repr(date_time))
+    def serialize(date_time: datetime) -> str:
+        # Call to convert python object to graphql result
+        assert isinstance(date_time, datetime), 'Received not compatible datetime "{}"'.format(repr(date_time))
         return dump_hs_date_time(date_time)
 
-    @classmethod
-    def parse_literal(cls, node):  # pylint: disable=arguments-differ
-        return cls.parse_value(node.value)
+    @staticmethod
+    def parse_literal(node: StringValue) -> datetime:  # pylint: disable=arguments-differ
+        # Call to convert graphql parameter to python object
+        assert isinstance(node, StringValue), 'Received not compatible datetime "{}"'.format(repr(node))
+        return HSDateTime.parse_value(node.value)
 
     @staticmethod
-    def parse_value(value: str) -> Optional[datetime]:
-        try:
-            if isinstance(value, datetime):
-                return value
-            if isinstance(value, str):
-                return parse_hs_date_format(value)
-        except ValueError:
-            return None
+    def parse_value(value: str) -> datetime:
+        # Call to convert graphql variable to python object
+        return parse_hs_datetime_format(value)
 
 
 class HSDate(graphene.String):
@@ -88,23 +84,18 @@ class HSDate(graphene.String):
     # class Meta:
     #     name = "AWSDateTime" if BOTO3_AVAILABLE else "DateTime"
     @staticmethod
-    def serialize(a_date):
-        assert isinstance(
-            a_date, (datetime, date)
-        ), 'Received not compatible date "{}"'.format(repr(a_date))
+    def serialize(a_date: date) -> str:
+        assert isinstance(a_date, date), 'Received not compatible date "{}"'.format(repr(a_date))
         return dump_hs_date(a_date)
 
-    @classmethod
-    def parse_literal(cls, node):  # pylint: disable=arguments-differ
-        return cls.parse_value(node.value)
+    @staticmethod
+    def parse_literal(node: StringValue) -> date:  # pylint: disable=arguments-differ
+        assert isinstance(node, StringValue), 'Received not compatible date "{}"'.format(repr(node))
+        return HSDate.parse_value(node.value)
 
     @staticmethod
-    def parse_value(value: str) -> Optional[date]:
-        if isinstance(value, date):
-            return value
-        if isinstance(value, str):
-            return parse_hs_date_format(value)
-        raise ValueError(value)
+    def parse_value(value: str) -> date:
+        return parse_hs_date_format(value)
 
 
 class HSTime(graphene.String):
@@ -115,23 +106,18 @@ class HSTime(graphene.String):
     # class Meta:
     #     name = "String"
     @staticmethod
-    def serialize(a_time):
-        assert isinstance(
-            a_time, (datetime, time)
-        ), 'Received not compatible time "{}"'.format(repr(a_time))
+    def serialize(a_time: time) -> str:
+        assert isinstance(a_time, time), 'Received not compatible time "{}"'.format(repr(a_time))
         return dump_hs_time(a_time)
 
-    @classmethod
-    def parse_literal(cls, node):  # pylint: disable=arguments-differ
-        return cls.parse_value(node.value)
+    @staticmethod
+    def parse_literal(node: StringValue) -> time:  # pylint: disable=arguments-differ
+        assert isinstance(node, StringValue), 'Received not compatible time "{}"'.format(repr(node))
+        return HSTime.parse_value(node.value)
 
     @staticmethod
-    def parse_value(value: str) -> Optional[date]:
-        if isinstance(value, time):
-            return value
-        if isinstance(value, str):
-            return parse_hs_date_format(value)
-        raise ValueError(value)  # FIXME: a valider
+    def parse_value(value: str) -> time:
+        return parse_hs_time_format(value)
 
 
 class HSUri(graphene.String):
@@ -139,8 +125,31 @@ class HSUri(graphene.String):
     Haystack URI for GraphQL
     """
 
-    class Meta:  # pylint: disable=too-few-public-methods,missing-class-docstring
-        name = "AWSURL" if BOTO3_AVAILABLE else "HSURL"
+    # class Meta:  # pylint: disable=too-few-public-methods,missing-class-docstring
+    #     name = "AWSURL" if BOTO3_AVAILABLE else "HSURL"
+
+    @staticmethod
+    def serialize(a_uri: Uri) -> str:
+        assert isinstance(a_uri, Uri), 'Received not compatible uri "{}"'.format(repr(a_time))
+        return str(a_uri)
+
+    @staticmethod
+    def parse_literal(node: StringValue) -> time:  # pylint: disable=arguments-differ
+        return HSUri.parse_value(node.value)
+
+    @staticmethod
+    def parse_value(value: str) -> time:
+        if value.startswith("u:"):
+            return haystackapi.parse_scalar(value, haystackapi.MODE_JSON, version=haystackapi.VER_3_0)
+        return Uri(value)
+
+
+class HSCoordinate(graphene.ObjectType):  # pylint: disable=too-few-public-methods
+    """ Haystack coordinate for GraphQL """
+    latitude = graphene.Float(required=True,
+                              description="Latitude")  # FIXME: require
+    longitude = graphene.Float(required=True,
+                               description="Longitude")
 
 
 class HSAbout(graphene.ObjectType):  # pylint: disable=too-few-public-methods
@@ -172,12 +181,6 @@ class HSOps(graphene.ObjectType):  # pylint: disable=too-few-public-methods
 
     name = graphene.String(description="Name of operation (see https://project-haystack.org/doc/Ops)")
     summary = graphene.String(description="Summary of operation")
-
-
-class HSCoordinate(graphene.ObjectType):  # pylint: disable=too-few-public-methods
-    """ Haystack coordinate for GraphQL """
-    lat = graphene.Float(description="Latitude")  # FIXME: require
-    long = graphene.Float(description="Longitude")
 
 
 class HSTS(graphene.ObjectType):  # pylint: disable=too-few-public-methods,too-many-instance-attributes
@@ -396,16 +399,16 @@ class ReadHaystack(graphene.ObjectType):
         return entity_id
 
     @staticmethod
-    def _conv_entity(cls: Type, entity: Dict[str, Any]):
-        entity_result = cls()
+    def _conv_entity(target_class: Type, entity: Dict[str, Any]):
+        entity_result = target_class()
         for key, val in entity.items():
             if key in entity:
                 entity_result.__setattr__(key, val)
         return entity_result
 
     @staticmethod
-    def _conv_list_to_object_type(cls: Type, grid: Grid):
+    def _conv_list_to_object_type(target_class: Type, grid: Grid):
         result = []
         for row in grid:
-            result.append(ReadHaystack._conv_entity(cls, row))
+            result.append(ReadHaystack._conv_entity(target_class, row))
         return result

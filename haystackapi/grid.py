@@ -251,14 +251,14 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """
         Retrieve the row at index.
         """
+        if isinstance(key, int):
+            return self._row[key]
         if isinstance(key, slice):
             result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
             result._row = self._row[key]
             result._index = None
             return result
-        if isinstance(key, int):
-            return self._row[key]
-        assert isinstance(key, Ref), "The 'id' tag must be a Ref"
+        assert isinstance(key, Ref), "The 'key' must be a Ref or int"
         if not self._index:
             self.reindex()
         return self._index[key]

@@ -458,7 +458,7 @@ def test_his_read_with_coordinate(mock_s3, mock_get_url):
                 {
                     ts
                     val
-                    coord { lat long }
+                    coord { latitude longitude }
                 }
             }
         }
@@ -468,4 +468,4 @@ def test_his_read_with_coordinate(mock_s3, mock_get_url):
                     {'haystack':
                          {'histories':
                               [[{'ts': '2020-01-01T00:00:00+00:00 UTC', 'val': 'c:100.000000,150.000000',
-                                 'coord': {'lat': 100.0, 'long': 150.0}}]]}}}
+                                 'coord': {'latitude': 100.0, 'longitude': 150.0}}]]}}}

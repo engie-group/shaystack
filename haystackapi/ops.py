@@ -25,7 +25,7 @@ from accept_types import AcceptableType, get_best_match
 from .datatypes import Ref, Quantity, MARKER
 from .dumper import dump
 from .grid import Grid, VER_3_0
-from .grid_filter import parse_hs_date_format
+from .grid_filter import parse_hs_datetime_format
 from .parser import MODE_ZINC, MODE_CSV, MODE_JSON, parse_scalar, parse, mode_to_suffix
 from .providers.haystack_interface import (
     EmptyGrid,
@@ -392,7 +392,7 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             if "select" in args:
                 select = args["select"]
             if "version" in args:
-                date_version = parse_hs_date_format(args["version"].split(" "))
+                date_version = parse_hs_datetime_format(args["version"].split(" "))
 
         if read_ids is None and read_filter is None:
             raise ValueError("'id' or 'filter' must be set")
@@ -564,7 +564,7 @@ def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
             duration = parse_scalar(args["duration"])
             assert isinstance(duration, Quantity)
         if "version" in args:
-            date_version = parse_hs_date_format(args["version"].split(" "))
+            date_version = parse_hs_datetime_format(args["version"].split(" "))
         if entity_id is None:
             raise ValueError("'id' must be set")
         if val is not None:
@@ -609,7 +609,7 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             if "range" in args:
                 date_range = args["range"]
             if "version" in args:
-                date_version = parse_hs_date_format(args["version"])
+                date_version = parse_hs_datetime_format(args["version"])
 
         grid_date_range = parse_date_range(date_range, provider.get_tz())
         log.debug(
@@ -641,12 +641,12 @@ def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                 time_serie_grid = Grid(version=VER_3_0, columns=["date", "val"])
                 time_serie_grid.extend(
                     [
-                        {"date": parse_hs_date_format(d), "val": v}
+                        {"date": parse_hs_datetime_format(d), "val": v}
                         for d, v in literal_eval(args["ts"])
                     ]
                 )
         if "version" in args:
-            date_version = parse_hs_date_format(args["version"])
+            date_version = parse_hs_datetime_format(args["version"])
         grid_response = provider.his_write(entity_id, time_serie_grid, date_version)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, "OK")

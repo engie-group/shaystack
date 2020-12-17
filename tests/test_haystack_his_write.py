@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytz
 
 import haystackapi
-from haystackapi import Ref, parse_hs_date_format, Grid, VER_3_0
+from haystackapi import Ref, parse_hs_datetime_format, Grid, VER_3_0
 from haystackapi.ops import HaystackHttpRequest, DEFAULT_MIME_TYPE
 from haystackapi.providers import ping
 
@@ -50,7 +50,7 @@ def test_his_write_with_args(mock):
 
     # THEN
     result_ts = Grid(version=VER_3_0, columns=["date", "val"])
-    result_ts.extend([{"date": parse_hs_date_format(d), "val": v} for d, v in time_serie])
+    result_ts.extend([{"date": parse_hs_datetime_format(d), "val": v} for d, v in time_serie])
     mock.assert_called_once_with(Ref("1234"), result_ts, None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)

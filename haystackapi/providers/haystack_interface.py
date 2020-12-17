@@ -18,7 +18,7 @@ from tzlocal import get_localzone
 
 from ..datatypes import Ref, Quantity, Uri
 from ..grid import Grid, VER_3_0
-from ..grid_filter import parse_hs_date_format
+from ..grid_filter import parse_hs_datetime_format
 
 log = logging.getLogger("haystackapi")
 
@@ -473,7 +473,7 @@ def parse_date_range(date_range: str, timezone: tzinfo) -> Tuple[datetime, datet
         return datetime.min.replace(tzinfo=pytz.UTC), \
                datetime.max.replace(tzinfo=pytz.UTC)
     if date_range not in ("today", "yesterday"):
-        split_date = [parse_hs_date_format(x) for x in date_range.split(",")]
+        split_date = [parse_hs_datetime_format(x) for x in date_range.split(",")]
         if len(split_date) > 1:
             assert type(split_date[0]) == type(  # pylint: disable=C0123
                 split_date[1]

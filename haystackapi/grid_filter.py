@@ -7,7 +7,7 @@
 Parse the filter syntax to produce a FilterAST.
 See https://www.project-haystack.org/doc/Filters
 """
-from datetime import datetime
+from datetime import datetime, time
 from functools import lru_cache
 
 from iso8601 import iso8601
@@ -358,6 +358,13 @@ def filter_function(grid_filter):
     return _filter_function(grid_filter).get()
 
 
-# FIXME: avec graphql, les dates sont au format "YYYY-MM-DD HH:MM" avec espace. Pb de conv.
+def parse_hs_datetime_format(datetime_str) -> datetime:
+    return hs_all_date.parseString(datetime_str, parseAll=True)[0]
+
+
 def parse_hs_date_format(date_str) -> datetime:
-    return hs_all_date.parseString(date_str, parseAll=True)[0]
+    return hs_date.parseString(date_str, parseAll=True)[0]
+
+
+def parse_hs_time_format(time_str) -> time:
+    return hs_time.parseString(time_str, parseAll=True)[0]

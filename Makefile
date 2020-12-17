@@ -414,7 +414,6 @@ ifeq ($(USE_OKTA),Y)
 endif
 	source $(ZAPPA_ENV)/bin/activate
 	pip install -e '.[graphql,lambda,aws]'
-	pip install -e hszinc
 
 ## Build lambda package
 aws-package: $(REQUIREMENTS) _zappa_pre_install compile-all
@@ -537,11 +536,6 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 
 ## Test graphql client with different providers
 functional-test: .make-functional-test
-
-# -------------------------------------- haystackapi submodule
-hszinc/dist/hszinc-*.whl: hszinc/haystackapi
-	cd hszinc
-	$(CONDA_PYTHON) setup.py bdist_wheel
 
 # -------------------------------------- Typing
 pytype.cfg: $(CONDA_PREFIX)/bin/pytype

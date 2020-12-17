@@ -1,0 +1,25 @@
+{
+  "dev": {
+    "profile_name": "default",
+    "aws_region": "us-east-2",
+    "app_function": "app.__init__.app",
+    "project_name": "Haystackapi",
+    "s3_bucket": "alpha-dev-zappa",
+    "runtime": "python3.8",
+    "aws_environment_variables": {
+      "LOG_LEVEL": "INFO",
+      "HAYSTACK_PROVIDER": "haystackapi.providers.url",
+      "HAYSTACK_URL": "s3://haystackapi/carytown.zinc"
+    },
+    "exclude": [
+      ".*",
+      "data",
+      "pip*",
+      "*csv",
+      "*.whl",
+      "boto3",
+      "botocore"
+    ],
+    "slim_handler": false
+  }
+}

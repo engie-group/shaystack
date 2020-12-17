@@ -3,18 +3,17 @@
     "profile_name": "haystackapi",
     "aws_region": "us-east-2",
     "app_function": "app.__init__.app",
-    "project_name": "alpha-dev-haystackapi",
-    "s3_bucket": "alpha-dev-zappa",
+    "project_name": "haystackapi",
+    "s3_bucket": "haystackapi",
     "runtime": "python3.8",
     "environment_variables": {
       "COOKIE_SECRET_KEY": "2d1a12a6-3232-4328-9365-b5b65e64a68f"
-    } ,
+    },
     "aws_environment_variables": {
-      "LOGLEVEL": "DEBUG",
+      "LOG_LEVEL": "DEBUG",
       "HAYSTACK_PROVIDER": "haystackapi.providers.url",
-      "HAYSTACK_URL": "s3://alpha-dev-haystack-marriott/marriott.json.gz"
-    } ,
-//    "layers": ["arn:aws:lambda:us-east-2:695980681400:layer:awswrangler-3_8:1"],
+      "HAYSTACK_URL": "s3://haystackapi/carytown.zinc"
+    },
     "exclude": [
       ".*",
       "*.postman*",
@@ -22,7 +21,6 @@
       "*.cfg",
       "*.md",
       "*.yaml",
-      "hszinc",
       "tests",
       "Makefile",
       "Project.variables",
@@ -31,7 +29,7 @@
       "pip*",
       "boto3", "botocore"
     ],
-    "slim_handler": false,
+    "slim_handler": false
 //    "manage_roles": false,
 //    "role_name": "ZappaDjangoRole",
 //    "role_arn": "arn:aws:iam::908424941159:role/ZappaDjangoRole"

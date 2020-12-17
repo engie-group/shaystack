@@ -197,15 +197,6 @@ This API use the `http://<host>:<port>/graphql` url and was conforms to the sche
         - `pip install "haystackapi[flask,graphql]"`
         - `HAYSTACK_PROVIDER='<your provider module>' haystackapi`
 
-## Custom provider
-
-To create your custom Haystack API
-
-- create a project
-- In a module, create a subclass of `haystackapi.providers.HaystackInterface`
-  with the name `Provider`
-- add parameter `HAYSTACK_PROVIDER` with the name of the package
-
 ### Providers
 
 Different sample of provider are proposed. You can add a new one with a subclass of
@@ -223,10 +214,21 @@ To create your custom Haystack API
 
 You can update others parameters (`HAYSTACK_PROVIDER`, `AWS_STACK`, `AWS_PROFILE`, `AWS_REGION`, ...)
 
+We propose different providers, with the objective in mind:
+
+- Expose the haystack files with an API and historical data
+- and manage the evolution of these files with the notion of `version`.
+
+If you want to connect the haystack API with IOT, you must extend a provider. It's more simple for a demo.
+
+To demonstrate this scenario, we want to publish the sample from `sample/` files from S3 bucket or from an SQL database.
+We must import this ontology and time-series inside the bucket or database before to use. To manage the different
+versions of files, you must use a dedicated tool.
+
 #### Provider Ping
 
 Use `HAYSTACK_PROVIDER=providers.ping` to use this provider. It's a very simple provider, with a tiny implementation of
-all haystack operation.
+all haystack operation. Read the code.
 
 ```bash
 $ HAYSTACK_PROVIDER=providers.ping haystackapi
@@ -388,20 +390,62 @@ component with the option, start the provider and use the url
 }
 ```
 
+Because the Graphql use a schema, and Haystack doesn't use one, it's not easy to manipulate the history result. To
+resolve that, we propose different *cast* for the value.
+
+```
+histories(ids:["@car-1","@bicycle-100"])
+{
+    ts
+    val  # Haystack json scalar
+    float # cast to float
+    bool # cast to bool
+    ...
+}
+```
+
+You can select the format you want.
+
 ## Using with Excel or PowerBI
 
 Because the default negotiated format is CSV, you can call these API with PowerQuery. TODO: importer le fichier sample
 
 ## Using with Amazon AWS
 
+This module propose two layer to use AWS cloud. It's possible to publish the haystack files in a bucket, and use the URL
+provider to expose an API (REST and GraphQL)
+and it's possible to use the AWS Lambda to publish the API.
+
 ### AWS Bucket
 
-TODO
+To export the haystacks files in a bucket, you must create one. If you accept the 'Version' feature, it's possible to
+update the files, and use the API to read an older version. The extended parameter `Version` may be used to ask some
+data, visible at a specific date.
+
+To import the haystack files, only in something is updated, use the `import_db` tools.
+
+Set AWS profile before to use this tool.
+
+```bash
+$ export AWS_PROFILE=default
+```
+
+TODO: Create bucket with random et import data
+
+Then, you can start a Flash server:
+
+```bash
+$ # Demo
+$ BUCKET=...
+$ HAYSTACK_PROVIDER=haystackapi.providers.url \
+  HAYSTACK_URL=s3://$BUCKET/carytown.zinc \
+  haystackapi
+```
 
 ### AWS Lambda
 
 The code is compatible with AWS Lambda. Install this option (`pip install "haystackapi[graphql,lambda]"`)
-and create a file `zappa_settings.json` with
+and create a file `zappa_settings.json` something like this:
 
 ```json
 {
@@ -413,8 +457,9 @@ and create a file `zappa_settings.json` with
     "s3_bucket": "zappa",
     "runtime": "python3.8",
     "aws_environment_variables": {
-      "HAYSTACK_PROVIDER": "haystackapi.providers.ping",
-      "HAYSTACK_URL": "s3://my_bucket/haystack_file.json"
+      "LOG_LEVEL": "info",
+      "HAYSTACK_PROVIDER": "haystackapi.providers.url",
+      "HAYSTACK_URL": "s3://my_bucket/haystack_file.zinc"
     }
   }
 }

@@ -1,11 +1,10 @@
 #!/bin/bash
-# Build a Debian package of hszinc.
+# Build a Debian package of haystackapi.
 set -e
 
 : ${MY_DIR:=$( dirname "$0" )}
 : ${PYTHON:=$( which python2 )}
 
-: ${BUILD_PY2:=True}
 : ${BUILD_PY3:=True}
 
 # Set the output directory if not already given
@@ -20,9 +19,7 @@ cd "${MY_DIR}"
 # Build
 "${PYTHON}" setup.py \
 	--command-package stdeb.command sdist_dsc \
-	--with-python2=${BUILD_PY2} --with-python3=${BUILD_PY3} \
-	--suggests=python-pint --suggests3=python3-pint \
-	--depends=python-backports.functools-lru-cache \
+	--with-python3=${BUILD_PY3} \
 	${DEBIAN_VERSION:+--debian-version=}${DEBIAN_VERSION} \
 	bdist_deb
 

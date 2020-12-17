@@ -207,11 +207,11 @@ class Provider(HaystackInterface):
         """ Implement Haystack 'read' """
         log.debug(
             "----> Call read(limit=%s, select='%s', ids=%s grid_filter='%s' date_version=%s)",
-            limit,
-            select,
-            entity_ids,
-            grid_filter,
-            date_version,
+            repr(limit),
+            repr(select),
+            repr(entity_ids),
+            repr(grid_filter),
+            repr(date_version),
         )
         conn = self.get_connect()
         # with conn.cursor() as cursor:
@@ -219,7 +219,7 @@ class Provider(HaystackInterface):
         try:
             sql_type_to_json = self._sql_type_to_json
             if date_version is None:
-                date_version = datetime.max.replace(tzinfo=pytz.UTC)
+                date_version = datetime.now().replace(tzinfo=pytz.UTC)
             exec_sql_filter: Callable = self._sql["exec_sql_filter"]
             if entity_ids is None:
                 exec_sql_filter(self._sql,
@@ -236,7 +236,7 @@ class Provider(HaystackInterface):
                 conn.commit()
                 return select_grid(grid, select)
             customer_id = self.get_customer_id()
-            sql_ids = "('" + "','".join([dump_scalar(entity_id)
+            sql_ids = "('" + "','".join([entity_id.name
                                          for entity_id in entity_ids]) + "')"
             cursor.execute(self._sql["SELECT_ENTITY_WITH_ID"] + sql_ids,
                            (date_version, customer_id))
@@ -259,9 +259,9 @@ class Provider(HaystackInterface):
         """ Implement Haystack 'hisRead' """
         log.debug(
             "----> Call his_read(id=%s , range=%s, " "date_version=%s)",
-            entity_id,
-            dates_range,
-            date_version,
+            repr(entity_id),
+            repr(dates_range),
+            repr(date_version),
         )
         conn = self.get_connect()
         cursor = conn.cursor()
@@ -441,6 +441,7 @@ class Provider(HaystackInterface):
         try:
             cursor.execute(self._sql["PURGE_TABLES_HAYSTACK"])
             cursor.execute(self._sql["PURGE_TABLES_HAYSTACK_META"])
+            cursor.execute(self._sql["PURGE_TABLES_TS"])
             conn.commit()
         finally:
             cursor.close()
@@ -487,19 +488,19 @@ class Provider(HaystackInterface):
 
             for row in diff_grid:
                 assert "id" in row, "Can import only entity with id"
-                json_id = dump_scalar(row["id"])
+                sql_id = row["id"].name
                 cursor.execute(self._sql["CLOSE_ENTITY"],
                                (
                                    end_date,
                                    now,
-                                   json_id,
+                                   sql_id,
                                    customer_id
                                )
                                )
                 if "remove_" not in row:
                     cursor.execute(self._sql["INSERT_ENTITY"],
                                    (
-                                       json_id,
+                                       sql_id,
                                        customer_id,
                                        now,
                                        json.dumps(dump_row(new_grid, new_grid[row["id"]]))

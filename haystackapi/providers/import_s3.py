@@ -31,8 +31,6 @@ log = logging.getLogger("import_s3")
 VERIFY = True
 POOL_SIZE = 20
 
-POOL = None
-
 lock = Lock()
 
 
@@ -221,7 +219,7 @@ def update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-lo
                         force=force,
                         merge_ts=True)
         if requests:
-            with ThreadPool(processes=POOL_SIZE) as pool:  # FIXME: pool global ou local ?
+            with ThreadPool(processes=POOL_SIZE) as pool:
                 pool.starmap(update_grid_on_s3, requests)
 
 

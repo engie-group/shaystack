@@ -73,8 +73,10 @@ class HSDateTime(graphene.String):
         return HSDateTime.parse_value(node.value)
 
     @staticmethod
-    def parse_value(value: str) -> datetime:
+    def parse_value(value: Union[datetime, str]) -> datetime:
         # Call to convert graphql variable to python object
+        if isinstance(value, datetime):
+            return value
         return parse_hs_datetime_format(value)
 
 
@@ -96,7 +98,9 @@ class HSDate(graphene.String):
         return HSDate.parse_value(node.value)
 
     @staticmethod
-    def parse_value(value: str) -> date:
+    def parse_value(value: Union[date, str]) -> date:
+        if isinstance(value, date):
+            return value
         return parse_hs_date_format(value)
 
 
@@ -118,7 +122,9 @@ class HSTime(graphene.String):
         return HSTime.parse_value(node.value)
 
     @staticmethod
-    def parse_value(value: str) -> time:
+    def parse_value(value: Union[time, str]) -> time:
+        if isinstance(value, time):
+            return value
         return parse_hs_time_format(value)
 
 

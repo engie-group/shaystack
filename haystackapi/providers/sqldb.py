@@ -5,6 +5,7 @@ Typing wrapper for sql drivers
 from typing import Tuple, Optional, List, Iterable, Iterator
 
 
+# PPR: use proxy for typing
 class DBCursor:  # pylint: disable=multiple-statements,no-self-use, missing-class-docstring
     def execute(self, cmd: str, args: Optional[Tuple] = None) -> None: ...
 

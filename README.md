@@ -392,7 +392,13 @@ component with the option, start the provider and use the url
 
 Because the default negotiated format is CSV, you can call these API with PowerQuery. TODO: importer le fichier sample
 
-## Using with AWS Lambda
+## Using with Amazon AWS
+
+### AWS Bucket
+
+TODO
+
+### AWS Lambda
 
 The code is compatible with AWS Lambda. Install this option (`pip install "haystackapi[graphql,lambda]"`)
 and create a file `zappa_settings.json` with

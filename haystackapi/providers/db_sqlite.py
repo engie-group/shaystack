@@ -12,7 +12,7 @@ from typing import Dict, Any, Optional, List, Tuple, Union
 import pytz
 
 from .sqldb import DBCursor
-from .. import parse_filter, jsondumper, Quantity
+from .. import parse_filter, jsondumper, Quantity, Ref
 from ..filter_ast import FilterNode, FilterUnary, FilterBinary, FilterPath
 
 log = logging.getLogger("sql.Provider")
@@ -167,7 +167,6 @@ def _generate_filter_in_sql(table_name: str,
                                    select, where,
                                    node.left,
                                    num_table)
-                value = jsondumper.dump_scalar(value)
                 if value is None:
                     if node.operator == '!=':
                         where.append(
@@ -178,9 +177,14 @@ def _generate_filter_in_sql(table_name: str,
                             f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
                             f"IS NULL\n")
                 else:
-                    where.append(
-                        f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
-                        f"{node.operator} '{str(value)}'\n")
+                    if isinstance(value, Ref):
+                        where.append(
+                            f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
+                            f"LIKE '{str(jsondumper.dump_scalar(value))}%'\n")
+                    else:
+                        where.append(
+                            f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
+                            f"{node.operator} '{str(jsondumper.dump_scalar(value))}'\n")
 
     else:
         assert False, "Invalid node"
@@ -388,4 +392,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
             AND datetime(date_time) BETWEEN datetime(?) AND datetime(?) 
             ORDER BY datetime(date_time)
             '''),
+        "PURGE_TABLES_TS": textwrap.dedent(f'''
+            DELETE FROM {table_name}_ts
+            ''')
     }

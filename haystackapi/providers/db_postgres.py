@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import List, Type, Any, Union, Tuple, Optional, Dict
 
 from .sqldb import DBCursor
-from .. import parse_filter, jsondumper, Quantity
+from .. import parse_filter, jsondumper, Quantity, Ref
 from ..filter_ast import FilterPath, FilterBinary, FilterUnary, FilterNode
 
 log = logging.getLogger("sql.Provider")
@@ -355,8 +355,13 @@ def _generate_filter_in_sql(table_name: str,
                 else:
                     where.append(f"t{num_table}.entity->>'{node.path.paths[-1]}' IS NULL\n")
             else:
-                where.append(f"t{num_table}.entity->>'{node.path.paths[-1]}' "
-                             f"{node.operator} '{str(value)}'\n")
+                if isinstance(node.value, Ref):
+                    # Comparison with Ref. Use only the name
+                    where.append(f"t{num_table}.entity->>'{node.path.paths[-1]}' "
+                                 f"LIKE '{str(value)}%'\n")
+                else:
+                    where.append(f"t{num_table}.entity->>'{node.path.paths[-1]}' "
+                                 f"{node.operator} '{str(value)}'\n")
     return num_table, select, where
 
 
@@ -523,4 +528,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Any]:
             AND date_time BETWEEN %s AND %s
             ORDER BY date_time
             '''),
+        "PURGE_TABLES_TS": textwrap.dedent(f'''
+            DELETE FROM {table_name}_ts
+            ''')
     }

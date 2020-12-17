@@ -70,7 +70,7 @@ def test_equal_ref():
         WHERE
         \'2020-10-01T00:00:00+00:00\' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id=\'customer\'
-        AND t1.entity->>\'a\' = \'r:id\'
+        AND t1.entity->>\'a\' LIKE \'r:id%\'
         LIMIT 1
         """)
     _check_pg(sql_request)
@@ -962,3 +962,19 @@ def test_combine_and():
         LIMIT 1
         """)
     _check_pg(sql_request)
+
+
+def test_select_with_id():
+    hs_filter = 'id==@p:demo:r:23a44701-3a62fd7a'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
+    _check_pg(sql_request)
+    assert sql_request == textwrap.dedent("""\
+        -- id==@p:demo:r:23a44701-3a62fd7a
+        SELECT t1.entity
+        FROM haystack as t1
+        WHERE
+        '2020-10-01T00:00:00+00:00' BETWEEN t1.start_datetime AND t1.end_datetime
+        AND t1.customer_id='customer'
+        AND t1.entity->>'id' LIKE 'r:p:demo:r:23a44701-3a62fd7a%'
+        LIMIT 1
+        """)

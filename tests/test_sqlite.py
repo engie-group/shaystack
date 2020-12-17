@@ -73,7 +73,7 @@ def test_equal_ref():
         WHERE
         ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t1.start_datetime) AND datetime(t1.end_datetime)
         AND t1.customer_id='customer')
-        AND json_extract(json(t1.entity),'$.a') == 'r:id'
+        AND json_extract(json(t1.entity),'$.a') LIKE 'r:id%'
         )
         LIMIT 1
         """)
@@ -1034,6 +1034,23 @@ def test_combine_and():
         AND json_extract(json(t1.entity),'$.d') == 'n:3.000000'
         )
         )
+        )
+        LIMIT 1
+        """)
+
+
+def test_select_with_id():
+    hs_filter = 'id==@p:demo:r:23a44701-3a62fd7a'
+    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
+    _check_sqlite(sql_request)
+    assert sql_request == textwrap.dedent("""\
+        -- id==@p:demo:r:23a44701-3a62fd7a
+        SELECT t1.entity
+        FROM haystack as t1
+        WHERE
+        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t1.start_datetime) AND datetime(t1.end_datetime)
+        AND t1.customer_id='customer')
+        AND json_extract(json(t1.entity),'$.id') LIKE 'r:p:demo:r:23a44701-3a62fd7a%'
         )
         LIMIT 1
         """)

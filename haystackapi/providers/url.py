@@ -147,7 +147,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             date_version,
         )
         if not date_version:
-            date_version = datetime.max.replace(tzinfo=pytz.UTC)
+            date_version = datetime.now().replace(tzinfo=pytz.UTC)
         grid = self._download_grid(self._get_url(), date_version)
         if entity_id in grid:
             entity = grid[entity_id]
@@ -166,7 +166,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
                 # assert history is sorted by date time
                 # Remove data after the date_version
                 for row in history:
-                    if row['ts'] > date_version:
+                    if row['ts'] >= date_version:
                         history = history[0:history.index(row)]
                         break
                 min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
@@ -338,11 +338,11 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             )
         return parse(body, mode)
 
-    # FIXME: bug avec typing
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -> None:
-        self._download_grid_effective_version = functools.lru_cache(size,  # type: ignore
-                                                                    Provider._download_grid_effective_version.__wrapped__)
+        self._download_grid_effective_version = \
+            functools.lru_cache(size,  # type: ignore
+                                Provider._download_grid_effective_version.__wrapped__)
 
     # pylint: enable=no-member
 

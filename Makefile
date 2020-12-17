@@ -502,7 +502,7 @@ functional-url-local: $(REQUIREMENTS)
 	export HAYSTACK_PROVIDER=haystackapi.provider.url
 	export HAYSTACK_URL=sample/carytown.zinc
 	$(MAKE) async-start-api >/dev/null
-	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/client_graphql.py
+	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local url serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 
@@ -515,7 +515,7 @@ functional-db-sqlite: $(REQUIREMENTS)
 	$(CONDA_PYTHON) -m haystackapi.providers.import_db sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in SQLite$(normal)"
 	$(MAKE) async-start-api >/dev/null
-	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/client_graphql.py
+	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local SQLite serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 
@@ -528,12 +528,12 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 	echo -e "$(green)Data imported in Postgres$(normal)"
 	$(MAKE) start-pg async-start-api >/dev/null
 
-	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/client_graphql.py
+	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local Postgres serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 
 .make-functional-test: functional-url-local functional-db-sqlite functional-db-postgres
-	touch .make-functional-test
+	@touch .make-functional-test
 
 ## Test graphql client with different providers
 functional-test: .make-functional-test
@@ -578,7 +578,7 @@ lint: .make-lint
 
 
 .PHONY: validate
-.make-validate: build .make-typing .make-lint .make-test .make-functional-test
+.make-validate: .make-typing .make-lint .make-test .make-functional-test dist
 	@date >.make-validate
 
 ## Validate the project

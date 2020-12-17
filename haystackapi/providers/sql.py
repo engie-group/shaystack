@@ -25,7 +25,7 @@ from overrides import overrides
 
 from . import select_grid
 from .haystack_interface import HaystackInterface
-from .sqldb import DBConnection
+from .sqldb_protocol import DBConnection
 from ..datatypes import Ref
 from ..grid import Grid
 from ..jsondumper import dump_scalar, dump_meta, dump_columns, dump_row

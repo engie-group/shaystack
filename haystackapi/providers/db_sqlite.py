@@ -11,7 +11,7 @@ from typing import Dict, Any, Optional, List, Tuple, Union
 
 import pytz
 
-from .sqldb import DBCursor
+from .sqldb_protocol import DBCursor
 from .. import parse_filter, jsondumper, Quantity, Ref
 from ..filter_ast import FilterNode, FilterUnary, FilterBinary, FilterPath
 

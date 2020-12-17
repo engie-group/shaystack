@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Type, Any, Union, Tuple, Optional, Dict
 
-from .sqldb import DBCursor
+from .sqldb_protocol import DBCursor
 from .. import parse_filter, jsondumper, Quantity, Ref
 from ..filter_ast import FilterPath, FilterBinary, FilterUnary, FilterNode
 

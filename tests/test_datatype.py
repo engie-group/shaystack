@@ -169,7 +169,7 @@ def test_qty_hash():
     _check_hash(50, 'Hz')
 
 
-def test_qty_binary_ops():
+def test_qty_binary_ops():  # pylint: disable=too-many-branches
     def _check_qty_op(_fn, _a, _b):
         quantity_a = haystackapi.Quantity(_a)
         quantity_b = haystackapi.Quantity(_b)

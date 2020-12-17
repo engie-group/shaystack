@@ -813,28 +813,26 @@ def test_path_or():
     _check_sqlite(sql_request)
     assert sql_request == textwrap.dedent("""\
         -- siteRef->geoPostalCode or siteRef->geoCountry
-        (
         SELECT t1.entity
         FROM haystack as t1
         INNER JOIN haystack AS t2 ON
-        '2020-10-01T00:00:00+00:00' BETWEEN t1.start_datetime AND t1.end_datetime
-        AND t1.customer_id='customer'
-        AND '2020-10-01T00:00:00+00:00' BETWEEN t2.start_datetime AND t2.end_datetime
+        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t1.start_datetime) AND datetime(t1.end_datetime)
+        AND t1.customer_id='customer')
+        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t2.start_datetime) AND datetime(t2.end_datetime)
         AND t2.customer_id='customer'
-        AND t1.entity->'siteRef' = t2.entity->'id'
-        AND t2.entity ? 'geoPostalCode'
+        AND json_object(json(t1.entity),'$.siteRef') = json_object(json(t2.entity),'$.id'))
+        AND json_extract(json(t2.entity),'$.geoPostalCode') IS NOT NULL
         )
         UNION
-        (
         SELECT t3.entity
         FROM haystack as t3
         INNER JOIN haystack AS t4 ON
-        '2020-10-01T00:00:00+00:00' BETWEEN t3.start_datetime AND t3.end_datetime
-        AND t3.customer_id='customer'
-        AND '2020-10-01T00:00:00+00:00' BETWEEN t4.start_datetime AND t4.end_datetime
+        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t3.start_datetime) AND datetime(t3.end_datetime)
+        AND t3.customer_id='customer')
+        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t4.start_datetime) AND datetime(t4.end_datetime)
         AND t4.customer_id='customer'
-        AND t3.entity->'siteRef' = t4.entity->'id'
-        AND t4.entity ? 'geoPostalCode'
+        AND json_object(json(t3.entity),'$.siteRef') = json_object(json(t4.entity),'$.id'))
+        AND json_extract(json(t4.entity),'$.geoCountry') IS NOT NULL
         )
         LIMIT 1
         """)
@@ -905,37 +903,6 @@ def test_and_or_and():
         )
         LIMIT 1
         """)
-
-
-def test_path_or():
-    hs_filter = '(a->b or c->d)'
-    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
-    _check_sqlite(sql_request)
-    assert sql_request == textwrap.dedent("""\
-        -- (a->b or c->d)
-        SELECT t1.entity
-        FROM haystack as t1
-        INNER JOIN haystack AS t2 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t1.start_datetime) AND datetime(t1.end_datetime)
-        AND t1.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t2.start_datetime) AND datetime(t2.end_datetime)
-        AND t2.customer_id='customer'
-        AND json_object(json(t1.entity),'$.a') = json_object(json(t2.entity),'$.id'))
-        AND json_extract(json(t2.entity),'$.b') IS NOT NULL
-        )
-        UNION
-        SELECT t3.entity
-        FROM haystack as t3
-        INNER JOIN haystack AS t4 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t3.start_datetime) AND datetime(t3.end_datetime)
-        AND t3.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t4.start_datetime) AND datetime(t4.end_datetime)
-        AND t4.customer_id='customer'
-        AND json_object(json(t3.entity),'$.c') = json_object(json(t4.entity),'$.id'))
-        AND json_extract(json(t4.entity),'$.d') IS NOT NULL
-        )
-        LIMIT 1
-    """)
 
 
 def test_and_or_path():

@@ -513,7 +513,7 @@ def to_dict(token_list):
 
 hs_dict = GenerateMatch(
     lambda ver: Or([
-        Suppress(Regex(r'[ *]')),  # FIXME : must be [ ]* and in another place, but pyparsing loop
+        Suppress(Regex(r'[ *]')),  # PPR : must be [ ]* and in another place, but pyparsing loop
         And([
             Suppress(Regex(r'{ *')),
             hs_tags[ver],

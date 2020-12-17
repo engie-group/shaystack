@@ -5,11 +5,12 @@ _RAW_UNIT_DATA = None
 
 
 def get_units():
-    global _RAW_UNIT_DATA
+    global _RAW_UNIT_DATA  # pylint: disable=global-statement
     if _RAW_UNIT_DATA is None:
         unit_data = {}
 
-        for raw_row in pkg_resources.open_text(__package__, 'project_haystack_units.txt', encoding='UTF-8'):
+        for raw_row in pkg_resources.open_text(__package__,
+                                               'project_haystack_units.txt', encoding='UTF-8'):
             row = raw_row.split(u',')
             if not bool(row):
                 continue

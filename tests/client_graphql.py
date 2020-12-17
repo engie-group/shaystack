@@ -24,13 +24,16 @@ def client_graphql():
                'haystack': {
                    'with_hist':
                        [
-                           {'id': 'r:p:demo:r:23a44701-bbc36976 Tariff His', 'dis': 's:Tariff His'}],
+                           {'id': 'r:p:demo:r:23a44701-bbc36976 Tariff His',
+                            'dis': 's:Tariff His'}],
                    'with_ids':
                        [
-                           {'id': 'r:p:demo:r:23a44701-bbc36976 Tariff His', 'dis': 's:Tariff His'}],
+                           {'id': 'r:p:demo:r:23a44701-bbc36976 Tariff His',
+                            'dis': 's:Tariff His'}],
                    'entities':
                        [
-                           {'id': 'r:p:demo:r:23a44701-bbc36976 Tariff His', 'dis': 's:Tariff His'}],
+                           {'id': 'r:p:demo:r:23a44701-bbc36976 Tariff His',
+                            'dis': 's:Tariff His'}],
                    'histories': [
                        [{'ts': '2020-02-01T00:00:00+00:00 UTC', 'float': 86.0},
                         {'ts': '2020-03-01T00:00:00+00:00 UTC', 'float': 83.0},

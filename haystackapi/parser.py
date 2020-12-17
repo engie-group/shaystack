@@ -53,37 +53,10 @@ def mode_to_suffix(mode):
     return _mode_to_suffix.get(mode, None)
 
 
-def _parse_mode(mode):
-    """
-    Sanitise the mode given.  Whilst code _should_ use the MODE_ZINC and
-    MODE_JSON constants above, we have some code internally that plays fast
-    and loose with this.
-    """
-    if mode in (MODE_ZINC, MODE_JSON, MODE_CSV):
-        return mode
-
-    # Danger zone: user has given us something different.  They better know
-    # what it is they are doing!
-    mode = str(mode).lower()
-    if mode == 'zinc':
-        LOG.warning("Use MODE_ZINC in place of 'zinc'")
-        return MODE_ZINC
-    if mode == 'json':
-        LOG.warning("Use MODE_JSON in place of 'json'")
-        return MODE_JSON
-    if mode == 'csv':
-        LOG.warning("Use MODE_CSV in place of 'csv'")
-        return MODE_JSON
-    # Clearly that was a wrong assumption.  Let 'em have it!
-    raise ValueError('Unrecognised mode, should be MODE_ZINC or MODE_JSON')
-
-
 def parse(grid_str, mode=MODE_ZINC, charset='utf-8', single=True):
     """
     Parse the given Zinc text and return the equivalent data.
     """
-    # Sanitise mode
-    mode = _parse_mode(mode)
 
     # Decode incoming text (or python3 will whine!)
     if isinstance(grid_str, bytes):
@@ -121,9 +94,6 @@ def parse(grid_str, mode=MODE_ZINC, charset='utf-8', single=True):
 
 
 def parse_grid(grid_str, mode=MODE_ZINC, charset='utf-8'):
-    # Sanitise mode
-    mode = _parse_mode(mode)
-
     # Decode incoming text
     if isinstance(grid_str, bytes):  # pragma: no cover
         # No coverage here, because it *should* be handled above unless the user
@@ -140,9 +110,6 @@ def parse_grid(grid_str, mode=MODE_ZINC, charset='utf-8'):
 
 
 def parse_scalar(scalar, mode=MODE_ZINC, version=LATEST_VER, charset='utf-8'):
-    # Sanitise mode
-    mode = _parse_mode(mode)
-
     # Decode version string
     if not isinstance(version, Version):
         version = Version(version)

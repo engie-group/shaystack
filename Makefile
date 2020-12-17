@@ -569,6 +569,7 @@ typing: .make-typing
 	$(VALIDATE_VENV)
 	@echo -e "$(cyan)Check lint...$(normal)"
 	@pylint -d duplicate-code app haystackapi
+	@echo -e "$(cyan)Check lint for tests...$(normal)"
 	@pylint --rcfile=.pylintrc-test tests
 	touch .make-lint
 

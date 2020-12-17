@@ -65,7 +65,6 @@ def _read_grid(uri):
 
 
 # May be an handler for Lambda
-# TODO: imported les TS
 def import_in_db(source: str,
                  destination: str,
                  customer_id: str = '',

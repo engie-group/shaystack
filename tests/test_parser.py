@@ -1760,9 +1760,7 @@ def test_malformed_scalar_zinc():
     try:
         haystackapi.parse_scalar(12341234, mode=haystackapi.MODE_ZINC)
         assert False, 'Should have failed'
-    except AssertionError:
-        raise
-    except:  # noqa: E722
+    except AttributeError:
         pass
 
 

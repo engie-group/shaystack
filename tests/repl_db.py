@@ -7,9 +7,7 @@ import traceback
 from typing import cast
 from urllib.parse import urlparse
 
-import psycopg2
 import pytz
-from pyparsing import ParseException
 
 from haystackapi.providers import get_provider
 from haystackapi.providers.db_postgres import _sql_filter as pg_sql_filter
@@ -30,7 +28,7 @@ def main():
             super().__init__()
             self.conn = conn
 
-        def do_pg(self, arg):
+        def do_pg(self, arg: str) -> None:
             try:
                 sql_request = pg_sql_filter("haystack", arg, FAKE_NOW, 1, "customer")
                 print(sql_request)
@@ -38,26 +36,27 @@ def main():
                     cursor = self.conn.cursor()
                     cursor.execute(sql_request)
                     cursor.close()
-            except (psycopg2.errors.SyntaxError, ParseException):
+            except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
             finally:
                 conn.rollback()
 
-        def do_sqlite(self, arg):
+        def do_sqlite(self, arg: str) -> None:
             try:
                 sql_request = sqlite_sql_filter("haystack", arg, FAKE_NOW, 1, "customer")
                 print(sql_request)
+                sql_request = "qsd!"
                 if scheme.startswith("sqlite"):
                     cursor = self.conn.cursor()
                     cursor.execute(sql_request)
                     cursor.close()
-            except (psycopg2.errors.SyntaxError, ParseException, Exception):
+            except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
             finally:
                 conn.rollback()
 
-        def do_bye(self, arg):
-            self.close()
+        def do_bye(self, arg: str) -> bool:  # pylint: disable=unused-argument,no-self-use
+            return True
 
     TstRequest(conn).cmdloop()
     return 0

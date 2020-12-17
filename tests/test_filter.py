@@ -6,7 +6,7 @@ from datetime import time, date, datetime
 
 from iso8601 import iso8601
 
-from haystackapi import Grid, Uri, Ref, Coordinate, MARKER, XStr
+from haystackapi import Grid, Uri, Ref, Coordinate, MARKER, XStr, grid_filter
 from haystackapi.filter_ast import FilterUnary, FilterBinary, FilterPath, FilterAST
 from haystackapi.grid_filter import hs_filter, _FnWrapper, filter_function
 from haystackapi.zoneinfo import timezone
@@ -179,7 +179,8 @@ def test_generated_filter_with_reference():
 def test_grid_filter():
     grid = Grid(columns={'id': {}, 'site': {}, 'equip': {}, 'geoPostalCode': {}, 'ahu': {},
                          'geoCity': {}, 'curVal': {}, 'hvac': {}, 'siteRef': {}})
-    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago',
+                 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
     grid.append({'id': Ref('id2'), 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
     grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
@@ -200,7 +201,8 @@ def test_grid_filter():
 def test_grid_specification_filter_sample():
     grid = Grid(columns=['id', 'site', 'equip', 'geoPostalCode', 'ahu',
                          'geoCity', 'curVal', 'hvac', 'siteRef'])
-    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago',
+                 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
     grid.append({'id': Ref('id2'), 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
     grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
@@ -258,14 +260,15 @@ def test_grid_specification_filter_sample():
 
 def test_if_generated_function_removed():
     # Check if the generated function will be removed
-    import haystackapi.grid_filter
     wrapper = _FnWrapper("_acme", "def _acme(): pass")
-    assert haystackapi.grid_filter._acme  # type: ignore
+    # pylint: disable=no-member
+    assert grid_filter._acme  # type: ignore
+    # pylint: enable=no-member
     if wrapper:
         del wrapper
     gc.collect()
     try:
-        assert haystackapi.grid_filter._acme is not None  # type: ignore
+        assert grid_filter._acme is not None  # type: ignore
         assert False
     except AttributeError:
         pass
@@ -274,7 +277,8 @@ def test_if_generated_function_removed():
 def test_slide_get():
     grid = Grid(columns={'id': {}, 'site': {}, 'equip': {}, 'geoPostalCode': {}, 'ahu': {},
                          'geoCity': {}, 'curVal': {}, 'hvac': {}, 'siteRef': {}})
-    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago',
+                 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
     grid.append({'id': Ref('id2'), 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
     grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
@@ -286,7 +290,8 @@ def test_slide_get():
 def test_empty_filter():
     grid = Grid(columns={'id': {}, 'site': {}, 'equip': {}, 'geoPostalCode': {}, 'ahu': {},
                          'geoCity': {}, 'curVal': {}, 'hvac': {}, 'siteRef': {}})
-    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago',
+                 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
     grid.append({'id': Ref('id2'), 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
     grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
@@ -296,14 +301,16 @@ def test_empty_filter():
 def test_multiple_and_filter():
     grid = Grid(columns={'id': {}, 'site': {}, 'equip': {}, 'geoPostalCode': {}, 'ahu': {},
                          'geoCity': {}, 'curVal': {}, 'hvac': {}, 'siteRef': {}})
-    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago',
+                 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
     assert len(grid.filter("id and site and equip and geoPostalCode")) == 1
 
 
 def test_empty_filter_and_limit():
     grid = Grid(columns={'id': {}, 'site': {}})
-    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago',
+                 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
     grid.append({'id': Ref('id2'), 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
     grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})
@@ -313,7 +320,8 @@ def test_empty_filter_and_limit():
 
 def test_filter_and_limit():
     grid = Grid(columns={'id': {}, 'site': {}})
-    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago', 'geoPostalCode': "78280", 'ahu': MARKER,
+    grid.append({'id': Ref('id1'), 'site': MARKER, 'equip': 'Chicago',
+                 'geoPostalCode': "78280", 'ahu': MARKER,
                  'geoCity': 'Chicago', 'curVal': 76})
     grid.append({'id': Ref('id2'), 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
     grid.append({'equip': 'Chicago', 'hvac': MARKER, 'siteRef': Ref('id1'), 'curVal': 74})

@@ -111,13 +111,13 @@ class HaystackInterface(ABC):
         grid.append(
             {
                 "haystackVersion": str(VER_3_0),
-                "tz": str(get_localzone()),
+                "tz": str(self.get_tz()),
                 "serverName": "haystack_" + os.environ.get("AWS_REGION", "local"),
                 "serverTime": datetime.now(tz=self.get_tz()).replace(microsecond=0),
                 "serverBootTime": datetime.now(tz=self.get_tz()).replace(
                     microsecond=0
                 ),
-                "productName": "AWS Lamdda Haystack Provider",
+                "productName": "AWS Lambda Haystack Provider",
                 "productUri": Uri(home),
                 "productVersion": "0.1",
                 "moduleName": "URLProvider",

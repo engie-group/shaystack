@@ -74,7 +74,7 @@ def test_read_version_with_filter(mock_s3, mock_get_url):
 
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
-def test_read_version_with_filter(mock_s3, mock_get_url):
+def test_read_version_with_filter2(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("haystackapi.providers.url") as provider:
@@ -113,10 +113,10 @@ def test_lru_version(mock):
         assert provider._download_grid(url, version_2).metadata["v"] == "2"
         assert provider._download_grid(url, version_1).metadata["v"] == "1"
         try:
-            provider._download_grid(url, version_0).metadata["v"]
+            provider._download_grid(url, version_0)
             assert False, "Must return nothing"
         except ValueError:
-            pass
+            pass  # Empty body
 
 
 @patch.object(URLProvider, '_get_url')

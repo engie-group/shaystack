@@ -232,7 +232,7 @@ class Provider(HaystackInterface):
                                 )
                 grid = self._init_grid_from_db(date_version)
                 for row in cursor:
-                    grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))  # FIXME: sql_type ?
+                    grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
                 conn.commit()
                 return select_grid(grid, select)
             customer_id = self.get_customer_id()

@@ -83,8 +83,6 @@ def merge_timeseries(source_grid: Grid,
     """
     assert 'ts' in source_grid.column, "The source grid must have ts,value columns"
     if 'ts' in destination_grid.column:
-        # destination_grid = destination_grid.copy()  # FIXME
-        # destination_grid[0]['ts'] = destination_grid[0]['ts'] - timedelta(seconds=20)  # FIXME: Bug injecté
         if id(destination_grid) != id(source_grid):
             destination_grid.sort('ts')
             source_grid.sort('ts')
@@ -182,7 +180,7 @@ def update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-lo
                 destination_grid = EmptyGrid
 
         if force or not compare_grid or (destination_grid - source_grid):
-            if not force and merge_ts:  # PPR: if TS, limite the number of AWS versions ?
+            if not force and merge_ts:  # PPR: if TS, limit the number of AWS versions ?
                 source_data, b64_digest = merge_timeseries(source_grid,
                                                            destination_grid,
                                                            suffix_to_mode(suffix), use_gzip)

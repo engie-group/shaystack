@@ -63,8 +63,9 @@ In [6]: g.column['firstColumn'] = {'metaData':'in no particular order', 'abc': 1
 In [7]: g.column['secondColumn'] = {}
 In [8]: g.extend([
 ...:     {'firstColumn': haystackapi.Quantity(154, 'kg'), 'secondColumn': 'and counting'},
-...:     {'firstColumn': haystackapi.MARKER, 'secondColumn': 'supported on Python 2.7 and 3.x'},
-...:     {'firstColumn': haystackapi.Coordinate(-27.4725,153.003), 'secondColumn': 'Made in Australia from local and imported ingredients'},
+...:     {'firstColumn': haystackapi.MARKER, 'secondColumn': 'supported on Python 3.7+'},
+...:     {'firstColumn': haystackapi.Coordinate(-27.4725,153.003), 
+...:          'secondColumn': 'Made in Australia from local and imported ingredients'},
 ...:     ])
 Out[8]: 
 <Grid>
@@ -78,7 +79,7 @@ Out[8]:
         secondColumn='and counting'
         Row    1:
         firstColumn=MARKER
-        secondColumn='supported on Python 2.7 and 3.x'
+        secondColumn='supported on Python 3.7+'
         Row    2:
         firstColumn=Coordinate(-27.4725, 153.003)
         secondColumn='Made in Australia from local and imported ingredients'
@@ -91,7 +92,7 @@ firstColumn metaData:"in no particular order" abc:123,secondColumn
 M,"supported on Python 2.7 and 3.x"
 C(-27.472500,153.003000),"Made in Australia from local and imported ingredients"
 
-In [10]: print (haystackapi.dump(g,mode=haystackapi.MODE_JSON))
+In [10]: print(haystackapi.dump(g,mode=haystackapi.MODE_JSON))
 {"meta": {"aMarker": "m:", "today": "d:2020-12-16", "ver": "3.0"}, "cols": [{"metaData": "s:in no particular order", "abc": "n:123.000000", "name": "firstColumn"}, {"name": "secondColumn"}], "rows": [{"firstColumn": "n:154.000000 kg", "secondColumn": "s:and counting"}, {"firstColumn": "m:", "secondColumn": "s:supported on Python 2.7 and 3.x"}, {"firstColumn": "c:-27.472500,153.003000", "secondColumn": "s:Made in Australia from local and imported ingredients"}]}
 
 In [11]: # Load haystack file
@@ -127,11 +128,11 @@ Out[16]:
  'geoCity': 'Richmond'}
 
 In [17]: # Read time-series
-In [18]: his = g.filter("his")[0]
-In [19]: ts_uri = "sample/" + his["hisURI"]
+In [18]: with_his = g.filter("his")[0]
+In [19]: ts_uri = "sample/" + with_his["hisURI"]
 In [20]: with open(ts_uri) as f:
 ...:         ts = haystackapi.parse(f.read(),haystackapi.MODE_ZINC)
-...:         print(ts)
+...:         print(ts)  # Print associated time-series
 ...: 
 <Grid>
         Version: 3.0

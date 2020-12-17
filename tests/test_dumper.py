@@ -5,19 +5,14 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 import datetime
 import json
-import sys
+from csv import reader
+
+import pytz
 
 import haystackapi
-import pytz
 from haystackapi import dump_scalar
-
 from .test_parser import SIMPLE_EXAMPLE_ZINC, SIMPLE_EXAMPLE_JSON, \
     METADATA_EXAMPLE_JSON, SIMPLE_EXAMPLE_CSV, METADATA_EXAMPLE_CSV
-
-if sys.version_info[0] == 2:
-    from csv23 import reader
-else:
-    from csv import reader
 
 # The metadata example is a little different, as we generate the grid without
 # spaces around the commas.
@@ -783,7 +778,8 @@ def test_scalar_dict_zinc_v3():
                         "\"An empty dict\",{}\n"
                         "\"A marker in a dict\",{marker:M}\n"
                         "\"A references in a dict\",{" +
-                        " ".join([str(k) + ":" + str(v) for k, v in {"ref": "@a-ref", "ref2": "@a-ref"}.items()])
+                        " ".join([str(k) + ":" + str(v)
+                                  for k, v in {"ref": "@a-ref", "ref2": "@a-ref"}.items()])
                         .replace("ref2:@a-ref", "ref2:@a-ref \"a value\"") +
                         "}\n"
                         "\"A quantity in a dict\",{quantity:500miles}\n")
@@ -869,7 +865,8 @@ def test_scalar_dict_csv_v3():
 "An empty dict","{}"
 "A marker in a dict","{marker:M}"
 "A references in a dict","{''' + \
-           " ".join([k + ":" + v for k, v in {'ref': '@a-ref', 'ref2': '@a-ref ""a value""'}.items()]) + \
+           " ".join([k + ":" + v
+                     for k, v in {'ref': '@a-ref', 'ref2': '@a-ref ""a value""'}.items()]) + \
            '''}"
 "A quantity in a dict","{quantity:500miles}"
 '''

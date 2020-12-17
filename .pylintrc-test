@@ -143,7 +143,10 @@ disable=print-statement,
         missing-module-docstring,
         missing-class-docstring,
         protected-access,
-        similarities
+        similarities,
+
+        too-many-lines,
+        invalid-name
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -322,7 +325,7 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=100
+max-line-length=120
 
 # Maximum number of lines in a module.
 max-module-lines=1000
@@ -549,7 +552,7 @@ min-public-methods=2
 
 # List of modules that can be imported at any level, not just the top level
 # one.
-allow-any-import-level=
+allow-any-import-level=haystackapi.grid_diff
 
 # Allow wildcard imports from modules that define __all__.
 allow-wildcard-with-all=no

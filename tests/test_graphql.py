@@ -4,17 +4,19 @@ from unittest.mock import patch
 
 import pytz
 from graphene.test import Client
+from pytz import timezone
 
 from app.blueprint_graphql import schema
 from haystackapi import Grid, VER_3_0, Uri, Ref, Coordinate, MARKER
 from haystackapi.providers import get_provider
-from haystackapi.providers.url import Provider
 from haystackapi.providers.url import Provider as URLProvider
 from tests import _get_mock_s3
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
-def test_about():
+@patch.object(URLProvider, 'get_tz')
+def test_about(mock):
+    mock.return_value = timezone('UTC')
     with get_provider("haystackapi.providers.url") as _:
         client = Client(schema)
         executed = client.execute('''
@@ -45,9 +47,9 @@ def test_about():
                                    'about':
                                        {
                                            'haystackVersion': '3.0',
-                                           'tz': 'Europe/Paris',
+                                           'tz': 'UTC',
                                            # 'serverName': 'haystack_local',
-                                           'productName': 'AWS Lamdda Haystack Provider',
+                                           'productName': 'AWS Lambda Haystack Provider',
                                            'productUri': 'http://localhost',
                                            'productVersion': '1.0',
                                            'moduleName': 'URLProvider',
@@ -98,8 +100,8 @@ def test_ops():
                }
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_tag_values(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
@@ -118,8 +120,8 @@ def test_tag_values(mock_s3, mock_get_url):
                {'data': {'haystack': {'tagValues': ['@id1', '@id2']}}}
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_versions(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
@@ -143,8 +145,8 @@ def test_versions(mock_s3, mock_get_url):
                                '2020-10-01T00:00:01+00:00 UTC']}}}
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_entities_with_id(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
@@ -175,8 +177,8 @@ def test_entities_with_id(mock_s3, mock_get_url):
                }
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_entities_with_filter(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
@@ -197,8 +199,8 @@ def test_entities_with_filter(mock_s3, mock_get_url):
                        {'id': 'r:id1', 'col': 'n:1.000000', 'hisURI': 's:his0.zinc', }]}}}
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_entities_with_select(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
@@ -217,8 +219,8 @@ def test_entities_with_select(mock_s3, mock_get_url):
                {'data': {'haystack': {'entities': [{'id': 'r:id1'}]}}}
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_entities_with_limit(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
@@ -239,8 +241,8 @@ def test_entities_with_limit(mock_s3, mock_get_url):
                        {'id': 'r:id1', 'col': 'n:1.000000', 'hisURI': 's:his0.zinc', }]}}}
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_boolean(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
@@ -283,8 +285,8 @@ def test_his_read_with_boolean(mock_s3, mock_get_url):
                                               'bool': False}]]}}}
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_number(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
@@ -295,8 +297,8 @@ def test_his_read_with_number(mock_s3, mock_get_url):
     mock_s3.return_value.his_count = 500
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
-    with cast(URLProvider, get_provider("haystackapi.providers.url")) as provider:
-        provider.cache_clear()
+    with cast(URLProvider, get_provider("haystackapi.providers.url")) as Provider:
+        Provider.cache_clear()
         client = Client(schema)
         executed = client.execute('''
         { 
@@ -325,8 +327,8 @@ def test_his_read_with_number(mock_s3, mock_get_url):
                                 'str': '3.5'}]]}}}
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_uri(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
@@ -336,8 +338,8 @@ def test_his_read_with_uri(mock_s3, mock_get_url):
     mock_s3.return_value.his_count = 100
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
-    with cast(URLProvider, get_provider("haystackapi.providers.url")) as provider:
-        provider.cache_clear()
+    with cast(URLProvider, get_provider("haystackapi.providers.url")) as Provider:
+        Provider.cache_clear()
         client = Client(schema)
         executed = client.execute('''
         { 
@@ -360,8 +362,8 @@ def test_his_read_with_uri(mock_s3, mock_get_url):
                                  'val': 'u:http://localhost', 'uri': 'http://localhost'}]]}}}
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_ref(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
@@ -371,8 +373,8 @@ def test_his_read_with_ref(mock_s3, mock_get_url):
     mock_s3.return_value.his_count = 200
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
-    with cast(URLProvider, get_provider("haystackapi.providers.url")) as provider:
-        provider.cache_clear()
+    with cast(URLProvider, get_provider("haystackapi.providers.url")) as Provider:
+        Provider.cache_clear()
         client = Client(schema)
         executed = client.execute('''
         { 
@@ -396,8 +398,8 @@ def test_his_read_with_ref(mock_s3, mock_get_url):
                                  'ref': '@id1'}]]}}}
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_datetime(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
@@ -408,8 +410,8 @@ def test_his_read_with_datetime(mock_s3, mock_get_url):
     mock_s3.return_value.his_count = 300
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
-    with cast(URLProvider, get_provider("haystackapi.providers.url")) as provider:
-        provider.cache_clear()
+    with cast(URLProvider, get_provider("haystackapi.providers.url")) as Provider:
+        Provider.cache_clear()
         client = Client(schema)
         executed = client.execute('''
         { 
@@ -436,8 +438,8 @@ def test_his_read_with_datetime(mock_s3, mock_get_url):
                                  'time': '00:00:00'}]]}}}
 
 
-@patch.object(Provider, '_get_url')
-@patch.object(Provider, '_s3')
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_coordinate(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
@@ -447,8 +449,8 @@ def test_his_read_with_coordinate(mock_s3, mock_get_url):
     mock_s3.return_value.his_count = 400
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
-    with cast(URLProvider, get_provider("haystackapi.providers.url")) as provider:
-        provider.cache_clear()
+    with cast(URLProvider, get_provider("haystackapi.providers.url")) as Provider:
+        Provider.cache_clear()
         client = Client(schema)
         executed = client.execute('''
         { 

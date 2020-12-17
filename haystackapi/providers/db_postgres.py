@@ -127,7 +127,7 @@ def _merge_has_operators(left, right, merged_class: Type) -> Optional[_Root]:
 
 
 # Phase 1 : reorganize AST
-def _optimize_filter_for_sql(node: FilterNode) -> FilterNode:
+def _optimize_filter_for_sql(node: FilterNode) -> Union[_Root, FilterNode]:
     if isinstance(node, FilterPath):
         return _Path(node.paths)
     if isinstance(node, FilterBinary):
@@ -165,8 +165,7 @@ def _optimize_filter_for_sql(node: FilterNode) -> FilterNode:
         if node.operator == "not":
             return _NotHas(_Path(node.right.paths))
         assert 0, "Invalid operator"
-    else:
-        return node  # Value
+    return node  # Value
 
 
 # Phase 2: Generate SQL

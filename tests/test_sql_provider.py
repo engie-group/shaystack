@@ -134,7 +134,7 @@ def test_read_version_with_filter():
 
 
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
-def test_read_version_with_filter():
+def test_read_version_with_filter2():
     try:
         # caplog.set_level(logging.DEBUG)
         with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
@@ -175,4 +175,3 @@ def test_values_for_tag():
             assert len(values) > 1
     except NotImplementedError:
         skip("Unsupported with standard sqlite. Use supersqlite")
-

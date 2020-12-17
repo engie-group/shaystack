@@ -67,7 +67,8 @@ def gen_random_uri():
 
 def gen_random_str(min_length=1, max_length=20, charset=STR_CHARSET):
     # Generate a random 20-character string
-    return u''.join([random.choice(charset) for _ in range(0, random.randint(min_length, max_length))])
+    return u''.join([random.choice(charset)
+                     for _ in range(0, random.randint(min_length, max_length))])
 
 
 def gen_random_date():

@@ -35,7 +35,7 @@ class Quantity(six.with_metaclass(ABCMeta, object)):  # pylint: disable=too-few-
     """
 
     def __new__(cls, value, unit=None):
-        return PintQuantity(value, to_pint(unit))  # FIXME
+        return PintQuantity(value, to_pint(unit))
 
     # Fake ctr to help audit tools
     def __init__(self, value, unit=None):

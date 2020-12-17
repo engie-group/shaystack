@@ -756,7 +756,7 @@ def test_path_or():
         AND '2020-10-01T00:00:00+00:00' BETWEEN t4.start_datetime AND t4.end_datetime
         AND t4.customer_id='customer'
         AND t3.entity->'siteRef' = t4.entity->'id'
-        AND t4.entity ? 'geoPostalCode'
+        AND t4.entity ? 'geoCountry'
         )
         LIMIT 1
         """)
@@ -812,39 +812,6 @@ def test_and_or_and():
         AND (t1.entity ? 'toto')
         LIMIT 1
         """)
-    _check_pg(sql_request)
-
-
-def test_path_or():
-    hs_filter = '(a->b or c->d)'
-    sql_request = sql_filter('haystack', hs_filter, FAKE_NOW, 1, "customer")
-    assert sql_request == textwrap.dedent("""\
-        -- (a->b or c->d)
-        (
-        SELECT t1.entity
-        FROM haystack as t1
-        INNER JOIN haystack AS t2 ON
-        '2020-10-01T00:00:00+00:00' BETWEEN t1.start_datetime AND t1.end_datetime
-        AND t1.customer_id='customer'
-        AND '2020-10-01T00:00:00+00:00' BETWEEN t2.start_datetime AND t2.end_datetime
-        AND t2.customer_id='customer'
-        AND t1.entity->'a' = t2.entity->'id'
-        AND t2.entity ? 'b'
-        )
-        UNION
-        (
-        SELECT t3.entity
-        FROM haystack as t3
-        INNER JOIN haystack AS t4 ON
-        '2020-10-01T00:00:00+00:00' BETWEEN t3.start_datetime AND t3.end_datetime
-        AND t3.customer_id='customer'
-        AND '2020-10-01T00:00:00+00:00' BETWEEN t4.start_datetime AND t4.end_datetime
-        AND t4.customer_id='customer'
-        AND t3.entity->'c' = t4.entity->'id'
-        AND t4.entity ? 'd'
-        )
-        LIMIT 1
-    """)
     _check_pg(sql_request)
 
 

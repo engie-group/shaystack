@@ -28,7 +28,6 @@ except ImportError:
 log = logging.getLogger("haystackapi")
 
 
-# PPR: see the batch approach
 class HSScalar(graphene.Scalar):
     """Haystack Scalar"""
 
@@ -43,14 +42,15 @@ class HSScalar(graphene.Scalar):
     @staticmethod
     def parse_literal(node: Union[IntValue, FloatValue, StringValue, BooleanValue, EnumValue]) -> Any:
         if isinstance(node, StringValue):
-            s = node.value
-            if len(s) >= 2 and s[1] == ':':
-                return haystackapi.parse_scalar(node.value, haystackapi.MODE_JSON, version=haystackapi.VER_3_0)
+            str_value = node.value
+            if len(str_value) >= 2 and str_value[1] == ':':
+                return haystackapi.parse_scalar(node.value,
+                                                haystackapi.MODE_JSON)
         return node.value
 
     @staticmethod
     def parse_value(value: Any) -> Any:
-        return haystackapi.parse_scalar(value, haystackapi.MODE_JSON, version=haystackapi.VER_3_0)
+        return haystackapi.parse_scalar(value, haystackapi.MODE_JSON)
 
 
 class HSDateTime(graphene.String):
@@ -61,13 +61,15 @@ class HSDateTime(graphene.String):
     @staticmethod
     def serialize(date_time: datetime) -> str:
         # Call to convert python object to graphql result
-        assert isinstance(date_time, datetime), 'Received not compatible datetime "{}"'.format(repr(date_time))
+        assert isinstance(date_time, datetime), \
+            'Received not compatible datetime "{}"'.format(repr(date_time))
         return dump_hs_date_time(date_time)
 
     @staticmethod
     def parse_literal(node: StringValue) -> datetime:  # pylint: disable=arguments-differ
         # Call to convert graphql parameter to python object
-        assert isinstance(node, StringValue), 'Received not compatible datetime "{}"'.format(repr(node))
+        assert isinstance(node, StringValue), \
+            'Received not compatible datetime "{}"'.format(repr(node))
         return HSDateTime.parse_value(node.value)
 
     @staticmethod
@@ -130,15 +132,15 @@ class HSUri(graphene.String):
 
     @staticmethod
     def serialize(a_uri: Uri) -> str:
-        assert isinstance(a_uri, Uri), 'Received not compatible uri "{}"'.format(repr(a_time))
+        assert isinstance(a_uri, Uri), 'Received not compatible uri "{}"'.format(repr(a_uri))
         return str(a_uri)
 
     @staticmethod
-    def parse_literal(node: StringValue) -> time:  # pylint: disable=arguments-differ
+    def parse_literal(node: StringValue) -> Uri:  # pylint: disable=arguments-differ
         return HSUri.parse_value(node.value)
 
     @staticmethod
-    def parse_value(value: str) -> time:
+    def parse_value(value: str) -> Uri:
         if value.startswith("u:"):
             return haystackapi.parse_scalar(value, haystackapi.MODE_JSON, version=haystackapi.VER_3_0)
         return Uri(value)
@@ -147,7 +149,7 @@ class HSUri(graphene.String):
 class HSCoordinate(graphene.ObjectType):  # pylint: disable=too-few-public-methods
     """ Haystack coordinate for GraphQL """
     latitude = graphene.Float(required=True,
-                              description="Latitude")  # FIXME: require
+                              description="Latitude")
     longitude = graphene.Float(required=True,
                                description="Longitude")
 

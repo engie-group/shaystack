@@ -16,7 +16,6 @@ from .grid import Grid
 from .jsondumper import dump_grid as dump_json_grid, \
     dump_scalar as dump_json_scalar
 from .parser import MODE_ZINC, MODE_JSON, MODE_CSV
-from .parser import _parse_mode
 from .version import LATEST_VER
 from .zincdumper import dump_grid as dump_zinc_grid, \
     dump_scalar as dump_zinc_scalar
@@ -26,9 +25,6 @@ def dump(grids, mode=MODE_ZINC):
     """
     Dump the given grids in the specified over-the-wire format.
     """
-    # Sanitise mode
-    mode = _parse_mode(mode)
-
     if isinstance(grids, Grid):
         return dump_grid(grids, mode=mode)
     _dump = functools.partial(dump_grid, mode=mode)
@@ -42,9 +38,6 @@ def dump(grids, mode=MODE_ZINC):
 
 
 def dump_grid(grid, mode=MODE_ZINC):
-    # Sanitise mode
-    mode = _parse_mode(mode)
-
     if mode == MODE_ZINC:
         return dump_zinc_grid(grid)
     if mode == MODE_JSON:
@@ -55,9 +48,6 @@ def dump_grid(grid, mode=MODE_ZINC):
 
 
 def dump_scalar(scalar, mode=MODE_ZINC, version=LATEST_VER):
-    # Sanitise mode
-    mode = _parse_mode(mode)
-
     if mode == MODE_ZINC:
         return dump_zinc_scalar(scalar, version=version)
     if mode == MODE_JSON:

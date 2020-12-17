@@ -150,10 +150,11 @@ disable=print-statement,
         unused-argument,
         too-many-branches,
         too-many-statements,
-        duplicate-code,
-
         too-many-boolean-expressions,
-        fixme # FIXME
+        duplicate-code,
+        cyclic-import,
+        import-outside-toplevel,
+        todo,fixme # FIXME
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -559,7 +560,7 @@ min-public-methods=2
 
 # List of modules that can be imported at any level, not just the top level
 # one.
-allow-any-import-level=
+allow-any-import-level=haystackapi.grid_diff
 
 # Allow wildcard imports from modules that define __all__.
 allow-wildcard-with-all=no

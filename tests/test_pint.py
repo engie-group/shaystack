@@ -8,7 +8,8 @@ units = []
 
 
 def get_units():
-    with pkg_resources.open_text(__package__, 'project_haystack_units.txt', encoding='UTF-8') as file:
+    with pkg_resources.open_text(__package__,
+                                 'project_haystack_units.txt', encoding='UTF-8') as file:
         for line in file:
             if '--' not in line and line != '':
                 res = line.rstrip().split(',')
@@ -27,7 +28,7 @@ def test_all_units():
         try:
             # if to_haystack(each) != each:
             #     assert to_pint(to_haystack(each)) == each
-            quantity = haystackapi.Quantity(1, each)
+            haystackapi.Quantity(1, each)
             defined.append(each)
         except UndefinedUnitError as error:
             not_defined.append(each)

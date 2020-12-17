@@ -520,8 +520,8 @@ def test_slice():
     result = grid[0:2]
     assert isinstance(result, Grid)
     assert len(result) == 2
-    assert result[Ref('id1')]
-    assert result[Ref('id2')]
+    assert result[Ref('id1')]  # pylint: disable=invalid-sequence-index
+    assert result[Ref('id2')]  # pylint: disable=invalid-sequence-index
 
 
 def test_grid_contain():

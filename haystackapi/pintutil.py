@@ -149,7 +149,7 @@ def to_haystack(unit):
     for haystack_value, pint_value in HAYSTACK_CONVERSION:
         if pint_value == u'':
             continue
-        unit = unit.replace(pint_value, haystack_value)  # FIXME: optimise this big loop
+        unit = unit.replace(pint_value, haystack_value)  # PPR: optimise this big loop
     return unit
 
 
@@ -167,7 +167,7 @@ def to_pint(unit):
             unit is None:
         return ''
         # Those units are not units... they are impossible to fit anywhere in Pint
-    for haystack_value, pint_value in HAYSTACK_CONVERSION:  # FIXME: leasy
+    for haystack_value, pint_value in HAYSTACK_CONVERSION:  # PPR: leasy ?
         unit = unit.replace(haystack_value, pint_value)
     return unit
 

@@ -147,7 +147,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             date_version,
         )
         if not date_version:
-            date_version = datetime(9999, 12, 31, 23, 59, 59, 99, tzinfo=pytz.UTC)  # TODO: manage range
+            date_version = datetime.max.replace(tzinfo=pytz.UTC)
         grid = self._download_grid(self._get_url(), date_version)
         if entity_id in grid:
             entity = grid[entity_id]
@@ -169,7 +169,6 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
                     if row['ts'] > date_version:
                         history = history[0:history.index(row)]
                         break
-                # TODO: manage range
                 min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
                 max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
 
@@ -177,7 +176,6 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
                     min_date = min(min_date, time_serie["ts"])
                     max_date = max(max_date, time_serie["ts"])
 
-                # TODO: filter suivant version MAX
                 grid.metadata = {
                     "id": entity_id,
                     "hisStart": min_date,
@@ -341,10 +339,12 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
         return parse(body, mode)
 
     # FIXME: bug avec typing
-    # def set_lru_size(self, size:int) -> None:
-    #     self._download_grid_effective_version = \
-    #         functools.lru_cache(size,  # pylint: disable=no-member
-    #                             Provider._download_grid_effective_version.__wrapped__)
+    # pylint: disable=no-member
+    def set_lru_size(self, size: int) -> None:
+        self._download_grid_effective_version = functools.lru_cache(size,  # type: ignore
+                                                                    Provider._download_grid_effective_version.__wrapped__)
+
+    # pylint: enable=no-member
 
     def cache_clear(self) -> None:
         self._download_grid_effective_version.cache_clear()

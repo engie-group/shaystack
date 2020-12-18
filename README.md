@@ -11,7 +11,7 @@ This project contains source code to parse or dump Haystack files
 [Csv](https://www.project-haystack.org/doc/Csv)).
 
 To implement the [Haystack Rest API](https://www.project-haystack.org/doc/Rest), extend the class `HaystackInterface`
-and publish an AWS Lambda or start a Flash server (See [Server API](#server-api).
+and publish an AWS Lambda or start a Flash server (See [Server API](#server-api)).
 
 This implementation propose two API endpoint:
 
@@ -26,19 +26,22 @@ To try this module, the best way is to download a sample of haystack file. In an
 git clone --depth 1 https://github.com/pprados/haystackapi.git sample ; \
 cd sample ; \
 git filter-branch --prune-empty --subdirectory-filter sample HEAD ; \
-cd ..
+rm -Rf .git ; \
+cd .. ; \
+ls sample
 ```
 
 The directory `sample` now has examples files.
 
-- carytown.[csv|jon|zinc]  : The haystack ontology
-- p:demo:*.zinc : sample of time series
+- `carytown.[csv|jon|zinc]`  : The haystack ontology
+- `p:demo:*.zinc` : sample of time series
 
-Create a virtual environement
+Create a virtual environment
 
 ```bash
 $ virtualenv -p python3.8 venv
-source venv/bin/activate
+$ source venv/bin/activate
+$ pip install ipython
 ```
 
 Then, install the module with all options
@@ -186,7 +189,7 @@ The code implements all [operations](https://project-haystack.org/doc/Rest):
 
 ## GraphQL Haystack API
 
-This API use the `http://<host>:<port>/graphql` url and was conforms to the schema describe in file `schema.graphql`.
+This API use the `http://<host>:<port>/graphql` url and is conforms to the schema describe in file `schema.graphql`.
 
 ### Deploy a Web server
 - start the api
@@ -210,28 +213,27 @@ To create your custom Haystack API
 - create a project
 - In a module, create a subclass of `haystackapi.providers.HaystackInterface`
   with the name `Provider`
-- add parameter `HAYSTACK_PROVIDER` with the name of the package
-
-You can update others parameters (`HAYSTACK_PROVIDER`, `AWS_STACK`, `AWS_PROFILE`, `AWS_REGION`, ...)
+- add a parameter `HAYSTACK_PROVIDER` with the name of the module
 
 We propose different providers, with the objective in mind:
 
-- Expose the haystack files with an API and historical data
+- Expose the haystack files and historical data with an API
 - and manage the evolution of these files with the notion of `version`.
 
-If you want to connect the haystack API with IOT, you must extend a provider. It's more simple for a demo.
+If you want to connect the haystack API with IOT, you must extend a provider. The current providers are not connected to
+IOT for simplicity.
 
 To demonstrate this scenario, we want to publish the sample from `sample/` files from S3 bucket or from an SQL database.
 We must import this ontology and time-series inside the bucket or database before to use. To manage the different
-versions of files, you must use a dedicated tool.
+versions of files, you must use a dedicated tool, to import only the difference between versions.
 
 #### Provider Ping
 
-Use `HAYSTACK_PROVIDER=providers.ping` to use this provider. It's a very simple provider, with a tiny implementation of
-all haystack operation. Read the code.
+Use `HAYSTACK_PROVIDER=haystackapi.providers.ping` to use this provider. It's a very simple provider, with a tiny
+implementation of all haystack operation. Read the code.
 
 ```bash
-$ HAYSTACK_PROVIDER=providers.ping haystackapi
+$ HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi
 ```
 
 In another console
@@ -243,9 +245,12 @@ $ curl http://localhost:3000/haystack/about
 #### Provider URL
 
 Use `HAYSTACK_PROVIDER=haystackapi.providers.url` to use this provider. Add the variable `HAYSTACK_URL=<url>` to expose
-an ReadHaystack file via the ReadHaystack protocol. The methods `/read` and `/hisRead` was implemented. The `<url>` may
-have the classic form (`http://...`, `ftp://...`) or can reference an S3 file (`s3://...`). The time series to manage
-history must be referenced in the entity, with the `hisURI` tag. This URI may be relative and must be in parquet format.
+an Haystack file via the Haystack protocol. The methods `/read` and `/hisRead` was implemented. The `<url>` may have the
+classic form (`http://...`, `ftp://...`) or can reference an S3 file (`s3://...`). The time series to manage history
+must be referenced in the entity, with the `hisURI` tag. This URI may be relative and must be in haystack.
+
+All the file may be zipped. Reference the zipped version with the `.gz` suffix
+(eg. `ontology.zinc.gz`)
 
 ```bash
 $ # Demo
@@ -258,15 +263,8 @@ in another shell
 
 ```bash
 $ curl 'http://localhost:3000/haystack/read?filter=site'
-temp,tz,regionRef,occupiedStart,geoStreet,hisMode,lightsGroup,geoAddr,power,kwSite,ahu,sp,occupiedEnd,heat,phone,lights,tariffHis,weatherRef,his,zone,siteMeter,yearBuilt,kind,store,id,navName,geoState,rooftop,area,equipRef,elec,storeNum,air,outside,energy,return,geoPostalCode,unit,damper,geoCoord,metro,site,cur,point,geoCountry,summary,sitePoint,elecCost,fan,enum,pressure,hvac,stage,primaryFunction,sensor,effective,meter,occupied,discharge,dis,cmd,elecMeterLoad,geoCity,costPerHour,siteRef,cool,equip,hisURI
-,"New_York",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,"3504 W Cary St",,,"3504 W Cary St, Richmond, VA",,,,,20:00:00,,"804.552.2222",,,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,1996.0,,✓,@p:demo:r:23a44701-a89a6c66 Carytown,,"VA",,3149.0ft²,,,1.0,,,,,"23221",,,"C(37.555385,-77.486903)","Richmond",✓,,,"US",,,,,,,,,"Retail Store",,,,,,"Carytown",,,"Richmond",,,,,
-```
-
-You can use `import_s3` to import an Haystack file in s3 bucket, only if the file is modified
-(to respect the notion of Version with this provider). The corresponding `hisURI` time-series files are uploaded too.
-
-```bash
-python -m haystackapi.providers.import_s3 <haystack file url> <s3 url>
+air,phone,sensor,occupied,store,damper,enum,temp,tz,tariffHis,sp,area,site,weatherRef,elecCost,hisMode,kwSite,summary,fan,siteRef,primaryFunction,kind,cmd,geoCountry,elec,lights,geoStreet,occupiedEnd,yearBuilt,siteMeter,geoCoord,regionRef,occupiedStart,effective,equip,sitePoint,cool,ahu,hvac,costPerHour,unit,lightsGroup,discharge,zone,power,geoCity,rooftop,navName,outside,point,dis,energy,elecMeterLoad,id,geoAddr,cur,geoState,geoPostalCode,equipRef,meter,pressure,heat,return,storeNum,his,metro,stage,hisURI
+,"804.552.2222",,,✓,,,,"New_York",,,3149.0ft²,✓,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,,,,"Retail Store",,,"US",,,"3504 W Cary St",20:00:00,1996.0,,"C(37.555385,-77.486903)",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,,,,,,,,,,,,,"Richmond",,,,,"Carytown",,,@p:demo:r:23a44701-a89a6c66 Carytown,"3504 W Cary St, Richmond, VA",,"VA","23221",,,,,,1.0,,"Richmond",,
 ```
 
 You can use the parameters:
@@ -275,18 +273,11 @@ You can use the parameters:
 * `--no-time-series` if you don't want to upload the time-series referenced in `hisURI` tags'
 * `--force` to force the upload, and create a new version for all files in the bucket.
 
-Because this provider use a local cache with the parsing version of S3 file, it's may be possible to see different
-versions if AWS use multiple instances of lambda. To fixe that, the environment variable `REFRESH` can be set to delay
-cache refresh
-(Default value is 15m). Every quarter of an hour, each lambda check the list of version for this file, and refresh the
-cache in memory, at the same time. If a new version is published just before you start the lambda, it's may be possible
-you can't see this version. You must wait the end of the current quarter.
-
 #### Provider SQL
 
 This provider use an ontology imported in SQL database. Each entity is saved in a row in the JSON format.
 Use `HAYSTACK_PROVIDER=haytackapi.providers.sql` to use this provider. Add the variable `HAYSTACK_DB` to describe the
-link to the table. At this time, only SuperSQLite and Postgresql was supported.
+link to the root table. At this time, only SuperSQLite and Postgresql was supported.
 
 Install the corresponding driver:
 
@@ -295,11 +286,11 @@ Install the corresponding driver:
 | sqlite   | `pip install supersqlite` |
 | postgres | `pip install psycopg2`    |
 
-You can use `import_db` to import a Haystack file in database, only if the entities are modified
+You can use `haystack_import_db` to import a Haystack files in database, only if the entities are modified
 (to respect the notion of Version with this provider). The corresponding `hisURI` time-series files are uploaded too.
 
 ```bash
-python -m haystackapi.providers.import_db <haystack file url> <db url>
+haystack_import_db <haystack file url> <db url>
 ```
 
 You can use the parameters:
@@ -313,7 +304,7 @@ To demonstrate the usage with sqlite,
 ```bash
 $ # Demo
 $   # Import haystack file in DB
-$ python -m haystackapi.providers.import_db sample/carytown.zinc sqlite3://localhost/test.db#haystack
+$ haystackapi_import_db sample/carytown.zinc sqlite3://localhost/test.db#haystack
 $   # Expose haystack with API
 $ HAYSTACK_PROVIDER=haytackapi.providers.sql \
   HAYSTACK_DB=sqlite3:///test.db#haystack \
@@ -322,36 +313,40 @@ $ HAYSTACK_PROVIDER=haytackapi.providers.sql \
 
 in another shell
 
+# FIXME
 ```bash
 $ curl 'http://localhost:3000/haystack/read?filter=site'
 temp,tz,regionRef,occupiedStart,geoStreet,hisMode,lightsGroup,geoAddr,power,kwSite,ahu,sp,occupiedEnd,heat,phone,lights,tariffHis,weatherRef,his,zone,siteMeter,yearBuilt,kind,store,id,navName,geoState,rooftop,area,equipRef,elec,storeNum,air,outside,energy,return,geoPostalCode,unit,damper,geoCoord,metro,site,cur,point,geoCountry,summary,sitePoint,elecCost,fan,enum,pressure,hvac,stage,primaryFunction,sensor,effective,meter,occupied,discharge,dis,cmd,elecMeterLoad,geoCity,costPerHour,siteRef,cool,equip,hisURI
 ,"New_York",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,"3504 W Cary St",,,"3504 W Cary St, Richmond, VA",,,,,20:00:00,,"804.552.2222",,,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,1996.0,,✓,@p:demo:r:23a44701-a89a6c66 Carytown,,"VA",,3149.0ft²,,,1.0,,,,,"23221",,,"C(37.555385,-77.486903)","Richmond",✓,,,"US",,,,,,,,,"Retail Store",,,,,,"Carytown",,,"Richmond",,,,,
 ```
 
-Inside the SQL url, if the password is empty and you use AWS lambda,  
+_Inside the SQL url, if the password is empty and you use AWS lambda,  
 the password is retrieved from the service [`secretManagers`](https://aws.amazon.com/secrets-manager/), with the key,
-whose name is in the environment variable `HAYSTACK_DB_SECRET`. Use the key `password` to save the password.
+whose name is in the environment variable `HAYSTACK_DB_SECRET`. Use the key `password` to save the password._
 
-After deployment, you can use this provider like any others providers. The haystack filter was automatically converted
-to SQL. Three table was created:
+After the deployment, you can use this provider like any others providers. The haystack filter was automatically
+converted to SQL. Three table was created:
 
 - <table_name> (`haystack` by default)
 - <table_name>_meta_datas
-- <table_name>_ts and some index. The column `entity` use a json version of haystack entity
-  (See [here](https://project-haystack.org/doc/Json)).
+- <table_name>_ts
+- and some index.
 
-The time-series are save in table <table_name>_ts. If you prefer to use a dedicated time-series database, overload the
-method `hisRead()`
+The column `entity` use a json version of haystack entity (See [here](https://project-haystack.org/doc/Json)).
+
+The time-series are saved in a table `<table_name>_ts`. If you prefer to use a dedicated time-series database, overload
+the method `hisRead()`
 
 To manage the multi-tenancy, it's possible to use different approach:
 
-- Overload the method `get_customer_id()` to return the name of customer, deduce by the user logging
+- Overload the method `get_customer_id()` to return the name of the current customer, deduce by the user logging
 - Use different tables (change the table name, ...#haystack_customer1, ...#haystack_customer2)
+  and publish different API
 
 # Using GraphQL API
 
-All the providers can use invoked with a GraphQL API in place of standard Haystack Rest API. After installing the
-component with the option, start the provider and use the url
+All the providers can be invoked with a GraphQL API in place of the standard Haystack Rest API. After installing the
+component with the good option (`pip install 'haystackapi[graphql]'), start the provider and use the url
 `http://localhost:3000/graphql`. You can see an interface to use the ontology.
 
 ```GraphQL
@@ -390,8 +385,8 @@ component with the option, start the provider and use the url
 }
 ```
 
-Because the Graphql use a schema, and Haystack doesn't use one, it's not easy to manipulate the history result. To
-resolve that, we propose different *cast* for the value.
+Because Graphql use a schema and Haystack doesn't use one, it's not easy to manipulate the history result. To resolve
+that, we propose different *cast* for the values.
 
 ```
 histories(ids:["@car-1","@bicycle-100"])
@@ -404,31 +399,52 @@ histories(ids:["@car-1","@bicycle-100"])
 }
 ```
 
-You can select the format you want.
+You can select the format you want in the request.
 
 ## Using with Excel or PowerBI
 
-Because the default negotiated format is CSV, you can call these API with PowerQuery. TODO: importer le fichier sample
+Because the default negotiated format is CSV, you can call these API with PowerQuery.
+
+# TODO: importer le fichier sample
 
 ## Using with Amazon AWS
 
-This module propose two layer to use AWS cloud. It's possible to publish the haystack files in a bucket, and use the URL
+This module offers two layer to use AWS cloud. It's possible to publish the haystack files in a bucket, and use the URL
 provider to expose an API (REST and GraphQL)
 and it's possible to use the AWS Lambda to publish the API.
 
 ### AWS Bucket
 
-To export the haystacks files in a bucket, you must create one. If you accept the 'Version' feature, it's possible to
+To export the haystacks files in a bucket, you must create one. If you add the _Version_ feature, it's possible to
 update the files, and use the API to read an older version. The extended parameter `Version` may be used to ask some
 data, visible at a specific date.
 
+You can use `haystack_import_s3` to import an Haystack file in s3 bucket, only if the file is modified
+(to respect the notion of _Version_ with this provider).
+
+The corresponding `hisURI` time-series files are uploaded too. The current values before the first version of the new
+file are added to maintain the history.
+
+```bash
+haystack_import_s3 <haystack file url> <s3 url>
+```
+
 To import the haystack files, only in something is updated, use the `import_db` tools.
+
+_Because this provider use a local cache with the parsing version of S3 file, it's may be possible to see different
+versions if AWS use multiple instances of lambda. To fixe that, the environment variable `REFRESH` can be set to delay
+cache refresh
+(Default value is 15m). Every quarter of an hour, each lambda check the list of version for this file, and refresh the
+cache in memory, at the same time. If a new version is published just before you start the lambda, it's may be possible
+you can't see this version. You must wait the end of the current quarter._
 
 Set AWS profile before to use this tool.
 
 ```bash
 $ export AWS_PROFILE=default
 ```
+
+You can update others parameters (`AWS_STACK`, `AWS_PROFILE`, `AWS_REGION`, ...)
 
 TODO: Create bucket with random et import data
 

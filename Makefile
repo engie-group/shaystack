@@ -391,7 +391,7 @@ async-start-minio: .minio $(REQUIREMENTS)
 
 
 ## Stop all async server
-async-stop: async-stop-api async-stop-minio
+async-stop: async-stop-api async-stop-minio stop-pg stop-pgadmin
 
 # -------------------------------------- AWS
 ifeq ($(USE_OKTA),Y)

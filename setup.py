@@ -123,8 +123,8 @@ setup(name='haystackapi',
       entry_points={
           "console_scripts": [
               'haystackapi = app.__init__:main',
-              'haystackapi_import_db = haystackapi.providers.import_db',
-              'haystackapi_import_s3 = haystackapi.providers.import_s3',
+              'haystackapi_import_db = haystackapi.providers.import_db:main',
+              'haystackapi_import_s3 = haystackapi.providers.import_s3:main',
           ]
       },
       project_urls={

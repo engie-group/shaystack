@@ -173,13 +173,49 @@ api, etc.
 
 To clean the project, use `make clean`.
 
-# Validate before commit
+# Validate all the code before commit
 
 To validate all the code, use `make validate`
 
 ## Release
 
-To release, use `make release`
+Before release a version, you must create a new tag.
+
+```bash
+git commit -a
+git tag v2.x-rc
+```
+
+To test this release in a test twine repository (https://test.pypi.org/legacy/):
+
+```bash
+make test-twine
+```
+
+It's possible to test a last time all the project, with this release candidate. To do that,
+
+```bash
+export PIP_INDEX_URL=https://test.pypi.org/simple
+export PIP_EXTRA_INDEX_URL=https://pypi.org/simple
+```
+
+Then, you can test the usage with this release candidate.
+
+```bash
+$ mkdir $TMP/demo
+$ cd $TMP/demo
+$ virtualenv -p python3.8 venv
+$ source venv/bin/activate
+$ pip install 'haystackapi[graphql,lambda]'
+$ python
+import haystackapi
+```
+
+To release a new official public version:
+
+- tag the version
+- push the tag
+- and use `make release`
 
 # Tips
 

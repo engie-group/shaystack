@@ -1,5 +1,15 @@
 # ReadHaystack AWS Lambda API
 
+| This a pre-release version|
+| --- |
+
+To use the package present in **test.pypi.org**, use
+
+```bash
+export PIP_INDEX_URL=https://test.pypi.org/simple
+export PIP_EXTRA_INDEX_URL=https://pypi.org/simple
+```
+
 Haystackapi is set of API to implement [Haystack project specification](https://project-haystack.org/). It's compatible
 in Flask server in data center, edge or in AWS Lambda function.
 

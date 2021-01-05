@@ -261,7 +261,8 @@ clean-zappa:
 
 ## Clean project
 clean: async-stop clean-zappa
-	@rm -rf bin/* .mypy_cache .pytest_cache .start build nohup.out dist .make-* .pytype out.json
+	@rm -rf bin/* .mypy_cache .pytest_cache .start build nohup.out dist/ .make-* .pytype out.json
+	mkdir dist/
 
 .PHONY: clean-all
 # Clean all environments
@@ -623,25 +624,36 @@ dist: bdist sdist
 ## Check the distribution before publication
 check-twine: bdist
 	$(VALIDATE_VENV)
+	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \
+		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \
+		; exit 1 )
 	twine check \
 		$(shell find dist/ -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
 
+.PHONY: test-twine
 ## Publish distribution on test.pypi.org
-test-twine: bdist
+test-twine: dist check-twine
 	$(VALIDATE_VENV)
-	rm -f dist/*.asc
-	twine upload --sign --repository-url https://test.pypi.org/legacy/ \
-		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
-
-.PHONY: release
-## Publish distribution on pypi.org
-release: clean dist
-	@$(VALIDATE_VENV)
-	[[ $$( find dist -name "*.dev*" | wc -l ) == 0 ]] || \
+	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \
 		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \
 		; exit 1 )
 	rm -f dist/*.asc
-	echo "Enter Pypi password"
+	echo -e "$(green)Enter the Pypi password$(normal)"
+	twine upload --sign --repository-url https://test.pypi.org/legacy/ \
+		$(shell find dist/ -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
+	echo -e "To the test repositiry"
+	echo -e "$(green)export PIP_INDEX_URL=https://test.pypi.org/simple$(normal)"
+	echo -e "$(green)export PIP_EXTRA_INDEX_URL=https://pypi.org/simple$(normal)"
+
+.PHONY: release
+## Publish distribution on pypi.org
+release: clean check-twine
+	@$(VALIDATE_VENV)
+	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \
+		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \
+		; exit 1 )
+	rm -f dist/*.asc
+	echo -e "$(green)Enter the Pypi password$(normal)"
 	twine upload --sign \
 		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
 

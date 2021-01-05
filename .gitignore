@@ -256,8 +256,7 @@ PPR*
 .env
 
 *.zip
-tests/data/
 .okta_aws_login_config
 sample/*.gz
 
-./test.db
+test.db

@@ -2,6 +2,7 @@
 Save Haystack ontology in SQLite database with JSon extension.
 Convert the haystack filter to sqlite SQL equivalent syntax.
 """
+import itertools
 import json
 import logging
 import textwrap
@@ -192,11 +193,7 @@ def _generate_filter_in_sql(table_name: str,
 
 
 def _flatten(a_list: List[Any]) -> List[Any]:
-    if not a_list:
-        return a_list
-    if isinstance(a_list[0], list):
-        return _flatten(a_list[0]) + _flatten(a_list[1:])
-    return a_list[:1] + _flatten(a_list[1:])
+    return itertools.chain.from_iterable(a_list)
 
 
 def _select_version(version: datetime, num_table: int) -> str:

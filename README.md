@@ -279,15 +279,19 @@ This provider use an ontology imported in SQL database. Each entity is saved in 
 Use `HAYSTACK_PROVIDER=haytackapi.providers.sql` to use this provider. Add the variable `HAYSTACK_DB` to describe the
 link to the root table. At this time, only SuperSQLite and Postgresql was supported.
 
-Install the corresponding driver:
+```
+$ pip install 'haystackapi[graphql,lambda]'
+```
+
+Install the corresponding database driver:
 
 | Database | Driver                    |
 | -------- | ------------------------- |
 | sqlite   | `pip install supersqlite` |
 | postgres | `pip install psycopg2`    |
 
-You can use `haystack_import_db` to import a Haystack files in database, only if the entities are modified
-(to respect the notion of Version with this provider). The corresponding `hisURI` time-series files are uploaded too.
+You can use `haystack_import_db` to import a Haystack files into the database, only if the entities are modified
+(to respect the notion of _Version_ with this provider). The corresponding `hisURI` time-series files are uploaded too.
 
 ```bash
 haystack_import_db <haystack file url> <db url>
@@ -295,34 +299,45 @@ haystack_import_db <haystack file url> <db url>
 
 You can use the parameters:
 
-* `--customer` to set the customer id
+* `--customer` to set the customer id for all imported records
 * `--clean` to clean the oldest versions before import a new one
-* `--no-time-series` if you don't want to upload the time-series referenced in `hisURI` tags'
+* `--no-time-series` if you don't want to import the time-series referenced in `hisURI` tags'
 
 To demonstrate the usage with sqlite,
 
 ```bash
 $ # Demo
-$   # Import haystack file in DB
-$ haystackapi_import_db sample/carytown.zinc sqlite3://localhost/test.db#haystack
-$   # Expose haystack with API
-$ HAYSTACK_PROVIDER=haytackapi.providers.sql \
+$ # - Install the components
+$ pip install 'haystackapi[flask]'
+$ # - Install the sqlite driver
+$ pip install supersqlite
+$ # - Import haystack file in DB
+$ haystackapi_import_db sample/carytown.zinc sqlite3:///test.db#haystack
+$ # - Expose haystack with API
+$ HAYSTACK_PROVIDER=haystackapi.providers.sql \
   HAYSTACK_DB=sqlite3:///test.db#haystack \
   haystackapi
 ```
 
 in another shell
 
-# FIXME
 ```bash
 $ curl 'http://localhost:3000/haystack/read?filter=site'
-temp,tz,regionRef,occupiedStart,geoStreet,hisMode,lightsGroup,geoAddr,power,kwSite,ahu,sp,occupiedEnd,heat,phone,lights,tariffHis,weatherRef,his,zone,siteMeter,yearBuilt,kind,store,id,navName,geoState,rooftop,area,equipRef,elec,storeNum,air,outside,energy,return,geoPostalCode,unit,damper,geoCoord,metro,site,cur,point,geoCountry,summary,sitePoint,elecCost,fan,enum,pressure,hvac,stage,primaryFunction,sensor,effective,meter,occupied,discharge,dis,cmd,elecMeterLoad,geoCity,costPerHour,siteRef,cool,equip,hisURI
-,"New_York",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,"3504 W Cary St",,,"3504 W Cary St, Richmond, VA",,,,,20:00:00,,"804.552.2222",,,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,1996.0,,✓,@p:demo:r:23a44701-a89a6c66 Carytown,,"VA",,3149.0ft²,,,1.0,,,,,"23221",,,"C(37.555385,-77.486903)","Richmond",✓,,,"US",,,,,,,,,"Retail Store",,,,,,"Carytown",,,"Richmond",,,,,
+air,phone,sensor,occupied,store,damper,enum,temp,tz,tariffHis,sp,area,site,weatherRef,elecCost,hisMode,kwSite,summary,fan,siteRef,primaryFunction,kind,cmd,geoCountry,elec,lights,geoStreet,occupiedEnd,yearBuilt,siteMeter,geoCoord,regionRef,occupiedStart,effective,equip,sitePoint,cool,ahu,hvac,costPerHour,unit,lightsGroup,discharge,zone,power,geoCity,rooftop,navName,outside,point,dis,energy,elecMeterLoad,id,geoAddr,cur,geoState,geoPostalCode,equipRef,meter,pressure,heat,return,storeNum,his,metro,stage,hisURI
+,"804.552.2222",,,✓,,,,"New_York",,,3149.0ft²,✓,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,,,,"Retail Store",,,"US",,,"3504 W Cary St",20:00:00,1996.0,,"C(37.555385,-77.486903)",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,,,,,,,,,,,,,"Richmond",,,,,"Carytown",,,@p:demo:r:23a44701-a89a6c66 Carytown,"3504 W Cary St, Richmond, VA",,"VA","23221",,,,,,1.0,,"Richmond",,
 ```
 
-_Inside the SQL url, if the password is empty and you use AWS lambda,  
+The SQL url is in form: <dialect[+<driver>]>://[<user>[:<password>]@><host>[:<port>]/<databasename>[#<table name>]
+
+- sqlite3:///test.db#haystack
+- sqlite3://localhost/test.db
+- sqlite3+supersqlite.sqlite3:///test.db#haystack
+- postgres://postgres:password@172.17.0.2:5432/postgres#haystack
+
+Inside the SQL url, if the password is empty, and you use AWS lambda,  
 the password is retrieved from the service [`secretManagers`](https://aws.amazon.com/secrets-manager/), with the key,
-whose name is in the environment variable `HAYSTACK_DB_SECRET`. Use the key `password` to save the password._
+whose name is in the environment variable `HAYSTACK_DB_SECRET`. Use the key `password` in secret managers to protect the
+database password.
 
 After the deployment, you can use this provider like any others providers. The haystack filter was automatically
 converted to SQL. Three table was created:
@@ -339,15 +354,40 @@ the method `hisRead()`
 
 To manage the multi-tenancy, it's possible to use different approach:
 
-- Overload the method `get_customer_id()` to return the name of the current customer, deduce by the user logging
+- Overload the method `get_customer_id()` to return the name of the current customer, deduce by the current API user
 - Use different tables (change the table name, ...#haystack_customer1, ...#haystack_customer2)
-  and publish different API
+  and publish different API, one by customer
 
 # Using GraphQL API
 
 All the providers can be invoked with a GraphQL API in place of the standard Haystack Rest API. After installing the
-component with the good option (`pip install 'haystackapi[graphql]'), start the provider and use the url
+component with the good option (`pip install 'haystackapi[graphql]'`), start the provider and use the url
 `http://localhost:3000/graphql`. You can see an interface to use the ontology.
+
+For the demonstration,
+
+```bash
+$ # Demo
+$ # - Install components
+$ pip install 'haystackapi[graphql]'
+$ # - Install the sqlite driver
+$ pip install supersqlite
+$ # - Import haystack file in DB
+$ haystackapi_import_db sample/carytown.zinc sqlite3:///test.db#haystack
+$ # - Expose haystack with GraphQL API
+$ HAYSTACK_PROVIDER=haystackapi.providers.sql \
+  HAYSTACK_DB=sqlite3:///test.db#haystack \
+  haystackapi
+```
+
+In another shell
+
+```bash
+$ # - Open URL
+$ xdg-open http://localhost:3000/graphql
+```
+
+and use this request
 
 ```GraphQL
 # Demo
@@ -372,13 +412,12 @@ component with the good option (`pip install 'haystackapi[graphql]'), start the 
             name
             summary
         }
-        byid:entities(ids:["@elec-16514","@site-434051"])
+        byid:entities(ids:["@p:demo:r:23a44701-3a62fd7a"])
         byfilter:entities(select: "id,dis" filter: "id", limit: 2)
-        histories(ids:["@car-1","@bicycle-100"])
+        histories(ids:["@p:demo:r:23a44701-3a62fd7a"])
         {
             ts
-            val
-            coord { lat long }
+            float
         }
         country:tagValues(tag:"geoCountry")
     }
@@ -403,9 +442,9 @@ You can select the format you want in the request.
 
 ## Using with Excel or PowerBI
 
-Because the default negotiated format is CSV, you can call these API with PowerQuery.
-
-# TODO: importer le fichier sample
+Because the default negotiated format is CSV, you can call these API with PowerQuery or Excel. Try the sample file '
+HaystackAPI.xlsm' and set haystack url
+(http://10.0.2.2:3000/haystack with a local virtual windows).
 
 ## Using with Amazon AWS
 
@@ -416,10 +455,10 @@ and it's possible to use the AWS Lambda to publish the API.
 ### AWS Bucket
 
 To export the haystacks files in a bucket, you must create one. If you add the _Version_ feature, it's possible to
-update the files, and use the API to read an older version. The extended parameter `Version` may be used to ask some
-data, visible at a specific date.
+update the files, and use the API to read an older version. The extended parameter `Version` in each request may be used
+to ask some data, visible at a specific date.
 
-You can use `haystack_import_s3` to import an Haystack file in s3 bucket, only if the file is modified
+You can use `haystack_import_s3` to import a Haystack file in s3 bucket, only if the file is modified
 (to respect the notion of _Version_ with this provider).
 
 The corresponding `hisURI` time-series files are uploaded too. The current values before the first version of the new

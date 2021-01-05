@@ -1,8 +1,6 @@
 """
 Base of haystack implementation.
 """
-from __future__ import annotations
-
 import logging
 import os
 import traceback
@@ -180,7 +178,7 @@ class HaystackInterface(ABC):
     # Implement this method, only if you want to limited the format negociation
     def formats(self) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'formats' ops """
-        raise NotImplementedError()
+        return None  # Use default format
 
     @abstractmethod
     def read(

@@ -222,14 +222,15 @@ class Provider(HaystackInterface):
                 date_version = datetime.now().replace(tzinfo=pytz.UTC)
             exec_sql_filter: Callable = self._sql["exec_sql_filter"]
             if entity_ids is None:
-                exec_sql_filter(self._sql,
-                                cursor,
-                                self._parsed_db.fragment,
-                                grid_filter,
-                                date_version,
-                                limit,
-                                self.get_customer_id(),
-                                )
+                print("exec sql filter")
+                cursor = exec_sql_filter(self._sql,
+                                         cursor,
+                                         self._parsed_db.fragment,
+                                         grid_filter,
+                                         date_version,
+                                         limit,
+                                         self.get_customer_id(),
+                                         )
                 grid = self._init_grid_from_db(date_version)
                 for row in cursor:
                     grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))

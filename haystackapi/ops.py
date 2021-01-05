@@ -394,6 +394,8 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
             if "version" in args:
                 date_version = parse_hs_datetime_format(args["version"].split(" "))
 
+        if read_filter is None:
+            read_filter = ""
         if read_ids is None and read_filter is None:
             raise ValueError("'id' or 'filter' must be set")
         log.debug(

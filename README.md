@@ -514,7 +514,7 @@ $ HAYSTACK_PROVIDER=haystackapi.providers.url \
 ### AWS Lambda
 
 The code is compatible with AWS Lambda. Install this option (`pip install "haystackapi[lambda]"`)
-and create a file `zappa_settings.json` something like this:
+and create a file `zappa_settings.json` with something like this:
 
 ```json
 {
@@ -526,13 +526,15 @@ and create a file `zappa_settings.json` something like this:
     "s3_bucket": "zappa",
     "runtime": "python3.8",
     "aws_environment_variables": {
-      "LOG_LEVEL": "info",
+      "LOG_LEVEL": "INFO",
       "HAYSTACK_PROVIDER": "haystackapi.providers.url",
-      "HAYSTACK_URL": "s3://my_bucket/haystack_file.zinc"
+      "HAYSTACK_URL": "s3://my_bucket/carytown.zinc"
     }
   }
 }
 ```        
+
+Update the parameter values like `project_name`, `s3_bucket` or `HAYSTACK_URL`.
 
 Then, use [zappa](https://github.com/Miserlou/Zappa) to deploy.
 
@@ -543,7 +545,7 @@ $ pip install "haystackapi[graphql,lambda]"
 $ zappa deploy
 ```
 
-Then, you can the Lambda API to invoke the REST or GraphQL API.
+You can the Lambda API to invoke the REST or GraphQL API.
 
 ```bash
 $ # Extract the API URL
@@ -554,19 +556,24 @@ $ # Try the Graphql API
 $ xdg-open "$HAYSTACK_ROOT_API/graphql"
 ```
 
+### AWS AppSync
+
+Appsync is a technology to agregate differents API in one Graphql API. It's possible to merge the haystack GraphQL with
+other GraphQL API with AppSync. To do that, read [this file](aws appsync/AppSync.md).
+
 # Optional part
 
 Haystack component propose different optional parts.
 
-| Option  | Feature                                     |
-| ------- | ------------------------------------------- |
-| flask   | Expose API with Flask HTTP server           |
-| graphql | Expose Graphql API with Flask HTTP server   |
-| lambda  | Be compatible with AWS Lambda and S3 bucket |
+| Option  | Feature                                         |
+| ------- | ----------------------------------------------- |
+| flask   | Expose API with Flask HTTP server               |
+| graphql | Expose Graphql API with Flask HTTP server       |
+| lambda  | Add compatibility with AWS Lambda and S3 bucket |
 
 Use `pip install "haystackapi[_<options>_]"`, like:
 
-- pip install "haystackapi[flask,graphql,lambda]"
+- `pip install "haystackapi[flask,graphql,lambda]"`
 
 ## Data types
 
@@ -574,8 +581,8 @@ Use `pip install "haystackapi[_<options>_]"`, like:
 
 ### `Null`, `Boolean`, `Date`, `Time`, `Date/Time` and `strings`.
 
-Standard Python types. In the case of Date/Time, the `tzinfo` parameter is set to the equivalent timezone provided by
-the `pytz` library where possible.
+In the case of Date/Time, the `tzinfo` parameter is set to the equivalent timezone provided by the `pytz` library where
+possible.
 
 ### `Numbers`
 
@@ -589,16 +596,16 @@ used like the `None` object.
 
 ### `Bin` and `XBin`
 
-These are represented bytes array.
+These are represented bytes array with specific MIME type. Accept `hex` or `b64` to encode and decode the bytes array.
 
 ### `Uri`
 
-This is an classical `Uri` for Haystack
+This is a classical `Uri` for Haystack
 
 ### `Ref`
 
 Represented by the custom type `haystackapi.Ref` which has `name` (`str`),
-`has_value` (`bool`) and `value` (any type) attributes.
+`has_value` (`bool`) and `value` (any type) attributes. The value must be conforme with the haystack specification.
 
 ### `Coordinate`
 
@@ -607,7 +614,7 @@ Represented by the custom type `haystackapi.Coordinate`, which has `latitude` an
 
 ### Collection `List`, `Dict` or `Grid`
 
-A tag may be a list, a dict or another grid.
+A tag may be a list, a dict or another grid (recursive grid). To be used with care.
 
 # Contribute
 

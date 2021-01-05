@@ -7,7 +7,7 @@ You are welcome to contribute.
 The project includes the following files and folders:
 
 - `app` - Code for the application's Flask, GraphQL and Lambda function.
-- `aws appsync` - Special parameter and information for AWS AppSync
+- `aws appsync` - Special parameters and information for AWS AppSync
 - `haystackapi` - The generic wrapper between technology and implementation
 - `haystackapi/providers` - Sample of providers.
 - `sample` - Sample haystack file
@@ -28,6 +28,7 @@ to `test`, `start-api`, etc. See `make help` to print all major target.
 
 ```bash
 git clone --recurse-submodules http://github.com/pprados/haystackapi.git 
+cd haystackapi
 make configure
 conda activate haystackapi
 make test
@@ -41,7 +42,7 @@ Tests are defined in the `tests` folder in this project. To run all tests, use `
 make test
 ```
 
-The functional tests, try to use the different versions of provider with the same data. To do that, it's necessary to
+The functional tests try to use the different versions of provider with the same data. To do that, it's necessary to
 start different database in docker environment. Use `make functional-test`
 
 ```bash

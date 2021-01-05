@@ -76,17 +76,16 @@ def test_negociation_json_without_content_type() -> None:
     request = HaystackHttpRequest()
     grid: Grid = Grid(columns={'id': {}})
     request.headers["Accept"] = mime_type
-    request.headers["Content-Type"] = mime_type
+    del request.headers["Content-Type"]
     request.body = haystackapi.dump(grid, mode=mime_type)
 
     # WHEN
     response = haystackapi.read(request, "dev")
 
     # THEN
-    assert response.status_code == 400
+    assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    error_grid: Grid = haystackapi.parse(response.body, mime_type)
-    assert "err" in error_grid.metadata
+    haystackapi.parse(response.body, mime_type)
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
@@ -96,14 +95,14 @@ def test_negociation_json_with_unknown_content_type() -> None:
     request = HaystackHttpRequest()
     grid: Grid = Grid(columns={'id': {}})
     request.headers["Accept"] = mime_type
-    request.headers["Content-Type"] = mime_type
+    request.headers["Content-Type"] = "text/html"
     request.body = haystackapi.dump(grid, mode=mime_type)
 
     # WHEN
     response = haystackapi.read(request, "dev")
 
     # THEN
-    assert response.status_code == 400
+    assert response.status_code == 406
     assert response.headers["Content-Type"].startswith(mime_type)
     error_grid: Grid = haystackapi.parse(response.body, mime_type)
     assert "err" in error_grid.metadata
@@ -142,7 +141,7 @@ def test_negociation_with_invalide_accept() -> None:
     response = haystackapi.read(request, "dev")
 
     # THEN
-    assert response.status_code == 400
+    assert response.status_code == 406
     assert response.headers["Content-Type"].startswith(mime_type)
     error_grid = haystackapi.parse(response.body, mime_type)
     assert "err" in error_grid.metadata

@@ -1,7 +1,7 @@
 # ReadHaystack AWS Lambda API
 
 Haystackapi is set of API to implement [Haystack project specification](https://project-haystack.org/). It's compatible
-with AWS Lambda or Flask server.
+in Flask server in data center, edge or in AWS Lambda function.
 
 ## Summary
 
@@ -290,11 +290,11 @@ Install the corresponding database driver:
 | sqlite   | `pip install supersqlite` |
 | postgres | `pip install psycopg2`    |
 
-You can use `haystack_import_db` to import a Haystack files into the database, only if the entities are modified
+You can use `haystackapi_import_db` to import a Haystack files into the database, only if the entities are modified
 (to respect the notion of _Version_ with this provider). The corresponding `hisURI` time-series files are uploaded too.
 
 ```bash
-haystack_import_db <haystack file url> <db url>
+haystackapi_import_db <haystack file url> <db url>
 ```
 
 You can use the parameters:
@@ -428,7 +428,7 @@ Because Graphql use a schema and Haystack doesn't use one, it's not easy to mani
 that, we propose different *cast* for the values.
 
 ```
-histories(ids:["@car-1","@bicycle-100"])
+histories(ids:["@p:demo:r:23a44701-3a62fd7a"])
 {
     ts
     val  # Haystack json scalar
@@ -452,30 +452,27 @@ This module offers two layer to use AWS cloud. It's possible to publish the hays
 provider to expose an API (REST and GraphQL)
 and it's possible to use the AWS Lambda to publish the API.
 
+To import the dependencies:
+
+```bash
+$ pip install haystack[lambda]
+```
+
 ### AWS Bucket
 
 To export the haystacks files in a bucket, you must create one. If you add the _Version_ feature, it's possible to
 update the files, and use the API to read an older version. The extended parameter `Version` in each request may be used
 to ask some data, visible at a specific date.
 
-You can use `haystack_import_s3` to import a Haystack file in s3 bucket, only if the file is modified
+You can use `haystackapi_import_s3` to import a Haystack file in s3 bucket, only if the file is modified
 (to respect the notion of _Version_ with this provider).
+
+```bash
+haystackapi_import_s3 <haystack file url> <s3 url>
+```
 
 The corresponding `hisURI` time-series files are uploaded too. The current values before the first version of the new
 file are added to maintain the history.
-
-```bash
-haystack_import_s3 <haystack file url> <s3 url>
-```
-
-To import the haystack files, only in something is updated, use the `import_db` tools.
-
-_Because this provider use a local cache with the parsing version of S3 file, it's may be possible to see different
-versions if AWS use multiple instances of lambda. To fixe that, the environment variable `REFRESH` can be set to delay
-cache refresh
-(Default value is 15m). Every quarter of an hour, each lambda check the list of version for this file, and refresh the
-cache in memory, at the same time. If a new version is published just before you start the lambda, it's may be possible
-you can't see this version. You must wait the end of the current quarter._
 
 Set AWS profile before to use this tool.
 
@@ -485,21 +482,38 @@ $ export AWS_PROFILE=default
 
 You can update others parameters (`AWS_STACK`, `AWS_PROFILE`, `AWS_REGION`, ...)
 
-TODO: Create bucket with random et import data
+Then, create an S3 bucket, and for the demo, set the variable `MY_BUCKET`
+
+```bash
+$ export MY_BUCKET=<your bucket name>
+```
+
+You can import the datas inside this bucket
+
+```bash
+$ haystackapi_import_s3 sample/carytown.zinc s3://${MY_BUCKET}
+```
+
+_Because this provider use a local cache with the parsing version of S3 file, it's may be possible to see different
+versions if AWS use multiple instances of lambda. To fixe that, the environment variable `REFRESH` can be set to delay
+cache refresh (Default value is 15m). Every quarter of an hour, each lambda check the list of version for this file, and
+refresh the cache in memory, at the same time. If a new version is published just before you start the lambda, it's may
+be possible you can't see this version. You must wait the end of the current quarter, reploye the lambda or update
+the `REFRESH`
+parameter._
 
 Then, you can start a Flash server:
 
 ```bash
 $ # Demo
-$ BUCKET=...
 $ HAYSTACK_PROVIDER=haystackapi.providers.url \
-  HAYSTACK_URL=s3://$BUCKET/carytown.zinc \
+  HAYSTACK_URL=s3://${MY_BUCKET}/carytown.zinc \
   haystackapi
 ```
 
 ### AWS Lambda
 
-The code is compatible with AWS Lambda. Install this option (`pip install "haystackapi[graphql,lambda]"`)
+The code is compatible with AWS Lambda. Install this option (`pip install "haystackapi[lambda]"`)
 and create a file `zappa_settings.json` something like this:
 
 ```json
@@ -520,46 +534,78 @@ and create a file `zappa_settings.json` something like this:
 }
 ```        
 
-update the parameters use `zappa deploy`. Then, you can the Lambda API to invoke the REST or GraphQL API.
+Then, use [zappa](https://github.com/Miserlou/Zappa) to deploy.
 
-# Data types
+```bash
+$ virtualenv -p python3.8 venv
+$ source venv/bin/activate
+$ pip install "haystackapi[graphql,lambda]"
+$ zappa deploy
+```
+
+Then, you can the Lambda API to invoke the REST or GraphQL API.
+
+```bash
+$ # Extract the API URL
+$ HAYSTACK_ROOT_API=$(zappa status --json | jq -r '."API Gateway URL"')
+$ # Try the classic haystack API
+$ curl $HAYSTACK_ROOT_API/haystack/about
+$ # Try the Graphql API
+$ xdg-open "$HAYSTACK_ROOT_API/graphql"
+```
+
+# Optional part
+
+Haystack component propose different optional parts.
+
+| Option  | Feature                                     |
+| ------- | ------------------------------------------- |
+| flask   | Expose API with Flask HTTP server           |
+| graphql | Expose Graphql API with Flask HTTP server   |
+| lambda  | Be compatible with AWS Lambda and S3 bucket |
+
+Use `pip install "haystackapi[_<options>_]"`, like:
+
+- pip install "haystackapi[flask,graphql,lambda]"
+
+## Data types
 
 `haystackapi` converts the common Python data types:
 
-## `Null`, `Boolean`, `Date`, `Time`, `Date/Time` and `strings`.
+### `Null`, `Boolean`, `Date`, `Time`, `Date/Time` and `strings`.
 
 Standard Python types. In the case of Date/Time, the `tzinfo` parameter is set to the equivalent timezone provided by
 the `pytz` library where possible.
 
-## `Numbers`
+### `Numbers`
 
 Numbers without a unit are represented as `float` objects. Numbers with a unit are represented by
 the `haystackapi.Quantity` custom type which has two attributes: `value` and `unit`.
 
-## `Marker` and `Remove`
+### `Marker` and `Remove`
 
 These are singletons, represented by `haystackapi.MARKER` and `haystackapi.REMOVE`. They behave and are intended to be
 used like the `None` object.
 
-## `Bin` and `XBin`
+### `Bin` and `XBin`
 
 These are represented bytes array.
 
-## `Uri`
+### `Uri`
 
 This is an classical `Uri` for Haystack
 
-## `Ref`
+### `Ref`
 
 Represented by the custom type `haystackapi.Ref` which has `name` (`str`),
 `has_value` (`bool`) and `value` (any type) attributes.
 
-## `Coordinate`
+### `Coordinate`
 
 Represented by the custom type `haystackapi.Coordinate`, which has `latitude` and
 `longitude` types (both `float`)
 
-## Collection `List`, `Dict` or `Grid`
+### Collection `List`, `Dict` or `Grid`
 
 A tag may be a list, a dict or another grid.
 

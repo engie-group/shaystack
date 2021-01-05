@@ -495,10 +495,10 @@ unit-test: .make-unit-test
 ## Run all tests (unit and functional)
 test: .make-test
 
-
+# Test local deployement with URL provider
 functional-url-local: $(REQUIREMENTS)
 	@$(MAKE) async-stop-api >/dev/null
-	export HAYSTACK_PROVIDER=haystackapi.provider.url
+	export HAYSTACK_PROVIDER=haystackapi.providers.url
 	export HAYSTACK_URL=sample/carytown.zinc
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
@@ -509,7 +509,7 @@ functional-url-local: $(REQUIREMENTS)
 functional-db-sqlite: $(REQUIREMENTS)
 	@$(MAKE) async-stop-api>/dev/null
 	rm -f test.db
-	export HAYSTACK_PROVIDER=haystackapi.provider.sql
+	export HAYSTACK_PROVIDER=haystackapi.providers.sql
 	export HAYSTACK_DB=sqlite3://localhost/test.db
 	$(CONDA_PYTHON) -m haystackapi.providers.import_db sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in SQLite$(normal)"
@@ -521,7 +521,7 @@ functional-db-sqlite: $(REQUIREMENTS)
 # Start Postgres, Clean DB, Start API and try
 functional-db-postgres: $(REQUIREMENTS) clean-pg
 	@$(MAKE) async-stop-api >/dev/null
-	export HAYSTACK_PROVIDER=haystackapi.provider.sql
+	export HAYSTACK_PROVIDER=haystackapi.providers.sql
 	export HAYSTACK_DB=postgres://postgres:password@172.17.0.2:5432/postgres
 	$(CONDA_PYTHON) -m haystackapi.providers.import_db sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in Postgres$(normal)"

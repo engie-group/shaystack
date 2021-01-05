@@ -178,7 +178,7 @@ class HaystackInterface(ABC):
     # Implement this method, only if you want to limited the format negociation
     def formats(self) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'formats' ops """
-        return None  # Use default format
+        return None  # type: ignore
 
     @abstractmethod
     def read(

@@ -10,7 +10,7 @@ endif
 endif
 
 PRJ?=haystackapi
-HAYSTACK_PROVIDER?=haystackapi.providers.ping
+HAYSTACK_PROVIDER?=haystackapi.providers.url
 HAYSTACK_URL?=sample/carytown.zinc
 HAYSTACK_DB?=sqlite3:///:memory:#haystack
 USE_OKTA?=N
@@ -401,7 +401,7 @@ aws-update-token:
 	@aws sts get-caller-identity >/dev/null 2>/dev/null || $(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
 else
 aws-update-token:
-	# Nothing
+	echo -e "$(yellow)Nothing to do to refresh the token. (Set USE_OKTA and GIMME ?)$(normal)"
 endif
 
 .PHONY: aws-package aws-deploy aws-update aws-undeploy
@@ -502,12 +502,23 @@ functional-url-local: $(REQUIREMENTS)
 	export HAYSTACK_URL=sample/carytown.zinc
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
-	echo -e "$(green)Test with local url serveur OK$(normal)"
+	echo -e "$(green)Test with url serveur and local file OK$(normal)"
+	$(MAKE) async-stop-api >/dev/null
+
+# Test local deployement with URL provider
+functional-url-s3: $(REQUIREMENTS) aws-update-token
+	@$(MAKE) async-stop-api >/dev/null
+	export HAYSTACK_PROVIDER=haystackapi.providers.url
+	export HAYSTACK_URL=s3://haystackapi/carytown.zinc
+	$(MAKE) async-start-api >/dev/null
+	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
+	echo -e "$(green)Test with url serveur and s3 file OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 
 # Clean DB, Start API, and try with SQLite
 functional-db-sqlite: $(REQUIREMENTS)
 	@$(MAKE) async-stop-api>/dev/null
+	pip install supersqlite
 	rm -f test.db
 	export HAYSTACK_PROVIDER=haystackapi.providers.sql
 	export HAYSTACK_DB=sqlite3://localhost/test.db
@@ -521,6 +532,7 @@ functional-db-sqlite: $(REQUIREMENTS)
 # Start Postgres, Clean DB, Start API and try
 functional-db-postgres: $(REQUIREMENTS) clean-pg
 	@$(MAKE) async-stop-api >/dev/null
+	pip install psycopg2
 	export HAYSTACK_PROVIDER=haystackapi.providers.sql
 	export HAYSTACK_DB=postgres://postgres:password@172.17.0.2:5432/postgres
 	$(CONDA_PYTHON) -m haystackapi.providers.import_db sample/carytown.zinc $${HAYSTACK_DB}
@@ -531,7 +543,7 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 	echo -e "$(green)Test with local Postgres serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 
-.make-functional-test: functional-url-local functional-db-sqlite functional-db-postgres
+.make-functional-test: functional-url-local functional-db-sqlite functional-db-postgres functional-url-s3
 	@touch .make-functional-test
 
 ## Test graphql client with different providers
@@ -583,42 +595,36 @@ validate: .make-validate
 ## Release the project
 release: clean .make-validate
 
-# -------------------------------------- Submodule
-submodule-update:
-	git submodule update --remote --rebase
-
-submodule-push:
-	git push --recurse-submodules=on-demand
-
-submodule-stash:
-	git submodule foreach 'git stash'
-
 # --------------------------- Distribution
+dist/:
+	mkdir dist
+
 .PHONY: bdist
-dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC) schema.graphql
+dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC) schema.graphql | dist/
 	@$(VALIDATE_VENV)
 	$(CONDA_PYTHON) setup.py bdist_wheel
 
 ## Create a binary wheel distribution
-bdist: dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl
+bdist: dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl | dist/
 
 .PHONY: sdist
-dist/$(PRJ_PACKAGE)-*.tar.gz: $(REQUIREMENTS) schema.graphql
+dist/$(PRJ_PACKAGE)-*.tar.gz: $(REQUIREMENTS) schema.graphql | dist/
 	@$(VALIDATE_VENV)
 	$(CONDA_PYTHON) setup.py sdist
 
-sdist: dist/$(PRJ_PACKAGE)-*.tar.gz
+sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
 
 .PHONY: dist
 ## Create a full distribution
 dist: bdist sdist
+	@echo -e "$(yellow)Package for distribution created$(normal)"
 
 .PHONY: check-twine
 ## Check the distribution before publication
 check-twine: bdist
 	$(VALIDATE_VENV)
 	twine check \
-		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
+		$(shell find dist/ -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
 
 ## Publish distribution on test.pypi.org
 test-twine: bdist

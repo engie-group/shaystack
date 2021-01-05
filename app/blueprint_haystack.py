@@ -123,7 +123,7 @@ def flask_his_write():
     """
     Invoke his_write() from flask
     """
-    return his_write(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod"))
+    return _as_response(his_write(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
 
 
 @haystack_blueprint.route('/invokeAction', methods=['POST', 'GET'])

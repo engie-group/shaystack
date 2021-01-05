@@ -8,7 +8,7 @@ import logging
 import textwrap
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Any, Optional, List, Tuple, Union
+from typing import Dict, Any, Optional, List, Tuple, Union, Iterator
 
 import pytz
 
@@ -192,7 +192,7 @@ def _generate_filter_in_sql(table_name: str,
     return num_table, select, where
 
 
-def _flatten(a_list: List[Any]) -> List[Any]:
+def _flatten(a_list: List[Any]) -> Iterator[Any]:
     return itertools.chain.from_iterable(a_list)
 
 

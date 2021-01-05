@@ -59,6 +59,8 @@ log = logging.getLogger("url.Provider")
 
 LRU_SIZE, PERIODIC_REFRESH = 15, int(os.environ.get("REFRESH", "15"))
 
+TLS_VERIFY = True
+
 
 class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attributes
     """
@@ -205,7 +207,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             self._lambda_client = boto3.client("lambda",
                                                region_name=os.environ["AWS_REGION"],
                                                endpoint_url=os.environ.get("AWS_S3_ENDPOINT", None),
-                                               verify=False,  # See https://tinyurl.com/y5tap6ys
+                                               verify=TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
                                                )
         return self._lambda_client
 
@@ -226,7 +228,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             self._s3_client = boto3.client(
                 "s3",
                 endpoint_url=os.environ.get("AWS_S3_ENDPOINT", None),
-                verify=False,  # See https://tinyurl.com/y5tap6ys
+                verify=TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
             )
         return self._s3_client
 

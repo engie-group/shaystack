@@ -28,7 +28,7 @@ from ..zincparser import ZincParseException
 
 log = logging.getLogger("import_s3")
 
-VERIFY = True
+VERIFY = True  # See https://tinyurl.com/y5tap6ys
 POOL_SIZE = 20
 
 lock = Lock()
@@ -151,8 +151,9 @@ def update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-lo
                 with lock:
                     source_grid = parse(unzipped_source_data.decode("utf-8-sig"),
                                         suffix_to_mode(suffix))
+                path = parsed_destination.path[1:]
                 destination_data = s3_client.get_object(Bucket=parsed_destination.hostname,
-                                                        Key=parsed_destination.path[1:],
+                                                        Key=path,
                                                         IfNoneMatch=source_etag)['Body'].read()
                 if parsed_source.path.endswith(".gz"):
                     destination_data = gzip.decompress(destination_data)
@@ -182,9 +183,10 @@ def update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-lo
                 source_data, b64_digest = merge_timeseries(source_grid,
                                                            destination_grid,
                                                            suffix_to_mode(suffix), use_gzip)
+            path = parsed_destination.path[1:]
             s3_client.put_object(Body=source_data,
                                  Bucket=parsed_destination.hostname,
-                                 Key=parsed_destination.path[1:],
+                                 Key=path,
                                  ContentMD5=b64_digest
                                  )
             log.info("%s updated (put in s3 bucket)", parsed_source.geturl())
@@ -234,6 +236,9 @@ def import_in_s3(source: str,
     The destination must be an s3 URL. If this URL end with '/' the source filename was used.
     """
     parsed_source = urlparse(source)
+    parsed_destination = urlparse(destination)
+    if not parsed_destination.path:
+        destination = destination + "/"
     if destination.endswith('/'):
         destination += Path(parsed_source.path).name
     parsed_destination = urlparse(destination)

@@ -8,7 +8,7 @@ import textwrap
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Type, Any, Union, Tuple, Optional, Dict
+from typing import List, Type, Any, Union, Tuple, Optional, Dict, Iterator
 
 from .sqldb_protocol import DBCursor
 from .. import parse_filter, jsondumper, Quantity, Ref
@@ -366,7 +366,7 @@ def _generate_filter_in_sql(table_name: str,
     return num_table, select, where
 
 
-def _flatten(a_list: List[Any]) -> List[Any]:
+def _flatten(a_list: List[Any]) -> Iterator[Any]:
     return itertools.chain.from_iterable(a_list)
 
 

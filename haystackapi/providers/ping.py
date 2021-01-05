@@ -142,7 +142,7 @@ class Provider(HaystackInterface):
             ids,
             lease,
         )
-        grid = Grid(VER_3_0)
+        grid = Grid(VER_3_0, metadata={"watchId": "sample_id", "lease": Quantity(1, 'day')})
         grid.append({"id": Ref("id1"), "val": Quantity(100, "°")})
         return grid.extends_columns()
 

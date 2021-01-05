@@ -43,7 +43,14 @@ make test
 ```
 
 The functional tests try to use the different versions of provider with the same data. To do that, it's necessary to
-start different database in docker environment. Use `make functional-test`
+start different database in docker environment. The AWS token must be refreshed. If you use OKTA technology,
+
+```bash
+$ export USE_OKTA=Y
+$ export GIMME="echo 0 | gimme-aws-creds --username XXXXX-A"
+```
+
+or set this values in `.env` file.
 
 ```bash
 make functional-test
@@ -61,6 +68,7 @@ You can also start API server in background with `make async-start-api` and clos
 ```bash
 make async-start-api
 curl http://localhost:3000/haystack/about
+make async-stop-api
 ```
 
 ### Invoke local API
@@ -71,6 +79,7 @@ After started local api, to invoke api, use `make api-<ops>`
 make async-start-api
 make api-about
 make api-read
+make async-stop-api
 ```
 
 To print the local API URL:
@@ -105,8 +114,9 @@ make graphql-schema
 
 #### Use AWS AppSync
 
-It's possible to use AWS AppSync to integrate the Haystack GraphQL API. Read the file `README.md` in the
-folder `aws appsync`.
+It's possible to use AWS AppSync to integrate the Haystack GraphQL API. Read the
+file [`AppSync.md`](aws%20appsync/AppSync.md)
+in the folder `aws appsync`.
 
 ## Deploy the application on AWS Lambda
 
@@ -142,7 +152,7 @@ make aws-logs
 
 ### Invoke AWS API
 
-After deployment, to invoke aws api, use `make aws-api-<path suffix>`
+After the deployment, to invoke aws api, use `make aws-api-<path suffix>`
 
 ```bash
 make aws-api-about
@@ -163,10 +173,19 @@ api, etc.
 
 To clean the project, use `make clean`.
 
-## Tips
+# Validate before commit
+
+To validate all the code, use `make validate`
+
+## Release
+
+To release, use `make release`
+
+# Tips
 
 If you use Okta technology, you can set in `.env`
 
 ```bash
+USE_OKTA=Y
 GIMME="echo 0 | gimme-aws-creds --username XXXX"
 ```

@@ -559,7 +559,7 @@ $ xdg-open "$HAYSTACK_ROOT_API/graphql"
 ### AWS AppSync
 
 Appsync is a technology to agregate differents API in one Graphql API. It's possible to merge the haystack GraphQL with
-other GraphQL API with AppSync. To do that, read [this file](aws appsync/AppSync.md).
+other GraphQL API with AppSync. To do that, read [this file](aws%20appsync/AppSync.md).
 
 # Optional part
 

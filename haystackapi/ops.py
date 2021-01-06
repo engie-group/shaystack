@@ -5,8 +5,6 @@
 
     Upper of this API, you can find a Flask, AWS Lambda, etc.
 """
-from __future__ import annotations
-
 import base64
 import codecs
 import gzip

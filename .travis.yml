@@ -1,12 +1,16 @@
 language: python
 python:
-  #  - "3.7"
+  - "3.7"
   - "3.8"
-#  - "3.9"
+  - "3.9"
+# desactivate.
+# pip install typed-ast # fail
+# See https://github.com/python/typed_ast/issues/97
 #  - "pypy3"
+
 # command to install dependencies
 install:
-  - CRYPTOGRAPHY_ALLOW_OPENSSL_102=1 pip install '.[dev]'
+  - CRYPTOGRAPHY_ALLOW_OPENSSL_102=1 pip install '.[dev,flask,graphql]'
 # command to run tests
 script:
   - nosetests --with-coverage --cover-package=haystackapi --where=tests

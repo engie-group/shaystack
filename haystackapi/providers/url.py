@@ -322,7 +322,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
         if not PERIODIC_REFRESH or parsed_uri.geturl() not in self._versions:
             self._periodic_refresh_versions(parsed_uri, True)
 
-    @functools.lru_cache
+    @functools.lru_cache(maxsize=LRU_SIZE)
     def _download_grid_effective_version(self, uri: str,  # pylint: disable=method-hidden
                                          effective_version: datetime) -> Grid:
         log.info("_download_grid(%s,%s)", uri, effective_version)

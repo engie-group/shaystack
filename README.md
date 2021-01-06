@@ -10,8 +10,8 @@ export PIP_INDEX_URL=https://test.pypi.org/simple
 export PIP_EXTRA_INDEX_URL=https://pypi.org/simple
 ```
 
-Haystackapi is set of API to implement [Haystack project specification](https://project-haystack.org/). It's compatible
-in Flask server in data center, edge or in AWS Lambda function.
+Haystackapi is a set of API to implement [Haystack project specification](https://project-haystack.org/). It's
+compatible with Flask server in data center, edge or in AWS Lambda function.
 
 ## Summary
 
@@ -21,7 +21,8 @@ This project contains source code to parse or dump Haystack files
 [Csv](https://www.project-haystack.org/doc/Csv)).
 
 To implement the [Haystack Rest API](https://www.project-haystack.org/doc/Rest), extend the class `HaystackInterface`
-and publish an AWS Lambda or start a Flash server (See [Server API](#server-api)).
+and publish an AWS Lambda or start a Flash server
+(See [Server API](#server-api)).
 
 This implementation propose two API endpoint:
 
@@ -46,21 +47,20 @@ The directory `sample` now has examples files.
 - `carytown.[csv|jon|zinc]`  : The haystack ontology
 - `p:demo:*.zinc` : sample of time series
 
-Create a virtual environment
+Inside this directory, create a virtual environment
 
 ```console
 $ virtualenv -p python3.8 venv
 $ source venv/bin/activate
-$ pip install ipython
 ```
 
 Then, install the module with all options
 
 ```console
-$ pip install 'haystackapi[graphql,lambda]'
+$ pip install 'haystackapi[flask,graphql,lambda]'
 ```
 
-It's time to try to manipulate a grid. Start IPython or Python
+It's time to try to manipulate a grid. Start Python
 
 ```python-repl
 Python 3.7.8 | packaged by conda-forge | (default, Jul 31 2020, 02:25:08) 
@@ -102,7 +102,7 @@ In [9]: print(haystackapi.dump(g))
 ver:"3.0" aMarker today:2020-12-16
 firstColumn metaData:"in no particular order" abc:123,secondColumn
 154kg,"and counting"
-M,"supported on Python 2.7 and 3.x"
+M,"supported on Python and 3.7+"
 C(-27.472500,153.003000),"Made in Australia from local and imported ingredients"
 
 In [10]: print(haystackapi.dump(g,mode=haystackapi.MODE_JSON))
@@ -171,7 +171,7 @@ In [23]: with open("ontology.json","w") as f:
 
 # Data science
 
-It's easy to convert a grid to dataframe.
+It's easy to convert a grid to a dataframe.
 
 ```python
 with open("file.zinc") as f:
@@ -183,6 +183,12 @@ df = pd.DataFrame(grid.filter(“point and co2e”))  # Convert grid to data fra
 # Features
 
 Haystackapi is agile and can be deployed in different scenarios. Choose an option for each features.
+
+| Python |
+|:------:|
+|   3.7  |
+|   3.8  |
+|   3.9  |
 
 | Deployment              |
 | ----------------------- |
@@ -199,10 +205,19 @@ Haystackapi is agile and can be deployed in different scenarios. Choose an optio
 | Sqlite database           |
 | Postgres database         |
 
-| API               |
-| ----------------- |
-| Haystack REST API |
-| GraphQL API       |
+| Multi tenancy                 |
+| ----------------------------- |
+| Single                        |
+| Multiple, share the SQL table |
+| Multiple, dedicated SQL table |
+
+| API                                               |
+| ------------------------------------------------- |
+| Haystack REST API                                 |
+| GraphQL API alone                                 |
+| GraphQL API integrated inside another via AppSync |
+
+and you can extend these proposed scenario.
 
 # Server API
 
@@ -213,12 +228,15 @@ This implementation propose two API endpoint:
 
 ## Classical REST Haystack API
 
+This API use the `http://<host>:<port>/haystack` url.
+
 These API can negotiate:
 
 - Request format (`Content-Type: text/zinc`, `application/json` or `text/csv`)
 - Response format (`Accept: text/zinc, application/json, text/csv`)
 
 The code implements all [operations](https://project-haystack.org/doc/Rest):
+
 - [about](https://project-haystack.org/doc/Ops#about)
 - [ops](https://project-haystack.org/doc/Ops#ops)
 - [formats](https://project-haystack.org/doc/Ops#formats)
@@ -312,12 +330,6 @@ air,phone,sensor,occupied,store,damper,enum,temp,tz,tariffHis,sp,area,site,weath
 ,"804.552.2222",,,✓,,,,"New_York",,,3149.0ft²,✓,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,,,,"Retail Store",,,"US",,,"3504 W Cary St",20:00:00,1996.0,,"C(37.555385,-77.486903)",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,,,,,,,,,,,,,"Richmond",,,,,"Carytown",,,@p:demo:r:23a44701-a89a6c66 Carytown,"3504 W Cary St, Richmond, VA",,"VA","23221",,,,,,1.0,,"Richmond",,
 ```
 
-You can use the parameters:
-
-* `--no-compare` if you don't want to download the remote version and compare with the new version to detect an update
-* `--no-time-series` if you don't want to upload the time-series referenced in `hisURI` tags'
-* `--force` to force the upload, and create a new version for all files in the bucket.
-
 #### Provider SQL
 
 This provider use an ontology imported in SQL database. Each entity is saved in a row in the JSON format.
@@ -372,12 +384,12 @@ air,phone,sensor,occupied,store,damper,enum,temp,tz,tariffHis,sp,area,site,weath
 ,"804.552.2222",,,✓,,,,"New_York",,,3149.0ft²,✓,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,,,,"Retail Store",,,"US",,,"3504 W Cary St",20:00:00,1996.0,,"C(37.555385,-77.486903)",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,,,,,,,,,,,,,"Richmond",,,,,"Carytown",,,@p:demo:r:23a44701-a89a6c66 Carytown,"3504 W Cary St, Richmond, VA",,"VA","23221",,,,,,1.0,,"Richmond",,
 ```
 
-The SQL url is in form: <dialect[+<driver>]>://[<user>[:<password>]@><host>[:<port>]/<databasename>[#<table name>]
+The SQL url is in form: <dialect[+driver]>://[<user>[:<password>]@><host>[:<port>]/<databasename>[#<table name>]
 
-- sqlite3:///test.db#haystack
-- sqlite3://localhost/test.db
-- sqlite3+supersqlite.sqlite3:///test.db#haystack
-- postgres://postgres:password@172.17.0.2:5432/postgres#haystack
+- `sqlite3:///test.db#haystack`
+- `sqlite3://localhost/test.db`
+- `sqlite3+supersqlite.sqlite3:///test.db#haystack`
+- `postgres://postgres:password@172.17.0.2:5432/postgres`
 
 Inside the SQL url, if the password is empty, and you use AWS lambda,  
 the password is retrieved from the service [`secretManagers`](https://aws.amazon.com/secrets-manager/), with the key,
@@ -400,7 +412,7 @@ the method `hisRead()`
 To manage the multi-tenancy, it's possible to use different approach:
 
 - Overload the method `get_customer_id()` to return the name of the current customer, deduce by the current API user
-- Use different tables (change the table name, ...#haystack_customer1, ...#haystack_customer2)
+- Use different tables (change the table name, `...#haystack_customer1`, `...#haystack_customer2`)
   and publish different API, one by customer
 
 # Using GraphQL API
@@ -415,20 +427,16 @@ For the demonstration,
 $ # Demo
 $ # - Install components
 $ pip install 'haystackapi[graphql]'
-$ # - Install the sqlite driver
-$ pip install supersqlite
-$ # - Import haystack file in DB
-$ haystackapi_import_db sample/carytown.zinc sqlite3:///test.db#haystack
 $ # - Expose haystack with GraphQL API
-$ HAYSTACK_PROVIDER=haystackapi.providers.sql \
-  HAYSTACK_DB=sqlite3:///test.db#haystack \
+$ HAYSTACK_PROVIDER=haystackapi.providers.url \
+  HAYSTACK_URL=sample/carytown.zinc \
   haystackapi
 ```
 
 In another shell
 
 ```console
-$ # - Open URL
+$ # - Open the GraphQL console
 $ xdg-open http://localhost:3000/graphql
 ```
 
@@ -487,13 +495,13 @@ You can select the format you want in the request.
 
 ## Using with Excel or PowerBI
 
-Because the default negotiated format is CSV, you can call these API with PowerQuery or Excel. Try the sample file '
-HaystackAPI.xlsm' and set haystack url
-(http://10.0.2.2:3000/haystack with a local virtual windows).
+Because the default negotiated format is CSV, you can call the REST API with PowerQuery or Excel. Try the sample file
+['HaystackAPI.xlsm'](HaystackAPI.xlsm) and set a correct haystack url
+(http://10.0.2.2:3000/haystack with a local virtual windows). You can load all the data inside Excel table.
 
 ## Using with Amazon AWS
 
-This module offers two layer to use AWS cloud. It's possible to publish the haystack files in a bucket, and use the URL
+This module offers two layers to use AWS cloud. It's possible to publish the haystack files in a bucket, and use the URL
 provider to expose an API (REST and GraphQL)
 and it's possible to use the AWS Lambda to publish the API.
 
@@ -536,18 +544,16 @@ $ export MY_BUCKET=<your bucket name>
 You can import the datas inside this bucket
 
 ```console
-$ haystackapi_import_s3 sample/carytown.zinc s3://${MY_BUCKET}
+$ haystackapi_import_s3 sample/carytown.zinc "s3://${MY_BUCKET}"
 ```
 
-_Because this provider use a local cache with the parsing version of S3 file, it's may be possible to see different
-versions if AWS use multiple instances of lambda. To fixe that, the environment variable `REFRESH` can be set to delay
-cache refresh (Default value is 15m). Every quarter of an hour, each lambda check the list of version for this file, and
-refresh the cache in memory, at the same time. If a new version is published just before you start the lambda, it's may
-be possible you can't see this version. You must wait the end of the current quarter, reploye the lambda or update
-the `REFRESH`
-parameter._
+You can use the parameters:
 
-Then, you can start a Flash server:
+* `--no-compare` if you don't want to download the remote version and compare with the new version to detect an update
+* `--no-time-series` if you don't want to upload the time-series referenced in `hisURI` tags'
+* `--force` to force the upload, and create a new version for all files in the bucket.
+
+Then, you can start a local Flash server:
 
 ```console
 $ # Demo
@@ -555,6 +561,14 @@ $ HAYSTACK_PROVIDER=haystackapi.providers.url \
   HAYSTACK_URL=s3://${MY_BUCKET}/carytown.zinc \
   haystackapi
 ```
+
+_Because this provider use a local cache with the parsing version of S3 file, it's may be possible to see different
+versions if AWS use multiple instances of lambda. To fix that, the environment variable `REFRESH` can be set to delay
+the cache refresh (Default value is 15m). Every quarter of an hour, each lambda instance check the list of version for
+this file, and refresh the cache in memory, at the same time. If a new version is published just before you start the
+lambda, it's may be possible you can't see this new version. You must wait the end of the current quarter, redeploy the
+lambda or update the `REFRESH`
+parameter._
 
 ### AWS Lambda
 
@@ -590,7 +604,7 @@ $ pip install "haystackapi[graphql,lambda]"
 $ zappa deploy
 ```
 
-You can the Lambda API to invoke the REST or GraphQL API.
+You can use the Lambda API to invoke the REST or GraphQL API.
 
 ```console
 $ # Extract the API URL
@@ -632,7 +646,8 @@ possible.
 ### `Numbers`
 
 Numbers without a unit are represented as `float` objects. Numbers with a unit are represented by
-the `haystackapi.Quantity` custom type which has two attributes: `value` and `unit`.
+the `haystackapi.Quantity` custom type which has two attributes: `value` and `unit`. The unit use
+the [Pint](https://pint.readthedocs.io/en/stable/) framework to manage and convert unit.
 
 ### `Marker` and `Remove`
 
@@ -667,9 +682,12 @@ See [here](./Contibute.md)
 
 # Resources
 
-[Haystack Project](https://www.project-haystack.org/)
-[Zappa](https://github.com/Miserlou/Zappa) framework
+- [Haystack Project](https://www.project-haystack.org/)
+- [Zappa](https://github.com/Miserlou/Zappa) framework
 
 # TODO
 
+- [ ] coverage
 - [ ] Docker file
+- [ ] MySQL
+- [ ] Pypy (when pip install typed-ast running)

@@ -80,7 +80,9 @@ dev_requirements = [
     'twine',
     'mock',
     'supersqlite',
-    'nose'
+    'psycopg2',
+    'nose',
+    'coverage'
 ]
 
 setup(name='haystackapi',

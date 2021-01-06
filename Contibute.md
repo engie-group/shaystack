@@ -13,7 +13,7 @@ The project includes the following files and folders:
 - `sample` - Sample haystack file
 - `tests` - Unit tests for the application code.
 - `*.postman*.json` - script to invoke API with postman
-- `Makefile` - All tools to manage the project (Use `make help`'`)
+- `Makefile` - All tools to manage the project (Use `make help`)
 
 You can add some environment variable in `.env` file (See `.env.template`).
 
@@ -43,7 +43,7 @@ $ make test
 ```
 
 The functional tests try to use the different versions of provider with the same data. To do that, it's necessary to
-start different database in docker environment. The AWS token must be refreshed. If you use OKTA technology,
+start different database in docker environment. The AWS token may be refreshed. If you use OKTA technology,
 
 ```console
 $ export USE_OKTA=Y
@@ -109,7 +109,7 @@ $ make graphql-schema
 ```
 
 - Insert this schema without the `Query`
-- In you query, insert a link to `app/graphql_model.py!ReadHaystack`
+- In you global query, insert a link to `app/graphql_model.py!ReadHaystack`
 - And deploy your application
 
 #### Use AWS AppSync
@@ -175,11 +175,11 @@ To clean the project, use `make clean`.
 
 # Validate all the code before commit
 
-To validate all the code, use `make validate`
+To validate all the code, use `make validate`. This target check the unit test, the lint, the typing, etc.
 
 ## Release
 
-Before release a version, you must create a new tag for the release candidate.
+Before to release a version, you must create a new tag for this release candidate.
 
 ```shell
 $ # Commit the version
@@ -206,6 +206,7 @@ $ source venv/bin/activate
 $ pip install 'haystackapi[graphql,lambda]'
 $ python
 import haystackapi
+...
 ```
 
 To release a new official public version:
@@ -221,7 +222,13 @@ $ # Publish the release
 $ make release
 ```
 
+# Travis
+
+Travis is configured to track the project. See [here](https://travis-ci.com/github/pprados/haystackapi)
+
 # Tips
+
+Don't forget to try `make help`.
 
 If you use Okta technology, you can set in `.env`
 

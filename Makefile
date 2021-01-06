@@ -485,7 +485,7 @@ aws-logs:
 .PHONY: unit-test
 .make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile | .env
 	@$(VALIDATE_VENV)
-	PYTHONPATH=tests:. $(CONDA_PYTHON) -m nose -s tests $(NOSETESTS_ARGS)
+	$(CONDA_PYTHON) -m nose -s tests --where=tests $(NOSETESTS_ARGS)
 	date >.make-unit-test
 ## Run unit test
 unit-test: .make-unit-test

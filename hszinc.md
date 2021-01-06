@@ -18,6 +18,7 @@ At this time (2021/1/1), here are the differences.
 | Haystack GraphQL API           |     |  Y  |
 | Default haystack version       | 2.0 | 3.0 |
 | Use unit with pint             | opt.|  Y  |
+| Python                         | 2+  | 3.7+|
 
 To port a code from `hszinc` to `haystackapi`:
 

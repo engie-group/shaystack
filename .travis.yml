@@ -6,7 +6,7 @@ python:
 #  - "pypy3"
 # command to install dependencies
 install:
-  - CRYPTOGRAPHY_ALLOW_OPENSSL_102=1 pip install .
+  - CRYPTOGRAPHY_ALLOW_OPENSSL_102=1 pip install '.[dev]'
 # command to run tests
 script:
   - nosetests --with-coverage --cover-package=haystackapi --where=tests

@@ -1,4 +1,4 @@
-# ReadHaystack AWS Lambda API
+# Python Haystack API
 
 | This is a pre-release version |
 | --- |
@@ -38,9 +38,19 @@ To see the similarities and differences between the two version, clic [here](hsz
 
 # Try it
 
-To try this module, the best way is to download a sample of haystack file.
+To try this module, the best way is to download a sample of haystack file. First, create a directory to work.
+
+```console
+$ mkdir $TMP/haystack
+$ cd $TMP/haystack
+```
+
 Download [here](https://downgit.github.io/#/home?url=https://github.com/pprados/haystackapi/tree/develop/sample)
-and unzip the `sample.zip` in an empty directory.
+and unzip the `sample.zip` in this directory.
+
+```console
+$ unzip sample
+```
 
 The directory `sample` now has examples files.
 
@@ -177,7 +187,7 @@ It's easy to convert a grid to a dataframe.
 with open("file.zinc") as f:
     grid = haystackapi.parse(f.read(), haystackapi.MODE_ZINC)
 
-df = pd.DataFrame(grid.filter(“point and co2e”))  # Convert grid to data frame
+df = pd.DataFrame(grid.filter("point and co2e"))  # Convert grid to data frame
 ```
 
 # Features
@@ -218,7 +228,7 @@ Haystackapi is agile and can be deployed in different scenarios. Choose an optio
 | GraphQL API alone                                 |
 | GraphQL API integrated inside another via AppSync |
 
-and you can extend these proposed scenario.
+and you can extend these proposed scenario. You can read later, how to implement these different scenarios.
 
 # Server API
 
@@ -271,7 +281,7 @@ Different sample of provider are proposed. You can add a new one with a subclass
 `haystackapi.providers.HaystackInterface`. Then, you can implement only the method you want. The others methods are
 automatically excluded in the [`../ops`](https://project-haystack.org/doc/Ops#ops) operation.
 
-To select a provider, add the environment variable `HAYSTACK_PROVIDER` in the environment.
+To select a provider, add the environment variable `HAYSTACK_PROVIDER`.
 
 To create your custom Haystack API
 
@@ -312,7 +322,7 @@ $ curl http://localhost:3000/haystack/about
 Use `HAYSTACK_PROVIDER=haystackapi.providers.url` to use this provider. Add the variable `HAYSTACK_URL=<url>` to expose
 an Haystack file via the Haystack protocol. The methods `/read` and `/hisRead` was implemented. The `<url>` may have the
 classic form (`http://...`, `ftp://...`) or can reference an S3 file (`s3://...`). The time series to manage history
-must be referenced in the entity, with the `hisURI` tag. This URI may be relative and must be in haystack.
+must be referenced in the entity, with the `hisURI` tag. This URI may be relative and must be in haystack format.
 
 All the file may be zipped. Reference the zipped version with the `.gz` suffix
 (eg. `ontology.zinc.gz`)
@@ -386,8 +396,9 @@ air,phone,sensor,occupied,store,damper,enum,temp,tz,tariffHis,sp,area,site,weath
 ,"804.552.2222",,,✓,,,,"New_York",,,3149.0ft²,✓,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,,,,"Retail Store",,,"US",,,"3504 W Cary St",20:00:00,1996.0,,"C(37.555385,-77.486903)",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,,,,,,,,,,,,,"Richmond",,,,,"Carytown",,,@p:demo:r:23a44701-a89a6c66 Carytown,"3504 W Cary St, Richmond, VA",,"VA","23221",,,,,,1.0,,"Richmond",,
 ```
 
-The SQL url is in form: <dialect[+driver]>://[<user>[:<password>]@><host>[:<port>]/<databasename>[#<table name>]
+The SQL url is in form: <dialect\[+<driver>]>://\[<user>\[:<password>]@><host>\[:<port>]/<databasename>\[#<table name>]
 
+Samples:
 - `sqlite3:///test.db#haystack`
 - `sqlite3://localhost/test.db`
 - `sqlite3+supersqlite.sqlite3:///test.db#haystack`
@@ -413,9 +424,9 @@ the method `hisRead()`
 
 To manage the multi-tenancy, it's possible to use different approach:
 
-- Overload the method `get_customer_id()` to return the name of the current customer, deduce by the current API user
+- Overload the method `get_customer_id()` to return the name of the current customer, deduce by the current API caller
 - Use different tables (change the table name, `...#haystack_customer1`, `...#haystack_customer2`)
-  and publish different API, one by customer
+  and publish different API, one by customers.
 
 # Using GraphQL API
 
@@ -554,6 +565,8 @@ You can use the parameters:
 * `--no-compare` if you don't want to download the remote version and compare with the new version to detect an update
 * `--no-time-series` if you don't want to upload the time-series referenced in `hisURI` tags'
 * `--force` to force the upload, and create a new version for all files in the bucket.
+
+If the source and target are in different buckets in the same region, the copy was done from bucket to bucket.
 
 Then, you can start a local Flash server:
 

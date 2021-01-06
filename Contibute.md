@@ -27,11 +27,11 @@ To initialise the Conda environment, use `make configure` and activate the conda
 to `test`, `start-api`, etc. See `make help` to print all major target.
 
 ```console
-$ git clone --recurse-submodules http://github.com/pprados/haystackapi.git 
+$ git clone http://github.com/pprados/haystackapi.git 
 $ cd haystackapi
 $ make configure
 $ conda activate haystackapi
-$ make test
+$ make help
 ```
 
 ## Tests
@@ -98,6 +98,10 @@ $ make graphql-api
 
 To test the GraphQL API, open this URL with a web browser or use a GraphQL Client with this URL.
 
+```console
+$ xdg-open $(make graphql-api)
+```
+
 #### Merge GraphQL API
 
 To integrate Haystack GraphQL API inside another GraphQL API,
@@ -108,15 +112,22 @@ To integrate Haystack GraphQL API inside another GraphQL API,
 $ make graphql-schema
 ```
 
-- Insert this schema without the `Query`
-- In you global query, insert a link to `app/graphql_model.py!ReadHaystack`
-- And deploy your application
+- Insert this schema without the `Query` in you global query,
+- insert a link to `app/graphql_model.py!ReadHaystack`
+- and deploy your application
 
 #### Use AWS AppSync
 
 It's possible to use AWS AppSync to integrate the Haystack GraphQL API. Read the
 file [`AppSync.md`](aws%20appsync/AppSync.md)
 in the folder `aws appsync`.
+
+## Deploy on Docker
+
+- To build the image use `make docker-build`.
+- To run the docker use `make docker-run`
+- To start the docker in background use `make async-docker-start` and stop with `make async-docker-stop`
+- To remove the image use `make docker-rm`
 
 ## Deploy the application on AWS Lambda
 

@@ -261,7 +261,7 @@ clean-zappa:
 
 ## Clean project
 clean: async-stop clean-zappa
-	@rm -rf bin/* .mypy_cache .pytest_cache .start build nohup.out dist/ .make-* .pytype out.json
+	@rm -rf bin/* .mypy_cache .pytest_cache .start build nohup.out dist .make-* .pytype out.json
 	mkdir dist/
 
 .PHONY: clean-all
@@ -392,7 +392,7 @@ async-start-minio: .minio $(REQUIREMENTS)
 
 
 ## Stop all async server
-async-stop: async-stop-api async-stop-minio stop-pg stop-pgadmin
+async-stop: async-stop-api async-stop-minio stop-pg stop-pgadmin async-docker-stop
 
 # -------------------------------------- AWS
 ifeq ($(USE_OKTA),Y)
@@ -613,7 +613,7 @@ start-pg:
 
 ## Stop postgres database
 stop-pg:
-	@docker stop postgres
+	@docker stop postgres >/dev/null
 	echo -e "$(green)Postgres stopped$(normal)"
 
 ## Print postgres db url connection
@@ -647,11 +647,44 @@ start-pgadmin:
 
 ## Stop PGAdmin
 stop-pgadmin:
-	@docker stop pgadmin
+	@docker stop pgadmin >/dev/null
 	echo -e "$(green)PGAdmin stopped$(normal)"
 
 ## Print all URL
 info: api pg-url aws-api
+
+# --------------------------- Docker
+## Build docker
+docker-build:
+	@docker build -t haystackapi .
+
+## Run the docker
+docker-run: async-docker-stop docker-rm
+	@echo -e "$(green)Start Haystackapi in docker$(normal)"
+	docker run -p 3000:3000 --name haystackapi haystackapi
+
+## Run the docker in background
+async-docker-start: docker-rm
+	@docker run -dp 3000:3000 --name haystackapi haystackapi
+	echo -e "$(green)Haystackapi in docker is started$(normal)"
+
+## Stop the background docker
+async-docker-stop:
+	@docker stop haystackapi >/dev/null || true
+	echo -e "$(green)Haystackapi docker stopped$(normal)"
+
+## Remove the docker image
+docker-rm: async-docker-stop
+	@docker rm haystackapi >/dev/null || true
+	echo -e "$(green)Haystackapi docker removed$(normal)"
+
+# Start the docker image with bash
+docker-run-bash:
+	@docker run -p 3000:3000 -it haystackapi bash
+
+# Execute a bash inside the docker
+docker-bash:
+	@docker exec -it haystackapi /bin/bash
 
 # --------------------------- Distribution
 dist/:

@@ -100,10 +100,10 @@ class HaystackInterface(ABC):
                 "productName",  # Str name of the server software product
                 "productUri",
                 "productVersion",
-                # "moduleName",
                 # module which implements Haystack server protocol
+                "moduleName",
                 # if its a plug-in to the product
-                # "moduleVersion"  # Str version of moduleName
+                "moduleVersion"  # Str version of moduleName
             ],
         )
         grid.append(

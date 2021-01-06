@@ -194,6 +194,7 @@ Haystackapi is agile and can be deployed in different scenarios. Choose an optio
 | ----------------------- |
 | Internet Flask server   |
 | Edge Flask server       |
+| Docker Flask server     |
 | Internet AWS Lambda API |
 
 | Backend                   |
@@ -263,6 +264,7 @@ This API use the `http://<host>:<port>/graphql` url and is conforms to the schem
         - `pip install "haystackapi[flask,graphql]"`
         - `HAYSTACK_PROVIDER='<your provider module>' haystackapi`
 
+The command line `haystackapi` accept parameters (use `haystackapi --help`)
 ### Providers
 
 Different sample of provider are proposed. You can add a new one with a subclass of
@@ -570,6 +572,23 @@ lambda, it's may be possible you can't see this new version. You must wait the e
 lambda or update the `REFRESH`
 parameter._
 
+### Docker
+
+The `Dockerfile` can be used to generate an image with a set of parameter.
+
+```console
+$ # Build the image
+$ docker build -t haystackapi .
+$ # Run and customize the image
+$ docker run -p 3000:3000 \
+  -e HAYSTACK_PROVIDER=haystackapi.providers.ping \
+  -e HAYSTACK_URL=sample/carytown.zinc \
+  -e HAYSTACK_DB=sqlite:///test.db#haystack \
+  -e HAYSTACK_DB_SECRET= \
+  -e REFRESH=15 \
+  haystackapi 
+```
+
 ### AWS Lambda
 
 The code is compatible with AWS Lambda. Install this option (`pip install "haystackapi[lambda]"`)
@@ -688,6 +707,5 @@ See [here](./Contibute.md)
 # TODO
 
 - [ ] coverage
-- [ ] Docker file
 - [ ] MySQL
 - [ ] Pypy (when pip install typed-ast running)

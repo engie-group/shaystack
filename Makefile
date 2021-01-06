@@ -596,67 +596,6 @@ validate: .make-validate
 ## Release the project
 release: clean .make-validate
 
-# --------------------------- Distribution
-dist/:
-	mkdir dist
-
-.PHONY: bdist
-dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC) schema.graphql | dist/
-	@$(VALIDATE_VENV)
-	$(CONDA_PYTHON) setup.py bdist_wheel
-
-## Create a binary wheel distribution
-bdist: dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl | dist/
-
-.PHONY: sdist
-dist/$(PRJ_PACKAGE)-*.tar.gz: $(REQUIREMENTS) schema.graphql | dist/
-	@$(VALIDATE_VENV)
-	$(CONDA_PYTHON) setup.py sdist
-
-sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
-
-.PHONY: dist
-## Create a full distribution
-dist: bdist sdist
-	@echo -e "$(yellow)Package for distribution created$(normal)"
-
-.PHONY: check-twine
-## Check the distribution before publication
-check-twine: bdist
-	$(VALIDATE_VENV)
-	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \
-		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \
-		; exit 1 )
-	twine check \
-		$(shell find dist/ -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
-
-.PHONY: test-twine
-## Publish distribution on test.pypi.org
-test-twine: dist check-twine
-	$(VALIDATE_VENV)
-	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \
-		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \
-		; exit 1 )
-	rm -f dist/*.asc
-	echo -e "$(green)Enter the Pypi password$(normal)"
-	twine upload --sign --repository-url https://test.pypi.org/legacy/ \
-		$(shell find dist/ -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
-	echo -e "To the test repositiry"
-	echo -e "$(green)export PIP_INDEX_URL=https://test.pypi.org/simple$(normal)"
-	echo -e "$(green)export PIP_EXTRA_INDEX_URL=https://pypi.org/simple$(normal)"
-
-.PHONY: release
-## Publish distribution on pypi.org
-release: clean check-twine
-	@$(VALIDATE_VENV)
-	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \
-		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \
-		; exit 1 )
-	rm -f dist/*.asc
-	echo -e "$(green)Enter the Pypi password$(normal)"
-	twine upload --sign \
-		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
-
 # ------------- Postgres database
 ## Print sqlite db url connection
 sqlite-url:
@@ -713,3 +652,62 @@ stop-pgadmin:
 
 ## Print all URL
 info: api pg-url aws-api
+
+# --------------------------- Distribution
+dist/:
+	mkdir dist
+
+.PHONY: bdist
+dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC) schema.graphql | dist/
+	@$(VALIDATE_VENV)
+	$(CONDA_PYTHON) setup.py bdist_wheel
+
+## Create a binary wheel distribution
+bdist: dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl | dist/
+
+.PHONY: sdist
+dist/$(PRJ_PACKAGE)-*.tar.gz: $(REQUIREMENTS) schema.graphql | dist/
+	@$(VALIDATE_VENV)
+	$(CONDA_PYTHON) setup.py sdist
+
+sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
+
+.PHONY: dist
+## Create a full distribution
+dist: bdist sdist
+	@echo -e "$(yellow)Package for distribution created$(normal)"
+
+.PHONY: check-twine
+## Check the distribution before publication
+check-twine: bdist
+	$(VALIDATE_VENV)
+	twine check \
+		$(shell find dist/ -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
+
+.PHONY: test-twine
+## Publish distribution on test.pypi.org
+test-twine: dist check-twine
+	$(VALIDATE_VENV)
+	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \
+		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \
+		; exit 1 )
+	rm -f dist/*.asc
+	echo -e "$(green)Enter the Pypi password$(normal)"
+	twine upload --sign --repository-url https://test.pypi.org/legacy/ \
+		$(shell find dist/ -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
+	echo -e "To the test repositiry"
+	echo -e "$(green)export PIP_INDEX_URL=https://test.pypi.org/simple$(normal)"
+	echo -e "$(green)export PIP_EXTRA_INDEX_URL=https://pypi.org/simple$(normal)"
+
+.PHONY: release
+## Publish distribution on pypi.org
+release: clean check-twine
+	@$(VALIDATE_VENV)
+	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \
+		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \
+		; exit 1 )
+	rm -f dist/*.asc
+	echo -e "$(green)Enter the Pypi password$(normal)"
+	twine upload --sign \
+		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
+

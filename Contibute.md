@@ -26,34 +26,34 @@ to manage dependencies and others tools.
 To initialise the Conda environment, use `make configure` and activate the conda environment. Then, it's possible
 to `test`, `start-api`, etc. See `make help` to print all major target.
 
-```bash
-git clone --recurse-submodules http://github.com/pprados/haystackapi.git 
-cd haystackapi
-make configure
-conda activate haystackapi
-make test
+```console
+$ git clone --recurse-submodules http://github.com/pprados/haystackapi.git 
+$ cd haystackapi
+$ make configure
+$ conda activate haystackapi
+$ make test
 ```
 
 ## Tests
 
 Tests are defined in the `tests` folder in this project. To run all tests, use `make test`.
 
-```bash
-make test
+```console
+$ make test
 ```
 
 The functional tests try to use the different versions of provider with the same data. To do that, it's necessary to
 start different database in docker environment. The AWS token must be refreshed. If you use OKTA technology,
 
-```bash
+```console
 $ export USE_OKTA=Y
 $ export GIMME="echo 0 | gimme-aws-creds --username XXXXX-A"
 ```
 
 or set this values in `.env` file.
 
-```bash
-make functional-test
+```console
+$ make functional-test
 ```
 
 ## Use the Makefile to test API locally
@@ -65,35 +65,35 @@ and `HaystackAPI.postman_environment.json` to test and invoke the local API.
 
 You can also start API server in background with `make async-start-api` and close it with `make async-stop-api`.
 
-```bash
-make async-start-api
-curl http://localhost:3000/haystack/about
-make async-stop-api
+```console
+$ make async-start-api
+$ curl http://localhost:3000/haystack/about
+$ make async-stop-api
 ```
 
 ### Invoke local API
 
 After started local api, to invoke api, use `make api-<ops>`
 
-```bash
-make async-start-api
-make api-about
-make api-read
-make async-stop-api
+```console
+$ make async-start-api
+$ make api-about
+$ make api-read
+$ make async-stop-api
 ```
 
 To print the local API URL:
 
-```bash
-make api
+```console
+$ make api
 ```
 
 ### GraphQL API
 
 To print the local GraphQL API URL:
 
-```bash
-make graphql-api
+```console
+$ make graphql-api
 ```
 
 To test the GraphQL API, open this URL with a web browser or use a GraphQL Client with this URL.
@@ -104,8 +104,8 @@ To integrate Haystack GraphQL API inside another GraphQL API,
 
 - Extract the schema
 
-```bash
-make graphql-schema
+```console
+$ make graphql-schema
 ```
 
 - Insert this schema without the `Query`
@@ -122,46 +122,46 @@ in the folder `aws appsync`.
 
 To build and deploy application in AWS, run the following in your shell:
 
-```bash
-make aws-deploy
+```console
+$ make aws-deploy
 ```
 
 ## Update the application on AWS Lambda
 
 To build and deploy application in AWS, run the following in your shell:
 
-```bash
-make aws-update
+```console
+$ make aws-update
 ```
 
 ## Undeploy the application on AWS Lambda
 
 To undeploy application in AWS, run the following in your shell:
 
-```bash
-make aws-undeploy
+```console
+$ make aws-undeploy
 ```
 
 ## Lambda function logs
 
 To simplify troubleshooting, use `make aws-log`
 
-```bash
-make aws-logs
+```console
+$ make aws-logs
 ```
 
 ### Invoke AWS API
 
 After the deployment, to invoke aws api, use `make aws-api-<path suffix>`
 
-```bash
-make aws-api-about
+```console
+$ make aws-api-about
 ```
 
 To print the AWS API URL:
 
-```bash
-make aws-api
+```console
+$ make aws-api
 ```
 
 ### Customize environment variable
@@ -179,21 +179,18 @@ To validate all the code, use `make validate`
 
 ## Release
 
-Before release a version, you must create a new tag.
+Before release a version, you must create a new tag for the release candidate.
 
-```bash
-git commit -a
-git tag v2.x-rc
+```shell
+$ # Commit the version
+$ git commit -a
+$ # Add a tag for the release candidate
+$ git tag vX.Y.Z-rc
+$ # Publish the module in test twine repository (https://test.pypi.org/legacy/):
+$ make test-twine
 ```
 
-To test this release in a test twine repository (https://test.pypi.org/legacy/):
-
-```bash
-make test-twine
-```
-
-It's possible to test a last time all the project, with this release candidate. To do that,
-
+It's possible to test a last time all the project, with this release candidate. To do this:
 ```bash
 export PIP_INDEX_URL=https://test.pypi.org/simple
 export PIP_EXTRA_INDEX_URL=https://pypi.org/simple
@@ -201,7 +198,7 @@ export PIP_EXTRA_INDEX_URL=https://pypi.org/simple
 
 Then, you can test the usage with this release candidate.
 
-```bash
+```shell
 $ mkdir $TMP/demo
 $ cd $TMP/demo
 $ virtualenv -p python3.8 venv
@@ -213,9 +210,16 @@ import haystackapi
 
 To release a new official public version:
 
-- tag the version
-- push the tag
-- and use `make release`
+```shell
+$ # Commit
+$ git commit -a
+$ # Tag the version
+$ git tag vX.Y.Z
+$ # Publish the tag
+$ git push origin vX.Y.Z
+$ # Publish the release
+$ make release
+```
 
 # Tips
 

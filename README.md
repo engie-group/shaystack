@@ -1,9 +1,9 @@
 # ReadHaystack AWS Lambda API
 
-| This a pre-release version|
+| This is a pre-release version |
 | --- |
 
-To use the package present in **test.pypi.org**, use
+To use the release candidate package present in **test.pypi.org**, use
 
 ```bash
 export PIP_INDEX_URL=https://test.pypi.org/simple
@@ -28,18 +28,18 @@ This implementation propose two API endpoint:
 - Classical [REST Haystack API](https://www.project-haystack.org/doc/Rest)
 - GraphQL API
 
+# History
+
+This project is a fork of [hszinc](https://github.com/widesky/hszinc)
+(Thanks to the team). The proposed evolutions were too big to be accepted in a pull request.
+
+To see the similarities and differences between the two version, clic [here](hszinc.md)
+
 # Try it
 
-To try this module, the best way is to download a sample of haystack file. In an empty directory,
-
-```bash
-git clone --depth 1 https://github.com/pprados/haystackapi.git sample ; \
-cd sample ; \
-git filter-branch --prune-empty --subdirectory-filter sample HEAD ; \
-rm -Rf .git ; \
-cd .. ; \
-ls sample
-```
+To try this module, the best way is to download a sample of haystack file.
+Download [here](https://downgit.github.io/#/home?url=https://github.com/pprados/haystackapi/tree/develop/sample)
+and unzip the `sample.zip` in an empty directory.
 
 The directory `sample` now has examples files.
 
@@ -48,7 +48,7 @@ The directory `sample` now has examples files.
 
 Create a virtual environment
 
-```bash
+```console
 $ virtualenv -p python3.8 venv
 $ source venv/bin/activate
 $ pip install ipython
@@ -56,13 +56,13 @@ $ pip install ipython
 
 Then, install the module with all options
 
-```
+```console
 $ pip install 'haystackapi[graphql,lambda]'
 ```
 
 It's time to try to manipulate a grid. Start IPython or Python
 
-```
+```python-repl
 Python 3.7.8 | packaged by conda-forge | (default, Jul 31 2020, 02:25:08) 
 Type 'copyright', 'credits' or 'license' for more information
 IPython 7.18.1 -- An enhanced Interactive Python. Type '?' for help.
@@ -169,6 +169,41 @@ In [23]: with open("ontology.json","w") as f:
     ...: 
 ```
 
+# Data science
+
+It's easy to convert a grid to dataframe.
+
+```python
+with open("file.zinc") as f:
+    grid = haystackapi.parse(f.read(), haystackapi.MODE_ZINC)
+
+df = pd.DataFrame(grid.filter(“point and co2e”))  # Convert grid to data frame
+```
+
+# Features
+
+Haystackapi is agile and can be deployed in different scenarios. Choose an option for each features.
+
+| Deployment              |
+| ----------------------- |
+| Internet Flask server   |
+| Edge Flask server       |
+| Internet AWS Lambda API |
+
+| Backend                   |
+| ------------------------- |
+| local file                |
+| url                       |
+| S3 bucket without version |
+| S3 bucket with version    |
+| Sqlite database           |
+| Postgres database         |
+
+| API               |
+| ----------------- |
+| Haystack REST API |
+| GraphQL API       |
+
 # Server API
 
 This implementation propose two API endpoint:
@@ -242,13 +277,13 @@ versions of files, you must use a dedicated tool, to import only the difference 
 Use `HAYSTACK_PROVIDER=haystackapi.providers.ping` to use this provider. It's a very simple provider, with a tiny
 implementation of all haystack operation. Read the code.
 
-```bash
+```console
 $ HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi
 ```
 
 In another console
 
-```bash
+```console
 $ curl http://localhost:3000/haystack/about
 ```
 
@@ -262,7 +297,7 @@ must be referenced in the entity, with the `hisURI` tag. This URI may be relativ
 All the file may be zipped. Reference the zipped version with the `.gz` suffix
 (eg. `ontology.zinc.gz`)
 
-```bash
+```console
 $ # Demo
 $ HAYSTACK_PROVIDER=haystackapi.providers.url \
   HAYSTACK_URL=sample/carytown.zinc \
@@ -271,7 +306,7 @@ $ HAYSTACK_PROVIDER=haystackapi.providers.url \
 
 in another shell
 
-```bash
+```console
 $ curl 'http://localhost:3000/haystack/read?filter=site'
 air,phone,sensor,occupied,store,damper,enum,temp,tz,tariffHis,sp,area,site,weatherRef,elecCost,hisMode,kwSite,summary,fan,siteRef,primaryFunction,kind,cmd,geoCountry,elec,lights,geoStreet,occupiedEnd,yearBuilt,siteMeter,geoCoord,regionRef,occupiedStart,effective,equip,sitePoint,cool,ahu,hvac,costPerHour,unit,lightsGroup,discharge,zone,power,geoCity,rooftop,navName,outside,point,dis,energy,elecMeterLoad,id,geoAddr,cur,geoState,geoPostalCode,equipRef,meter,pressure,heat,return,storeNum,his,metro,stage,hisURI
 ,"804.552.2222",,,✓,,,,"New_York",,,3149.0ft²,✓,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,,,,"Retail Store",,,"US",,,"3504 W Cary St",20:00:00,1996.0,,"C(37.555385,-77.486903)",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,,,,,,,,,,,,,"Richmond",,,,,"Carytown",,,@p:demo:r:23a44701-a89a6c66 Carytown,"3504 W Cary St, Richmond, VA",,"VA","23221",,,,,,1.0,,"Richmond",,
@@ -289,7 +324,7 @@ This provider use an ontology imported in SQL database. Each entity is saved in 
 Use `HAYSTACK_PROVIDER=haytackapi.providers.sql` to use this provider. Add the variable `HAYSTACK_DB` to describe the
 link to the root table. At this time, only SuperSQLite and Postgresql was supported.
 
-```
+```console
 $ pip install 'haystackapi[graphql,lambda]'
 ```
 
@@ -315,7 +350,7 @@ You can use the parameters:
 
 To demonstrate the usage with sqlite,
 
-```bash
+```console
 $ # Demo
 $ # - Install the components
 $ pip install 'haystackapi[flask]'
@@ -331,7 +366,7 @@ $ HAYSTACK_PROVIDER=haystackapi.providers.sql \
 
 in another shell
 
-```bash
+```console
 $ curl 'http://localhost:3000/haystack/read?filter=site'
 air,phone,sensor,occupied,store,damper,enum,temp,tz,tariffHis,sp,area,site,weatherRef,elecCost,hisMode,kwSite,summary,fan,siteRef,primaryFunction,kind,cmd,geoCountry,elec,lights,geoStreet,occupiedEnd,yearBuilt,siteMeter,geoCoord,regionRef,occupiedStart,effective,equip,sitePoint,cool,ahu,hvac,costPerHour,unit,lightsGroup,discharge,zone,power,geoCity,rooftop,navName,outside,point,dis,energy,elecMeterLoad,id,geoAddr,cur,geoState,geoPostalCode,equipRef,meter,pressure,heat,return,storeNum,his,metro,stage,hisURI
 ,"804.552.2222",,,✓,,,,"New_York",,,3149.0ft²,✓,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,,,,"Retail Store",,,"US",,,"3504 W Cary St",20:00:00,1996.0,,"C(37.555385,-77.486903)",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,,,,,,,,,,,,,"Richmond",,,,,"Carytown",,,@p:demo:r:23a44701-a89a6c66 Carytown,"3504 W Cary St, Richmond, VA",,"VA","23221",,,,,,1.0,,"Richmond",,
@@ -376,7 +411,7 @@ component with the good option (`pip install 'haystackapi[graphql]'`), start the
 
 For the demonstration,
 
-```bash
+```console
 $ # Demo
 $ # - Install components
 $ pip install 'haystackapi[graphql]'
@@ -392,14 +427,14 @@ $ HAYSTACK_PROVIDER=haystackapi.providers.sql \
 
 In another shell
 
-```bash
+```console
 $ # - Open URL
 $ xdg-open http://localhost:3000/graphql
 ```
 
 and use this request
 
-```GraphQL
+```graphql
 # Demo
 {
     haystack {
@@ -437,14 +472,14 @@ and use this request
 Because Graphql use a schema and Haystack doesn't use one, it's not easy to manipulate the history result. To resolve
 that, we propose different *cast* for the values.
 
-```
+```graphql
 histories(ids:["@p:demo:r:23a44701-3a62fd7a"])
 {
-    ts
-    val  # Haystack json scalar
-    float # cast to float
-    bool # cast to bool
-    ...
+ts
+val  # Haystack json scalar
+float # cast to float
+bool # cast to bool
+...
 }
 ```
 
@@ -464,7 +499,7 @@ and it's possible to use the AWS Lambda to publish the API.
 
 To import the dependencies:
 
-```bash
+```console
 $ pip install haystack[lambda]
 ```
 
@@ -486,7 +521,7 @@ file are added to maintain the history.
 
 Set AWS profile before to use this tool.
 
-```bash
+```console
 $ export AWS_PROFILE=default
 ```
 
@@ -494,13 +529,13 @@ You can update others parameters (`AWS_STACK`, `AWS_PROFILE`, `AWS_REGION`, ...)
 
 Then, create an S3 bucket, and for the demo, set the variable `MY_BUCKET`
 
-```bash
+```console
 $ export MY_BUCKET=<your bucket name>
 ```
 
 You can import the datas inside this bucket
 
-```bash
+```console
 $ haystackapi_import_s3 sample/carytown.zinc s3://${MY_BUCKET}
 ```
 
@@ -514,7 +549,7 @@ parameter._
 
 Then, you can start a Flash server:
 
-```bash
+```console
 $ # Demo
 $ HAYSTACK_PROVIDER=haystackapi.providers.url \
   HAYSTACK_URL=s3://${MY_BUCKET}/carytown.zinc \
@@ -548,7 +583,7 @@ Update the parameter values like `project_name`, `s3_bucket` or `HAYSTACK_URL`.
 
 Then, use [zappa](https://github.com/Miserlou/Zappa) to deploy.
 
-```bash
+```console
 $ virtualenv -p python3.8 venv
 $ source venv/bin/activate
 $ pip install "haystackapi[graphql,lambda]"
@@ -557,7 +592,7 @@ $ zappa deploy
 
 You can the Lambda API to invoke the REST or GraphQL API.
 
-```bash
+```console
 $ # Extract the API URL
 $ HAYSTACK_ROOT_API=$(zappa status --json | jq -r '."API Gateway URL"')
 $ # Try the classic haystack API
@@ -634,3 +669,7 @@ See [here](./Contibute.md)
 
 [Haystack Project](https://www.project-haystack.org/)
 [Zappa](https://github.com/Miserlou/Zappa) framework
+
+# TODO
+
+- [ ] Docker file

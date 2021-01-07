@@ -58,6 +58,9 @@ class HSDateTime(graphene.String):
     Haystack compatible date format.
     """
 
+    class Meta:
+        name = "AWSDateTime" if BOTO3_AVAILABLE else "DateTime"
+
     @staticmethod
     def serialize(date_time: datetime) -> str:
         # Call to convert python object to graphql result
@@ -85,8 +88,9 @@ class HSDate(graphene.String):
     Haystack date for GraphQL
     """
 
-    # class Meta:
-    #     name = "AWSDateTime" if BOTO3_AVAILABLE else "DateTime"
+    class Meta:
+        name = "AWSDate" if BOTO3_AVAILABLE else "Date"
+
     @staticmethod
     def serialize(a_date: date) -> str:
         assert isinstance(a_date, date), 'Received not compatible date "{}"'.format(repr(a_date))
@@ -109,8 +113,9 @@ class HSTime(graphene.String):
     Haystack time for GraphQL
     """
 
-    # class Meta:
-    #     name = "String"
+    class Meta:
+        name = "AWSTime" if BOTO3_AVAILABLE else "Time"
+
     @staticmethod
     def serialize(a_time: time) -> str:
         assert isinstance(a_time, time), 'Received not compatible time "{}"'.format(repr(a_time))
@@ -133,8 +138,8 @@ class HSUri(graphene.String):
     Haystack URI for GraphQL
     """
 
-    # class Meta:  # pylint: disable=too-few-public-methods,missing-class-docstring
-    #     name = "AWSURL" if BOTO3_AVAILABLE else "HSURL"
+    class Meta:  # pylint: disable=too-few-public-methods,missing-class-docstring
+        name = "AWSURL" if BOTO3_AVAILABLE else "HSURL"
 
     @staticmethod
     def serialize(a_uri: Uri) -> str:

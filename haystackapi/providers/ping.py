@@ -62,7 +62,7 @@ class Provider(HaystackInterface):
             self,
             limit: int,
             select: Optional[str],
-            entity_ids: Optional[Grid] = None,
+            entity_ids: Optional[List[Ref]] = None,
             grid_filter: Optional[str] = None,
             date_version: Optional[datetime] = None,
     ) -> Grid:  # pylint: disable=no-self-use
@@ -186,7 +186,7 @@ class Provider(HaystackInterface):
                           val: Optional[Any],
                           duration: Quantity,
                           who: Optional[str],
-                          date_version: Optional[datetime],
+                          date_version: Optional[datetime] = None,
                           ) -> None:  # pylint: disable=no-self-use
         """ Return EmptyGrid """
         log.info('point_write_write(id=%s, level=%s, val=%s, duration=%s, who=%s, date_version=%s")',

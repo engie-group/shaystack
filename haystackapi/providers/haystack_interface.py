@@ -264,7 +264,7 @@ class HaystackInterface(ABC):
             val: Optional[Any],
             duration: Quantity,
             who: Optional[str],
-            date_version: Optional[datetime],
+            date_version: Optional[datetime] = None,
     ) -> None:  # pylint: disable=no-self-use
         """
         Implement the Haystack 'pointWrite' ops
@@ -288,8 +288,8 @@ class HaystackInterface(ABC):
     def his_read(
             self,
             entity_id: Ref,
-            dates_range: Optional[Tuple[datetime, datetime]],
-            date_version: Optional[datetime],
+            dates_range: Optional[Tuple[datetime, datetime]] = None,
+            date_version: Optional[datetime] = None,
     ) -> Grid:  # pylint: disable=no-self-use
         """
         Implement the Haystack 'hisRead' ops
@@ -376,12 +376,12 @@ def get_provider(class_str: str) -> HaystackInterface:
                     self,
                     limit: int,
                     select: Optional[str],
-                    entity_id: Optional[List[Ref]],
+                    entity_ids: Optional[List[Ref]],
                     grid_filter: Optional[str],
                     date_version: Optional[datetime],
             ) -> Grid:
                 # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().read(limit, select, entity_id, grid_filter, date_version)
+                return super().read(limit, select, entity_ids, grid_filter, date_version)
 
             def nav(self, nav_id: str) -> Any:
                 # pylint: disable=missing-function-docstring,useless-super-delegation

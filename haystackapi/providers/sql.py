@@ -200,7 +200,7 @@ class Provider(HaystackInterface):
             self,
             limit: int,
             select: Optional[str],
-            entity_ids: Optional[Grid] = None,
+            entity_ids: Optional[List[Ref]] = None,
             grid_filter: Optional[str] = None,
             date_version: Optional[datetime] = None,
     ) -> Grid:
@@ -254,8 +254,8 @@ class Provider(HaystackInterface):
     def his_read(
             self,
             entity_id: Ref,
-            dates_range: Optional[Tuple[datetime, datetime]],
-            date_version: Optional[datetime],
+            dates_range: Optional[Tuple[datetime, datetime]] = None,
+            date_version: Optional[datetime] = None,
     ) -> Grid:
         """ Implement Haystack 'hisRead' """
         log.debug(
@@ -449,12 +449,14 @@ class Provider(HaystackInterface):
 
     def import_diff_grid_in_db(self,
                                diff_grid: Grid,
+                               version: datetime,
                                customer_id: Optional[str],
-                               version: Optional[datetime],
                                now: Optional[datetime] = None) -> None:
 
         init_grid = self._init_grid_from_db(version)
         new_grid = init_grid + diff_grid
+        if not customer_id:
+            customer_id = ""
 
         if now is None:
             now = datetime.now(tz=pytz.UTC)
@@ -515,8 +517,15 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
-    def import_ts_in_db(self, time_series: Grid, entity_id: Ref, customer_id: str) -> None:
+    def import_ts_in_db(self, time_series: Grid,
+                        version: datetime,
+                        entity_id: Ref,
+                        customer_id: Optional[str],
+                        now: Optional[datetime] = None
+                        ) -> None:
         assert 'ts' in time_series.column, "TS must have a column 'ts'"
+        if not customer_id:
+            customer_id = ""
         conn = self.get_connect()
         begin_datetime = time_series.metadata.get("hisStart")
         end_datetime = time_series.metadata.get("hisStart")

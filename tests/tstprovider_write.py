@@ -21,7 +21,7 @@ class Provider(HaystackInterface):
                           val: Optional[Any],
                           duration: Quantity,
                           who: Optional[str],
-                          date_version: Optional[datetime]) -> None:
+                          date_version: Optional[datetime] = None) -> None:
         raise NotImplementedError()
 
     @overrides

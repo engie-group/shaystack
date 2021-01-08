@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from typing import Union, Tuple, Optional
+from typing import Union, Tuple, Optional, List
 
 from overrides import overrides
 
@@ -11,7 +11,7 @@ class Provider(HaystackInterface):
     @overrides
     def read(self, limit: int,
              select: Optional[str] = None,
-             entity_ids: Optional[Grid] = None,
+             entity_ids: Optional[List[Ref]] = None,
              grid_filter: Optional[str] = None,
              date_version: Optional[datetime] = None) -> Grid:
         raise NotImplementedError()

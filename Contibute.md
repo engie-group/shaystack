@@ -239,7 +239,58 @@ Travis is configured to track the project. See [here](https://travis-ci.com/gith
 
 # Tips
 
+## Conversion between haystack filter to SQL
+
+The SQL provider must convert the Haystack request to SQL. Because the usage of JSON inside SQL is not normalized, each
+database use a different approach. A dedicated conversion is apply for SQLite and Postgres.
+
+To test the different conversion, you can use a REPL tools.
+
+```console
+$ python tests/repl_db.py
+```
+
+Then, you can test the conversion for Postgres (`pg`) or Sqlite (`sqlite`)
+
+```console
+Documented commands (type help <topic>):
+========================================
+help
+
+Undocumented commands:
+======================
+bye  pg  sqlite
+
+(Cmd) pg site or point
+-- site or point
+SELECT t1.entity
+FROM haystack as t1
+WHERE
+'2020-10-01T00:00:00+00:00' BETWEEN t1.start_datetime AND t1.end_datetime
+AND t1.customer_id='customer'
+AND t1.entity ?| array['site', 'point']
+LIMIT 1
+
+(Cmd) sqlite site or point
+-- site or point
+SELECT t1.entity
+FROM haystack as t1
+WHERE
+((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t1.start_datetime) AND datetime(t1.end_datetime)
+AND t1.customer_id='customer')
+AND (json_extract(json(t1.entity),'$.site') IS NOT NULL
+OR json_extract(json(t1.entity),'$.point') IS NOT NULL
+)
+)
+LIMIT 1
+(cmd) bye
+```
+
+## Help
+
 Don't forget to try `make help`.
+
+## OKTA
 
 If you use Okta technology, you can set in `.env`
 

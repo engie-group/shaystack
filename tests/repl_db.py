@@ -19,6 +19,8 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 def main():
     """ Loop to test the postgres generation with REPL """
+    if "HAYSTACK_DB" not in os.environ:
+        os.environ["HAYSTACK_DB"] = "sqlite3:///:memory:"
     provider = get_provider("haystackapi.providers.sql")
     conn = cast(SQLProvider, provider).get_connect()
     scheme = urlparse(os.environ["HAYSTACK_DB"]).scheme
@@ -45,7 +47,6 @@ def main():
             try:
                 sql_request = sqlite_sql_filter("haystack", arg, FAKE_NOW, 1, "customer")
                 print(sql_request)
-                sql_request = "qsd!"
                 if scheme.startswith("sqlite"):
                     cursor = self.conn.cursor()
                     cursor.execute(sql_request)

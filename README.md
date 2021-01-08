@@ -228,6 +228,11 @@ Haystackapi is agile and can be deployed in different scenarios. Choose an optio
 | GraphQL API alone                                 |
 | GraphQL API integrated inside another via AppSync |
 
+| Cost        | Technologies               |
+| ----------- | -------------------------- |
+| With server | VM, Docker, Postgres, etc. |
+| Server less | AWS Lambda, Aurora         |
+
 and you can extend these proposed scenario. You can read later, how to implement these different scenarios.
 
 # Server API
@@ -321,8 +326,9 @@ $ curl http://localhost:3000/haystack/about
 
 Use `HAYSTACK_PROVIDER=haystackapi.providers.url` to use this provider. Add the variable `HAYSTACK_URL=<url>` to expose
 an Haystack file via the Haystack protocol. The methods `/read` and `/hisRead` was implemented. The `<url>` may have the
-classic form (`http://...`, `ftp://...`) or can reference an S3 file (`s3://...`). The time series to manage history
-must be referenced in the entity, with the `hisURI` tag. This URI may be relative and must be in haystack format.
+classic form (`http://...`, `ftp://...`, `file://...`, etc.) or can reference an S3 file (`s3://...`). The time series
+to manage history must be referenced in the entity, with the `hisURI` tag. This URI may be relative and must be in
+haystack format.
 
 All the file may be zipped. Reference the zipped version with the `.gz` suffix
 (eg. `ontology.zinc.gz`)

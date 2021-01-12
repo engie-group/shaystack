@@ -11,7 +11,9 @@ import functools
 import json
 import logging
 import re
+from typing import Optional, Any, AnyStr, Union, List
 
+from . import Grid
 from .csvparser import parse_grid as parse_csv_grid
 from .csvparser import parse_scalar as parse_csv_scalar
 from .jsonparser import parse_grid as parse_json_grid, \
@@ -43,17 +45,18 @@ _mode_to_suffix = {MODE_ZINC: ".zinc",
                    }
 
 
-def suffix_to_mode(ext):
+def suffix_to_mode(ext: str) -> Optional[str]:
     """ Convert a file suffix to Haystack mode"""
     return _suffix_to_mode.get(ext, None)
 
 
-def mode_to_suffix(mode):
+def mode_to_suffix(mode: str) -> Optional[str]:
     """ Convert haystackapi mode to file suffix"""
     return _mode_to_suffix.get(mode, None)
 
 
-def parse(grid_str, mode=MODE_ZINC, charset='utf-8', single=True):
+def parse(grid_str: Union[AnyStr, List[str]], mode: str = MODE_ZINC, charset: str = 'utf-8', single: bool = True) -> \
+Optional[Grid]:
     """
     Parse the given Zinc text and return the equivalent data.
     """
@@ -93,7 +96,7 @@ def parse(grid_str, mode=MODE_ZINC, charset='utf-8', single=True):
     return grids
 
 
-def parse_grid(grid_str, mode=MODE_ZINC, charset='utf-8'):
+def parse_grid(grid_str: str, mode: str = MODE_ZINC, charset: str = 'utf-8') -> Grid:
     # Decode incoming text
     if isinstance(grid_str, bytes):  # pragma: no cover
         # No coverage here, because it *should* be handled above unless the user
@@ -109,7 +112,9 @@ def parse_grid(grid_str, mode=MODE_ZINC, charset='utf-8'):
     raise NotImplementedError('Format not implemented: %s' % mode)
 
 
-def parse_scalar(scalar, mode=MODE_ZINC, version=LATEST_VER, charset='utf-8'):
+def parse_scalar(scalar: Union[bytes, str], mode: str = MODE_ZINC,
+                 version: Union[Version, str] = LATEST_VER,
+                 charset: str = 'utf-8') -> Any:
     # Decode version string
     if not isinstance(version, Version):
         version = Version(version)

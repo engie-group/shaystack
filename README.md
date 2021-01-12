@@ -527,7 +527,7 @@ and it's possible to use the AWS Lambda to publish the API.
 To import the dependencies:
 
 ```console
-$ pip install haystack[lambda]
+$ pip install haystackapi[lambda]
 ```
 
 ### AWS Bucket
@@ -591,23 +591,6 @@ lambda, it's may be possible you can't see this new version. You must wait the e
 lambda or update the `REFRESH`
 parameter._
 
-### Docker
-
-The `Dockerfile` can be used to generate an image with a set of parameter.
-
-```console
-$ # Build the image
-$ docker build -t haystackapi .
-$ # Run and customize the image
-$ docker run -p 3000:3000 \
-  -e HAYSTACK_PROVIDER=haystackapi.providers.ping \
-  -e HAYSTACK_URL=sample/carytown.zinc \
-  -e HAYSTACK_DB=sqlite:///test.db#haystack \
-  -e HAYSTACK_DB_SECRET= \
-  -e REFRESH=15 \
-  haystackapi 
-```
-
 ### AWS Lambda
 
 The code is compatible with AWS Lambda. Install this option (`pip install "haystackapi[lambda]"`)
@@ -657,6 +640,25 @@ $ xdg-open "$HAYSTACK_ROOT_API/graphql"
 
 Appsync is a technology to agregate differents API in one Graphql API. It's possible to merge the haystack GraphQL with
 other GraphQL API with AppSync. To do that, read [this file](aws%20appsync/AppSync.md).
+
+### Docker
+
+The `Dockerfile` can be used to generate an image with a set of parameter.
+
+```console
+$ # Get docker file
+$ wget https://github.com/pprados/haystackapi/blob/develop/Dockerfile
+$ # Build the image
+$ docker build -t haystackapi .
+$ # Run and customize the image
+$ docker run -p 3000:3000 \
+  -e HAYSTACK_PROVIDER=haystackapi.providers.ping \
+  -e HAYSTACK_URL=sample/carytown.zinc \
+  -e HAYSTACK_DB=sqlite:///test.db#haystack \
+  -e HAYSTACK_DB_SECRET= \
+  -e REFRESH=15 \
+  haystackapi 
+```
 
 # Optional part
 

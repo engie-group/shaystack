@@ -115,10 +115,10 @@ class HaystackInterface(ABC):
                 "serverBootTime": datetime.now(tz=self.get_tz()).replace(
                     microsecond=0
                 ),
-                "productName": "AWS Lambda Haystack Provider",
+                "productName": "Haystack Provider",
                 "productUri": Uri(home),
                 "productVersion": "0.1",
-                "moduleName": "URLProvider",
+                "moduleName": "AbstractProvider",
                 "moduleVersion": "0.1",
             }
         )

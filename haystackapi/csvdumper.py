@@ -14,11 +14,13 @@ from __future__ import unicode_literals
 import datetime
 import functools
 import re
+from typing import AnyStr, List, Dict, Any, Match
 
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
     MARKER, NA, REMOVE, STR_SUB, XStr
 from .grid import Grid
-from .version import LATEST_VER, VER_3_0
+from .sortabledict import SortableDict
+from .version import LATEST_VER, VER_3_0, Version
 from .zincdumper import dump_grid as zinc_dump_grid
 from .zincdumper import dump_scalar as zinc_dump_scalar
 
@@ -32,7 +34,7 @@ CSV_SUB = [
 ]
 
 
-def str_sub(match):
+def str_sub(match: Match) -> AnyStr:
     char = match.group(0)
     order = ord(char)
     if order >= 0x0080:
@@ -43,14 +45,14 @@ def str_sub(match):
     return char
 
 
-def str_csv_escape(str_value):
+def str_csv_escape(str_value: str) -> AnyStr:
     str_value = STR_META.sub(str_sub, str_value)
     for orig, esc in CSV_SUB:
         str_value = str_value.replace(orig, esc)
     return str_value
 
 
-def uri_sub(match):
+def uri_sub(match: Match) -> AnyStr:
     char = match.group(0)
     order = ord(char)
     if order >= 0x80:
@@ -61,7 +63,7 @@ def uri_sub(match):
     return char
 
 
-def dump_grid(grid):
+def dump_grid(grid: Grid) -> AnyStr:
     """
     Dump a single grid to its CSV representation.
     """
@@ -73,7 +75,7 @@ def dump_grid(grid):
     return ''.join(csv_result)
 
 
-def dump_columns(csv_result, cols):
+def dump_columns(csv_result: List[str], cols: SortableDict) -> None:
     _dump = functools.partial(dump_column)
     csv_result.extend(map(_dump, cols.keys()))
     # Remove last comma
@@ -82,15 +84,15 @@ def dump_columns(csv_result, cols):
     csv_result.append('\n')
 
 
-def dump_column(col):
+def dump_column(col: str) -> str:
     return dump_id(col) + ","
 
 
-def dump_rows(csv_result, grid):
+def dump_rows(csv_result: List[str], grid: Grid) -> None:
     list(map(functools.partial(dump_row, csv_result, grid), grid))
 
 
-def dump_row(csv_result, grid, row):
+def dump_row(csv_result: List[str], grid: Grid, row: Dict[str, Any]) -> None:
     row_in_csv = [dump_scalar(row.get(c), version=grid.version) + "," for c in grid.column.keys()]
     row_in_csv[-1] = row_in_csv[-1][:-1] + '\n'
     if len(row_in_csv) == 1 and row_in_csv[0] == '\n':
@@ -98,51 +100,51 @@ def dump_row(csv_result, grid, row):
     csv_result.extend(row_in_csv)
 
 
-def dump_id(id_str):
+def dump_id(id_str: str) -> str:
     return id_str
 
 
-def dump_str(str_value):
+def dump_str(str_value: str) -> str:
     return '"' + str_csv_escape(str_value) + '"'
 
 
-def dump_uri(uri_value):
+def dump_uri(uri_value: Uri) -> str:
     # Replace special characters.
-    uri_value = URI_META.sub(uri_sub, uri_value)
+    uri_value = URI_META.sub(uri_sub, str(uri_value))
     # Replace other escapes.
     for orig, esc in STR_SUB:
         uri_value = uri_value.replace(orig, esc)
     return '`%s`' % uri_value
 
 
-def dump_bin(bin_value):
+def dump_bin(bin_value: Bin) -> str:
     return 'Bin(%s)' % bin_value
 
 
-def dump_xstr(xstr_value):
+def dump_xstr(xstr_value: XStr) -> str:
     return '"' + str_csv_escape(str(xstr_value)) + '"'
 
 
-def dump_quantity(quantity):
+def dump_quantity(quantity: Quantity) -> str:
     if (quantity.unit is None) or (quantity.unit == ''):
         return dump_decimal(quantity.value)
     return '%s%s' % (dump_decimal(quantity.value),
                      quantity.unit)
 
 
-def dump_decimal(decimal):
+def dump_decimal(decimal: float) -> str:
     return str(decimal)
 
 
-def dump_bool(bool_value):
+def dump_bool(bool_value: bool) -> str:
     return 'true' if bool(bool_value) else 'false'
 
 
-def dump_coord(coordinate):
+def dump_coord(coordinate: Coordinate) -> str:
     return '"' + zinc_dump_scalar(coordinate) + '"'
 
 
-def dump_ref(ref):
+def dump_ref(ref: Ref) -> str:
     if ref.has_value:
         str_ref = '@%s %s' % (ref.name, ref.value)
         if '"' in str_ref or ',' in str_ref:
@@ -151,21 +153,21 @@ def dump_ref(ref):
     return '@%s' % ref.name
 
 
-def dump_date(date):
-    return date.isoformat()
+def dump_date(a_date: datetime.date) -> str:
+    return a_date.isoformat()
 
 
-def dump_time(time):
+def dump_time(time: datetime.time) -> str:
     return time.isoformat()
 
 
-def dump_date_time(date_time):
+def dump_date_time(date_time: datetime.datetime) -> str:
     # tz_name = timezone_name(date_time)
     # return '%s %s' % (date_time.isoformat(), tz_name)
     return '%s' % (date_time.isoformat())  # Note: Excel can not parse the date time with tz_name
 
 
-def dump_scalar(scalar, version=LATEST_VER):
+def dump_scalar(scalar: Any, version: Version = LATEST_VER) -> str:
     if scalar is None:
         return ''
     if scalar is NA:

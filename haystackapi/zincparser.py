@@ -25,7 +25,7 @@ from .grid import Grid
 # Bring in our sortable dict class to preserve order
 from .sortabledict import SortableDict
 # Bring in version handling
-from .version import Version, VER_2_0, VER_3_0
+from .version import Version, VER_2_0, VER_3_0, LATEST_VER
 from .zoneinfo import timezone
 
 # flake8: noqa E731
@@ -675,7 +675,7 @@ def parse_grid(grid_data, parse_all=True):
                     sys.exc_info()[2])
 
 
-def parse_scalar(scalar_data, version):
+def parse_scalar(scalar_data: str, version: Version = LATEST_VER):
     """
     Parse a Project Haystack scalar in ZINC format.
     """

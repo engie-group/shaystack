@@ -12,7 +12,7 @@ from io import StringIO
 
 from .datatypes import MARKER, Ref
 from .grid import Grid
-from .version import VER_3_0
+from .version import VER_3_0, Version, LATEST_VER
 from .zincparser import parse_scalar as zinc_parse_scalar, ZincParseException
 
 
@@ -39,7 +39,7 @@ def parse_grid(grid_str):
 _EMPTY = "<empty>"
 
 
-def parse_scalar(scalar, version):
+def parse_scalar(scalar: str, version: Version = LATEST_VER):
     if scalar == '':
         return _EMPTY
     if scalar == u'\u2713':

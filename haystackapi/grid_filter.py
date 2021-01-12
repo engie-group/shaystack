@@ -9,13 +9,15 @@ See https://www.project-haystack.org/doc/Filters
 """
 from datetime import datetime, time
 from functools import lru_cache
+from typing import Any, List, Callable, Dict
 
 from iso8601 import iso8601
 from pyparsing import Word, ZeroOrMore, Literal, Forward, Combine, Optional, Regex, OneOrMore, \
     CaselessLiteral, Suppress, Group
 
+from . import Grid
 from .datatypes import REMOVE, MARKER, Coordinate, NA, Bin, Ref, XStr, Uri, Quantity
-from .filter_ast import FilterPath, FilterBinary, FilterUnary, FilterAST
+from .filter_ast import FilterPath, FilterBinary, FilterUnary, FilterAST, FilterNode
 from .zincparser import DelimitedList, to_dict
 from .zoneinfo import timezone
 
@@ -260,32 +262,32 @@ class _NotFoundValue:
     def __repr__(self):
         return 'NOT_FOUND'
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return False
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return False
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return False
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
         return False
 
-    def __le__(self, other):
+    def __le__(self, other: Any) -> bool:
         return False
 
-    def __gt__(self, other):
+    def __gt__(self, other: Any) -> bool:
         return False
 
-    def __ge__(self, other):
+    def __ge__(self, other: Any) -> bool:
         return False
 
 
 NOT_FOUND = _NotFoundValue()
 
 
-def _get_path(grid, obj, paths):
+def _get_path(grid: Grid, obj: Any, paths: List[str]) -> Any:
     try:
         for i, path in enumerate(paths):
             obj = obj[path]
@@ -294,11 +296,13 @@ def _get_path(grid, obj, paths):
         if not obj:
             return NOT_FOUND
         return obj  # It's a value at this time
+    except TypeError:
+        return NOT_FOUND
     except KeyError:
         return NOT_FOUND
 
 
-def _generate_filter_in_python(node, def_filter):
+def _generate_filter_in_python(node: FilterNode, def_filter: List[str]) -> List[str]:
     if isinstance(node, FilterPath):
         def_filter.append("_get_path(_grid, _entity, %s)" % node.paths)
     elif isinstance(node, FilterBinary):
@@ -324,41 +328,41 @@ def _generate_filter_in_python(node, def_filter):
 
 
 class _FnWrapper:
-    def __init__(self, fun_name, function_template):
+    def __init__(self, fun_name: str, function_template: str):
         self.fun_name = fun_name
         exec(function_template, globals(), globals())  # pylint: disable=W0122
 
-    def __del__(self):  # pragma: no cover
+    def __del__(self) -> None:  # pragma: no cover
         del globals()[self.fun_name]  # Remove generated function if the LRU ask that
 
-    def get(self):
+    def get(self) -> Callable[[Grid, Dict[str, Any]], bool]:
         return globals()[self.fun_name]
 
 
 @lru_cache(maxsize=FILTER_CACHE_LRU_SIZE)
-def _filter_function(grid_filter):
+def _filter_function(grid_filter: str) -> _FnWrapper:
     global _ID_FUNCTION  # pylint: disable=global-statement
     def_filter = _generate_filter_in_python(
         parse_filter(grid_filter).head, [])  # pylint: disable=protected-access
     fun_name = "_gen_hsfilter_" + str(_ID_FUNCTION)
     function_template = "def %s(_grid, _entity):\n  return " % fun_name + "".join(def_filter)
-    # print("\nGenerate:\n# " + grid_filter + "\n" + function_template)  # For debug
+    print("\nGenerate:\n# " + grid_filter + "\n" + function_template)  # For debug
     _ID_FUNCTION += 1
     return _FnWrapper(fun_name, function_template)
 
 
-def filter_set_lru_size(lru_size):
+def filter_set_lru_size(lru_size: int) -> None:
     """ Change the lru size for the compiled filter functions """
     global _filter_function  # pylint: disable=W0601, C0103
     original_function = _filter_function.__wrapped__  # pylint: disable=E1101
     _filter_function = lru_cache(lru_size, original_function)  # type: ignore
 
 
-def filter_function(grid_filter):
+def filter_function(grid_filter: str) -> Callable[[Grid, Dict[str, Any]], bool]:
     return _filter_function(grid_filter).get()
 
 
-def parse_hs_datetime_format(datetime_str) -> datetime:
+def parse_hs_datetime_format(datetime_str: str) -> datetime:
     return hs_all_date.parseString(datetime_str, parseAll=True)[0]
 
 

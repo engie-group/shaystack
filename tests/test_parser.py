@@ -30,7 +30,7 @@ firstName,bday
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
-SIMPLE_EXAMPLE_JSON = {
+SIMPLE_EXAMPLE_JSON = json.dumps({
     'meta': {'ver': '2.0'},
     'cols': [
         {'name': 'firstName'},
@@ -40,7 +40,7 @@ SIMPLE_EXAMPLE_JSON = {
         {'firstName': 's:Jack', 'bday': 'd:1973-07-23'},
         {'firstName': 's:Jill', 'bday': 'd:1975-11-15'},
     ],
-}
+})
 
 SIMPLE_EXAMPLE_CSV = '''firstName,bday
 "Jack",1973-07-23
@@ -53,7 +53,7 @@ siteName dis:"Sites", val dis:"Value" unit:"kW"
 "Site 2", 463.028kW
 '''
 
-METADATA_EXAMPLE_JSON = {
+METADATA_EXAMPLE_JSON = json.dumps({
     'meta': {'ver': '2.0', 'database': 's:test',
              'dis': 's:Site Energy Summary'},
     'cols': [
@@ -64,7 +64,7 @@ METADATA_EXAMPLE_JSON = {
         {'siteName': 's:Site 1', 'val': 'n:356.214000 kW'},
         {'siteName': 's:Site 2', 'val': 'n:463.028000 kW'},
     ],
-}
+})
 METADATA_EXAMPLE_CSV = '''siteName,val
 "Site 1",356.214kW
 "Site 2",463.028kW
@@ -76,17 +76,18 @@ str,null
 "Explict",N
 '''
 
-NULL_EXAMPLE_JSON = {
-    'meta': {'ver': '2.0'},
-    'cols': [
-        {'name': 'str'},
-        {'name': 'null'},
-    ],
-    'rows': [
-        {'str': 'Implicit', 'null': None},  # There's no "implicit" mode
-        {'str': 'Explicit', 'null': None},
-    ],
-}
+NULL_EXAMPLE_JSON = json.dumps(
+    {
+        'meta': {'ver': '2.0'},
+        'cols': [
+            {'name': 'str'},
+            {'name': 'null'},
+        ],
+        'rows': [
+            {'str': 'Implicit', 'null': None},  # There's no "implicit" mode
+            {'str': 'Explicit', 'null': None},
+        ],
+    })
 
 NULL_EXAMPLE_CSV = '''str,null
 "Implicit",
@@ -98,7 +99,7 @@ str,na
 "NA value",NA
 '''
 
-NA_EXAMPLE_JSON = {
+NA_EXAMPLE_JSON = json.dumps({
     'meta': {'ver': '3.0'},
     'cols': [
         {'name': 'str'},
@@ -107,9 +108,9 @@ NA_EXAMPLE_JSON = {
     'rows': [
         {'str': 'NA value', 'na': 'z:'},
     ],
-}
+})
 
-REMOVE_EXAMPLE_JSON_V2 = {
+REMOVE_EXAMPLE_JSON_V2 = json.dumps({
     'meta': {'ver': '2.0'},
     'cols': [
         {'name': 'str'},
@@ -119,9 +120,9 @@ REMOVE_EXAMPLE_JSON_V2 = {
         {'str': 'v2 REMOVE value', 'remove': 'x:'},
         {'str': 'v3 REMOVE value', 'remove': '-:'},
     ],
-}
+})
 
-REMOVE_EXAMPLE_JSON_V3 = {
+REMOVE_EXAMPLE_JSON_V3 = json.dumps({
     'meta': {'ver': '3.0'},
     'cols': [
         {'name': 'str'},
@@ -131,7 +132,7 @@ REMOVE_EXAMPLE_JSON_V3 = {
         {'str': 'v2 REMOVE value', 'remove': 'x:'},
         {'str': 'v3 REMOVE value', 'remove': '-:'},
     ],
-}
+})
 
 
 def _check_row_keys(row, grid):
@@ -467,7 +468,7 @@ def test_marker_in_row_zinc():
 
 
 def test_marker_in_row_json():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '2.0'},
         'cols': [
             {'name': 'str'},
@@ -477,7 +478,7 @@ def test_marker_in_row_json():
             {'str': 'No Marker', 'marker': None},
             {'str': 'Marker', 'marker': 'm:'},
         ],
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
     assert 'marker' not in grid[0]
     assert grid[1]['marker'] is haystackapi.MARKER
 
@@ -505,7 +506,7 @@ def test_bool_zinc():
 
 
 def test_bool_json():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '2.0'},
         'cols': [
             {'name': 'str'},
@@ -515,7 +516,7 @@ def test_bool_json():
             {'str': 'True', 'bool': True},
             {'str': 'False', 'bool': False},
         ],
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
     assert grid[0]['bool']
     assert not grid[1]['bool']
 
@@ -548,7 +549,7 @@ def test_number_zinc():
 
 
 def test_number_json():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '2.0'},
         'cols': [
             {'name': 'str'},
@@ -566,7 +567,7 @@ def test_number_json():
             {'str': "Negative Infinity", 'number': 'n:-INF'},
             {'str': "Not a Number", 'number': 'n:NaN'},
         ],
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
     _check_number(grid)
 
 
@@ -601,7 +602,7 @@ def test_string_zinc():
 
 
 def test_string_json():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '2.0'},
         'cols': [
             {'name': 'str'},
@@ -613,7 +614,7 @@ def test_string_json():
             {'str': "Literal", 'strExample': 's:an explicit string'},
             {'str': "With colons", 'strExample': 's:string:with:colons'},
         ],
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
     assert len(grid) == 4
     assert grid.pop(0)['strExample'] == ''
     assert grid.pop(0)['strExample'] == 'a string'
@@ -622,7 +623,7 @@ def test_string_json():
 
 
 def test_string_csv():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '2.0'},
         'cols': [
             {'name': 'str'},
@@ -634,7 +635,7 @@ def test_string_csv():
             {'str': "Literal", 'strExample': 's:an explicit string'},
             {'str': "With colons", 'strExample': 's:string:with:colons'},
         ],
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
     assert len(grid) == 4
     assert grid.pop(0)['strExample'] == ''
     assert grid.pop(0)['strExample'] == 'a string'
@@ -653,7 +654,7 @@ def test_uri_zinc():
 
 
 def test_uri_json():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '2.0'},
         'cols': [
             {'name': 'uri'},
@@ -661,7 +662,7 @@ def test_uri_json():
         'rows': [
             {'uri': 'u:http://www.vrt.com.au'},
         ],
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
     assert len(grid) == 1
     assert grid[0]['uri'] == haystackapi.Uri('http://www.vrt.com.au')
 
@@ -687,7 +688,7 @@ def test_ref_zinc():
 
 
 def test_ref_json():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '2.0'},
         'cols': [
             {'name': 'str'},
@@ -697,7 +698,7 @@ def test_ref_json():
             {'str': 'Basic', 'ref': 'r:a-basic-ref'},
             {'str': 'With value', 'ref': 'r:reference With value'},
         ],
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
     assert len(grid) == 2
     assert grid[0]['ref'] == haystackapi.Ref('a-basic-ref')
     assert grid[1]['ref'] == haystackapi.Ref('reference', 'With value')
@@ -726,7 +727,7 @@ def test_date_zinc():
 
 
 def test_date_json():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '2.0'},
         'cols': [
             {'name': 'date'},
@@ -734,7 +735,7 @@ def test_date_json():
         'rows': [
             {'date': 'd:2010-03-13'},
         ],
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
     assert len(grid) == 1
     assert isinstance(grid[0]['date'], datetime.date)
     assert grid[0]['date'] == datetime.date(2010, 3, 13)
@@ -765,7 +766,7 @@ def test_time_zinc():
 
 
 def test_time_json():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '2.0'},
         'cols': [
             {'name': 'time'},
@@ -775,7 +776,7 @@ def test_time_json():
             {'time': 'h:08:12:05'},
             {'time': 'h:08:12:05.5'},
         ],
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
     assert len(grid) == 3
     row = grid.pop(0)
     assert isinstance(row['time'], datetime.time)
@@ -821,7 +822,7 @@ def test_datetime_zinc():
 
 
 def test_datetime_json():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '2.0'},
         'cols': [
             {'name': 'datetime'},
@@ -834,7 +835,7 @@ def test_datetime_json():
             {'datetime': 't:2010-01-08T05:00:00Z UTC'},
             {'datetime': 't:2010-01-08T05:00:00Z'},
         ],
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
     _check_datetime(grid)
 
 
@@ -866,7 +867,7 @@ def test_list_v2_zinc():
 def test_list_v2_json():
     # Version 2.0 does not support lists
     try:
-        haystackapi.parse({
+        haystackapi.parse(json.dumps({
             'meta': {'ver': '2.0'},
             'cols': [
                 {'name': 'list'},
@@ -874,7 +875,7 @@ def test_list_v2_json():
             'rows': [
                 {'list': ['s:my list', None, True, 'n:1234']}
             ]
-        }, mode=haystackapi.MODE_JSON)
+        }), mode=haystackapi.MODE_JSON)
         assert False, 'Project Haystack 2.0 does not support lists'
     except ValueError:
         pass
@@ -934,7 +935,7 @@ def test_list_v3_zinc():
 def test_list_v3_json():
     # Simpler test case than the ZINC one, since the Python JSON parser
     # will take care of the elements for us.
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '3.0'},
         'cols': [
             {'name': 'list'},
@@ -942,7 +943,7 @@ def test_list_v3_json():
         'rows': [
             {'list': ['s:my list', None, True, 'n:1234']}
         ]
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
     assert len(grid) == 1
     lst = grid[0]['list']
     assert isinstance(lst, list)
@@ -1029,7 +1030,7 @@ def test_dict_zinc():
 
 
 def test_dict_json():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '3.0'},
         'cols': [
             {'name': 'dict'},
@@ -1042,7 +1043,7 @@ def test_dict_json():
             {'dict': {'marker': 'm:', 'tag': [1, 2]}},
             {'dict': {'tag': {'marker': 'm:'}}},
         ]
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
 
     # There should be 4 rows
     assert len(grid) == 6
@@ -1057,7 +1058,7 @@ def test_dict_json():
 
 
 def test_dict_csv():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '3.0'},
         'cols': [
             {'name': 'dict'},
@@ -1070,7 +1071,7 @@ def test_dict_csv():
             {'dict': {'marker': 'm:', 'tag': [1, 2]}},
             {'dict': {'tag': {'marker': 'm:'}}},
         ]
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
     # There should be 4 rows
     assert len(grid) == 6
     for row in grid:
@@ -1095,7 +1096,7 @@ def test_bin_zinc():
 
 
 def test_bin_json():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '2.0'},
         'cols': [
             {'name': 'bin'},
@@ -1103,7 +1104,7 @@ def test_bin_json():
         'rows': [
             {'bin': 'b:text/plain'},
         ],
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
     assert len(grid) == 1
     assert grid[0]['bin'] == haystackapi.Bin('text/plain')
 
@@ -1130,7 +1131,7 @@ def test_xstr_hex_zinc():
 
 
 def test_xstr_hex_json():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '3.0'},
         'cols': [
             {'name': 'bin'},
@@ -1138,7 +1139,7 @@ def test_xstr_hex_json():
         'rows': [
             {'bin': 'x:hex:deadbeef'},
         ],
-    }, mode=MODE_JSON)
+    }), mode=MODE_JSON)
     assert len(grid) == 1
     assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
 
@@ -1162,7 +1163,7 @@ def test_xstr_b64_zinc():
 
 
 def test_xstr_b64_json():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '3.0'},
         'cols': [
             {'name': 'bin'},
@@ -1170,7 +1171,7 @@ def test_xstr_b64_json():
         'rows': [
             {'bin': 'x:b64:3q2+7w=='},
         ],
-    }, mode=MODE_JSON)
+    }), mode=MODE_JSON)
     assert len(grid) == 1
     assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
 
@@ -1195,7 +1196,7 @@ def test_coord_zinc():
 
 
 def test_coord_json():
-    grid = haystackapi.parse({
+    grid = haystackapi.parse(json.dumps({
         'meta': {'ver': '2.0'},
         'cols': [
             {'name': 'coord'},
@@ -1203,7 +1204,7 @@ def test_coord_json():
         'rows': [
             {'coord': 'c:37.55,-77.45'},
         ],
-    }, mode=haystackapi.MODE_JSON)
+    }), mode=haystackapi.MODE_JSON)
     assert len(grid) == 1
     assert grid[0]['coord'] == haystackapi.Coordinate(37.55, -77.45)
 
@@ -1699,12 +1700,6 @@ def test_scalar_bytestring_json():
            == haystackapi.Quantity(50, unit='Hz')
 
 
-def test_scalar_rawnum_json():
-    # Test handling of raw numbers
-    assert haystackapi.parse_scalar(123, mode=haystackapi.MODE_JSON) == 123
-    assert haystackapi.parse_scalar(123.45, mode=haystackapi.MODE_JSON) == 123.45
-
-
 def test_str_version():
     # This should assume v3.0, and parse successfully.
     val = haystackapi.parse_scalar('[1,2,3]', mode=haystackapi.MODE_ZINC,
@@ -1758,7 +1753,7 @@ def test_malformed_row_zinc():
 def test_malformed_scalar_zinc():
     # This should always raise an error after logging
     try:
-        haystackapi.parse_scalar(12341234, mode=haystackapi.MODE_ZINC)
+        haystackapi.parse_scalar(12341234, mode=haystackapi.MODE_ZINC)  # type: ignore
         assert False, 'Should have failed'
     except AttributeError:
         pass

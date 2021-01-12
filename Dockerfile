@@ -3,6 +3,7 @@ FROM python:3
 WORKDIR /usr/src/app
 
 # Use the published module in test
+# FIXME
 ENV PIP_INDEX_URL=https://test.pypi.org/simple
 ENV PIP_EXTRA_INDEX_URL=https://pypi.org/simple
 RUN pip install --no-cache-dir "haystackapi[flask,graphql,lambda]"

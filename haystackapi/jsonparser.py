@@ -235,7 +235,7 @@ def parse_embedded_scalar(scalar, version=LATEST_VER) -> Any:  # pylint: disable
     return scalar
 
 
-def parse_scalar(scalar, version=LATEST_VER):
+def parse_scalar(scalar: str, version: Version = LATEST_VER):
     # If we're given a string, decode the JSON data.
     if isinstance(scalar, str) and \
             (len(scalar) >= 2) and \

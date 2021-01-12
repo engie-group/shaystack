@@ -25,6 +25,7 @@ At this time (2021/1/1), here are the differences.
 | Use 'pint' for unit            | opt.|  Y  |
 | Check type of 'id'             |     |  Y  |
 | Python                         | 2+  | 3.7+|
+| Typing                         |     |  Y  |
 
 To port a code from `hszinc` to `haystackapi`:
 

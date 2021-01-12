@@ -24,9 +24,8 @@ from .datatypes import Ref, Quantity, MARKER
 from .dumper import dump
 from .grid import Grid, VER_3_0
 from .grid_filter import parse_hs_datetime_format
-from .parser import MODE_ZINC, MODE_CSV, MODE_JSON, parse_scalar, parse, mode_to_suffix
+from .parser import MODE_ZINC, MODE_CSV, MODE_JSON, parse_scalar, parse, mode_to_suffix, EmptyGrid
 from .providers.haystack_interface import (
-    EmptyGrid,
     HttpError, get_singleton_provider, parse_date_range,
 )
 

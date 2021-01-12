@@ -139,7 +139,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             self,
             entity_id: Ref,
             dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
-            date_version: Optional[datetime],
+            date_version: Optional[datetime] = None
     ) -> Grid:
         """ Implement Haystack 'hisRead' """
         log.debug(
@@ -338,7 +338,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             raise ValueError(
                 "The file extension must be .(json|zinc|csv)[.gz]"
             )
-        return parse(body, mode)
+        return cast(Grid, parse(body, mode))
 
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -> None:

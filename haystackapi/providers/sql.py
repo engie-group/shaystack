@@ -102,7 +102,7 @@ def _fix_dialect_alias(dialect: str) -> str:
 
 class Provider(HaystackInterface):
     """
-    Expose an Haystack file via the Haystactk Rest API.
+    Expose an Haystack data via the Haystactk Rest API and SQL databases
     """
 
     @property
@@ -222,7 +222,6 @@ class Provider(HaystackInterface):
                 date_version = datetime.now().replace(tzinfo=pytz.UTC)
             exec_sql_filter: Callable = self._sql["exec_sql_filter"]
             if entity_ids is None:
-                print("exec sql filter")
                 cursor = exec_sql_filter(self._sql,
                                          cursor,
                                          self._parsed_db.fragment,
@@ -332,7 +331,7 @@ class Provider(HaystackInterface):
             self._connect = connect
             self.create_db()
         if not self._connect:
-            raise ValueError("Inconnect database url")
+            raise ValueError("Impossible to use the database url")
         return self._connect
 
     def _get_secret_manager_secret(self) -> str:  # pylint: disable=no-self-use
@@ -403,9 +402,9 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
-    def export_grid_from_db(self,
-                            customer: Optional[str],
-                            version: Optional[datetime]) -> Grid:
+    def read_grid_from_db(self,
+                          customer: Optional[str],
+                          version: Optional[datetime]) -> Grid:
         """ Read haystack data from database and return a Grid"""
         if version is None:
             version = datetime.max.replace(tzinfo=pytz.UTC)
@@ -447,11 +446,11 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
-    def import_diff_grid_in_db(self,
-                               diff_grid: Grid,
-                               version: datetime,
-                               customer_id: Optional[str],
-                               now: Optional[datetime] = None) -> None:
+    def update_grid_in_db(self,
+                          diff_grid: Grid,
+                          version: Optional[datetime],
+                          customer_id: Optional[str],
+                          now: Optional[datetime] = None) -> None:
 
         init_grid = self._init_grid_from_db(version)
         new_grid = init_grid + diff_grid
@@ -509,16 +508,16 @@ class Provider(HaystackInterface):
                                        json.dumps(dump_row(new_grid, new_grid[row["id"]]))
                                    )
                                    )
-                    log.debug("Update %s", row['id'].name)
+                    log.debug("Update record %s in DB", row['id'].name)
                 else:
-                    log.debug("Remove %s", row['id'].name)
+                    log.debug("Remove record %s in DB", row['id'].name)
 
             conn.commit()
         finally:
             cursor.close()
 
-    def import_ts_in_db(self, time_series: Grid,
-                        version: datetime,
+    def import_ts_in_db(self,
+                        time_series: Grid,
                         entity_id: Ref,
                         customer_id: Optional[str],
                         now: Optional[datetime] = None

@@ -346,7 +346,7 @@ def _filter_function(grid_filter: str) -> _FnWrapper:
         parse_filter(grid_filter).head, [])  # pylint: disable=protected-access
     fun_name = "_gen_hsfilter_" + str(_ID_FUNCTION)
     function_template = "def %s(_grid, _entity):\n  return " % fun_name + "".join(def_filter)
-    print("\nGenerate:\n# " + grid_filter + "\n" + function_template)  # For debug
+    # print("\nGenerate:\n# " + grid_filter + "\n" + function_template)  # For debug
     _ID_FUNCTION += 1
     return _FnWrapper(fun_name, function_template)
 

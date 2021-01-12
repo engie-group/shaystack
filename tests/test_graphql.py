@@ -49,7 +49,7 @@ def test_about(mock):
                                            'haystackVersion': '3.0',
                                            'tz': 'UTC',
                                            # 'serverName': 'haystack_local',
-                                           'productName': 'AWS Lambda Haystack Provider',
+                                           'productName': 'Haystack Provider',
                                            'productUri': 'http://localhost',
                                            'productVersion': '1.0',
                                            'moduleName': 'URLProvider',

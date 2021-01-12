@@ -58,7 +58,7 @@ class HSDateTime(graphene.String):
     Haystack compatible date format.
     """
 
-    class Meta:
+    class Meta:  # pylint: disable=missing-class-docstring
         name = "AWSDateTime" if BOTO3_AVAILABLE else "DateTime"
 
     @staticmethod
@@ -88,7 +88,7 @@ class HSDate(graphene.String):
     Haystack date for GraphQL
     """
 
-    class Meta:
+    class Meta:  # pylint: disable=missing-class-docstring
         name = "AWSDate" if BOTO3_AVAILABLE else "Date"
 
     @staticmethod
@@ -113,7 +113,7 @@ class HSTime(graphene.String):
     Haystack time for GraphQL
     """
 
-    class Meta:
+    class Meta:  # pylint: disable=missing-class-docstring
         name = "AWSTime" if BOTO3_AVAILABLE else "Time"
 
     @staticmethod

@@ -56,6 +56,8 @@ or set this values in `.env` file.
 $ make functional-test
 ```
 
+The tests with a connection with AWS are excluded. To run explicitly these tests, use `make test-aws`.
+
 ## Use the Makefile to test API locally
 
 Use the `make start-api` to run the API locally on port 3000 with Flask.
@@ -174,6 +176,11 @@ To print the AWS API URL:
 ```console
 $ make aws-api
 ```
+
+### Use AWS Time stream
+
+You can create a database in *AWS Time Stream* and use the provider
+`haytackapi.providers.sql_ts`.
 
 ### Customize environment variable
 

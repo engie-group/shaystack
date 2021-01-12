@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, date, timedelta, tzinfo
 from importlib import import_module
-from typing import Any, Tuple, Dict, Optional, List, cast
+from typing import Any, Tuple, Dict, Optional, List, cast, Union
 
 import pytz
 from pytz import BaseTzInfo
@@ -19,8 +19,6 @@ from ..grid import Grid, VER_3_0
 from ..grid_filter import parse_hs_datetime_format
 
 log = logging.getLogger("haystackapi")
-
-EmptyGrid = Grid(version=VER_3_0, columns={"empty": {}})
 
 
 def _to_camel(snake_str: str) -> str:
@@ -288,7 +286,7 @@ class HaystackInterface(ABC):
     def his_read(
             self,
             entity_id: Ref,
-            dates_range: Optional[Tuple[datetime, datetime]] = None,
+            dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
             date_version: Optional[datetime] = None,
     ) -> Grid:  # pylint: disable=no-self-use
         """

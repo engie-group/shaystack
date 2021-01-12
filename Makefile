@@ -31,6 +31,7 @@ export HAYSTACK_URL
 export HAYSTACK_DB
 export LOGLEVEL
 export AWS_PROFILE
+export AWS_REGION
 export PYTHON_VERSION
 export HISREAD_PARAMS
 export FLASK_DEBUG
@@ -485,7 +486,7 @@ aws-logs:
 .PHONY: unit-test
 .make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile | .env
 	@$(VALIDATE_VENV)
-	$(CONDA_PYTHON) -m nose -s tests --where=tests $(NOSETESTS_ARGS)
+	$(CONDA_PYTHON) -m nose -s tests -a '!aws' --where=tests $(NOSETESTS_ARGS)
 	date >.make-unit-test
 ## Run unit test
 unit-test: .make-unit-test
@@ -496,7 +497,16 @@ unit-test: .make-unit-test
 ## Run all tests (unit and functional)
 test: .make-test
 
-# Test local deployement with URL provider
+.make-test-aws: aws-update-token
+	$(VALIDATE_VENV)
+	$(CONDA_PYTHON) -m nose -s tests -a 'aws' --where=tests $(NOSETESTS_ARGS)
+	@date >.make-test-aws
+
+## Run only test with connection with AWS
+test-aws: .make-test-aws
+
+
+# Test local deployment with URL provider
 functional-url-local: $(REQUIREMENTS)
 	@$(MAKE) async-stop-api >/dev/null
 	export HAYSTACK_PROVIDER=haystackapi.providers.url
@@ -506,7 +516,7 @@ functional-url-local: $(REQUIREMENTS)
 	echo -e "$(green)Test with url serveur and local file OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 
-# Test local deployement with URL provider
+# Test local deployment with URL provider
 functional-url-s3: $(REQUIREMENTS) aws-update-token
 	@$(MAKE) async-stop-api >/dev/null
 	export HAYSTACK_PROVIDER=haystackapi.providers.url
@@ -519,7 +529,7 @@ functional-url-s3: $(REQUIREMENTS) aws-update-token
 # Clean DB, Start API, and try with SQLite
 functional-db-sqlite: $(REQUIREMENTS)
 	@$(MAKE) async-stop-api>/dev/null
-	pip install supersqlite
+	pip install supersqlite >/dev/null
 	rm -f test.db
 	export HAYSTACK_PROVIDER=haystackapi.providers.sql
 	export HAYSTACK_DB=sqlite3://localhost/test.db
@@ -530,10 +540,26 @@ functional-db-sqlite: $(REQUIREMENTS)
 	echo -e "$(green)Test with local SQLite serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 
+# Clean DB, Start API, and try with SQLite + Time stream
+functional-db-sqlite-ts: $(REQUIREMENTS)
+	@$(MAKE) async-stop-api>/dev/null
+	pip install supersqlite boto3 >/dev/null
+	rm -f test.db
+	export HAYSTACK_PROVIDER=haystackapi.providers.sql_ts
+	export HAYSTACK_DB=sqlite3://localhost/test.db
+	export HAYSTACK_TS=timestream://HaystackAPIDemo?mem_ttl=8760&mag_ttl=400
+	export LOG_LEVEL=INFO
+	$(CONDA_PYTHON) -m haystackapi.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB} $${HAYSTACK_TS}
+	echo -e "$(green)Data imported in SQLite and Time stream$(normal)"
+	$(MAKE) async-start-api >/dev/null
+	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
+	echo -e "$(green)Test with local SQLite serveur and Time Stream OK$(normal)"
+	$(MAKE) async-stop-api >/dev/null
+
 # Start Postgres, Clean DB, Start API and try
 functional-db-postgres: $(REQUIREMENTS) clean-pg
 	@$(MAKE) async-stop-api >/dev/null
-	pip install psycopg2
+	pip install psycopg2 >/dev/null
 	export HAYSTACK_PROVIDER=haystackapi.providers.sql
 	export HAYSTACK_DB=postgres://postgres:password@172.17.0.2:5432/postgres
 	$(CONDA_PYTHON) -m haystackapi.providers.import_db sample/carytown.zinc $${HAYSTACK_DB}
@@ -544,7 +570,8 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 	echo -e "$(green)Test with local Postgres serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 
-.make-functional-test: functional-url-local functional-db-sqlite functional-db-postgres functional-url-s3
+.make-functional-test: functional-url-local functional-db-sqlite functional-db-postgres \
+		functional-url-s3 functional-db-sqlite-ts
 	@touch .make-functional-test
 
 ## Test graphql client with different providers
@@ -585,7 +612,7 @@ lint: .make-lint
 
 
 .PHONY: validate
-.make-validate: .make-typing .make-lint .make-test .make-functional-test dist
+.make-validate: .make-typing .make-lint .make-test .make-test-aws .make-functional-test dist
 	@date >.make-validate
 
 ## Validate the project
@@ -613,7 +640,7 @@ start-pg:
 
 ## Stop postgres database
 stop-pg:
-	@docker stop postgres >/dev/null
+	@docker stop postgres 2>&1 >/dev/null || true
 	echo -e "$(green)Postgres stopped$(normal)"
 
 ## Print postgres db url connection
@@ -647,7 +674,7 @@ start-pgadmin:
 
 ## Stop PGAdmin
 stop-pgadmin:
-	@docker stop pgadmin >/dev/null
+	@docker stop pgadmin 2>&1 >/dev/null || true
 	echo -e "$(green)PGAdmin stopped$(normal)"
 
 ## Print all URL
@@ -670,7 +697,7 @@ async-docker-start: docker-rm
 
 ## Stop the background docker
 async-docker-stop:
-	@docker stop haystackapi >/dev/null || true
+	@docker stop haystackapi 2>&1 >/dev/null || true
 	echo -e "$(green)Haystackapi docker stopped$(normal)"
 
 ## Remove the docker image

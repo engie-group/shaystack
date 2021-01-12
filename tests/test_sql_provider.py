@@ -21,6 +21,7 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 def skip(msg: str) -> None:
     raise SkipTest(msg)
 
+
 def _get_grids():
     sample_grid = Grid(version=VER_3_0, columns=["id", "col"])
     sample_grid.append({"id": Ref("id1"), "col": 1})
@@ -49,7 +50,7 @@ def _get_grids():
 def _populate_db(provider: SQLProvider) -> None:
     provider.purge_db()
     for grid, version in _get_grids():
-        provider.import_diff_grid_in_db(grid, "", None, version)
+        provider.update_grid_in_db(grid, None, "", version)
 
 
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
@@ -66,14 +67,14 @@ def test_import_grid_in_db():
                     columns=[("id", {}), ("a", {"dis": "a"}), ("b", {"dis": "b"})])
         grid.append({"id": Ref("1"), "a": "a", "b": "b"})
         grid.append({"id": Ref("2"), "a": "c", "b": "d"})
-        provider.import_diff_grid_in_db(grid, "customer", None, FAKE_NOW)
+        provider.update_grid_in_db(grid, None, "customer", FAKE_NOW)
 
 
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
-def test_import_diff_grid_in_db():
+def test_update_grid_in_db():
     with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
-        provider.create_db()
         provider.purge_db()
+        provider.create_db()
         left = Grid(columns={"id": {}, "a": {}, "b": {}, "c": {}})
         left.append({"id": Ref("id1"), "a": 1, "b": 2})
         left.append({"id": Ref("id2"), "a": 2, "b": 2})
@@ -82,12 +83,12 @@ def test_import_diff_grid_in_db():
         left.append({"id": Ref("old_id"), "a": 1, "b": 2})
         right = Grid(columns={"id": {}, "a": {}, "b": {}, "c": {}})
         right.append({"id": Ref("id1"), "a": 3, "c": 5})
-        provider.import_diff_grid_in_db(left, "customer", None, FAKE_NOW)
+        provider.update_grid_in_db(left, version=None, customer_id="customer", now=FAKE_NOW)
         NEXT_FAKE = FAKE_NOW + datetime.timedelta(minutes=1)
-        provider.import_diff_grid_in_db(right - left, "customer", None, NEXT_FAKE)
-        grid = provider.export_grid_from_db("customer", None)
+        provider.update_grid_in_db(right - left, version=None, customer_id="customer", now=NEXT_FAKE)
+        grid = provider.read_grid_from_db("customer", None)
         assert len(grid) == 1
-        grid = provider.export_grid_from_db("customer", FAKE_NOW)
+        grid = provider.read_grid_from_db("customer", FAKE_NOW)
         assert len(grid) == 5
 
 

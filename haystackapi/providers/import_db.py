@@ -10,7 +10,7 @@ from datetime import datetime
 from io import BytesIO
 from os.path import dirname
 from pathlib import Path
-from typing import Optional, cast
+from typing import Optional, cast, List
 from urllib.parse import urlparse, ParseResult
 
 import click
@@ -19,7 +19,7 @@ import pytz
 from app.graphql_model import BOTO3_AVAILABLE
 from . import sql
 from .haystack_interface import get_provider
-from .. import suffix_to_mode, parse
+from .. import suffix_to_mode, parse, Grid
 
 log = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ def _download_uri(parsed_uri: ParseResult) -> bytes:
     return data
 
 
-def _read_grid(uri):
+def _read_grid(uri: str) -> Grid:
     parsed_uri = urlparse(uri, allow_fragments=False)
 
     data = _download_uri(parsed_uri)
@@ -67,22 +67,28 @@ def _read_grid(uri):
 
 # May be an handler for Lambda
 def import_in_db(source: str,
-                 destination: str,
+                 database_url: str,
+                 ts_url: Optional[str],
                  customer_id: str = '',
                  time_series: bool = True,
                  reset: bool = False,
-                 version: Optional[datetime] = None):
-    os.environ["HAYSTACK_DB"] = destination
+                 version: Optional[datetime] = None) -> None:
+    os.environ["HAYSTACK_DB"] = database_url
+    provider_name = "haystackapi.providers.sql"
+    if ts_url:
+        os.environ["HAYSTACK_TS"] = ts_url
+        provider_name = "haystackapi.providers.sql_ts"
+
     if not version:
         version = datetime.now(tz=pytz.UTC)
-    with get_provider("haystackapi.providers.sql") as provider:
+    with get_provider(provider_name) as provider:
         provider = cast(sql.Provider, provider)
-        provider.create_db()
         if reset:
             provider.purge_db()
-        original_grid = provider.export_grid_from_db(customer_id, version)
+        provider.create_db()
+        original_grid = provider.read_grid_from_db(customer_id, version)
         target_grid = _read_grid(source)
-        provider.import_diff_grid_in_db(target_grid - original_grid, version, customer_id)
+        provider.update_grid_in_db(target_grid - original_grid, version, customer_id)
         log.info("%s imported", source)
 
         if time_series:
@@ -92,7 +98,7 @@ def import_in_db(source: str,
                     assert "id" in row, "TS must have an id"
                     uri = dir_name + '/' + row['hisURI']
                     ts_grid = _read_grid(uri)
-                    provider.import_ts_in_db(ts_grid, version, row["id"], customer_id)
+                    provider.import_ts_in_db(ts_grid, row["id"], customer_id)
                     log.info("%s imported", uri)
 
 
@@ -102,11 +108,12 @@ def aws_handler(event, context):
     Set the environment variable HAYSTACK_URL and HAYSTACK_DB
     """
     hs_url = os.environ.get("HAYSTACK_URL")
-    database = os.environ.get("HAYSTACK_DB")
+    database_url = os.environ.get("HAYSTACK_DB")
+    database_ts = os.environ.get("HAYSTACK_TS")
     customer = event.get("CUSTOMER")
     assert hs_url, "Set `HAYSTACK_URL`"
-    assert database, "Set `HAYSTACK_DB`"
-    import_in_db(hs_url, database, customer)
+    assert database_url, "Set `HAYSTACK_DB`"
+    import_in_db(hs_url, database_url, database_ts, customer)
 
 
 @click.command(short_help='Import haystack file in database')
@@ -114,9 +121,10 @@ def aws_handler(event, context):
                 metavar='<haystack file url>',
                 # help='filename or url (may be s3:/...)'
                 )
-@click.argument('database_url',
+@click.argument('database_urls',
                 metavar='<db url>',
                 # help='url to describe db connection'
+                nargs=-1
                 )
 @click.option("--customer",
               help='Data for a dedicated customer',
@@ -129,7 +137,7 @@ def aws_handler(event, context):
               help='Clean the database before import the first version',
               is_flag=True)
 def main(haystack_url: str,
-         database_url: str,
+         database_urls: List[str],
          customer: Optional[str],
          clean: bool,
          time_series: bool) -> int:
@@ -137,12 +145,23 @@ def main(haystack_url: str,
     Import haystack file for file or URL, to database, to be used with sql provider.
     Only the difference was imported, with a new version of ontology.
     """
+    if len(database_urls) > 2:
+        click.echo('Use maximum 2 url database url')
+        raise click.Abort()
+    database_url = database_urls[0]
+    ts_url = database_urls[1] if len(database_urls) > 1 else None
+    if ts_url and not BOTO3_AVAILABLE:
+        print("Use 'pip install boto3' before using AWS features", file=sys.stderr)
+        return -1
     if customer is None:
         customer = ''
     if clean is None:
         clean = False
-    import_in_db(haystack_url, database_url, customer, time_series, clean)
-    print(f"{haystack_url} imported in {database_url}")
+    import_in_db(haystack_url, database_url, ts_url, customer, time_series, clean)
+    if ts_url:
+        print(f"{haystack_url} imported in {database_url} and {ts_url}")
+    else:
+        print(f"{haystack_url} imported in {database_url}")
     return 0
 
 

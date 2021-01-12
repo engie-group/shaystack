@@ -20,10 +20,9 @@ import boto3
 import click
 from botocore.exceptions import ClientError
 
-from .haystack_interface import EmptyGrid
 from ..dumper import dump
 from ..grid import Grid
-from ..parser import parse, suffix_to_mode
+from ..parser import parse, suffix_to_mode, EmptyGrid
 from ..zincparser import ZincParseException
 
 log = logging.getLogger("import_s3")

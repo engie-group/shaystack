@@ -84,7 +84,7 @@ class Provider(HaystackInterface):
             self,
             entity_id: Ref,
             dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
-            date_version: Optional[datetime],
+            date_version: Optional[datetime] = None
     ) -> Grid:
         """ Return EmptyGrid """
         log.info(

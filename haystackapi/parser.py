@@ -13,15 +13,17 @@ import logging
 import re
 from typing import Optional, Any, AnyStr, Union, List
 
-from . import Grid
 from .csvparser import parse_grid as parse_csv_grid
 from .csvparser import parse_scalar as parse_csv_scalar
+from .grid import Grid
 from .jsonparser import parse_grid as parse_json_grid, \
     parse_scalar as parse_json_scalar
 # Bring in version handling
-from .version import Version, LATEST_VER
+from .version import Version, LATEST_VER, VER_3_0
 from .zincparser import parse_grid as parse_zinc_grid, \
     parse_scalar as parse_zinc_scalar
+
+EmptyGrid = Grid(version=VER_3_0, columns={"empty": {}})
 
 LOG = logging.getLogger(__name__)
 
@@ -55,8 +57,10 @@ def mode_to_suffix(mode: str) -> Optional[str]:
     return _mode_to_suffix.get(mode, None)
 
 
-def parse(grid_str: Union[AnyStr, List[str]], mode: str = MODE_ZINC, charset: str = 'utf-8', single: bool = True) -> \
-Optional[Grid]:
+def parse(grid_str: Union[AnyStr, List[str]],
+          mode: str = MODE_ZINC,
+          charset: str = 'utf-8',
+          single: bool = True) -> Union[Grid, List[Grid]]:
     """
     Parse the given Zinc text and return the equivalent data.
     """
@@ -92,7 +96,7 @@ Optional[Grid]:
         # Most of the time, we will only want one grid.
         if grids:
             return grids[0]
-        return None
+        return EmptyGrid
     return grids
 
 

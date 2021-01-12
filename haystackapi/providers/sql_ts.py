@@ -1,3 +1,9 @@
+"""
+Add the persistance of time-series with TS database.
+
+Set the HAYSTACK_TS with Timeseries database connection URL,
+(timestream://HaystackAPIDemo/?mem_ttl=1&mag_ttl=100#haystack)
+"""
 import os
 from datetime import datetime, date, time
 from typing import Optional, Tuple, Callable, Any
@@ -6,24 +12,29 @@ from urllib.parse import urlparse
 
 import boto3
 import dateutil
+import pytz
 from botocore.client import BaseClient
 from botocore.config import Config
 from overrides import overrides
 
 from .sql import Provider as SQLProvider
 from .sql import log
-from ..datatypes import Ref, MARKER, REMOVE, Coordinate, Quantity, NA
+from ..datatypes import Ref, MARKER, REMOVE, Coordinate, Quantity, NA, XStr
 from ..grid import Grid
+
+MAX_ROWS_BY_WRITE = 100
+DEFAULT_MEM_TTL = 8766
+DEFAULT_MAG_TTL = 400
 
 
 def _create_database(client: BaseClient,
                      database: str) -> None:
     try:
         client.create_database(DatabaseName=database)
-        log.info(f"Database [{database}] created successfully.")
+        log.info("Database [%s] created successfully.", database)
     except client.exceptions.ConflictException:
         # Database exists. Skipping database creation
-        log.debug(f"Database [{database}] exists. Skipping database creation.")
+        log.debug("Database [%s] exists. Skipping database creation.", database)
 
 
 def _create_table(client: BaseClient,
@@ -38,10 +49,11 @@ def _create_table(client: BaseClient,
                                 'MemoryStoreRetentionPeriodInHours': mem_ttl,
                                 'MagneticStoreRetentionPeriodInDays': mag_ttl
                             })
-        log.info(f"Table [{table_name}] successfully created (memory ttl: {mem_ttl}h magnetic ttl: {mag_ttl}d.")
+        log.info("Table [%s] successfully created (memory ttl: %sh, magnetic ttl: %sd.",
+                 table_name, mem_ttl, mag_ttl)
     except client.exceptions.ConflictException:
         # Table exists on database [{database}]. Skipping table creation"
-        log.debug(f"Table [{table_name}] exists. Skipping database creation.")
+        log.debug("Table [%s] exists. Skipping database creation.", table_name)
 
 
 def _update_table(client: BaseClient,
@@ -55,7 +67,7 @@ def _update_table(client: BaseClient,
                             'MemoryStoreRetentionPeriodInHours': mem_ttl,
                             'MagneticStoreRetentionPeriodInDays': mag_ttl
                         })
-    log.info(f"Retention updated to {mem_ttl}h and {mag_ttl}d.")
+    log.info("Retention updated to %sh and %sd.", mem_ttl, mag_ttl)
 
 
 def _delete_table(client: BaseClient,
@@ -68,6 +80,10 @@ def _delete_table(client: BaseClient,
 
 
 class Provider(SQLProvider):
+    """
+    Expose an Haystack data via the Haystactk Rest API and SQL+TS databases
+    """
+
     @property
     def name(self) -> str:
         return "SQL+timeseries"
@@ -114,163 +130,168 @@ class Provider(SQLProvider):
                                                         region_name=region)
         return self._read_client
 
-    @staticmethod
-    def _print_rejected_records_exceptions(err):
-        log.error(f"RejectedRecords: {err}")
-        for rr in err.response["RejectedRecords"]:
-            log.error(f'Rejected Index {str(rr["RecordIndex"])}: {rr["Reason"]}')
-            if "ExistingVersion" in rr:
-                log.error(f'Rejected record existing version: {rr["ExistingVersion"]}')
-
     @overrides
     def import_ts_in_db(self, time_series: Grid,
-                        version: datetime,
                         entity_id: Ref,
                         customer_id: Optional[str],
                         now: Optional[datetime] = None
                         ) -> None:
-        # FIXME: travailler en microsecond ?
+        client = self._get_write_client()
         try:
-            client = self._get_write_client()
-
             if not time_series:
                 return  # Empty
-            v = time_series[0]["val"]  # Suppose all values share the same type
-            cast_fn, target_type = self._hs_to_timestream_type(v)
+            value = time_series[0]["val"]  # Suppose all values share the same type
+            cast_fn, target_type = Provider._hs_to_timestream_type(value)
+            if not customer_id:  # Empty string ?
+                customer_id = None
             common_attributs = {
-                'Dimensions': [
+                'Dimensions': list(filter(lambda x: x['Value'] is not None, [
                     {'Name': 'id', 'Value': entity_id.name},
-                    {'Name': 'hs_type', 'Value': type(v).__name__},
-                    {'Name': 'unit', 'Value': v.unit if isinstance(v, Quantity) else " "},
-                    {'Name': 'customer', 'Value': customer_id}
-                ],
+                    {'Name': 'hs_type', 'Value': type(value).__name__},
+                    {'Name': 'unit', 'Value': value.unit if isinstance(value, Quantity) else " "},
+                    {'Name': 'customer_id', 'Value': customer_id}
+                ])),
                 'MeasureName': 'val',
                 'MeasureValueType': target_type,  # DOUBLE | BIGINT | VARCHAR | BOOLEAN
-                'TimeUnit': 'MILLISECONDS',  # MILLISECONDS | SECONDS | MICROSECONDS | NANOSECONDS
-                # See https://docs.aws.amazon.com/timestream/latest/developerguide/API_WriteRecords.html
-                'Version': int(round(version.timestamp() * 1000))
+                'TimeUnit': 'MICROSECONDS',  # MILLISECONDS | SECONDS | MICROSECONDS | NANOSECONDS
+                'Version': int(round(datetime.now().timestamp() * 1000000))
             }
 
-            # FIXME : Maximum number of 100 items.
             records = [{
-                'Time': str(int(round(row["ts"].timestamp() * 1000))),
+                'Time': str(int(round(row["ts"].timestamp() * 1000000))),
                 "MeasureValue": cast_fn(row["val"]),
             } for row in time_series]
 
-            result = client.write_records(DatabaseName=self._ts_database_name,
-                                          TableName=self._ts_table_name,
-                                          Records=records,
-                                          CommonAttributes=common_attributs)
-            log.debug(f"WriteRecords Status: [{result['ResponseMetadata']['HTTPStatusCode']}]")
+            for i in range(0, len(records), MAX_ROWS_BY_WRITE):
+                result = client.write_records(DatabaseName=self._ts_database_name,
+                                              TableName=self._ts_table_name,
+                                              Records=records[i:i + MAX_ROWS_BY_WRITE],
+                                              CommonAttributes=common_attributs)
+                log.debug("WriteRecords Status: [%s]", result['ResponseMetadata']['HTTPStatusCode'])
         except client.exceptions.RejectedRecordsException as err:
-            self._print_rejected_records_exceptions(err)
+            log.error("RejectedRecords: %s", err)
+            for rejected_record in err.response["RejectedRecords"]:
+                log.error(' [%s:%s]: %s',
+                          str(rejected_record["RecordIndex"]),
+                          time_series[rejected_record["RecordIndex"]]["ts"],
+                          rejected_record["Reason"]
+                          )
             raise
 
-    def _hs_to_timestream_type(self, v: Any) -> Tuple[Callable, str]:
-        target_type = None
-        cast_fn = lambda x: str(x)
-        if isinstance(v, str):
+    @staticmethod
+    def _hs_to_timestream_type(value: Any) -> Tuple[Callable, str]:
+        cast_fn = str
+        if isinstance(value, str):
             target_type = "VARCHAR"
-        elif isinstance(v, float):
+        elif isinstance(value, float):
             target_type = "DOUBLE"
-        elif isinstance(v, Quantity):
+        elif isinstance(value, Quantity):
             target_type = "DOUBLE"
             cast_fn = lambda x: str(x.value)
-        elif isinstance(v, bool):
+        elif isinstance(value, bool):
             target_type = "BOOLEAN"
-        elif isinstance(v, int):
+        elif isinstance(value, int):
             target_type = "DOUBLE"
-        elif v is MARKER:
+        elif value is MARKER:
             target_type = "BOOLEAN"
             cast_fn = lambda x: str(x is MARKER)
-        elif v is REMOVE:
+        elif value is REMOVE:
             target_type = "BOOLEAN"
             cast_fn = lambda x: str(x is REMOVE)
-        elif v is NA:
-            target_type = 'DOUBLE'
-            cast_fn = lambda x: float('nan')
-        elif isinstance(v, Ref):
+        elif value is NA:
+            target_type = 'BOOLEAN'
+            cast_fn = lambda x: str(x is NA)
+        elif isinstance(value, Ref):
             target_type = "VARCHAR"
             cast_fn = lambda x: x.name
-        elif isinstance(v, datetime):
+        elif isinstance(value, datetime):
             target_type = "BIGINT"
             cast_fn = lambda x: str(int(round(x.timestamp())))
-        elif isinstance(v, date):
+        elif isinstance(value, date):
             target_type = "BIGINT"
             cast_fn = lambda x: str(x.toordinal())
-        elif isinstance(v, time):
+        elif isinstance(value, time):
             target_type = "BIGINT"
             cast_fn = lambda x: str(((x.hour * 60 + x.minute) * 60 + x.second) * 1000000 + x.microsecond)
-        elif isinstance(v, Coordinate):
+        elif isinstance(value, Coordinate):
             target_type = "VARCHAR"
             cast_fn = lambda x: str(x.latitude) + "," + str(x.longitude)
-        elif v == None:
+        elif isinstance(value, XStr):
+            target_type = "VARCHAR"
+            cast_fn = lambda x: value.encoding + "," + value.data_to_string()
+        elif value is None:
             target_type = "BOOLEAN"
-            cast_fn = lambda x: str(x)
+            cast_fn = lambda x: str(False)
         else:
             raise ValueError("Unknwon type")
         return cast_fn, target_type
 
-    def _cast_timeserie_to_hs(self,
-                              val: str,
-                              t: str,
+    @staticmethod
+    def _cast_timeserie_to_hs(val: str,
+                              python_type: str,
                               unit: str) -> Any:
-        if t == "str":
+        if python_type == "str":
             return val
-        if t == "float":
+        if python_type == "float":
             return float(val)
-        if t == "PintQuantity":
+        if python_type == "PintQuantity":
             return Quantity(float(val), unit)
-        if t == "Quantity":
+        if python_type == "Quantity":
             return Quantity(float(val), unit)
-        if t == "bool":
+        if python_type == "bool":
             return val.lower() == 'true'
-        if t == "int":
+        if python_type == "int":
             return int(float(val))
-        if t == "MarkerType":
+        if python_type == "MarkerType":
             return MARKER if val else None
-        if t == "RemoveType":
+        if python_type == "RemoveType":
             return REMOVE if val else None
-        if t == "NAType":
+        if python_type == "NAType":
             return NA if val else None
-        if t == "Ref":
+        if python_type == "Ref":
             return Ref(val)
-        if t == "datetime":
+        if python_type == "datetime":
             return datetime.fromtimestamp(int(val))
-        if t == "date":
+        if python_type == "date":
             return date.fromordinal(int(val))
-        if t == "time":
+        if python_type == "time":
             int_time = int(val)
-            h = ((int_time // 1000000) // 60) // 60
-            m = ((int_time // 1000000) // 60) % 60
-            s = (int_time // 1000000) % 60
+            hour = ((int_time // 1000000) // 60) // 60
+            minute = ((int_time // 1000000) // 60) % 60
+            split = (int_time // 1000000) % 60
             mic = int_time % 1000000
-            return time(h, m, s, mic)
-        if t == "Coordinate":
-            s = val.split(",")
-            return Coordinate(float(s[0]), float(s[1]))
-        if t == "NoneType":
+            return time(hour, minute, split, mic)
+        if python_type == "Coordinate":
+            split = val.split(",")
+            return Coordinate(float(split[0]), float(split[1]))
+        if python_type == "XStr":
+            split = val.split(",")
+            return XStr(*split)
+        if python_type == "NoneType":
             return None
+        assert False, f"Unknown type {python_type}"
+        return None
 
-    def _kind_to_timestream_type(self, kind: str) -> str:
-        switcher = {  # FIXME: static
-            "marker": "BOOLEAN",
-            "bool": "BOOLEAN",
-            "na": "BOOLEAN",  # FIXME
-            "number": "DOUBLE",
-            "remove": "BOOLEAN",
-            "marker": "BOOLEAN",
-            "str": "VARCHAR",
-            "uri": "VARCHAR",  # FIXME
-            "ref": "VARCHAR",
-            "bin": "VARCHAR",  # FIXME
-            "date": "BIGINT",
-            "time": "BIGINT",
-            "datetime": "BIGINT",
-            "coord": "VARCHAR",
-            "xstr": "VARCHAR",  # FIXME
-        }
-        return switcher[kind.lower()]
+    _kind_type = {
+        "marker": "BOOLEAN",
+        "delete": "BOOLEAN",
+        "bool": "BOOLEAN",
+        "na": "BOOLEAN",
+        "number": "DOUBLE",
+        "remove": "BOOLEAN",
+        "str": "VARCHAR",
+        "uri": "VARCHAR",
+        "ref": "VARCHAR",
+        "date": "BIGINT",
+        "time": "BIGINT",
+        "datetime": "BIGINT",
+        "coord": "VARCHAR",
+        "xstr": "VARCHAR",
+    }
+
+    @staticmethod
+    def _kind_to_timestream_type(kind: str) -> str:
+        return Provider._kind_type[kind.lower()]
 
     @overrides
     def create_db(self) -> None:
@@ -289,36 +310,54 @@ class Provider(SQLProvider):
         entity = self.read(1, None, [entity_id], None, date_version)[0]
         if not entity:
             raise ValueError(f" id '{entity_id} not found")
+
+        if not date_version:
+            date_version = datetime.max.replace(tzinfo=pytz.UTC)
+        if dates_range and dates_range[1] > date_version:
+            dates_range = list(dates_range)
+            dates_range[1] = date_version
+
         kind = entity.get("kind", "Number")
-        timestream_type = self._kind_to_timestream_type(kind)
+        timestream_type = Provider._kind_to_timestream_type(kind)
         try:
             grid = Grid(columns=["ts", "val"])
-            # TODO: customer ?
-            # TODO: date_range et date_version
 
-            SELECT_ALL = f"SELECT time,hs_type,unit,measure_value::{timestream_type} FROM {self._ts_database_name}.{self._ts_table_name} " \
-                         f"WHERE id='{entity_id.name}' and customer='{self.get_customer_id()}'"
-            page_iterator = paginator.paginate(QueryString=SELECT_ALL)
+            select_all = f"SELECT time,hs_type,unit,measure_value::{timestream_type} " \
+                         f"FROM {self._ts_database_name}.{self._ts_table_name} " \
+                         f"WHERE id='{entity_id.name}' AND customer_id='{self.get_customer_id()}' "
+            if dates_range:
+                select_all += f"AND time BETWEEN from_iso8601_timestamp('{dates_range[0].isoformat()}') " \
+                              f"AND from_iso8601_timestamp('{dates_range[1].isoformat()}')"
+            page_iterator = paginator.paginate(QueryString=select_all)
             for page in page_iterator:
 
                 for row in page['Rows']:
                     datas = row['Data']
-                    ts = dateutil.parser.isoparse(datas[0]['ScalarValue'])
+                    scalar_value = dateutil.parser.isoparse(datas[0]['ScalarValue'])
                     hs_type = datas[1]['ScalarValue']
                     unit = datas[2]['ScalarValue'].strip()
                     str_val = datas[3]['ScalarValue']
-
-                    grid.append({"ts": ts, "val": self._cast_timeserie_to_hs(str_val, hs_type, unit)})
+                    if not hs_type:
+                        hs_type = "float"
+                    grid.append({"ts": scalar_value,
+                                 "val": Provider._cast_timeserie_to_hs(str_val, hs_type, unit)})
             return grid
         except ValueError as err:
-            log.error("Exception while running query:", err)
+            log.error("Exception while running query: %s", err)
+            raise
 
     def create_ts(self) -> None:
         client = self._get_write_client()
         _create_database(client, self._ts_database_name)
-        mem_ttl = int(parse_qs(self._parsed_ts.query).get("mem_ttl", 24)[0])
-        mag_ttl = int(parse_qs(self._parsed_ts.query).get("mag_ttl", 365)[0])
+        pqs = parse_qs(self._parsed_ts.query)
+        mem_ttl = int(pqs["mem_ttl"][0]) if "mem_ttl" in pqs else DEFAULT_MEM_TTL
+        mag_ttl = int(pqs["mag_ttl"][0]) if "mag_ttl" in pqs else DEFAULT_MAG_TTL
         _create_table(client, self._ts_database_name, self._ts_table_name, mem_ttl, mag_ttl)
 
-    def delete_ts(self) -> None:
+    def purge_ts(self) -> None:
         _delete_table(self._get_write_client(), self._ts_database_name, self._ts_table_name)
+
+    @overrides
+    def purge_db(self) -> None:
+        super().purge_db()
+        self.purge_ts()

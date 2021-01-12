@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime
 from typing import Union, Tuple, Optional, List
 
 from overrides import overrides
@@ -17,9 +17,10 @@ class Provider(HaystackInterface):
         raise NotImplementedError()
 
     @overrides
-    def his_read(self, entity_id: Ref,
-                 dates_range: Optional[Union[Union[datetime, str],
-                                             Tuple[datetime, Optional[datetime]],
-                                             Tuple[date, Optional[date]]]],
-                 date_version: Optional[datetime]) -> Grid:
+    def his_read(
+            self,
+            entity_id: Ref,
+            dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+            date_version: Optional[datetime] = None,
+    ) -> Grid:
         raise NotImplementedError()

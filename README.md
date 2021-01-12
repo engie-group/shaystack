@@ -1,7 +1,7 @@
 # Python Haystack API
 
 | This is a pre-release version |
-| --- |
+| ----------------------------- |
 
 To use the release candidate package present in **test.pypi.org**, use
 
@@ -11,7 +11,7 @@ export PIP_EXTRA_INDEX_URL=https://pypi.org/simple
 ```
 
 Haystackapi is a set of API to implement [Haystack project specification](https://project-haystack.org/). It's
-compatible with Flask server in data center, edge or in AWS Lambda function.
+compatible with Flask server in data center, Edge (Raspberry?) or in AWS Lambda function.
 
 ## Summary
 
@@ -38,14 +38,15 @@ To see the similarities and differences between the two version, clic [here](hsz
 
 # Try it
 
-To try this module, the best way is to download a sample of haystack file. First, create a directory to work.
+To try this module, the best way is to download a sample of haystack files. First, create a directory to work.
 
 ```console
 $ mkdir $TMP/haystack
 $ cd $TMP/haystack
 ```
 
-Download [here](https://downgit.github.io/#/home?url=https://github.com/pprados/haystackapi/tree/develop/sample)
+Download the zip
+file [here](https://downgit.github.io/#/home?url=https://github.com/pprados/haystackapi/tree/develop/sample)
 and unzip the `sample.zip` in this directory.
 
 ```console
@@ -54,10 +55,10 @@ $ unzip sample
 
 The directory `sample` now has examples files.
 
-- `carytown.[csv|jon|zinc]`  : The haystack ontology
-- `p:demo:*.zinc` : sample of time series
+- `carytown.[csv|jon|zinc]`: The haystack ontology
+- `p:demo:*.zinc`: sample of time series
 
-Inside this directory, create a virtual environment
+Create a virtual environment
 
 ```console
 $ virtualenv -p python3.8 venv
@@ -70,7 +71,7 @@ Then, install the module with all options
 $ pip install 'haystackapi[flask,graphql,lambda]'
 ```
 
-It's time to try to manipulate a grid. Start Python
+It's time to try to manipulate a `Grid`. Start Python
 
 ```python-repl
 Python 3.7.8 | packaged by conda-forge | (default, Jul 31 2020, 02:25:08) 
@@ -184,6 +185,9 @@ In [23]: with open("ontology.json","w") as f:
 It's easy to convert a grid to a dataframe.
 
 ```python
+import haystackapi
+import panda as pd
+
 with open("file.zinc") as f:
     grid = haystackapi.parse(f.read(), haystackapi.MODE_ZINC)
 
@@ -192,7 +196,7 @@ df = pd.DataFrame(grid.filter("point and co2e"))  # Convert grid to data frame
 
 # Features
 
-Haystackapi is agile and can be deployed in different scenarios. Choose an option for each features.
+Haystackapi is agile and can be deployed in different scenarios. Choose an option for each feature.
 
 | Python |
 |:------:|
@@ -207,14 +211,15 @@ Haystackapi is agile and can be deployed in different scenarios. Choose an optio
 | Docker Flask server     |
 | Internet AWS Lambda API |
 
-| Backend                   |
-| ------------------------- |
-| local file                |
-| url                       |
-| S3 bucket without version |
-| S3 bucket with version    |
-| Sqlite database           |
-| Postgres database         |
+| Backend                      |
+| ---------------------------- |
+| local file                   |
+| url                          |
+| S3 bucket without version    |
+| S3 bucket with version       |
+| Sqlite database              |
+| Postgres database            |
+| SQL database + AWS Timesteam |
 
 | Multi tenancy                 |
 | ----------------------------- |
@@ -348,6 +353,16 @@ air,phone,sensor,occupied,store,damper,enum,temp,tz,tariffHis,sp,area,site,weath
 ,"804.552.2222",,,✓,,,,"New_York",,,3149.0ft²,✓,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,,,,"Retail Store",,,"US",,,"3504 W Cary St",20:00:00,1996.0,,"C(37.555385,-77.486903)",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,,,,,,,,,,,,,"Richmond",,,,,"Carytown",,,@p:demo:r:23a44701-a89a6c66 Carytown,"3504 W Cary St, Richmond, VA",,"VA","23221",,,,,,1.0,,"Richmond",,
 ```
 
+##### Limitations
+
+Because this provider use a local cache with the parsing version of S3 file, it's may be possible to see different
+versions if AWS use multiple instances of lambda. To fix that, the environment variable `REFRESH` can be set to delay
+the cache refresh (Default value is 15m). Every quarter of an hour, each lambda instance check the list of version for
+this file, and refresh the cache in memory, at the same time. If a new version is published just before you start the
+lambda, it's may be possible you can't see this new version. You must wait the end of the current quarter, redeploy the
+lambda or update the `REFRESH`
+parameter.
+
 #### Provider SQL
 
 This provider use an ontology imported in SQL database. Each entity is saved in a row in the JSON format.
@@ -360,10 +375,10 @@ $ pip install 'haystackapi[graphql,lambda]'
 
 Install the corresponding database driver:
 
-| Database | Driver                    |
-| -------- | ------------------------- |
-| sqlite   | `pip install supersqlite` |
-| postgres | `pip install psycopg2`    |
+| Database | Driver                                              |
+| -------- | --------------------------------------------------- |
+| sqlite   | `pip install supersqlite` (may take several minutes)|
+| postgres | `pip install psycopg2`                              |
 
 You can use `haystackapi_import_db` to import a Haystack files into the database, only if the entities are modified
 (to respect the notion of _Version_ with this provider). The corresponding `hisURI` time-series files are uploaded too.
@@ -433,6 +448,64 @@ To manage the multi-tenancy, it's possible to use different approach:
 - Overload the method `get_customer_id()` to return the name of the current customer, deduce by the current API caller
 - Use different tables (change the table name, `...#haystack_customer1`, `...#haystack_customer2`)
   and publish different API, one by customers.
+
+##### Limitations
+
+- All entities uses with this provider must have an `id` tag
+- SQLite can not manage parentheses with SQL Request with `UNION` or `INTERSECT`. Some complexe haystack request can not
+  generate a perfect translation to SQL.
+
+#### Provider SQL + AWS Time stream
+
+This provider extends the SQL Provider to manage time-series with
+[AWS Time stream](https://docs.aws.amazon.com/timestream/). Use `HAYSTACK_PROVIDER=haytackapi.providers.sql_ts` to use
+this provider. Add the variable `HAYSTACK_DB` to describe the link to the root table in SQL DB and `HAYSTACK_TS` to
+describe the link to *AWS Time stream*. The format of `HAYSTACK_TS` is :
+
+`timestream://<database>\[?mem_ttl=<memory retention in hour>&mag_ttl=<magnetic retention in day>]\[#<tablename>]`
+
+The parameters `mem_ttl` and `mag_ttl` are optionals and be used only to create the table.
+Read [this](https://docs.aws.amazon.com/timestream/latest/developerguide/API_RetentionProperties.html)
+for the maximum value. The default value for `mem_ttl` is 8766 (1y+6h) and 400d for `mag_ttl`.
+
+The table schema is
+
+```
+id (varchar)            -- The haystack id
+customer_id (varchar)   -- The associated customer_id
+unit (varchar)          -- Unit, use only with time series of quantity
+hs_type (varchar)       -- python type of the time serie
+measure_name (varchar)  -- 'val'
+time (timestamp)        -- The timestamp of the value is microseconds
+measure_value::<double> -- The value (adapt the name with the type of value)
+```
+
+You can publish data in this table, via *[AWS IoT](https://aws.amazon.com/fr/iot/)* Core for example.
+
+- Use the same `id` as for Haystack.
+- Add eventually a value for `customer_id`
+-
+
+```console
+$ HAYSTACK_PROVIDER=haystackapi.providers.sql \
+  HAYSTACK_DB=sqlite3:///test.db#haystack \
+  HAYSTACK_TS=timestream://HaystackAPIDemo/?mem_ttl=1&mag_ttl=100#haystack \
+  haystackapi
+```
+
+With this provider, all the time-series are inserted in AWS Time Stream. You can use `haystackapi_import_db` with a
+third parameter to describe the link to the time-series database:
+
+```console
+$ haystackapi_import_db sample/carytown.zinc \
+    sqlite3:///test.db#haystack \
+    timestream://HaystackAPIDemo
+```
+
+##### Limitation
+
+AWS Time stream refuse to import a data outside the memory windows delays.
+See [here](https://docs.aws.amazon.com/timestream/latest/developerguide/API_RejectedRecord.html)
 
 # Using GraphQL API
 
@@ -582,14 +655,6 @@ $ HAYSTACK_PROVIDER=haystackapi.providers.url \
   HAYSTACK_URL=s3://${MY_BUCKET}/carytown.zinc \
   haystackapi
 ```
-
-_Because this provider use a local cache with the parsing version of S3 file, it's may be possible to see different
-versions if AWS use multiple instances of lambda. To fix that, the environment variable `REFRESH` can be set to delay
-the cache refresh (Default value is 15m). Every quarter of an hour, each lambda instance check the list of version for
-this file, and refresh the cache in memory, at the same time. If a new version is published just before you start the
-lambda, it's may be possible you can't see this new version. You must wait the end of the current quarter, redeploy the
-lambda or update the `REFRESH`
-parameter._
 
 ### AWS Lambda
 

@@ -30,7 +30,7 @@ firstName,bday
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
-SIMPLE_EXAMPLE_JSON = json.dumps({
+SIMPLE_EXAMPLE_JSON = {
     'meta': {'ver': '2.0'},
     'cols': [
         {'name': 'firstName'},
@@ -40,7 +40,7 @@ SIMPLE_EXAMPLE_JSON = json.dumps({
         {'firstName': 's:Jack', 'bday': 'd:1973-07-23'},
         {'firstName': 's:Jill', 'bday': 'd:1975-11-15'},
     ],
-})
+}
 
 SIMPLE_EXAMPLE_CSV = '''firstName,bday
 "Jack",1973-07-23
@@ -53,7 +53,7 @@ siteName dis:"Sites", val dis:"Value" unit:"kW"
 "Site 2", 463.028kW
 '''
 
-METADATA_EXAMPLE_JSON = json.dumps({
+METADATA_EXAMPLE_JSON = {
     'meta': {'ver': '2.0', 'database': 's:test',
              'dis': 's:Site Energy Summary'},
     'cols': [
@@ -64,7 +64,7 @@ METADATA_EXAMPLE_JSON = json.dumps({
         {'siteName': 's:Site 1', 'val': 'n:356.214000 kW'},
         {'siteName': 's:Site 2', 'val': 'n:463.028000 kW'},
     ],
-})
+}
 METADATA_EXAMPLE_CSV = '''siteName,val
 "Site 1",356.214kW
 "Site 2",463.028kW
@@ -76,18 +76,17 @@ str,null
 "Explict",N
 '''
 
-NULL_EXAMPLE_JSON = json.dumps(
-    {
-        'meta': {'ver': '2.0'},
-        'cols': [
-            {'name': 'str'},
-            {'name': 'null'},
-        ],
-        'rows': [
-            {'str': 'Implicit', 'null': None},  # There's no "implicit" mode
-            {'str': 'Explicit', 'null': None},
-        ],
-    })
+NULL_EXAMPLE_JSON = {
+    'meta': {'ver': '2.0'},
+    'cols': [
+        {'name': 'str'},
+        {'name': 'null'},
+    ],
+    'rows': [
+        {'str': 'Implicit', 'null': None},  # There's no "implicit" mode
+        {'str': 'Explicit', 'null': None},
+    ],
+}
 
 NULL_EXAMPLE_CSV = '''str,null
 "Implicit",
@@ -390,7 +389,7 @@ def test_metadata_zinc():
 
 
 def test_metadata_json():
-    grid = haystackapi.parse(METADATA_EXAMPLE_JSON, mode=haystackapi.MODE_JSON)
+    grid = haystackapi.parse(json.dumps(METADATA_EXAMPLE_JSON), mode=haystackapi.MODE_JSON)
     _check_metadata(grid, force_metadata_order=False)
 
 
@@ -400,7 +399,7 @@ def test_null_zinc():
 
 
 def test_null_json():
-    grid = haystackapi.parse(NULL_EXAMPLE_JSON, mode=haystackapi.MODE_JSON)
+    grid = haystackapi.parse(json.dumps(NULL_EXAMPLE_JSON), mode=haystackapi.MODE_JSON)
     _check_null(grid)
 
 
@@ -1231,9 +1230,9 @@ def test_multi_grid_zinc():
 
 def test_multi_grid_json():
     # Multiple grids are separated by newlines.
-    grid_list = haystackapi.parse([SIMPLE_EXAMPLE_JSON,
-                                   METADATA_EXAMPLE_JSON,
-                                   NULL_EXAMPLE_JSON], mode=haystackapi.MODE_JSON, single=False)
+    grid_list = haystackapi.parse([json.dumps(SIMPLE_EXAMPLE_JSON),
+                                   json.dumps(METADATA_EXAMPLE_JSON),
+                                   json.dumps(NULL_EXAMPLE_JSON)], mode=haystackapi.MODE_JSON, single=False)
     assert len(grid_list) == 3
     _check_simple(grid_list[0])
     _check_metadata(grid_list[1], force_metadata_order=False)
@@ -1243,7 +1242,8 @@ def test_multi_grid_json():
 def test_multi_grid_csv():
     # Multiple grids are separated by newlines.
     grid_list = haystackapi.parse(list(map(json.dumps, [SIMPLE_EXAMPLE_JSON,
-                                                        METADATA_EXAMPLE_JSON, NULL_EXAMPLE_JSON])),
+                                                        METADATA_EXAMPLE_JSON,
+                                                        NULL_EXAMPLE_JSON])),
                                   mode=haystackapi.MODE_JSON, single=False)
     assert len(grid_list) == 3
     _check_simple(grid_list[0])

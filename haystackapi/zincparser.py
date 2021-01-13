@@ -21,8 +21,6 @@ from typing import Optional as Typing_Optional
 import iso8601
 import pyparsing as pp
 import six
-# Bring in special Project Haystack types and time zones
-from dateutil.tz import tzlocal
 
 from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, NA, REMOVE, Ref, XStr
 from .grid import Grid
@@ -31,6 +29,8 @@ from .sortabledict import SortableDict
 # Bring in version handling
 from .version import Version, VER_2_0, VER_3_0, LATEST_VER
 from .zoneinfo import timezone
+
+# Bring in special Project Haystack types and time zones
 
 # flake8: noqa E731
 
@@ -322,7 +322,7 @@ def _parse_datetime(toks: List[datetime.datetime]) -> List[datetime.datetime]:
         return [timezone(tzname).localize(isodt)]
     if bool(tzname):
         return [isodt.astimezone(timezone(tzname))]
-    return [isodt.astimezone(tzlocal())]
+    return [isodt.astimezone(timezone("UTC"))]
 
 
 hs_dateTime = And([

@@ -212,7 +212,7 @@ ifeq ($(USE_OKTA),Y)
 	pip install gimme-aws-creds
 endif
 	conda install -c conda-forge -c anaconda -y \
-		make jq
+		make jq libpq
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	echo -e "$(cyan)pip install -e .$(normal)"
 	pip install -e .

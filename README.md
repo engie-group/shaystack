@@ -420,7 +420,8 @@ air,phone,sensor,occupied,store,damper,enum,temp,tz,tariffHis,sp,area,site,weath
 ,"804.552.2222",,,✓,,,,"New_York",,,3149.0ft²,✓,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,,,,"Retail Store",,,"US",,,"3504 W Cary St",20:00:00,1996.0,,"C(37.555385,-77.486903)",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,,,,,,,,,,,,,"Richmond",,,,,"Carytown",,,@p:demo:r:23a44701-a89a6c66 Carytown,"3504 W Cary St, Richmond, VA",,"VA","23221",,,,,,1.0,,"Richmond",,
 ```
 
-The SQL url is in form: <dialect\[+<driver>]>://\[<user>\[:<password>]@><host>\[:<port>]/<databasename>\[#<table name>]
+The SQL url is in form: <dialect\[+\<driver\>]>://\[\<user\>\[:\<password\>]@>\<host\>\[:\<port\>]/\<database
+name\>\[#\<table name\>]
 
 Samples:
 - `sqlite3:///test.db#haystack`
@@ -465,7 +466,7 @@ This provider extends the SQL Provider to manage time-series with
 this provider. Add the variable `HAYSTACK_DB` to describe the link to the root table in SQL DB and `HAYSTACK_TS` to
 describe the link to *AWS Time stream*. The format of `HAYSTACK_TS` is :
 
-`timestream://<database>\[?mem_ttl=<memory retention in hour>&mag_ttl=<magnetic retention in day>]\[#<tablename>]`
+`timestream://<database>[?mem_ttl=<memory retention in hour>&mag_ttl=<magnetic retention in day>][#<tablename>]`
 
 The parameters `mem_ttl` and `mag_ttl` are optionals and be used only to create the table.
 Read [this](https://docs.aws.amazon.com/timestream/latest/developerguide/API_RetentionProperties.html)

@@ -76,7 +76,7 @@ def test_import_ts_grid_in_db_and_his_read(mock):
             grid.append({"ts": datetime.datetime.utcnow(), "val": val})
             provider.import_ts_in_db(grid, entity_id, "customer", FAKE_NOW)
             grid_ts = provider.his_read(entity_id, parse_date_range("today", provider.get_tz()), None)
-            assert grid_ts[0]['val'] == val, f"with {kind=} and {val=}"
+            assert grid_ts[0]['val'] == val, f"with kind={kind} and val={val}"
 
 
 @attr('aws')

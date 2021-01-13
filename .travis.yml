@@ -13,6 +13,6 @@ install:
   - CRYPTOGRAPHY_ALLOW_OPENSSL_102=1 pip install '.[dev,flask,graphql]'
 # command to run tests
 script:
-  - nosetests --with-coverage --cover-package=haystackapi --where=tests
+  - nosetests -a '!aws' --with-coverage --cover-package=haystackapi --where=tests
 after_success:
   - coveralls

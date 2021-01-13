@@ -11,7 +11,7 @@ def get_units():
 
         for raw_row in pkg_resources.open_text(__package__,
                                                'project_haystack_units.txt', encoding='UTF-8'):
-            row = raw_row.split(u',')
+            row = raw_row.split(',')
             if not bool(row):
                 continue
             if row[0].startswith('--'):

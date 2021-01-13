@@ -397,8 +397,8 @@ def test_grid_not_equal_col_with_new_metadata():
         {'test': 2},
         {'test': 3}
     ])
-    diff = copy.deepcopy(ref)
-    diff.column.add_item('test', 'add')
+    diff: Grid = copy.deepcopy(ref)
+    diff.column.add_item(key='test', value='add')  # type: ignore
     assert ref != diff
 
 
@@ -423,9 +423,9 @@ def test_grid_not_equal_col_with_change_col_name():
         {'test': 2},
         {'test': 3}
     ])
-    diff = copy.deepcopy(ref)
+    diff: Grid = copy.deepcopy(ref)
     diff.column.pop('test')
-    diff.column.add_item('new', 'add')
+    diff.column.add_item(key='new', value='add')  # type: ignore
     assert ref != diff
 
 

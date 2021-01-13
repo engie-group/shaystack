@@ -1,10 +1,9 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Zinc Grid dumper
-# (C) 2018 VRT Systems
+# Grid CSV dumper
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
-
 """
 Save a `Grid` in CSV file, conform with the specification describe
 here (https://www.project-haystack.org/doc/Csv)
@@ -28,9 +27,9 @@ URI_META = re.compile(r'([\\`\u0080-\uffff])')
 STR_META = re.compile(r'([\\"$\u0080-\uffff])')
 
 CSV_SUB = [
-    (u'\\"', u'""'),
-    (u'\\\\', u'\\'),
-    (u'\\u2713', u'\u2713'),
+    ('\\"', '""'),
+    ('\\\\', '\\'),
+    ('\\u2713', '\u2713'),
 ]
 
 
@@ -127,8 +126,8 @@ def dump_xstr(xstr_value: XStr) -> str:
 
 def dump_quantity(quantity: Quantity) -> str:
     if (quantity.unit is None) or (quantity.unit == ''):
-        return dump_decimal(quantity.value)
-    return '%s%s' % (dump_decimal(quantity.value),
+        return dump_decimal(quantity.m)
+    return '%s%s' % (dump_decimal(quantity.m),
                      quantity.unit)
 
 

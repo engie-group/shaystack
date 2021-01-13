@@ -1,4 +1,8 @@
-## Raise a GraphQL field error in case of a datasource invocation error
+## -*- coding: utf-8 -*-
+## App Sync output filter
+## (C) 2021 Engie Digital
+##
+## vim: set ts=4 sts=4 et tw=78 sw=4 si: ## Raise a GraphQL field error in case of a datasource invocation error
 #if($ctx.error)
 $util.error($ctx.error.message, $ctx.error.type)
 #end

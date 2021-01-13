@@ -1,7 +1,8 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Zinc Grid
+# Use license Apache V2.0
 # (C) 2016 VRT Systems
+# (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
@@ -101,7 +102,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             return dt1.date() == dt2.date() and Grid._approx_check(dt1.time(), dt2.time())
         if isinstance(version_1, Quantity):
             return version_1.unit == version_2.unit and \
-                   Grid._approx_check(version_1.value, version_2.value)
+                   Grid._approx_check(version_1.m, version_2.value)
         if isinstance(version_1, Coordinate):
             return Grid._approx_check(version_1.latitude, version_2.latitude) and \
                    Grid._approx_check(version_1.longitude, version_2.longitude)
@@ -213,38 +214,38 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """
         Return a representation of this grid.
         """
-        parts = [u'\tVersion: %s' % self.ver_str]
+        parts = ['\tVersion: %s' % self.ver_str]
         if bool(self.metadata):
-            parts.append(u'\tMetadata: %s' % self.metadata)
+            parts.append('\tMetadata: %s' % self.metadata)
 
         column_meta = []
         for col_name, col_meta in self.column.items():
             if bool(col_meta):
-                column_meta.append(u'\t\t%s: %s' % (col_name, col_meta))
+                column_meta.append('\t\t%s: %s' % (col_name, col_meta))
             else:
-                column_meta.append(u'\t\t%s' % col_name)
+                column_meta.append('\t\t%s' % col_name)
 
         if bool(column_meta):
-            parts.append(u'\tColumns:\n%s' % '\n'.join(column_meta))
+            parts.append('\tColumns:\n%s' % '\n'.join(column_meta))
         elif self.column:
-            parts.append(u'\tColumns: %s' % ', '.join(self.column.keys()))
+            parts.append('\tColumns: %s' % ', '.join(self.column.keys()))
         else:
-            parts.append(u'\tNo columns')
+            parts.append('\tNo columns')
 
         if bool(self):
             parts.extend([
-                u'\tRow %4d:\n\t%s' % (row, u'\n\t'.join([
-                    ((u'%s=%r' % (col_name, data[col_name]))
+                '\tRow %4d:\n\t%s' % (row, '\n\t'.join([
+                    (('%s=%r' % (col_name, data[col_name]))
                      if col_name in data else
-                     (u'%s absent' % col_name)) for col_name in self.column.keys()]))
+                     ('%s absent' % col_name)) for col_name in self.column.keys()]))
                 for (row, data) in enumerate(self)
             ])
         else:
-            parts.append(u'\tNo rows')
+            parts.append('\tNo rows')
         # Represent as pseudo-XML
         class_name = self.__class__.__name__
-        return u'<%s>\n%s\n</%s>' % (
-            class_name, u'\n'.join(parts), class_name
+        return '<%s>\n%s\n</%s>' % (
+            class_name, '\n'.join(parts), class_name
         )
 
     def __getitem__(self, key: Union[int, Ref, slice]) -> Union[Dict[str, Any], 'Grid']:

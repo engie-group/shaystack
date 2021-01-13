@@ -110,6 +110,7 @@ def test_import_ts_grid_in_db_with_a_lot_of_records(mock):
         provider.import_ts_in_db(grid, entity_id, "customer", FAKE_NOW)
 
 
+@attr('aws')
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 @patch.dict('os.environ', {'HAYSTACK_TS': HAYSTACK_TS})
 def test_about():

@@ -1,5 +1,7 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
+# Filter parser
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
@@ -39,7 +41,7 @@ hs_decimal = Combine(
     Optional(hs_exp)).setParseAction(
     lambda toks: float(toks[0])
 )
-hs_unitChar = hs_alpha | Word(u'%_/$' + u''.join([
+hs_unitChar = hs_alpha | Word('%_/$' + ''.join([
     chr(c) for c in range(0x0080, 0xffff)
 ]), exact=1)
 hs_unit = Combine(OneOrMore(hs_unitChar))
@@ -147,7 +149,7 @@ hs_tzUTCOffset = Combine(
 hs_timeZoneName = hs_tzUTCOffset | hs_tzName
 
 
-def _parse_datetime(toks):
+def _parse_datetime(toks: List[datetime]) -> List[datetime]:
     # Made up of parts: ISO8601 Date/Time, time zone label
     isodt = toks[0]
     if len(toks) > 1:
@@ -230,7 +232,7 @@ hs_parens = (Suppress(Literal("(")) + hs_filter + Suppress(Literal(")"))).setPar
 hs_term = hs_parens | hs_missing | hs_cmp | hs_has
 
 
-def _merge_and_or(key, toks):
+def _merge_and_or(key: str, toks: List[FilterBinary]) -> FilterBinary:
     if len(toks) == 1:
         return toks[0]
     return FilterBinary(key, _merge_and_or(key, toks[:-2]), toks[-1])
@@ -245,7 +247,7 @@ hs_condOr = (hs_condAnd + ZeroOrMore(Literal("or") + hs_condAnd)).setParseAction
 hs_filter <<= hs_condOr
 
 
-def parse_filter(grid_filter):
+def parse_filter(grid_filter: str) -> FilterAST:
     """
     Return an AST tree of filter.
     Can be used to generate other language (SQL, etc.)

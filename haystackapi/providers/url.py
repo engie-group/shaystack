@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+# URL Provider
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """
 An Haystack Read-Only API provider to expose an Haystack file via the Haystack API.
 The file must be referenced with the environment variable HAYSTACK_URL and may be the form:

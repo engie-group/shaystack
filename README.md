@@ -1,5 +1,8 @@
 # Python Haystack API
 
+| The API is not stable and can be changed without warning. |
+| --------------------------------------------------------- |
+
 | This is a pre-release version |
 | ----------------------------- |
 
@@ -503,9 +506,9 @@ $ haystackapi_import_db sample/carytown.zinc \
 ```
 
 ##### Limitation
-
-AWS Time stream refuse to import a data outside the memory windows delays.
-See [here](https://docs.aws.amazon.com/timestream/latest/developerguide/API_RejectedRecord.html)
+- The entities with history must have a tag `kind` to describe the type of value and a tag `id`
+- AWS Time stream refuse to import a data outside the memory windows delays.
+  See [here](https://docs.aws.amazon.com/timestream/latest/developerguide/API_RejectedRecord.html)
 
 # Using GraphQL API
 

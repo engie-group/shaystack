@@ -1,8 +1,15 @@
+# -*- coding: utf-8 -*-
+# Postgres db driver
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """
 Save Haystack ontology in Postgres database (use JSon type).
 Convert the haystack filter to postgres SQL equivalent syntax.
 """
 import itertools
+import json
 import logging
 import textwrap
 from abc import abstractmethod, ABC
@@ -330,7 +337,7 @@ def _generate_filter_in_sql(table_name: str,
     elif isinstance(node, _Compare):
         value = node.value
         if isinstance(value, Quantity):
-            value = value.value
+            value = value.m
         if isinstance(value, (int, float)) and node.operator not in ('=', '!='):
             # Comparison with numbers. Must remove the header 'n:'
             num_table, select, where = \
@@ -349,7 +356,7 @@ def _generate_filter_in_sql(table_name: str,
                                select, where,
                                node.path,
                                num_table)
-            value = jsondumper.dump_scalar(node.value)
+            value = json.loads(jsondumper.dump_scalar(node.value))
             if value is None:
                 if node.operator == '!=':
                     where.append(f"t{num_table}.entity->>'{node.path.paths[-1]}' IS NOT NULL\n")

@@ -1,7 +1,8 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # JSON Grid Parser
+# Use license Apache V2.0
 # (C) 2018 VRT Systems
+# (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
@@ -17,13 +18,14 @@ import functools
 import json
 import re
 import sys
-from typing import Any
+from typing import Any, List, Dict, Union
 
 import iso8601
 
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
     MARKER, NA, REMOVE, XStr
 from .grid import Grid
+from .metadata import MetadataObject
 from .version import LATEST_VER, Version, VER_3_0
 from .zoneinfo import timezone
 
@@ -54,7 +56,7 @@ COORD_RE = re.compile(r'c:(-?\d*\.?\d*),(-?\d*\.?\d*)$',
 STR_ESC_RE = re.compile(r'\\([bfnrt"\\$]|u[0-9a-fA-F]{4})')
 
 
-def parse_grid(grid_str):
+def parse_grid(grid_str: str) -> Grid:
     # Grab the metadata
     if isinstance(grid_str, str):
         parsed = json.loads(grid_str)
@@ -80,14 +82,14 @@ def parse_grid(grid_str):
     return grid
 
 
-def parse_metadata(meta, version):
-    metadata = {}
+def parse_metadata(meta: Dict[str, Any], version: Version) -> MetadataObject:
+    metadata = MetadataObject()
     for name, value in meta.items():
         metadata[name] = parse_embedded_scalar(value, version=version)
     return metadata
 
 
-def parse_cols(grid, parsed, version):
+def parse_cols(grid: Grid, parsed: List[Dict[str, Any]], version: Version) -> None:
     for col in parsed:
         name = col.pop('name')
         meta = {}
@@ -98,7 +100,7 @@ def parse_cols(grid, parsed, version):
         grid.column[name] = meta
 
 
-def parse_row(row, version):
+def parse_row(row: Dict[str, Any], version: Version) -> Dict[str, Any]:
     parsed_row = {}
     for col, value in row.items():
         value = parse_embedded_scalar(value, version=version)
@@ -107,7 +109,8 @@ def parse_row(row, version):
     return parsed_row
 
 
-def parse_embedded_scalar(scalar, version=LATEST_VER) -> Any:  # pylint: disable=too-many-locals
+def parse_embedded_scalar(scalar: Union[None, List, Dict, str],
+                          version: Version = LATEST_VER) -> Any:  # pylint: disable=too-many-locals
     # Simple cases
     if scalar is None:
         return None
@@ -235,7 +238,7 @@ def parse_embedded_scalar(scalar, version=LATEST_VER) -> Any:  # pylint: disable
     return scalar
 
 
-def parse_scalar(scalar: str, version: Version = LATEST_VER):
+def parse_scalar(scalar: str, version: Version = LATEST_VER) -> Any:
     # If we're given a string, decode the JSON data.
     if isinstance(scalar, str) and \
             (len(scalar) >= 2) and \

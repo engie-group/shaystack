@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+# Haystack API Provider module
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """
 A Flask layer to haystack interface.
 """
@@ -65,8 +71,8 @@ def favicon():
 
 @click.command()
 @click.option('-h', '--host', default='0.0.0.0')
-@click.option('-p', '--port', default=3000)
-def main(host, port) -> int:
+@click.option('-p', '--port', default=3000, type=int)
+def main(host: str, port: int) -> int:
     """
     Stack a flask server.
     The command line must set the host and port.

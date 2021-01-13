@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-# Zinc dumping and parsing module
-# (C) 2016 VRT Systems and Engie Digital
+# Haystack module
+# Use license Apache V2.0
+# (C) 2016 VRT Systems
+# (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """

@@ -1,10 +1,15 @@
+# -*- coding: utf-8 -*-
+# Haystack API Provider module
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """
 A flask blueprint to manage Haystack API
 """
 import os
 
-from flask import Blueprint
-from flask import Response as flask_response
+from flask import Blueprint, Response
 from flask import request as flash_request
 
 # from werkzeug.local import LocalProxy
@@ -28,8 +33,8 @@ def _as_request(request: flash_request) -> HaystackHttpRequest:
     return haystack_request
 
 
-def _as_response(response: HaystackHttpResponse) -> flask_response:
-    rep = flask_response()
+def _as_response(response: HaystackHttpResponse) -> Response:
+    rep = Response()
     rep.status_code = response.status_code
     rep.headers = response.headers
     rep.data = response.body
@@ -37,7 +42,7 @@ def _as_response(response: HaystackHttpResponse) -> flask_response:
 
 
 @haystack_blueprint.route('/about', methods=['POST', 'GET'])
-def flask_about():
+def flask_about() -> Response:
     """
     Invoke about() from flask
     """
@@ -45,7 +50,7 @@ def flask_about():
 
 
 @haystack_blueprint.route('/ops', methods=['POST', 'GET'])
-def flask_ops():
+def flask_ops() -> Response:
     """
     Invoke ops() from flask
     """
@@ -53,7 +58,7 @@ def flask_ops():
 
 
 @haystack_blueprint.route('/formats', methods=['POST', 'GET'])
-def flask_formats():
+def flask_formats() -> Response:
     """
     Invoke formats() from flask
     """
@@ -61,7 +66,7 @@ def flask_formats():
 
 
 @haystack_blueprint.route('/read', methods=['POST', 'GET'])
-def flask_read():
+def flask_read() -> Response:
     """
     Invoke read() from flask
     """
@@ -69,7 +74,7 @@ def flask_read():
 
 
 @haystack_blueprint.route('/nav', methods=['POST', 'GET'])
-def flask_nav():
+def flask_nav() -> Response:
     """
     Invoke nav() from flask
     """
@@ -77,7 +82,7 @@ def flask_nav():
 
 
 @haystack_blueprint.route('/watchSub', methods=['POST', 'GET'])
-def flask_watch_sub():
+def flask_watch_sub() -> Response:
     """
     Invoke watch_sub() from flask
     """
@@ -85,7 +90,7 @@ def flask_watch_sub():
 
 
 @haystack_blueprint.route('/watchUnsub', methods=['POST', 'GET'])
-def flask_watch_unsub():
+def flask_watch_unsub() -> Response:
     """
     Invoke watch_unsub() from flask
     """
@@ -94,7 +99,7 @@ def flask_watch_unsub():
 
 
 @haystack_blueprint.route('/watchPoll', methods=['POST', 'GET'])
-def flask_watch_poll():
+def flask_watch_poll() -> Response:
     """
     Invoke watch_poll() from flask
     """
@@ -102,7 +107,7 @@ def flask_watch_poll():
 
 
 @haystack_blueprint.route('/pointWrite', methods=['POST', 'GET'])
-def flask_point_write():
+def flask_point_write() -> Response:
     """
     Invoke point_write() from flask
     """
@@ -111,7 +116,7 @@ def flask_point_write():
 
 
 @haystack_blueprint.route('/hisRead', methods=['POST', 'GET'])
-def flask_his_read():
+def flask_his_read() -> Response:
     """
     Invoke his_read() from flask
     """
@@ -119,7 +124,7 @@ def flask_his_read():
 
 
 @haystack_blueprint.route('/hisWrite', methods=['POST', 'GET'])
-def flask_his_write():
+def flask_his_write() -> Response:
     """
     Invoke his_write() from flask
     """
@@ -127,7 +132,7 @@ def flask_his_write():
 
 
 @haystack_blueprint.route('/invokeAction', methods=['POST', 'GET'])
-def flask_invoke_action():
+def flask_invoke_action() -> Response:
     """
     Invoke invoke_action() from flask
     """

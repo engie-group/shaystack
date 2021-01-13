@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+# Haystack API Provider module
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """
 A top GraphQL query.
 
@@ -46,7 +52,7 @@ graphql_blueprint.add_url_rule('',
                                ))
 
 
-def _dump_haystack_schema():
+def _dump_haystack_schema() -> None:
     """
     Print haystack schema to insert in another global schema.
     """

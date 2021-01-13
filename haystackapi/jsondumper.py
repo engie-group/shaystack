@@ -1,7 +1,8 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # JSON Grid dumper
+# Use license Apache V2.0
 # (C) 2018 VRT Systems
+# (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
@@ -14,48 +15,54 @@ from __future__ import unicode_literals
 import datetime
 import functools
 import json
+from typing import Dict, Optional, Tuple, List, Any, Union
 
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
     MARKER, NA, REMOVE, XStr
 from .grid import Grid
 from .jsonparser import MARKER_STR, NA_STR, REMOVE2_STR, REMOVE3_STR
-from .version import LATEST_VER, VER_3_0
+from .metadata import MetadataObject
+from .sortabledict import SortableDict
+from .version import LATEST_VER, VER_3_0, Version
 from .zoneinfo import timezone_name
 
 
-def dump_grid(grid):
+def dump_grid(grid: Grid) -> str:
     return json.dumps(_dump_grid_to_json(grid))
 
 
-def _dump_grid_to_json(grid):
+def _dump_grid_to_json(grid: Grid) -> Dict[str, Union[List[str], Dict[str, str]]]:
     return {
-        'meta': dump_meta(grid.metadata, version=grid.version, grid=True),
+        'meta': dump_meta(grid.metadata, version=grid.version, for_grid=True),
         'cols': dump_columns(grid.column, version=grid.version),
         'rows': dump_rows(grid),
     }
 
 
-def dump_meta(meta, version=LATEST_VER, grid=False):
+def dump_meta(meta: MetadataObject,
+              version: Version = LATEST_VER,
+              for_grid: Optional[bool] = False) -> Dict[str, str]:
     _dump = functools.partial(dump_meta_item, version=version)
     _meta = dict(map(_dump, list(meta.items())))
-    if grid:
+    if for_grid:
         _meta['ver'] = str(version)
     return _meta
 
 
-def dump_meta_item(item, version=LATEST_VER):
+def dump_meta_item(item: str, version: Version = LATEST_VER) \
+        -> Tuple[str, Union[None, bool, str, List[str], Dict[str, Any]]]:
     (item_id, item_value) = item
     return (dump_id(item_id),
-            dump_scalar(item_value, version=version))
+            _dump_scalar(item_value, version=version))
 
 
-def dump_columns(cols, version=LATEST_VER):
+def dump_columns(cols: SortableDict, version: Version = LATEST_VER) -> List[str]:
     _dump = functools.partial(dump_column, version=version)
     _cols = list(zip(*list(cols.items())))
     return list(map(_dump, *_cols))
 
 
-def dump_column(col, col_meta, version=LATEST_VER):
+def dump_column(col: str, col_meta: MetadataObject, version: Version = LATEST_VER) -> Dict[str, str]:
     if bool(col_meta):
         _meta = dump_meta(col_meta, version=version)
     else:
@@ -64,17 +71,19 @@ def dump_column(col, col_meta, version=LATEST_VER):
     return _meta
 
 
-def dump_rows(grid):
+def dump_rows(grid: Grid) -> List[str]:
     return list(map(functools.partial(dump_row, grid), grid))
 
 
-def dump_row(grid, row):
+def dump_row(grid: Grid, row: Dict[str, Any]) -> Dict[str, str]:
     return {
-        c: dump_scalar(row.get(c), version=grid.version)
-        for c in list(grid.column.keys()) if c in row}
+        c: _dump_scalar(row.get(c), version=grid.version)
+        for c in list(grid.column.keys()) if c in row
+    }
 
 
-def dump_scalar(scalar, version=LATEST_VER):
+def _dump_scalar(scalar: Any, version: Version = LATEST_VER) \
+        -> Union[None, str, bool, List[str], Dict[str, Any]]:
     if scalar is None:
         return None
     if scalar is MARKER:
@@ -121,72 +130,76 @@ def dump_scalar(scalar, version=LATEST_VER):
     raise NotImplementedError('Unhandled case: %r' % scalar)
 
 
-def dump_id(id_str):
+def dump_scalar(scalar: Any, version: Version = LATEST_VER) -> str:
+    return json.dumps(_dump_scalar(scalar, version))
+
+
+def dump_id(id_str: str) -> str:
     return id_str
 
 
-def dump_str(str_value):
-    return u's:%s' % str_value
+def dump_str(str_value: str) -> str:
+    return 's:%s' % str_value
 
 
-def dump_uri(uri_value):
-    return u'u:%s' % uri_value
+def dump_uri(uri_value: Uri) -> str:
+    return 'u:%s' % uri_value
 
 
-def dump_bin(bin_value):
-    return u'b:%s' % bin_value
+def dump_bin(bin_value: Bin) -> str:
+    return 'b:%s' % bin_value
 
 
-def dump_xstr(xstr_value):
-    return u'x:%s:%s' % (xstr_value.encoding, xstr_value.data_to_string())
+def dump_xstr(xstr_value: XStr) -> str:
+    return 'x:%s:%s' % (xstr_value.encoding, xstr_value.data_to_string())
 
 
-def dump_quantity(quantity):
+def dump_quantity(quantity: Quantity) -> str:
     if (quantity.unit is None) or (quantity.unit == ''):
-        return dump_decimal(quantity.value)
-    return 'n:%f %s' % (quantity.value, quantity.unit)
+        return dump_decimal(quantity.m)
+    return 'n:%f %s' % (quantity.m, quantity.unit)
 
 
-def dump_decimal(decimal):
+def dump_decimal(decimal: float) -> str:
     return 'n:%f' % decimal
 
 
-def dump_bool(bool_value):
+def dump_bool(bool_value: bool) -> bool:
     return bool_value
 
 
-def dump_coord(coordinate):
+def dump_coord(coordinate: Coordinate) -> str:
     return 'c:%f,%f' % (coordinate.latitude, coordinate.longitude)
 
 
-def dump_ref(ref):
+def dump_ref(ref: Ref) -> str:
     if ref.has_value:
-        return u'r:%s %s' % (ref.name, ref.value)
-    return u'r:%s' % ref.name
+        return 'r:%s %s' % (ref.name, ref.value)
+    return 'r:%s' % ref.name
 
 
-def dump_date(date):
+def dump_date(date: datetime.date) -> str:
     return 'd:%s' % date.isoformat()
 
 
-def dump_time(time):
+def dump_time(time: datetime.time) -> str:
     return 'h:%s' % time.isoformat()
 
 
-def dump_date_time(date_time):
+def dump_date_time(date_time: datetime.datetime) -> str:
     tz_name = timezone_name(date_time)
     return 't:%s %s' % (date_time.isoformat(), tz_name)
 
 
-def dump_list(lst, version=LATEST_VER):
+def dump_list(lst: List[Any], version: Version = LATEST_VER) -> List[str]:
     if version < VER_3_0:
         raise ValueError('Project Haystack %s '
                          'does not support lists' % version)
-    return list(map(functools.partial(dump_scalar, version=version), lst))
+    return list(map(functools.partial(_dump_scalar, version=version), lst))
 
 
-def dump_dict(dic, version=LATEST_VER):
+def dump_dict(dic: Dict[str, Any], version: Version = LATEST_VER) -> Dict[str, str]:
     if version < VER_3_0:
         raise ValueError('Project Haystack %s '
                          'does not support dict' % version)
-    return {k: dump_scalar(v, version=version) for (k, v) in dic.items()}
+    return {k: _dump_scalar(v, version=version) for (k, v) in dic.items()}

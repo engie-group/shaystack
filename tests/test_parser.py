@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # Zinc dumping and parsing module
+# Use license Apache V2.0
 # (C) 2016 VRT Systems
+# (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
@@ -188,7 +190,7 @@ def _check_metadata(grid, force_metadata_order=True):
     assert row['siteName'] == 'Site 1'
     val = row['val']
     assert isinstance(val, haystackapi.Quantity)
-    assert val.value == 356.214
+    assert val.m == 356.214
     assert val.unit == 'kW'
 
     # Second row:
@@ -197,7 +199,7 @@ def _check_metadata(grid, force_metadata_order=True):
     assert row['siteName'] == 'Site 2'
     val = row['val']
     assert isinstance(val, haystackapi.Quantity)
-    assert val.value == 463.028
+    assert val.m == 463.028
     assert val.unit == 'kW'
 
 
@@ -483,7 +485,7 @@ def test_marker_in_row_json():
 
 
 def test_marker_in_row_csv():
-    grid = haystackapi.parse(textwrap.dedent(u'''
+    grid = haystackapi.parse(textwrap.dedent('''
         str,marker
         "No Marker",
         "Marker",\u2713
@@ -530,7 +532,7 @@ def test_bool_csv():
 
 
 def test_number_zinc():
-    grid = haystackapi.parse(textwrap.dedent(u'''
+    grid = haystackapi.parse(textwrap.dedent('''
         ver:"2.0"
         str,number
         "Integer",1
@@ -571,7 +573,7 @@ def test_number_json():
 
 
 def test_number_csv():
-    grid = haystackapi.parse(textwrap.dedent(u'''
+    grid = haystackapi.parse(textwrap.dedent('''
         str,number
         "Integer",1
         "Negative Integer",-34
@@ -956,7 +958,7 @@ def test_list_v3_json():
 def test_list_v3_csv():
     # Simpler test case than the ZINC one, since the Python JSON parser
     # will take care of the elements for us.
-    grid = haystackapi.parse(textwrap.dedent(u'''
+    grid = haystackapi.parse(textwrap.dedent('''
         ix,list,
         00,"[]","An empty list"
         01,"[N]","A list with a NULL"
@@ -1275,7 +1277,7 @@ def test_grid_meta_zinc():
     assert_is(meta['aMarker'], haystackapi.MARKER)
     assert_is(meta['anotherMarker'], haystackapi.MARKER)
     assert isinstance(meta['aQuantity'], haystackapi.Quantity)
-    assert meta['aQuantity'].value == 123
+    assert meta['aQuantity'].m == 123
     assert meta['aQuantity'].unit == 'Hz'
     assert isinstance(meta['aDate'], datetime.date)
     assert meta['aDate'] == datetime.date(2016, 1, 13)
@@ -1315,7 +1317,7 @@ def test_col_meta_zinc():
     assert_is(meta['aMarker'], haystackapi.MARKER)
     assert_is(meta['anotherMarker'], haystackapi.MARKER)
     assert isinstance(meta['aQuantity'], haystackapi.Quantity)
-    assert meta['aQuantity'].value == 123
+    assert meta['aQuantity'].m == 123
     assert meta['aQuantity'].unit == 'Hz'
     assert isinstance(meta['aDate'], datetime.date)
     assert meta['aDate'] == datetime.date(2016, 1, 13)

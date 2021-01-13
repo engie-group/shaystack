@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+# SQL Provider
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """
 Manipulate Haystack ontology on SQL database.
 
@@ -30,7 +36,6 @@ from ..datatypes import Ref
 from ..grid import Grid
 from ..jsondumper import dump_scalar, dump_meta, dump_columns, dump_row
 from ..jsonparser import parse_scalar, parse_row, parse_metadata, parse_cols
-from ..metadata import MetadataObject
 from ..version import VER_3_0
 
 try:
@@ -281,7 +286,7 @@ class Provider(HaystackInterface):
                 history.append(
                     {
                         "ts": field_to_datetime_tz(row[0]),
-                        "val": parse_scalar(row[1])
+                        "val": json.loads(parse_scalar(row[1]))
                     }
                 )
             min_date = datetime.max.replace(tzinfo=pytz.UTC)
@@ -395,7 +400,7 @@ class Provider(HaystackInterface):
             row = cursor.fetchone()
             if row:
                 meta, cols = row
-                grid.metadata = MetadataObject(parse_metadata(sql_type_to_json(meta), VER_3_0))
+                grid.metadata = parse_metadata(sql_type_to_json(meta), VER_3_0)
                 parse_cols(grid, sql_type_to_json(cols), VER_3_0)
             conn.commit()
             return grid
@@ -555,7 +560,7 @@ class Provider(HaystackInterface):
                                [(entity_id.name,
                                  customer_id,
                                  datetime_tz_to_field(row['ts']),
-                                 json.dumps(dump_scalar(row['val']))) for row in time_series]
+                                 dump_scalar(row['val'])) for row in time_series]
                                )
             cursor.close()
             conn.commit()

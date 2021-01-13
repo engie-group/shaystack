@@ -1,7 +1,8 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Zinc grammar specification.
+# Use license Apache V2.0
 # (C) 2016 VRT Systems
+# (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
@@ -14,12 +15,15 @@ import datetime
 import logging
 import re
 import sys
+from typing import Dict, Any, Callable, List
+from typing import Optional as Typing_Optional
 
 import iso8601
 import pyparsing as pp
 import six
-
 # Bring in special Project Haystack types and time zones
+from dateutil.tz import tzlocal
+
 from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, NA, REMOVE, Ref, XStr
 from .grid import Grid
 # Bring in our sortable dict class to preserve order
@@ -48,10 +52,10 @@ NEWLINE_RE = re.compile(r'\r?\n')
 CHAR_NUM_RE = re.compile(r' *\(at char \d+\),')
 
 
-def reformat_exception(ex_msg, line_num=None):
-    msg = CHAR_NUM_RE.sub(u'', str(ex_msg))
+def reformat_exception(ex_msg: pp.ParseException, line_num: Typing_Optional[int] = None) -> str:
+    msg = CHAR_NUM_RE.sub('', str(ex_msg))
     if line_num is not None:
-        return msg.replace(u'line:1', u'line:%d' % line_num)
+        return msg.replace('line:1', 'line:%d' % line_num)
     return msg
 
 
@@ -84,7 +88,7 @@ class ZincParseException(ValueError):
     the line and column for the grid are given.
     """
 
-    def __init__(self, message, grid_str, line, col):
+    def __init__(self, message: str, grid_str: str, line: int, col: int):
         self.grid_str = grid_str
         self.line = line
         self.col = col
@@ -93,8 +97,8 @@ class ZincParseException(ValueError):
             # If we know the line and column, point it out in the message.
             grid_str_lines = grid_str.split('\n')
             width = max([len(line) for line in grid_str_lines])
-            line_fmt = u'%%-%ds' % width
-            row_fmt = u'%4d%s' + line_fmt + u'%s'
+            line_fmt = '%%-%ds' % width
+            row_fmt = '%4d%s' + line_fmt + '%s'
 
             formatted_lines = [
                 row_fmt % (
@@ -107,16 +111,16 @@ class ZincParseException(ValueError):
                 in enumerate(grid_str.split('\n'), 1)
             ]
             formatted_lines.insert(line,
-                                   (u'    | ' + line_fmt + u' |')
-                                   % (((col - 2) * u' ') + '.^.')
+                                   ('    | ' + line_fmt + ' |')
+                                   % (((col - 2) * ' ') + '.^.')
                                    )
 
             # Border it for readability
-            formatted_lines.insert(0, u'    .' + (u'-' * (2 + width)) + u'.')
-            formatted_lines.append(u'    \'' + (u'-' * (2 + width)) + u'\'')
+            formatted_lines.insert(0, '    .' + ('-' * (2 + width)) + '.')
+            formatted_lines.append('    \'' + ('-' * (2 + width)) + '\'')
 
             # Append to message
-            message += u'\n%s' % u'\n'.join(formatted_lines)
+            message += '\n%s' % '\n'.join(formatted_lines)
         except ValueError:  # pragma: no cover
             # We should not get here.
             LOG.exception('Exception encountered formatting log message')
@@ -129,10 +133,10 @@ class NearestMatch:  # pylint: disable=global-statement
     This class returns the nearest matching grammar for the given version.
     """
 
-    def __init__(self, known_grammars):
+    def __init__(self, known_grammars: Dict[Version, Any]):
         self._known_grammars = known_grammars
 
-    def __getitem__(self, ver):
+    def __getitem__(self, ver: Version) -> Any:
         """
         Retrieve the grammar that closest matches the version string given.
         """
@@ -152,11 +156,11 @@ class GenerateMatch:
     This class tries to generate a matching grammar based on the version input given.
     """
 
-    def __init__(self, generator_fn):
+    def __init__(self, generator_fn: Callable[[Version], Any]):
         self._generator_fn = generator_fn
         self._known_grammars = {}
 
-    def __getitem__(self, ver):
+    def __getitem__(self, ver: Version) -> Any:
         try:
             return self._known_grammars[ver]
         except KeyError:
@@ -165,7 +169,7 @@ class GenerateMatch:
             return a_generator
 
 
-def _unescape(a_string, uri=False):
+def _unescape(a_string: str, uri: bool = False) -> str:
     """
     Iterative parser for string escapes.
     """
@@ -286,7 +290,7 @@ hs_time_str = Combine(And([
 ]))
 
 
-def _parse_time(toks):
+def _parse_time(toks: List[str]) -> List[datetime.time]:
     time_str = toks[0]
     time_fmt = '%H:%M'
     if time_str.count(':') == 2:
@@ -305,7 +309,7 @@ hs_isoDateTime = Combine(And([
 ])).setParseAction(lambda toks: [iso8601.parse_date(toks[0].upper())])
 
 
-def _parse_datetime(toks):
+def _parse_datetime(toks: List[datetime.datetime]) -> List[datetime.datetime]:
     # Made up of parts: ISO8601 Date/Time, time zone label
     isodt = toks[0]
     if len(toks) > 1:
@@ -317,15 +321,8 @@ def _parse_datetime(toks):
         # This technically shouldn't happen according to Zinc specs
         return [timezone(tzname).localize(isodt)]
     if bool(tzname):
-        try:
-            return [isodt.astimezone(timezone(tzname))]
-        except ValueError:  # pragma: no cover
-            # Unlikely to occur, might do though if Project Haystack changes
-            # its timezone list or if a system doesn't recognise a particular
-            # timezone.
-            return [isodt]  # Failed, leave alone
-    else:
-        return [isodt]
+        return [isodt.astimezone(timezone(tzname))]
+    return [isodt.astimezone(tzlocal())]
 
 
 hs_dateTime = And([
@@ -339,7 +336,7 @@ hs_dateTime = And([
 # Quantities and raw numeric values
 hs_unitChar = Or([
     hs_alpha,
-    Word(u'%_/$' + u''.join([
+    Word('%_/$' + ''.join([
         chr(c)
         for c in range(0x0080, 0xffff)
     ]), exact=1)
@@ -482,7 +479,7 @@ hs_tags = GenerateMatch(
                                Suppress(Regex(r'[ *]'))])).setName('tags'))
 
 
-def to_dict(token_list):
+def to_dict(token_list: List[Any]) -> Dict[str, Any]:
     result = {}
     iterator = enumerate(token_list)
     for i, tok in iterator:
@@ -595,7 +592,7 @@ hs_cols = GenerateMatch(
 hs_gridVer = Combine(And([Suppress(Literal('ver:')) + hs_str]))
 
 
-def _assign_ver(toks):
+def _assign_ver(toks: List[SortableDict]) -> SortableDict:
     ver = toks[0]
     if len(toks) > 1:
         grid_meta = toks[1]
@@ -619,7 +616,7 @@ hs_gridMeta = GenerateMatch(
     ]).setParseAction(_assign_ver))  # + hs_nl
 
 
-def _gen_grid(toks):
+def _gen_grid(toks: List[Any]) -> Grid:
     (grid_meta, col_meta, rows) = toks
     if len(rows) == 1 and rows[0] is None:
         rows = []
@@ -644,7 +641,7 @@ hs_grid_3_0 <<= And([
 ]).setParseAction(_gen_grid)
 
 
-def parse_grid(grid_data, parse_all=True):
+def parse_grid(grid_data: str, parse_all: bool = True):
     """
     Parse the incoming grid.
     """

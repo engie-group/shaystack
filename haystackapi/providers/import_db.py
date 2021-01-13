@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+# Import data in SQL database
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """
 Import haystack file in SQL database.
 """
@@ -89,7 +95,7 @@ def import_in_db(source: str,
         original_grid = provider.read_grid_from_db(customer_id, version)
         target_grid = _read_grid(source)
         provider.update_grid_in_db(target_grid - original_grid, version, customer_id)
-        log.info("%s imported", source)
+        log.debug("%s imported", source)
 
         if time_series:
             dir_name = dirname(source)
@@ -99,7 +105,7 @@ def import_in_db(source: str,
                     uri = dir_name + '/' + row['hisURI']
                     ts_grid = _read_grid(uri)
                     provider.import_ts_in_db(ts_grid, row["id"], customer_id)
-                    log.info("%s imported", uri)
+                    log.debug("%s imported", uri)
 
 
 def aws_handler(event, context):

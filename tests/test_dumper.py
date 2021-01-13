@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # Zinc dumping and parsing module
+# Use license Apache V2.0
 # (C) 2016 VRT Systems
+# (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 import datetime
@@ -267,14 +269,14 @@ def test_data_types_zinc_v2():
         },
         {
             'comment': 'A URI',
-            'value': haystackapi.Uri(u'http://www.example.com#`unicode:\u1234\u5678`'),
+            'value': haystackapi.Uri('http://www.example.com#`unicode:\u1234\u5678`'),
         },
         {
             'comment': 'A string',
-            'value': u'This is a test\n'
-                     u'Line two of test\n'
-                     u'\tIndented with "quotes", \\backslashes\\ and '
-                     u'Unicode characters: \u1234\u5678 and a $ dollar sign',
+            'value': 'This is a test\n'
+                     'Line two of test\n'
+                     '\tIndented with "quotes", \\backslashes\\ and '
+                     'Unicode characters: \u1234\u5678 and a $ dollar sign',
         },
         {
             'comment': 'A date',
@@ -526,7 +528,7 @@ def test_data_types_csv_v2():
     ])
     grid_csv = haystackapi.dump(grid, mode=haystackapi.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
-    assert grid_csv == u'''comment,value
+    assert grid_csv == '''comment,value
 "A null value",
 "A marker",\u2713
 "A remove (2.0 version)",R
@@ -1032,7 +1034,7 @@ def test_scalar_json():
     # No need to be exhaustive, the underlying function is tested heavily by
     # the grid dump tests.
     assert haystackapi.dump_scalar(haystackapi.Ref('areference', 'a display name'),
-                                   mode=haystackapi.MODE_JSON) == 'r:areference a display name'
+                                   mode=haystackapi.MODE_JSON) == '"r:areference a display name"'
 
 
 def test_scalar_csv():

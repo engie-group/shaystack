@@ -499,7 +499,9 @@ test: .make-test
 
 .make-test-aws: aws-update-token
 	$(VALIDATE_VENV)
+	echo -e "$(green)Running AWS tests...$(normal)"
 	$(CONDA_PYTHON) -m nose -s tests -a 'aws' --where=tests $(NOSETESTS_ARGS)
+	echo -e "$(green)AWS tests done$(normal)"
 	@date >.make-test-aws
 
 ## Run only test with connection with AWS
@@ -533,7 +535,7 @@ functional-db-sqlite: $(REQUIREMENTS)
 	rm -f test.db
 	export HAYSTACK_PROVIDER=haystackapi.providers.sql
 	export HAYSTACK_DB=sqlite3://localhost/test.db
-	$(CONDA_PYTHON) -m haystackapi.providers.import_db sample/carytown.zinc $${HAYSTACK_DB}
+	$(CONDA_PYTHON) -m haystackapi.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in SQLite$(normal)"
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
@@ -562,7 +564,7 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 	pip install psycopg2 >/dev/null
 	export HAYSTACK_PROVIDER=haystackapi.providers.sql
 	export HAYSTACK_DB=postgres://postgres:password@172.17.0.2:5432/postgres
-	$(CONDA_PYTHON) -m haystackapi.providers.import_db sample/carytown.zinc $${HAYSTACK_DB}
+	$(CONDA_PYTHON) -m haystackapi.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in Postgres$(normal)"
 	$(MAKE) start-pg async-start-api >/dev/null
 

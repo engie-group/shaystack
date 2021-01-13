@@ -1,7 +1,8 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Zinc Grid dumper
+# Use license Apache V2.0
 # (C) 2018 VRT Systems
+# (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
@@ -14,18 +15,21 @@ from __future__ import unicode_literals
 import datetime
 import functools
 import re
+from typing import Match, Tuple, Any, List, Dict
 
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
     MARKER, NA, REMOVE, STR_SUB, XStr
 from .grid import Grid
-from .version import LATEST_VER, VER_3_0
+from .metadata import MetadataObject
+from .sortabledict import SortableDict
+from .version import LATEST_VER, VER_3_0, Version
 from .zoneinfo import timezone_name
 
 URI_META = re.compile(r'([\\`\u0080-\uffff])')
 STR_META = re.compile(r'([\\"$\u0080-\uffff])')
 
 
-def str_sub(match):
+def str_sub(match: Match) -> str:
     char = match.group(0)
     order = ord(char)
     if order >= 0x0080:
@@ -33,10 +37,10 @@ def str_sub(match):
         return '\\u%04x' % order
     if char in '\\"$':
         return '\\%s' % char
-    return char
+    return str(char)
 
 
-def uri_sub(match):
+def uri_sub(match: Match) -> str:
     char = match.group(0)
     order = ord(char)
     if order >= 0x80:
@@ -44,10 +48,10 @@ def uri_sub(match):
         return '\\u%04x' % order
     if char in '\\`':
         return '\\%s' % char
-    return char
+    return str(char)
 
 
-def dump_grid(grid):
+def dump_grid(grid: Grid) -> str:
     """
     Dump a single grid to its ZINC representation.
     """
@@ -59,12 +63,12 @@ def dump_grid(grid):
     return '\n'.join([header, columns] + rows + [''])
 
 
-def dump_meta(meta, version=LATEST_VER):
+def dump_meta(meta: MetadataObject, version: Version = LATEST_VER) -> str:
     _dump = functools.partial(dump_meta_item, version=version)
     return ' '.join(map(_dump, list(meta.items())))
 
 
-def dump_meta_item(item, version=LATEST_VER):
+def dump_meta_item(item: Tuple[str, Any], version: Version = LATEST_VER) -> str:
     (item_id, item_value) = item
     if item_value is MARKER:
         return dump_id(item_id)
@@ -72,7 +76,7 @@ def dump_meta_item(item, version=LATEST_VER):
                       dump_scalar(item_value, version=version))
 
 
-def dump_columns(cols, version=LATEST_VER):
+def dump_columns(cols: SortableDict, version: Version = LATEST_VER) -> str:
     if not cols:
         return ''
     _dump = functools.partial(dump_column, version=version)
@@ -80,21 +84,21 @@ def dump_columns(cols, version=LATEST_VER):
     return ','.join(map(_dump, *_cols))
 
 
-def dump_column(col, col_meta, version=LATEST_VER):
+def dump_column(col: str, col_meta: MetadataObject, version: Version = LATEST_VER) -> str:
     if bool(col_meta):
         return '%s %s' % (dump_id(col),
                           dump_meta(col_meta, version=version))
     return dump_id(col)
 
 
-def dump_rows(grid):
+def dump_rows(grid: Grid) -> List[str]:
     return list(map(functools.partial(dump_row, grid), grid))
 
 
 _EMPTY = "<empty>"
 
 
-def dump_row(grid, row):
+def dump_row(grid: Grid, row: Dict[str, Any]) -> str:
     if len(grid.column.keys()) > 1:
         return ','.join([dump_scalar(row.get(c, _EMPTY), version=grid.version) for
                          c in grid.column.keys()])
@@ -102,7 +106,7 @@ def dump_row(grid, row):
                      c in grid.column.keys()])
 
 
-def dump_scalar(scalar, version=LATEST_VER):
+def dump_scalar(scalar: Any, version: Version = LATEST_VER) -> str:
     if scalar is _EMPTY:
         return ""
     if scalar is None:
@@ -162,11 +166,11 @@ def dump_scalar(scalar, version=LATEST_VER):
     raise NotImplementedError('Unhandled case: %r' % scalar)
 
 
-def dump_id(id_str):
+def dump_id(id_str: str) -> str:
     return id_str
 
 
-def dump_str(str_value):
+def dump_str(str_value: str) -> str:
     # Replace special characters.
     str_value = STR_META.sub(str_sub, str_value)
     # Replace other escapes.
@@ -175,8 +179,9 @@ def dump_str(str_value):
     return '"%s"' % str_value
 
 
-def dump_uri(uri_value):
+def dump_uri(uri: Uri) -> str:
     # Replace special characters.
+    uri_value = str(uri)
     uri_value = URI_META.sub(uri_sub, uri_value)
     # Replace other escapes.
     for orig, esc in STR_SUB:
@@ -184,47 +189,47 @@ def dump_uri(uri_value):
     return '`%s`' % uri_value
 
 
-def dump_bin(bin_value):
+def dump_bin(bin_value: Bin) -> str:
     return 'Bin(%s)' % bin_value
 
 
-def dump_xstr(xstr_value):
+def dump_xstr(xstr_value: XStr) -> str:
     return '%s("%s")' % (xstr_value.encoding, xstr_value.data_to_string())
 
 
-def dump_quantity(quantity):
+def dump_quantity(quantity: Quantity) -> str:
     if (quantity.unit is None) or (quantity.unit == ''):
-        return dump_decimal(quantity.value)
-    return '%s%s' % (dump_decimal(quantity.value),
+        return dump_decimal(quantity.m)
+    return '%s%s' % (dump_decimal(quantity.m),
                      quantity.unit)
 
 
-def dump_decimal(decimal):
+def dump_decimal(decimal: float) -> str:
     return str(decimal)
 
 
-def dump_bool(bool_value):
+def dump_bool(bool_value: bool) -> str:
     return 'T' if bool(bool_value) else 'F'
 
 
-def dump_coord(coordinate):
+def dump_coord(coordinate: Coordinate) -> str:
     return 'C(%f,%f)' % (coordinate.latitude, coordinate.longitude)
 
 
-def dump_ref(ref):
+def dump_ref(ref: Ref) -> str:
     if ref.has_value:
         return '@%s %s' % (ref.name, dump_str(ref.value))
     return '@%s' % ref.name
 
 
-def dump_hs_date(date):
+def dump_hs_date(date: datetime.date) -> str:
     return date.isoformat()
 
 
-def dump_hs_time(time):
+def dump_hs_time(time: datetime.time) -> str:
     return time.isoformat()
 
 
-def dump_hs_date_time(date_time):
+def dump_hs_date_time(date_time: datetime.datetime) -> str:
     tz_name = timezone_name(date_time)
     return '%s %s' % (date_time.isoformat(), tz_name)

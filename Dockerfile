@@ -13,6 +13,7 @@ COPY sample sample
 ENV HAYSTACK_PROVIDER=haystackapi.providers.url
 ENV HAYSTACK_URL=sample/carytown.zinc
 ENV HAYSTACK_DB=sqlite:///test.db#haystack
+ENV HAYSTACK_TS=
 ENV HAYSTACK_DB_SECRET=
 ENV REFRESH=15
 

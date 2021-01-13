@@ -1,7 +1,8 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Zinc data types
+# Use license Apache V2.0
 # (C) 2016 VRT Systems
+# (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
@@ -13,6 +14,8 @@ import base64
 import binascii
 import re
 from abc import ABCMeta
+from numbers import Number
+from typing import Optional, Tuple, Union
 
 import six
 
@@ -34,12 +37,12 @@ class Quantity(six.with_metaclass(ABCMeta, object)):  # pylint: disable=too-few-
     A float value with with pint unit.
     """
 
-    def __new__(cls, value, unit=None):
-        return PintQuantity(value, to_pint(unit))
+    def __new__(cls, m: float, unit: Optional[str] = None):
+        return PintQuantity(m, to_pint(unit))
 
     # Fake ctr to help audit tools
-    def __init__(self, value, unit=None):
-        self.value = value
+    def __init__(self, m: float, unit: Optional[str] = None):
+        self.m = m  # pylint: disable=invalid-name
         self.unit = unit
 
 
@@ -48,237 +51,238 @@ class Qty:
     A quantity is a scalar value (floating point) with a unit.
     """
 
-    def __init__(self, value, unit):
+    def __init__(self, value: float, unit: Optional[str]):
         self.value = value
         self.unit = unit
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '%s(%r, %r)' % (
             self.__class__.__name__, self.value, self.unit
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '%s %s' % (
             self.value, self.unit
         )
 
-    def __index__(self):
+    def __index__(self) -> float:
         return self.value.__index__()
 
-    def __oct__(self):  # pragma: no cover
-        return oct(self.value)
+    def __oct__(self) -> str:  # pragma: no cover
+        return oct(int(self.value))
 
-    def __hex__(self):  # pragma: no cover
-        return hex(self.value)
+    def __hex__(self) -> str:  # pragma: no cover
+        return hex(int(self.value))
 
-    def __int__(self):  # pragma: no cover
+    def __int__(self) -> int:  # pragma: no cover
         return int(self.value)
 
-    def __complex__(self):
+    def __complex__(self) -> complex:
         return complex(self.value)
 
-    def __float__(self):
+    def __float__(self) -> float:
         return float(self.value)
 
-    def __neg__(self):
-        return -self.value
+    def __neg__(self) -> 'Qty':
+        return Qty(-self.value, self.unit)
 
-    def __pos__(self):
-        return +self.value
+    def __pos__(self) -> 'Qty':
+        return self
 
-    def __abs__(self):
-        return abs(self.value)
+    def __abs__(self) -> 'Qty':
+        return Qty(abs(self.value), self.unit)
 
-    def __invert__(self):
-        return ~self.value
+    def __invert__(self) -> 'Qty':
+        return Qty(~self.value, self.unit)
 
-    def __add__(self, other):
+    def __add__(self, other: Union[Number, 'Qty']) -> 'Qty':
         if isinstance(other, Qty):
             other = other.value
-        return self.value + other
+        return Qty(self.value + other, self.unit)
 
-    def __sub__(self, other):
+    def __sub__(self, other: Union[Number, 'Qty']) -> 'Qty':
         if isinstance(other, Qty):
             other = other.value
-        return self.value - other
+        return Qty(self.value - other, self.unit)
 
-    def __mul__(self, other):
+    def __mul__(self, other: Union[Number, 'Qty']) -> 'Qty':
         if isinstance(other, Qty):
             other = other.value
-        return self.value * other
+        return Qty(self.value * other, self.unit)
 
-    def __div__(self, other):  # pragma: no cover
+    def __div__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         if isinstance(other, Qty):
             other = other.value
-        return self.value / other
+        return Qty(self.value / other, self.unit)
 
-    def __truediv__(self, other):
+    def __truediv__(self, other: Union[Number, 'Qty']) -> 'Qty':
         if isinstance(other, Qty):
             other = other.value
-        return self.value / other
+        return Qty(self.value / other, self.unit)
 
-    def __floordiv__(self, other):
+    def __floordiv__(self, other: Union[Number, 'Qty']) -> 'Qty':
         if isinstance(other, Qty):
             other = other.value
-        return self.value // other
+        return Qty(self.value // other, self.unit)
 
-    def __mod__(self, other):
+    def __mod__(self, other: Union[Number, 'Qty']) -> 'Qty':
         if isinstance(other, Qty):
             other = other.value
-        return self.value % other
+        return Qty(self.value % other, self.unit)
 
-    def __divmod__(self, other):
+    def __divmod__(self, other: Union[Number, 'Qty']) -> Tuple[float, float]:
         if isinstance(other, Qty):
             other = other.value
+
         return divmod(self.value, other)
 
-    def __pow__(self, other, modulo=None):
+    def __pow__(self, other: Union[Number, 'Qty'], modulo: Optional[int] = None) -> complex:
         if isinstance(other, Qty):
             other = other.value
         return pow(self.value, other, modulo)
 
-    def __lshift__(self, other):
+    def __lshift__(self, other: Union[Number, 'Qty']) -> 'Qty':
         if isinstance(other, Qty):
             other = other.value
-        return self.value << other
+        return Qty(self.value << other, self.unit)
 
-    def __rshift__(self, other):
+    def __rshift__(self, other: Union[Number, 'Qty']) -> 'Qty':
         if isinstance(other, Qty):
             other = other.value
-        return self.value >> other
+        return Qty(self.value >> other, self.unit)
 
-    def __and__(self, other):
+    def __and__(self, other: Union[Number, 'Qty']) -> 'Qty':
         if isinstance(other, Qty):
             other = other.value
-        return self.value & other
+        return Qty(self.value & other, self.unit)
 
-    def __xor__(self, other):
+    def __xor__(self, other: Union[Number, 'Qty']) -> 'Qty':
         if isinstance(other, Qty):
             other = other.value
-        return self.value ^ other
+        return Qty(self.value ^ other, self.unit)
 
-    def __or__(self, other):
+    def __or__(self, other: Union[Number, 'Qty']) -> 'Qty':
         if isinstance(other, Qty):
             other = other.value
-        return self.value | other
+        return Qty(self.value | other, self.unit)
 
-    def __radd__(self, other):
+    def __radd__(self, other: Union[Number, 'Qty']) -> 'Qty':
         if isinstance(other, Qty):  # pragma: no cover
             # Unlikely due to Qty supporting these ops directly
             other = other.value
-        return other + self.value
+        return Qty(other + self.value, self.unit)
 
-    def __rsub__(self, other):
+    def __rsub__(self, other: Union[Number, 'Qty']) -> 'Qty':
         if isinstance(other, Qty):  # pragma: no cover
             # Unlikely due to Qty supporting these ops directly
             other = other.value
-        return other - self.value
+        return Qty(other - self.value, self.unit)
 
-    def __rmul__(self, other):
+    def __rmul__(self, other: Union[Number, 'Qty']) -> 'Qty':
         if isinstance(other, Qty):  # pragma: no cover
             # Unlikely due to Qty supporting these ops directly
             other = other.value
-        return other * self.value
+        return Qty(other * self.value, self.unit)
 
-    def __rdiv__(self, other):  # pragma: no cover
+    def __rdiv__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         if isinstance(other, Qty):
             # Unlikely due to Qty supporting these ops directly
             other = other.value
-        return other / self.value
+        return Qty(other / self.value, self.unit)
 
-    def __rtruediv__(self, other):  # pragma: no cover
+    def __rtruediv__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
         if isinstance(other, Qty):
             other = other.value
-        return other / self.value
+        return Qty(other / self.value, self.unit)
 
-    def __rfloordiv__(self, other):  # pragma: no cover
+    def __rfloordiv__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
         if isinstance(other, Qty):
             other = other.value
-        return other // self.value
+        return Qty(other // self.value, self.unit)
 
-    def __rmod__(self, other):  # pragma: no cover
+    def __rmod__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
         if isinstance(other, Qty):
             other = other.value
-        return other % self.value
+        return Qty(other % self.value, self.unit)
 
-    def __rdivmod__(self, other):  # pragma: no cover
+    def __rdivmod__(self, other: Union[Number, 'Qty']) -> Tuple[float, float]:  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
         if isinstance(other, Qty):
             other = other.value
         return divmod(other, self.value)
 
-    def __rpow__(self, other):  # pragma: no cover
+    def __rpow__(self, other: Union[Number, 'Qty']) -> complex:  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
         if isinstance(other, Qty):
             other = other.value
         return pow(other, self.value)
 
-    def __rlshift__(self, other):  # pragma: no cover
+    def __rlshift__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
         if isinstance(other, Qty):
             other = other.value
-        return other << self.value
+        return Qty(other << self.value, self.unit)
 
-    def __rrshift__(self, other):  # pragma: no cover
+    def __rrshift__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
         if isinstance(other, Qty):
             other = other.value
-        return other >> self.value
+        return Qty(other >> self.value, self.unit)
 
-    def __rand__(self, other):  # pragma: no cover
+    def __rand__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
         if isinstance(other, Qty):
             other = other.value
-        return other & self.value
+        return Qty(other & self.value, self.unit)
 
-    def __rxor__(self, other):  # pragma: no cover
+    def __rxor__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
         if isinstance(other, Qty):
             other = other.value
-        return other ^ self.value
+        return Qty(other ^ self.value, self.unit)
 
-    def __ror__(self, other):  # pragma: no cover
+    def __ror__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
         if isinstance(other, Qty):
             other = other.value
-        return other | self.value
+        return Qty(other | self.value, self.unit)
 
-    def _cmp_op(self, other, operator):
+    def _cmp_op(self, other: Union[Number, 'Qty'], operator) -> bool:  # PPR: type
         if isinstance(other, Qty):
             if other.unit != self.unit:
                 raise TypeError('Quantity units differ: %s vs %s' % (self.unit, other.unit))
             return operator(self.value, other.value)
         return operator(self.value, other)
 
-    def __lt__(self, other):
+    def __lt__(self, other: Union[Number, 'Qty']) -> bool:
         return self._cmp_op(other, lambda x, y: x < y)
 
-    def __le__(self, other):
+    def __le__(self, other: Union[Number, 'Qty']) -> bool:
         return self._cmp_op(other, lambda x, y: x <= y)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Union[Number, 'Qty']) -> bool:
         return self._cmp_op(other, lambda x, y: x == y)
 
-    def __ge__(self, other):
+    def __ge__(self, other: Union[Number, 'Qty']) -> bool:
         return self._cmp_op(other, lambda x, y: x >= y)
 
-    def __gt__(self, other):
+    def __gt__(self, other: Union[Number, 'Qty']) -> bool:
         return self._cmp_op(other, lambda x, y: x > y)
 
-    def __ne__(self, other):
+    def __ne__(self, other: Union[Number, 'Qty']) -> bool:
         return self._cmp_op(other, lambda x, y: x != y)
 
-    def __cmp__(self, other):
+    def __cmp__(self, other: Union[Number, 'Qty']) -> int:
         if self == other:
             return 0
         if self < other:
             return -1
         return 1
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.value, self.unit))
 
 
@@ -296,37 +300,40 @@ class PintQuantity(Qty, unit_reg.Quantity):
 Quantity.register(PintQuantity)  # noqa: E303
 
 
+# PPR Quantity = unit_reg.Quantity
+
+
 class Coordinate:
     """
     A 2D co-ordinate in degrees latitude and longitude.
     """
 
-    def __init__(self, latitude, longitude):
+    def __init__(self, latitude: float, longitude: float):
         self.latitude = latitude
         self.longitude = longitude
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '%s(%r, %r)' % (
             self.__class__.__name__, self.latitude, self.longitude
         )
 
-    def __str__(self):
-        return (u'%f\N{DEGREE SIGN} lat %f\N{DEGREE SIGN} long' % (
+    def __str__(self) -> str:
+        return ('%f\N{DEGREE SIGN} lat %f\N{DEGREE SIGN} long' % (
             round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
         ))
 
-    def __eq__(self, other):
+    def __eq__(self, other: 'Coordinate') -> bool:
         if not isinstance(other, Coordinate):
-            return NotImplemented
+            return False
         return (self.latitude == other.latitude) and \
                (self.longitude == other.longitude)
 
-    def __ne__(self, other):
+    def __ne__(self, other: 'Coordinate') -> bool:
         if not isinstance(other, Coordinate):
-            return NotImplemented
+            return True
         return not self == other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.latitude) ^ hash(self.longitude)
 
 
@@ -336,13 +343,12 @@ class Uri(str):
     types.
     """
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '%s(%s)' % (self.__class__.__name__,
                            super().__repr__())
 
-    def __eq__(self, other):
-        if not isinstance(other, Uri):
-            return NotImplemented
+    def __eq__(self, other: 'Uri') -> bool:
+        assert isinstance(other, Uri)
         return super().__eq__(other)
 
 
@@ -352,13 +358,12 @@ class Bin(str):
     types.
     """
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '%s(%s)' % (self.__class__.__name__,
                            super().__repr__())
 
-    def __eq__(self, other):
-        if not isinstance(other, Bin):
-            return NotImplemented
+    def __eq__(self, other: 'Bin') -> bool:
+        assert isinstance(other, Bin)
         return super().__eq__(other)
 
 
@@ -367,39 +372,44 @@ class XStr:
     A convenience class to allow identification of a Xstr
     """
 
-    def __init__(self, encoding, data):
+    def __init__(self, encoding: str, data: str):
         self.encoding = encoding
         if encoding == "hex":
             self.data = bytearray.fromhex(data)
         elif encoding == "b64":
             self.data = base64.b64decode(data)
         else:
-            self.data = data  # Not decoded
+            self.data = data.encode('ascii')  # Not decoded
 
-    def data_to_string(self):
+    def data_to_string(self) -> str:
         if self.encoding == "hex":
             return binascii.b2a_hex(self.data).decode("ascii")
         if self.encoding == "b64":
             return binascii.b2a_base64(self.data, newline=False).decode("ascii")
-        return self.data
+        raise ValueError("Ignore encoding")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'XStr("%s","%s")' % (self.encoding, self.data_to_string())
 
-    def __eq__(self, other):
+    def __eq__(self, other: 'XStr') -> bool:
         if not isinstance(other, XStr):
-            return NotImplemented
+            return False
         return self.data == other.data  # Check only binary data
+
+    def __ne__(self, other: 'XStr') -> bool:
+        if not isinstance(other, XStr):
+            return True
+        return not self.data == other.data  # Check only binary data
 
 
 class _Singleton:
-    def __copy__(self):
+    def __copy__(self) -> '_Singleton':
         return self
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo: '_Singleton') -> '_Singleton':
         return self
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.__class__)
 
 
@@ -408,7 +418,7 @@ class MarkerType(_Singleton):
     A singleton class representing a Marker.
     """
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'MARKER'
 
 
@@ -420,7 +430,7 @@ class NAType(_Singleton):
     A singleton class representing a NA.
     """
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'NA'
 
 
@@ -432,7 +442,7 @@ class RemoveType(_Singleton):
     A singleton class representing a Remove.
     """
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'REMOVE'
 
 
@@ -448,45 +458,45 @@ class Ref:
     # but the documentation does not specify what this string encodes.  This is
     # distinct from the reference name itself immediately following the @
     # symbol.  I'm guessing it's some kind of value.
-    def __init__(self, name, value=None, has_value=False):
+    def __init__(self, name: str, value: Optional[str] = None, has_value: bool = False):
         assert isinstance(name, str) and re.match("^[a-zA-Z0-9_:\\-.~]+$", name)
         self.name = name
         self.value = value
         self.has_value = has_value or (value is not None)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '%s(%r, %r, %r)' % (
             self.__class__.__name__, self.name, self.value, self.has_value
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.has_value:
             return '@%s %r' % (
                 self.name, self.value
             )
         return '@%s' % self.name
 
-    def __eq__(self, other):
+    def __eq__(self, other: 'Ref') -> bool:
         if not isinstance(other, Ref):
-            return NotImplemented
+            return False
         return self.name == other.name
 
-    def __ne__(self, other):
+    def __ne__(self, other: 'Ref'):
         if not isinstance(other, Ref):
-            return NotImplemented
+            return True
         return not self == other
 
-    def __lt__(self, other):
+    def __lt__(self, other: 'Ref') -> bool:
         return self.name.__lt__(other.name)
 
-    def __le__(self, other):
+    def __le__(self, other: 'Ref') -> bool:
         return self.name.__le__(other.name)
 
-    def __gt__(self, other):
+    def __gt__(self, other: 'Ref') -> bool:
         return self.name.__gt__(other.name)
 
-    def __ge__(self, other):
+    def __ge__(self, other: 'Ref') -> bool:
         return self.name.__ge__(other.name)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.name)

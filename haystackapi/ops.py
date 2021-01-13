@@ -1,9 +1,14 @@
-""" Haystack API implemented with HTTP generic layer.
+# -*- coding: utf-8 -*-
+# Wrapper between HTTP request and Haystack provider
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
+""" Wrapper between HTTP request and Haystack provider
 
-    The environment variable `HAYSTACK_PROVIDER` is use to
-    route the HTTP request to the specified provider.
-
-    Upper of this API, you can find a Flask, AWS Lambda, etc.
+    Instancier `HaystackHttpRequest` and `HaystackHttpResponse`
+    to create a link between HTTP technology and HaystackAPI,
+    and invoke the corresponding function.
 """
 import base64
 import codecs
@@ -15,7 +20,8 @@ import traceback
 from ast import literal_eval
 from dataclasses import dataclass, field
 from decimal import Decimal
-from typing import Optional, Any, Match, List, cast
+from numbers import Number
+from typing import Optional, Any, List, cast
 from typing import Tuple, Dict
 
 from accept_types import AcceptableType, get_best_match
@@ -80,7 +86,7 @@ class _AcceptableEncoding:
     weight = Decimal(1)
     pattern = None
 
-    def __init__(self, raw_encoding_type):
+    def __init__(self, raw_encoding_type: str):
         bits = raw_encoding_type.split(";", 1)
 
         encoding_type = bits[0]
@@ -95,23 +101,20 @@ class _AcceptableEncoding:
         self.weight = _get_weight(tail)
         self.pattern = re.compile("^" + re.escape(encoding_type) + "$")
 
-    def matches(self, encoding_type: str) -> Optional[Match[Any]]:
+    def matches(self, encoding_type: str) -> bool:
         """
         Return true if encoding_type match the pattern
         """
         return self.pattern.match(encoding_type)
 
-    def __str__(self):
-        return self.__unicode__()
-
-    def __unicode__(self):
+    def __str__(self) -> str:
         display = self.encoding_type
         if self.weight != Decimal(1):
             display += "; q=%0.2f" % self.weight
 
         return display
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<AcceptableType {0}>".format(self)
 
     def __eq__(self, other: Any) -> bool:
@@ -119,14 +122,14 @@ class _AcceptableEncoding:
             return False
         return (self.encoding_type, self.weight) == (other.encoding_type, other.weight)
 
-    def __lt__(self, other: Any) -> bool:
-        if not isinstance(other, _AcceptableEncoding):
-            raise ValueError("Parameter invalid")
+    def __lt__(self, other: '_AcceptableEncoding') -> bool:
+        assert isinstance(other, _AcceptableEncoding)
         return self.weight < other.weight
 
 
 def get_best_encoding_match(
-        header: str, available_encoding: List[str]
+        header: str,
+        available_encoding: List[str]
 ) -> Optional[str]:
     """
     Return best encoding match.
@@ -156,7 +159,7 @@ def _parse_header(header: str) -> List[AcceptableType]:
     return sorted(encoding_types, reverse=True)
 
 
-def _get_weight(tail):
+def _get_weight(tail: str) -> Number:
     """Given the tail of a mime type header (the bit after the first ``;``),
     find the ``q`` (weight, or quality) parameter.
 

@@ -1,7 +1,8 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Project Haystack version definitions.
+# Use license Apache V2.0
 # (C) 2018 VRT Systems
+# (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
@@ -28,6 +29,7 @@ So, in this implementation:
 
 import re
 import warnings
+from typing import Union
 
 VERSION_RE = re.compile(r'^(\d[\d.]*)([^\d].*)*$')
 
@@ -37,7 +39,7 @@ class Version:
     A Project Haystack version number
     """
 
-    def __init__(self, ver_str):
+    def __init__(self, ver_str: str):
         if isinstance(ver_str, Version):
             # Clone constructor
             self.version_nums = ver_str.version_nums
@@ -56,20 +58,20 @@ class Version:
                                        for p in version_nums.split('.')])
             self.version_extra = version_extra
 
-    def __str__(self):
+    def __str__(self) -> str:
         base = '.'.join([str(p) for p in self.version_nums])
         if self.version_extra:
             base += self.version_extra
         return base
 
-    def _cmp(self, other):
+    def _cmp(self, other: Union['Version', str]) -> int:
         """
         Compare two Project Haystack version strings, then return
             -1 if self < other,
             0 if self == other
             or 1 if self > other.
         """
-        if not isinstance(other, Version):
+        if isinstance(other, str):
             other = Version(other)
 
         num1 = self.version_nums
@@ -101,35 +103,35 @@ class Version:
             return -1
         return 1
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(str(self))
 
     # Comparison operators
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         return self._cmp(other) < 0
 
-    def __le__(self, other):
+    def __le__(self, other) -> bool:
         return self._cmp(other) < 1
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self._cmp(other) == 0
 
-    def __ne__(self, other):
+    def __ne__(self, other) -> bool:
         return self._cmp(other) != 0
 
-    def __ge__(self, other):
+    def __ge__(self, other) -> bool:
         return self._cmp(other) > -1
 
-    def __gt__(self, other):
+    def __gt__(self, other) -> bool:
         return self._cmp(other) > 0
 
     @classmethod
-    def nearest(cls, ver):
+    def nearest(cls, ver: Union[str, 'Version']) -> 'Version':
         """
         Retrieve the official version nearest the one given.
         """
-        if not isinstance(ver, Version):
+        if isinstance(ver, str):
             ver = Version(ver)
 
         if ver in OFFICIAL_VERSIONS:

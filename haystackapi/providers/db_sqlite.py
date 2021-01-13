@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+# SQLite db driver
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """
 Save Haystack ontology in SQLite database with JSon extension.
 Convert the haystack filter to sqlite SQL equivalent syntax.
@@ -148,7 +154,7 @@ def _generate_filter_in_sql(table_name: str,
         else:
             value = node.right
             if isinstance(value, Quantity):
-                value = value.value
+                value = value.m
             if isinstance(value, (int, float)) and node.operator not in ('==', '!='):
                 # Comparison with numbers. Must remove the header 'n:'
                 num_table, select, where = \
@@ -181,11 +187,11 @@ def _generate_filter_in_sql(table_name: str,
                     if isinstance(value, Ref):
                         where.append(
                             f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
-                            f"LIKE '{str(jsondumper.dump_scalar(value))}%'\n")
+                            f"LIKE '{str(json.loads(jsondumper.dump_scalar(value)))}%'\n")
                     else:
                         where.append(
                             f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
-                            f"{node.operator} '{str(jsondumper.dump_scalar(value))}'\n")
+                            f"{node.operator} '{str(json.loads(jsondumper.dump_scalar(value)))}'\n")
 
     else:
         assert False, "Invalid node"

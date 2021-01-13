@@ -1,7 +1,14 @@
+# -*- coding: utf-8 -*-
+# Haystack API Provider module
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """
 Model to inject a another graphene model, to manage the haystack layer.
 See the blueprint_graphql to see how to integrate this part of global GraphQL model.
 """
+import json
 import logging
 from datetime import datetime, date, time
 from typing import Optional, List, Any, Dict, Union, Type
@@ -37,7 +44,9 @@ class HSScalar(graphene.Scalar):
 
     @staticmethod
     def serialize(hs_scalar: Any) -> Any:
-        return haystackapi.dump_scalar(hs_scalar, haystackapi.MODE_JSON, version=haystackapi.VER_3_0)
+        return json.loads(haystackapi.dump_scalar(hs_scalar,
+                                                  haystackapi.MODE_JSON,
+                                                  version=haystackapi.VER_3_0))
 
     @staticmethod
     def parse_literal(node: Union[IntValue, FloatValue, StringValue, BooleanValue, EnumValue]) -> Any:

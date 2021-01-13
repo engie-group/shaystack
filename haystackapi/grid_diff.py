@@ -1,5 +1,8 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
+# Compare Grid
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
+#
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """
 Module to compare two grid.
@@ -195,7 +198,7 @@ def grid_merge(orig_grid: Grid, diff: Grid) -> Grid:  # pylint: disable=too-many
     return orig_grid
 
 
-def merge_cols(column, orig_column):
+def merge_cols(column: SortableDict, orig_column: SortableDict) -> SortableDict:
     # Apply diff of columns
     new_cols = column.copy()  # Order describe by diff
     for col, v_col in column.items():
@@ -218,7 +221,7 @@ def merge_cols(column, orig_column):
     return new_cols
 
 
-def merge_metadata(metadata, left_metadata):
+def merge_metadata(metadata: MetadataObject, left_metadata: MetadataObject) -> None:
     for k_metadata, v_metadata in metadata.items():
         if k_metadata == 'diff_' and v_metadata == MARKER:
             pass

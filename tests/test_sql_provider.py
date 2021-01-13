@@ -23,9 +23,9 @@ def skip(msg: str) -> None:
 
 
 def _get_grids():
-    sample_grid = Grid(version=VER_3_0, columns=["id", "col"])
-    sample_grid.append({"id": Ref("id1"), "col": 1})
-    sample_grid.append({"id": Ref("id2"), "col": 2})
+    sample_grid = Grid(version=VER_3_0, columns=["id", "col", "dis"])
+    sample_grid.append({"id": Ref("id1"), "col": 1, "dis": "Dis 1"})
+    sample_grid.append({"id": Ref("id2"), "col": 2, "dis": "Dis 2"})
     version_1 = datetime.datetime(2020, 10, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)
     version_2 = datetime.datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
     version_3 = datetime.datetime(2020, 10, 1, 0, 0, 3, 0, tzinfo=pytz.UTC)
@@ -168,11 +168,33 @@ def test_version():
 
 
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
-def test_values_for_tag():
+def test_values_for_tag_id():
     try:
         with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
             _populate_db(provider)
             values = provider.values_for_tag("id")
             assert len(values) > 1
+    except NotImplementedError:
+        skip("Unsupported with standard sqlite. Use supersqlite")
+
+
+@patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
+def test_values_for_tag_col():
+    try:
+        with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
+            _populate_db(provider)
+            values = provider.values_for_tag("col")
+            assert len(values) > 1
+    except NotImplementedError:
+        skip("Unsupported with standard sqlite. Use supersqlite")
+
+
+@patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
+def test_values_for_tag_dis():
+    try:
+        with cast(SQLProvider, get_provider("haystackapi.providers.sql")) as provider:
+            _populate_db(provider)
+            values = provider.values_for_tag("dis")
+            assert values == ['Dis 1', 'Dis 2']
     except NotImplementedError:
         skip("Unsupported with standard sqlite. Use supersqlite")

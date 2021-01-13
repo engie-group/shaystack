@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-# CSV Grid Parser
-# (C) 2020 Philippe PRADOS
+# Grid CSV dumper
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """
@@ -9,6 +10,7 @@ and produce a `Grid` instance.
 """
 from csv import reader
 from io import StringIO
+from typing import Any
 
 from .datatypes import MARKER, Ref
 from .grid import Grid
@@ -16,7 +18,7 @@ from .version import VER_3_0, Version, LATEST_VER
 from .zincparser import parse_scalar as zinc_parse_scalar, ZincParseException
 
 
-def parse_grid(grid_str):
+def parse_grid(grid_str: str) -> Grid:
     version = VER_3_0
     # for row in csv.reader(grid_str.splitlines()): print(row)
     csv_reader = reader(StringIO(grid_str))
@@ -39,10 +41,10 @@ def parse_grid(grid_str):
 _EMPTY = "<empty>"
 
 
-def parse_scalar(scalar: str, version: Version = LATEST_VER):
+def parse_scalar(scalar: str, version: Version = LATEST_VER) -> Any:
     if scalar == '':
         return _EMPTY
-    if scalar == u'\u2713':
+    if scalar == '\u2713':
         return MARKER
     if scalar == 'true':
         return True

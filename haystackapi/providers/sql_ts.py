@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+# SQL + TS provider
+# Use license Apache V2.0
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """
 Add the persistance of time-series with TS database.
 
@@ -187,7 +193,7 @@ class Provider(SQLProvider):
             target_type = "DOUBLE"
         elif isinstance(value, Quantity):
             target_type = "DOUBLE"
-            cast_fn = lambda x: str(x.value)
+            cast_fn = lambda x: str(x.m)
         elif isinstance(value, bool):
             target_type = "BOOLEAN"
         elif isinstance(value, int):

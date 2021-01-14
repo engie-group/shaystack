@@ -1,12 +1,12 @@
 # Python Haystack API
 
-| The API is not stable and can be changed without warning. |
+| The API is not stable and can be changed without any notice. |
 | --------------------------------------------------------- |
 
 | This is a pre-release version |
 | ----------------------------- |
 
-To use the release candidate package present in **test.pypi.org**, use
+To use the release candidate package hosted in **test.pypi.org**, use
 
 ```bash
 export PIP_INDEX_URL=https://test.pypi.org/simple
@@ -16,28 +16,44 @@ export PIP_EXTRA_INDEX_URL=https://pypi.org/simple
 Haystackapi is a set of API to implement [Haystack project specification](https://project-haystack.org/). It's
 compatible with Flask server in data center, Edge (Raspberry?) or in AWS Lambda function.
 
-## Summary
+## About Haystack, and who is it for
 
-This project contains source code to parse or dump Haystack files
+[Haystack project]((https://project-haystack.org/)) is an open source initiative to standardize semantic data models for
+Internet Of Things. It enables interoperability between any IoT data producer and consumer, mainly in the Smart Building
+area.
+
+Haystack core data model is the Grid, it can be serialized in many formats,
+mainly [Zinc](https://www.project-haystack.org/doc/Zinc),
+[Json](https://www.project-haystack.org/doc/Json)
+and [Csv](https://www.project-haystack.org/doc/Csv)
+
+## About this project
+
+This project implements client side haystack code. Useful to parse or dump Haystack files
 ([Zinc](https://www.project-haystack.org/doc/Zinc),
 [Json](https://www.project-haystack.org/doc/Json),
 [Csv](https://www.project-haystack.org/doc/Csv)).
 
-To implement the [Haystack Rest API](https://www.project-haystack.org/doc/Rest), extend the class `HaystackInterface`
-and publish an AWS Lambda or start a Flash server
-(See [Server API](#server-api)).
+It also implements the server side: To implement the
+[Haystack Rest API](https://www.project-haystack.org/doc/Rest), useful to serve Haystack data you host.
 
-This implementation propose two API endpoint:
-
-- Classical [REST Haystack API](https://www.project-haystack.org/doc/Rest)
-- GraphQL API
+- We implemented two serving options (See Server API): Flask and AWS Lambda
+    - Each offering two API endpoints:
+        - Classical REST Haystack API
+        - GraphQL API
+- We introduced and implemented the *Provider* concept, which handles various options in terms on haystack data
+  location:
+    - Local or remote file system (including AWS S3)
+    - Local or remote relational database, with optional AWS Time Stream use for Time Series
+    - Other custom data location can be handled by extending
+      `haystackapi.providers.HaystackInterface`
 
 # History
 
 This project is a fork of [hszinc](https://github.com/widesky/hszinc)
 (Thanks to the team). The proposed evolutions were too big to be accepted in a pull request.
 
-To see the similarities and differences between the two version, clic [here](hszinc.md)
+To see the similarities and differences between the two project, click [here](hszinc.md)
 
 # Try it
 
@@ -120,7 +136,13 @@ M,"supported on Python and 3.7+"
 C(-27.472500,153.003000),"Made in Australia from local and imported ingredients"
 
 In [10]: print(haystackapi.dump(g,mode=haystackapi.MODE_JSON))
-{"meta": {"aMarker": "m:", "today": "d:2020-12-16", "ver": "3.0"}, "cols": [{"metaData": "s:in no particular order", "abc": "n:123.000000", "name": "firstColumn"}, {"name": "secondColumn"}], "rows": [{"firstColumn": "n:154.000000 kg", "secondColumn": "s:and counting"}, {"firstColumn": "m:", "secondColumn": "s:supported on Python 2.7 and 3.x"}, {"firstColumn": "c:-27.472500,153.003000", "secondColumn": "s:Made in Australia from local and imported ingredients"}]}
+{"meta": {"aMarker": "m:", "today": "d:2020-12-16", "ver": "3.0"}, "cols": [{"metaData": "s:in no particular order", 
+"abc": "n:123.000000", "name": "firstColumn"}, {"name": "secondColumn"}], 
+"rows": [
+{"firstColumn": "n:154.000000 kg", "secondColumn": "s:and counting"}, 
+{"firstColumn": "m:", "secondColumn": "s:supported on Python 2.7 and 3.x"}, 
+{"firstColumn": "c:-27.472500,153.003000", "secondColumn": "s:Made in Australia from local and imported ingredients"}
+]}
 
 In [11]: # Load haystack file
 In [12]: import io
@@ -163,7 +185,8 @@ In [20]: with open(ts_uri) as f:
 ...: 
 <Grid>
         Version: 3.0
-        Metadata: MetadataObject{'hisStart'=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=<StaticTzInfo 'Etc/UTC'>), 'hisEnd'=datetime.datetime(2020, 12, 1, 0, 0, tzinfo=<StaticTzInfo 'Etc/UTC'>)}
+        Metadata: MetadataObject{'hisStart'=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=<StaticTzInfo 'Etc/UTC'>), 
+        'hisEnd'=datetime.datetime(2020, 12, 1, 0, 0, tzinfo=<StaticTzInfo 'Etc/UTC'>)}
         Columns:
                 ts
                 val
@@ -352,8 +375,15 @@ in another shell
 
 ```console
 $ curl 'http://localhost:3000/haystack/read?filter=site'
-air,phone,sensor,occupied,store,damper,enum,temp,tz,tariffHis,sp,area,site,weatherRef,elecCost,hisMode,kwSite,summary,fan,siteRef,primaryFunction,kind,cmd,geoCountry,elec,lights,geoStreet,occupiedEnd,yearBuilt,siteMeter,geoCoord,regionRef,occupiedStart,effective,equip,sitePoint,cool,ahu,hvac,costPerHour,unit,lightsGroup,discharge,zone,power,geoCity,rooftop,navName,outside,point,dis,energy,elecMeterLoad,id,geoAddr,cur,geoState,geoPostalCode,equipRef,meter,pressure,heat,return,storeNum,his,metro,stage,hisURI
-,"804.552.2222",,,✓,,,,"New_York",,,3149.0ft²,✓,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,,,,"Retail Store",,,"US",,,"3504 W Cary St",20:00:00,1996.0,,"C(37.555385,-77.486903)",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,,,,,,,,,,,,,"Richmond",,,,,"Carytown",,,@p:demo:r:23a44701-a89a6c66 Carytown,"3504 W Cary St, Richmond, VA",,"VA","23221",,,,,,1.0,,"Richmond",,
+air,phone,sensor,occupied,store,damper,enum,temp,tz,tariffHis,sp,area,site,weatherRef,elecCost,hisMode,kwSite,summary,
+fan,siteRef,primaryFunction,kind,cmd,geoCountry,elec,lights,geoStreet,occupiedEnd,yearBuilt,siteMeter,geoCoord,
+regionRef,occupiedStart,effective,equip,sitePoint,cool,ahu,hvac,costPerHour,unit,lightsGroup,discharge,zone,power,
+geoCity,rooftop,navName,outside,point,dis,energy,elecMeterLoad,id,geoAddr,cur,geoState,geoPostalCode,equipRef,meter,
+pressure,heat,return,storeNum,his,metro,stage,hisURI
+,"804.552.2222",,,✓,,,,"New_York",,,3149.0ft²,✓,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,,,,"Retail Store",,,
+"US",,,"3504 W Cary St",20:00:00,1996.0,,"C(37.555385,-77.486903)",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,
+,,,,,,,,,,,,"Richmond",,,,,"Carytown",,,@p:demo:r:23a44701-a89a6c66 Carytown,"3504 W Cary St, Richmond, VA",,
+"VA","23221",,,,,,1.0,,"Richmond",,
 ```
 
 ##### Limitations
@@ -382,6 +412,7 @@ Install the corresponding database driver:
 | -------- | --------------------------------------------------- |
 | sqlite   | `pip install supersqlite` (may take several minutes)|
 | postgres | `pip install psycopg2`                              |
+|          | or `pip install psycopg2-binary`                    |
 
 You can use `haystackapi_import_db` to import a Haystack files into the database, only if the entities are modified
 (to respect the notion of _Version_ with this provider). The corresponding `hisURI` time-series files are uploaded too.
@@ -416,8 +447,15 @@ in another shell
 
 ```console
 $ curl 'http://localhost:3000/haystack/read?filter=site'
-air,phone,sensor,occupied,store,damper,enum,temp,tz,tariffHis,sp,area,site,weatherRef,elecCost,hisMode,kwSite,summary,fan,siteRef,primaryFunction,kind,cmd,geoCountry,elec,lights,geoStreet,occupiedEnd,yearBuilt,siteMeter,geoCoord,regionRef,occupiedStart,effective,equip,sitePoint,cool,ahu,hvac,costPerHour,unit,lightsGroup,discharge,zone,power,geoCity,rooftop,navName,outside,point,dis,energy,elecMeterLoad,id,geoAddr,cur,geoState,geoPostalCode,equipRef,meter,pressure,heat,return,storeNum,his,metro,stage,hisURI
-,"804.552.2222",,,✓,,,,"New_York",,,3149.0ft²,✓,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,,,,"Retail Store",,,"US",,,"3504 W Cary St",20:00:00,1996.0,,"C(37.555385,-77.486903)",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,,,,,,,,,,,,,"Richmond",,,,,"Carytown",,,@p:demo:r:23a44701-a89a6c66 Carytown,"3504 W Cary St, Richmond, VA",,"VA","23221",,,,,,1.0,,"Richmond",,
+air,phone,sensor,occupied,store,damper,enum,temp,tz,tariffHis,sp,area,site,weatherRef,elecCost,hisMode,kwSite,summary,
+fan,siteRef,primaryFunction,kind,cmd,geoCountry,elec,lights,geoStreet,occupiedEnd,yearBuilt,siteMeter,geoCoord,
+regionRef,occupiedStart,effective,equip,sitePoint,cool,ahu,hvac,costPerHour,unit,lightsGroup,discharge,zone,power,
+geoCity,rooftop,navName,outside,point,dis,energy,elecMeterLoad,id,geoAddr,cur,geoState,geoPostalCode,equipRef,meter,
+pressure,heat,return,storeNum,his,metro,stage,hisURI
+,"804.552.2222",,,✓,,,,"New_York",,,3149.0ft²,✓,"@p:demo:r:23a44701-1af1bca9 Richmond, VA",,,,,,,"Retail Store",,,
+"US",,,"3504 W Cary St",20:00:00,1996.0,,"C(37.555385,-77.486903)",@p:demo:r:23a44701-67faf4db Richmond,10:00:00,
+,,,,,,,,,,,,"Richmond",,,,,"Carytown",,,@p:demo:r:23a44701-a89a6c66 Carytown,"3504 W Cary St, Richmond, VA",,
+"VA","23221",,,,,,1.0,,"Richmond",,
 ```
 
 The SQL url is in form: <dialect\[+\<driver\>]>://\[\<user\>\[:\<password\>]@>\<host\>\[:\<port\>]/\<database
@@ -793,6 +831,10 @@ See [here](./Contibute.md)
 
 - [Haystack Project](https://www.project-haystack.org/)
 - [Zappa](https://github.com/Miserlou/Zappa) framework
+
+# License
+
+See [LICENCE](LICENSE-2.0.txt) file
 
 # TODO
 

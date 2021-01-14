@@ -34,6 +34,21 @@ $ conda activate haystackapi
 $ make help
 ```
 
+## Build in docker
+
+Start a bash in Ubuntu docker image.
+
+```console
+$ docker run -v $$(pwd):/haystackapi -it ubuntu
+```
+
+Then, run `init_conda_build.sh`
+
+```console
+# cd /haystackapi
+# ./init_conda_build.sh
+```
+
 ## Tests
 
 Tests are defined in the `tests` folder in this project. To run all tests, use `make test`.

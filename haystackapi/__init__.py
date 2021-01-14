@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Haystack module
-# Use license Apache V2.0
+# See the accompanying LICENSE Apache V2.0 file.
 # (C) 2016 VRT Systems
 # (C) 2021 Engie Digital
 #

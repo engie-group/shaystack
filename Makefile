@@ -3,10 +3,8 @@ SHELL=/bin/bash
 .SHELLFLAGS = -e -c
 .ONESHELL:
 
-ifeq ($(ARTIFACTS_DIR),)
-ifeq ($(shell echo "$(shell echo $(MAKE_VERSION) | sed 's@^[^0-9]*\([0-9]\+\).*@\1@' ) >= 4" | bc -l),0)
+ifeq ($(shell (( $(shell echo "$(MAKE_VERSION)" | sed 's@^[^0-9]*\([0-9]\+\).*@\1@') >= 4 )) || echo 1),1)
 $(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
-endif
 endif
 
 PRJ?=haystackapi
@@ -211,8 +209,9 @@ $(PIP_PACKAGE): $(CONDA_PYTHON) setup.py | .git # Install pip dependencies
 ifeq ($(USE_OKTA),Y)
 	pip install gimme-aws-creds
 endif
-	conda install -c conda-forge -c anaconda -y \
-		make jq libpq
+	conda install -c conda-forge -y \
+		make git jq gcc_linux-64 gxx_linux-64
+	conda install -c anaconda libpq -y
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	echo -e "$(cyan)pip install -e .$(normal)"
 	pip install -e .
@@ -267,7 +266,7 @@ clean: async-stop clean-zappa
 
 .PHONY: clean-all
 # Clean all environments
-clean-all: clean remove-venv
+clean-all: clean docker-make-clean remove-venv
 
 
 # -------------------------------------- Build
@@ -615,6 +614,7 @@ lint: .make-lint
 
 .PHONY: validate
 .make-validate: .make-typing .make-lint .make-test .make-test-aws .make-functional-test dist
+	echo -e "$(green)The project is validated$(normal)"
 	@date >.make-validate
 
 ## Validate the project
@@ -692,6 +692,29 @@ docker-run: async-docker-stop docker-rm
 	@echo -e "$(green)Start Haystackapi in docker$(normal)"
 	docker run -p 3000:3000 --name haystackapi haystackapi
 
+.PHONY: docker-make-image docker-make-bash docker-make-%
+## Create a docker image to build the project with make
+docker-make-image: BuildDockerfile
+	@echo -e "$(green)Build docker image '$(USER)/haystackapi-dev' to build the project...$(normal)"
+	docker build \
+		-q \
+		--build-arg UID=$$(id -u) \
+		--tag $(USER)/haystackapi-make \
+		-f BuildDockerfile .
+	@echo -e "$(green)Use $(cyan)alias dmake='docker run -v $$PWD:/haystackapi -it $$USER/haystackapi-make'$(normal)"
+
+## Start a bash to build the project in a docker container
+docker-make-bash:
+	@echo -e "$(green)Start a new development environment in docker$(normal)"
+	docker run --rm \
+		-v $(PWD):/haystackapi \
+		--entrypoint /bin/bash \
+		-it $(USER)/haystackapi-make
+
+docker-make-clean:
+	@docker image rm $(USER)/haystackapi-make
+	@echo -e "$(cyan)Docker image removed$(normal)"
+
 ## Run the docker in background
 async-docker-start: docker-rm
 	@docker run -dp 3000:3000 --name haystackapi haystackapi
@@ -733,6 +756,7 @@ dist/$(PRJ_PACKAGE)-*.tar.gz: $(REQUIREMENTS) schema.graphql | dist/
 	$(CONDA_PYTHON) setup.py sdist
 
 sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
+sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
 
 .PHONY: dist
 ## Create a full distribution
@@ -763,7 +787,7 @@ test-twine: dist check-twine
 
 .PHONY: release
 ## Publish distribution on pypi.org
-release: clean check-twine
+release: clean check-twine docker-make-image
 	@$(VALIDATE_VENV)
 	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \
 		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \

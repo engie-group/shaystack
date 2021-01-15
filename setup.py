@@ -1,11 +1,17 @@
 #!/usr/bin/python
 import os
-import re
 import subprocess
 
 from setuptools import setup, find_packages
 
 ROOT = "https://github.com/pprados/haystackapi"
+
+import re
+
+# PPR: Use https://docs.openstack.org/pbr/latest
+DEFAULT_VERSION = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                            open("haystackapi/_version.py", "rt").read(),
+                            re.M).group(1)
 
 
 # Return git remote url
@@ -70,6 +76,9 @@ graphql_requirements = [
                        ] + flask_requirements
 
 dev_requirements = [
+    'lsm-db',
+    'supersqlite',
+    'psycopg2',
     'python-dotenv',
     'zappa',
     'pytype',
@@ -79,8 +88,6 @@ dev_requirements = [
     'nose',
     'twine',
     'mock',
-    'supersqlite',
-    'psycopg2',
     'nose',
     'coverage'
 ]
@@ -92,7 +99,7 @@ setup(name='haystackapi',
       description='Implementation of Haystack REST API',
       long_description=open('README.md', mode='r', encoding='utf-8').read(),
       long_description_content_type='text/markdown',
-      version="0.1",
+      version=DEFAULT_VERSION,
       author='Philippe PRADOS',
       author_email='support@prados.fr',
       license='Apache v2',

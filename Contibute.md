@@ -36,18 +36,24 @@ $ make help
 
 ## Build in docker
 
-Start a bash in Ubuntu docker image.
+It's possible to use a Docker container to build the project.
 
+Use `make docker-make-image` to create the image `$USER/haystackapi-make`. Then, you can start this image to build the
+project inside the docker. To do that, you create an alias `dmake`:
 ```console
-$ docker run -v $$(pwd):/haystackapi -it ubuntu
+$ alias dmake='docker run -v $PWD:/haystackapi -it $USER/haystackapi-make'
 ```
 
-Then, run `init_conda_build.sh`
+and use it in place of `make`.
 
+Then, you stay in this image with `make docker-make-bash`.
+
+Finally, you can run this image with the file copied during the `docker-dev-build` process.
 ```console
-# cd /haystackapi
-# ./init_conda_build.sh
+$ docker run -it $USER/haystackapi-make help
 ```
+
+Don't forget to rebuild this image if you change a file.
 
 ## Tests
 

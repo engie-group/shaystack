@@ -1,0 +1,33 @@
+FROM continuumio/miniconda3
+# Use host user id to be capable to use -v $(PWD):/haystackapi
+ARG PRJ=haystackapi
+ARG USERNAME=${PRJ}
+# May be mapped to the host user id ( --build-arg UID=$(id -u) )
+ARG UID=1000
+ARG VENV=docker-${PRJ}
+
+RUN apt-get update ; apt-get install -y build-essential ; apt-get clean
+RUN chmod -R go+rw /opt/conda
+RUN adduser --disabled-password --uid ${UID} --gecos '' ${USERNAME}
+USER ${USERNAME}
+RUN conda init bash
+# May be mapped to current host projet directory ( -v $PWD:/$PRJ )
+COPY . /${PRJ}
+USER root
+RUN chown -R ${UID}:${UID} /${PRJ}
+USER haystackapi
+RUN echo "conda activate ${VENV}" >> ~/.bashrc
+RUN mkdir -p ~/.aws ; printf "[default]\nregion = eu-west-3\n" > ~/.aws/config
+WORKDIR /${PRJ}
+ENV VENV=${VENV}
+RUN make configure
+
+ENV CONDA_EXE /opt/conda/bin/conda
+ENV CONDA_PREFIX /opt/conda/envs/docker-haystackapi
+ENV CONDA_PROMPT_MODIFIER (docker-haystackapi)
+ENV CONDA_SHLVL 2
+ENV CONDA_DEFAULT_ENV docker-haystackapi
+ENV CONDA_PYTHON_EXE /opt/conda/bin/python
+ENV CONDA_PREFIX_1 /opt/conda
+ENTRYPOINT ["make"]
+CMD ["help"]

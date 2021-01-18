@@ -15,7 +15,16 @@ USE_OKTA?=N
 AWS_PROFILE?=default
 AWS_REGION?=eu-west-3
 LOGLEVEL?=WARNING
+# Default parameter for make [aws-]api-read
+READ_PARAMS?=?filter=his&limit=5
+# Default parameter for make [aws-]api-hisRead
 HISREAD_PARAMS?=?id=@id1
+ifeq (, $(shell which docker))
+IS_DOCKER=0
+else
+IS_DOCKER=1
+endif
+
 
 # Override project variables
 ifneq (,$(wildcard .env))
@@ -60,10 +69,10 @@ AWS_SECRET_KEY=$(shell aws configure --profile $(AWS_PROFILE) get aws_secret_acc
 
 # Calculate the make extended parameter
 # Keep only the unknown target
-ARGS = `ARGS="$(filter-out $@,$(MAKECMDGOALS))" && echo $${ARGS:-${1}}`
+#ARGS = `ARGS="$(filter-out $@,$(MAKECMDGOALS))" && echo $${ARGS:-${1}}`
 # Hack to ignore unknown target. May be used to calculate parameters
-%:
-	@:
+#%:
+#	@:
 
 CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
@@ -72,6 +81,10 @@ ACTIVATE_VENV=source $(CONDA_BASE)/etc/profile.d/conda.sh && conda activate $(VE
 DEACTIVATE_VENV=source $(CONDA_BASE)/etc/profile.d/conda.sh && conda deactivate
 
 VALIDATE_VENV=$(CHECK_VENV)
+
+CHECK_DOCKER=@if ! which docker >/dev/null ; \
+  then echo -e "$(red)Docker in docker is not supported for 'make $(@)'$(normal)"; exit 0 ; fi
+
 
 ifneq ($(TERM),)
 normal:=$(shell tput sgr0)
@@ -377,6 +390,7 @@ graphql-schema: schema.graphql
 	mkdir -p .minio
 
 start-minio: .minio $(REQUIREMENTS)
+	@$(CHECK_DOCKER)
 	docker run -p 9000:9000 \
 	-e "MINIO_ACCESS_KEY=$(AWS_ACCESS_KEY)" \
 	-e "MINIO_SECRET_KEY=$(AWS_SECRET_KEY)" \
@@ -389,6 +403,7 @@ async-stop-minio:
 	rm -f .start/start-minio.pid
 
 async-start-minio: .minio $(REQUIREMENTS)
+	@$(CHECK_DOCKER)
 	@$(VALIDATE_VENV)
 	[ -e .start/start-minio.pid ] && echo -e "$(yellow)Local Minio was allready started$(normal)" && exit
 	mkdir -p .start
@@ -646,6 +661,7 @@ sqlite-url:
 # ------------- Postgres database
 ## Start postgres database
 start-pg:
+	@$(CHECK_DOCKER)
 	@docker start postgres || docker run \
 		--name postgres \
 		--hostname postgres \
@@ -655,19 +671,23 @@ start-pg:
 
 ## Stop postgres database
 stop-pg:
+	@$(CHECK_DOCKER)
 	@docker stop postgres 2>&1 >/dev/null || true
 	echo -e "$(green)Postgres stopped$(normal)"
 
 ## Print postgres db url connection
 pg-url: start-pg
+	@$(CHECK_DOCKER)
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
 	@echo "postgres://postgres:password@$$IP:5432/postgres#haystack"
 
 pg-shell:
+	@$(CHECK_DOCKER)
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
 	docker exec -e PGPASSWORD=password -it postgres psql -U postgres -h $$IP
 
 clean-pg: start-pg
+	@$(CHECK_DOCKER)
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
 	docker exec -e PGPASSWORD=password -it postgres psql -U postgres -h $$IP \
 	-c 'drop table if exists haystack;drop table if exists haystack_meta_datas;drop table if exists haystack_ts;'
@@ -678,6 +698,7 @@ PGADMIN_PASSWORD?=password
 
 ## Start PGAdmin
 start-pgadmin:
+	@$(CHECK_DOCKER)
 	@docker start pgadmin || docker run \
 	--name pgadmin \
 	-p 8082:80 \
@@ -689,6 +710,7 @@ start-pgadmin:
 
 ## Stop PGAdmin
 stop-pgadmin:
+	@$(CHECK_DOCKER)
 	@docker stop pgadmin 2>&1 >/dev/null || true
 	echo -e "$(green)PGAdmin stopped$(normal)"
 
@@ -698,56 +720,66 @@ info: api pg-url aws-api
 # --------------------------- Docker
 ## Build a Docker image with the project
 docker-build:
+	@$(CHECK_DOCKER)
 	@docker build -t haystackapi \
 		--tag $(DOCKER_REPOSITORY)/$(PRJ) \
 		-f docker/Dockerfile .
 
 ## Run the docker (set environement variable)
 docker-run: async-docker-stop docker-rm
+	@$(CHECK_DOCKER)
 	@echo -e "$(green)Start Haystackapi in docker$(normal)"
 	docker run -p 3000:3000 --name haystackapi haystackapi
 
 ## Run the docker with a Flask server in background
 async-docker-start: docker-rm
+	@$(CHECK_DOCKER)
 	@docker run -dp 3000:3000 --name haystackapi haystackapi
 	echo -e "$(green)Haystackapi in docker is started$(normal)"
 
 ## Stop the background docker with a Flask server
 async-docker-stop:
+	@$(CHECK_DOCKER)
 	@docker stop haystackapi 2>&1 >/dev/null || true
 	echo -e "$(green)Haystackapi docker stopped$(normal)"
 
 ## Remove the docker image
 docker-rm: async-docker-stop
+	@$(CHECK_DOCKER)
 	@docker rm haystackapi >/dev/null || true
 	echo -e "$(green)Haystackapi docker removed$(normal)"
 
 # Start the docker image with current shell
 docker-run-shell:
+	@$(CHECK_DOCKER)
 	@docker run -p 3000:3000 -it haystackapi $(SHELL)
 
 # Execute a shell inside the docker
 docker-shell:
+	@$(CHECK_DOCKER)
 	@docker exec -it haystackapi $(SHELL)
 
 .PHONY: docker-make-image docker-make-shell docker-make-clean
 ## Create a docker image to build the project with make
 docker-make-image: docker/MakeDockerfile
+	@$(CHECK_DOCKER)
 	@echo -e "$(green)Build docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' to build the project...$(normal)"
 	docker build \
 		--build-arg UID=$$(id -u) \
 		--tag $(DOCKER_REPOSITORY)/$(PRJ)-make \
 		-f docker/MakeDockerfile .
-	@echo -e "$(green)Use $(cyan)alias dmake='docker run -v $$PWD:/$(PRJ) -it $(DOCKER_REPOSITORY)/$(PRJ)-make'$(normal)"
+	@echo -e "$(green)Use $(cyan)alias dmake='docker run -v $$PWD:/$(PRJ) -v $$HOME/.aws:/home/haystackapi/.aws -it $(DOCKER_REPOSITORY)/$(PRJ)-make'$(normal)"
 	@echo -e "$(green)and $(cyan)dmake ...  # Use make in a Docker container$(normal)"
 
 ## Start a shell to build the project in a docker container
 docker-make-shell:
+	@$(CHECK_DOCKER)
 	@docker run \
 		-v $(PWD):/$(PRJ) \
 		-it $(DOCKER_REPOSITORY)/$(PRJ)-make shell
 
 docker-make-clean:
+	@$(CHECK_DOCKER)
 	@docker image rm $(USER)/$(PRJ)-make
 	@echo -e "$(cyan)Docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' removed$(normal)"
 
@@ -809,9 +841,3 @@ release: clean check-twine
 	echo -e "$(green)Enter the Pypi password$(normal)"
 	twine upload --sign \
 		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
-
-toto:
-	echo ok
-	if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
-	then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
-	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"

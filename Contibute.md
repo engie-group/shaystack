@@ -41,7 +41,8 @@ For MAC users, it's possible to use a Docker container to build the project.
 Use `make docker-make-image` to create the image `$USER/haystackapi-make`. Then, you can start this image to build the
 project inside the docker. To do that, create an alias `dmake`:
 ```console
-$ alias dmake='docker run -v $PWD:/haystackapi -it $USER/haystackapi-make'
+$ alias dmake='dmake='docker run -v $USER/workspace.bda/haystack-api:/haystackapi \
+    -v $USER/.aws:/home/haystackapi/.aws -it $USER/haystackapi-make'
 ```
 
 You can add this alias in your `.bash_aliases` or equivalent.
@@ -53,6 +54,8 @@ $ dmake test
 ```
 
 You can use `dmake shell` to start a shell inside the container and do what you want.
+
+WARNING: It's not possible to use Docker in Docker. So, some commands are ignored.
 
 ## Tests
 

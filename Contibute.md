@@ -33,6 +33,7 @@ $ make configure
 $ conda activate haystackapi
 $ make help
 ```
+*WARNING: it's not possible to use only virtualenv.*
 
 ## Build in docker container
 

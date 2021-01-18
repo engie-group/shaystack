@@ -236,7 +236,7 @@ ifeq ($(USE_OKTA),Y)
 endif
 	echo -e "$(cyan)Install binary dependencies ...$(normal)"
 	conda install -y -c conda-forge \
-		make git jq libpq
+		make git jq libpq curl
 #	conda install -c anaconda libpq -y
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	echo -e "$(cyan)pip install -e .$(normal)"
@@ -766,6 +766,9 @@ docker-make-image: docker/MakeDockerfile
 	@echo -e "$(green)Build docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' to build the project...$(normal)"
 	docker build \
 		--build-arg UID=$$(id -u) \
+		--build-arg AWS_PROFILE=$(AWS_PROFILE) \
+		--build-arg AWS_REGION=$(AWS_REGION) \
+		-p 3000:3000 \
 		--tag $(DOCKER_REPOSITORY)/$(PRJ)-make \
 		-f docker/MakeDockerfile .
 	@echo -e "$(green)Use $(cyan)alias dmake='docker run -v $$PWD:/$(PRJ) -v $$HOME/.aws:/home/haystackapi/.aws -it $(DOCKER_REPOSITORY)/$(PRJ)-make'$(normal)"

@@ -1,12 +1,15 @@
 FROM continuumio/miniconda3
+MAINTAINER pprados
 # Use host user id to be capable to use -v $(PWD):/haystackapi
 ARG PRJ=haystackapi
 ARG USERNAME=${PRJ}
 # May be mapped to the host user id ( --build-arg UID=$(id -u) )
 ARG UID=1000
 ARG VENV=docker-${PRJ}
+ARG AWS_PROFILE=default
+ARG AWS_REGION=eu-west-3
 
-RUN apt-get update ; apt-get install -y build-essential ; apt-get clean
+RUN apt-get update ; apt-get install -y build-essential nano vi; apt-get clean
 RUN chmod -R go+rw /opt/conda
 RUN adduser --disabled-password --uid ${UID} --gecos '' ${USERNAME}
 USER ${USERNAME}
@@ -17,7 +20,7 @@ USER root
 RUN chown -R ${UID}:${UID} /${PRJ}
 USER haystackapi
 RUN echo "conda activate ${VENV}" >> ~/.bashrc
-RUN mkdir -p ~/.aws ; printf "[default]\nregion = eu-west-3\n" > ~/.aws/config
+RUN mkdir -p ~/.aws ; printf "[${AWS_PROFILE}]\nregion = ${AWS_REGION}\n" > ~/.aws/config
 WORKDIR /${PRJ}
 ENV VENV=${VENV}
 RUN make configure

@@ -15,7 +15,7 @@ USE_OKTA?=N
 AWS_PROFILE?=default
 AWS_REGION?=eu-west-3
 LOGLEVEL?=WARNING
-HISREAD_PARAMS=?id=@id1
+HISREAD_PARAMS?=?id=@id1
 
 # Override project variables
 ifneq (,$(wildcard .env))
@@ -47,6 +47,7 @@ FLASK_DEBUG?=1
 AWS_STAGE?=dev
 GIMME?=gimme-aws-creds
 ZAPPA_ENV=zappa_venv
+DOCKER_REPOSITORY=$(USER)
 
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 
@@ -57,6 +58,12 @@ MINIO_HOME=$(HOME)/.minio
 AWS_ACCESS_KEY=$(shell aws configure --profile $(AWS_PROFILE) get aws_access_key_id)
 AWS_SECRET_KEY=$(shell aws configure --profile $(AWS_PROFILE) get aws_secret_access_key)
 
+# Calculate the make extended parameter
+# Keep only the unknown target
+ARGS = `ARGS="$(filter-out $@,$(MAKECMDGOALS))" && echo $${ARGS:-${1}}`
+# Hack to ignore unknown target. May be used to calculate parameters
+%:
+	@:
 
 CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
@@ -146,6 +153,11 @@ dump-params:
 	echo AWS_PROFILE='$(AWS_PROFILE)'
 	echo AWS_STAGE='$(AWS_STAGE)'
 
+.PHONY: shell
+# Start a child shell
+shell:
+	@$(SHELL)
+
 # -------------------------------------- GIT
 .env:
 	touch .env
@@ -203,15 +215,16 @@ requirements: $(REQUIREMENTS)
 dependencies: requirements
 
 # Rule to update the current venv, with the dependencies describe in `setup.py`
-$(PIP_PACKAGE): $(CONDA_PYTHON) setup.py | .git # Install pip dependencies
+$(PIP_PACKAGE): $(CONDA_PYTHON) setup.* | .git # Install pip dependencies
 	@$(VALIDATE_VENV)
 	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"
 ifeq ($(USE_OKTA),Y)
 	pip install gimme-aws-creds
 endif
-	conda install -c conda-forge -y \
-		make git jq gcc_linux-64 gxx_linux-64
-	conda install -c anaconda libpq -y
+	echo -e "$(cyan)Install binary dependencies ...$(normal)"
+	conda install -y -c conda-forge \
+		make git jq libpq
+#	conda install -c anaconda libpq -y
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	echo -e "$(cyan)pip install -e .$(normal)"
 	pip install -e .
@@ -683,44 +696,23 @@ stop-pgadmin:
 info: api pg-url aws-api
 
 # --------------------------- Docker
-## Build docker
+## Build a Docker image with the project
 docker-build:
-	@docker build -t haystackapi .
+	@docker build -t haystackapi \
+		--tag $(DOCKER_REPOSITORY)/$(PRJ) \
+		-f docker/Dockerfile .
 
-## Run the docker
+## Run the docker (set environement variable)
 docker-run: async-docker-stop docker-rm
 	@echo -e "$(green)Start Haystackapi in docker$(normal)"
 	docker run -p 3000:3000 --name haystackapi haystackapi
 
-.PHONY: docker-make-image docker-make-bash docker-make-%
-## Create a docker image to build the project with make
-docker-make-image: BuildDockerfile
-	@echo -e "$(green)Build docker image '$(USER)/haystackapi-dev' to build the project...$(normal)"
-	docker build \
-		-q \
-		--build-arg UID=$$(id -u) \
-		--tag $(USER)/haystackapi-make \
-		-f BuildDockerfile .
-	@echo -e "$(green)Use $(cyan)alias dmake='docker run -v $$PWD:/haystackapi -it $$USER/haystackapi-make'$(normal)"
-
-## Start a bash to build the project in a docker container
-docker-make-bash:
-	@echo -e "$(green)Start a new development environment in docker$(normal)"
-	docker run --rm \
-		-v $(PWD):/haystackapi \
-		--entrypoint /bin/bash \
-		-it $(USER)/haystackapi-make
-
-docker-make-clean:
-	@docker image rm $(USER)/haystackapi-make
-	@echo -e "$(cyan)Docker image removed$(normal)"
-
-## Run the docker in background
+## Run the docker with a Flask server in background
 async-docker-start: docker-rm
 	@docker run -dp 3000:3000 --name haystackapi haystackapi
 	echo -e "$(green)Haystackapi in docker is started$(normal)"
 
-## Stop the background docker
+## Stop the background docker with a Flask server
 async-docker-stop:
 	@docker stop haystackapi 2>&1 >/dev/null || true
 	echo -e "$(green)Haystackapi docker stopped$(normal)"
@@ -730,13 +722,34 @@ docker-rm: async-docker-stop
 	@docker rm haystackapi >/dev/null || true
 	echo -e "$(green)Haystackapi docker removed$(normal)"
 
-# Start the docker image with bash
-docker-run-bash:
-	@docker run -p 3000:3000 -it haystackapi bash
+# Start the docker image with current shell
+docker-run-shell:
+	@docker run -p 3000:3000 -it haystackapi $(SHELL)
 
-# Execute a bash inside the docker
-docker-bash:
-	@docker exec -it haystackapi /bin/bash
+# Execute a shell inside the docker
+docker-shell:
+	@docker exec -it haystackapi $(SHELL)
+
+.PHONY: docker-make-image docker-make-shell docker-make-clean
+## Create a docker image to build the project with make
+docker-make-image: docker/MakeDockerfile
+	@echo -e "$(green)Build docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' to build the project...$(normal)"
+	docker build \
+		--build-arg UID=$$(id -u) \
+		--tag $(DOCKER_REPOSITORY)/$(PRJ)-make \
+		-f docker/MakeDockerfile .
+	@echo -e "$(green)Use $(cyan)alias dmake='docker run -v $$PWD:/$(PRJ) -it $(DOCKER_REPOSITORY)/$(PRJ)-make'$(normal)"
+	@echo -e "$(green)and $(cyan)dmake ...  # Use make in a Docker container$(normal)"
+
+## Start a shell to build the project in a docker container
+docker-make-shell:
+	@docker run \
+		-v $(PWD):/$(PRJ) \
+		-it $(DOCKER_REPOSITORY)/$(PRJ)-make shell
+
+docker-make-clean:
+	@docker image rm $(USER)/$(PRJ)-make
+	@echo -e "$(cyan)Docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' removed$(normal)"
 
 # --------------------------- Distribution
 dist/:
@@ -760,7 +773,7 @@ sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
 
 .PHONY: dist
 ## Create a full distribution
-dist: bdist sdist
+dist: bdist sdist docker-make-image
 	@echo -e "$(yellow)Package for distribution created$(normal)"
 
 .PHONY: check-twine
@@ -787,7 +800,7 @@ test-twine: dist check-twine
 
 .PHONY: release
 ## Publish distribution on pypi.org
-release: clean check-twine docker-make-image
+release: clean check-twine
 	@$(VALIDATE_VENV)
 	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \
 		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \
@@ -797,3 +810,8 @@ release: clean check-twine docker-make-image
 	twine upload --sign \
 		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
 
+toto:
+	echo ok
+	if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
+	then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
+	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"

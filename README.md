@@ -410,7 +410,7 @@ Install the corresponding database driver:
 
 | Database | Driver                                              |
 | -------- | --------------------------------------------------- |
-| sqlite   | `pip install supersqlite` (install build-essential before, and may take several minutes)|
+| sqlite   | `pip install supersqlite` (`apt install build-essential` before, and may take several minutes)|
 | postgres | `pip install psycopg2`                              |
 |          | or `pip install psycopg2-binary`                    |
 

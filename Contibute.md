@@ -34,26 +34,25 @@ $ conda activate haystackapi
 $ make help
 ```
 
-## Build in docker
+## Build in docker container
 
-It's possible to use a Docker container to build the project.
+For MAC users, it's possible to use a Docker container to build the project.
 
 Use `make docker-make-image` to create the image `$USER/haystackapi-make`. Then, you can start this image to build the
-project inside the docker. To do that, you create an alias `dmake`:
+project inside the docker. To do that, create an alias `dmake`:
 ```console
 $ alias dmake='docker run -v $PWD:/haystackapi -it $USER/haystackapi-make'
 ```
 
-and use it in place of `make`.
+You can add this alias in your `.bash_aliases` or equivalent.
 
-Then, you stay in this image with `make docker-make-bash`.
+and use `dmake` in place of `make`.
 
-Finally, you can run this image with the file copied during the `docker-dev-build` process.
 ```console
-$ docker run -it $USER/haystackapi-make help
+$ dmake test
 ```
 
-Don't forget to rebuild this image if you change a file.
+You can use `dmake shell` to start a shell inside the container and do what you want.
 
 ## Tests
 

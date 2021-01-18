@@ -76,9 +76,6 @@ graphql_requirements = [
                        ] + flask_requirements
 
 dev_requirements = [
-    'lsm-db',
-    'supersqlite',
-    'psycopg2',
     'python-dotenv',
     'zappa',
     'pytype',
@@ -89,7 +86,9 @@ dev_requirements = [
     'twine',
     'mock',
     'nose',
-    'coverage'
+    'coverage',
+    'psycopg2',
+    'supersqlite',
 ]
 
 setup(name='haystackapi',

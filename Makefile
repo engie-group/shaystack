@@ -105,8 +105,8 @@ endif
 ## Print all majors target
 help:
 	@echo "$(bold)Available rules:$(normal)"
-	@echo
-	@sed -n -e "/^## / { \
+	echo
+	sed -n -e "/^## / { \
 		h; \
 		s/.*//; \
 		:doc" \
@@ -173,12 +173,12 @@ shell:
 
 # -------------------------------------- GIT
 .env:
-	touch .env
+	@touch .env
 
 .git/config: | .git .git/hooks/pre-push # Configure git
 	@git config --local core.autocrlf input
 	# Set tabulation to 4 when use 'git diff'
-	@git config --local core.page 'less -x4'
+	git config --local core.page 'less -x4'
 
 # Rule to add a validation before pushing in master branch.
 # Use FORCE=y git push to override this validation.
@@ -211,10 +211,10 @@ shell:
 	chmod +x .git/hooks/pre-push
 
 fetch:
-	git fetch
+	@git fetch
 
 pull:
-	git pull
+	@git pull
 
 # -------------------------------------- Virtualenv
 .PHONY: configure
@@ -222,7 +222,7 @@ pull:
 configure:
 	@if [[ "$(PRJ)" == "$(CONDA_DEFAULT_ENV)" ]] ; \
   		then echo -e "$(red)Use $(cyan)conda deactivate$(red) before using $(cyan)make configure$(normal)"; exit ; fi
-	@conda create --name "$(VENV)" \
+	conda create --name "$(VENV)" \
 		python=$(PYTHON_VERSION) \
 		-y $(CONDA_ARGS)
 	echo -e "Use: $(cyan)conda activate $(VENV)$(normal) $(CONDA_ARGS)"
@@ -247,7 +247,7 @@ endif
 	pip install -e .
 	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"
 	pip install -e "file://$$(pwd)#egg=haystackapi[dev,flask,graphql,lambda]"
-	@touch $(PIP_PACKAGE)
+	touch $(PIP_PACKAGE)
 
 # All dependencies of the project must be here
 .PHONY: requirements dependencies
@@ -265,7 +265,7 @@ upgrade-$(VENV):
 	@$(VALIDATE_VENV)
 	conda update --all $(CONDA_ARGS)
 	pip list --format freeze --outdated | sed 's/(.*//g' | xargs -r -n1 pip install $(EXTRA_INDEX) -U
-	@echo -e "$(cyan)After validation, upgrade the setup.py$(normal)"
+	echo -e "$(cyan)After validation, upgrade the setup.py$(normal)"
 
 # Upgrade packages to last versions
 upgrade-venv: upgrade-$(VENV)
@@ -275,13 +275,13 @@ upgrade-venv: upgrade-$(VENV)
 # Remove all the pip package
 clean-pip:
 	@pip freeze | grep -v "^-e" | grep -v "@" | xargs pip uninstall -y
-	@echo -e "$(cyan)Virtual env cleaned$(normal)"
+	echo -e "$(cyan)Virtual env cleaned$(normal)"
 
 .PHONY: clean-venv clean-$(VENV)
 # Clean venv
 clean-$(VENV): remove-venv
 	@conda create -y -q -n $(VENV) $(CONDA_ARGS)
-	@echo -e "$(yellow)Warning: Conda virtualenv $(VENV) is empty.$(normal)"
+	echo -e "$(yellow)Warning: Conda virtualenv $(VENV) is empty.$(normal)"
 ## Set the current VENV empty
 clean-venv : clean-$(VENV)
 
@@ -338,7 +338,7 @@ api-hisRead:
 ## Start api
 start-api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
-	@[ -e .start/start-api.pid ] && $(MAKE) async-stop-api || true
+	[ -e .start/start-api.pid ] && $(MAKE) async-stop-api || true
 	echo "$(green)PROVIDER=${HAYSTACK_PROVIDER}"
 	echo "$(green)URL=${HAYSTACK_URL}"
 	echo "$(green)DB=${HAYSTACK_DB}"
@@ -349,7 +349,7 @@ start-api: $(REQUIREMENTS)
 
 # Start local api in background
 async-start-api: $(REQUIREMENTS)
-	$(VALIDATE_VENV)
+	@$(VALIDATE_VENV)
 	[ -e .start/start-api.pid ] && echo -e "$(yellow)Local API was allready started$(normal)" && exit
 	mkdir -p .start
 	FLASK_DEBUG=1 FLASK_APP=app.run FLASK_ENV=$(AWS_STAGE) \
@@ -361,8 +361,8 @@ async-start-api: $(REQUIREMENTS)
 
 # Stop local api emulator in background
 async-stop-api:
-	$(VALIDATE_VENV)
-	@[ -e .start/start-api.pid ] && kill `cat .start/start-api.pid` 2>/dev/null >/dev/null || true && echo -e "$(green)Local API stopped$(normal)"
+	@$(VALIDATE_VENV)
+	[ -e .start/start-api.pid ] && kill `cat .start/start-api.pid` 2>/dev/null >/dev/null || true && echo -e "$(green)Local API stopped$(normal)"
 	rm -f .start/start-api.pid
 
 # -------------------------------------- GraphQL
@@ -381,7 +381,7 @@ graphql-api-%:
 
 schema.graphql: app/graphql_model.py app/blueprint_graphql.py
 	@$(VALIDATE_VENV)
-	@python -m app.blueprint_graphql >schema.graphql
+	python -m app.blueprint_graphql >schema.graphql
 
 ## Print haystack graphql schema
 graphql-schema: schema.graphql
@@ -392,7 +392,7 @@ graphql-schema: schema.graphql
 # https://min.io/
 # See https://docs.min.io/docs/how-to-use-aws-sdk-for-python-with-minio-server.html
 .minio:
-	mkdir -p .minio
+	@mkdir -p .minio
 
 start-minio: .minio $(REQUIREMENTS)
 	@$(CHECK_DOCKER)
@@ -409,7 +409,7 @@ async-stop-minio:
 
 async-start-minio: .minio $(REQUIREMENTS)
 	@$(CHECK_DOCKER)
-	@$(VALIDATE_VENV)
+	$(VALIDATE_VENV)
 	[ -e .start/start-minio.pid ] && echo -e "$(yellow)Local Minio was allready started$(normal)" && exit
 	mkdir -p .start
 	nohup  docker run -p 9000:9000 \
@@ -435,7 +435,7 @@ aws-update-token: $(REQUIREMENTS)
 	@aws sts get-caller-identity >/dev/null 2>/dev/null || $(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
 else
 aws-update-token:
-	echo -e "$(yellow)Nothing to do to refresh the token. (Set USE_OKTA and GIMME ?)$(normal)"
+	@echo -e "$(yellow)Nothing to do to refresh the token. (Set USE_OKTA and GIMME ?)$(normal)"
 endif
 
 .PHONY: aws-package aws-deploy aws-update aws-undeploy
@@ -451,7 +451,7 @@ endif
 
 ## Build lambda package
 aws-package: $(REQUIREMENTS) _zappa_pre_install compile-all
-	echo -e "$(cyan)Create lambda package...$(normal)"
+	@echo -e "$(cyan)Create lambda package...$(normal)"
 	source $(ZAPPA_ENV)/bin/activate
 	zappa package $(AWS_STAGE)
 	rm -Rf $(ZAPPA_ENV)
@@ -459,7 +459,7 @@ aws-package: $(REQUIREMENTS) _zappa_pre_install compile-all
 
 ## Deploy lambda functions
 aws-deploy: $(REQUIREMENTS) _zappa_pre_install compile-all
-	$(VALIDATE_VENV)
+	@$(VALIDATE_VENV)
 	source $(ZAPPA_ENV)/bin/activate
 	zappa deploy $(AWS_STAGE)
 	rm -Rf $(ZAPPA_ENV)
@@ -476,9 +476,9 @@ aws-update: $(REQUIREMENTS) _zappa_pre_install compile-all
 ## Remove AWS Stack
 aws-undeploy: $(REQUIREMENTS)
 ifeq ($(USE_OKTA),Y)
-	$(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
+	@$(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
 endif
-	zappa undeploy $(AWS_STAGE) --remove-logs
+	@zappa undeploy $(AWS_STAGE) --remove-logs
 
 .PHONY: aws-api
 ## Print AWS API URL
@@ -530,11 +530,11 @@ unit-test: .make-unit-test
 test: .make-test
 
 .make-test-aws: aws-update-token
-	$(VALIDATE_VENV)
+	@$(VALIDATE_VENV)
 	echo -e "$(green)Running AWS tests...$(normal)"
 	$(CONDA_PYTHON) -m nose -s tests -a 'aws' --where=tests $(NOSETESTS_ARGS)
 	echo -e "$(green)AWS tests done$(normal)"
-	@date >.make-test-aws
+	date >.make-test-aws
 
 ## Run only test with connection with AWS
 test-aws: .make-test-aws
@@ -616,13 +616,13 @@ functional-test: .make-functional-test
 # -------------------------------------- Typing
 pytype.cfg: $(CONDA_PREFIX)/bin/pytype
 	@$(VALIDATE_VENV)
-	@[[ ! -f pytype.cfg ]] && pytype --generate-config pytype.cfg || true
+	[[ ! -f pytype.cfg ]] && pytype --generate-config pytype.cfg || true
 	touch pytype.cfg
 
 .PHONY: typing
 .make-typing: $(REQUIREMENTS) $(CONDA_PREFIX)/bin/pytype pytype.cfg $(PYTHON_SRC)
-	$(VALIDATE_VENV)
-	@echo -e "$(cyan)Check typing...$(normal)"
+	@$(VALIDATE_VENV)
+	echo -e "$(cyan)Check typing...$(normal)"
 	MYPYPATH=stubs pytype -V $(PYTHON_VERSION) haystackapi app tests
 	touch .make-typing
 
@@ -636,11 +636,11 @@ typing: .make-typing
 	pylint --generate-rcfile > .pylintrc
 
 .make-lint: $(REQUIREMENTS) $(PYTHON_SRC) | .pylintrc .pylintrc-test
-	$(VALIDATE_VENV)
-	@echo -e "$(cyan)Check lint...$(normal)"
-	@pylint -d duplicate-code app haystackapi
-	@echo -e "$(cyan)Check lint for tests...$(normal)"
-	@pylint --rcfile=.pylintrc-test tests
+	@$(VALIDATE_VENV)
+	echo -e "$(cyan)Check lint...$(normal)"
+	pylint -d duplicate-code app haystackapi
+	echo -e "$(cyan)Check lint for tests...$(normal)"
+	pylint --rcfile=.pylintrc-test tests
 	touch .make-lint
 
 ## Lint the code
@@ -649,8 +649,8 @@ lint: .make-lint
 
 .PHONY: validate
 .make-validate: .make-typing .make-lint .make-test .make-test-aws .make-functional-test dist
-	echo -e "$(green)The project is validated$(normal)"
-	@date >.make-validate
+	@echo -e "$(green)The project is validated$(normal)"
+	date >.make-validate
 
 ## Validate the project
 validate: .make-validate
@@ -663,13 +663,13 @@ release: clean .make-validate
 # ------------- Postgres database
 ## Print sqlite db url connection
 sqlite-url:
-	echo "sqlite3://test.db#haystack"
+	@echo "sqlite3://test.db#haystack"
 
 # ------------- Postgres database
 ## Start postgres database
 start-pg:
 	@$(CHECK_DOCKER)
-	@docker start postgres || docker run \
+	docker start postgres || docker run \
 		--name postgres \
 		--hostname postgres \
 		-e POSTGRES_PASSWORD=password \
@@ -679,23 +679,23 @@ start-pg:
 ## Stop postgres database
 stop-pg:
 	@$(CHECK_DOCKER)
-	@docker stop postgres 2>&1 >/dev/null || true
+	docker stop postgres 2>&1 >/dev/null || true
 	echo -e "$(green)Postgres stopped$(normal)"
 
 ## Print postgres db url connection
 pg-url: start-pg
 	@$(CHECK_DOCKER)
-	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
-	@echo "postgres://postgres:password@$$IP:5432/postgres#haystack"
+	IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
+	echo "postgres://postgres:password@$$IP:5432/postgres#haystack"
 
 pg-shell:
 	@$(CHECK_DOCKER)
-	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
+	IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
 	docker exec -e PGPASSWORD=password -it postgres psql -U postgres -h $$IP
 
 clean-pg: start-pg
 	@$(CHECK_DOCKER)
-	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
+	IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
 	docker exec -e PGPASSWORD=password -it postgres psql -U postgres -h $$IP \
 	-c 'drop table if exists haystack;drop table if exists haystack_meta_datas;drop table if exists haystack_ts;'
 
@@ -706,7 +706,7 @@ PGADMIN_PASSWORD?=password
 ## Start PGAdmin
 start-pgadmin:
 	@$(CHECK_DOCKER)
-	@docker start pgadmin || docker run \
+	docker start pgadmin || docker run \
 	--name pgadmin \
 	-p 8082:80 \
 	--link postgres \
@@ -718,7 +718,7 @@ start-pgadmin:
 ## Stop PGAdmin
 stop-pgadmin:
 	@$(CHECK_DOCKER)
-	@docker stop pgadmin 2>&1 >/dev/null || true
+	docker stop pgadmin 2>&1 >/dev/null || true
 	echo -e "$(green)PGAdmin stopped$(normal)"
 
 ## Print all URL
@@ -728,48 +728,48 @@ info: api pg-url aws-api
 ## Build a Docker image with the project
 docker-build:
 	@$(CHECK_DOCKER)
-	@docker build -t haystackapi \
+	docker build -t haystackapi \
 		--tag $(DOCKER_REPOSITORY)/$(PRJ) \
 		-f docker/Dockerfile .
 
 ## Run the docker (set environement variable)
 docker-run: async-docker-stop docker-rm
 	@$(CHECK_DOCKER)
-	@echo -e "$(green)Start Haystackapi in docker$(normal)"
+	echo -e "$(green)Start Haystackapi in docker$(normal)"
 	docker run -p 3000:3000 --name haystackapi haystackapi
 
 ## Run the docker with a Flask server in background
 async-docker-start: docker-rm
 	@$(CHECK_DOCKER)
-	@docker run -dp 3000:3000 --name haystackapi haystackapi
+	docker run -dp 3000:3000 --name haystackapi haystackapi
 	echo -e "$(green)Haystackapi in docker is started$(normal)"
 
 ## Stop the background docker with a Flask server
 async-docker-stop:
 	@$(CHECK_DOCKER)
-	@docker stop haystackapi 2>&1 >/dev/null || true
+	docker stop haystackapi 2>&1 >/dev/null || true
 	echo -e "$(green)Haystackapi docker stopped$(normal)"
 
 ## Remove the docker image
 docker-rm: async-docker-stop
 	@$(CHECK_DOCKER)
-	@docker rm haystackapi >/dev/null || true
+	docker rm haystackapi >/dev/null || true
 	echo -e "$(green)Haystackapi docker removed$(normal)"
 
 # Start the docker image with current shell
 docker-run-shell:
 	@$(CHECK_DOCKER)
-	@docker run -p 3000:3000 -it haystackapi $(SHELL)
+	docker run -p 3000:3000 -it haystackapi $(SHELL)
 
 # Execute a shell inside the docker
 docker-shell:
 	@$(CHECK_DOCKER)
-	@docker exec -it haystackapi $(SHELL)
+	docker exec -it haystackapi $(SHELL)
 
 .PHONY: docker-make-image docker-make-shell docker-make-clean
 ## Create a docker image to build the project with make
 docker-make-image: docker/MakeDockerfile
-	$(CHECK_DOCKER)
+	@$(CHECK_DOCKER)
 	echo -e "$(green)Build docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' to build the project...$(normal)"
 	REPO=$(shell git remote get-url origin)
 	docker build \
@@ -787,13 +787,13 @@ docker-make-image: docker/MakeDockerfile
 -v $$HOME/.okta_aws_login_config:/home/$(PRJ)/.okta_aws_login_config \
 -p3000:3000 \
 -it $(DOCKER_REPOSITORY)/$(PRJ)-make'$(normal)\n"
-	@echo -e "$(green)and $(cyan)dmake ...  # Use make in a Docker container$(normal)"
+	echo -e "$(green)and $(cyan)dmake ...  # Use make in a Docker container$(normal)"
 
 
 ## Start a shell to build the project in a docker container
 docker-make-shell:
 	@$(CHECK_DOCKER)
-	@docker run \
+	docker run \
 		-v $(PWD):/$(PRJ) \
 		-v $$HOME/.aws:/home/$(PRJ)/.aws \
 		-v $$HOME/.okta_aws_login_config:/home/$(PRJ)/.okta_aws_login_config \
@@ -802,8 +802,8 @@ docker-make-shell:
 
 docker-make-clean:
 	@$(CHECK_DOCKER)
-	@docker image rm $(USER)/$(PRJ)-make
-	@echo -e "$(cyan)Docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' removed$(normal)"
+	docker image rm $(USER)/$(PRJ)-make
+	echo -e "$(cyan)Docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' removed$(normal)"
 
 # --------------------------- Distribution
 dist/:
@@ -833,14 +833,14 @@ dist: bdist sdist docker-make-image
 .PHONY: check-twine
 ## Check the distribution before publication
 check-twine: bdist
-	$(VALIDATE_VENV)
+	@$(VALIDATE_VENV)
 	twine check \
 		$(shell find dist/ -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
 
 .PHONY: test-twine
 ## Publish distribution on test.pypi.org
 test-twine: dist check-twine
-	$(VALIDATE_VENV)
+	@$(VALIDATE_VENV)
 	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \
 		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \
 		; exit 1 )

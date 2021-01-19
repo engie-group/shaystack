@@ -2,9 +2,9 @@
 
 Use `HAYSTACK_PROVIDER=haystackapi.providers.url` to use this provider. Add the variable `HAYSTACK_URL=<url>` to expose
 an Haystack file via the Haystack protocol. The methods `/read` and `/hisRead` was implemented. The `<url>` may have the
-classic form (`http://...`, `ftp://...`, `file://...`, etc.) or can reference an S3 file (`s3://...`). The time series
-to manage history must be referenced in the entity, with the `hisURI` tag. This URI may be relative and must be in
-haystack format.
+classic form (`http://...`, `ftp://...`, `file://...`, etc.) or can reference an S3 file
+(`s3://...` [more...](README_aws.md)). The time series to manage history must be referenced in the entity, with
+the `hisURI` tag. This URI may be relative and must be in haystack format.
 
 All the file may be zipped. Reference the zipped version with the `.gz` suffix
 (eg. `ontology.zinc.gz`)
@@ -38,5 +38,4 @@ versions if AWS use multiple instances of lambda. To fix that, the environment v
 the cache refresh (Default value is 15m). Every quarter of an hour, each lambda instance check the list of version for
 this file, and refresh the cache in memory, at the same time. If a new version is published just before you start the
 lambda, it's may be possible you can't see this new version. You must wait the end of the current quarter, redeploy the
-lambda or update the `REFRESH`
-parameter.
+lambda or update the `REFRESH` parameter [more...](README_aws.md).

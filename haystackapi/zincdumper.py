@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Zinc Grid dumper
-# Use license Apache V2.0
+# See the accompanying LICENSE Apache V2.0 file.
 # (C) 2018 VRT Systems
 # (C) 2021 Engie Digital
 #

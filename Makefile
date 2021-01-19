@@ -3,10 +3,8 @@ SHELL=/bin/bash
 .SHELLFLAGS = -e -c
 .ONESHELL:
 
-ifeq ($(ARTIFACTS_DIR),)
-ifeq ($(shell echo "$(shell echo $(MAKE_VERSION) | sed 's@^[^0-9]*\([0-9]\+\).*@\1@' ) >= 4" | bc -l),0)
+ifeq ($(shell (( $(shell echo "$(MAKE_VERSION)" | sed 's@^[^0-9]*\([0-9]\+\).*@\1@') >= 4 )) || echo 1),1)
 $(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
-endif
 endif
 
 PRJ?=haystackapi
@@ -17,7 +15,16 @@ USE_OKTA?=N
 AWS_PROFILE?=default
 AWS_REGION?=eu-west-3
 LOGLEVEL?=WARNING
-HISREAD_PARAMS=?id=@id1
+# Default parameter for make [aws-]api-read
+READ_PARAMS?=?filter=his&limit=5
+# Default parameter for make [aws-]api-hisRead
+HISREAD_PARAMS?=?id=@id1
+ifeq (, $(shell which docker))
+IS_DOCKER=0
+else
+IS_DOCKER=1
+endif
+
 
 # Override project variables
 ifneq (,$(wildcard .env))
@@ -49,6 +56,7 @@ FLASK_DEBUG?=1
 AWS_STAGE?=dev
 GIMME?=gimme-aws-creds
 ZAPPA_ENV=zappa_venv
+DOCKER_REPOSITORY=$(USER)
 
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 
@@ -59,6 +67,12 @@ MINIO_HOME=$(HOME)/.minio
 AWS_ACCESS_KEY=$(shell aws configure --profile $(AWS_PROFILE) get aws_access_key_id)
 AWS_SECRET_KEY=$(shell aws configure --profile $(AWS_PROFILE) get aws_secret_access_key)
 
+# Calculate the make extended parameter
+# Keep only the unknown target
+#ARGS = `ARGS="$(filter-out $@,$(MAKECMDGOALS))" && echo $${ARGS:-${1}}`
+# Hack to ignore unknown target. May be used to calculate parameters
+#%:
+#	@:
 
 CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
@@ -67,6 +81,10 @@ ACTIVATE_VENV=source $(CONDA_BASE)/etc/profile.d/conda.sh && conda activate $(VE
 DEACTIVATE_VENV=source $(CONDA_BASE)/etc/profile.d/conda.sh && conda deactivate
 
 VALIDATE_VENV=$(CHECK_VENV)
+
+CHECK_DOCKER=@if ! which docker >/dev/null ; \
+  then echo -e "$(red)Docker in docker is not supported for 'make $(@)'$(normal)"; exit 0 ; fi
+
 
 ifneq ($(TERM),)
 normal:=$(shell tput sgr0)
@@ -148,6 +166,11 @@ dump-params:
 	echo AWS_PROFILE='$(AWS_PROFILE)'
 	echo AWS_STAGE='$(AWS_STAGE)'
 
+.PHONY: shell
+# Start a child shell
+shell:
+	@$(SHELL)
+
 # -------------------------------------- GIT
 .env:
 	touch .env
@@ -205,14 +228,16 @@ requirements: $(REQUIREMENTS)
 dependencies: requirements
 
 # Rule to update the current venv, with the dependencies describe in `setup.py`
-$(PIP_PACKAGE): $(CONDA_PYTHON) setup.py | .git # Install pip dependencies
+$(PIP_PACKAGE): $(CONDA_PYTHON) setup.* | .git # Install pip dependencies
 	@$(VALIDATE_VENV)
 	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"
 ifeq ($(USE_OKTA),Y)
 	pip install gimme-aws-creds
 endif
-	conda install -c conda-forge -c anaconda -y \
-		make jq libpq
+	echo -e "$(cyan)Install binary dependencies ...$(normal)"
+	conda install -y -c conda-forge \
+		make git jq libpq curl
+#	conda install -c anaconda libpq -y
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	echo -e "$(cyan)pip install -e .$(normal)"
 	pip install -e .
@@ -267,7 +292,7 @@ clean: async-stop clean-zappa
 
 .PHONY: clean-all
 # Clean all environments
-clean-all: clean remove-venv
+clean-all: clean docker-make-clean remove-venv
 
 
 # -------------------------------------- Build
@@ -365,6 +390,7 @@ graphql-schema: schema.graphql
 	mkdir -p .minio
 
 start-minio: .minio $(REQUIREMENTS)
+	@$(CHECK_DOCKER)
 	docker run -p 9000:9000 \
 	-e "MINIO_ACCESS_KEY=$(AWS_ACCESS_KEY)" \
 	-e "MINIO_SECRET_KEY=$(AWS_SECRET_KEY)" \
@@ -377,6 +403,7 @@ async-stop-minio:
 	rm -f .start/start-minio.pid
 
 async-start-minio: .minio $(REQUIREMENTS)
+	@$(CHECK_DOCKER)
 	@$(VALIDATE_VENV)
 	[ -e .start/start-minio.pid ] && echo -e "$(yellow)Local Minio was allready started$(normal)" && exit
 	mkdir -p .start
@@ -615,6 +642,7 @@ lint: .make-lint
 
 .PHONY: validate
 .make-validate: .make-typing .make-lint .make-test .make-test-aws .make-functional-test dist
+	echo -e "$(green)The project is validated$(normal)"
 	@date >.make-validate
 
 ## Validate the project
@@ -633,6 +661,7 @@ sqlite-url:
 # ------------- Postgres database
 ## Start postgres database
 start-pg:
+	@$(CHECK_DOCKER)
 	@docker start postgres || docker run \
 		--name postgres \
 		--hostname postgres \
@@ -642,19 +671,23 @@ start-pg:
 
 ## Stop postgres database
 stop-pg:
+	@$(CHECK_DOCKER)
 	@docker stop postgres 2>&1 >/dev/null || true
 	echo -e "$(green)Postgres stopped$(normal)"
 
 ## Print postgres db url connection
 pg-url: start-pg
+	@$(CHECK_DOCKER)
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
 	@echo "postgres://postgres:password@$$IP:5432/postgres#haystack"
 
 pg-shell:
+	@$(CHECK_DOCKER)
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
 	docker exec -e PGPASSWORD=password -it postgres psql -U postgres -h $$IP
 
 clean-pg: start-pg
+	@$(CHECK_DOCKER)
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
 	docker exec -e PGPASSWORD=password -it postgres psql -U postgres -h $$IP \
 	-c 'drop table if exists haystack;drop table if exists haystack_meta_datas;drop table if exists haystack_ts;'
@@ -665,6 +698,7 @@ PGADMIN_PASSWORD?=password
 
 ## Start PGAdmin
 start-pgadmin:
+	@$(CHECK_DOCKER)
 	@docker start pgadmin || docker run \
 	--name pgadmin \
 	-p 8082:80 \
@@ -676,6 +710,7 @@ start-pgadmin:
 
 ## Stop PGAdmin
 stop-pgadmin:
+	@$(CHECK_DOCKER)
 	@docker stop pgadmin 2>&1 >/dev/null || true
 	echo -e "$(green)PGAdmin stopped$(normal)"
 
@@ -683,37 +718,73 @@ stop-pgadmin:
 info: api pg-url aws-api
 
 # --------------------------- Docker
-## Build docker
+## Build a Docker image with the project
 docker-build:
-	@docker build -t haystackapi .
+	@$(CHECK_DOCKER)
+	@docker build -t haystackapi \
+		--tag $(DOCKER_REPOSITORY)/$(PRJ) \
+		-f docker/Dockerfile .
 
-## Run the docker
+## Run the docker (set environement variable)
 docker-run: async-docker-stop docker-rm
+	@$(CHECK_DOCKER)
 	@echo -e "$(green)Start Haystackapi in docker$(normal)"
 	docker run -p 3000:3000 --name haystackapi haystackapi
 
-## Run the docker in background
+## Run the docker with a Flask server in background
 async-docker-start: docker-rm
+	@$(CHECK_DOCKER)
 	@docker run -dp 3000:3000 --name haystackapi haystackapi
 	echo -e "$(green)Haystackapi in docker is started$(normal)"
 
-## Stop the background docker
+## Stop the background docker with a Flask server
 async-docker-stop:
+	@$(CHECK_DOCKER)
 	@docker stop haystackapi 2>&1 >/dev/null || true
 	echo -e "$(green)Haystackapi docker stopped$(normal)"
 
 ## Remove the docker image
 docker-rm: async-docker-stop
+	@$(CHECK_DOCKER)
 	@docker rm haystackapi >/dev/null || true
 	echo -e "$(green)Haystackapi docker removed$(normal)"
 
-# Start the docker image with bash
-docker-run-bash:
-	@docker run -p 3000:3000 -it haystackapi bash
+# Start the docker image with current shell
+docker-run-shell:
+	@$(CHECK_DOCKER)
+	@docker run -p 3000:3000 -it haystackapi $(SHELL)
 
-# Execute a bash inside the docker
-docker-bash:
-	@docker exec -it haystackapi /bin/bash
+# Execute a shell inside the docker
+docker-shell:
+	@$(CHECK_DOCKER)
+	@docker exec -it haystackapi $(SHELL)
+
+.PHONY: docker-make-image docker-make-shell docker-make-clean
+## Create a docker image to build the project with make
+docker-make-image: docker/MakeDockerfile
+	@$(CHECK_DOCKER)
+	@echo -e "$(green)Build docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' to build the project...$(normal)"
+	docker build \
+		--build-arg UID=$$(id -u) \
+		--build-arg AWS_PROFILE=$(AWS_PROFILE) \
+		--build-arg AWS_REGION=$(AWS_REGION) \
+		-p 3000:3000 \
+		--tag $(DOCKER_REPOSITORY)/$(PRJ)-make \
+		-f docker/MakeDockerfile .
+	@echo -e "$(green)Use $(cyan)alias dmake='docker run -v $$PWD:/$(PRJ) -v $$HOME/.aws:/home/haystackapi/.aws -it $(DOCKER_REPOSITORY)/$(PRJ)-make'$(normal)"
+	@echo -e "$(green)and $(cyan)dmake ...  # Use make in a Docker container$(normal)"
+
+## Start a shell to build the project in a docker container
+docker-make-shell:
+	@$(CHECK_DOCKER)
+	@docker run \
+		-v $(PWD):/$(PRJ) \
+		-it $(DOCKER_REPOSITORY)/$(PRJ)-make shell
+
+docker-make-clean:
+	@$(CHECK_DOCKER)
+	@docker image rm $(USER)/$(PRJ)-make
+	@echo -e "$(cyan)Docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' removed$(normal)"
 
 # --------------------------- Distribution
 dist/:
@@ -733,10 +804,11 @@ dist/$(PRJ_PACKAGE)-*.tar.gz: $(REQUIREMENTS) schema.graphql | dist/
 	$(CONDA_PYTHON) setup.py sdist
 
 sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
+sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
 
 .PHONY: dist
 ## Create a full distribution
-dist: bdist sdist
+dist: bdist sdist docker-make-image
 	@echo -e "$(yellow)Package for distribution created$(normal)"
 
 .PHONY: check-twine
@@ -772,4 +844,3 @@ release: clean check-twine
 	echo -e "$(green)Enter the Pypi password$(normal)"
 	twine upload --sign \
 		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
-

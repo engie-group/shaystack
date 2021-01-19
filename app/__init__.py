@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Haystack API Provider module
-# Use license Apache V2.0
+# See the accompanying LICENSE Apache V2.0 file.
 # (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
@@ -42,7 +42,9 @@ pip install "haystackapi[flask,graphql]"
 """, file=sys.stderr)
 
 app = Flask(__name__)
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}, r"/graphql/*": {"origins": "*"}}, )
+cors = CORS(app, resources={
+    r"/haystack/*": {"origins": "*"},
+    r"/graphql/*": {"origins": "*"}}, )
 
 _log_level = os.environ.get("LOG_LEVEL", "WARNING")
 logging.basicConfig(level=_log_level)

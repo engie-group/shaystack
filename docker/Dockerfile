@@ -1,20 +1,30 @@
 FROM python:3
 
+ARG HAYSTACK_PROVIDER=haystackapi.providers.url
+ARG HAYSTACK_URL=sample/carytown.zinc
+ARG HAYSTACK_DB=sqlite:///test.db#haystack
+ARG HAYSTACK_TS=
+ARG HAYSTACK_DB_SECRET=
+ARG REFRESH=15
+ARG STAGE=prod
+
+ARG PIP_INDEX_URL=https://pypi.python.org/pypi
+ARG PIP_EXTRA_INDEX_URL=
+
 WORKDIR /usr/src/app
 
-# Use the published module in test
-# FIXME: Remove test.pypi in Dockerfile
-ENV PIP_INDEX_URL=https://test.pypi.org/simple
-ENV PIP_EXTRA_INDEX_URL=https://pypi.org/simple
-RUN pip install --no-cache-dir "haystackapi[flask,graphql,lambda]"
+ENV PIP_INDEX_URL=${PIP_INDEX_URL}
+ENV PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
+
+RUN pip install "haystackapi[flask,graphql,lambda]"
 
 COPY sample sample
 
-ENV HAYSTACK_PROVIDER=haystackapi.providers.url
-ENV HAYSTACK_URL=sample/carytown.zinc
-ENV HAYSTACK_DB=sqlite:///test.db#haystack
-ENV HAYSTACK_TS=
-ENV HAYSTACK_DB_SECRET=
-ENV REFRESH=15
+ENV HAYSTACK_PROVIDER=${HAYSTACK_PROVIDER}
+ENV HAYSTACK_URL=${HAYSTACK_URL}
+ENV HAYSTACK_DB=${HAYSTACK_DB}
+ENV HAYSTACK_TS=${HASYTACK_TS}
+ENV HAYSTACK_DB_SECRET=${HAYSTACK_DB_SECRET}
+ENV REFRESH=${REFRESH}
 
 CMD [ "haystackapi" ]

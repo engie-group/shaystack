@@ -53,6 +53,27 @@ __all__ = ['Grid', 'dump', 'parse', 'dump_scalar', 'parse_scalar', 'parse_filter
            "invoke_action",
            ]
 
+__pdoc__ = {
+    "csvdumper": False,
+    "csvparser": False,
+    "datatypes": False,
+    "dumper": False,
+    "filter_ast": False,
+    "grid": False,
+    "grid_diff": False,
+    "grid_filter": False,
+    "jsondumper": False,
+    "jsonparser": False,
+    "metadata": False,
+    "ops": False,
+    "parser": False,
+    "pintutil": False,
+    "sortabledict": False,
+    "version": False,
+    "zincdumper": False,
+    "zincparser": False,
+    "zoneinfo": False,
+}
 __author__ = 'Ph. Prados, VRT Systems'
 __copyright__ = 'Copyright 2016-2020, Ph. Prados & VRT System'
 __credits__ = ['Philippe PRADOS',

@@ -201,7 +201,7 @@ Depending on where and how your haystack data is stored, you need to choose an e
 |Data on AWS S3 Bucket|`export HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=s3://... haystackapi`|Remember to install aws support and boto3 python module. [More...](README_url_provider.md)|
 |Data in a SuperSQLite database|`export HAYSTACK_PROVIDER=haystackapi.providers.sql HAYSTACK_URL=sqlite3://... haystackapi`|Remember to install supersqlite python module. [More...](README_url_provider.md)|
 |Data in a Postgresql database|`export HAYSTACK_PROVIDER=haystackapi.providers.sql HAYSTACK_URL=postgres://... haystackapi`|Remember to install psycopg2 python module. [More...](README_url_provider.md)|
-|Data in a database and Time series in AWS Time Stream|`export HAYSTACK_PROVIDER=haystackapi.providers.sql_ts HAYSTACK_URL=postgres://... HAYSTACK_TS=timestream:://... haystackapi`|[More...](README_url_ts_provider.md)|
+|Data in a database and Time series in AWS Time Stream|`export HAYSTACK_PROVIDER=haystackapi.providers.sql_ts HAYSTACK_URL=postgres://... HAYSTACK_TS=timestream:://... haystackapi`|[More...](README_sql_ts_provider.md)|
 |Custom|`export HAYSTACK_PROVIDER=haystackapi.providers.<your module name>`|Write your own subclass of `haystackapi.providers.HaystackInterface haystackapi`. Non implemented methods will be automatically excluded in [`ops`](https://project-haystack.org/doc/Ops#ops) operation output|
 
 Note: Existing providers are not connected to IOT for simplicity.

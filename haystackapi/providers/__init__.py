@@ -16,6 +16,11 @@ from ..sortabledict import SortableDict
 
 __all__ = ["HaystackInterface", "get_provider"]
 
+__pdoc__ = \
+    {
+        "sqldb_protocol": False
+    }
+
 
 def select_grid(grid: Grid, select: str) -> Grid:
     if select:

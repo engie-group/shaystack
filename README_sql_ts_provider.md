@@ -30,7 +30,7 @@ You can publish data in this table, via *[AWS IoT](https://aws.amazon.com/fr/iot
 -
 
 ```console
-$ HAYSTACK_PROVIDER=haystackapi.providers.sql \
+$ HAYSTACK_PROVIDER=haystackapi.providers.sql_ts \
   HAYSTACK_DB=sqlite3:///test.db#haystack \
   HAYSTACK_TS=timestream://HaystackAPIDemo/?mem_ttl=1&mag_ttl=100#haystack \
   haystackapi

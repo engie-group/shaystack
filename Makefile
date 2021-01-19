@@ -53,7 +53,8 @@ CONDA_PACKAGE:=$(CONDA_PREFIX)/lib/python$(PYTHON_VERSION)/site-packages
 CONDA_PYTHON:=$(CONDA_PREFIX)/bin/python
 CONDA_ARGS?=
 FLASK_DEBUG?=1
-AWS_STAGE?=dev
+STAGE=dev
+AWS_STAGE?=$(STAGE)
 GIMME?=gimme-aws-creds
 ZAPPA_ENV=zappa_venv
 DOCKER_REPOSITORY=$(USER)
@@ -83,7 +84,7 @@ DEACTIVATE_VENV=source $(CONDA_BASE)/etc/profile.d/conda.sh && conda deactivate
 VALIDATE_VENV=$(CHECK_VENV)
 
 CHECK_DOCKER=if ! which docker >/dev/null ; \
-  then echo -e "$(red)Docker in docker is not supported for 'make $(@)'$(normal)"; exit 0 ; fi
+  then echo -e "$(red)Docker not found for 'make $(@)'$(normal)"; exit 0 ; fi
 
 
 ifneq ($(TERM),)
@@ -159,12 +160,16 @@ dump-%:
 
 ## Print project variables
 dump-params:
-	@echo PRJ="$(PRJ)"
-	echo HAYSTACK_PROVIDER='$(HAYSTACK_PROVIDER)'
-	echo HAYSTACK_URL='$(HAYSTACK_URL)'
-	echo HAYSTACK_DB='$(HAYSTACK_DB)'
-	echo AWS_PROFILE='$(AWS_PROFILE)'
-	echo AWS_STAGE='$(AWS_STAGE)'
+	@echo -e "$(green)PRJ='$(PRJ)'$(normal)"
+	echo -e "$(green)HAYSTACK_PROVIDER='$(HAYSTACK_PROVIDER)'$(normal)"
+	echo -e "$(green)HAYSTACK_URL='$(HAYSTACK_URL)'$(normal)"
+	echo -e "$(green)HAYSTACK_DB='$(HAYSTACK_DB)'$(normal)"
+	echo -e "$(green)AWS_PROFILE='$(AWS_PROFILE)'$(normal)"
+	echo -e "$(green)STAGE='$(STAGE)'$(normal)"
+	echo -e "$(green)READ_PARAMS='$(READ_PARAMS)'$(normal)"
+	echo -e "$(green)PIP_INDEX_URL='$(PIP_INDEX_URL)'$(normal)"
+	echo -e "$(green)HISREAD_PARAMS='$(HISREAD_PARAMS)'$(normal)"
+	echo -e "$(green)PIP_EXTRA_INDEX_URL='$(PIP_EXTRA_INDEX_URL)'$(normal)"
 
 .PHONY: shell
 # Start a child shell
@@ -296,7 +301,7 @@ clean: async-stop clean-zappa
 
 .PHONY: clean-all
 # Clean all environments
-clean-all: clean docker-make-clean remove-venv
+clean-all: clean docker-rm docker-make-clean remove-venv
 
 
 # -------------------------------------- Build
@@ -324,12 +329,14 @@ api-%:
 
 api-read:
 	@$(VALIDATE_VENV)
+	echo -e "Use $(yellow)READ_PARAMS=$(READ_PARAMS)$(normal)"
 	TARGET="localhost:3000"
 	curl -H "Accept: text/zinc" \
 			"$${TARGET}/haystack/read$(READ_PARAMS)"
 
 api-hisRead:
 	@$(VALIDATE_VENV)
+	echo -e "Use $(yellow)HISREAD_PARAMS=$(HISREAD_PARAMS)$(normal)"
 	TARGET="localhost:3000"
 	curl -H "Accept: text/zinc" \
 			"$${TARGET}/haystack/hisRead$(HISREAD_PARAMS)"
@@ -338,13 +345,13 @@ api-hisRead:
 ## Start api
 start-api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
-	[ -e .start/start-api.pid ] && $(MAKE) async-stop-api || true
-	echo "$(green)PROVIDER=${HAYSTACK_PROVIDER}"
-	echo "$(green)URL=${HAYSTACK_URL}"
-	echo "$(green)DB=${HAYSTACK_DB}"
-	echo "$(green)TS=${HAYSTACK_TS}"
-	echo "$(green)Use http://localhost:3000/graphql or http://localhost:3000/haystack$(normal)"
-	FLASK_DEBUG=1 FLASK_ENV=$(AWS_STAGE) \
+	[ -e .start/start-api.pid ] && $(MAKE) -s async-stop-api || true
+	echo -e "$(green)PROVIDER=${HAYSTACK_PROVIDER}"
+	echo -e "$(green)URL=${HAYSTACK_URL}"
+	echo -e "$(green)DB=${HAYSTACK_DB}"
+	echo -e "$(green)TS=${HAYSTACK_TS}"
+	echo -e "$(green)Use http://localhost:3000/graphql or http://localhost:3000/haystack$(normal)"
+	FLASK_DEBUG=1 FLASK_ENV=$(STAGE) \
 	$(CONDA_PYTHON) -m app.__init__
 
 # Start local api in background
@@ -352,7 +359,7 @@ async-start-api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	[ -e .start/start-api.pid ] && echo -e "$(yellow)Local API was allready started$(normal)" && exit
 	mkdir -p .start
-	FLASK_DEBUG=1 FLASK_APP=app.run FLASK_ENV=$(AWS_STAGE) \
+	FLASK_DEBUG=1 FLASK_APP=app.run FLASK_ENV=$(STAGE) \
 	nohup $(CONDA_PYTHON) -m app.__init__ >.start/start-api.log 2>&1 &
 	echo $$! >.start/start-api.pid
 	sleep 0.5
@@ -369,7 +376,7 @@ async-stop-api:
 .PHONY: graphql-schema graphql-api
 ## Print GraphQL API url
 graphql-api:
-	@echo "http://localhost:3000/graphql/"
+	@echo "http://localhost:3000/graphql"
 
 graphql-api-%:
 	@$(VALIDATE_VENV)
@@ -542,41 +549,41 @@ test-aws: .make-test-aws
 
 # Test local deployment with URL provider
 functional-url-local: $(REQUIREMENTS)
-	@$(MAKE) async-stop-api >/dev/null
+	@$(MAKE) -s async-stop-api >/dev/null
 	export HAYSTACK_PROVIDER=haystackapi.providers.url
 	export HAYSTACK_URL=sample/carytown.zinc
-	$(MAKE) async-start-api >/dev/null
+	$(MAKE) -s async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with url serveur and local file OK$(normal)"
-	$(MAKE) async-stop-api >/dev/null
+	$(MAKE) -s async-stop-api >/dev/null
 
 # Test local deployment with URL provider
 functional-url-s3: $(REQUIREMENTS) aws-update-token
-	@$(MAKE) async-stop-api >/dev/null
+	@$(MAKE) -s async-stop-api >/dev/null
 	export HAYSTACK_PROVIDER=haystackapi.providers.url
 	export HAYSTACK_URL=s3://haystackapi/carytown.zinc
-	$(MAKE) async-start-api >/dev/null
+	$(MAKE) -s async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with url serveur and s3 file OK$(normal)"
-	$(MAKE) async-stop-api >/dev/null
+	$(MAKE) -s async-stop-api >/dev/null
 
 # Clean DB, Start API, and try with SQLite
 functional-db-sqlite: $(REQUIREMENTS)
-	@$(MAKE) async-stop-api>/dev/null
+	@$(MAKE) -s async-stop-api>/dev/null
 	pip install supersqlite >/dev/null
 	rm -f test.db
 	export HAYSTACK_PROVIDER=haystackapi.providers.sql
 	export HAYSTACK_DB=sqlite3://localhost/test.db
 	$(CONDA_PYTHON) -m haystackapi.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in SQLite$(normal)"
-	$(MAKE) async-start-api >/dev/null
+	$(MAKE) -s async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local SQLite serveur OK$(normal)"
-	$(MAKE) async-stop-api >/dev/null
+	$(MAKE) -s async-stop-api >/dev/null
 
 # Clean DB, Start API, and try with SQLite + Time stream
 functional-db-sqlite-ts: $(REQUIREMENTS)
-	@$(MAKE) async-stop-api>/dev/null
+	@$(MAKE) -s async-stop-api>/dev/null
 	pip install supersqlite boto3 >/dev/null
 	rm -f test.db
 	export HAYSTACK_PROVIDER=haystackapi.providers.sql_ts
@@ -585,26 +592,26 @@ functional-db-sqlite-ts: $(REQUIREMENTS)
 	export LOG_LEVEL=INFO
 	$(CONDA_PYTHON) -m haystackapi.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB} $${HAYSTACK_TS}
 	echo -e "$(green)Data imported in SQLite and Time stream$(normal)"
-	$(MAKE) async-start-api >/dev/null
+	$(MAKE) -s async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local SQLite serveur and Time Stream OK$(normal)"
-	$(MAKE) async-stop-api >/dev/null
+	$(MAKE) -s async-stop-api >/dev/null
 
 # Start Postgres, Clean DB, Start API and try
 functional-db-postgres: $(REQUIREMENTS) clean-pg
-	@$(MAKE) async-stop-api >/dev/null
+	@$(MAKE) -s async-stop-api >/dev/null
 	pip install psycopg2 >/dev/null
-	$(MAKE) start-pg
+	$(MAKE) -s start-pg
 	PG_IP=$(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres)
 	export HAYSTACK_PROVIDER=haystackapi.providers.sql
 	export HAYSTACK_DB=postgres://postgres:password@$$PG_IP:5432/postgres
 	$(CONDA_PYTHON) -m haystackapi.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in Postgres$(normal)"
-	$(MAKE) start-pg async-start-api >/dev/null
+	$(MAKE) -s start-pg async-start-api >/dev/null
 
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local Postgres serveur OK$(normal)"
-	$(MAKE) async-stop-api >/dev/null
+	$(MAKE) -s async-stop-api >/dev/null
 
 .make-functional-test: functional-url-local functional-db-sqlite functional-db-postgres \
 		functional-url-s3 functional-db-sqlite-ts
@@ -725,36 +732,52 @@ stop-pgadmin:
 info: api pg-url aws-api
 
 # --------------------------- Docker
-## Build a Docker image with the project
+## Build a Docker image with the project and current Haystack parameter (see `make dump-params`)
 docker-build:
 	@$(CHECK_DOCKER)
-	docker build -t haystackapi \
-		--tag $(DOCKER_REPOSITORY)/$(PRJ) \
+	docker build \
+		--build-arg HAYSTACK_PROVIDER='$(HAYSTACK_PROVIDER)' \
+		--build-arg HAYSTACK_URL='$(HAYSTACK_URL)' \
+		--build-arg HAYSTACK_DB='$(HAYSTACK_DB)' \
+		--build-arg HAYSTACK_TS='$(HAYSTACK_TS)' \
+		--build-arg HAYSTACK_DB_SECRET='$(HAYSTACK_DB_SECRET)' \
+		--build-arg REFRESH='$(REFRESH)' \
+		--build-arg STAGE='$(STAGE)' \
+		--build-arg PIP_INDEX_URL='$(PIP_INDEX_URL)' \
+		--build-arg PIP_EXTRA_INDEX_URL='$(PIP_EXTRA_INDEX_URL)' \
+		--tag '$(DOCKER_REPOSITORY)/$(PRJ)' \
 		-f docker/Dockerfile .
+	echo -e "$(green)Docker image '$(yellow)$(DOCKER_REPOSITORY)/$(PRJ)$(green)' build with$(normal)"
+	$(MAKE) -s dump-params
 
 ## Run the docker (set environement variable)
 docker-run: async-docker-stop docker-rm
 	@$(CHECK_DOCKER)
-	echo -e "$(green)Start Haystackapi in docker$(normal)"
-	docker run -p 3000:3000 --name haystackapi haystackapi
+	echo ""
+	echo -e "$(green)PROVIDER=${HAYSTACK_PROVIDER}"
+	echo -e "$(green)URL=${HAYSTACK_URL}"
+	echo -e "$(green)DB=${HAYSTACK_DB}"
+	echo -e "$(green)TS=${HAYSTACK_TS}"
+	echo -e "$(green)Use http://localhost:3000/graphql or http://localhost:3000/haystack$(normal)"
+	docker run -p 3000:3000 --name '$(PRJ)' $(DOCKER_REPOSITORY)/$(PRJ)
 
 ## Run the docker with a Flask server in background
 async-docker-start: docker-rm
 	@$(CHECK_DOCKER)
-	docker run -dp 3000:3000 --name haystackapi haystackapi
+	docker run -dp 3000:3000 --name '$(PRJ)' $(DOCKER_REPOSITORY)/$(PRJ)
 	echo -e "$(green)Haystackapi in docker is started$(normal)"
 
 ## Stop the background docker with a Flask server
 async-docker-stop:
 	@$(CHECK_DOCKER)
-	docker stop haystackapi 2>&1 >/dev/null || true
-	echo -e "$(green)Haystackapi docker stopped$(normal)"
+	docker stop '$(PRJ)' 2>&1 >/dev/null || true
+	echo -e "$(green)'$(DOCKER_REPOSITORY)/$(PRJ)' docker stopped$(normal)"
 
 ## Remove the docker image
 docker-rm: async-docker-stop
 	@$(CHECK_DOCKER)
-	docker rm haystackapi >/dev/null || true
-	echo -e "$(green)Haystackapi docker removed$(normal)"
+	docker rm '$(PRJ)' >/dev/null || true
+	echo -e "$(green)'$(DOCKER_REPOSITORY)/$(PRJ)' docker removed$(normal)"
 
 # Start the docker image with current shell
 docker-run-shell:
@@ -779,6 +802,8 @@ docker-make-image: docker/MakeDockerfile
 		--build-arg AWS_PROFILE="$(AWS_PROFILE)" \
 		--build-arg AWS_REGION="$(AWS_REGION)" \
 		--build-arg USE_OKTA="$(USE_OKTA)" \
+		--build-arg PIP_INDEX_URL='$(PIP_INDEX_URL)' \
+		--build-arg PIP_EXTRA_INDEX_URL='$(PIP_EXTRA_INDEX_URL)' \
 		--tag $(DOCKER_REPOSITORY)/$(PRJ)-make \
 		-f docker/MakeDockerfile .
 	printf	"$(green)Declare\n$(cyan)alias dmake='docker run \

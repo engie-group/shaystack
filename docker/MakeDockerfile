@@ -23,6 +23,9 @@ ARG AWS_PROFILE=default
 ARG AWS_REGION=eu-west-3
 ARG USE_OKTA=N
 
+ARG PIP_INDEX_URL=https://pypi.python.org/pypi
+ARG PIP_EXTRA_INDEX_URL=
+
 RUN apt-get update ; apt-get install -y build-essential git nano vim libpq-dev python-dev ; apt-get clean
 RUN chmod -R go+rw /opt/conda
 RUN adduser --disabled-password --uid ${UID} --gecos '' ${USERNAME}
@@ -48,6 +51,8 @@ WORKDIR /${PRJ}
 
 
 
+ENV PIP_INDEX_URL=${PIP_INDEX_URL}
+ENV PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
 ENV VENV=${VENV}
 RUN make configure
 

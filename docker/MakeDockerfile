@@ -1,36 +1,67 @@
+# Image to buil Haystackapi
+# See the accompanying LICENSE Apache V2.0 file.
+# (C) 2021 Engie Digital
+#
+# build-arg:
+# UID: uid to use (use --build-arg UID=$(id -u) before mapping the source directory)
+# REPO: git repository
+# BRANCH: Branch to clone (`master` by default)
+# AWS_PROFILE: profile to use (`default` by default)
+# AWS_REGION: AWS region (`eu-west-3` by default)
+
 FROM continuumio/miniconda3
 MAINTAINER pprados
 # Use host user id to be capable to use -v $(PWD):/haystackapi
 ARG PRJ=haystackapi
 ARG USERNAME=${PRJ}
+ARG REPO=https://github.com/pprados/haystackapi.git
+ARG BRANCH=master
 # May be mapped to the host user id ( --build-arg UID=$(id -u) )
 ARG UID=1000
 ARG VENV=docker-${PRJ}
 ARG AWS_PROFILE=default
 ARG AWS_REGION=eu-west-3
+ARG USE_OKTA=N
 
-RUN apt-get update ; apt-get install -y build-essential nano vi; apt-get clean
+RUN apt-get update ; apt-get install -y build-essential git nano vim libpq-dev python-dev ; apt-get clean
 RUN chmod -R go+rw /opt/conda
 RUN adduser --disabled-password --uid ${UID} --gecos '' ${USERNAME}
+RUN mkdir /${PRJ}
+RUN chown ${UID}:${UID} /${PRJ}
 USER ${USERNAME}
 RUN conda init bash
-# May be mapped to current host projet directory ( -v $PWD:/$PRJ )
-COPY . /${PRJ}
-USER root
-RUN chown -R ${UID}:${UID} /${PRJ}
-USER haystackapi
-RUN echo "conda activate ${VENV}" >> ~/.bashrc
 RUN mkdir -p ~/.aws ; printf "[${AWS_PROFILE}]\nregion = ${AWS_REGION}\n" > ~/.aws/config
+RUN printf "[default]\nregion = ${AWS_REGION}\n" >> ~/.aws/config
+RUN echo "conda activate ${VENV}" >> ~/.bashrc
+
+# May be mapped to current host projet directory ( -v $PWD:/$PRJ )
+RUN git clone -b ${BRANCH} ${REPO} /${PRJ}
+
+# FIXME [[[[
+#USER root
+#COPY . /${PRJ}
+#RUN chown -R 1000:1000 /${PRJ}
+#USER ${USERNAME}
+# ]]]]]
+
 WORKDIR /${PRJ}
+
+
+
 ENV VENV=${VENV}
 RUN make configure
 
+ENV USE_OKTA=${USE_OKTA}
 ENV CONDA_EXE /opt/conda/bin/conda
-ENV CONDA_PREFIX /opt/conda/envs/docker-haystackapi
-ENV CONDA_PROMPT_MODIFIER (docker-haystackapi)
+ENV CONDA_PREFIX /opt/conda/envs/${VENV}
+ENV CONDA_PROMPT_MODIFIER (${VENV})
 ENV CONDA_SHLVL 2
-ENV CONDA_DEFAULT_ENV docker-haystackapi
+ENV CONDA_DEFAULT_ENV ${VENV}
 ENV CONDA_PYTHON_EXE /opt/conda/bin/python
 ENV CONDA_PREFIX_1 /opt/conda
+ENV AWS_PROFILE=${AWS_PROFILE}
+ENV AWS_REGION=${AWS_REGION}
+# RUN make dependencies
+
 ENTRYPOINT ["make"]
 CMD ["help"]

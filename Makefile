@@ -3,7 +3,7 @@ SHELL=/bin/bash
 .SHELLFLAGS = -e -c
 .ONESHELL:
 
-ifeq ($(shell (( $(shell echo "$(MAKE_VERSION)" | sed 's@^[^0-9]*\([0-9]\+\).*@\1@') >= 4 )) || echo 1),1)
+ifeq ($(shell (( $(shell echo "$(MAKE_VERSION)" | sed -e 's@^[^0-9]*\([0-9]\+\).*@\1@') >= 4 )) || echo 1),1)
 $(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
 endif
 
@@ -48,7 +48,7 @@ PYTHON_SRC=$(shell find . -name '*.py')
 PYTHON_VERSION:=3.8
 PRJ_PACKAGE:=$(PRJ)
 VENV ?= $(PRJ)
-CONDA_BASE:=$(shell conda info --base)
+CONDA_BASE:=$(shell unset AWS_PROFILE ; conda info --base || 'base')
 CONDA_PACKAGE:=$(CONDA_PREFIX)/lib/python$(PYTHON_VERSION)/site-packages
 CONDA_PYTHON:=$(CONDA_PREFIX)/bin/python
 CONDA_ARGS?=
@@ -82,7 +82,7 @@ DEACTIVATE_VENV=source $(CONDA_BASE)/etc/profile.d/conda.sh && conda deactivate
 
 VALIDATE_VENV=$(CHECK_VENV)
 
-CHECK_DOCKER=@if ! which docker >/dev/null ; \
+CHECK_DOCKER=if ! which docker >/dev/null ; \
   then echo -e "$(red)Docker in docker is not supported for 'make $(@)'$(normal)"; exit 0 ; fi
 
 
@@ -210,6 +210,12 @@ shell:
 	PRE-PUSH
 	chmod +x .git/hooks/pre-push
 
+fetch:
+	git fetch
+
+pull:
+	git pull
+
 # -------------------------------------- Virtualenv
 .PHONY: configure
 ## Prepare the work environment (conda venv, ...)
@@ -235,9 +241,7 @@ ifeq ($(USE_OKTA),Y)
 	pip install gimme-aws-creds
 endif
 	echo -e "$(cyan)Install binary dependencies ...$(normal)"
-	conda install -y -c conda-forge \
-		make git jq libpq curl
-#	conda install -c anaconda libpq -y
+	conda install -y -c conda-forge make git jq libpq curl
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	echo -e "$(cyan)pip install -e .$(normal)"
 	pip install -e .
@@ -338,6 +342,7 @@ start-api: $(REQUIREMENTS)
 	echo "$(green)PROVIDER=${HAYSTACK_PROVIDER}"
 	echo "$(green)URL=${HAYSTACK_URL}"
 	echo "$(green)DB=${HAYSTACK_DB}"
+	echo "$(green)TS=${HAYSTACK_TS}"
 	echo "$(green)Use http://localhost:3000/graphql or http://localhost:3000/haystack$(normal)"
 	FLASK_DEBUG=1 FLASK_ENV=$(AWS_STAGE) \
 	$(CONDA_PYTHON) -m app.__init__
@@ -426,7 +431,7 @@ async-stop: async-stop-api async-stop-minio stop-pg stop-pgadmin async-docker-st
 ifeq ($(USE_OKTA),Y)
 .PHONY: aws-update-token
 # Update the AWS Token
-aws-update-token:
+aws-update-token: $(REQUIREMENTS)
 	@aws sts get-caller-identity >/dev/null 2>/dev/null || $(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
 else
 aws-update-token:
@@ -589,8 +594,10 @@ functional-db-sqlite-ts: $(REQUIREMENTS)
 functional-db-postgres: $(REQUIREMENTS) clean-pg
 	@$(MAKE) async-stop-api >/dev/null
 	pip install psycopg2 >/dev/null
+	$(MAKE) start-pg
+	PG_IP=$(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres)
 	export HAYSTACK_PROVIDER=haystackapi.providers.sql
-	export HAYSTACK_DB=postgres://postgres:password@172.17.0.2:5432/postgres
+	export HAYSTACK_DB=postgres://postgres:password@$$PG_IP:5432/postgres
 	$(CONDA_PYTHON) -m haystackapi.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in Postgres$(normal)"
 	$(MAKE) start-pg async-start-api >/dev/null
@@ -762,23 +769,35 @@ docker-shell:
 .PHONY: docker-make-image docker-make-shell docker-make-clean
 ## Create a docker image to build the project with make
 docker-make-image: docker/MakeDockerfile
-	@$(CHECK_DOCKER)
-	@echo -e "$(green)Build docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' to build the project...$(normal)"
+	$(CHECK_DOCKER)
+	echo -e "$(green)Build docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' to build the project...$(normal)"
+	REPO=$(shell git remote get-url origin)
 	docker build \
 		--build-arg UID=$$(id -u) \
-		--build-arg AWS_PROFILE=$(AWS_PROFILE) \
-		--build-arg AWS_REGION=$(AWS_REGION) \
-		-p 3000:3000 \
+		--build-arg REPO="$$REPO" \
+		--build-arg BRANCH=develop \
+		--build-arg AWS_PROFILE="$(AWS_PROFILE)" \
+		--build-arg AWS_REGION="$(AWS_REGION)" \
+		--build-arg USE_OKTA="$(USE_OKTA)" \
 		--tag $(DOCKER_REPOSITORY)/$(PRJ)-make \
 		-f docker/MakeDockerfile .
-	@echo -e "$(green)Use $(cyan)alias dmake='docker run -v $$PWD:/$(PRJ) -v $$HOME/.aws:/home/haystackapi/.aws -it $(DOCKER_REPOSITORY)/$(PRJ)-make'$(normal)"
+	printf	"$(green)Declare\n$(cyan)alias dmake='docker run \
+-v $$PWD:/$(PRJ) \
+-v $$HOME/.aws:/home/$(PRJ)/.aws \
+-v $$HOME/.okta_aws_login_config:/home/$(PRJ)/.okta_aws_login_config \
+-p3000:3000 \
+-it $(DOCKER_REPOSITORY)/$(PRJ)-make'$(normal)\n"
 	@echo -e "$(green)and $(cyan)dmake ...  # Use make in a Docker container$(normal)"
+
 
 ## Start a shell to build the project in a docker container
 docker-make-shell:
 	@$(CHECK_DOCKER)
 	@docker run \
 		-v $(PWD):/$(PRJ) \
+		-v $$HOME/.aws:/home/$(PRJ)/.aws \
+		-v $$HOME/.okta_aws_login_config:/home/$(PRJ)/.okta_aws_login_config \
+		-p 3000:3000 \
 		-it $(DOCKER_REPOSITORY)/$(PRJ)-make shell
 
 docker-make-clean:

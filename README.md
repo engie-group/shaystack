@@ -34,10 +34,10 @@ This project implements client side haystack code. Useful to parse or dump Hayst
 [Json](https://www.project-haystack.org/doc/Json),
 [Csv](https://www.project-haystack.org/doc/Csv)).
 
-It also implements the server side: To implement the
+On the server side, it also implements 
 [Haystack Rest API](https://www.project-haystack.org/doc/Rest), useful to serve Haystack data you host.
 
-- We implemented two serving options (See Server API): Flask and AWS Lambda
+- We implemented two serving options (See [API Server](#Server Side Haystack)): Flask and AWS Lambda
     - Each offering two API endpoints:
         - Classical REST Haystack API
         - GraphQL API
@@ -55,27 +55,26 @@ This project is a fork of [hszinc](https://github.com/widesky/hszinc)
 
 To see the similarities and differences between the two project, click [here](hszinc.md)
 
-# Try it
+# Client side: Haystack client python module
 
-To try this module, the best way is to download a sample of haystack files. First, create a directory to work.
+To try the client side python module included in this project, the best way is to download a sample of haystack files. First, create a working directory.
 
 ```console
 $ mkdir $TMP/haystack
 $ cd $TMP/haystack
 ```
 
-Download the zip
-file [here](https://downgit.github.io/#/home?url=https://github.com/pprados/haystackapi/tree/develop/sample)
-and unzip the `sample.zip` in this directory.
+Download and unzip [`sample` zip file](https://downgit.github.io/#/home?url=https://github.com/pprados/haystackapi/tree/develop/sample)
+in this directory.
 
 ```console
 $ unzip sample
 ```
 
-The directory `sample` now has examples files.
+The directory `sample` now contains:
 
-- `carytown.[csv|jon|zinc]`: The haystack ontology
-- `p:demo:*.zinc`: sample of time series
+- `carytown.[csv|jon|zinc]`: A public reference haystack ontology
+- `p:demo:*.zinc`: A sample of time series data (ts,val csv format)
 
 Create a virtual environment
 
@@ -87,144 +86,29 @@ $ source venv/bin/activate
 Then, install the module with all options
 
 ```console
-$ pip install 'haystackapi[flask,graphql,lambda]'
+$ pip install "haystackapi[flask,graphql,lambda]"
 ```
 
-It's time to try to manipulate a `Grid`. Start Python
+`sample.ipynb` jupyter notebook contains code to read, filter, manipulate
+and print `Grid` objects containing haystack data.
+It also contains code to create a `Pandas Dataframe` from a `Grid` object, which could be useful for a Data Science project.
 
-```python-repl
-Python 3.7.8 | packaged by conda-forge | (default, Jul 31 2020, 02:25:08) 
-Type 'copyright', 'credits' or 'license' for more information
-IPython 7.18.1 -- An enhanced Interactive Python. Type '?' for help.
+Install and start a jupyter notebook server then open `sample.ipynb`
 
-In [1]: import haystackapi
-In [2]: import datetime
-In [3]: g = haystackapi.Grid()
-In [4]: g.metadata['aMarker'] = haystackapi.MARKER
-In [5]: g.metadata['today'] = datetime.date.today()
-In [6]: g.column['firstColumn'] = {'metaData':'in no particular order', 'abc': 123}
-In [7]: g.column['secondColumn'] = {}
-In [8]: g.extend([
-...:     {'firstColumn': haystackapi.Quantity(154, 'kg'), 'secondColumn': 'and counting'},
-...:     {'firstColumn': haystackapi.MARKER, 'secondColumn': 'supported on Python 3.7+'},
-...:     {'firstColumn': haystackapi.Coordinate(-27.4725,153.003), 
-...:          'secondColumn': 'Made in Australia from local and imported ingredients'},
-...:     ])
-Out[8]: 
-<Grid>
-        Version: 3.0
-        Metadata: MetadataObject{'aMarker'=MARKER, 'today'=datetime.date(2020, 12, 16)}
-        Columns:
-                firstColumn: {'metaData': 'in no particular order', 'abc': 123}
-                secondColumn
-        Row    0:
-        firstColumn=PintQuantity(154, 'kg')
-        secondColumn='and counting'
-        Row    1:
-        firstColumn=MARKER
-        secondColumn='supported on Python 3.7+'
-        Row    2:
-        firstColumn=Coordinate(-27.4725, 153.003)
-        secondColumn='Made in Australia from local and imported ingredients'
-</Grid>
-
-In [9]: print(haystackapi.dump(g))
-ver:"3.0" aMarker today:2020-12-16
-firstColumn metaData:"in no particular order" abc:123,secondColumn
-154kg,"and counting"
-M,"supported on Python and 3.7+"
-C(-27.472500,153.003000),"Made in Australia from local and imported ingredients"
-
-In [10]: print(haystackapi.dump(g,mode=haystackapi.MODE_JSON))
-{"meta": {"aMarker": "m:", "today": "d:2020-12-16", "ver": "3.0"}, "cols": [{"metaData": "s:in no particular order", 
-"abc": "n:123.000000", "name": "firstColumn"}, {"name": "secondColumn"}], 
-"rows": [
-{"firstColumn": "n:154.000000 kg", "secondColumn": "s:and counting"}, 
-{"firstColumn": "m:", "secondColumn": "s:supported on Python 2.7 and 3.x"}, 
-{"firstColumn": "c:-27.472500,153.003000", "secondColumn": "s:Made in Australia from local and imported ingredients"}
-]}
-
-In [11]: # Load haystack file
-In [12]: import io
-In [13]: with open("sample/carytown.zinc") as f:
-...:         g = haystackapi.parse(f.read(),haystackapi.MODE_ZINC)
-...: 
-In [14]: # Filter some entity
-In [15]: site = g.filter("site")[0]
-In [16]: site
-Out[16]: 
-{'tz': 'New_York',
- 'regionRef': Ref('p:demo:r:23a44701-67faf4db', 'Richmond', True),
- 'occupiedStart': datetime.time(10, 0),
- 'geoStreet': '3504 W Cary St',
- 'geoAddr': '3504 W Cary St, Richmond, VA',
- 'occupiedEnd': datetime.time(20, 0),
- 'phone': '804.552.2222',
- 'weatherRef': Ref('p:demo:r:23a44701-1af1bca9', 'Richmond, VA', True),
- 'yearBuilt': 1996.0,
- 'store': MARKER,
- 'id': Ref('p:demo:r:23a44701-a89a6c66', 'Carytown', True),
- 'geoState': 'VA',
- 'area': PintQuantity(3149.0, 'ft²'),
- 'storeNum': 1.0,
- 'geoPostalCode': '23221',
- 'geoCoord': Coordinate(37.555385, -77.486903),
- 'metro': 'Richmond',
- 'site': MARKER,
- 'geoCountry': 'US',
- 'primaryFunction': 'Retail Store',
- 'dis': 'Carytown',
- 'geoCity': 'Richmond'}
-
-In [17]: # Read time-series
-In [18]: with_his = g.filter("his")[0]
-In [19]: ts_uri = "sample/" + with_his["hisURI"]
-In [20]: with open(ts_uri) as f:
-...:         ts = haystackapi.parse(f.read(),haystackapi.MODE_ZINC)
-...:         print(ts)  # Print associated time-series
-...: 
-<Grid>
-        Version: 3.0
-        Metadata: MetadataObject{'hisStart'=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=<StaticTzInfo 'Etc/UTC'>), 
-        'hisEnd'=datetime.datetime(2020, 12, 1, 0, 0, tzinfo=<StaticTzInfo 'Etc/UTC'>)}
-        Columns:
-                ts
-                val
-        Row    0:
-        ts=datetime.datetime(2020, 2, 1, 0, 0, tzinfo=<StaticTzInfo 'Etc/UTC'>)
-        val=86.0
-        Row    1:
-        ts=datetime.datetime(2020, 3, 1, 0, 0, tzinfo=<StaticTzInfo 'Etc/UTC'>)
-        val=83.0
-</Grid>
-In [21]: # Save grid
-In [22]: with open("ontology.csv","w") as f:
-    ...:         f.write(haystackapi.dump(g,haystackapi.MODE_CSV))
-    ...: 
-In [23]: with open("ontology.json","w") as f:
-    ...:         f.write(haystackapi.dump(g,haystackapi.MODE_JSON))
-    ...: 
+```console
+$ pip install jupyter pandas
+$ jupyter-notebook
 ```
 
-# Data science
+[a relative link](other_file.md)
 
-It's easy to convert a grid to a dataframe.
-
-```python
-import haystackapi
-import panda as pd
-
-with open("file.zinc") as f:
-    grid = haystackapi.parse(f.read(), haystackapi.MODE_ZINC)
-
-df = pd.DataFrame(grid.filter("point and co2e"))  # Convert grid to data frame
-```
+[Custom foo description](#foo)
 
 # Features
 
 Haystackapi is agile and can be deployed in different scenarios. Choose an option for each feature.
 
-| Python |
+| Python version |
 |:------:|
 |   3.7  |
 |   3.8  |
@@ -237,7 +121,7 @@ Haystackapi is agile and can be deployed in different scenarios. Choose an optio
 | Docker Flask server     |
 | Internet AWS Lambda API |
 
-| Backend                      |
+| Haystack data location       |
 | ---------------------------- |
 | local file                   |
 | url                          |
@@ -250,94 +134,98 @@ Haystackapi is agile and can be deployed in different scenarios. Choose an optio
 | Multi tenancy                 |
 | ----------------------------- |
 | Single                        |
-| Multiple, share the SQL table |
+| Multiple, shared SQL table |
 | Multiple, dedicated SQL table |
 
 | API                                               |
 | ------------------------------------------------- |
 | Haystack REST API                                 |
-| GraphQL API alone                                 |
+| Standalone GraphQL API                            |
 | GraphQL API integrated inside another via AppSync |
 
-| Cost        | Technologies               |
+| Serverless  | Technologies               |
 | ----------- | -------------------------- |
-| With server | VM, Docker, Postgres, etc. |
-| Server less | AWS Lambda, Aurora         |
+| No  | VM, Docker, Postgres, etc. |
+| Yes | AWS Lambda, Aurora         |
 
 and you can extend these proposed scenario. You can read later, how to implement these different scenarios.
 
-# Server API
+# Server Side: Haystack API Server
 
-This implementation propose two API endpoint:
+This implementation can offer two API endpoints:
 
-- Classical [REST Haystack API](https://www.project-haystack.org/doc/Rest)
-- GraphQL API
+- Classical [REST Haystack](https://www.project-haystack.org/doc/Rest)
+  - Available on `http://<host>:<port>/haystack`
+- GraphQL
+  - Available on `http://<host>:<port>/graphql` and compliant with [`schema.graphql`](schema.graphql)
 
-## Classical REST Haystack API
-
-This API use the `http://<host>:<port>/haystack` url.
-
-These API can negotiate:
+This API can negotiate:
 
 - Request format (`Content-Type: text/zinc`, `application/json` or `text/csv`)
 - Response format (`Accept: text/zinc, application/json, text/csv`)
 
-The code implements all [operations](https://project-haystack.org/doc/Rest):
-
+These [operations](https://project-haystack.org/doc/Rest) are implemented in both endpoints:
 - [about](https://project-haystack.org/doc/Ops#about)
 - [ops](https://project-haystack.org/doc/Ops#ops)
 - [formats](https://project-haystack.org/doc/Ops#formats)
 - [read](https://project-haystack.org/doc/Ops#read)
+- [hisRead](https://project-haystack.org/doc/Ops#hisRead)
 - [nav](https://project-haystack.org/doc/Ops#nav)
+- [invokeAction](https://project-haystack.org/doc/Ops#invokeAction)
+
+These [operations](https://project-haystack.org/doc/Rest) are implemented only in classical endpoint:
 - [watchSub](https://project-haystack.org/doc/Ops#watchSub)
 - [watchUnsub](https://project-haystack.org/doc/Ops#watchUnsub)
 - [watchPoll](https://project-haystack.org/doc/Ops#watchPoll)
 - [pointWrite](https://project-haystack.org/doc/Ops#pointWrite)
-- [hisRead](https://project-haystack.org/doc/Ops#hisRead)
 - [hisWrite](https://project-haystack.org/doc/Ops#hisWrite)
-- [invokeAction](https://project-haystack.org/doc/Ops#invokeAction)
 
-## GraphQL Haystack API
+## API Server deployment
 
-This API use the `http://<host>:<port>/graphql` url and is conforms to the schema describe in file `schema.graphql`.
+### Installing
+Using `pip install` you can add the support of some options:
+- `pip install "haystackapi[flask]"` allows you to use a local [Flask](https://flask.palletsprojects.com/en/1.1.x/) server
+- `pip install "haystackapi[aws]"` allows you to:
+  - Serve the API in an AWS Lambda function
+  - Expose haystack data located in an AWS S3 Bucket  
+- `pip install "haystackapi[graphql]"` allows you to:
+  - Expose the `/graphql` endpoint in addition to the classical `/haystack` endpoint
 
-### Deploy a Web server
-- start the api
-    - with [Flask](https://flask.palletsprojects.com/en/1.1.x/) and Haystack classical API,
-        - `pip install "haystackapi[flask]"`
-        - `HAYSTACK_PROVIDER='<your provider module>' haystackapi`
-    - with Flask and Haystack+GraphQL API,
-        - `pip install "haystackapi[flask,graphql]"`
-        - `HAYSTACK_PROVIDER='<your provider module>' haystackapi`
+You can mix two or more options, if you need them all, use `pip install "haystackapi[flask,graphql,aws]"`
 
-The command line `haystackapi` accept parameters (use `haystackapi --help`)
-### Providers
+### Choosing and configuring your provider
+Depending on where and how your haystack data is stored, you need to choose an existing Provider or implement your own by extending `haystackapi.providers.HaystackInterface` 
 
-Different sample of provider are proposed. You can add a new one with a subclass of
-`haystackapi.providers.HaystackInterface`. Then, you can implement only the method you want. The others methods are
-automatically excluded in the [`../ops`](https://project-haystack.org/doc/Ops#ops) operation.
+|Where is data stored|Configuration|Miscellaneous|
+|---|---|---|
+|No data, just testing|`export HAYSTACK_PROVIDER=haystackapi.providers.ping`||
+|Data on http server|`export HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=http://...`|[More...](README_url_provier.md)|
+|Data on ftp server|`export HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=ftp://...`|[More...](README_url_provier.md)|
+|Data on local filesystem|`export HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=file://...`|[More...](README_url_provier.md)|
+|Data on AWS S3 Bucket|`export HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=s3://...`|Remember to install aws support and boto3 python module. [More...](README_url_provier.md)|
+|Data in a SuperSQLite database|`export HAYSTACK_PROVIDER=haystackapi.providers.sql HAYSTACK_URL=sqlite3://...`|Remember to install supersqlite python module. [More...](README_url_provier.md)|
+|Data in a Postgresql database|`export HAYSTACK_PROVIDER=haystackapi.providers.sql HAYSTACK_URL=sqlite3://...`|Remember to install psycopg2 python module. [More...](README_url_provier.md)|
+|Custom|`export HAYSTACK_PROVIDER=haystackapi.providers.<your class name>`|Write your own subclass of `haystackapi.providers.HaystackInterface`. Non implemented methods will be automatically excluded in [`ops`](https://project-haystack.org/doc/Ops#ops) operation output|
 
-To select a provider, add the environment variable `HAYSTACK_PROVIDER`.
+Note: Existing providers are not connected to IOT for simplicity.
+If you want to connect the haystack API with IOT, you must implement a custom provider. 
 
-To create your custom Haystack API
+### Starting the server
+Use the command `haystackapi` (check `haystackapi --help` for parameters)
 
-- create a project
-- In a module, create a subclass of `haystackapi.providers.HaystackInterface`
-  with the name `Provider`
-- add a parameter `HAYSTACK_PROVIDER` with the name of the module
 
 We propose different providers, with the objective in mind:
 
 - Expose the haystack files and historical data with an API
 - and manage the evolution of these files with the notion of `version`.
 
-If you want to connect the haystack API with IOT, you must extend a provider. The current providers are not connected to
-IOT for simplicity.
+
 
 To demonstrate this scenario, we want to publish the sample from `sample/` files from S3 bucket or from an SQL database.
 We must import this ontology and time-series inside the bucket or database before to use. To manage the different
 versions of files, you must use a dedicated tool, to import only the difference between versions.
 
+==================================================
 #### Provider Ping
 
 Use `HAYSTACK_PROVIDER=haystackapi.providers.ping` to use this provider. It's a very simple provider, with a tiny

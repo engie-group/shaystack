@@ -251,6 +251,8 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
     def __getitem__(self, key: Union[int, Ref, slice]) -> Union[Dict[str, Any], 'Grid']:
         """
         Retrieve the row at index.
+        :param key: index, Haystack reference or slide
+        :return: a new grid with a selection of entities
         """
         if isinstance(key, int):
             return self._row[key]
@@ -265,13 +267,41 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         return self._index[key]
 
     def __contains__(self, key: Union[int, Ref]) -> bool:
+        """Return an entity with the corresponding id.
+
+            Args:
+                index (Ref): The id of entity
+                default (Dict[str, Any]): The default value if the entity is not found
+
+            Returns:
+                Dict[str, Any]: The entity with the id == index
+
+        """
         if isinstance(key, int):
             return 0 <= key < len(self._row)
         if not self._index:
             self.reindex()
         return key in self._index
 
-    def get(self, index: Ref, default=None) -> Dict[str, Any]:
+    def get(self, index: Ref, default: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Return an entity with the corresponding id.
+
+            Args:
+                index (Ref): The id of entity
+                default (Dict[str, Any]): The default value if the entity is not found
+
+            Returns:
+                Dict[str, Any]: The entity with the id == index
+
+        """
+        # '''
+        # Return an entity with the corresponding id.
+        #
+        # Attributes:
+        #     :param index: A haystack reference
+        #
+        #     :param default: Value if the reference was not founded
+        # '''
         if not self._index:
             self.reindex()
         return self._index.get(index, default)
@@ -410,7 +440,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
     def filter(self, grid_filter: str, limit: int = 0) -> 'Grid':
         """
         Return a filter version of this grid.
-        Warning, use a grid.filter(...).deepcopy() if you not whant to share metadata, columns and rows)
+        Warning, use a grid.filter(...).deepcopy() if you not want to share metadata, columns and rows)
         """
         assert isinstance(limit, int)
         assert limit >= 0

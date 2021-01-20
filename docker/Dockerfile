@@ -1,5 +1,6 @@
 FROM python:3
 
+ARG PORT=3000
 ARG HAYSTACK_PROVIDER=haystackapi.providers.url
 ARG HAYSTACK_URL=sample/carytown.zinc
 ARG HAYSTACK_DB=sqlite:///test.db#haystack
@@ -26,5 +27,6 @@ ENV HAYSTACK_DB=${HAYSTACK_DB}
 ENV HAYSTACK_TS=${HASYTACK_TS}
 ENV HAYSTACK_DB_SECRET=${HAYSTACK_DB_SECRET}
 ENV REFRESH=${REFRESH}
-
-CMD [ "haystackapi" ]
+ENV PORT=${PORT}
+EXPOSE ${PORT}
+ENTRYPOINT haystackapi --port ${PORT} --host 0.0.0.0

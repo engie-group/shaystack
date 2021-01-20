@@ -46,7 +46,7 @@ $ make help
 For MAC users, it's possible to use a Docker container to build the project.
 
 Use `make docker-make-image` to create the image `$USER/haystackapi-make`. Then, you can start this image to build the
-project inside a docker container. Then, add the `alias` proposed in your `.bash_aliases` or equivalent.
+project inside a docker container. Then, add the proposed `alias` in your `.bash_aliases` or equivalent.
 
 use `dmake` (Docker make) in place of `make`.
 
@@ -55,8 +55,6 @@ $ dmake test
 ```
 
 You can use `dmake shell` to start a shell **inside** the container.
-
-*WARNING: It's not possible to use Docker in Docker. So, some commands are ignored.*
 
 ## Tests
 
@@ -69,7 +67,7 @@ $ make test
 The functional tests try to use the different versions of provider with the same data. To do that, it's necessary to
 start different database in docker environment. The AWS token may be refreshed.
 
-If you use OKTA technology, declare this in the environement
+If you use OKTA technology, declare this in the environment
 
 ```console
 $ echo "USE_OKTA=Y" >>.env
@@ -77,6 +75,7 @@ $ pip install gimme-aws-creds
 ```
 
 then
+
 ```console
 $ make functional-test
 ```
@@ -86,6 +85,10 @@ The tests with a connection with AWS are excluded. To run explicitly these tests
 ## Use the Makefile to test API locally
 
 Use the `make start-api` to run the API locally on port 3000 with Flask and the current parameters.
+
+```console
+$ HAYSTACK_PROVIDER=haystackapi.providers.ping make start-api
+```
 
 You can use [Postman](https://www.postman.com/) and the files `HaystackAPI.postman_collection.json`
 and `HaystackAPI.postman_environment.json` to test and invoke the local API.
@@ -100,7 +103,7 @@ $ make async-stop-api
 
 ### Invoke local API
 
-After started local api, to invoke api, use `make api-<ops>`
+After started local api, to invoke use `make api-<ops>`
 
 ```console
 $ make async-start-api

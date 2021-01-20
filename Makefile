@@ -1,12 +1,14 @@
-#!/usr/bin/env make -f
+#!/usr/bin/env make
 SHELL=/bin/bash
 .SHELLFLAGS = -e -c
 .ONESHELL:
+MAKEFLAGS += --no-print-directory
 
 ifeq ($(shell (( $(shell echo "$(MAKE_VERSION)" | sed -e 's@^[^0-9]*\([0-9]\+\).*@\1@') >= 4 )) || echo 1),1)
 $(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
 endif
 
+# You can change the password in .env
 PRJ?=haystackapi
 HAYSTACK_PROVIDER?=haystackapi.providers.url
 HAYSTACK_URL?=sample/carytown.zinc
@@ -15,16 +17,14 @@ USE_OKTA?=N
 AWS_PROFILE?=default
 AWS_REGION?=eu-west-3
 LOGLEVEL?=WARNING
+PG_PASSWORD?=password
+PGADMIN_USER?=$(USER)@domain.com
+PGADMIN_PASSWORD?=password
+
 # Default parameter for make [aws-]api-read
 READ_PARAMS?=?filter=his&limit=5
 # Default parameter for make [aws-]api-hisRead
 HISREAD_PARAMS?=?id=@id1
-ifeq (, $(shell which docker))
-IS_DOCKER=0
-else
-IS_DOCKER=1
-endif
-
 
 # Override project variables
 ifneq (,$(wildcard .env))
@@ -40,12 +40,13 @@ export LOGLEVEL
 export AWS_PROFILE
 export AWS_REGION
 export PYTHON_VERSION
+export READ_PARAMS
 export HISREAD_PARAMS
 export FLASK_DEBUG
 
 
 PYTHON_SRC=$(shell find . -name '*.py')
-PYTHON_VERSION:=3.8
+PYTHON_VERSION?=3.7
 PRJ_PACKAGE:=$(PRJ)
 VENV ?= $(PRJ)
 CONDA_BASE:=$(shell unset AWS_PROFILE ; conda info --base || 'base')
@@ -58,6 +59,7 @@ AWS_STAGE?=$(STAGE)
 GIMME?=gimme-aws-creds
 ZAPPA_ENV=zappa_venv
 DOCKER_REPOSITORY=$(USER)
+PORT?=3000
 
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 
@@ -75,17 +77,13 @@ AWS_SECRET_KEY=$(shell aws configure --profile $(AWS_PROFILE) get aws_secret_acc
 #%:
 #	@:
 
-CHECK_VENV=@if [[ "base" == "$(CONDA_DEFAULT_ENV)" ]] || [[ -z "$(CONDA_DEFAULT_ENV)" ]] ; \
+CHECK_VENV=@if [[ $(VENV) != "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
 
 ACTIVATE_VENV=source $(CONDA_BASE)/etc/profile.d/conda.sh && conda activate $(VENV) $(CONDA_ARGS)
 DEACTIVATE_VENV=source $(CONDA_BASE)/etc/profile.d/conda.sh && conda deactivate
 
 VALIDATE_VENV=$(CHECK_VENV)
-
-CHECK_DOCKER=if ! which docker >/dev/null ; \
-  then echo -e "$(red)Docker not found for 'make $(@)'$(normal)"; exit 0 ; fi
-
 
 ifneq ($(TERM),)
 normal:=$(shell tput sgr0)
@@ -160,21 +158,24 @@ dump-%:
 
 ## Print project variables
 dump-params:
-	@echo -e "$(green)PRJ='$(PRJ)'$(normal)"
-	echo -e "$(green)HAYSTACK_PROVIDER='$(HAYSTACK_PROVIDER)'$(normal)"
+	@echo -e "$(green)HAYSTACK_PROVIDER='$(HAYSTACK_PROVIDER)'$(normal)"
 	echo -e "$(green)HAYSTACK_URL='$(HAYSTACK_URL)'$(normal)"
 	echo -e "$(green)HAYSTACK_DB='$(HAYSTACK_DB)'$(normal)"
 	echo -e "$(green)AWS_PROFILE='$(AWS_PROFILE)'$(normal)"
 	echo -e "$(green)STAGE='$(STAGE)'$(normal)"
-	echo -e "$(green)READ_PARAMS='$(READ_PARAMS)'$(normal)"
+	echo -e "$(green)PORT='$(PORT)'$(normal)"
 	echo -e "$(green)PIP_INDEX_URL='$(PIP_INDEX_URL)'$(normal)"
-	echo -e "$(green)HISREAD_PARAMS='$(HISREAD_PARAMS)'$(normal)"
 	echo -e "$(green)PIP_EXTRA_INDEX_URL='$(PIP_EXTRA_INDEX_URL)'$(normal)"
+	echo -e "$(green)READ_PARAMS='$${READ_PARAMS}'$(normal)"
+	echo -e "$(green)HISREAD_PARAMS='$${HISREAD_PARAMS}'$(normal)"
 
-.PHONY: shell
+.PHONY: shell bash env
 # Start a child shell
-shell:
+shell bash zsh:
 	@$(SHELL)
+
+env:
+	env
 
 # -------------------------------------- GIT
 .env:
@@ -225,12 +226,20 @@ pull:
 .PHONY: configure
 ## Prepare the work environment (conda venv, ...)
 configure:
-	@if [[ "$(PRJ)" == "$(CONDA_DEFAULT_ENV)" ]] ; \
-  		then echo -e "$(red)Use $(cyan)conda deactivate$(red) before using $(cyan)make configure$(normal)"; exit ; fi
-	conda create --name "$(VENV)" \
-		python=$(PYTHON_VERSION) \
-		-y $(CONDA_ARGS)
-	echo -e "Use: $(cyan)conda activate $(VENV)$(normal) $(CONDA_ARGS)"
+	@if [[ "$(CONDA_DEFAULT_ENV)" != "" && "$(VENV)" != "$(CONDA_DEFAULT_ENV)" ]] ; \
+		then echo -e "$(red)Use $(cyan)conda deactivate$(red) before using $(cyan)make configure$(normal)"; exit ; fi
+	if [[ "$(VENV)" != "base" ]]
+	then
+		conda create --name "$(VENV)" python=$(PYTHON_VERSION) -y $(CONDA_ARGS)
+		echo -e "Use: $(cyan)conda activate $(VENV)$(normal) $(CONDA_ARGS)"
+	else
+		conda install python=$(PYTHON_VERSION) -y $(CONDA_ARGS)
+	fi
+
+_re_configure:
+	source $$(conda info --base)/etc/profile.d/conda.sh
+	conda deactivate
+	$(MAKE) configure
 
 # All dependencies of the project must be here
 .PHONY: requirements dependencies
@@ -241,18 +250,23 @@ dependencies: requirements
 # Rule to update the current venv, with the dependencies describe in `setup.py`
 $(PIP_PACKAGE): $(CONDA_PYTHON) setup.* | .git # Install pip dependencies
 	@$(VALIDATE_VENV)
+	conda info
 	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"
 ifeq ($(USE_OKTA),Y)
 	pip install gimme-aws-creds
 endif
 	echo -e "$(cyan)Install binary dependencies ...$(normal)"
-	conda install -y -c conda-forge make git jq libpq curl
-	echo -e "$(cyan)Install project dependencies ...$(normal)"
-	echo -e "$(cyan)pip install -e .$(normal)"
-	pip install -e .
-	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"
-	pip install -e "file://$$(pwd)#egg=haystackapi[dev,flask,graphql,lambda]"
-	touch $(PIP_PACKAGE)
+# SANS	conda install -y -c conda-forge compilers make git jq libpq curl psycopg2
+	conda install -y -c conda-forge conda compilers make git jq libpq curl psycopg2
+	pip install supersqlite --log LOG_FILE
+	python -c 'import supersqlite; print("SuperSqlite ok")'
+	read -p "Alors, ok ?"
+# FIXME	echo -e "$(cyan)Install project dependencies ...$(normal)"
+#	echo -e "$(cyan)pip install -e .$(normal)"
+#	pip install -e .
+#	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"
+#	pip install -e "file://$$(pwd)#egg=haystackapi[dev,flask,graphql,lambda]"
+		touch $(PIP_PACKAGE)
 
 # All dependencies of the project must be here
 .PHONY: requirements dependencies
@@ -317,27 +331,27 @@ compile-all:
 .PHONY: api
 ## Print API URL
 api:
-	@echo http://localhost:3000/haystack
+	@echo http://localhost:$(PORT)/haystack
 
 .PHONY: api-*
 ## Invoke local API (eg. make api-about)
 api-%:
 	@$(VALIDATE_VENV)
-	TARGET="localhost:3000"
+	TARGET="localhost:$(PORT)"
 	curl -H "Accept: text/zinc" \
 			"$${TARGET}/haystack/$*"
 
 api-read:
 	@$(VALIDATE_VENV)
 	echo -e "Use $(yellow)READ_PARAMS=$(READ_PARAMS)$(normal)"
-	TARGET="localhost:3000"
+	TARGET="localhost:$(PORT)"
 	curl -H "Accept: text/zinc" \
 			"$${TARGET}/haystack/read$(READ_PARAMS)"
 
 api-hisRead:
 	@$(VALIDATE_VENV)
 	echo -e "Use $(yellow)HISREAD_PARAMS=$(HISREAD_PARAMS)$(normal)"
-	TARGET="localhost:3000"
+	TARGET="localhost:$(PORT)"
 	curl -H "Accept: text/zinc" \
 			"$${TARGET}/haystack/hisRead$(HISREAD_PARAMS)"
 
@@ -345,14 +359,14 @@ api-hisRead:
 ## Start api
 start-api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
-	[ -e .start/start-api.pid ] && $(MAKE) -s async-stop-api || true
+	[ -e .start/start-api.pid ] && $(MAKE) async-stop-api || true
 	echo -e "$(green)PROVIDER=${HAYSTACK_PROVIDER}"
 	echo -e "$(green)URL=${HAYSTACK_URL}"
 	echo -e "$(green)DB=${HAYSTACK_DB}"
 	echo -e "$(green)TS=${HAYSTACK_TS}"
-	echo -e "$(green)Use http://localhost:3000/graphql or http://localhost:3000/haystack$(normal)"
+	echo -e "$(green)Use http://localhost:$(PORT)/graphql or http://localhost:$(PORT)/haystack$(normal)"
 	FLASK_DEBUG=1 FLASK_ENV=$(STAGE) \
-	$(CONDA_PYTHON) -m app.__init__
+	$(CONDA_PYTHON) -m app.__init__ --port $(PORT)
 
 # Start local api in background
 async-start-api: $(REQUIREMENTS)
@@ -360,9 +374,9 @@ async-start-api: $(REQUIREMENTS)
 	[ -e .start/start-api.pid ] && echo -e "$(yellow)Local API was allready started$(normal)" && exit
 	mkdir -p .start
 	FLASK_DEBUG=1 FLASK_APP=app.run FLASK_ENV=$(STAGE) \
-	nohup $(CONDA_PYTHON) -m app.__init__ >.start/start-api.log 2>&1 &
+	nohup $(CONDA_PYTHON) -m app.__init__ --port $(PORT) >.start/start-api.log 2>&1 &
 	echo $$! >.start/start-api.pid
-	sleep 0.5
+	sleep 1
 	tail .start/start-api.log
 	echo -e "$(yellow)Local API started$(normal)"
 
@@ -372,11 +386,14 @@ async-stop-api:
 	[ -e .start/start-api.pid ] && kill `cat .start/start-api.pid` 2>/dev/null >/dev/null || true && echo -e "$(green)Local API stopped$(normal)"
 	rm -f .start/start-api.pid
 
+conda-info:
+	conda info
+
 # -------------------------------------- GraphQL
 .PHONY: graphql-schema graphql-api
 ## Print GraphQL API url
 graphql-api:
-	@echo "http://localhost:3000/graphql"
+	@echo "http://localhost:$(PORT)/graphql"
 
 graphql-api-%:
 	@$(VALIDATE_VENV)
@@ -384,7 +401,7 @@ graphql-api-%:
 		-X POST \
 		-H "Content-Type: application/json" \
 		--data '{ "query": "{ haystack { about { name } } }" }' \
-		http://localhost:3000/graphql/
+		http://localhost:$(PORT)/graphql/
 
 schema.graphql: app/graphql_model.py app/blueprint_graphql.py
 	@$(VALIDATE_VENV)
@@ -402,8 +419,7 @@ graphql-schema: schema.graphql
 	@mkdir -p .minio
 
 start-minio: .minio $(REQUIREMENTS)
-	@$(CHECK_DOCKER)
-	docker run -p 9000:9000 \
+	@docker run -p 9000:9000 \
 	-e "MINIO_ACCESS_KEY=$(AWS_ACCESS_KEY)" \
 	-e "MINIO_SECRET_KEY=$(AWS_SECRET_KEY)" \
 	-v  "$(MINIO_HOME):/data" \
@@ -415,8 +431,7 @@ async-stop-minio:
 	rm -f .start/start-minio.pid
 
 async-start-minio: .minio $(REQUIREMENTS)
-	@$(CHECK_DOCKER)
-	$(VALIDATE_VENV)
+	@$(VALIDATE_VENV)
 	[ -e .start/start-minio.pid ] && echo -e "$(yellow)Local Minio was allready started$(normal)" && exit
 	mkdir -p .start
 	nohup  docker run -p 9000:9000 \
@@ -549,41 +564,41 @@ test-aws: .make-test-aws
 
 # Test local deployment with URL provider
 functional-url-local: $(REQUIREMENTS)
-	@$(MAKE) -s async-stop-api >/dev/null
+	@$(MAKE) async-stop-api >/dev/null
 	export HAYSTACK_PROVIDER=haystackapi.providers.url
 	export HAYSTACK_URL=sample/carytown.zinc
-	$(MAKE) -s async-start-api >/dev/null
+	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with url serveur and local file OK$(normal)"
-	$(MAKE) -s async-stop-api >/dev/null
+	$(MAKE) async-stop-api >/dev/null
 
 # Test local deployment with URL provider
 functional-url-s3: $(REQUIREMENTS) aws-update-token
-	@$(MAKE) -s async-stop-api >/dev/null
+	@$(MAKE) async-stop-api >/dev/null
 	export HAYSTACK_PROVIDER=haystackapi.providers.url
 	export HAYSTACK_URL=s3://haystackapi/carytown.zinc
-	$(MAKE) -s async-start-api >/dev/null
+	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with url serveur and s3 file OK$(normal)"
-	$(MAKE) -s async-stop-api >/dev/null
+	$(MAKE) async-stop-api >/dev/null
 
 # Clean DB, Start API, and try with SQLite
 functional-db-sqlite: $(REQUIREMENTS)
-	@$(MAKE) -s async-stop-api>/dev/null
+	@$(MAKE) async-stop-api>/dev/null
 	pip install supersqlite >/dev/null
 	rm -f test.db
 	export HAYSTACK_PROVIDER=haystackapi.providers.sql
 	export HAYSTACK_DB=sqlite3://localhost/test.db
 	$(CONDA_PYTHON) -m haystackapi.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in SQLite$(normal)"
-	$(MAKE) -s async-start-api >/dev/null
+	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local SQLite serveur OK$(normal)"
-	$(MAKE) -s async-stop-api >/dev/null
+	$(MAKE) async-stop-api >/dev/null
 
 # Clean DB, Start API, and try with SQLite + Time stream
 functional-db-sqlite-ts: $(REQUIREMENTS)
-	@$(MAKE) -s async-stop-api>/dev/null
+	@$(MAKE) async-stop-api>/dev/null
 	pip install supersqlite boto3 >/dev/null
 	rm -f test.db
 	export HAYSTACK_PROVIDER=haystackapi.providers.sql_ts
@@ -592,26 +607,25 @@ functional-db-sqlite-ts: $(REQUIREMENTS)
 	export LOG_LEVEL=INFO
 	$(CONDA_PYTHON) -m haystackapi.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB} $${HAYSTACK_TS}
 	echo -e "$(green)Data imported in SQLite and Time stream$(normal)"
-	$(MAKE) -s async-start-api >/dev/null
+	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local SQLite serveur and Time Stream OK$(normal)"
-	$(MAKE) -s async-stop-api >/dev/null
+	$(MAKE) async-stop-api >/dev/null
 
 # Start Postgres, Clean DB, Start API and try
 functional-db-postgres: $(REQUIREMENTS) clean-pg
-	@$(MAKE) -s async-stop-api >/dev/null
+	@$(MAKE) async-stop-api >/dev/null
 	pip install psycopg2 >/dev/null
-	$(MAKE) -s start-pg
+	$(MAKE) start-pg
 	PG_IP=$(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres)
 	export HAYSTACK_PROVIDER=haystackapi.providers.sql
 	export HAYSTACK_DB=postgres://postgres:password@$$PG_IP:5432/postgres
 	$(CONDA_PYTHON) -m haystackapi.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in Postgres$(normal)"
-	$(MAKE) -s start-pg async-start-api >/dev/null
-
+	$(MAKE) start-pg async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local Postgres serveur OK$(normal)"
-	$(MAKE) -s async-stop-api >/dev/null
+	$(MAKE) async-stop-api >/dev/null
 
 .make-functional-test: functional-url-local functional-db-sqlite functional-db-postgres \
 		functional-url-s3 functional-db-sqlite-ts
@@ -675,45 +689,37 @@ sqlite-url:
 # ------------- Postgres database
 ## Start postgres database
 start-pg:
-	@$(CHECK_DOCKER)
-	docker start postgres || docker run \
+	@docker start postgres || docker run \
 		--name postgres \
 		--hostname postgres \
 		-e POSTGRES_PASSWORD=password \
+		-p 5432:5432 \
 		-d postgres
 	echo -e "$(yellow)Postgres started$(normal)"
 
 ## Stop postgres database
 stop-pg:
-	@$(CHECK_DOCKER)
-	docker stop postgres 2>&1 >/dev/null || true
+	@docker stop postgres 2>&1 >/dev/null || true
 	echo -e "$(green)Postgres stopped$(normal)"
 
 ## Print postgres db url connection
 pg-url: start-pg
-	@$(CHECK_DOCKER)
-	IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
+	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
 	echo "postgres://postgres:password@$$IP:5432/postgres#haystack"
 
 pg-shell:
-	@$(CHECK_DOCKER)
-	IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
-	docker exec -e PGPASSWORD=password -it postgres psql -U postgres -h $$IP
+	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
+	docker exec -e PGPASSWORD=$(PG_PASSWORD) -it postgres psql -U postgres -h $$IP
 
 clean-pg: start-pg
-	@$(CHECK_DOCKER)
-	IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
-	docker exec -e PGPASSWORD=password -it postgres psql -U postgres -h $$IP \
+	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
+	docker exec -e PGPASSWORD=$(PG_PASSWORD) -it postgres psql -U postgres -h $$IP \
 	-c 'drop table if exists haystack;drop table if exists haystack_meta_datas;drop table if exists haystack_ts;'
 
-# You can change the password in .env
-PGADMIN_USER?=$(USER)@domain.com
-PGADMIN_PASSWORD?=password
 
 ## Start PGAdmin
 start-pgadmin:
-	@$(CHECK_DOCKER)
-	docker start pgadmin || docker run \
+	@docker start pgadmin || docker run \
 	--name pgadmin \
 	-p 8082:80 \
 	--link postgres \
@@ -724,8 +730,7 @@ start-pgadmin:
 
 ## Stop PGAdmin
 stop-pgadmin:
-	@$(CHECK_DOCKER)
-	docker stop pgadmin 2>&1 >/dev/null || true
+	@docker stop pgadmin 2>&1 >/dev/null || true
 	echo -e "$(green)PGAdmin stopped$(normal)"
 
 ## Print all URL
@@ -734,8 +739,8 @@ info: api pg-url aws-api
 # --------------------------- Docker
 ## Build a Docker image with the project and current Haystack parameter (see `make dump-params`)
 docker-build:
-	@$(CHECK_DOCKER)
-	docker build \
+	@docker build \
+		--build-arg PORT='$(PORT)' \
 		--build-arg HAYSTACK_PROVIDER='$(HAYSTACK_PROVIDER)' \
 		--build-arg HAYSTACK_URL='$(HAYSTACK_URL)' \
 		--build-arg HAYSTACK_DB='$(HAYSTACK_DB)' \
@@ -748,52 +753,56 @@ docker-build:
 		--tag '$(DOCKER_REPOSITORY)/$(PRJ)' \
 		-f docker/Dockerfile .
 	echo -e "$(green)Docker image '$(yellow)$(DOCKER_REPOSITORY)/$(PRJ)$(green)' build with$(normal)"
-	$(MAKE) -s dump-params
+	$(MAKE) dump-params
 
 ## Run the docker (set environement variable)
 docker-run: async-docker-stop docker-rm
-	@$(CHECK_DOCKER)
-	echo ""
+	@echo ""
 	echo -e "$(green)PROVIDER=${HAYSTACK_PROVIDER}"
 	echo -e "$(green)URL=${HAYSTACK_URL}"
 	echo -e "$(green)DB=${HAYSTACK_DB}"
 	echo -e "$(green)TS=${HAYSTACK_TS}"
-	echo -e "$(green)Use http://localhost:3000/graphql or http://localhost:3000/haystack$(normal)"
-	docker run -p 3000:3000 --name '$(PRJ)' $(DOCKER_REPOSITORY)/$(PRJ)
+	echo -e "$(green)Use http://localhost:$(PORT)/graphql or http://localhost:$(PORT)/haystack$(normal)"
+	docker run --rm -it --name '$(PRJ)' $(DOCKER_REPOSITORY)/$(PRJ)
 
 ## Run the docker with a Flask server in background
 async-docker-start: docker-rm
-	@$(CHECK_DOCKER)
-	docker run -dp 3000:3000 --name '$(PRJ)' $(DOCKER_REPOSITORY)/$(PRJ)
+	@docker run -dp $(PORT):$(PORT) --name '$(PRJ)' $(DOCKER_REPOSITORY)/$(PRJ)
 	echo -e "$(green)Haystackapi in docker is started$(normal)"
 
 ## Stop the background docker with a Flask server
 async-docker-stop:
-	@$(CHECK_DOCKER)
-	docker stop '$(PRJ)' 2>&1 >/dev/null || true
+	@docker stop '$(PRJ)' 2>&1 >/dev/null || true
 	echo -e "$(green)'$(DOCKER_REPOSITORY)/$(PRJ)' docker stopped$(normal)"
 
 ## Remove the docker image
 docker-rm: async-docker-stop
-	@$(CHECK_DOCKER)
-	docker rm '$(PRJ)' >/dev/null || true
+	@docker rm '$(PRJ)' >/dev/null || true
 	echo -e "$(green)'$(DOCKER_REPOSITORY)/$(PRJ)' docker removed$(normal)"
 
 # Start the docker image with current shell
 docker-run-shell:
-	@$(CHECK_DOCKER)
-	docker run -p 3000:3000 -it haystackapi $(SHELL)
+	@docker run -p $(PORT):$(PORT) -it haystackapi $(SHELL)
 
 # Execute a shell inside the docker
 docker-shell:
-	@$(CHECK_DOCKER)
-	docker exec -it haystackapi $(SHELL)
+	@docker exec -it haystackapi $(SHELL)
 
-.PHONY: docker-make-image docker-make-shell docker-make-clean
+# --------------------------- Docker Make
+_DOCKER_RUN_PARAMS=\
+--rm \
+-v "$(PWD):/$(PRJ)" \
+-v "$(CONDA_BASE):/opt/conda" \
+-v /var/run/docker.sock:/var/run/docker.sock \
+-v $$HOME/.aws:/home/$(PRJ)/.aws \
+-v $$HOME/.okta_aws_login_config:/home/$(PRJ)/.okta_aws_login_config \
+--group-add $$(getent group docker | cut -d: -f3) \
+-it
+
+.PHONY: docker-dmake-image docker-dmake-shell docker-make-clean
 ## Create a docker image to build the project with make
-docker-make-image: docker/MakeDockerfile
-	@$(CHECK_DOCKER)
-	echo -e "$(green)Build docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' to build the project...$(normal)"
+docker-dmake-image: docker/MakeDockerfile
+	@echo -e "$(green)Build docker image '$(DOCKER_REPOSITORY)/$(PRJ)-dmake' to build the project...$(normal)"
 	REPO=$(shell git remote get-url origin)
 	docker build \
 		--build-arg UID=$$(id -u) \
@@ -801,33 +810,35 @@ docker-make-image: docker/MakeDockerfile
 		--build-arg BRANCH=develop \
 		--build-arg AWS_PROFILE="$(AWS_PROFILE)" \
 		--build-arg AWS_REGION="$(AWS_REGION)" \
+		--build-arg PYTHON_VERSION="$(PYTHON_VERSION)" \
 		--build-arg USE_OKTA="$(USE_OKTA)" \
 		--build-arg PIP_INDEX_URL='$(PIP_INDEX_URL)' \
 		--build-arg PIP_EXTRA_INDEX_URL='$(PIP_EXTRA_INDEX_URL)' \
-		--tag $(DOCKER_REPOSITORY)/$(PRJ)-make \
+		--build-arg PORT=$(PORT) \
+		--tag $(DOCKER_REPOSITORY)/$(PRJ)-dmake \
 		-f docker/MakeDockerfile .
+	# $(MAKE) $(CONDA_BASE)/envs/docker-$(PRJ) >/dev/null
+	# FIXME docker run $(_DOCKER_RUN_PARAMS) $(DOCKER_REPOSITORY)/$(PRJ)-dmake _re_configure
 	printf	"$(green)Declare\n$(cyan)alias dmake='docker run \
--v $$PWD:/$(PRJ) \
--v $$HOME/.aws:/home/$(PRJ)/.aws \
--v $$HOME/.okta_aws_login_config:/home/$(PRJ)/.okta_aws_login_config \
--p3000:3000 \
--it $(DOCKER_REPOSITORY)/$(PRJ)-make'$(normal)\n"
-	echo -e "$(green)and $(cyan)dmake ...  # Use make in a Docker container$(normal)"
+$(_DOCKER_RUN_PARAMS) $(DOCKER_REPOSITORY)/$(PRJ)-dmake'$(normal)\n"
+	echo -e "$(green)and use $(cyan)dmake ...$(normal)  # Use make in a Docker container"
 
 
-## Start a shell to build the project in a docker container
-docker-make-shell:
-	@$(CHECK_DOCKER)
-	docker run \
-		-v $(PWD):/$(PRJ) \
-		-v $$HOME/.aws:/home/$(PRJ)/.aws \
-		-v $$HOME/.okta_aws_login_config:/home/$(PRJ)/.okta_aws_login_config \
-		-p 3000:3000 \
-		-it $(DOCKER_REPOSITORY)/$(PRJ)-make shell
+# Create an environment docker-$(PRJ) via the Docker image
+docker-dmake-env: $(CONDA_BASE)/envs/docker-$(PRJ)
+$(CONDA_BASE)/envs/docker-$(PRJ):
+	VENV=docker-haystackapi make configure
 
-docker-make-clean:
-	@$(CHECK_DOCKER)
-	docker image rm $(USER)/$(PRJ)-make
+# Start a shell to build the project in a docker container
+docker-dmake-shell: $(CONDA_BASE)/envs/docker-$(PRJ)
+	@docker run \
+		--user 1000 \
+		--entrypoint $(SHELL) \
+		$(_DOCKER_RUN_PARAMS) \
+		$(DOCKER_REPOSITORY)/$(PRJ)-dmake
+
+docker-dmake-clean:
+	@docker image rm $(DOCKER_REPOSITORY)/$(PRJ)-dmake
 	echo -e "$(cyan)Docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' removed$(normal)"
 
 # --------------------------- Distribution

@@ -4,8 +4,6 @@
 #
 # build-arg:
 # UID: uid to use (use --build-arg UID=$(id -u) before mapping the source directory)
-# REPO: git repository
-# BRANCH: Branch to clone (`master` by default)
 # AWS_PROFILE: profile to use (`default` by default)
 # AWS_REGION: AWS region (`eu-west-3` by default)
 #
@@ -22,8 +20,6 @@ MAINTAINER Philippe PRADOS
 ARG PRJ=haystackapi
 # Use host user id to be capable to use -v $(PWD):/haystackapi
 ARG USERNAME=${PRJ}
-ARG REPO=https://github.com/pprados/${PRJ}.git
-ARG BRANCH=master
 # May be mapped to the host user id ( --build-arg UID=$(id -u) )
 ARG UID=1000
 ARG VENV=docker-${PRJ}
@@ -35,8 +31,11 @@ ARG PIP_INDEX_URL=https://pypi.python.org/pypi
 ARG PIP_EXTRA_INDEX_URL=
 ARG PORT=3000
 
+# PPR OK    apt-get install -y build-essential git nano vim libpq-dev python-dev docker.io ;
+# PPR OK    apt-get install -y make git nano vim libpq-dev python-dev docker.io ;
+# PPR OK    apt-get install -y make git nano vim docker.io ;
 RUN apt-get update ; \
-    apt-get install -y build-essential git nano vim libpq-dev python-dev docker.io ; \
+    apt-get install -y make nano vim docker.io ; \
     apt-get clean ; \
     rm -rf /var/lib/apt/lists/*
 RUN adduser --disabled-password --uid ${UID} --gecos '' ${USERNAME} && \
@@ -48,7 +47,7 @@ RUN mkdir /${PRJ} && \
     chmod 755 /bin/conda_run
 
 USER ${USERNAME}
-#SHELL ["/bin/bash", "-c"]
+SHELL ["/bin/bash", "-c"]
 ENV VENV=${VENV} \
     PYTHON_VERSION=${PYTHON_VERSION} \
     PIP_INDEX_URL=${PIP_INDEX_URL} \
@@ -64,19 +63,14 @@ RUN conda init bash && \
     echo "conda activate ${VENV}" >> ~/.bashrc
 
 # May be mapped to current host projet directory ( -v $PWD:/$PRJ )
-#RUN git clone -b ${BRANCH} ${REPO} /${PRJ}
-
-# FOR DEBUG [[[[
 USER root
 COPY . /${PRJ}
 RUN chown -R ${UID}:${UID} /${PRJ}
 USER ${USERNAME}
-# ]]]]]
 
 WORKDIR /${PRJ}
 RUN make configure
 EXPOSE ${PORT}
 
-#ENTRYPOINT ["/bin/conda_run","make"]
-#CMD ["help"]
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["/bin/conda_run","make"]
+CMD ["help"]

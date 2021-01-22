@@ -44,12 +44,13 @@ export READ_PARAMS
 export HISREAD_PARAMS
 export FLASK_DEBUG
 
-
 PYTHON_SRC=$(shell find . -name '*.py')
 PYTHON_VERSION?=3.7
 PRJ_PACKAGE:=$(PRJ)
 VENV ?= $(PRJ)
-CONDA_BASE:=$(shell unset AWS_PROFILE ; conda info --base || 'base')
+CONDA_PYTHON_EXE?=/opt/conda/bin/conda
+CONDA_BASE:=$(shell unset AWS_PROFILE ; $$(dirname $$(which activate))/conda info --base || '/opt/conda')
+CONDA_EXE:=/opt/conda/bin/conda
 CONDA_PACKAGE:=$(CONDA_PREFIX)/lib/python$(PYTHON_VERSION)/site-packages
 CONDA_PYTHON:=$(CONDA_PREFIX)/bin/python
 CONDA_ARGS?=
@@ -60,6 +61,11 @@ GIMME?=gimme-aws-creds
 ZAPPA_ENV=zappa_venv
 DOCKER_REPOSITORY=$(USER)
 PORT?=3000
+
+toto:
+	conda info --base
+	echo "XXX=$(shell unset AWS_PROFILE ; $(CONDA_PYTHON_EXE) info --base)
+
 
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 
@@ -77,13 +83,13 @@ AWS_SECRET_KEY=$(shell aws configure --profile $(AWS_PROFILE) get aws_secret_acc
 #%:
 #	@:
 
-CHECK_VENV=@if [[ $(VENV) != "$(CONDA_DEFAULT_ENV)" ]] ; \
+CHECK_VENV=if [[ $(VENV) != "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
 
 ACTIVATE_VENV=source $(CONDA_BASE)/etc/profile.d/conda.sh && conda activate $(VENV) $(CONDA_ARGS)
 DEACTIVATE_VENV=source $(CONDA_BASE)/etc/profile.d/conda.sh && conda deactivate
 
-VALIDATE_VENV=$(CHECK_VENV)
+VALIDATE_VENV?=$(CHECK_VENV)
 
 ifneq ($(TERM),)
 normal:=$(shell tput sgr0)
@@ -144,6 +150,14 @@ help:
 	echo -e "Use '$(cyan)make -jn ...$(normal)' for Parallel run"
 	echo -e "Use '$(cyan)make -B ...$(normal)' to force the target"
 	echo -e "Use '$(cyan)make -n ...$(normal)' to simulate the build"
+
+
+# --------------------------- Info
+## Print all URL
+info: api pg-url aws-api
+
+conda-info:
+	conda info
 
 
 .PHONY: dump-*
@@ -222,24 +236,43 @@ fetch:
 pull:
 	@git pull
 
-# -------------------------------------- Virtualenv
-.PHONY: configure
+# -------------------------------------- Initialize Virtual env
+.PHONY: configure _configure _check_configure
+
 ## Prepare the work environment (conda venv, ...)
-configure:
-	@if [[ "$(CONDA_DEFAULT_ENV)" != "" && "$(VENV)" != "$(CONDA_DEFAULT_ENV)" ]] ; \
+configure: _check_configure _configure
+
+_check_configure:
+	@if [[ "$(CONDA_DEFAULT_ENV)" != "" && "$(CONDA_DEFAULT_ENV)" != "base" ]] ; \
 		then echo -e "$(red)Use $(cyan)conda deactivate$(red) before using $(cyan)make configure$(normal)"; exit ; fi
-	if [[ "$(VENV)" != "base" ]]
+
+# Configure with the check. Use to be called inside a docker, with a mapping /opt/conda
+# to create an environment via the docker.
+_configure:
+	@if [[ "$(VENV)" != "base" ]]
 	then
-		conda create --name "$(VENV)" python=$(PYTHON_VERSION) -y $(CONDA_ARGS)
+		$(CONDA_EXE) create --name "$(VENV)" -c conda-forge compilers python=$(PYTHON_VERSION) -y $(CONDA_ARGS)
 		echo -e "Use: $(cyan)conda activate $(VENV)$(normal) $(CONDA_ARGS)"
 	else
-		conda install python=$(PYTHON_VERSION) -y $(CONDA_ARGS)
+		$(CONDA_EXE) install -c conda-forge compilers python=$(PYTHON_VERSION) -y $(CONDA_ARGS)
 	fi
 
-_re_configure:
-	source $$(conda info --base)/etc/profile.d/conda.sh
-	conda deactivate
-	$(MAKE) configure
+# -------------------------------------- Standard requirements
+# Rule to update the current venv, with the dependencies describe in `setup.py`
+$(PIP_PACKAGE): $(CONDA_PYTHON) setup.* | .git # Install pip dependencies
+	@$(VALIDATE_VENV)
+	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"
+ifeq ($(USE_OKTA),Y)
+	pip install gimme-aws-creds
+endif
+	echo -e "$(cyan)Install binary dependencies ...$(normal)"
+	conda install -y -c conda-forge conda compilers make git jq libpq curl psycopg2
+	echo -e "$(cyan)Install project dependencies ...$(normal)"
+	echo -e "$(cyan)pip install -e .$(normal)"
+	pip install -e .
+	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"
+	pip install -e "file://$$(pwd)#egg=haystackapi[dev,flask,graphql,lambda]"
+	touch $(PIP_PACKAGE)
 
 # All dependencies of the project must be here
 .PHONY: requirements dependencies
@@ -247,47 +280,18 @@ REQUIREMENTS=$(PIP_PACKAGE) .git/config
 requirements: $(REQUIREMENTS)
 dependencies: requirements
 
-# Rule to update the current venv, with the dependencies describe in `setup.py`
-$(PIP_PACKAGE): $(CONDA_PYTHON) setup.* | .git # Install pip dependencies
-	@$(VALIDATE_VENV)
-	conda info
-	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"
-ifeq ($(USE_OKTA),Y)
-	pip install gimme-aws-creds
-endif
-	echo -e "$(cyan)Install binary dependencies ...$(normal)"
-# SANS	conda install -y -c conda-forge compilers make git jq libpq curl psycopg2
-	conda install -y -c conda-forge conda compilers make git jq libpq curl psycopg2
-	pip install supersqlite --log LOG_FILE
-	python -c 'import supersqlite; print("SuperSqlite ok")'
-	read -p "Alors, ok ?"
-# FIXME	echo -e "$(cyan)Install project dependencies ...$(normal)"
-#	echo -e "$(cyan)pip install -e .$(normal)"
-#	pip install -e .
-#	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"
-#	pip install -e "file://$$(pwd)#egg=haystackapi[dev,flask,graphql,lambda]"
-		touch $(PIP_PACKAGE)
-
-# All dependencies of the project must be here
-.PHONY: requirements dependencies
-requirements: $(REQUIREMENTS)
-dependencies: requirements
-
-remove-$(VENV):
+# Remove the current conda environment
+remove-venv remove-$(VENV):
 	@$(DEACTIVATE_VENV)
 	conda env remove --name "$(VENV)" -y 2>/dev/null
 	echo -e "Use: $(cyan)conda deactivate$(normal)"
-# Remove virtual environement
-remove-venv : remove-$(VENV)
 
-upgrade-$(VENV):
+# Upgrade packages to last versions
+upgrade-venv upgrade-$(VENV):
 	@$(VALIDATE_VENV)
 	conda update --all $(CONDA_ARGS)
 	pip list --format freeze --outdated | sed 's/(.*//g' | xargs -r -n1 pip install $(EXTRA_INDEX) -U
 	echo -e "$(cyan)After validation, upgrade the setup.py$(normal)"
-
-# Upgrade packages to last versions
-upgrade-venv: upgrade-$(VENV)
 
 # -------------------------------------- Clean
 .PHONY: clean-pip
@@ -317,17 +321,15 @@ clean: async-stop clean-zappa
 # Clean all environments
 clean-all: clean docker-rm docker-make-clean remove-venv
 
-
 # -------------------------------------- Build
-
-.PHONY: dist build compile-all
+.PHONY: dist build compile-all api api-read api-hisRead
 
 # Compile all python files
 compile-all:
 	@echo -e "$(cyan)Compile all python file...$(normal)"
 	$(CONDA_PYTHON) -m compileall
 
-# -------------------------------------- API
+# -------------------------------------- Client API
 .PHONY: api
 ## Print API URL
 api:
@@ -355,20 +357,21 @@ api-hisRead:
 	curl -H "Accept: text/zinc" \
 			"$${TARGET}/haystack/hisRead$(HISREAD_PARAMS)"
 
+# -------------------------------------- Server API
 .PHONY: start-api async-start-api async-stop-api
 ## Start api
 start-api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	[ -e .start/start-api.pid ] && $(MAKE) async-stop-api || true
-	echo -e "$(green)PROVIDER=${HAYSTACK_PROVIDER}"
-	echo -e "$(green)URL=${HAYSTACK_URL}"
-	echo -e "$(green)DB=${HAYSTACK_DB}"
-	echo -e "$(green)TS=${HAYSTACK_TS}"
+	echo -e "$(green)PROVIDER=$${HAYSTACK_PROVIDER}"
+	echo -e "$(green)URL=$${HAYSTACK_URL}"
+	echo -e "$(green)DB=$${HAYSTACK_DB}"
+	echo -e "$(green)TS=$${HAYSTACK_TS}"
 	echo -e "$(green)Use http://localhost:$(PORT)/graphql or http://localhost:$(PORT)/haystack$(normal)"
 	FLASK_DEBUG=1 FLASK_ENV=$(STAGE) \
 	$(CONDA_PYTHON) -m app.__init__ --port $(PORT)
 
-# Start local api in background
+# Start local API server in background
 async-start-api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	[ -e .start/start-api.pid ] && echo -e "$(yellow)Local API was allready started$(normal)" && exit
@@ -380,14 +383,11 @@ async-start-api: $(REQUIREMENTS)
 	tail .start/start-api.log
 	echo -e "$(yellow)Local API started$(normal)"
 
-# Stop local api emulator in background
+# Stop the background local API server
 async-stop-api:
 	@$(VALIDATE_VENV)
 	[ -e .start/start-api.pid ] && kill `cat .start/start-api.pid` 2>/dev/null >/dev/null || true && echo -e "$(green)Local API stopped$(normal)"
 	rm -f .start/start-api.pid
-
-conda-info:
-	conda info
 
 # -------------------------------------- GraphQL
 .PHONY: graphql-schema graphql-api
@@ -733,12 +733,15 @@ stop-pgadmin:
 	@docker stop pgadmin 2>&1 >/dev/null || true
 	echo -e "$(green)PGAdmin stopped$(normal)"
 
-## Print all URL
-info: api pg-url aws-api
-
 # --------------------------- Docker
 ## Build a Docker image with the project and current Haystack parameter (see `make dump-params`)
 docker-build:
+	@echo "Build image with"
+	echo -e "$(green)PROVIDER=$${HAYSTACK_PROVIDER}"
+	echo -e "$(green)URL=$${HAYSTACK_URL}"
+	echo -e "$(green)DB=$${HAYSTACK_DB}"
+	echo -e "$(green)TS=$${HAYSTACK_TS}"
+	echo -e "$(green)Use http://localhost:$(PORT)/graphql or http://localhost:$(PORT)/haystack$(normal)"
 	@docker build \
 		--build-arg PORT='$(PORT)' \
 		--build-arg HAYSTACK_PROVIDER='$(HAYSTACK_PROVIDER)' \
@@ -756,14 +759,16 @@ docker-build:
 	$(MAKE) dump-params
 
 ## Run the docker (set environement variable)
-docker-run: async-docker-stop docker-rm
-	@echo ""
-	echo -e "$(green)PROVIDER=${HAYSTACK_PROVIDER}"
-	echo -e "$(green)URL=${HAYSTACK_URL}"
-	echo -e "$(green)DB=${HAYSTACK_DB}"
-	echo -e "$(green)TS=${HAYSTACK_TS}"
-	echo -e "$(green)Use http://localhost:$(PORT)/graphql or http://localhost:$(PORT)/haystack$(normal)"
-	docker run --rm -it --name '$(PRJ)' $(DOCKER_REPOSITORY)/$(PRJ)
+docker-run: async-docker-stop docker-rm docker-inspect
+	docker run --rm \
+		-it \
+		--name '$(PRJ)' \
+		$(DOCKER_REPOSITORY)/$(PRJ)
+
+# Print environment variables inside the docker image
+docker-inspect:
+	@echo -e "$(green)Parameter inside the docker image:$(normal)"
+	docker inspect --format '{{join .Config.Env "\n" }}' $(DOCKER_REPOSITORY)/$(PRJ)
 
 ## Run the docker with a Flask server in background
 async-docker-start: docker-rm
@@ -789,25 +794,27 @@ docker-shell:
 	@docker exec -it haystackapi $(SHELL)
 
 # --------------------------- Docker Make
+.PHONY: docker-build-dmake docker-alias-dmake docker-inspect-dmake \
+	docker-configure-dmake docker-exec-dmake docker-inspect-dmake docker-rm-dmake
+
 _DOCKER_RUN_PARAMS=\
 --rm \
--v "$(PWD):/$(PRJ)" \
 -v "$(CONDA_BASE):/opt/conda" \
+-v "$(PWD):/$(PRJ)" \
 -v /var/run/docker.sock:/var/run/docker.sock \
 -v $$HOME/.aws:/home/$(PRJ)/.aws \
 -v $$HOME/.okta_aws_login_config:/home/$(PRJ)/.okta_aws_login_config \
 --group-add $$(getent group docker | cut -d: -f3) \
 -it
 
-.PHONY: docker-dmake-image docker-dmake-shell docker-make-clean
-## Create a docker image to build the project with make
-docker-dmake-image: docker/MakeDockerfile
+DMAKE=docker run $(_DOCKER_RUN_PARAMS) $(DOCKER_REPOSITORY)/$(PRJ)-dmake
+
+## Create a docker image to build the project with dmake (docker make)
+docker-build-dmake: docker/DMake.Dockerfile
 	@echo -e "$(green)Build docker image '$(DOCKER_REPOSITORY)/$(PRJ)-dmake' to build the project...$(normal)"
 	REPO=$(shell git remote get-url origin)
 	docker build \
 		--build-arg UID=$$(id -u) \
-		--build-arg REPO="$$REPO" \
-		--build-arg BRANCH=develop \
 		--build-arg AWS_PROFILE="$(AWS_PROFILE)" \
 		--build-arg AWS_REGION="$(AWS_REGION)" \
 		--build-arg PYTHON_VERSION="$(PYTHON_VERSION)" \
@@ -816,28 +823,48 @@ docker-dmake-image: docker/MakeDockerfile
 		--build-arg PIP_EXTRA_INDEX_URL='$(PIP_EXTRA_INDEX_URL)' \
 		--build-arg PORT=$(PORT) \
 		--tag $(DOCKER_REPOSITORY)/$(PRJ)-dmake \
-		-f docker/MakeDockerfile .
-	# $(MAKE) $(CONDA_BASE)/envs/docker-$(PRJ) >/dev/null
-	# FIXME docker run $(_DOCKER_RUN_PARAMS) $(DOCKER_REPOSITORY)/$(PRJ)-dmake _re_configure
-	printf	"$(green)Declare\n$(cyan)alias dmake='docker run \
-$(_DOCKER_RUN_PARAMS) $(DOCKER_REPOSITORY)/$(PRJ)-dmake'$(normal)\n"
+		-f docker/DMake.Dockerfile .
+	# but with the mapping /opt/conda
+	$(MAKE) docker-configure-dmake
+	echo ""
+	echo -e "$(green)Image '$(DOCKER_REPOSITORY)/$(PRJ)-dmake' build with:$(normal)"
+	$(MAKE) docker-inspect-dmake
+	$(MAKE) docker-alias-dmake
+
+# Print the alias for 'dmake'
+docker-alias-dmake:
+	@printf	"$(green)Declare\n$(cyan)alias dmake='$(DMAKE)'\n"
 	echo -e "$(green)and use $(cyan)dmake ...$(normal)  # Use make in a Docker container"
 
+# Hack to create the venv docker-haystackapi inside the docker
+docker-configure-dmake: $(CONDA_BASE)/envs/docker-$(PRJ)
 
-# Create an environment docker-$(PRJ) via the Docker image
-docker-dmake-env: $(CONDA_BASE)/envs/docker-$(PRJ)
-$(CONDA_BASE)/envs/docker-$(PRJ):
-	VENV=docker-haystackapi make configure
+$(CONDA_BASE)/envs/docker-$(PRJ): docker/DMake.Dockerfile
+	source $$(conda info --base)/etc/profile.d/conda.sh
+	conda deactivate
+	$(DMAKE) \
+		CONDA_PREFIX=/opt/conda \
+		VALIDATE_VENV='exit' \
+		VENV=docker-haystackapi \
+		PYTHON_VERSION=$(PYTHON_VERSION) \
+		_configure
 
 # Start a shell to build the project in a docker container
-docker-dmake-shell: $(CONDA_BASE)/envs/docker-$(PRJ)
+docker-exec-dmake:
 	@docker run \
+		--entrypoint bash \
 		--user 1000 \
-		--entrypoint $(SHELL) \
 		$(_DOCKER_RUN_PARAMS) \
 		$(DOCKER_REPOSITORY)/$(PRJ)-dmake
 
-docker-dmake-clean:
+# Print env variable for the docker image dmake
+docker-inspect-dmake:
+	@echo -e "$(green)Parameter inside the docker dmake image:$(normal)"
+	docker inspect --format '{{join .Config.Env "\n" }}' $(DOCKER_REPOSITORY)/$(PRJ)-dmake
+
+# Remove the dmake image
+# FIXME: a tester
+docker-rm-dmake:
 	@docker image rm $(DOCKER_REPOSITORY)/$(PRJ)-dmake
 	echo -e "$(cyan)Docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' removed$(normal)"
 

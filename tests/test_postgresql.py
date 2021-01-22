@@ -1,5 +1,7 @@
 # --------------------------------------------------------------------------------------
-# Test generated sql request for Postgres
+# Test generated sql request for Postgres.
+# If the HAYSTACK_DB use postgresql://...,
+# a real connection is open with Postgres.
 import datetime
 import logging
 import os
@@ -23,7 +25,7 @@ def _check_pg(sql_request: str):
         provider = cast(SQLProvider, get_provider("haystackapi.providers.sql"))
         conn = provider.get_connect()
         try:
-            conn.execute(sql_request)
+            conn.cursor().execute(sql_request)
         finally:
             conn.rollback()
 

@@ -59,7 +59,7 @@ _default_driver = {
     "sqlite3": ("supersqlite.sqlite3", {"database"}),
     "supersqlite": ("supersqlite.sqlite3", {"database"}),
     "postgresql": ("psycopg2", {"host", "database", "user", "password"}),
-    "postgre": ("psycopg2", {"host", "database", "user", "password"}),
+    "postgres": ("psycopg2", {"host", "database", "user", "password"}),
     # "mysql": "mysqldb",  # Not implemented yet
     # "oracle": "cx_oracle",
     # "mssql": "pymssql",
@@ -88,6 +88,8 @@ def _import_db_driver(parsed_db: ParseResult,
         dialect = _fix_dialect_alias(dialect)
     else:
         dialect = _fix_dialect_alias(parsed_db.scheme)
+        if dialect not in default_driver:
+            raise ValueError(f"Dialect '{dialect}' not supported")
         driver = default_driver[dialect][0]
     if driver.find('.') != -1:
         splitted = driver.split('.')
@@ -313,6 +315,8 @@ class Provider(HaystackInterface):
 
     def get_connect(self) -> DBConnection:  # PPR: monothread ? No with Zappa
         if not self._connect and self._dialect:  # Lazy connection
+            if self._dialect not in self._default_driver:
+                raise ValueError(f"Dialect '{self._dialect}' not supported")
             try:
                 port = self._parsed_db.port  # To manage sqlite in memory
             except ValueError:
@@ -388,7 +392,7 @@ class Provider(HaystackInterface):
     def _init_grid_from_db(self, version: Optional[datetime]) -> Grid:
         customer = self.get_customer_id()
         if version is None:
-            version = datetime.max.replace(tzinfo=pytz.UTC)
+            version = datetime.max.replace(tzinfo=pytz.UTC, microsecond=0)
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -412,7 +416,7 @@ class Provider(HaystackInterface):
                           version: Optional[datetime]) -> Grid:
         """ Read haystack data from database and return a Grid"""
         if version is None:
-            version = datetime.max.replace(tzinfo=pytz.UTC)
+            version = datetime.max.replace(tzinfo=pytz.UTC, microsecond=0)
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()

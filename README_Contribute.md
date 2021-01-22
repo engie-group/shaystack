@@ -30,7 +30,7 @@ to `test`, `start-api`, etc. See `make help` to print all major target.
 Before,
 
 ```console
-apt install build-essential
+apt install build-essential # FIXME: a vérifier
 ```console
 $ git clone http://github.com/pprados/haystackapi.git 
 $ cd haystackapi
@@ -43,18 +43,31 @@ $ make help
 
 ## Build in docker container
 
-For MAC users, it's possible to use a Docker container to build the project.
+For MAC users or for others contexts, it's possible to use a Docker container to build the project.
 
-Use `make docker-make-image` to create the image `$USER/haystackapi-make`. Then, you can start this image to build the
-project inside a docker container. Then, add the proposed `alias` in your `.bash_aliases` or equivalent.
-
-use `dmake` (Docker make) in place of `make`.
+Use `make docker-build-dmake` to create the image `$USER/haystackapi-dmake`. Then, you can start this image to build the
+project inside a docker container. Add the proposed `alias` in your `.bash_aliases` or
+equivalent (`make docker-alias-dmake`)
+Now, use `dmake` (Docker make) in place of `make`.
 
 ```console
 $ dmake test
 ```
 
 You can use `dmake shell` to start a shell **inside** the container.
+
+Note: the conda environement is `docker-haystackapi`.
+
+## Windows WSL
+
+Windows WSL accept to use [Windows Docker](https://docs.docker.com/docker-for-windows/install/). Sometime, it's not
+possible to invoke the database inside Docker (ping fail), but it's possible to communicate between Dockers. So, to
+resolve that, build a new Docker Image, and use it in place of `make start-api`.
+
+```console
+$ make docker-build
+$ make docker-run
+```
 
 ## Tests
 
@@ -109,8 +122,8 @@ After started local api, to invoke use `make api-<ops>`
 $ make async-start-api
 $ make api-about
 $ make api-ops
-$ make api-read  # Use READ_PARAM
-$ make api-hisRead  # Use HISREAD_PARAM
+$ make READ_PARAM=?filter=site&limit=1 api-read
+$ make HISREAD_PARAMS=?id=@p:demo:r:23a44701-3a62fd7a api-hisRead
 $ make async-stop-api
 ```
 

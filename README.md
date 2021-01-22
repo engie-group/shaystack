@@ -387,7 +387,7 @@ A tag may be a list, a dict or another grid (recursive grid). To be used with ca
 
 # Contribute
 
-See [here](./Contibute.md)
+See [here](./README_Contribute.md)
 
 # Resources
 
@@ -405,3 +405,4 @@ See [LICENCE](LICENSE-2.0.txt) file
 - [ ] Pypy (when pip install typed-ast running)
 - [ ] Implements watch in GraphQL
 - [ ] Implements *write* in GraphQL
+- [ ] Docker images with ARM

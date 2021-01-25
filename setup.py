@@ -89,6 +89,9 @@ dev_requirements = [
     'coverage',
     'psycopg2',
     'supersqlite',
+    'sphinx',
+    'sphinx-rtd-theme',
+    'recommonmark'
 ]
 
 setup(name='haystackapi',

@@ -4,7 +4,7 @@
     "aws_region": "us-east-2",
     "app_function": "app.__init__.app",
     "project_name": "haystackapi",
-    "s3_bucket": "haystackapi",
+    "s3_bucket": "haystackapizappa4",
     "runtime": "python3.8",
     "environment_variables": {
       "COOKIE_SECRET_KEY": "2d1a12a6-3232-4328-9365-b5b65e64a68f"
@@ -27,16 +27,17 @@
       "pytest.ini",
       "pytype.cfg",
       "pip*",
-      "boto3", "botocore"
+      "boto3",
+      "botocore"
     ],
     "slim_handler": false
-//    "manage_roles": false,
-//    "role_name": "ZappaDjangoRole",
-//    "role_arn": "arn:aws:iam::908424941159:role/ZappaDjangoRole"
-//    "extra_permissions": [{ // Attach any extra permissions to this policy.
-//            "Effect": "Allow",
-//            "Action": ["rekognition:*"], // AWS Service ARN
-//            "Resource": "*"
-//        }]
+    //    "mange_roles": false,
+    //    "role_name": "ZappaDjangoRole",
+    //    "role_arn": "arn:aws:iam::908424941159:role/ZappaDjangoRole"
+    //    "extra_permissions": [{ // Attach any extra permissions to this policy.
+    //            "Effect": "Allow",
+    //            "Action": ["rekognition:*"], // AWS Service ARN
+    //            "Resource": "*"
+    //        }]
   }
 }

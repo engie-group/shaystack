@@ -31,18 +31,6 @@ ifneq (,$(wildcard .env))
 include .env
 endif
 
-# Export all project variables
-export PRJ
-export HAYSTACK_PROVIDER
-export HAYSTACK_URL
-export HAYSTACK_DB
-export LOGLEVEL
-export AWS_PROFILE
-export AWS_REGION
-export PYTHON_VERSION
-export READ_PARAMS
-export HISREAD_PARAMS
-export FLASK_DEBUG
 
 PYTHON_SRC=$(shell find . -name '*.py')
 PYTHON_VERSION?=3.7
@@ -57,7 +45,6 @@ CONDA_ARGS?=
 FLASK_DEBUG?=1
 STAGE=dev
 AWS_STAGE?=$(STAGE)
-GIMME?=gimme-aws-creds
 ZAPPA_ENV=zappa_venv
 DOCKER_REPOSITORY=$(USER)
 PORT?=3000
@@ -72,6 +59,19 @@ AWS_API_HOME=$(shell zappa status $(AWS_STAGE) --json | jq -r '."API Gateway URL
 MINIO_HOME=$(HOME)/.minio
 AWS_ACCESS_KEY=$(shell aws configure --profile $(AWS_PROFILE) get aws_access_key_id)
 AWS_SECRET_KEY=$(shell aws configure --profile $(AWS_PROFILE) get aws_secret_access_key)
+
+# Export all project variables
+export PRJ
+export HAYSTACK_PROVIDER
+export HAYSTACK_URL
+export HAYSTACK_DB
+export LOGLEVEL
+export AWS_PROFILE
+export AWS_REGION
+export PYTHON_VERSION
+export READ_PARAMS
+export HISREAD_PARAMS
+export FLASK_DEBUG
 
 # Calculate the make extended parameter
 # Keep only the unknown target
@@ -263,12 +263,13 @@ ifeq ($(USE_OKTA),Y)
 	pip install gimme-aws-creds
 endif
 	echo -e "$(cyan)Install binary dependencies ...$(normal)"
-	conda install -y -c conda-forge conda compilers make git jq libpq curl psycopg2
+	conda install -y -c conda-forge conda setuptools compilers make git jq libpq curl psycopg2
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
+	pip install --no-cache-dir supersqlite
 	echo -e "$(cyan)pip install -e .$(normal)"
 	pip install -e .
 	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"
-	pip install -e "file://$$(pwd)#egg=haystackapi[dev,flask,graphql,lambda]"
+	pip install -e '.[dev,flask,graphql,lambda]'
 	touch $(PIP_PACKAGE)
 
 # All dependencies of the project must be here
@@ -316,7 +317,7 @@ clean: async-stop clean-zappa
 
 .PHONY: clean-all
 # Clean all environments
-clean-all: clean docker-rm docker-make-clean remove-venv
+clean-all: clean docker-rm docker-rm-dmake remove-venv
 
 # -------------------------------------- Build
 .PHONY: dist build compile-all api api-read api-hisRead
@@ -446,15 +447,16 @@ async-start-minio: .minio $(REQUIREMENTS)
 ## Stop all async server
 async-stop: async-stop-api async-stop-minio stop-pg stop-pgadmin async-docker-stop
 
+
 # -------------------------------------- AWS
 ifeq ($(USE_OKTA),Y)
 .PHONY: aws-update-token
 # Update the AWS Token
 aws-update-token: $(REQUIREMENTS)
-	@aws sts get-caller-identity >/dev/null 2>/dev/null || $(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
+	@aws sts get-caller-identity >/dev/null 2>/dev/null || gimme-aws-creds --profile $(AWS_PROFILE)
 else
 aws-update-token:
-	@echo -e "$(yellow)Nothing to do to refresh the token. (Set USE_OKTA and GIMME ?)$(normal)"
+	@echo -e "$(yellow)Nothing to do to refresh the token. (Set USE_OKTA ?)$(normal)"
 endif
 
 .PHONY: aws-package aws-deploy aws-update aws-undeploy
@@ -462,14 +464,12 @@ endif
 # Install a clean venv before invoking zappa
 _zappa_pre_install: clean-zappa
 	@virtualenv -p python$(PYTHON_VERSION) $(ZAPPA_ENV)
-ifeq ($(USE_OKTA),Y)
-	$(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
-endif
 	source $(ZAPPA_ENV)/bin/activate
-	pip install -e '.[graphql,lambda,aws]'
+	pip install -U pip setuptools
+	pip install -e '.[graphql,lambda]'
 
 ## Build lambda package
-aws-package: $(REQUIREMENTS) _zappa_pre_install compile-all
+aws-package: $(REQUIREMENTS) _zappa_pre_install compile-all aws-update-token
 	@echo -e "$(cyan)Create lambda package...$(normal)"
 	source $(ZAPPA_ENV)/bin/activate
 	zappa package $(AWS_STAGE)
@@ -478,7 +478,7 @@ aws-package: $(REQUIREMENTS) _zappa_pre_install compile-all
 
 ## Deploy lambda functions
 aws-deploy: $(REQUIREMENTS) _zappa_pre_install compile-all
-	@$(VALIDATE_VENV)
+	$(VALIDATE_VENV)
 	source $(ZAPPA_ENV)/bin/activate
 	zappa deploy $(AWS_STAGE)
 	rm -Rf $(ZAPPA_ENV)
@@ -495,7 +495,7 @@ aws-update: $(REQUIREMENTS) _zappa_pre_install compile-all
 ## Remove AWS Stack
 aws-undeploy: $(REQUIREMENTS)
 ifeq ($(USE_OKTA),Y)
-	@$(subst $\",,$(GIMME)) --profile $(AWS_PROFILE)
+	gimme-aws-creds --profile $(AWS_PROFILE)
 endif
 	@zappa undeploy $(AWS_STAGE) --remove-logs
 

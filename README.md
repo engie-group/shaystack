@@ -53,7 +53,7 @@ On the server side, it also implements
 This project is a fork of [hszinc](https://github.com/widesky/hszinc)
 (Thanks to the team). The proposed evolutions were too big to be accepted in a pull request.
 
-To see the similarities and differences between the two project, click [here](hszinc.md)
+To see the similarities and differences between the two project, click [here](README_hszinc.md)
 
 # Client side: Haystack client python module
 
@@ -399,7 +399,6 @@ See [here](./README_Contribute.md)
 See [LICENCE](LICENSE-2.0.txt) file
 
 # TODO
-
 - [ ] coverage
 - [ ] MySQL
 - [ ] Pypy (when pip install typed-ast running)

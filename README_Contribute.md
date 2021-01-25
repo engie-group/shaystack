@@ -27,10 +27,6 @@ to manage dependencies and others tools.
 To initialise the Conda environment, use `make configure` and activate the conda environment. Then, it's possible
 to `test`, `start-api`, etc. See `make help` to print all major target.
 
-Before,
-
-```console
-apt install build-essential # FIXME: a vérifier
 ```console
 $ git clone http://github.com/pprados/haystackapi.git 
 $ cd haystackapi
@@ -39,11 +35,11 @@ $ conda activate haystackapi
 $ make help
 ```
 
-*WARNING: it's not possible to use only virtualenv.*
+*WARNING: it's not possible to use only virtualenv. Use conda.*
 
 ## Build in docker container
 
-For MAC users or for others contexts, it's possible to use a Docker container to build the project.
+For MAC users or for others contexts (CI/CD), it's possible to use a Docker container to build the project.
 
 Use `make docker-build-dmake` to create the image `$USER/haystackapi-dmake`. Then, you can start this image to build the
 project inside a docker container. Add the proposed `alias` in your `.bash_aliases` or

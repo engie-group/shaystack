@@ -89,7 +89,7 @@ def _import_db_driver(parsed_db: ParseResult,
     else:
         dialect = _fix_dialect_alias(parsed_db.scheme)
         if dialect not in default_driver:
-            raise ValueError(f"Dialect '{dialect}' not supported")
+            raise ValueError(f"Dialect '{dialect}' not supported ({parsed_db.geturl()})")
         driver = default_driver[dialect][0]
     if driver.find('.') != -1:
         splitted = driver.split('.')

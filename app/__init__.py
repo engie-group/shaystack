@@ -72,7 +72,7 @@ def favicon():
 
 
 @click.command()
-@click.option('-h', '--host', default='0.0.0.0')
+@click.option('-h', '--host', default='localhost')
 @click.option('-p', '--port', default=3000, type=int)
 def main(host: str, port: int) -> int:
     """
@@ -80,7 +80,7 @@ def main(host: str, port: int) -> int:
     The command line must set the host and port.
     """
     debug = (os.environ.get("FLASK_DEBUG", "0") == "1")
-    app.run(host=host if not debug else 'localhost',
+    app.run(host=host,
             port=port,
             debug=debug)
     return 0

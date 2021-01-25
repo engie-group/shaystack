@@ -49,8 +49,8 @@ PYTHON_VERSION?=3.7
 PRJ_PACKAGE:=$(PRJ)
 VENV ?= $(PRJ)
 CONDA_PYTHON_EXE?=/opt/conda/bin/conda
-CONDA_BASE:=$(shell unset AWS_PROFILE ; $$(dirname $$(which activate))/conda info --base || '/opt/conda')
-CONDA_EXE:=/opt/conda/bin/conda
+CONDA_BASE:=$(shell conda info --base || '/opt/conda')
+CONDA_EXE:=$(CONDA_BASE)/bin/conda
 CONDA_PACKAGE:=$(CONDA_PREFIX)/lib/python$(PYTHON_VERSION)/site-packages
 CONDA_PYTHON:=$(CONDA_PREFIX)/bin/python
 CONDA_ARGS?=
@@ -61,11 +61,8 @@ GIMME?=gimme-aws-creds
 ZAPPA_ENV=zappa_venv
 DOCKER_REPOSITORY=$(USER)
 PORT?=3000
-
-toto:
-	conda info --base
-	echo "XXX=$(shell unset AWS_PROFILE ; $(CONDA_PYTHON_EXE) info --base)
-
+INPUT_NETWORK?=localhost
+HOST_API?=localhost
 
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 
@@ -172,16 +169,16 @@ dump-%:
 
 ## Print project variables
 dump-params:
-	@echo -e "$(green)HAYSTACK_PROVIDER='$(HAYSTACK_PROVIDER)'$(normal)"
-	echo -e "$(green)HAYSTACK_URL='$(HAYSTACK_URL)'$(normal)"
-	echo -e "$(green)HAYSTACK_DB='$(HAYSTACK_DB)'$(normal)"
-	echo -e "$(green)AWS_PROFILE='$(AWS_PROFILE)'$(normal)"
-	echo -e "$(green)STAGE='$(STAGE)'$(normal)"
-	echo -e "$(green)PORT='$(PORT)'$(normal)"
-	echo -e "$(green)PIP_INDEX_URL='$(PIP_INDEX_URL)'$(normal)"
-	echo -e "$(green)PIP_EXTRA_INDEX_URL='$(PIP_EXTRA_INDEX_URL)'$(normal)"
-	echo -e "$(green)READ_PARAMS='$${READ_PARAMS}'$(normal)"
-	echo -e "$(green)HISREAD_PARAMS='$${HISREAD_PARAMS}'$(normal)"
+	@echo -e "$(green)HAYSTACK_PROVIDER=$(HAYSTACK_PROVIDER)$(normal)"
+	echo -e "$(green)HAYSTACK_URL=$(HAYSTACK_URL)$(normal)"
+	echo -e "$(green)HAYSTACK_DB=$(HAYSTACK_DB)$(normal)"
+	echo -e "$(green)AWS_PROFILE=$(AWS_PROFILE)$(normal)"
+	echo -e "$(green)STAGE=$(STAGE)$(normal)"
+	echo -e "$(green)PORT=$(PORT)$(normal)"
+	echo -e "$(green)PIP_INDEX_URL=$(PIP_INDEX_URL)$(normal)"
+	echo -e "$(green)PIP_EXTRA_INDEX_URL=$(PIP_EXTRA_INDEX_URL)$(normal)"
+	echo -e "$(green)READ_PARAMS=$${READ_PARAMS}$(normal)"
+	echo -e "$(green)HISREAD_PARAMS=$${HISREAD_PARAMS}$(normal)"
 
 .PHONY: shell bash env
 # Start a child shell
@@ -333,27 +330,27 @@ compile-all:
 .PHONY: api
 ## Print API URL
 api:
-	@echo http://localhost:$(PORT)/haystack
+	@echo http://$(HOST_API):$(PORT)/haystack
 
 .PHONY: api-*
 ## Invoke local API (eg. make api-about)
 api-%:
 	@$(VALIDATE_VENV)
-	TARGET="localhost:$(PORT)"
+	TARGET="$(HOST_API):$(PORT)"
 	curl -H "Accept: text/zinc" \
 			"$${TARGET}/haystack/$*"
 
 api-read:
 	@$(VALIDATE_VENV)
 	echo -e "Use $(yellow)READ_PARAMS=$(READ_PARAMS)$(normal)"
-	TARGET="localhost:$(PORT)"
+	TARGET="$(HOST_API):$(PORT)"
 	curl -H "Accept: text/zinc" \
 			"$${TARGET}/haystack/read$(READ_PARAMS)"
 
 api-hisRead:
 	@$(VALIDATE_VENV)
 	echo -e "Use $(yellow)HISREAD_PARAMS=$(HISREAD_PARAMS)$(normal)"
-	TARGET="localhost:$(PORT)"
+	TARGET="$(HOST_API):$(PORT)"
 	curl -H "Accept: text/zinc" \
 			"$${TARGET}/haystack/hisRead$(HISREAD_PARAMS)"
 
@@ -367,9 +364,9 @@ start-api: $(REQUIREMENTS)
 	echo -e "$(green)URL=$${HAYSTACK_URL}"
 	echo -e "$(green)DB=$${HAYSTACK_DB}"
 	echo -e "$(green)TS=$${HAYSTACK_TS}"
-	echo -e "$(green)Use http://localhost:$(PORT)/graphql or http://localhost:$(PORT)/haystack$(normal)"
+	echo -e "$(green)Use http://$(HOST_API):$(PORT)/graphql or http://$(HOST_API):$(PORT)/haystack$(normal)"
 	FLASK_DEBUG=1 FLASK_ENV=$(STAGE) \
-	$(CONDA_PYTHON) -m app.__init__ --port $(PORT)
+	$(CONDA_PYTHON) -m app.__init__ --port $(PORT) --host $(INPUT_NETWORK)
 
 # Start local API server in background
 async-start-api: $(REQUIREMENTS)
@@ -393,7 +390,7 @@ async-stop-api:
 .PHONY: graphql-schema graphql-api
 ## Print GraphQL API url
 graphql-api:
-	@echo "http://localhost:$(PORT)/graphql"
+	@echo "http://$(HOST_API):$(PORT)/graphql"
 
 graphql-api-%:
 	@$(VALIDATE_VENV)
@@ -401,7 +398,7 @@ graphql-api-%:
 		-X POST \
 		-H "Content-Type: application/json" \
 		--data '{ "query": "{ haystack { about { name } } }" }' \
-		http://localhost:$(PORT)/graphql/
+		http://$(HOST_API):$(PORT)/graphql/
 
 schema.graphql: app/graphql_model.py app/blueprint_graphql.py
 	@$(VALIDATE_VENV)
@@ -726,7 +723,7 @@ start-pgadmin:
     -e 'PGADMIN_DEFAULT_EMAIL=$(PGADMIN_USER)' \
     -e 'PGADMIN_DEFAULT_PASSWORD=$(PGADMIN_PASSWORD)' \
     -d dpage/pgadmin4
-	echo -e "$(yellow)PGAdmin started (http://localhost:8082). Use $(cyan)$(PGADMIN_USER)$(yellow) and $(cyan)$(PGADMIN_PASSWORD)$(yellow) $(normal)"
+	echo -e "$(yellow)PGAdmin started (http://$(HOST_API):8082). Use $(cyan)$(PGADMIN_USER)$(yellow) and $(cyan)$(PGADMIN_PASSWORD)$(yellow) $(normal)"
 
 ## Stop PGAdmin
 stop-pgadmin:
@@ -741,7 +738,7 @@ docker-build:
 	echo -e "$(green)URL=$${HAYSTACK_URL}"
 	echo -e "$(green)DB=$${HAYSTACK_DB}"
 	echo -e "$(green)TS=$${HAYSTACK_TS}"
-	echo -e "$(green)Use http://localhost:$(PORT)/graphql or http://localhost:$(PORT)/haystack$(normal)"
+	echo -e "$(green)Use http://$(HOST_API):$(PORT)/graphql or http://$(HOST_API):$(PORT)/haystack$(normal)"
 	@docker build \
 		--build-arg PORT='$(PORT)' \
 		--build-arg HAYSTACK_PROVIDER='$(HAYSTACK_PROVIDER)' \
@@ -797,9 +794,10 @@ docker-shell:
 .PHONY: docker-build-dmake docker-alias-dmake docker-inspect-dmake \
 	docker-configure-dmake docker-exec-dmake docker-inspect-dmake docker-rm-dmake
 
+#-v "$(CONDA_BASE):/opt/conda"
 _DOCKER_RUN_PARAMS=\
 --rm \
--v "$(CONDA_BASE):/opt/conda" \
+-v "$(CONDA_BASE)/envs/:/opt/conda/envs" \
 -v "$(PWD):/$(PRJ)" \
 -v /var/run/docker.sock:/var/run/docker.sock \
 -v $$HOME/.aws:/home/$(PRJ)/.aws \

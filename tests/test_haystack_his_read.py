@@ -1,13 +1,12 @@
 from datetime import datetime, date, timedelta
 
-import pytz
-from mock import patch
-from tzlocal.unix import get_localzone
-
 import haystackapi
+import pytz
 from haystackapi import Ref
 from haystackapi.ops import HaystackHttpRequest, DEFAULT_MIME_TYPE
 from haystackapi.providers import ping
+from mock import patch
+from tzlocal.unix import get_localzone
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
@@ -158,7 +157,7 @@ def test_his_read_with_range_one_datetime(mock) -> None:
     cur_datetime = datetime.combine(datetime_1, datetime.min.time()).replace(tzinfo=pytz.UTC)
     mock.assert_called_once_with(Ref("1234"),
                                  (cur_datetime,
-                                  cur_datetime + timedelta(days=1, milliseconds=-1)
+                                  datetime.max.replace(tzinfo=pytz.UTC)
                                   ), None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
@@ -186,7 +185,9 @@ def test_his_read_with_range_two_date(mock) -> None:
     # THEN
     mock.assert_called_once_with(Ref("1234"),
                                  (datetime(2020, 1, 1).replace(tzinfo=get_localzone()),
-                                  datetime(2020, 1, 2).replace(tzinfo=get_localzone())
+                                  datetime.combine(
+                                      datetime(2020, 1, 2),
+                                      datetime.max.time()).replace(tzinfo=get_localzone())
                                   ), None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)

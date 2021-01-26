@@ -475,18 +475,29 @@ def parse_date_range(date_range: str, timezone: tzinfo) -> Tuple[datetime, datet
         return datetime.min.replace(tzinfo=pytz.UTC), \
                datetime.max.replace(tzinfo=pytz.UTC)
     if date_range not in ("today", "yesterday"):
-        split_date = [parse_hs_datetime_format(x) for x in date_range.split(",")]
+        split_date = [parse_hs_datetime_format(x) if x else None for x in date_range.split(",")]
         if len(split_date) > 1:
+            if isinstance(split_date[0], datetime) or isinstance(split_date[1], datetime):
+                if not split_date[0]:
+                    split_date[0] = datetime.min.replace(tzinfo=pytz.UTC)
+                if not split_date[1]:
+                    split_date[1] = datetime.max.replace(tzinfo=pytz.UTC)
+                assert type(split_date[0]) == type(  # pylint: disable=C0123
+                    split_date[1]
+                )
+                return cast(Tuple[datetime, datetime], tuple(split_date))
+            if not split_date[0]:
+                split_date[0] = date.min
+            if not split_date[1]:
+                split_date[1] = date.max
             assert type(split_date[0]) == type(  # pylint: disable=C0123
                 split_date[1]
             )
-            if isinstance(split_date[0], datetime):
-                return cast(Tuple[datetime, datetime], tuple(split_date))
             return \
                 (datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=timezone),
-                 datetime.combine(split_date[1], datetime.min.time()).replace(tzinfo=timezone))
+                 datetime.combine(split_date[1], datetime.max.time()).replace(tzinfo=timezone))
         if isinstance(split_date[0], datetime):
-            return (split_date[0], split_date[0] + timedelta(days=1, milliseconds=-1))
+            return (split_date[0], datetime.max.replace(tzinfo=pytz.UTC))
         tzdate = datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=timezone)
         return tzdate, tzdate + timedelta(days=1, milliseconds=-1)
     if date_range == "today":

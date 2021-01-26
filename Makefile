@@ -366,6 +366,7 @@ build/html: $(REQUIREMENTS) docs/source docs/* *.md | .git
 ## Generate and show the HTML documentation
 docs: build/html
 	@$(BROWSER) build/html/index.html
+	touch docs
 
 # -------------------------------------- Client API
 .PHONY: api

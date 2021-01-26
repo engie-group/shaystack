@@ -16,21 +16,27 @@ from .sortabledict import SortableDict
 
 
 class MetadataObject(SortableDict):  # pylint: disable=too-many-ancestors
-    """
-    An object that contains some metadata fields.  Used as a convenience
+    """An object that contains some metadata fields. Used as a convenience
     base-class for grids and columns, both of which have metadata.
     """
 
     def append(self, key: str, value: Any = MARKER, replace: bool = True) -> 'MetadataObject':
-        """
-        Append the item to the metadata.
+        """Append the item to the metadata.
+
+        Args:
+            key (str):
+            value (Any):
+            replace (bool):
         """
         self.add_item(key, value, replace=replace)
         return self
 
     def extend(self, items: Iterable[Any], replace: bool = True) -> None:
-        """
-        Append the items to the metadata.
+        """Append the items to the metadata.
+
+        Args:
+            items:
+            replace (bool):
         """
         if isinstance(items, (dict, SortableDict)):
             items = list(items.items())

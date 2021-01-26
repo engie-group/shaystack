@@ -18,7 +18,7 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 
 def main():
-    """ Loop to test the postgres generation with REPL """
+    """Loop to test the postgres generation with REPL"""
     if "HAYSTACK_DB" not in os.environ:
         os.environ["HAYSTACK_DB"] = "sqlite3:///:memory:"
     provider = get_provider("haystackapi.providers.sql")

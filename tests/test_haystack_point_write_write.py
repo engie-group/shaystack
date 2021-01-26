@@ -10,6 +10,10 @@ from haystackapi.providers import ping
 @patch.object(ping.Provider, 'point_write_write')
 def test_point_write_write_with_zinc(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = Grid(version=VER_3_0, columns=["level", "levelDis", "val", "who"])
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()

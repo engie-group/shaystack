@@ -53,6 +53,11 @@ CHAR_NUM_RE = re.compile(r' *\(at char \d+\),')
 
 
 def reformat_exception(ex_msg: pp.ParseException, line_num: Typing_Optional[int] = None) -> str:
+    """
+    Args:
+        ex_msg (pp.ParseException):
+        line_num:
+    """
     msg = CHAR_NUM_RE.sub('', str(ex_msg))
     if line_num is not None:
         return msg.replace('line:1', 'line:%d' % line_num)
@@ -61,6 +66,12 @@ def reformat_exception(ex_msg: pp.ParseException, line_num: Typing_Optional[int]
 
 # Convenience function, we want whitespace left alone.
 def _leave_ws(cls, *args, **kwargs):
+    """
+    Args:
+        cls:
+        *args:
+        **kwargs:
+    """
     return cls(*args, **kwargs).leaveWhitespace()
 
 
@@ -83,12 +94,18 @@ Forward = lambda *a, **kwa: _leave_ws(pp.Forward, *a, **kwa)
 
 
 class ZincParseException(ValueError):
-    """
-    Exception thrown when a grid cannot be parsed successfully.  If known,
-    the line and column for the grid are given.
+    """Exception thrown when a grid cannot be parsed successfully. If known, the
+    line and column for the grid are given.
     """
 
     def __init__(self, message: str, grid_str: str, line: int, col: int):
+        """
+        Args:
+            message (str):
+            grid_str (str):
+            line (int):
+            col (int):
+        """
         self.grid_str = grid_str
         self.line = line
         self.col = col
@@ -129,16 +146,20 @@ class ZincParseException(ValueError):
 
 
 class NearestMatch:  # pylint: disable=global-statement
-    """
-    This class returns the nearest matching grammar for the given version.
-    """
+    """This class returns the nearest matching grammar for the given version."""
 
     def __init__(self, known_grammars: Dict[Version, Any]):
+        """
+        Args:
+            known_grammars:
+        """
         self._known_grammars = known_grammars
 
     def __getitem__(self, ver: Version) -> Any:
-        """
-        Retrieve the grammar that closest matches the version string given.
+        """Retrieve the grammar that closest matches the version string given.
+
+        Args:
+            ver (Version):
         """
         try:
             return self._known_grammars[ver]
@@ -152,15 +173,23 @@ class NearestMatch:  # pylint: disable=global-statement
 
 
 class GenerateMatch:
-    """
-    This class tries to generate a matching grammar based on the version input given.
+    """This class tries to generate a matching grammar based on the version
+    input given.
     """
 
     def __init__(self, generator_fn: Callable[[Version], Any]):
+        """
+        Args:
+            generator_fn:
+        """
         self._generator_fn = generator_fn
         self._known_grammars = {}
 
     def __getitem__(self, ver: Version) -> Any:
+        """
+        Args:
+            ver (Version):
+        """
         try:
             return self._known_grammars[ver]
         except KeyError:
@@ -170,8 +199,11 @@ class GenerateMatch:
 
 
 def _unescape(a_string: str, uri: bool = False) -> str:
-    """
-    Iterative parser for string escapes.
+    """Iterative parser for string escapes.
+
+    Args:
+        a_string (str):
+        uri (bool):
     """
     out = ''
     while len(a_string) > 0:
@@ -291,6 +323,10 @@ hs_time_str = Combine(And([
 
 
 def _parse_time(toks: List[str]) -> List[datetime.time]:
+    """
+    Args:
+        toks:
+    """
     time_str = toks[0]
     time_fmt = '%H:%M'
     if time_str.count(':') == 2:
@@ -311,6 +347,10 @@ hs_isoDateTime = Combine(And([
 
 def _parse_datetime(toks: List[datetime.datetime]) -> List[datetime.datetime]:
     # Made up of parts: ISO8601 Date/Time, time zone label
+    """
+    Args:
+        toks:
+    """
     isodt = toks[0]
     if len(toks) > 1:
         tzname = toks[1]
@@ -480,6 +520,10 @@ hs_tags = GenerateMatch(
 
 
 def to_dict(token_list: List[Any]) -> Dict[str, Any]:
+    """
+    Args:
+        token_list:
+    """
     result = {}
     iterator = enumerate(token_list)
     for i, tok in iterator:
@@ -593,6 +637,10 @@ hs_gridVer = Combine(And([Suppress(Literal('ver:')) + hs_str]))
 
 
 def _assign_ver(toks: List[SortableDict]) -> SortableDict:
+    """
+    Args:
+        toks:
+    """
     ver = toks[0]
     if len(toks) > 1:
         grid_meta = toks[1]
@@ -617,6 +665,10 @@ hs_gridMeta = GenerateMatch(
 
 
 def _gen_grid(toks: List[Any]) -> Grid:
+    """
+    Args:
+        toks:
+    """
     (grid_meta, col_meta, rows) = toks
     if len(rows) == 1 and rows[0] is None:
         rows = []
@@ -642,8 +694,11 @@ hs_grid_3_0 <<= And([
 
 
 def parse_grid(grid_data: str, parse_all: bool = True):
-    """
-    Parse the incoming grid.
+    """Parse the incoming grid.
+
+    Args:
+        grid_data (str):
+        parse_all (bool):
     """
     try:
         # First element is the grid metadata
@@ -673,8 +728,11 @@ def parse_grid(grid_data: str, parse_all: bool = True):
 
 
 def parse_scalar(scalar_data: str, version: Version = LATEST_VER):
-    """
-    Parse a Project Haystack scalar in ZINC format.
+    """Parse a Project Haystack scalar in ZINC format.
+
+    Args:
+        scalar_data (str):
+        version (Version):
     """
     try:
         return hs_scalar[version].parseString(scalar_data, parseAll=True)[0]

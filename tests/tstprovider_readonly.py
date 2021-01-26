@@ -14,6 +14,14 @@ class Provider(HaystackInterface):
              entity_ids: Optional[List[Ref]] = None,
              grid_filter: Optional[str] = None,
              date_version: Optional[datetime] = None) -> Grid:
+        """
+        Args:
+            limit (int):
+            select:
+            entity_ids:
+            grid_filter:
+            date_version:
+        """
         raise NotImplementedError()
 
     @overrides
@@ -23,4 +31,10 @@ class Provider(HaystackInterface):
             dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
             date_version: Optional[datetime] = None,
     ) -> Grid:
+        """
+        Args:
+            entity_id (Ref):
+            dates_range:
+            date_version:
+        """
         raise NotImplementedError()

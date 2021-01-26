@@ -49,12 +49,20 @@ _mode_to_suffix = {MODE_ZINC: ".zinc",
 
 
 def suffix_to_mode(ext: str) -> Optional[str]:
-    """ Convert a file suffix to Haystack mode"""
+    """Convert a file suffix to Haystack mode
+
+    Args:
+        ext (str):
+    """
     return _suffix_to_mode.get(ext, None)
 
 
 def mode_to_suffix(mode: str) -> Optional[str]:
-    """ Convert haystackapi mode to file suffix"""
+    """Convert haystackapi mode to file suffix
+
+    Args:
+        mode (str):
+    """
     return _mode_to_suffix.get(mode, None)
 
 
@@ -62,8 +70,13 @@ def parse(grid_str: Union[AnyStr, List[str]],
           mode: str = MODE_ZINC,
           charset: str = 'utf-8',
           single: bool = True) -> Union[Grid, List[Grid]]:
-    """
-    Parse the given Zinc text and return the equivalent data.
+    """Parse the given Zinc text and return the equivalent data.
+
+    Args:
+        grid_str:
+        mode (str):
+        charset (str):
+        single (bool):
     """
 
     # Decode incoming text (or python3 will whine!)
@@ -103,6 +116,12 @@ def parse(grid_str: Union[AnyStr, List[str]],
 
 def parse_grid(grid_str: str, mode: str = MODE_ZINC, charset: str = 'utf-8') -> Grid:
     # Decode incoming text
+    """
+    Args:
+        grid_str (str):
+        mode (str):
+        charset (str):
+    """
     if isinstance(grid_str, bytes):  # pragma: no cover
         # No coverage here, because it *should* be handled above unless the user
         # is preempting us by calling `parse_grid` directly.
@@ -121,6 +140,13 @@ def parse_scalar(scalar: Union[bytes, str], mode: str = MODE_ZINC,
                  version: Union[Version, str] = LATEST_VER,
                  charset: str = 'utf-8') -> Any:
     # Decode version string
+    """
+    Args:
+        scalar:
+        mode (str):
+        version:
+        charset (str):
+    """
     if not isinstance(version, Version):
         version = Version(version)
 

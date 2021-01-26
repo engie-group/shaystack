@@ -410,9 +410,7 @@ _TZ_RMAP = None
 
 
 def _map_timezones():
-    """
-    Map the official Haystack timezone list to those recognised by pytz.
-    """
+    """Map the official Haystack timezone list to those recognised by pytz."""
     tz_map = {}
     todo = HAYSTACK_TIMEZONES_SET.copy()
     for full_tz in pytz.all_timezones:
@@ -454,24 +452,22 @@ def _gen_map():
 
 
 def get_tz_map():
-    """
-    Return the timezone map, generating it if needed.
-    """
+    """Return the timezone map, generating it if needed."""
     tz_map, _ = _gen_map()
     return tz_map
 
 
 def get_tz_rmap():
-    """
-    Return the reverse timezone map, generating it if needed.
-    """
+    """Return the reverse timezone map, generating it if needed."""
     _, tz_rmap = _gen_map()
     return tz_rmap
 
 
 def timezone(haystack_tz):
-    """
-    Retrieve the Haystack timezone
+    """Retrieve the Haystack timezone
+
+    Args:
+        haystack_tz:
     """
     tz_map = get_tz_map()
     try:
@@ -486,8 +482,10 @@ def timezone(haystack_tz):
 
 
 def timezone_name(date_time):
-    """
-    Determine an appropriate timezone for the given date/time object
+    """Determine an appropriate timezone for the given date/time object
+
+    Args:
+        date_time:
     """
     tz_rmap = get_tz_rmap()
     if date_time.tzinfo is None:

@@ -13,6 +13,10 @@ from haystackapi.providers import ping
 @patch.object(ping.Provider, 'his_write')
 def test_his_write_with_zinc(mock):
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
@@ -36,6 +40,10 @@ def test_his_write_with_zinc(mock):
 @patch.object(ping.Provider, 'his_write')
 def test_his_write_with_args(mock):
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     time_serie = [
         (datetime(2020, 1, 1, tzinfo=pytz.utc).isoformat() + " UTC", 100),
         (datetime(2020, 1, 2, tzinfo=pytz.utc).isoformat() + " UTC", 200)]

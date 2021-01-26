@@ -72,6 +72,10 @@ _WARNING_RE = re.compile(
 
 
 def _check_warning(warn):
+    """
+    Args:
+        warn:
+    """
     assert issubclass(warn.category, UserWarning)
 
     warning_match = _WARNING_RE.match(str(warn.message))

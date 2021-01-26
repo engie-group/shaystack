@@ -14,6 +14,11 @@ from tests import _get_mock_s3
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
 def test_values_for_tag(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("haystackapi.providers.url") as provider:
@@ -31,6 +36,10 @@ def test_ops():
 
 @patch.object(URLProvider, '_get_url')
 def test_about(mock_get_url):
+    """
+    Args:
+        mock_get_url:
+    """
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("haystackapi.providers.url") as provider:
         result = provider.about("http://localhost")
@@ -40,6 +49,11 @@ def test_about(mock_get_url):
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
 def test_read_last_without_filter(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with cast(URLProvider, get_provider("haystackapi.providers.url")) as provider:
@@ -51,6 +65,11 @@ def test_read_last_without_filter(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
 def test_read_version_without_filter(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("haystackapi.providers.url") as provider:
@@ -62,6 +81,11 @@ def test_read_version_without_filter(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
 def test_read_version_with_filter(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("haystackapi.providers.url") as provider:
@@ -75,6 +99,11 @@ def test_read_version_with_filter(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
 def test_read_version_with_filter2(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("haystackapi.providers.url") as provider:
@@ -86,6 +115,11 @@ def test_read_version_with_filter2(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
 def test_read_version_with_ids(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("haystackapi.providers.url") as provider:
@@ -98,6 +132,10 @@ def test_read_version_with_ids(mock_s3, mock_get_url):
 
 @patch.object(URLProvider, '_s3')
 def test_lru_version(mock):
+    """
+    Args:
+        mock:
+    """
     mock.return_value = _get_mock_s3()
     with cast(URLProvider, get_provider("haystackapi.providers.url")) as provider:
         provider.cache_clear()
@@ -122,6 +160,11 @@ def test_lru_version(mock):
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
 def test_version(mock, mock_get_url):
+    """
+    Args:
+        mock:
+        mock_get_url:
+    """
     mock.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("haystackapi.providers.url") as provider:

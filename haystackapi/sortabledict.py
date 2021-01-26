@@ -18,13 +18,16 @@ import six
 
 
 class SortableDict(col.MutableMapping):
-    """
-    A dict-like object that permits value ordering/re-ordering.
-    """
+    """A dict-like object that permits value ordering/re-ordering."""
 
     def __init__(self,
                  initial: Union[None, List[Tuple[str, Any]], Dict[str, Any]] = None,
                  validate_fn: Optional[Callable[[Any], bool]] = None):
+        """
+        Args:
+            initial:
+            validate_fn:
+        """
         self._values = {}
         self._order = []
         self._validate_fn = validate_fn
@@ -46,12 +49,25 @@ class SortableDict(col.MutableMapping):
                            ]))
 
     def __getitem__(self, key: Union[str, int]) -> Any:
+        """
+        Args:
+            key:
+        """
         return self._values[key]
 
     def __setitem__(self, key: Union[str, int], value: Any) -> Any:
+        """
+        Args:
+            key:
+            value (Any):
+        """
         return self.add_item(key, value)
 
     def __delitem__(self, key: Union[str, int]) -> None:
+        """
+        Args:
+            key:
+        """
         del self._values[key]
         self._order.remove(key)
 
@@ -68,20 +84,27 @@ class SortableDict(col.MutableMapping):
                  index: Optional[int] = None,
                  pos_key: Union[None, str, int] = None,
                  replace: bool = True) -> None:
-        """
-        Add an item at a specific location, possibly replacing the
-        existing item.
+        """Add an item at a specific location, possibly replacing the existing
+        item.
 
         If after is True, we insert *after* the given index, otherwise we
         insert before.
 
         The position is specified using either index or pos_key, the former
-        specifies the position from the start of the array (base 0).  pos_key
-        specifies the name of another key, and positions the new key relative
-        to that key.
+        specifies the position from the start of the array (base 0). pos_key
+        specifies the name of another key, and positions the new key relative to
+        that key.
 
-        When replacing, the position will be left un-changed unless a location
-        is specified explicitly.
+        When replacing, the position will be left un-changed unless a
+        location is specified explicitly.
+
+        Args:
+            key:
+            value (Any):
+            after (bool):
+            index:
+            pos_key:
+            replace (bool):
         """
         if self._validate_fn:
             self._validate_fn(value)
@@ -121,18 +144,27 @@ class SortableDict(col.MutableMapping):
         self._values[key] = value
 
     def at(self, index: int) -> Any:  # pylint: disable=C0103
-        """
-        Return the key at the given index.
+        """Return the key at the given index.
+
+        Args:
+            index (int):
         """
         return self._order[index]
 
     def value_at(self, index: int) -> Any:
-        """
-        Return the value at the given index.
+        """Return the value at the given index.
+
+        Args:
+            index (int):
         """
         return self[self.at(index)]
 
     def index(self, *args, **kwargs):
+        """
+        Args:
+            *args:
+            **kwargs:
+        """
         return self._order.index(*args, **kwargs)
 
     def reverse(self) -> 'SortableDict':
@@ -140,12 +172,19 @@ class SortableDict(col.MutableMapping):
         return self
 
     def sort(self, *args, **kwargs) -> 'SortableDict':
+        """
+        Args:
+            *args:
+            **kwargs:
+        """
         self._order.sort(*args, **kwargs)
         return self
 
     def pop_at(self, index: int) -> Any:
-        """
-        Remove the key at the given index and return its value.
+        """Remove the key at the given index and return its value.
+
+        Args:
+            index (int):
         """
         return self.pop(self.at(index))
 

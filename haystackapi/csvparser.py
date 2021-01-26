@@ -19,6 +19,10 @@ from .zincparser import parse_scalar as zinc_parse_scalar, ZincParseException
 
 
 def parse_grid(grid_str: str) -> Grid:
+    """
+    Args:
+        grid_str (str):
+    """
     version = VER_3_0
     # for row in csv.reader(grid_str.splitlines()): print(row)
     csv_reader = reader(StringIO(grid_str))
@@ -42,6 +46,11 @@ _EMPTY = "<empty>"
 
 
 def parse_scalar(scalar: str, version: Version = LATEST_VER) -> Any:
+    """
+    Args:
+        scalar (str):
+        version (Version):
+    """
     if scalar == '':
         return _EMPTY
     if scalar == '\u2713':

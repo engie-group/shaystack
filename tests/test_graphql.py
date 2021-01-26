@@ -16,6 +16,10 @@ from tests import _get_mock_s3
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 @patch.object(URLProvider, 'get_tz')
 def test_about(mock):
+    """
+    Args:
+        mock:
+    """
     mock.return_value = timezone('UTC')
     with get_provider("haystackapi.providers.url") as _:
         client = Client(schema)
@@ -104,6 +108,11 @@ def test_ops():
 @patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_tag_values(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
@@ -124,6 +133,11 @@ def test_tag_values(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_versions(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
@@ -149,6 +163,11 @@ def test_versions(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_entities_with_id(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
@@ -181,6 +200,11 @@ def test_entities_with_id(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_entities_with_filter(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
@@ -203,6 +227,11 @@ def test_entities_with_filter(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_entities_with_select(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
@@ -223,6 +252,11 @@ def test_entities_with_select(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_entities_with_limit(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
@@ -245,6 +279,11 @@ def test_entities_with_limit(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_boolean(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     his = Grid(version=VER_3_0, columns=["ts", "val"])
     his.extend([{"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": MARKER},
@@ -289,6 +328,11 @@ def test_his_read_with_boolean(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_number(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
 
     his = Grid(version=VER_3_0, columns=["ts", "val"])
@@ -331,6 +375,11 @@ def test_his_read_with_number(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_uri(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     his = Grid(version=VER_3_0, columns=["ts", "val"])
     his.append({"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": Uri("http://localhost")})
@@ -366,6 +415,11 @@ def test_his_read_with_uri(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_ref(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     his = Grid(version=VER_3_0, columns=["ts", "val"])
     his.append({"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": Ref("id1")})
@@ -402,6 +456,11 @@ def test_his_read_with_ref(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_datetime(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     his = Grid(version=VER_3_0, columns=["ts", "val"])
     his.append({"ts": datetime(2020, 1, 1, tzinfo=pytz.utc),
@@ -442,6 +501,11 @@ def test_his_read_with_datetime(mock_s3, mock_get_url):
 @patch.object(URLProvider, '_s3')
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "haystackapi.providers.url"})
 def test_his_read_with_coordinate(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
     mock_s3.return_value = _get_mock_s3()
     his = Grid(version=VER_3_0, columns=["ts", "val"])
     his.append({"ts": datetime(2020, 1, 1, tzinfo=pytz.utc), "val": Coordinate(100.0, 150.0)})

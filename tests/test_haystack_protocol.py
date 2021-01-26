@@ -9,6 +9,10 @@ from haystackapi.ops import HaystackHttpRequest
 @patch('haystackapi.providers.haystack_interface.no_cache')
 def test_negociation_with_zinc(no_cache) -> None:
     # GIVEN
+    """
+    Args:
+        no_cache:
+    """
     no_cache.return_value = True
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
@@ -31,6 +35,10 @@ def test_negociation_with_zinc(no_cache) -> None:
 @patch('haystackapi.providers.haystack_interface.no_cache')
 def test_negociation_with_json(no_cache) -> None:
     # GIVEN
+    """
+    Args:
+        no_cache:
+    """
     no_cache.return_value = True
     mime_type = haystackapi.MODE_JSON
     request = HaystackHttpRequest()

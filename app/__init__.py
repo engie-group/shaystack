@@ -56,17 +56,13 @@ if USE_GRAPHQL:
 
 @app.route('/')
 def index():
-    """
-    Empty page to check the deployment
-    """
+    """Empty page to check the deployment"""
     return "Flask is up and running"
 
 
 @app.route('/favicon.ico')
 def favicon():
-    """
-    Return the favorite icon
-    """
+    """Return the favorite icon"""
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
@@ -75,9 +71,11 @@ def favicon():
 @click.option('-h', '--host', default='localhost')
 @click.option('-p', '--port', default=3000, type=int)
 def main(host: str, port: int) -> int:
-    """
-    Stack a flask server.
-    The command line must set the host and port.
+    """Stack a flask server. The command line must set the host and port.
+
+    Args:
+        host (str):
+        port (int):
     """
     debug = (os.environ.get("FLASK_DEBUG", "0") == "1")
     app.run(host=host,

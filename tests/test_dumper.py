@@ -26,6 +26,10 @@ siteName dis:"Sites",val dis:"Value" unit:"kW"
 
 
 def make_simple_grid(version=haystackapi.VER_2_0):
+    """
+    Args:
+        version:
+    """
     grid = haystackapi.Grid(version=version)
     grid.column['firstName'] = {}
     grid.column['bday'] = {}
@@ -62,6 +66,10 @@ def test_simple_csv():
 
 
 def make_metadata_grid(version=haystackapi.VER_2_0):
+    """
+    Args:
+        version:
+    """
     grid = haystackapi.Grid(version=version)
     grid.metadata['database'] = 'test'
     grid.metadata['dis'] = 'Site Energy Summary'
@@ -131,6 +139,10 @@ siteName,val
 
 
 def make_grid_meta(version=haystackapi.VER_2_0):
+    """
+    Args:
+        version:
+    """
     grid = haystackapi.Grid(version=version)
     grid.metadata['aString'] = 'aValue'
     grid.metadata['aNumber'] = 3.14159
@@ -174,6 +186,10 @@ def test_grid_meta_csv():
 
 
 def make_col_meta(version=haystackapi.VER_2_0):
+    """
+    Args:
+        version:
+    """
     grid = haystackapi.Grid(version=version)
     col_meta = haystackapi.MetadataObject()
     col_meta['aString'] = 'aValue'

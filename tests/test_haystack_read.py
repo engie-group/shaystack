@@ -10,6 +10,10 @@ from haystackapi.providers import ping
 @patch.object(ping.Provider, 'read')
 def test_read_with_zinc_and_filter(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
@@ -33,6 +37,10 @@ def test_read_with_zinc_and_filter(mock) -> None:
 @patch.object(ping.Provider, 'read')
 def test_read_with_arg_and_filter(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = DEFAULT_MIME_TYPE
     request = HaystackHttpRequest()
@@ -54,6 +62,10 @@ def test_read_with_arg_and_filter(mock) -> None:
 @patch.object(ping.Provider, 'read')
 def test_read_with_zinc_and_id(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
@@ -79,6 +91,10 @@ def test_read_with_zinc_and_id(mock) -> None:
 @patch.object(ping.Provider, 'read')
 def test_read_with_arg_and_id(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = DEFAULT_MIME_TYPE
     request = HaystackHttpRequest()
@@ -100,6 +116,10 @@ def test_read_with_arg_and_id(mock) -> None:
 @patch.object(ping.Provider, 'read')
 def test_read_with_zinc_and_select(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
@@ -123,6 +143,10 @@ def test_read_with_zinc_and_select(mock) -> None:
 @patch.object(ping.Provider, 'read')
 def test_read_with_arg_and_select(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = DEFAULT_MIME_TYPE
     request = HaystackHttpRequest()

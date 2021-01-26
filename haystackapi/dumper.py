@@ -24,8 +24,11 @@ from .zincdumper import dump_grid as dump_zinc_grid, \
 
 
 def dump(grids: Union[Grid, List[Grid]], mode: str = MODE_ZINC) -> str:
-    """
-    Dump the given grids in the specified over-the-wire format.
+    """Dump the given grids in the specified over-the-wire format.
+
+    Args:
+        grids:
+        mode (str):
     """
     if isinstance(grids, Grid):
         return dump_grid(grids, mode=mode)
@@ -40,6 +43,11 @@ def dump(grids: Union[Grid, List[Grid]], mode: str = MODE_ZINC) -> str:
 
 
 def dump_grid(grid: Grid, mode: str = MODE_ZINC) -> str:
+    """
+    Args:
+        grid (Grid):
+        mode (str):
+    """
     if mode == MODE_ZINC:
         return dump_zinc_grid(grid)
     if mode == MODE_JSON:
@@ -50,6 +58,12 @@ def dump_grid(grid: Grid, mode: str = MODE_ZINC) -> str:
 
 
 def dump_scalar(scalar: Any, mode: str = MODE_ZINC, version: Version = LATEST_VER) -> Optional[str]:
+    """
+    Args:
+        scalar (Any):
+        mode (str):
+        version (Version):
+    """
     if mode == MODE_ZINC:
         return dump_zinc_scalar(scalar, version=version)
     if mode == MODE_JSON:

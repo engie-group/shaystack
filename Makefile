@@ -1,5 +1,5 @@
 #!/usr/bin/env make
-SHELL=/bin/bash
+SHELL=/bin/zsh
 .SHELLFLAGS = -e -c
 .ONESHELL:
 MAKEFLAGS += --no-print-directory
@@ -33,7 +33,7 @@ endif
 
 
 PYTHON_SRC=$(shell find . -name '*.py')
-PYTHON_VERSION?=3.7
+PYTHON_VERSION?=3.8
 PRJ_PACKAGE:=$(PRJ)
 VENV ?= $(PRJ)
 CONDA_PYTHON_EXE?=/opt/conda/bin/conda
@@ -343,8 +343,7 @@ SPHINX_FLAGS=
 # Generate API docs
 docs/source: $(REQUIREMENTS) $(PYTHON_SRC)
 	@$(VALIDATE_VENV)
-	sphinx-apidoc -f -o site/source $(PRJ)
-	touch docs/source
+	sphinx-apidoc -f -o docs/source $(PRJ)
 
 # Build the documentation in specificed format (build/html, build/latexpdf, ...)
 build/%: $(REQUIREMENTS) docs/source docs/* *.md | .git
@@ -357,15 +356,15 @@ build/%: $(REQUIREMENTS) docs/source docs/* *.md | .git
 
 build/html: $(REQUIREMENTS) docs/source docs/* *.md | .git
 	@$(VALIDATE_VENV)
-	@TARGET=site
-	@echo "Build $$TARGET..."
-	@LATEXMKOPTS=-silent sphinx-build -M html docs site $(SPHINX_FLAGS)
-	touch build/$$TARGET
+	@echo "Clean html..."
+	@LATEXMKOPTS=-silent sphinx-build -M clean docs/source docs/build $(SPHINX_FLAGS)
+	@echo "Build html..."
+	@LATEXMKOPTS=-silent sphinx-build -M html docs/source docs/build $(SPHINX_FLAGS)
 
 # Build all format of documentations
 ## Generate and show the HTML documentation
 docs: build/html
-	@$(BROWSER) build/html/index.html
+	@$(BROWSER) docs/build/html/index.html
 
 # -------------------------------------- Client API
 .PHONY: api

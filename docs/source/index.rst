@@ -44,6 +44,8 @@ To see the similarities and differences between the two project, click [here](RE
     README_sql_provider
     README_sql_ts_provider
     README_aws
+    modules
+    haystackapi
     haystackapi.providers
     README_Contribute
     CHANGELOG

@@ -24,6 +24,11 @@ class RefuseRemove(BaseException):
 
 
 def _patch_dict(a_dict, cols=None):
+    """
+    Args:
+        a_dict:
+        cols:
+    """
     a_dict = a_dict.copy()
     max_rand = int(len(a_dict) * (PERCENT_PATCH / 100))
     keys = list(a_dict.keys())
@@ -49,10 +54,18 @@ def _patch_dict(a_dict, cols=None):
 
 
 def gen_diff_metadata(metadata):
+    """
+    Args:
+        metadata:
+    """
     return _patch_dict(metadata)
 
 
 def gen_diff_meta_cols(cols):
+    """
+    Args:
+        cols:
+    """
     cols = cols.copy()
     for col in cols:
         cols[col] = gen_diff_metadata(cols[col])
@@ -68,12 +81,20 @@ def gen_diff_meta_cols(cols):
 
 
 def gen_new_row(grid):
+    """
+    Args:
+        grid:
+    """
     for row in grid:
         row = _patch_dict(row, grid.column)
         yield _patch_dict(row)
 
 
 def gen_diff(orig):
+    """
+    Args:
+        orig:
+    """
     new_metadata = gen_diff_metadata(orig.metadata)
     new_meta_cols = gen_diff_meta_cols(orig.column)
     grid = Grid(orig.version, metadata=new_metadata, columns=new_meta_cols)
@@ -102,6 +123,10 @@ def _try_diff():
 
 
 def _validate_grid(grid):
+    """
+    Args:
+        grid:
+    """
     addr = [id(row) for row in grid._row]
     assert len(addr) == len(set(addr)), "Row in multiple place in grid"
     ids = [x['id'] for x in grid if 'id' in x]

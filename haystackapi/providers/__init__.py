@@ -23,6 +23,11 @@ __pdoc__ = \
 
 
 def select_grid(grid: Grid, select: str) -> Grid:
+    """
+    Args:
+        grid (Grid):
+        select (str):
+    """
     if select:
         select = select.strip()
         if select not in ["*", '']:

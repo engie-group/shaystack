@@ -1,5 +1,5 @@
 #!/usr/bin/env make
-SHELL=/bin/zsh
+SHELL=/bin/bash
 .SHELLFLAGS = -e -c
 .ONESHELL:
 MAKEFLAGS += --no-print-directory
@@ -33,7 +33,7 @@ endif
 
 
 PYTHON_SRC=$(shell find . -name '*.py')
-PYTHON_VERSION?=3.8
+PYTHON_VERSION?=3.7
 PRJ_PACKAGE:=$(PRJ)
 VENV ?= $(PRJ)
 CONDA_PYTHON_EXE?=/opt/conda/bin/conda

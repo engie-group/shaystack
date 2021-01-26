@@ -288,7 +288,7 @@ class Provider(HaystackInterface):
                 history.append(
                     {
                         "ts": field_to_datetime_tz(row[0]),
-                        "val": json.loads(parse_scalar(row[1]))
+                        "val": parse_scalar(row[1])
                     }
                 )
             min_date = datetime.max.replace(tzinfo=pytz.UTC)

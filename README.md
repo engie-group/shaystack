@@ -216,13 +216,11 @@ We propose different providers, with the objective in mind:
 - Expose the haystack files and historical data with an API
 - and manage the evolution of these files with the notion of `version`.
 
-
-
 To demonstrate this scenario, we want to publish the sample from `sample/` files from S3 bucket or from an SQL database.
 We must import this ontology and time-series inside the bucket or database before to use. To manage the different
 versions of files, you must use a dedicated tool, to import only the difference between versions.
 
-# Using GraphQL API
+### Using GraphQL API
 
 All the providers can be invoked with a GraphQL API in place of the standard Haystack Rest API. After installing the
 component with the good option (`pip install 'haystackapi[graphql]'`), start the provider and use the url
@@ -300,12 +298,6 @@ bool # cast to bool
 
 You can select the format you want in the request.
 
-# Using with Excel or PowerBI
-
-Because the default negotiated format is CSV, you can call the REST API with PowerQuery or Excel. Try the sample file
-['HaystackAPI.xlsm'](HaystackAPI.xlsm) and set a correct haystack url
-(http://10.0.2.2:3000/haystack with a local virtual windows). You can load all the data inside Excel table.
-
 ### Using AWS
 
 Read [more...](README_aws.md)
@@ -329,6 +321,12 @@ $ docker run -p 3000:3000 \
   haystackapi 
 ```
 
+## Using with Excel or PowerBI
+
+Because the default negotiated format is CSV, you can call the REST API with PowerQuery or Excel. Try the sample file
+['HaystackAPI.xlsm'](HaystackAPI.xlsm) and set a correct haystack url
+(http://10.0.2.2:3000/haystack with a local virtual windows). You can load all the data inside Excel table.
+
 # Optional part
 
 Haystack component propose different optional parts.
@@ -343,7 +341,7 @@ Use `pip install "haystackapi[_<options>_]"`, like:
 
 - `pip install "haystackapi[flask,graphql,lambda]"`
 
-## Data types
+# Data types
 
 `haystackapi` converts the common Python data types:
 

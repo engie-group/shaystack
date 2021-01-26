@@ -89,9 +89,7 @@ dev_requirements = [
     'coverage',
     'psycopg2',
     'supersqlite',
-    'sphinx',
-    'sphinx-rtd-theme',
-    'recommonmark'
+    'sphinx', 'sphinx-execute-code', 'sphinx_rtd_theme', 'recommonmark', 'sphinx-markdown-tables',  # To generate doc
 ]
 
 setup(name='haystackapi',

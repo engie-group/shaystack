@@ -34,10 +34,10 @@ This project implements client side haystack code. Useful to parse or dump Hayst
 [Json](https://www.project-haystack.org/doc/Json),
 [Csv](https://www.project-haystack.org/doc/Csv)).
 
-On the server side, it also implements 
-[Haystack Rest API](https://www.project-haystack.org/doc/Rest), useful to serve Haystack data you host.
+On the server side, it also implements [Haystack Rest API](https://www.project-haystack.org/doc/Rest), useful to serve
+Haystack data you host.
 
-- We implemented two serving options (See [API Server](#Server Side Haystack)): Flask and AWS Lambda
+- We implemented two serving options See [API Server](.:#server-side-haystack-api-server): Flask and AWS Lambda
     - Each offering two API endpoints:
         - Classical REST Haystack API
         - GraphQL API
@@ -249,7 +249,7 @@ $ xdg-open http://localhost:3000/graphql
 
 and use this request
 
-```graphql
+```
 # Demo
 {
     haystack {
@@ -287,7 +287,7 @@ and use this request
 Because Graphql use a schema and Haystack doesn't use one, it's not easy to manipulate the history result. To resolve
 that, we propose different *cast* for the values.
 
-```graphql
+```
 histories(ids:["@p:demo:r:23a44701-3a62fd7a"])
 {
 ts
@@ -300,7 +300,7 @@ bool # cast to bool
 
 You can select the format you want in the request.
 
-## Using with Excel or PowerBI
+# Using with Excel or PowerBI
 
 Because the default negotiated format is CSV, you can call the REST API with PowerQuery or Excel. Try the sample file
 ['HaystackAPI.xlsm'](HaystackAPI.xlsm) and set a correct haystack url

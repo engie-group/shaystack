@@ -80,6 +80,16 @@ export FLASK_DEBUG
 #%:
 #	@:
 
+define BROWSER
+	python -c '
+	import os, sys, webbrowser
+	from urllib.request import pathname2url
+
+	webbrowser.open("file://" + pathname2url(os.path.abspath(sys.argv[1])), autoraise=True)
+	sys.exit(0)
+	'
+endef
+
 CHECK_VENV=if [[ $(VENV) != "$(CONDA_DEFAULT_ENV)" ]] ; \
   then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
 
@@ -326,6 +336,36 @@ clean-all: clean docker-rm docker-rm-dmake remove-venv
 compile-all:
 	@echo -e "$(cyan)Compile all python file...$(normal)"
 	$(CONDA_PYTHON) -m compileall
+
+# -------------------------------------- Docs
+.PHONY: docs
+SPHINX_FLAGS=
+# Generate API docs
+docs/source: $(REQUIREMENTS) $(PYTHON_SRC)
+	@$(VALIDATE_VENV)
+	sphinx-apidoc -f -o site/source $(PRJ)
+	touch docs/source
+
+# Build the documentation in specificed format (build/html, build/latexpdf, ...)
+build/%: $(REQUIREMENTS) docs/source docs/* *.md | .git
+	@$(VALIDATE_VENV)
+	@TARGET=$(*:build/%=%)
+	@echo "Build $$TARGET..."
+	@LATEXMKOPTS=-silent sphinx-build -M $$TARGET docs build $(SPHINX_FLAGS)
+	touch build/$$TARGET
+
+
+build/html: $(REQUIREMENTS) docs/source docs/* *.md | .git
+	@$(VALIDATE_VENV)
+	@TARGET=site
+	@echo "Build $$TARGET..."
+	@LATEXMKOPTS=-silent sphinx-build -M html docs site $(SPHINX_FLAGS)
+	touch build/$$TARGET
+
+# Build all format of documentations
+## Generate and show the HTML documentation
+docs: build/html
+	@$(BROWSER) build/html/index.html
 
 # -------------------------------------- Client API
 .PHONY: api

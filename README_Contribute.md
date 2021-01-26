@@ -160,7 +160,7 @@ $ make graphql-schema
 #### Use AWS AppSync
 
 It's possible to use AWS AppSync to integrate the Haystack GraphQL API. Read the
-file [`AppSync.md`](aws%20appsync/AppSync.md)
+file [`AppSync.md`](AWS_appsync/AppSync.md)
 in the folder `aws appsync`.
 
 ## Deploy on Docker

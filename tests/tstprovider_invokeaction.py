@@ -17,4 +17,11 @@ class Provider(HaystackInterface):
             params: Dict[str, Any],
             date_version: Optional[datetime] = None
     ) -> Grid:
+        """
+        Args:
+            entity_id (Ref):
+            action (str):
+            params:
+            date_version:
+        """
         raise NotImplementedError()

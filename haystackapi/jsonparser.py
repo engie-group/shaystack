@@ -58,6 +58,10 @@ STR_ESC_RE = re.compile(r'\\([bfnrt"\\$]|u[0-9a-fA-F]{4})')
 
 def parse_grid(grid_str: str) -> Grid:
     # Grab the metadata
+    """
+    Args:
+        grid_str (str):
+    """
     if isinstance(grid_str, str):
         parsed = json.loads(grid_str)
     else:
@@ -83,6 +87,11 @@ def parse_grid(grid_str: str) -> Grid:
 
 
 def parse_metadata(meta: Dict[str, Any], version: Version) -> MetadataObject:
+    """
+    Args:
+        meta:
+        version (Version):
+    """
     metadata = MetadataObject()
     for name, value in meta.items():
         metadata[name] = parse_embedded_scalar(value, version=version)
@@ -90,6 +99,12 @@ def parse_metadata(meta: Dict[str, Any], version: Version) -> MetadataObject:
 
 
 def parse_cols(grid: Grid, parsed: List[Dict[str, Any]], version: Version) -> None:
+    """
+    Args:
+        grid (Grid):
+        parsed:
+        version (Version):
+    """
     for col in parsed:
         name = col.pop('name')
         meta = {}
@@ -101,6 +116,11 @@ def parse_cols(grid: Grid, parsed: List[Dict[str, Any]], version: Version) -> No
 
 
 def parse_row(row: Dict[str, Any], version: Version) -> Dict[str, Any]:
+    """
+    Args:
+        row:
+        version (Version):
+    """
     parsed_row = {}
     for col, value in row.items():
         value = parse_embedded_scalar(value, version=version)
@@ -112,6 +132,11 @@ def parse_row(row: Dict[str, Any], version: Version) -> Dict[str, Any]:
 def parse_embedded_scalar(scalar: Union[None, List, Dict, str],
                           version: Version = LATEST_VER) -> Any:  # pylint: disable=too-many-locals
     # Simple cases
+    """
+    Args:
+        scalar:
+        version (Version):
+    """
     if scalar is None:
         return None
     if isinstance(scalar, list):
@@ -240,6 +265,11 @@ def parse_embedded_scalar(scalar: Union[None, List, Dict, str],
 
 def parse_scalar(scalar: str, version: Version = LATEST_VER) -> Any:
     # If we're given a string, decode the JSON data.
+    """
+    Args:
+        scalar (str):
+        version (Version):
+    """
     if isinstance(scalar, str) and \
             (len(scalar) >= 2) and \
             (scalar[0] in ('"', '[', '{')) and \

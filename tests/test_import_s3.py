@@ -68,7 +68,7 @@ def test_merge_timeseries_source_overflow():
 
 
 def test_merge_timeseries_olds_values():
-    """ The destination has old data. Reinject the history """
+    """The destination has old data. Reinject the history"""
     destination = Grid(columns=["ts", "value"])
     destination.append(
         {"ts": datetime(2020, 1, 1, 0, 0, 2, 0, tzinfo=pytz.UTC), "value": 100}

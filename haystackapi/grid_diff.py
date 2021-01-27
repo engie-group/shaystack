@@ -19,6 +19,11 @@ from .sortabledict import SortableDict
 
 
 def grid_diff(left: Grid, right: Grid) -> Grid:  # pylint: disable=too-many-nested-blocks,too-many-locals
+    """
+    Args:
+        left (Grid):
+        right (Grid):
+    """
     diff = Grid(version=right.version, metadata={})
     metadata = diff.metadata
     metadata["diff_"] = MARKER  # Mark the grid to be a difference between grid
@@ -155,6 +160,11 @@ def grid_diff(left: Grid, right: Grid) -> Grid:  # pylint: disable=too-many-nest
 
 
 def grid_merge(orig_grid: Grid, diff: Grid) -> Grid:  # pylint: disable=too-many-nested-blocks
+    """
+    Args:
+        orig_grid (Grid):
+        diff (Grid):
+    """
     orig_grid._version = diff.version  # pylint: disable=protected-access
 
     # Apply diff of metadata
@@ -200,6 +210,11 @@ def grid_merge(orig_grid: Grid, diff: Grid) -> Grid:  # pylint: disable=too-many
 
 def merge_cols(column: SortableDict, orig_column: SortableDict) -> SortableDict:
     # Apply diff of columns
+    """
+    Args:
+        column (SortableDict):
+        orig_column (SortableDict):
+    """
     new_cols = column.copy()  # Order describe by diff
     for col, v_col in column.items():
         if 'remove_' in v_col:
@@ -222,6 +237,11 @@ def merge_cols(column: SortableDict, orig_column: SortableDict) -> SortableDict:
 
 
 def merge_metadata(metadata: MetadataObject, left_metadata: MetadataObject) -> None:
+    """
+    Args:
+        metadata (MetadataObject):
+        left_metadata (MetadataObject):
+    """
     for k_metadata, v_metadata in metadata.items():
         if k_metadata == 'diff_' and v_metadata == MARKER:
             pass

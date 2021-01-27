@@ -120,6 +120,10 @@ hs_time_str = Combine(
 
 
 def _parse_time(toks):
+    """
+    Args:
+        toks:
+    """
     time_str = toks[0]
     time_fmt = '%H:%M:%S'
     if '.' in time_str:
@@ -151,6 +155,10 @@ hs_timeZoneName = hs_tzUTCOffset | hs_tzName
 
 def _parse_datetime(toks: List[datetime]) -> List[datetime]:
     # Made up of parts: ISO8601 Date/Time, time zone label
+    """
+    Args:
+        toks:
+    """
     isodt = toks[0]
     if len(toks) > 1:
         tzname = toks[1]
@@ -233,6 +241,11 @@ hs_term = hs_parens | hs_missing | hs_cmp | hs_has
 
 
 def _merge_and_or(key: str, toks: List[FilterBinary]) -> FilterBinary:
+    """
+    Args:
+        key (str):
+        toks:
+    """
     if len(toks) == 1:
         return toks[0]
     return FilterBinary(key, _merge_and_or(key, toks[:-2]), toks[-1])
@@ -248,9 +261,11 @@ hs_filter <<= hs_condOr
 
 
 def parse_filter(grid_filter: str) -> FilterAST:
-    """
-    Return an AST tree of filter.
-    Can be used to generate other language (SQL, etc.)
+    """Return an AST tree of filter. Can be used to generate other language
+    (SQL, etc.)
+
+    Args:
+        grid_filter (str):
     """
     return FilterAST(hs_filter.parseString(grid_filter, parseAll=True)[0])
 
@@ -290,6 +305,12 @@ NOT_FOUND = _NotFoundValue()
 
 
 def _get_path(grid: Grid, obj: Any, paths: List[str]) -> Any:
+    """
+    Args:
+        grid (Grid):
+        obj (Any):
+        paths:
+    """
     try:
         for i, path in enumerate(paths):
             obj = obj[path]
@@ -305,6 +326,11 @@ def _get_path(grid: Grid, obj: Any, paths: List[str]) -> Any:
 
 
 def _generate_filter_in_python(node: FilterNode, def_filter: List[str]) -> List[str]:
+    """
+    Args:
+        node (FilterNode):
+        def_filter:
+    """
     if isinstance(node, FilterPath):
         def_filter.append("_get_path(_grid, _entity, %s)" % node.paths)
     elif isinstance(node, FilterBinary):
@@ -331,6 +357,11 @@ def _generate_filter_in_python(node: FilterNode, def_filter: List[str]) -> List[
 
 class _FnWrapper:
     def __init__(self, fun_name: str, function_template: str):
+        """
+        Args:
+            fun_name (str):
+            function_template (str):
+        """
         self.fun_name = fun_name
         exec(function_template, globals(), globals())  # pylint: disable=W0122
 
@@ -343,6 +374,10 @@ class _FnWrapper:
 
 @lru_cache(maxsize=FILTER_CACHE_LRU_SIZE)
 def _filter_function(grid_filter: str) -> _FnWrapper:
+    """
+    Args:
+        grid_filter (str):
+    """
     global _ID_FUNCTION  # pylint: disable=global-statement
     def_filter = _generate_filter_in_python(
         parse_filter(grid_filter).head, [])  # pylint: disable=protected-access
@@ -354,23 +389,43 @@ def _filter_function(grid_filter: str) -> _FnWrapper:
 
 
 def filter_set_lru_size(lru_size: int) -> None:
-    """ Change the lru size for the compiled filter functions """
+    """Change the lru size for the compiled filter functions
+
+    Args:
+        lru_size (int):
+    """
     global _filter_function  # pylint: disable=W0601, C0103
     original_function = _filter_function.__wrapped__  # pylint: disable=E1101
     _filter_function = lru_cache(lru_size, original_function)  # type: ignore
 
 
 def filter_function(grid_filter: str) -> Callable[[Grid, Dict[str, Any]], bool]:
+    """
+    Args:
+        grid_filter (str):
+    """
     return _filter_function(grid_filter).get()
 
 
 def parse_hs_datetime_format(datetime_str: str) -> datetime:
+    """
+    Args:
+        datetime_str (str):
+    """
     return hs_all_date.parseString(datetime_str, parseAll=True)[0]
 
 
 def parse_hs_date_format(date_str) -> datetime:
+    """
+    Args:
+        date_str:
+    """
     return hs_date.parseString(date_str, parseAll=True)[0]
 
 
 def parse_hs_time_format(time_str) -> time:
+    """
+    Args:
+        time_str:
+    """
     return hs_time.parseString(time_str, parseAll=True)[0]

@@ -10,6 +10,10 @@ from haystackapi.providers import ping
 @patch.object(ping.Provider, 'watch_poll')
 def test_watch_poll_with_zinc(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
@@ -37,6 +41,10 @@ def test_watch_poll_with_zinc(mock) -> None:
 @patch.object(ping.Provider, 'watch_poll')
 def test_watch_poll_with_args(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()

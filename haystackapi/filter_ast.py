@@ -12,13 +12,17 @@ from typing import List, Optional
 
 
 class FilterNode:  # pylint: disable=too-few-public-methods
-    """ Top type of all filter nodes. """
+    """Top type of all filter nodes."""
 
 
 class FilterPath(FilterNode):  # pylint: disable=too-few-public-methods
-    """ A filter path (a->b->c) """
+    """A filter path (a->b->c)"""
 
     def __init__(self, paths: List[str]):
+        """
+        Args:
+            paths:
+        """
         self.paths = paths
 
     def __repr__(self) -> str:
@@ -26,9 +30,15 @@ class FilterPath(FilterNode):  # pylint: disable=too-few-public-methods
 
 
 class FilterBinary(FilterNode):  # pylint: disable=too-few-public-methods
-    """ A filter binary operator """
+    """A filter binary operator"""
 
     def __init__(self, operator: str, left: FilterNode, right: FilterNode):
+        """
+        Args:
+            operator (str):
+            left (FilterNode):
+            right (FilterNode):
+        """
         self.operator = operator
         self.left = left
         self.right = right
@@ -38,9 +48,14 @@ class FilterBinary(FilterNode):  # pylint: disable=too-few-public-methods
 
 
 class FilterUnary(FilterNode):  # pylint: disable=too-few-public-methods
-    """ A filter unary operator """
+    """A filter unary operator"""
 
     def __init__(self, operator: str, right: FilterNode):
+        """
+        Args:
+            operator (str):
+            right (FilterNode):
+        """
         self.operator = operator
         self.right = right
 
@@ -49,9 +64,13 @@ class FilterUnary(FilterNode):  # pylint: disable=too-few-public-methods
 
 
 class FilterAST:  # pylint: disable=too-few-public-methods
-    """ The root of AST """
+    """The root of AST"""
 
     def __init__(self, head: Optional[FilterNode]):
+        """
+        Args:
+            head:
+        """
         self.head = head
 
     def __repr__(self) -> str:

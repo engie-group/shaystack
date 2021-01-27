@@ -35,11 +35,13 @@ VERSION_RE = re.compile(r'^(\d[\d.]*)([^\d].*)*$')
 
 
 class Version:
-    """
-    A Project Haystack version number
-    """
+    """A Project Haystack version number"""
 
     def __init__(self, ver_str: str):
+        """
+        Args:
+            ver_str (str):
+        """
         if isinstance(ver_str, Version):
             # Clone constructor
             self.version_nums = ver_str.version_nums
@@ -65,11 +67,11 @@ class Version:
         return base
 
     def _cmp(self, other: Union['Version', str]) -> int:
-        """
-        Compare two Project Haystack version strings, then return
-            -1 if self < other,
-            0 if self == other
-            or 1 if self > other.
+        """Compare two Project Haystack version strings, then return
+            -1 if self < other, 0 if self == other or 1 if self > other.
+
+        Args:
+            other:
         """
         if isinstance(other, str):
             other = Version(other)
@@ -128,8 +130,10 @@ class Version:
 
     @classmethod
     def nearest(cls, ver: Union[str, 'Version']) -> 'Version':
-        """
-        Retrieve the official version nearest the one given.
+        """Retrieve the official version nearest the one given.
+
+        Args:
+            ver:
         """
         if isinstance(ver, str):
             ver = Version(ver)

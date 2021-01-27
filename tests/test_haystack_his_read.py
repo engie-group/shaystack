@@ -14,6 +14,11 @@ from tzlocal.unix import get_localzone
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_zinc(mock, no_cache) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+        no_cache:
+    """
     mock.return_value = ping.PingGrid
     no_cache.return_value = True
     mime_type = haystackapi.MODE_ZINC
@@ -40,6 +45,10 @@ def test_his_read_with_zinc(mock, no_cache) -> None:
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_args(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = DEFAULT_MIME_TYPE
     request = HaystackHttpRequest()
@@ -62,6 +71,10 @@ def test_his_read_with_args(mock) -> None:
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_range_today(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
@@ -89,6 +102,10 @@ def test_his_read_with_range_today(mock) -> None:
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_range_yesterday(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
@@ -115,6 +132,10 @@ def test_his_read_with_range_yesterday(mock) -> None:
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_range_two_datetime(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
@@ -140,6 +161,10 @@ def test_his_read_with_range_two_datetime(mock) -> None:
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_range_one_datetime(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
@@ -168,6 +193,10 @@ def test_his_read_with_range_one_datetime(mock) -> None:
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_range_two_date(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
@@ -198,6 +227,10 @@ def test_his_read_with_range_two_date(mock) -> None:
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_range_one_date(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()

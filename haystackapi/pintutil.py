@@ -130,8 +130,10 @@ PINT_CONVERSION = [
 
 
 def to_haystack(unit: str):
-    """
-    Some parsing tweaks to fit pint units / handling of edge cases.
+    """Some parsing tweaks to fit pint units / handling of edge cases.
+
+    Args:
+        unit (str):
     """
     global HAYSTACK_CONVERSION  # pylint: disable=global-statement
     global PINT_CONVERSION  # pylint: disable=global-statement
@@ -155,8 +157,10 @@ def to_haystack(unit: str):
 
 
 def to_pint(unit: str) -> str:
-    """
-    Some parsing tweaks to fit pint units / handling of edge cases.
+    """Some parsing tweaks to fit pint units / handling of edge cases.
+
+    Args:
+        unit (str):
     """
     global HAYSTACK_CONVERSION  # pylint: disable=global-statement
     if unit == 'per_minute' or \
@@ -174,10 +178,7 @@ def to_pint(unit: str) -> str:
 
 
 def define_haystack_units() -> UnitRegistry:
-    """
-    Missing units found in project-haystack
-    Added to the registry
-    """
+    """Missing units found in project-haystack Added to the registry"""
     unit_ureg = UnitRegistry(on_redefinition='ignore')
     unit_ureg.define('% = [] = percent')
     unit_ureg.define('pixel = [] = px = dot = picture_element = pel')

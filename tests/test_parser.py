@@ -137,10 +137,19 @@ REMOVE_EXAMPLE_JSON_V3 = json.dumps({
 
 
 def _check_row_keys(row, grid):
+    """
+    Args:
+        row:
+        grid:
+    """
     assert set(row.keys()) == set(grid.column.keys())
 
 
 def _check_simple(grid):
+    """
+    Args:
+        grid:
+    """
     assert len(grid.metadata) == 0
     assert list(grid.column.keys()) == ['firstName', 'bday']
     # Neither column should have metadata
@@ -162,6 +171,11 @@ def _check_simple(grid):
 
 
 def _check_metadata(grid, force_metadata_order=True):
+    """
+    Args:
+        grid:
+        force_metadata_order:
+    """
     assert len(grid.metadata) == 2
     if force_metadata_order:
         assert list(grid.metadata.keys()) == ['database', 'dis']
@@ -204,23 +218,39 @@ def _check_metadata(grid, force_metadata_order=True):
 
 
 def _check_null(grid):
+    """
+    Args:
+        grid:
+    """
     assert len(grid) == 2
     assert 'null' not in grid[0]
     assert 'null' not in grid[1]
 
 
 def _check_na(grid):
+    """
+    Args:
+        grid:
+    """
     assert len(grid) == 1
     assert_is(grid[0]['na'], haystackapi.NA)
 
 
 def _check_remove(grid):
+    """
+    Args:
+        grid:
+    """
     assert len(grid) == 2
     assert_is(grid[0]['remove'], haystackapi.REMOVE)
     assert_is(grid[1]['remove'], haystackapi.REMOVE)
 
 
 def _check_number(grid):
+    """
+    Args:
+        grid:
+    """
     assert len(grid) == 10
     row = grid.pop(0)
     assert row['number'] == 1.0
@@ -247,6 +277,10 @@ def _check_number(grid):
 
 
 def _check_datetime(grid):
+    """
+    Args:
+        grid:
+    """
     assert len(grid) == 6
     row = grid.pop(0)
     assert isinstance(row['datetime'], datetime.datetime)

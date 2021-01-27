@@ -23,9 +23,8 @@ log = logging.getLogger("haystackapi")
 
 
 class Query(graphene.ObjectType):
-    """
-    GraphQL haystack query.
-    To integrate the haystack Graphql API with other GraphQL API, see `aws appsync`.
+    """GraphQL haystack query. To integrate the haystack Graphql API with other
+    GraphQL API, see `aws appsync` .
     """
 
     class Meta:  # pylint: disable=missing-class-docstring
@@ -35,6 +34,11 @@ class Query(graphene.ObjectType):
 
     @staticmethod
     def resolve_haystack(parent, info):
+        """
+        Args:
+            parent:
+            info:
+        """
         return ReadHaystack()
 
 
@@ -53,9 +57,7 @@ graphql_blueprint.add_url_rule('',
 
 
 def _dump_haystack_schema() -> None:
-    """
-    Print haystack schema to insert in another global schema.
-    """
+    """Print haystack schema to insert in another global schema."""
     # Print only haystack schema
     from graphql.utils import schema_printer  # pylint: disable=import-outside-toplevel
     print(schema_printer.print_schema(schema))
@@ -63,9 +65,9 @@ def _dump_haystack_schema() -> None:
 
 @click.command()
 def main() -> int:
-    """
-    Print the partial schema for haystack API.
-    `GRAPHQL_SCHEMA=app/haystack_schema.json python app/blueprint_graphql.py` >partial_gql.graphql
+    """Print the partial schema for haystack API.
+    `GRAPHQL_SCHEMA=app/haystack_schema.json python app/blueprint_graphql.py`
+    >partial_gql.graphql
     """
     _dump_haystack_schema()
     return 0

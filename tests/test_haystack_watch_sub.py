@@ -10,6 +10,10 @@ from haystackapi.providers import ping
 @patch.object(ping.Provider, 'watch_sub')
 def test_watch_sub_with_zinc(mock):
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = Grid(version=VER_3_0,
                              metadata={"watchId": "0123456789ABCDEF", "lease": 1},
                              columns=["empty"])
@@ -39,6 +43,10 @@ def test_watch_sub_with_zinc(mock):
 @patch.object(ping.Provider, 'watch_sub')
 def test_watch_sub_with_args(mock):
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = Grid(version=VER_3_0,
                              metadata={"watchId": "0123456789ABCDEF", "lease": 1},
                              columns=["empty"])

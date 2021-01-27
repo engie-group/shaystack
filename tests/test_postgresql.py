@@ -21,6 +21,10 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 # If .env set the HAYSTACK_DB to postgres, check to execute the sql request
 def _check_pg(sql_request: str):
+    """
+    Args:
+        sql_request (str):
+    """
     if os.environ.get('HAYSTACK_DB', '').startswith("postgres"):
         provider = cast(SQLProvider, get_provider("haystackapi.providers.sql"))
         conn = provider.get_connect()

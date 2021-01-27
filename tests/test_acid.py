@@ -69,6 +69,12 @@ def gen_random_uri():
 
 def gen_random_str(min_length=1, max_length=20, charset=STR_CHARSET):
     # Generate a random 20-character string
+    """
+    Args:
+        min_length:
+        max_length:
+        charset:
+    """
     return ''.join([random.choice(charset)
                     for _ in range(0, random.randint(min_length, max_length))])
 
@@ -103,6 +109,11 @@ def gen_random_coordinate():
 
 
 def gen_random_num(scale=1000, digits=2):
+    """
+    Args:
+        scale:
+        digits:
+    """
     return round(random.random() * scale, digits)
 
 
@@ -134,6 +145,10 @@ def gen_random_scalar():
 
 
 def gen_random_name(existing=None):
+    """
+    Args:
+        existing:
+    """
     while True:
         meta = random.choice(string.ascii_lowercase) + \
                gen_random_str(min_length=0, max_length=7,
@@ -155,6 +170,10 @@ def gen_random_meta():
 
 def gen_random_grid(metadata=True):
     # Generate a randomised grid of values and try parsing it back.
+    """
+    Args:
+        metadata:
+    """
     grid = Grid(version=VER_3_0)
     if metadata:
         grid.metadata.extend(gen_random_meta())
@@ -192,6 +211,10 @@ RANDOM_RECURSIVE_TYPES = [gen_random_list, gen_random_map, gen_random_grid]
 
 
 def dump_grid(grid):
+    """
+    Args:
+        grid:
+    """
     print('Version: %s' % grid.version)
     print('Metadata:')
     for k, val in grid.metadata.items():
@@ -209,6 +232,11 @@ def dump_grid(grid):
 
 
 def _try_dump_parse(ref_grid, mode):
+    """
+    Args:
+        ref_grid:
+        mode:
+    """
     try:
         # Dump the randomised grid to a string
         grid_str = dump(ref_grid, mode=mode)

@@ -21,6 +21,10 @@ from haystackapi.pintutil import to_haystack, to_pint
 
 
 def check_singleton_deepcopy(a_singleton):
+    """
+    Args:
+        a_singleton:
+    """
     orig_dict = {'some_value': a_singleton}
     copy_dict = deepcopy(orig_dict)
     assert copy_dict['some_value'] is a_singleton
@@ -43,6 +47,10 @@ def test_remove_hash():
 
 
 def check_singleton_copy(a_singleton):
+    """
+    Args:
+        a_singleton:
+    """
     assert copy(a_singleton) is a_singleton
 
 
@@ -300,11 +308,16 @@ def test_qty_std_method():
 
 
 class MyCoordinate:
-    """
-    A dummy class that can compare itself to a Coordinate from haystackapi.
+    """A dummy class that can compare itself to a Coordinate from
+    haystackapi.
     """
 
     def __init__(self, lat, lng):
+        """
+        Args:
+            lat:
+            lng:
+        """
         self.lat = lat
         self.lng = lng
 

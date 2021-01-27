@@ -9,6 +9,10 @@ from haystackapi.providers import ping
 @patch.object(ping.Provider, 'ops')
 def test_ops_with_zinc(mock) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+    """
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()

@@ -33,25 +33,36 @@ STR_SUB = [
 # Will keep in memory the way we want Quantity being created
 
 class Quantity(six.with_metaclass(ABCMeta, object)):  # pylint: disable=too-few-public-methods
-    """
-    A float value with with pint unit.
-    """
+    """A float value with with pint unit."""
 
     def __new__(cls, m: float, unit: Optional[str] = None):
+        """
+        Args:
+            m (float):
+            unit:
+        """
         return PintQuantity(m, to_pint(unit))
 
     # Fake ctr to help audit tools
     def __init__(self, m: float, unit: Optional[str] = None):
+        """
+        Args:
+            m (float):
+            unit:
+        """
         self.m = m  # pylint: disable=invalid-name
         self.unit = unit
 
 
 class Qty:
-    """
-    A quantity is a scalar value (floating point) with a unit.
-    """
+    """A quantity is a scalar value (floating point) with a unit."""
 
     def __init__(self, value: float, unit: Optional[str]):
+        """
+        Args:
+            value (float):
+            unit:
+        """
         self.value = value
         self.unit = unit
 
@@ -111,6 +122,10 @@ class Qty:
         return Qty(self.value * other, self.unit)
 
     def __div__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):
             other = other.value
         return Qty(self.value / other, self.unit)
@@ -131,6 +146,10 @@ class Qty:
         return Qty(self.value % other, self.unit)
 
     def __divmod__(self, other: Union[Number, 'Qty']) -> Tuple[float, float]:
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):
             other = other.value
 
@@ -167,24 +186,40 @@ class Qty:
         return Qty(self.value | other, self.unit)
 
     def __radd__(self, other: Union[Number, 'Qty']) -> 'Qty':
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):  # pragma: no cover
             # Unlikely due to Qty supporting these ops directly
             other = other.value
         return Qty(other + self.value, self.unit)
 
     def __rsub__(self, other: Union[Number, 'Qty']) -> 'Qty':
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):  # pragma: no cover
             # Unlikely due to Qty supporting these ops directly
             other = other.value
         return Qty(other - self.value, self.unit)
 
     def __rmul__(self, other: Union[Number, 'Qty']) -> 'Qty':
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):  # pragma: no cover
             # Unlikely due to Qty supporting these ops directly
             other = other.value
         return Qty(other * self.value, self.unit)
 
     def __rdiv__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):
             # Unlikely due to Qty supporting these ops directly
             other = other.value
@@ -192,65 +227,110 @@ class Qty:
 
     def __rtruediv__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):
             other = other.value
         return Qty(other / self.value, self.unit)
 
     def __rfloordiv__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):
             other = other.value
         return Qty(other // self.value, self.unit)
 
     def __rmod__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):
             other = other.value
         return Qty(other % self.value, self.unit)
 
     def __rdivmod__(self, other: Union[Number, 'Qty']) -> Tuple[float, float]:  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):
             other = other.value
         return divmod(other, self.value)
 
     def __rpow__(self, other: Union[Number, 'Qty']) -> complex:  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):
             other = other.value
         return pow(other, self.value)
 
     def __rlshift__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):
             other = other.value
         return Qty(other << self.value, self.unit)
 
     def __rrshift__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):
             other = other.value
         return Qty(other >> self.value, self.unit)
 
     def __rand__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):
             other = other.value
         return Qty(other & self.value, self.unit)
 
     def __rxor__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):
             other = other.value
         return Qty(other ^ self.value, self.unit)
 
     def __ror__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
         # Unlikely due to Qty supporting these ops directly
+        """
+        Args:
+            other:
+        """
         if isinstance(other, Qty):
             other = other.value
         return Qty(other | self.value, self.unit)
 
     def _cmp_op(self, other: Union[Number, 'Qty'], operator) -> bool:  # PPR: type
+        """
+        Args:
+            other:
+            operator:
+        """
         if isinstance(other, Qty):
             if other.unit != self.unit:
                 raise TypeError('Quantity units differ: %s vs %s' % (self.unit, other.unit))
@@ -276,6 +356,10 @@ class Qty:
         return self._cmp_op(other, lambda x, y: x != y)
 
     def __cmp__(self, other: Union[Number, 'Qty']) -> int:
+        """
+        Args:
+            other:
+        """
         if self == other:
             return 0
         if self < other:
@@ -287,12 +371,11 @@ class Qty:
 
 
 class PintQuantity(Qty, unit_reg.Quantity):
-    """
-    A quantity is a scalar value (floating point) with a unit.
-    This object uses Pint feature allowing conversion between units
-    for example :
-        a = haystackapi.Q_(19, 'degC')
-        a.to('degF')
+    """A quantity is a scalar value (floating point) with a unit. This object
+    uses Pint feature allowing conversion between units for example :
+
+        a = haystackapi.Q_(19, 'degC') a.to('degF')
+
     See https://pint.readthedocs.io for details
     """
 
@@ -304,11 +387,14 @@ Quantity.register(PintQuantity)  # noqa: E303
 
 
 class Coordinate:
-    """
-    A 2D co-ordinate in degrees latitude and longitude.
-    """
+    """A 2D co-ordinate in degrees latitude and longitude."""
 
     def __init__(self, latitude: float, longitude: float):
+        """
+        Args:
+            latitude (float):
+            longitude (float):
+        """
         self.latitude = latitude
         self.longitude = longitude
 
@@ -338,8 +424,7 @@ class Coordinate:
 
 
 class Uri(str):
-    """
-    A convenience class to allow identification of a URI from other string
+    """A convenience class to allow identification of a URI from other string
     types.
     """
 
@@ -353,8 +438,7 @@ class Uri(str):
 
 
 class Bin(str):
-    """
-    A convenience class to allow identification of a Bin from other string
+    """A convenience class to allow identification of a Bin from other string
     types.
     """
 
@@ -368,11 +452,14 @@ class Bin(str):
 
 
 class XStr:
-    """
-    A convenience class to allow identification of a Xstr
-    """
+    """A convenience class to allow identification of a Xstr"""
 
     def __init__(self, encoding: str, data: str):
+        """
+        Args:
+            encoding (str):
+            data (str):
+        """
         self.encoding = encoding
         if encoding == "hex":
             self.data = bytearray.fromhex(data)
@@ -407,6 +494,10 @@ class _Singleton:
         return self
 
     def __deepcopy__(self, memo: '_Singleton') -> '_Singleton':
+        """
+        Args:
+            memo:
+        """
         return self
 
     def __hash__(self) -> int:
@@ -414,9 +505,7 @@ class _Singleton:
 
 
 class MarkerType(_Singleton):
-    """
-    A singleton class representing a Marker.
-    """
+    """A singleton class representing a Marker."""
 
     def __repr__(self) -> str:
         return 'MARKER'
@@ -426,9 +515,7 @@ MARKER = MarkerType()
 
 
 class NAType(_Singleton):
-    """
-    A singleton class representing a NA.
-    """
+    """A singleton class representing a NA."""
 
     def __repr__(self) -> str:
         return 'NA'
@@ -438,9 +525,7 @@ NA = NAType()
 
 
 class RemoveType(_Singleton):
-    """
-    A singleton class representing a Remove.
-    """
+    """A singleton class representing a Remove."""
 
     def __repr__(self) -> str:
         return 'REMOVE'
@@ -450,15 +535,19 @@ REMOVE = RemoveType()
 
 
 class Ref:
-    """
-    A reference to an object in Project Haystack.
-    """
+    """A reference to an object in Project Haystack."""
 
     # The grammar specifies that it can have a string following a space,
     # but the documentation does not specify what this string encodes.  This is
     # distinct from the reference name itself immediately following the @
     # symbol.  I'm guessing it's some kind of value.
     def __init__(self, name: str, value: Optional[str] = None, has_value: bool = False):
+        """
+        Args:
+            name (str):
+            value:
+            has_value (bool):
+        """
         assert isinstance(name, str) and re.match("^[a-zA-Z0-9_:\\-.~]+$", name)
         self.name = name
         self.value = value

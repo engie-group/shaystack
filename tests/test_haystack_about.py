@@ -11,6 +11,11 @@ from haystackapi.providers import ping
 @patch.object(ping.Provider, 'about')
 def test_about_with_zinc(mock, no_cache) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+        no_cache:
+    """
     no_cache.return_value = True
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC
@@ -33,6 +38,11 @@ def test_about_with_zinc(mock, no_cache) -> None:
 @patch.object(ping.Provider, 'about')
 def test_about_without_headers(mock, no_cache) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+        no_cache:
+    """
     no_cache.return_value = True
     mock.return_value = Grid(columns=["a"])
     mock.return_value.append({"a": 1})
@@ -54,6 +64,11 @@ def test_about_without_headers(mock, no_cache) -> None:
 @patch.object(ping.Provider, 'about')
 def test_about_with_multivalues_headers(mock, no_cache) -> None:
     # GIVEN
+    """
+    Args:
+        mock:
+        no_cache:
+    """
     no_cache.return_value = True
     mock.return_value = ping.PingGrid
     mime_type = haystackapi.MODE_ZINC

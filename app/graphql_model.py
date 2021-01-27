@@ -14,10 +14,10 @@ from datetime import datetime, date, time
 from typing import Optional, List, Any, Dict, Union, Type
 
 import graphene
+import haystackapi
+import pytz
 from graphql import ResolveInfo
 from graphql.language.ast import StringValue, IntValue, FloatValue, BooleanValue, EnumValue
-
-import haystackapi
 from haystackapi import Ref, Uri, Coordinate, parse_hs_datetime_format, Grid
 from haystackapi.grid_filter import parse_hs_time_format, parse_hs_date_format
 from haystackapi.providers.haystack_interface import get_singleton_provider, parse_date_range
@@ -85,10 +85,12 @@ class HSDateTime(graphene.String):
         return HSDateTime.parse_value(node.value)
 
     @staticmethod
-    def parse_value(value: Union[datetime, str]) -> datetime:
+    def parse_value(value: Union[datetime, date, str]) -> datetime:
         # Call to convert graphql variable to python object
         if isinstance(value, datetime):
             return value
+        if isinstance(value, date):
+            return datetime.combine(value, datetime.max.time()).replace(tzinfo=pytz.UTC)
         return parse_hs_datetime_format(value)
 
 
@@ -343,7 +345,7 @@ class ReadHaystack(graphene.ObjectType):
                           info: ResolveInfo,
                           ids: Optional[List[str]] = None,
                           dates_range: Optional[str] = None,
-                          version: Union[str, datetime, None] = None):
+                          version: Union[str, datetime, date, None] = None):
         if version:
             version = HSDateTime.parse_value(version)
         log.debug("resolve_histories(parent,info,ids=%s, range=%s, version=%s)",

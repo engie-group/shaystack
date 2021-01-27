@@ -309,7 +309,7 @@ class HaystackInterface(ABC):
             self,
             entity_id: Ref,
             time_serie: Grid,
-            date_version: Optional[datetime]
+            date_version: Optional[datetime] = None
     ) -> Grid:  # pylint: disable=no-self-use
         """
         Implement the Haystack 'hisWrite' ops

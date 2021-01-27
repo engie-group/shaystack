@@ -19,6 +19,7 @@ import re
 import traceback
 from ast import literal_eval
 from dataclasses import dataclass, field
+from datetime import datetime, date
 from decimal import Decimal
 from numbers import Number
 from typing import Optional, Any, List, cast
@@ -617,6 +618,12 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         log.debug(
             "id=%s range=%s, date_version=%s", entity_id, grid_date_range, date_version
         )
+        if date_version:
+            if isinstance(date_version, date):
+                date_version = datetime.combine(date_version, datetime.max.time()) \
+                    .replace(tzinfo=provider.get_tz())
+            if grid_date_range[1] > date_version:
+                grid_date_range = (grid_date_range[0], date_version)
         grid_response = provider.his_read(entity_id, grid_date_range, date_version)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, "OK")

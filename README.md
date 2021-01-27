@@ -298,6 +298,17 @@ bool # cast to bool
 
 You can select the format you want in the request.
 
+### Specification extension
+
+To manage the history of ontologies, it's possible to add a parameter almost all request: `Version`
+This parameter must have the datetime when you want to ask the ontology. The result is the *vue*
+of these data at this time.
+
+To return only some tag, it's possible to add a parameter `filter` in `read` request.
+
+The syntax to analyse the daterange in `hisRead` is extended to accept a comma without value before or after (`date,`
+, `,datetime`, etc.)
+
 ### Using AWS
 
 Read [more...](README_aws.md)

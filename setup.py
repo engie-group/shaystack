@@ -2,7 +2,7 @@
 import os
 import subprocess
 
-from setuptools import setup, find_packages
+import setuptools
 
 ROOT = "https://github.com/pprados/haystackapi"
 
@@ -92,53 +92,56 @@ dev_requirements = [
     'sphinx', 'sphinx-execute-code', 'sphinx_rtd_theme', 'recommonmark', 'sphinx-markdown-tables',  # To generate doc
 ]
 
-setup(name='haystackapi',
-      url=_git_http_url(),
-      setup_requires=['setuptools_scm'],
-      use_scm_version=True,
-      description='Implementation of Haystack REST API',
-      long_description=open('README.md', mode='r', encoding='utf-8').read(),
-      long_description_content_type='text/markdown',
-      version=DEFAULT_VERSION,
-      author='Philippe PRADOS',
-      author_email='support@prados.fr',
-      license='Apache v2',
-      zip_safe=False,
-      packages=find_packages(),
-      include_package_data=True,
-      classifiers=[
-          'Development Status :: 4 - Beta',
-          'Environment :: Web Environment',
-          'Intended Audience :: Developers',
-          'License :: OSI Approved :: BSD License',
-          'Programming Language :: Python',
-          'Programming Language :: Python :: 3.7',
-          'Programming Language :: Python :: 3.8',
-          'Programming Language :: Python :: 3.9',
-          'Topic :: Scientific/Engineering',
-          'Topic :: Scientific/Engineering :: Information Analysis',
-          'Topic :: Software Development :: Libraries :: Python Modules',
-      ],
-      python_requires='>=3',
-      extras_require={
-          'dev': dev_requirements,
-          'flask': flask_requirements,
-          'graphql': graphql_requirements,
-          'lambda': lambda_requirements,
-          # 'azure': azure_requirements,
-      },
-      install_requires=install_requirements,
-      requires=install_requirements,
-      entry_points={
-          "console_scripts": [
-              'haystackapi = app.__init__:main',
-              'haystackapi_import_db = haystackapi.providers.import_db:main',
-              'haystackapi_import_s3 = haystackapi.providers.import_s3:main',
-          ]
-      },
-      project_urls={
-          'Documentation': ROOT,
-          'Source': ROOT,
-          'Tracker': ROOT + '/issues',
-      },
-      )
+setuptools.setup(
+    pbr=True
+)
+
+# setup(setup_requires=['pbr'],
+#       pbr=True,
+# # #      use_scm_version=True,
+# # #      description='Implementation of Haystack Project Specification',
+# # #      long_description=open('README.md', mode='r', encoding='utf-8').read(),
+# # #      long_description_content_type='text/markdown',
+# # #      version=DEFAULT_VERSION,
+# # #      author='Philippe PRADOS',
+# # #      author_email='support@prados.fr',
+# # #      license='Apache v2',
+# #       zip_safe=False,
+# #       packages=find_packages(),
+# #       include_package_data=True,
+# #       classifiers=[
+# #           'Development Status :: 4 - Beta',
+# #           'Environment :: Web Environment',
+# #           'Intended Audience :: Developers',
+# #           'License :: OSI Approved :: BSD License',
+# #           'Programming Language :: Python',
+# #           'Programming Language :: Python :: 3.7',
+# #           'Programming Language :: Python :: 3.8',
+# #           'Programming Language :: Python :: 3.9',
+# #           'Topic :: Scientific/Engineering',
+# #           'Topic :: Scientific/Engineering :: Information Analysis',
+# #           'Topic :: Software Development :: Libraries :: Python Modules',
+# #       ],
+# #       python_requires='>=3',
+#       extras_require={
+#           'dev': dev_requirements,
+#           'flask': flask_requirements,
+#           'graphql': graphql_requirements,
+#           'lambda': lambda_requirements,
+#           # 'azure': azure_requirements,
+#       },
+#       install_requires=install_requirements,
+#       requires=install_requirements,
+# #       entry_points={
+# #           "console_scripts": [
+# #               'haystackapi = app.__init__:main',
+# #               'haystackapi_import_db = haystackapi.providers.import_db:main',
+# #               'haystackapi_import_s3 = haystackapi.providers.import_s3:main',
+# #           ]
+# #       },
+# #       project_urls={
+# #           'Documentation': ROOT,
+# #           'Source': ROOT,
+# #           'Tracker': ROOT + '/issues',
+# #       },
+#       )

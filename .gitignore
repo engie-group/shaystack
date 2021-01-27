@@ -260,3 +260,4 @@ PPR*
 sample/*.gz
 
 test.db
+zappa_settings.json

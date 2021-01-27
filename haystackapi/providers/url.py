@@ -65,7 +65,7 @@ log = logging.getLogger("url.Provider")
 
 LRU_SIZE, PERIODIC_REFRESH = 15, int(os.environ.get("REFRESH", "15"))
 
-TLS_VERIFY = True
+TLS_VERIFY = os.environ.get("TLS_VERIFY", "true") == "true"
 
 
 class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attributes

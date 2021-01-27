@@ -1,0 +1,39 @@
+{
+  "dev": {
+    "profile_name": "${AWS_PROFILE}",
+    "aws_region": "${AWS_REGION}",
+    "app_function": "app.__init__.app",
+    "project_name": "${PRJ}",
+    "s3_bucket": "${PRJ}-zappa",
+    "runtime": "python${PYTHON_VERSION}",
+    "environment_variables": {
+      "COOKIE_SECRET_KEY": "${COOKIE_SECRET_KEY}"
+    },
+    "aws_environment_variables": {
+      "LOG_LEVEL": "${LOGLEVEL}",
+      "TLS_VERIFY": "${TLS_VERIFY}",
+      "HAYSTACK_PROVIDER": "${HAYSTACK_PROVIDER}",
+      "HAYSTACK_URL": "${HAYSTACK_URL}"
+      "HAYSTACK_DB": "${HAYSTACK_DB}"
+      "HAYSTACK_TS": "${HAYSTACK_TS}"
+    },
+    "exclude": [
+      ".*",
+      "*.postman*",
+      "*.ini",
+      "*.cfg",
+      "*.md",
+      "*.yaml",
+      "tests",
+      "Makefile",
+      "Project.variables",
+      "pytest.ini",
+      "pytype.cfg",
+      "pip*",
+      "boto3",
+      "botocore"
+    ],
+    "slim_handler": false,
+    "role_name": "archi-sandbox-HaystackRole"
+  }
+}

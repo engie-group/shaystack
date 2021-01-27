@@ -14,7 +14,18 @@ import sys
 import click
 from flask_cors import CORS
 
-from app.blueprint_graphql import graphql_blueprint
+USE_GRAPHQL = False
+try:
+    from app.blueprint_graphql import graphql_blueprint
+    import graphene  # pylint: disable=ungrouped-imports
+
+    USE_GRAPHQL = True
+except ImportError:
+    print("""
+To use GraphQL,use
+pip install "haystackapi[flask,graphql]"  
+""", file=sys.stderr)
+
 from app.blueprint_haystack import haystack_blueprint
 
 try:
@@ -29,17 +40,6 @@ and set HAYSTACK_PROVIDER variable
 HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi
 """, file=sys.stderr)
     sys.exit(-1)
-
-USE_GRAPHQL = False
-try:
-    import graphene  # pylint: disable=ungrouped-imports
-
-    USE_GRAPHQL = True
-except ImportError:
-    print("""
-To use GraphQL,use
-pip install "haystackapi[flask,graphql]"  
-""", file=sys.stderr)
 
 app = Flask(__name__)
 cors = CORS(app, resources={

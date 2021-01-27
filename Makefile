@@ -20,6 +20,7 @@ LOGLEVEL?=WARNING
 PG_PASSWORD?=password
 PGADMIN_USER?=$(USER)@domain.com
 PGADMIN_PASSWORD?=password
+TLS_VERIFY=False
 
 # Default parameter for make [aws-]api-read
 READ_PARAMS?=?filter=his&limit=5
@@ -50,6 +51,7 @@ DOCKER_REPOSITORY=$(USER)
 PORT?=3000
 INPUT_NETWORK?=localhost
 HOST_API?=localhost
+COOKIE_SECRET_KEY?=2d1a12a6-3232-4328-9365-b5b65e64a68f
 
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 
@@ -72,6 +74,9 @@ export PYTHON_VERSION
 export READ_PARAMS
 export HISREAD_PARAMS
 export FLASK_DEBUG
+export COOKIE_SECRET_KEY
+export PYTHON_VERSION
+export TLS_VERIFY
 
 # Calculate the make extended parameter
 # Keep only the unknown target
@@ -498,7 +503,7 @@ aws-update-token:
 	@echo -e "$(yellow)Nothing to do to refresh the token. (Set USE_OKTA ?)$(normal)"
 endif
 
-.PHONY: aws-package aws-deploy aws-update aws-undeploy
+.PHONY: aws-package aws-deploy aws-update aws-undeploy _zappa_settings
 
 # Install a clean venv before invoking zappa
 _zappa_pre_install: clean-zappa
@@ -507,8 +512,11 @@ _zappa_pre_install: clean-zappa
 	pip install -U pip setuptools
 	pip install -e '.[graphql,lambda]'
 
+_zappa_settings: zappa_settings.json.template
+	@envsubst <zappa_settings.json.template >zappa_settings.json
+
 ## Build lambda package
-aws-package: $(REQUIREMENTS) _zappa_pre_install compile-all aws-update-token
+aws-package: $(REQUIREMENTS) _zappa_pre_install compile-all _zappa_settings aws-update-token
 	@echo -e "$(cyan)Create lambda package...$(normal)"
 	source $(ZAPPA_ENV)/bin/activate
 	zappa package $(AWS_STAGE)
@@ -516,15 +524,16 @@ aws-package: $(REQUIREMENTS) _zappa_pre_install compile-all aws-update-token
 
 
 ## Deploy lambda functions
-aws-deploy: $(REQUIREMENTS) _zappa_pre_install compile-all
-	$(VALIDATE_VENV)
+aws-deploy: $(REQUIREMENTS) _zappa_pre_install _zappa_settings compile-all
+	@$(VALIDATE_VENV)
 	source $(ZAPPA_ENV)/bin/activate
 	zappa deploy $(AWS_STAGE)
 	rm -Rf $(ZAPPA_ENV)
 	echo -e "$(green)Lambdas are deployed$(normal)"
+	grep --color=never 'HAYSTACK_' zappa_settings.json
 
 ## Update lambda functions
-aws-update: $(REQUIREMENTS) _zappa_pre_install compile-all
+aws-update: $(REQUIREMENTS) _zappa_pre_install _zappa_settings compile-all
 	@$(VALIDATE_VENV)
 	source $(ZAPPA_ENV)/bin/activate
 	zappa update $(AWS_STAGE)
@@ -532,7 +541,7 @@ aws-update: $(REQUIREMENTS) _zappa_pre_install compile-all
 	echo -e "$(green)Lambdas are updated$(normal)"
 
 ## Remove AWS Stack
-aws-undeploy: $(REQUIREMENTS)
+aws-undeploy: $(REQUIREMENTS) _zappa_settings
 ifeq ($(USE_OKTA),Y)
 	gimme-aws-creds --profile $(AWS_PROFILE)
 endif

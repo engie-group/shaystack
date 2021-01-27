@@ -1,1 +1,0 @@
-../../README_sql_ts_provider.md

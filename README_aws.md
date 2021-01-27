@@ -75,12 +75,15 @@ and create a file `zappa_settings.json` with something like this:
     "aws_region": "us-east-2",
     "app_function": "app.__init__.app",
     "project_name": "my_haystackapi",
-    "s3_bucket": "zappa",
+    "s3_bucket": "my_haystackapi-zappa",
     "runtime": "python3.8",
     "aws_environment_variables": {
       "LOG_LEVEL": "INFO",
+      "TLS_VERIFY": "False",
       "HAYSTACK_PROVIDER": "haystackapi.providers.url",
-      "HAYSTACK_URL": "s3://my_bucket/carytown.zinc"
+      "HAYSTACK_URL": "s3://haystackapi/carytown.zinc",
+      "HAYSTACK_DB": "",
+      "HAYSTACK_TS": ""
     }
   }
 }

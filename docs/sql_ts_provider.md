@@ -1,6 +1,6 @@
 # Provider SQL + AWS Time stream
 
-This provider extends the [SQL Provider](README_sql_provider.md) to manage time-series with
+This provider extends the [SQL Provider](sql_provider.md) to manage time-series with
 [AWS Time stream](https://docs.aws.amazon.com/timestream/). Use `HAYSTACK_PROVIDER=haytackapi.providers.sql_ts` to use
 this provider. Add the variable `HAYSTACK_DB` to describe the link to the root table in SQL DB and `HAYSTACK_TS` to
 describe the link to *AWS Time stream*. The format of `HAYSTACK_TS` is :

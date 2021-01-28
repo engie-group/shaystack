@@ -12,4 +12,4 @@ class Provider(HaystackInterface):
         Args:
             nav_id (str):
         """
-        pass
+        return None

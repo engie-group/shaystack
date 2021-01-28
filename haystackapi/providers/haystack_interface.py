@@ -233,7 +233,8 @@ class HaystackInterface(ABC):
     @abstractmethod
     def nav(self, nav_id: str) -> Any:  # pylint: disable=no-self-use
         """ Implement the Haystack 'nav' ops
-        This operation allows servers to expose the database in a human-friendly tree (or graph) that can be explored
+        This operation allows servers to expose the database in a human-friendly tree (or graph)
+        that can be explored
 
         Args:
              nav_id (str): The string for nav id column
@@ -352,7 +353,9 @@ class HaystackInterface(ABC):
 
         Args:
             entity_id (Ref): The entity to read
-            dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date range. May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}), {dateTime}
+            dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date
+            range. May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}),
+            {dateTime}
             date_version ( datetime, optional): The optional date version to update
 
         Returns:

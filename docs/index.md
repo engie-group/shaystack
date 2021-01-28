@@ -53,7 +53,7 @@ Haystack data you host.
 This project is a fork of [hszinc](https://github.com/widesky/hszinc)
 (Thanks to the team). The proposed evolutions were too big to be accepted in a pull request.
 
-To see the similarities and differences between the two project, click [here](README_hszinc.md)
+To see the similarities and differences between the two project, click [here](hszinc.md)
 
 # Client side: Haystack client python module
 
@@ -64,7 +64,8 @@ $ mkdir $TMP/haystack
 $ cd $TMP/haystack
 ```
 
-Download and unzip [`sample` zip file](https://downgit.github.io/#/home?url=https://github.com/pprados/haystackapi/tree/develop/sample)
+Download and
+unzip [sample zip file](https://downgit.github.io/#/home?url=https://github.com/pprados/haystackapi/tree/develop/sample)
 in this directory.
 
 ```console
@@ -89,15 +90,34 @@ Then, install the module with all options
 $ pip install "haystackapi[flask,graphql,lambda]"
 ```
 
-`sample.ipynb` jupyter notebook contains code to read, filter, manipulate
-and print `Grid` objects containing haystack data.
-It also contains code to create a `Pandas Dataframe` from a `Grid` object, which could be useful for a Data Science project.
+[`haystack.ipynb`](https://github.com/pprados/haystackapi/haystack.ipynb) jupyter notebook contains code to read,
+filter, manipulate and print `Grid` objects containing haystack data.
 
-Install and start a jupyter notebook server then open `sample.ipynb`
+It also contains code to create a `Pandas Dataframe` from a `Grid` object, which could be useful for a Data Science
+project.
+
+Install and start a jupyter notebook server then
+open [`haystack.ipynb`](https://github.com/pprados/haystackapi/blob/develop/haystack.ipynb)
 
 ```console
-$ pip install jupyter pandas
-$ jupyter-notebook
+$ pip install jupyter
+$ jupyter notebook
+```
+
+The [documentation of the API is here](api/haystackapi/).
+
+# Data science
+
+It's easy to convert a grid to a dataframe.
+
+```python
+import haystackapi
+import panda as pd
+
+with open("file.zinc") as f:
+    grid = haystackapi.parse(f.read(), haystackapi.MODE_ZINC)
+
+df = pd.DataFrame(grid.filter("point and co2e"))  # Convert grid to data frame
 ```
 
 # Features
@@ -153,7 +173,8 @@ This implementation can offer two API endpoints:
 - Classical [REST Haystack](https://www.project-haystack.org/doc/Rest)
   - Available on `http://<host>:<port>/haystack`
 - GraphQL
-  - Available on `http://<host>:<port>/graphql` and compliant with [`schema.graphql`](schema.graphql)
+    - Available on `http://<host>:<port>/graphql` and compliant
+      with [`schema.graphql`](https://github.com/pprados/haystackapi/blob/develop/schema.graphql)
 
 This API can negotiate:
 
@@ -195,13 +216,13 @@ Depending on where and how your haystack data is stored, you need to choose an e
 |Where is data stored|Configuration|Miscellaneous|
 |---|---|---|
 |No data, just testing|`export HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi`||
-|Data on http server|`export HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=http://... haystackapi`|[More...](README_url_provider.md)|
-|Data on ftp server|`export HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=ftp://... haystackapi`|[More...](README_url_provider.md)|
-|Data on local filesystem|`export HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=file://... haystackapi`|[More...](README_url_provider.md)|
-|Data on AWS S3 Bucket|`export HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=s3://... haystackapi`|Remember to install aws support and boto3 python module. [More...](README_url_provider.md)|
-|Data in a SuperSQLite database|`export HAYSTACK_PROVIDER=haystackapi.providers.sql HAYSTACK_URL=sqlite3://... haystackapi`|Remember to install supersqlite python module. [More...](README_url_provider.md)|
-|Data in a Postgresql database|`export HAYSTACK_PROVIDER=haystackapi.providers.sql HAYSTACK_URL=postgres://... haystackapi`|Remember to install psycopg2 python module. [More...](README_url_provider.md)|
-|Data in a database and Time series in AWS Time Stream|`export HAYSTACK_PROVIDER=haystackapi.providers.sql_ts HAYSTACK_URL=postgres://... HAYSTACK_TS=timestream:://... haystackapi`|[More...](README_sql_ts_provider.md)|
+|Data on http server|`export HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=http://... haystackapi`|[More...](url_provider.md)|
+|Data on ftp server|`export HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=ftp://... haystackapi`|[More...](url_provider.md)|
+|Data on local filesystem|`export HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=file://... haystackapi`|[More...](url_provider.md)|
+|Data on AWS S3 Bucket|`export HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=s3://... haystackapi`|Remember to install aws support and boto3 python module. [More...](url_provider.md)|
+|Data in a SuperSQLite database|`export HAYSTACK_PROVIDER=haystackapi.providers.sql HAYSTACK_URL=sqlite3://... haystackapi`|Remember to install supersqlite python module. [More...](url_provider.md)|
+|Data in a Postgresql database|`export HAYSTACK_PROVIDER=haystackapi.providers.sql HAYSTACK_URL=postgres://... haystackapi`|Remember to install psycopg2 python module. [More...](url_provider.md)|
+|Data in a database and Time series in AWS Time Stream|`export HAYSTACK_PROVIDER=haystackapi.providers.sql_ts HAYSTACK_URL=postgres://... HAYSTACK_TS=timestream:://... haystackapi`|[More...](sql_ts_provider.md)|
 |Custom|`export HAYSTACK_PROVIDER=haystackapi.providers.<your module name>`|Write your own subclass of `haystackapi.providers.HaystackInterface haystackapi`. Non implemented methods will be automatically excluded in [`ops`](https://project-haystack.org/doc/Ops#ops) operation output|
 
 Note: Existing providers are not connected to IOT for simplicity.
@@ -311,7 +332,7 @@ The syntax to analyse the daterange in `hisRead` is extended to accept a comma w
 
 ### Using AWS
 
-Read [more...](README_aws.md)
+Read [more...](AWS.md)
 
 ### Docker
 
@@ -396,7 +417,7 @@ A tag may be a list, a dict or another grid (recursive grid). To be used with ca
 
 # Contribute
 
-See [here](./README_Contribute.md)
+See [here](./contribute.md)
 
 # Resources
 

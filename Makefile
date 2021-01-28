@@ -911,7 +911,7 @@ sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
 
 .PHONY: dist
 ## Create a full distribution
-dist: bdist sdist docker-make-image
+dist: bdist sdist docker-build
 	@echo -e "$(yellow)Package for distribution created$(normal)"
 
 .PHONY: check-twine

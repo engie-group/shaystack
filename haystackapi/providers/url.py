@@ -350,17 +350,17 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
     def set_lru_size(self, size: int) -> None:
         self._download_grid_effective_version = \
             functools.lru_cache(size,  # type: ignore
-                                Provider._download_grid_effective_version.__wrapped__)
+                                Provider._download_grid_effective_version.__wrapped__)  # type: ignore
 
     # pylint: enable=no-member
 
     def cache_clear(self) -> None:
-        self._download_grid_effective_version.cache_clear()
+        self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member
 
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
         parsed_uri = urlparse(uri, allow_fragments=False)
         self._refresh_versions(parsed_uri)
         for version, _ in self._versions[uri].items():
             if not date_version or version <= date_version:
-                return self._download_grid_effective_version(uri, version)
+                return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
         raise ValueError("Empty body not supported")

@@ -42,7 +42,7 @@ class Provider(HaystackInterface):
     def his_write(self,
                   entity_id: Ref,
                   time_serie: Grid,
-                  date_version: Optional[datetime]) -> Grid:
+                  date_version: Optional[datetime] = None) -> Grid:
         """
         Args:
             entity_id (Ref):

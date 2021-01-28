@@ -1,7 +1,10 @@
 CHANGES
 =======
 
+* Change doc and licence
 * - Switch to PBR
+* Delete index.md
+* Set theme jekyll-theme-slate
 * - Extend the parameters of zappa\_settings.json
 * - Fix a bug in the gestion of datetime range - Filter the result of his\_read() to limited to the 'Version' datetime
 * - Change license to BSD

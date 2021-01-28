@@ -1,12 +1,13 @@
 from datetime import datetime, date, timedelta
 
+import pytz  # pylint: disable=wrong-import-order
+from mock import patch  # pylint: disable=wrong-import-order
+from tzlocal.unix import get_localzone  # pylint: disable=wrong-import-order
+
 import haystackapi
-import pytz
 from haystackapi import Ref
 from haystackapi.ops import HaystackHttpRequest, DEFAULT_MIME_TYPE
 from haystackapi.providers import ping
-from mock import patch
-from tzlocal.unix import get_localzone
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})

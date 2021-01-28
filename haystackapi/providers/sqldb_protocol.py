@@ -10,16 +10,18 @@ Typing wrapper for sql drivers
 # Typing for DB driver
 import sys
 from typing import Tuple, Optional, List, Iterable, Iterator
+
 # type: ignore
 if sys.version_info[0:2] == (3, 7):
     from typing import Type
 
     Protocol = Type
 else:
-    from typing import Protocol
+    from typing import Protocol  # pylint: disable=no-name-in-module
 
 
-class DBCursor(Protocol):  # pylint: disable=multiple-statements,no-self-use, missing-class-docstring
+# pylint: disable=multiple-statements, no-self-use, missing-class-docstring
+class DBCursor(Protocol):
     def execute(self, cmd: str, args: Optional[Tuple] = None) -> None: ...
 
     def fetchall(self) -> List[List]: ...  #

@@ -1,5 +1,5 @@
 # Image to build Haystackapi
-# See the accompanying LICENSE Apache V2.0 file.
+# See the accompanying LICENSE file.
 # (C) 2021 Engie Digital
 #
 # build-arg:

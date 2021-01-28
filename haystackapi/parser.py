@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Zinc Grid Metadata
-# See the accompanying LICENSE Apache V2.0 file.
+# See the accompanying LICENSE file.
 # (C) 2016 VRT Systems
 # (C) 2021 Engie Digital
 #

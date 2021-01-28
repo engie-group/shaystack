@@ -28,7 +28,7 @@ To initialise the Conda environment, use `make configure` and activate the conda
 to `test`, `start-api`, etc. See `make help` to print all major target.
 
 ```console
-$ git clone http://github.com/pprados/haystackapi.git 
+$ git clone {{ site.github.clone_url }}  
 $ cd haystackapi
 $ make configure
 $ conda activate haystackapi
@@ -242,7 +242,7 @@ Before to release a version, you must create a new tag for this release candidat
 $ # Commit the version
 $ git commit -a
 $ # Add a tag for the release candidate
-$ git tag vX.Y.Z-rc
+$ git tag vX.Y.Z.0a0
 $ # Publish the module in test twine repository (https://test.pypi.org/legacy/):
 $ make test-twine
 ```

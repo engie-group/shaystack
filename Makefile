@@ -43,6 +43,7 @@ CONDA_EXE:=$(CONDA_BASE)/bin/conda
 CONDA_PACKAGE:=$(CONDA_PREFIX)/lib/python$(PYTHON_VERSION)/site-packages
 CONDA_PYTHON:=$(CONDA_PREFIX)/bin/python
 CONDA_ARGS?=
+GIT_CLONE_URL=$(shell git remote get-url origin)
 FLASK_DEBUG?=1
 STAGE=dev
 AWS_STAGE?=$(STAGE)
@@ -344,32 +345,6 @@ compile-all:
 
 # -------------------------------------- Docs
 .PHONY: docs
-SPHINX_FLAGS=
-# Generate API docs
-docs/source: $(REQUIREMENTS) $(PYTHON_SRC)
-	@$(VALIDATE_VENV)
-	sphinx-apidoc -f -o docs/source $(PRJ)
-
-# Build the documentation in specificed format (build/html, build/latexpdf, ...)
-build/%: $(REQUIREMENTS) docs/source docs/* *.md | .git
-	@$(VALIDATE_VENV)
-	@TARGET=$(*:build/%=%)
-	@echo "Build $$TARGET..."
-	@LATEXMKOPTS=-silent sphinx-build -M $$TARGET docs build $(SPHINX_FLAGS)
-	touch build/$$TARGET
-
-
-build/html: $(REQUIREMENTS) docs/source docs/* *.md | .git
-	@$(VALIDATE_VENV)
-	@echo "Clean html..."
-	@LATEXMKOPTS=-silent sphinx-build -M clean docs/source docs/build $(SPHINX_FLAGS)
-	@echo "Build html..."
-	@LATEXMKOPTS=-silent sphinx-build -M html docs/source docs/build $(SPHINX_FLAGS)
-
-# Build all format of documentations
-## Generate and show the HTML documentation
-docs: build/html
-	@$(BROWSER) docs/build/html/index.html
 
 # -------------------------------------- Client API
 .PHONY: api

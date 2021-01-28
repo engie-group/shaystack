@@ -1,0 +1,469 @@
+CHANGES
+=======
+
+* - Switch to PBR
+* - Extend the parameters of zappa\_settings.json
+* - Fix a bug in the gestion of datetime range - Filter the result of his\_read() to limited to the 'Version' datetime
+* - Change license to BSD
+* Update Makefile doc part with source and build directories. Start adding docstring Google format for auto doc
+* - Fix datesRange parsing
+* - Start to integrate Sphinx
+* Initiate documentation with Sphinx
+* - Update Makefile
+* - Fix the Makefile
+* - Fix SQL provider
+* - Update the dmake
+* - Update the doc
+* - Can reuse dmake multiple time (premiere version avec conda run..., mais pas de trace en flux)
+* - Fix documentation - Fix make docker-build
+* - Fix the echo in Makefile
+* - Split the README.md
+* - Fix docker-make-image to use .aws et Okta
+* - Fix functional\_test.py
+* - Add a docker image to build the project (docker in docker is impossible now=
+* - Fix CORS - Add curVal in samples
+* - Add a docker image to build the project
+* readme refacto
+* - Update copyright
+* - Update README
+* - Remove the dependency of dateutil
+* - Add dependency of libpq
+* - Fix Travis and README.md
+* - Add typing everywhere and fix corresponding bugs - Add copyright
+* - Add a provider to save the time-series in AWS Time Stream
+* - Import TS in timestream (limited by the memory window)
+* - Add type in csvdumper - Fix bug with navigation in filter and attribut with number
+* Fix sql repl
+* Fix usage and document of AWS AppSync
+* Fix documentation
+* Fix hszinc.md
+* Add Dockerfile
+* - Fix travis - Fix the documentation
+* - Try to fix travis 3
+* - Try to fix travis 2
+* - Try to fix travis
+* - Update documentation
+* Fix test twine and release
+* - Fix functional tests - Fix exotic request - Fix documentations
+* - Fix functional tests
+* - Fix some unittest
+* - Add Excel sample
+* - Fix the AWS part of README.md
+* - Fix Readme.md and little bug in SQL
+* - WIP fix AWS layers
+* - Fix AWS Lambda
+* - Use typing protocol for SQL DB Driver
+* - Fix filter with ID
+* - Fix lint with tests
+* - Fix graphql scalar type
+* - Fix pylint
+* - Fix typing
+* - Fix typing
+* - Fix TZ
+* - Add 'make functional-test'
+* - Manage TS in SQL provider
+* - Merge TS in import\_s3
+* - Fix .env in makefile
+* - Fix test in makefile
+* - Fix sample
+* - Remove Python2 dependencies
+* - Update usage of pint
+* Import hszinc in the project
+* Remove submodule
+* Move old project
+* - Add sample
+* - Fix the dependencies
+* - Fix unit tests
+* - Use SuperSqlite
+* - Refactor postgres sql generation
+* - Parenthesis in postgres
+* - Refactor postgres sql generation
+* - If the database password is empty and use AWS, exploite the SecretManager with the environment key HAYSTACK\_DB\_SECRET
+* - Audit code with Pycharm
+* - Add cast in GraphQL
+* - Update the imports process
+* - Change the postgres index
+* - add import\_s3
+* - Simplify end\_date without null
+* - Audit code with Pycharm & pylint
+* - Fix 'make test'
+* - Fix 'make test'
+* - Customer id must be set
+* - Add CORS
+* - Add SQL Provider
+* - Fix setup.py - Refactor cache implementation
+* Source was conform with PEP8
+* - Fix bug when filter is None or Empty
+* - Change the vocabulary of graphql - Add versions in graphql
+* - Add an option to remove to optimize the cache layer, when the Lambda concurrency is limited to 1
+* - Add GraphQL API for values
+* - Add GraphQL API
+* - Add GraphQL API
+* - Use json for entity, and GraphQL schema for other
+* - Mixte between full and json schema
+* - Retour full json
+* - Use generic GraphQL schema for Haystack
+* - GraphQL read haystack with key,val
+* - GraphQL avec approche HSKind
+* - Generate GraphQL Schema from Haystack schema - Some field clash with Python at this time
+* - Generate GraphQL Schema from Haystack schema - Some field clash with Python at this time
+* - GraphQL read haystack with Entity schema
+* - Fix refresh version
+* - Add get\_singleton\_provider() - Add parse\_dates\_range()
+* - Add values\_for\_tag - Add select parameter
+* - Fix pytype
+* - Fix pylint
+* - Fix url provider with local file
+* - Fix empty request
+* - Accept to run without boto3
+* - Add ping TU
+* - Implement LRU cache with s3 version
+* - Fix watch\_sub
+* - Implement 'range' in his\_read()
+* - Implements watch API - Implement pointWrite
+* - Add extend\_columns()
+* - Fix the acid test
+* - The 'id' tag must be a Ref(), not a string
+* - Fix protocol
+* Fix mode to suffix
+* pip require python 3.5 minimum
+* Add pack\_columns()
+* - Optimize memory footprint
+* - Use ext to mode
+* - Update date format to be compatible with Excel - Change title in readme - Reorganize the packaging
+* - Use hszinc with CSV - Manage .env and Project.variables variable
+* Fix semantique of \_\_add\_\_()
+* - Add the comparison of grid. The operator \_\_sub\_\_() return a grid with the diff between grid. Then, it's possible to apply the 'diff grid' to a grid, to migrate one version to another. - New usage of Grid 	- Grid(columns=["a","b"]) 	- grid.keys() 	- del grid["abc"] 	- grid.remove("abc") 	- grid.copy() 	- grid\_v2 - grid\_v1  # Compare grids 	- grid\_v1 + patch\_grid # Apply difference 	- grid\_v1 + (grid\_v2 - grid\_v1) == grid\_v2  # Allways true
+* - Add parser and dumper for CSV - Add Grid(columns=["a","b"]
+* - Add XStr feature
+* - Manage grid type (grid inside another grid)
+* - Support Haystack Dict with JSON and Zinc - Add hash in datatypes
+* - Use file suffix to mode - Add mode to file suffix
+* - Add date version parameter in /read, /hisRead, /hisWrite and /pointWrite - Url provider can manage the date version with s3 bucket - Refactor all tests - Validate the usage in AWS Lambda
+* - Manage distribution - Fix s3 download
+* - Refactor all tests
+* Refactor to use zappa
+* - Update date format to be compatible with Excel Change title in readme - Reorganize the packaging
+* - Implement HisRead
+* - Add home url
+* - Manage file: url - Manage .gz file
+* - Use hszinc with CSV - Manage .env and Project.variables variable
+* WC-3138: Merge tag '1.3.1' into develop
+* WC-3138: Merge branch 'release/1.3.1'
+* WC-3138: Bump version to 1.3.1
+* WC-3138: CHANGELOG.md: Change-log update
+* WC-3136: Merge branch 'bugfix/WC-2979-skyspark-newline-bug' into develop
+* WC-3136: parser unit tests: Test handling of extra newlines
+* WC-3136: parser: Use regex to clean newlines up
+* WC-3136: parser tests: Re-locate THIS\_DIR constant
+* WC-3136: parser: Re-locate input sanitation
+* WC-3136: parser: Handle trailing newlines
+* WC-3136: Merge tag 'v1.3.0' into develop
+* WC-3135: Merge branch 'release/1.3.0'
+* WC-3136: Version bump to 1.3.0
+* WC-3135: Merge branch 'feature/WC-2979-pull-request-merge' into develop
+* WC-3135: datatype unit tests: Tweak expected test data
+* WC-3135: datatypes: Always encode to UTF-8
+* WC-3135: mkdeb.sh: Depend on python-backports.functools-lru-cache
+* WC-3135: CHANGELOG.md: Update for 1.3.0 release
+* WC-3135: dumper: Add mode string handling
+* WC-3135: parser: Handle 'zinc' and 'json' as modes
+* WC-3135: parser unit tests: Handle single vs multiple grid forms
+* WC-3135: acid tests: Parse single grid
+* WC-3135: parser: Re-factor JSON handling
+* - Add grid[1:3]
+* - Extend coverage
+* - Add filter method in Grid - Generate dynamically a Python code to analize a row with a specific filter - Add index with 'ids' in Grid
+* - Add XStr feature
+* - Manage grid type (grid inside another grid)
+* Add unitest for dict parsing
+* - Support Haystack Dict with JSON and Zinc - Add hash in datatypes
+* parse() function return list of grid or one grid for JSON, but only a list of grid for Zinc. This fix normalize the return allways a list of grid
+* To help the content negociation, change the MODE\_ZINC and MODE\_JSON to use the standard Mime type. Then, it's possible to use \`\`\` grid = hszinc.parse(event.body, mode=req.headers['Content-Type')[0] \`\`\`
+* WC-3046: Merge branch 'bugfix/WC-3044-json-error-with-string' into develop
+* - Add the file Project.variable, to localized all the custom project variable in one file. - Add grid[1:3]
+* First public version
+* Update api call to manage GET and POST
+* Full haystack api
+* Skeleton for all Haystack API Can deploy on AWS Add skeleton for read Read haystack file from URI and apply a simple filter (k=v) Skeleton for all Haystack API - Support Haystack Dict with JSON and Zinc
+* Can deploy on AWS
+* WC-3045: jsonparser: Do JSON string processing on user-provided string only
+* WC-3045: parser unit tests: Test for handling of "{state}"
+* Skeleton for all Haystack API Can deploy on AWS Add skeleton for read Read haystack file from URI and apply a simple filter (k=v) Skeleton for all Haystack API - Support Haystack Dict with JSON and Zinc
+* Can deploy on AWS
+* Use the new version of hszinc, with dictionary
+* Apply fix in hszinc
+* - Add HsZinc submodule - Package and deploy lambda function on AWS - Add test of API
+* Clean the bootstrap of the project. Now, it's possible to initilize the environment with: $ make configure $ conda activate carbonapi $ make test
+* - Fix API calls - Add flag to remove temporary the compress layer - Add Postman collection
+* - Add functional tests - Add Accept-Encoding gzip
+* First implementation of Carbon API v2.0 interface
+* Organize project and Makefile
+* Merged feature/WC-2796-update-na-remove into develop
+* WC-2802: parser tests: Ensure parser never swallows errors
+* WC-2802: zincparser: \_ALWAYS\_ throw unhandled exceptions
+* WC-2802: dumper unit tests: Ensure x: is covered
+* WC-2802: dumper tests: Test NA is not serialised in v2.0
+* WC-2802: .travis.yml: Test Python 3.7 and 3.8
+* WC-2802: README.rst: Update documentation
+* WC-2802: parser unit tests: Test handling of NA, REMOVE
+* WC-2802: dumper unit tests: Test NA, Remove handling
+* WC-2802: grid: Require v3.0 for NA data type
+* WC-2802: zincdumper: Support NA
+* WC-2802: zincparser: Support NA
+* WC-2802: jsondumper: Add REMOVE and NA support
+* WC-2802: jsonparser: Support x:, -: and z:
+* WC-2802: hszinc: Expose NA data type
+* WC-2802: datatypes: Add NA
+* mkdeb.sh: Suggest pint be included in the build
+* Fix deprecation warning for collections.abc vs collections
+* WC-2277: pintutil: Use explicit unicode literals
+* WC-2277: setup.py: Make \`pint\` an optional extra
+* VRT-1672: Merge tag '1.2.3' into develop
+* VRT-1672: Merge branch 'release/1.2.3'
+* VRT-1672: CHANGELOG.md: Fix links
+* VRT-1672: Version bump to 1.2.3
+* VRT-1672: CHANGELOG.md update
+* VRT-1672: mkdeb.sh: Fix initial comment
+* VRT-1672: Drop old Debian package files
+* VRT-1672: mkdeb.sh: Debian package build script
+* VRT-1672: CHANGELOG.md: Add new change-log
+* VRT-1671: zincparser: On error, dump the raw grid
+* Github PR 12: zincparser: Tweak whitespace
+* add hs\_na (NA) for zinc 3.0
+* jsonparser: Don't use regex for parsing strings
+* WC-1695: Drop duplicated tests
+* WC-1695: pint enable utility: Fix logic error
+* WC-1695: Disable more \`pint\` tests
+* WC-1695: pint unit tests: Disable if pint not available
+* WC-1695: tests: Skip \`pint\` tests if pint not available
+* WC-1489: Merge tag 'v1.2.2' into develop
+* WC-1489: Merge branch 'release/1.2.2'
+* WC-1489: Version bump to 1.2.2
+* Merged bugfix/WC-1382-unicode-fix into develop
+* WC-1298: Merge tag 'v1.2.1' into develop
+* WC-1298: Merge branch 'release/1.2.1'
+* WC-1298: Version bump
+* WC-1298: Merge branch 'bugfix/WC-1296-hszinc-3-default' into develop
+* WC-1297: datatype tests: Check unit validation
+* WC-1297: datatype tests: Don't raise negative to fractional power
+* WC-1297: datatype tests: Test exponentiation
+* WC-1297: grid tests: Tweak data type assertion tests
+* WC-1297: grid tests: Add test for appending non-grid
+* WC-1297: parser, version tests: Always trigger warnings
+* WC-1297: grid tests: Test auto-upgrade and data type validation
+* WC-1297: parser tests: Strip duplicated warning checks
+* WC-1297: Version tests: Test migrated version detect logic
+* WC-1297: ACID test: report grid version
+* WC-1297: grid: Fix version auto-detection
+* WC-1297: version: Move version detection logic
+* WC-1297: grid: Import version 2.0
+* WC-1297: grid: Auto-detect or validate the version to use
+* WC-1297: sortabledict: Add value validation function
+* WC-1221: For 1.2.0 release
+* Merged feature/WC-1173-add-list-support into develop
+* WC-975: Merge branch 'release/1.1.2'
+* WC-975: Update version strings for hszinc 1.1.2
+* WC-929: parser: Set MULTILINE flag on \`re.compile\`
+* hszinc 0.1.1
+* tests.test\_datatype: Add checks for Ref != operator
+* datatypes: Rename \_\_neq\_\_ -> \_\_ne\_\_
+* tests.test\_datatype: Test for Ref equality
+* datatypes: Clean up whitespace
+* hszinc 0.1.0
+* Issue 7: dumper: Encode $ as \$
+* Issue 7: grammar: Recognise the \$ sequence
+* Issue 7: tests: Add dumper test to ensure $ encoded properly
+* Issue 7: tests: Add parser tests to detect \$ sequence handling
+* pintutil: Set string literals to Unicode literals
+* pint: Rename to pintutil
+* datatypes: Use six.with\_metaclass to define metaclass
+* datatypes: Coding style tweaks
+* dumper: Check for empty string on Quantity
+* test parser pint test
+* Added pint install to travis yml file
+* Pint unit conversion added to Quantity creation in Pint mode
+* Worked out class inheritance Now using Metaclass so hszinc.Quantity create Default or Pint object... but keeping the isinstance(Quantity) correct
+* Some tests
+* Switch conversion process to use dict constant
+* Some corrections to test suite Handling of None in to\_pint
+* Add pint to requirements
+* tests: Add pint units helper
+* Pint is working but tests are not
+* Text replacement done with replace.... will check if a regex could be better
+* Import problems solved.... ureg must be imported first (before Quantity)
+* First working version Few problems with utf-8 characters Next step is to implement pyhaystack\_pint.txt and organize import in a better way
+* Release 0.0.8
+* Added hash function to Quantity so Pandas functions can work (ex. dataframe.describe())
+* Release 0.0.7
+* setup.py: Package metadata tweaks
+* \_\_init\_\_: Catch ImportError so setup.py works
+* Release 0.0.6
+* setup.py: Add requires as well
+* parser: Handle mixed unicode with unicode-escapes
+* For pip to work, requirements need to be set via install\_requires parameter
+* Version bump debian package
+* hszinc.parser: Older versions of six don't have PY2
+* Release 0.0.5
+* setup.py: Add package requirements
+* hszinc.grid: Emit \_all\_ columns in \_\_repr\_\_
+* grid: Add pretty-printed string representation
+* hszinc.datatypes: Add copy operators for MARKER, REMOVE
+* parser: Fix Python2 test case
+* Added charset support
+* README: Tweak link for coverage
+* hszinc 0.0.4
+* README: Convert to RST, add some documentation
+* Expose dump\_scalar
+* dumper tests: Add test for unicode in URIs
+* dumper: Drop unused code path
+* datatypes: Use six.text\_types for base class in Uri/Bin
+* dumper: Python 3 support
+* dumper: Fix handling of unicode characters in strings
+* dumper tests: Correct formatting of numeric constant
+* dumper tests: Add tests for JSON output
+* dumper: Add JSON output support
+* parser tests: Tweak JSON examples to match dumper output
+* parser: Re-work string parsing to aid coverage
+* parser: Exclude unlikely code paths
+* parser tests: Test for time object without seconds
+* parser: Allow JSON time objects without seconds
+* parser tests: Add test for multiple JSON strings in a list
+* parser: Exclude unlikely code paths from coverage
+* parser tests: Implement more tests, re-work and fixes
+* parser: Take copies of JSON objects
+* parser: Fix parsing of coordinate from JSON
+* parser: Fix parsing JSON datetime and time objects
+* parser tests: Re-work ZINC Ref test
+* parser tests: Add Ref and Uri tests for JSON
+* parser tests: Add JSON string tests
+* parser tests: Add numeric parsing tests for JSON
+* parser: Implement INF, -INF and NaN for JSON
+* parser: Fix parsing of JSON negative numbers
+* parser tests: Add JSON bool, null and marker tests
+* parser: Handle bools in JSON mode
+* parser tests: Add metadata example using JSON
+* parser tests: Initial JSON parser test
+* parser: Fix missed import, column parsing
+* parser: Handle both singular grids and multi-grids in JSON
+* Expose MODE\_JSON and MODE\_ZINC constants
+* parser: Add parsing of JSON data
+* hszinc 0.0.3
+* Add acid tests for hszinc
+* gramar: Allow hyphens in timezone names
+* dumper: Tweak escaping of Uris and strings
+* parser: Reduce round-off error in parsing times
+* parser tests: Typesafe check of Uri and Bin types
+* datatypes: Don't override Bin's and Uri's \_\_str\_\_
+* datatypes: Fix Bin \_\_repr\_\_ operator
+* datatypes: Enforce types on eq ops, tweak representation
+* dumper tests: Update reference output
+* dumper test: Add 'remove' object
+* parser tests: Finish off tests
+* grammar: Require timezone begins with capital letter
+* parser tests: Complete more tests
+* grammar: Unit: Allow any character except non-printable and comma
+* parser: Tweak URI parsing de-escape rules
+* parser: URI: Replace \\` with \`
+* grammar: Allow characters 0x80-0xff in units
+* datatypes: Python 3 dropped 'cmp' and '\_\_cmp\_\_'
+* parser: Fix text for unicode data
+* Add 'six' to requirements
+* parser: Re-work string parsing to handle unicode
+* parser: Add more tests taken from nodehaystack
+* hszinc: Add missed import for 'REMOVE' object
+* parser: Handle trailing newlines after grids
+* grammar: Allow other characters in units
+* grammar: Loosen up string/URI character classes
+* grammar: Handle co-ordinate numbers of the form -.NNN
+* Add new "Remove" object
+* hszinc: Handle whitespace after : in metadata
+* debian/control: Correct dependency for pytz
+* Correct Debian control file
+* hszinc 0.0.2
+* Add dumping tests
+* dumper: Skip unhandled case in test coverage
+* zoneinfo: Treat 0 minutes offset as UTC if unsure
+* dumper: Tweak escaped characters in URIs
+* datatypes: Set has\_value to True if ref Value is not None
+* dumper: Dump marker metadata items without value
+* datatypes: Add comparison operators for Ref and Coordinate
+* datatypes: Add comparison operator to Quantity
+* dumper: Add newline to end of every grid
+* Add test for too many cells
+* Add column metadata test, tweak grid metadata test
+* parser: Exclude another unlikely case
+* parser tests: Add grid metadata test
+* parser: Exclude unlikely code paths from test coverage
+* Add coordinate parsing test
+* Add date/time parsing tests
+* Add date and time parsing
+* parser: Time takes 'microsecond' argument
+* grammar: Fix parsing of Bins
+* Add Bin parsing test
+* Add reference parsing tests
+* Add URI parsing test
+* Add string parsing tests
+* Fix parsing of NaN
+* Add some numeric parsing tests
+* parser: Fix parsing of numbers with separators
+* Add some more parser tests
+* README.md: Add badges
+* Fix parser tests for Python 3.x
+* Add some initial parser tests
+* Travis: Run coverage check after build
+* Add iso8601 dependency
+* Make 'tests' subdirectory a Python package
+* Re-locate package files
+* Initial stab at enabling Travis/Coveralls integration
+* Remove duplicate license file
+* datatypes: Add arithmetic operations for Quantity
+* datatypes: Allow Quantity to be cast as float
+* Drop Item and ItemPair types
+* grammar: Tweak URI and regexes
+* grammar: Handle UTC0 and GMT0 timezones
+* grid: Fix handling of provided metadata
+* grammar: Refine regex for strings and URIs
+* parser: Fix parsing of markers
+* parser: Handle a lack of grid metadata
+* Implement recommendations made by 2to3
+* Fix loading in Python 3
+* Package for Debian
+* Add setup script
+* Add top-level \_\_init\_\_ to package
+* metadata: Override \_\_setitem\_\_ for convenience
+* parser: Represent columns and metadata as MetadataObjects
+* dumper: Handle passing a single grid to dump
+* parser: Add missed re import
+* parser: Add parsing of string escapes
+* datatypes, dumper: Move STR\_SUB to data types
+* dumper: Beginnings of ZINC Grid dumper
+* zoneinfo: Add identification of a Haystack timezone
+* parser: Handle rows wider than column list
+* parser: Add parsing of Refs
+* datatypes: Handle Refs without values
+* parser: Use Bin and Uri, add time, date parsing
+* parser: Implement Uri and Bin types
+* datatype: Maybe being a constant, MARKER should be uppercase
+* parser: Add parsing of bool objects
+* datatypes: Add in more types from Zinc docs
+* parser: Fix parsing of columns, add co-ordinates, date-time
+* datatypes: Add co-ordinate type
+* grammar: Correct format of date/time, tweak co-ordinates
+* parser: Add incomplete parser
+* datatypes: Add definitions for some data types
+* grammar: Make unit at least one character
+* grid: Handle SortedDict for metadata and columns
+* sortabledict: Add repr operator
+* grammar: Make ' , ' sequence a separate object
+* grid: Make metadata a MetadataObject
+* grammar: Drop multi-grid parsing
+* sortabledict: Don't add to order when replacing
+* Add in more of the data model
+* Add timezone mapping
+* grammar: Add fractional seconds
+* Link to Zinc spec
+* Add README
+* Tweak copyrights
+* Initial stab at Zinc grammar definition
+* Initial commit

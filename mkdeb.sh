@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/isr/bin/env bash
 # Build a Debian package of haystackapi.
 set -e
 

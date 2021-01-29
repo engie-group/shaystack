@@ -346,6 +346,12 @@ compile-all:
 # -------------------------------------- Docs
 .PHONY: docs
 
+docs: $(REQUIREMENTS)
+	pdoc -f --html -o docs/api haystackapi
+
+start-docs:
+	pdoc --http : -f --html -o docs/api haystackapi
+
 # -------------------------------------- Client API
 .PHONY: api
 ## Print API URL

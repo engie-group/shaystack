@@ -23,10 +23,10 @@ from .version import LATEST_VER, VER_3_0, Version
 from .zincdumper import dump_grid as zinc_dump_grid
 from .zincdumper import dump_scalar as zinc_dump_scalar
 
-URI_META = re.compile(r'([\\`\u0080-\uffff])')
-STR_META = re.compile(r'([\\"$\u0080-\uffff])')
+_URI_META = re.compile(r'([\\`\u0080-\uffff])')
+_STR_META = re.compile(r'([\\"$\u0080-\uffff])')
 
-CSV_SUB = [
+_CSV_SUB = [
     ('\\"', '""'),
     ('\\\\', '\\'),
     ('\\u2713', '\u2713'),
@@ -45,8 +45,8 @@ def _str_sub(match: Match) -> AnyStr:
 
 
 def _str_csv_escape(str_value: str) -> AnyStr:
-    str_value = STR_META.sub(_str_sub, str_value)
-    for orig, esc in CSV_SUB:
+    str_value = _STR_META.sub(_str_sub, str_value)
+    for orig, esc in _CSV_SUB:
         str_value = str_value.replace(orig, esc)
     return str_value
 
@@ -117,7 +117,7 @@ def _dump_str(str_value: str) -> str:
 
 def _dump_uri(uri_value: Uri) -> str:
     # Replace special characters.
-    uri_value = URI_META.sub(_uri_sub, str(uri_value))
+    uri_value = _URI_META.sub(_uri_sub, str(uri_value))
     # Replace other escapes.
     for orig, esc in _STR_SUB:
         uri_value = uri_value.replace(orig, esc)

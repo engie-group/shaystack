@@ -126,7 +126,7 @@ __credits__ = [&#39;Philippe PRADOS&#39;,
                &#39;joyfun&#39;
                ]
 __license__ = &#39;BSD&#39;
-__version__ = &#39;0.1&#39;
+__version__ = &#39;0.8&#39;
 __maintainer__ = &#39;Philippe PRADOS&#39;
 __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </details>
@@ -149,13 +149,13 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <span>def <span class="ident">about</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement Haystack 'about' with AWS Lambda.</p>
+<div class="desc"><p>Implement Haystack 'about'.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>request</code></strong></dt>
 <dd>The HTTP Request</dd>
 <dt><strong><code>stage</code></strong></dt>
-<dd>The current stage ('prod', 'dev', etc.)</dd>
+<dd>The current stage (<code>prod</code>, <code>dev</code>, etc.)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>The HTTP Response</p></div>
@@ -165,10 +165,10 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </summary>
 <pre><code class="python">def about(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
-    Implement Haystack &#39;about&#39; with AWS Lambda.
+    Implement Haystack &#39;about&#39;.
     Args:
         request: The HTTP Request
-        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+        stage: The current stage (`prod`, `dev`, etc.)
 
     Returns:
         The HTTP Response
@@ -198,8 +198,8 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>grids</code></strong></dt>
-<dd>The grid or list of grid to dump.</dd>
-<dt><strong><code>mode</code></strong> :&ensp;<code>str</code></dt>
+<dd>The grid or list of grids to dump.</dd>
+<dt><strong><code>mode</code></strong></dt>
 <dd>The format. Must be MODE_ZINC, MODE_CSV or MODE_JSON</dd>
 </dl></div>
 <details class="source">
@@ -210,8 +210,8 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
     &#34;&#34;&#34;Dump the given grids in the specified over-the-wire format.
 
     Args:
-        grids: The grid or list of grid to dump.
-        mode (str): The format. Must be MODE_ZINC, MODE_CSV or MODE_JSON
+        grids: The grid or list of grids to dump.
+        mode: The format. Must be MODE_ZINC, MODE_CSV or MODE_JSON
     &#34;&#34;&#34;
     if isinstance(grids, Grid):
         return dump_grid(grids, mode=mode)
@@ -232,11 +232,11 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <div class="desc"><p>Dump a scalar value in the specified over-the-wire format and version.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>scalar</code></strong> :&ensp;<code>Any</code></dt>
+<dt><strong><code>scalar</code></strong></dt>
 <dd>The value to dump</dd>
-<dt><strong><code>mode</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>mode</code></strong></dt>
 <dd>The format. Must be MODE_ZINC, MODE_CSV or MODE_JSON</dd>
-<dt><strong><code>version</code></strong> :&ensp;<code><a title="haystackapi.Version" href="#haystackapi.Version">Version</a></code></dt>
+<dt><strong><code>version</code></strong></dt>
 <dd>The Haystack version to apply</dd>
 </dl></div>
 <details class="source">
@@ -247,9 +247,9 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
     &#34;&#34;&#34;
     Dump a scalar value in the specified over-the-wire format and version.
     Args:
-        scalar (Any): The value to dump
-        mode (str): The format. Must be MODE_ZINC, MODE_CSV or MODE_JSON
-        version (Version): The Haystack version to apply
+        scalar: The value to dump
+        mode: The format. Must be MODE_ZINC, MODE_CSV or MODE_JSON
+        version: The Haystack version to apply
     &#34;&#34;&#34;
     if mode == MODE_ZINC:
         return dump_zinc_scalar(scalar, version=version)
@@ -264,13 +264,13 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <span>def <span class="ident">formats</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement Haystack 'formats' with AWS Lambda.</p>
+<div class="desc"><p>Implement Haystack 'formats'.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>request</code></strong></dt>
 <dd>The HTTP Request</dd>
 <dt><strong><code>stage</code></strong></dt>
-<dd>The current stage ('prod', 'dev', etc.)</dd>
+<dd>The current stage (<code>prod</code>, <code>dev</code>, etc.)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>The HTTP Response</p></div>
@@ -280,10 +280,10 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </summary>
 <pre><code class="python">def formats(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
-    Implement Haystack &#39;formats&#39; with AWS Lambda.
+    Implement Haystack &#39;formats&#39;.
     Args:
         request: The HTTP Request
-        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+        stage: The current stage (`prod`, `dev`, etc.)
 
     Returns:
         The HTTP Response
@@ -330,13 +330,13 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <span>def <span class="ident">his_read</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement Haystack 'hisRead' with AWS Lambda.</p>
+<div class="desc"><p>Implement Haystack 'hisRead'.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>request</code></strong></dt>
 <dd>The HTTP Request</dd>
 <dt><strong><code>stage</code></strong></dt>
-<dd>The current stage ('prod', 'dev', etc.)</dd>
+<dd>The current stage (<code>prod</code>, <code>dev</code>, etc.)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>The HTTP Response</p></div>
@@ -346,10 +346,10 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </summary>
 <pre><code class="python">def his_read(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
-    Implement Haystack &#39;hisRead&#39; with AWS Lambda.
+    Implement Haystack &#39;hisRead&#39;.
     Args:
         request: The HTTP Request
-        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+        stage: The current stage (`prod`, `dev`, etc.)
 
     Returns:
         The HTTP Response
@@ -400,13 +400,13 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <span>def <span class="ident">his_write</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement Haystack 'hisWrite' with AWS Lambda.</p>
+<div class="desc"><p>Implement Haystack 'hisWrite'.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>request</code></strong></dt>
 <dd>The HTTP Request</dd>
 <dt><strong><code>stage</code></strong></dt>
-<dd>The current stage ('prod', 'dev', etc.)</dd>
+<dd>The current stage (<code>prod</code>, <code>dev</code>, etc.)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>The HTTP Response</p></div>
@@ -416,10 +416,10 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </summary>
 <pre><code class="python">def his_write(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
-    Implement Haystack &#39;hisWrite&#39; with AWS Lambda.
+    Implement Haystack &#39;hisWrite&#39;.
     Args:
         request: The HTTP Request
-        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+        stage: The current stage (`prod`, `dev`, etc.)
 
     Returns:
         The HTTP Response
@@ -458,13 +458,13 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <span>def <span class="ident">invoke_action</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement Haystack 'invokeAction' with AWS Lambda.</p>
+<div class="desc"><p>Implement Haystack 'invokeAction'.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>request</code></strong></dt>
 <dd>The HTTP Request</dd>
 <dt><strong><code>stage</code></strong></dt>
-<dd>The current stage ('prod', 'dev', etc.)</dd>
+<dd>The current stage (<code>prod</code>, <code>dev</code>, etc.)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>The HTTP Response</p></div>
@@ -474,10 +474,10 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </summary>
 <pre><code class="python">def invoke_action(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
-    Implement Haystack &#39;invokeAction&#39; with AWS Lambda.
+    Implement Haystack &#39;invokeAction&#39;.
     Args:
         request: The HTTP Request
-        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+        stage: The current stage (`prod`, `dev`, etc.)
 
     Returns:
         The HTTP Response
@@ -510,11 +510,11 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <div class="desc"><p>Convert haystackapi mode to file suffix</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>mode</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>mode</code></strong></dt>
 <dd>The haystack mode (<code>MODE_&hellip;</code>)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
-<p>the file suffix (<code>.zinc</code>, <code>.json</code>, <code>.csv</code>)</p></div>
+<p>The file suffix (<code>.zinc</code>, <code>.json</code>, <code>.csv</code>)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -523,9 +523,9 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
     &#34;&#34;&#34;Convert haystackapi mode to file suffix
 
     Args:
-        mode (str): The haystack mode (`MODE_...`)
+        mode: The haystack mode (`MODE_...`)
     Returns:
-        the file suffix (`.zinc`, `.json`, `.csv`)
+        The file suffix (`.zinc`, `.json`, `.csv`)
     &#34;&#34;&#34;
     return _mode_to_suffix.get(mode, None)</code></pre>
 </details>
@@ -534,13 +534,13 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <span>def <span class="ident">nav</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement Haystack 'nav' with AWS Lambda.</p>
+<div class="desc"><p>Implement Haystack 'nav'.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>request</code></strong></dt>
 <dd>The HTTP Request</dd>
 <dt><strong><code>stage</code></strong></dt>
-<dd>The current stage ('prod', 'dev', etc.)</dd>
+<dd>The current stage (<code>prod</code>, <code>dev</code>, etc.)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>The HTTP Response</p></div>
@@ -550,10 +550,10 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </summary>
 <pre><code class="python">def nav(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
-    Implement Haystack &#39;nav&#39; with AWS Lambda.
+    Implement Haystack &#39;nav&#39;.
     Args:
         request: The HTTP Request
-        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+        stage: The current stage (`prod`, `dev`, etc.)
 
     Returns:
         The HTTP Response
@@ -581,14 +581,14 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <span>def <span class="ident">parse</span></span>(<span>grid_str: Union[~AnyStr, List[str]], mode: str = 'text/zinc', single: bool = True) ‑> Union[haystackapi.grid.Grid, List[haystackapi.grid.Grid]]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Parse the given text and return the equivalent data.</p>
+<div class="desc"><p>Parse the given text and return the grids.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>grid_str</code></strong></dt>
 <dd>The string to parse</dd>
-<dt><strong><code>mode</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>mode</code></strong></dt>
 <dd>The format (<code>MODE_&hellip;</code>)</dd>
-<dt><strong><code>single</code></strong> :&ensp;<code>bool</code></dt>
+<dt><strong><code>single</code></strong></dt>
 <dd>Parse only ony grid (deprecated)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -600,12 +600,12 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <pre><code class="python">def parse(grid_str: Union[AnyStr, List[str]],
           mode: str = MODE_ZINC,
           single: bool = True) -&gt; Union[Grid, List[Grid]]:
-    &#34;&#34;&#34;Parse the given text and return the equivalent data.
+    &#34;&#34;&#34;Parse the given text and return the grids.
 
     Args:
         grid_str: The string to parse
-        mode (str): The format (`MODE_...`)
-        single (bool): Parse only ony grid (deprecated)
+        mode: The format (`MODE_...`)
+        single: Parse only ony grid (deprecated)
     Returns:
         A grid or a list of grids
     &#34;&#34;&#34;
@@ -677,10 +677,10 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <span>def <span class="ident">parse_hs_datetime_format</span></span>(<span>datetime_str: str) ‑> datetime.datetime</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Parse the haystack date time.</p>
+<div class="desc"><p>Parse the haystack date time (for filter).</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>datetime_str</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>datetime_str</code></strong></dt>
 <dd>The string to parse</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -693,9 +693,9 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </summary>
 <pre><code class="python">def parse_hs_datetime_format(datetime_str: str) -&gt; datetime:
     &#34;&#34;&#34;
-    Parse the haystack date time.
+    Parse the haystack date time (for filter).
     Args:
-        datetime_str (str): The string to parse
+        datetime_str: The string to parse
     Returns:
         the corresponding `datetime`
     Raises:
@@ -713,7 +713,7 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <dl>
 <dt><strong><code>scalar</code></strong></dt>
 <dd>The scalar data to parse</dd>
-<dt><strong><code>mode</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>mode</code></strong></dt>
 <dd>The haystack mode</dd>
 <dt><strong><code>version</code></strong></dt>
 <dd>The haystack version</dd>
@@ -731,7 +731,7 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
     Parse a scalar value
     Args:
         scalar: The scalar data to parse
-        mode (str): The haystack mode
+        mode: The haystack mode
         version: The haystack version
     Returns:
         a value
@@ -757,13 +757,13 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <span>def <span class="ident">point_write</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement Haystack 'pointWrite' with AWS Lambda.</p>
+<div class="desc"><p>Implement Haystack 'pointWrite'.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>request</code></strong></dt>
 <dd>The HTTP Request</dd>
 <dt><strong><code>stage</code></strong></dt>
-<dd>The current stage ('prod', 'dev', etc.)</dd>
+<dd>The current stage (<code>prod</code>, <code>dev</code>, etc.)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>The HTTP Response</p></div>
@@ -773,10 +773,10 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </summary>
 <pre><code class="python">def point_write(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
-    Implement Haystack &#39;pointWrite&#39; with AWS Lambda.
+    Implement Haystack &#39;pointWrite&#39;.
     Args:
         request: The HTTP Request
-        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+        stage: The current stage (`prod`, `dev`, etc.)
 
     Returns:
         The HTTP Response
@@ -838,13 +838,13 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <span>def <span class="ident">read</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement Haystack 'read' with AWS Lambda.</p>
+<div class="desc"><p>Implement Haystack <code><a title="haystackapi.read" href="#haystackapi.read">read()</a></code></p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>request</code></strong></dt>
 <dd>The HTTP Request</dd>
 <dt><strong><code>stage</code></strong></dt>
-<dd>The current stage ('prod', 'dev', etc.)</dd>
+<dd>The current stage (<code>prod</code>, <code>dev</code>, etc.)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>The HTTP Response</p></div>
@@ -854,10 +854,10 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </summary>
 <pre><code class="python">def read(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
-    Implement Haystack &#39;read&#39; with AWS Lambda.
+    Implement Haystack `read`
     Args:
         request: The HTTP Request
-        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+        stage: The current stage (`prod`, `dev`, etc.)
 
     Returns:
         The HTTP Response
@@ -927,7 +927,7 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <div class="desc"><p>Convert a file suffix to Haystack mode</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>ext</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>ext</code></strong></dt>
 <dd>The file suffix (<code>.zinc</code>, <code>.json</code>, <code>.csv</code>)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -940,7 +940,7 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
     &#34;&#34;&#34;Convert a file suffix to Haystack mode
 
     Args:
-        ext (str): The file suffix (`.zinc`, `.json`, `.csv`)
+        ext: The file suffix (`.zinc`, `.json`, `.csv`)
     Returns:
         The corresponding haystack mode (`MODE_...`)
     &#34;&#34;&#34;
@@ -951,13 +951,13 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <span>def <span class="ident">watch_poll</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement Haystack 'watch_poll' with AWS Lambda.</p>
+<div class="desc"><p>Implement Haystack 'watchPoll'.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>request</code></strong></dt>
 <dd>The HTTP Request</dd>
 <dt><strong><code>stage</code></strong></dt>
-<dd>The current stage ('prod', 'dev', etc.)</dd>
+<dd>The current stage (<code>prod</code>, <code>dev</code>, etc.)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>The HTTP Response</p></div>
@@ -967,10 +967,10 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </summary>
 <pre><code class="python">def watch_poll(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
-    Implement Haystack &#39;watch_poll&#39; with AWS Lambda.
+    Implement Haystack &#39;watchPoll&#39;.
     Args:
         request: The HTTP Request
-        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+        stage: The current stage (`prod`, `dev`, etc.)
 
     Returns:
         The HTTP Response
@@ -1004,13 +1004,13 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <span>def <span class="ident">watch_sub</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement Haystack 'watch_sub' with AWS Lambda.</p>
+<div class="desc"><p>Implement Haystack 'watchSub'.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>request</code></strong></dt>
 <dd>The HTTP Request</dd>
 <dt><strong><code>stage</code></strong></dt>
-<dd>The current stage ('prod', 'dev', etc.)</dd>
+<dd>The current stage (<code>prod</code>, <code>dev</code>, etc.)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>The HTTP Response</p></div>
@@ -1020,10 +1020,10 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </summary>
 <pre><code class="python">def watch_sub(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
-    Implement Haystack &#39;watch_sub&#39; with AWS Lambda.
+    Implement Haystack &#39;watchSub&#39;.
     Args:
         request: The HTTP Request
-        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+        stage: The current stage (`prod`, `dev`, etc.)
 
     Returns:
         The HTTP Response
@@ -1066,13 +1066,13 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <span>def <span class="ident">watch_unsub</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement Haystack 'watch_unsub' with AWS Lambda.</p>
+<div class="desc"><p>Implement Haystack 'watchUnsub'.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>request</code></strong></dt>
 <dd>The HTTP Request</dd>
 <dt><strong><code>stage</code></strong></dt>
-<dd>The current stage ('prod', 'dev', etc.)</dd>
+<dd>The current stage (<code>prod</code>, <code>dev</code>, etc.)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>The HTTP Response</p></div>
@@ -1082,10 +1082,10 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </summary>
 <pre><code class="python">def watch_unsub(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
-    Implement Haystack &#39;watch_unsub&#39; with AWS Lambda.
+    Implement Haystack &#39;watchUnsub&#39;.
     Args:
         request: The HTTP Request
-        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+        stage: The current stage (`prod`, `dev`, etc.)
 
     Returns:
         The HTTP Response
@@ -1133,7 +1133,12 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </code></dt>
 <dd>
 <div class="desc"><p>A convenience class to allow identification of a Bin from other string
-types.</p></div>
+types.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>data</code></strong></dt>
+<dd>the datas</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1141,6 +1146,8 @@ types.</p></div>
 <pre><code class="python">class Bin(str):
     &#34;&#34;&#34;A convenience class to allow identification of a Bin from other string
     types.
+    Args:
+        data: the datas
     &#34;&#34;&#34;
 
     def __repr__(self) -&gt; str:
@@ -1162,12 +1169,11 @@ types.</p></div>
 </code></dt>
 <dd>
 <div class="desc"><p>A 2D co-ordinate in degrees latitude and longitude.</p>
-<p>Create a 2D co-ordinate.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>latitude</code></strong> :&ensp;<code>float</code></dt>
+<dt><strong><code>latitude</code></strong></dt>
 <dd>the latitude</dd>
-<dt><strong><code>longitude</code></strong> :&ensp;<code>float</code></dt>
+<dt><strong><code>longitude</code></strong></dt>
 <dd>the longitude</dd>
 </dl></div>
 <details class="source">
@@ -1175,15 +1181,13 @@ types.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Coordinate:
-    &#34;&#34;&#34;A 2D co-ordinate in degrees latitude and longitude.&#34;&#34;&#34;
+    &#34;&#34;&#34;A 2D co-ordinate in degrees latitude and longitude.
+        Args:
+            latitude: the latitude
+            longitude: the longitude
+    &#34;&#34;&#34;
 
     def __init__(self, latitude: float, longitude: float):
-        &#34;&#34;&#34;
-        Create a 2D co-ordinate.
-        Args:
-            latitude (float): the latitude
-            longitude (float): the longitude
-        &#34;&#34;&#34;
         self.latitude = latitude
         self.longitude = longitude
 
@@ -1233,7 +1237,6 @@ followed by zero or more rows.</p>
 <li>Replace an entity with <code>id</code>: <code>grid[Ref("abc")] = new_entity</code></li>
 <li>Delete an entity with <code>id</code>: <code>del grid[Ref("abc")]</code></li>
 </ul>
-<p>Create a new Grid for a specific version, metadata and columns.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>version</code></strong></dt>
@@ -1264,6 +1267,11 @@ followed by zero or more rows.</p>
     - Size of grid: `len(grid)`
     - Replace an entity with `id`: `grid[Ref(&#34;abc&#34;)] = new_entity`
     - Delete an entity with `id`: `del grid[Ref(&#34;abc&#34;)]`
+
+    Args:
+        version: The haystack version (See VERSION_...)
+        metadata: A dictionary with the metadata associated with the grid.
+        columns: A list of columns, or a dictionary with columns name and corresponding metadata
     &#34;&#34;&#34;
 
     def __init__(self,
@@ -1273,13 +1281,6 @@ followed by zero or more rows.</p>
                                 Dict[str, Any],
                                 Iterable[Union[Tuple[str, Any], str]],
                                 SortableDict] = None):
-        &#34;&#34;&#34;Create a new Grid for a specific version, metadata and columns.
-
-        Args:
-            version: The haystack version (See VERSION_...)
-            metadata: A dictionary with the metadata associated with the grid.
-            columns: A list of columns, or a dictionary with columns name and corresponding metadata
-        &#34;&#34;&#34;
         version_given = version is not None
         if version_given:
             version = Version(version)
@@ -1554,7 +1555,7 @@ followed by zero or more rows.</p>
                 self._index[value[&#34;id&#34;]] = value
         return self
 
-    def __delitem__(self, key: Union[int, Ref]) -&gt; Optional[Dict[str,Any]]:
+    def __delitem__(self, key: Union[int, Ref]) -&gt; Optional[Dict[str, Any]]:
         &#34;&#34;&#34;Delete the row at index.
 
         Args:
@@ -1569,19 +1570,17 @@ followed by zero or more rows.</p>
         &#34;&#34;&#34; The haystack version of grid &#34;&#34;&#34;
         return self._version
 
-
     @property
     def nearest_version(self) -&gt; Version:  # pragma: no cover
         &#34;&#34;&#34; The nearest haystack version of grid &#34;&#34;&#34;
         return Version.nearest(self._version)
 
-
     def get(self, index: Ref, default: Dict[str, Any] = None) -&gt; Dict[str, Any]:
         &#34;&#34;&#34;Return an entity with the corresponding id.
 
         Args:
-            index (Ref): The id of entity
-            default (Dict[str, Any]): The default value if the entity is not found
+            index: The id of entity
+            default: The default value if the entity is not found
 
         Returns:
             Dict[str, Any]: The entity with the id == index or the default value
@@ -1596,7 +1595,7 @@ followed by zero or more rows.</p>
             self.reindex()
         return self._index.keys()
 
-    def pop(self, *index: Union[int,Ref]) -&gt; Optional[Dict[str, Any]]:
+    def pop(self, *index: Union[int, Ref]) -&gt; Optional[Dict[str, Any]]:
         &#34;&#34;&#34;Delete the row at index or with specified Ref id. If multiple
         index/key was specified, all row was removed. Return the old value of
         the first deleted item.
@@ -1628,7 +1627,7 @@ followed by zero or more rows.</p>
         &#34;&#34;&#34;Insert a new entity before the index position.
 
         Args:
-            index (int): The position where to insert
+            index: The position where to insert
             value: The new entity to add
         &#34;&#34;&#34;
         if not isinstance(value, dict):
@@ -1702,7 +1701,7 @@ followed by zero or more rows.</p>
         &#34;&#34;&#34;
         Sort the entity by a specific tag
         Args:
-            tag (str): The tag to use to sort the entity
+            tag: The tag to use to sort the entity
         Returns:
             `self`
         &#34;&#34;&#34;
@@ -1730,8 +1729,8 @@ followed by zero or more rows.</p>
         and rows
 
         Args:
-            grid_filter (str): The filter expression (see specification)
-            limit (int): The maximum number of result
+            grid_filter: The filter expression (see specification)
+            limit: The maximum number of result
         Returns:
             A new grid with only the selected entities.
         &#34;&#34;&#34;
@@ -1756,9 +1755,6 @@ followed by zero or more rows.</p>
     def _detect_or_validate(self, val: Any) -&gt; None:
         &#34;&#34;&#34;Detect the version used from the row content, or validate against the
         version if given.
-
-        Args:
-            val (Any):
         &#34;&#34;&#34;
         if (val is NA) \
                 or isinstance(val, (list, dict, SortableDict, Grid)):
@@ -1913,9 +1909,9 @@ def version(self) -&gt; Version:  # pragma: no cover
 and rows</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>grid_filter</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>grid_filter</code></strong></dt>
 <dd>The filter expression (see specification)</dd>
-<dt><strong><code>limit</code></strong> :&ensp;<code>int</code></dt>
+<dt><strong><code>limit</code></strong></dt>
 <dd>The maximum number of result</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -1933,8 +1929,8 @@ and rows</p>
     and rows
 
     Args:
-        grid_filter (str): The filter expression (see specification)
-        limit (int): The maximum number of result
+        grid_filter: The filter expression (see specification)
+        limit: The maximum number of result
     Returns:
         A new grid with only the selected entities.
     &#34;&#34;&#34;
@@ -1964,9 +1960,9 @@ and rows</p>
 <div class="desc"><p>Return an entity with the corresponding id.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>index</code></strong> :&ensp;<code><a title="haystackapi.Ref" href="#haystackapi.Ref">Ref</a></code></dt>
+<dt><strong><code>index</code></strong></dt>
 <dd>The id of entity</dd>
-<dt><strong><code>default</code></strong> :&ensp;<code>Dict[str, Any]</code></dt>
+<dt><strong><code>default</code></strong></dt>
 <dd>The default value if the entity is not found</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -1982,8 +1978,8 @@ and rows</p>
     &#34;&#34;&#34;Return an entity with the corresponding id.
 
     Args:
-        index (Ref): The id of entity
-        default (Dict[str, Any]): The default value if the entity is not found
+        index: The id of entity
+        default: The default value if the entity is not found
 
     Returns:
         Dict[str, Any]: The entity with the id == index or the default value
@@ -2000,7 +1996,7 @@ and rows</p>
 <div class="desc"><p>Insert a new entity before the index position.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>index</code></strong> :&ensp;<code>int</code></dt>
+<dt><strong><code>index</code></strong></dt>
 <dd>The position where to insert</dd>
 <dt><strong><code>value</code></strong></dt>
 <dd>The new entity to add</dd>
@@ -2013,7 +2009,7 @@ and rows</p>
     &#34;&#34;&#34;Insert a new entity before the index position.
 
     Args:
-        index (int): The position where to insert
+        index: The position where to insert
         value: The new entity to add
     &#34;&#34;&#34;
     if not isinstance(value, dict):
@@ -2089,7 +2085,7 @@ the first deleted item.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def pop(self, *index: Union[int,Ref]) -&gt; Optional[Dict[str, Any]]:
+<pre><code class="python">def pop(self, *index: Union[int, Ref]) -&gt; Optional[Dict[str, Any]]:
     &#34;&#34;&#34;Delete the row at index or with specified Ref id. If multiple
     index/key was specified, all row was removed. Return the old value of
     the first deleted item.
@@ -2144,7 +2140,7 @@ the first deleted item.</p>
 <div class="desc"><p>Sort the entity by a specific tag</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>tag</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>tag</code></strong></dt>
 <dd>The tag to use to sort the entity</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -2157,7 +2153,7 @@ the first deleted item.</p>
     &#34;&#34;&#34;
     Sort the entity by a specific tag
     Args:
-        tag (str): The tag to use to sort the entity
+        tag: The tag to use to sort the entity
     Returns:
         `self`
     &#34;&#34;&#34;
@@ -2173,7 +2169,7 @@ the first deleted item.</p>
 <dd>
 <div class="desc"><p>Interface to implement to be compatible with Haystack REST protocol.
 The subclasses may be abstract (implemented only a part of methods),
-the code detect that, and can calculate the set of implemented operations.</p></div>
+the 'ops' code detect that, and can calculate the set of implemented operations.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2182,12 +2178,13 @@ the code detect that, and can calculate the set of implemented operations.</p></
     &#34;&#34;&#34;
     Interface to implement to be compatible with Haystack REST protocol.
     The subclasses may be abstract (implemented only a part of methods),
-    the code detect that, and can calculate the set of implemented operations.
+    the &#39;ops&#39; code detect that, and can calculate the set of implemented operations.
     &#34;&#34;&#34;
 
     @property
     @abstractmethod
     def name(self) -&gt; str:
+        &#34;&#34;&#34; The name of the provider. &#34;&#34;&#34;
         raise NotImplementedError()
 
     def __repr__(self) -&gt; str:
@@ -2203,27 +2200,31 @@ the code detect that, and can calculate the set of implemented operations.</p></
         pass
 
     def get_tz(self) -&gt; BaseTzInfo:  # pylint: disable=no-self-use
+        &#34;&#34;&#34; Return server time zone. &#34;&#34;&#34;
         return get_localzone()
 
     def get_customer_id(self) -&gt; str:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Override this for multi-tenant&#34;&#34;&#34;
+        &#34;&#34;&#34; Override this for multi-tenant.
+        May be, extract the curstomer id from the current `Principal`.
+        &#34;&#34;&#34;
         return &#39;&#39;
 
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -&gt; List[Any]:
-        &#34;&#34;&#34;Get all values for a given tag
+        &#34;&#34;&#34;Get all values for a given tag.
 
         Args:
-            tag (:obj:`str`): tag
-            date_version (:obj:`datetime`, optional): version date
+            tag: The tag to analyse.
+            date_version: version date of the ontology.
 
         Returns:
-            (:obj:`List[Any]`) All unique values for a specific tag
+            All unique values for a specific tag
         &#34;&#34;&#34;
         raise NotImplementedError()
 
     def versions(self) -&gt; List[datetime]:  # pylint: disable=no-self-use
         &#34;&#34;&#34;
+        Return a list of versions fot the current ontology.
         Returns:
             datetime for each version or empty array if unknown
         &#34;&#34;&#34;
@@ -2231,16 +2232,16 @@ the code detect that, and can calculate the set of implemented operations.</p></
 
     @abstractmethod
     def about(self, home: str) -&gt; Grid:
-        &#34;&#34;&#34;Implement the Haystack &#39;about&#39; ops
+        &#34;&#34;&#34;Implement the Haystack &#39;about&#39; ops.
 
-        Note:
-            Must be completed with &#34;productUri&#34;, &#34;productVersion&#34;, &#34;moduleName&#34; abd &#34;moduleVersion&#34;
+        The subclasse must complet the result with &#34;productUri&#34;, &#34;productVersion&#34;, &#34;moduleName&#34;
+        and &#34;moduleVersion&#34;
 
         Args:
-            home (:obj:`str`): Home url of the API
+            home: Home url of the API
 
         Returns:
-            (:obj:`Grid`) the default &#39;about&#39; grid.
+            The default &#39;about&#39; grid.
         &#34;&#34;&#34;
         grid = Grid(
             version=VER_3_0,
@@ -2278,7 +2279,7 @@ the code detect that, and can calculate the set of implemented operations.</p></
         return grid
 
     def ops(self) -&gt; Grid:
-        &#34;&#34;&#34; Implement the Haystack &#39;ops&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;ops&#39; ops.
 
         Notes:
             Automatically calculate the implemented version.
@@ -2334,11 +2335,13 @@ the code detect that, and can calculate the set of implemented operations.</p></
         )
         return grid
 
-    def formats(self) -&gt; Grid:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;formats&#39; ops
+    def formats(self) -&gt; Optional[Grid]:  # pylint: disable=no-self-use
+        &#34;&#34;&#34; Implement the Haystack &#39;formats&#39; ops.
 
         Notes:
             Implement this method, only if you want to limit the format negotiation
+        Returns:
+            The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.
         &#34;&#34;&#34;
         return None  # type: ignore
 
@@ -2352,14 +2355,14 @@ the code detect that, and can calculate the set of implemented operations.</p></
             date_version: Optional[datetime],
     ) -&gt; Grid:  # pylint: disable=no-self-use
         &#34;&#34;&#34;
-        Implement the Haystack &#39;read&#39; ops
+        Implement the Haystack &#39;read&#39; ops.
 
         Args:
-            limit (int): The number of record to return or zero
-            select (str, optional): The selected tag separated with comma, else &#39;&#39; or &#39;*&#39;
-            entity_ids (List[Ref], optional): A list en ids. If set, grid_filter and limit are ignored
-            grid_filter (str, optional): A filter to apply. Ignored if entity_ids is set.
-            date_version (datetime, optional): The date to return of the last version.
+            limit: The number of record to return or zero
+            select: The selected tag separated with comma, else &#39;&#39; or &#39;*&#39;
+            entity_ids: A list en ids. If set, grid_filter and limit are ignored.
+            grid_filter: A filter to apply. Ignored if entity_ids is set.
+            date_version: The date of the ontology version.
 
         Returns:
             The requested Grid
@@ -2369,12 +2372,12 @@ the code detect that, and can calculate the set of implemented operations.</p></
 
     @abstractmethod
     def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;nav&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;nav&#39; ops.
         This operation allows servers to expose the database in a human-friendly tree (or graph)
         that can be explored
 
         Args:
-             nav_id (str): The string for nav id column
+             nav_id: The string for nav id column
         &#34;&#34;&#34;
         raise NotImplementedError()
 
@@ -2387,13 +2390,13 @@ the code detect that, and can calculate the set of implemented operations.</p></
             lease: Optional[int],
     ) -&gt; Grid:  # pylint: disable=no-self-use
         &#34;&#34;&#34;
-        Implement the Haystack &#39;watchSub&#39; ops
+        Implement the Haystack &#39;watchSub&#39; ops.
 
         Args:
-            watch_dis (str): Watch description
-            watch_id (str, optional): The user watch_id to update or None
-            ids (List[Ref]): The list of ids to watch
-            lease (int, optional): Lease to apply
+            watch_dis: Watch description
+            watch_id: The user watch_id to update or None.
+            ids: The list of ids to watch.
+            lease: Lease to apply.
 
         Returns:
             A Grid
@@ -2405,12 +2408,12 @@ the code detect that, and can calculate the set of implemented operations.</p></
             self, watch_id: str, ids: List[Ref], close: bool
     ) -&gt; Grid:  # pylint: disable=no-self-use
         &#34;&#34;&#34;
-        Implement the Haystack &#39;watchUnsub&#39; ops
+        Implement the Haystack &#39;watchUnsub&#39; ops.
 
         Args:
-            watch_id (str): The user watch_id to update or None
-            ids (List[Ref]): The list of ids to watch
-            close (bool): Set to True to close
+            watch_id: The user watch_id to update or None
+            ids: The list of ids to watch
+            close: Set to True to close
 
         Returns:
             A Grid
@@ -2421,11 +2424,11 @@ the code detect that, and can calculate the set of implemented operations.</p></
     def watch_poll(
             self, watch_id: str, refresh: bool
     ) -&gt; Grid:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;watchPoll&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;watchPoll&#39; ops.
 
         Args:
-            watch_id (str): The user watch_id to update or None
-            refresh (bool): Set to True for refreshing the data
+            watch_id: The user watch_id to update or None
+            refresh: Set to True for refreshing the data
 
         Returns:
             A Grid where each row corresponds to a watched entity.
@@ -2436,11 +2439,11 @@ the code detect that, and can calculate the set of implemented operations.</p></
     def point_write_read(
             self, entity_id: Ref, date_version: Optional[datetime]
     ) -&gt; Grid:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops.
 
         Args:
-            entity_id (Ref): The entity to update
-            date_version (datetime, optional): The optional date version to update
+            entity_id: The entity to update
+            date_version: The optional date version to update
 
         Returns:
             A Grid
@@ -2457,15 +2460,15 @@ the code detect that, and can calculate the set of implemented operations.</p></
             who: Optional[str],
             date_version: Optional[datetime] = None,
     ) -&gt; None:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops.
 
         Args:
-            entity_id (Ref): The entity to update
-            level (int): Number from 1-17 for level to write
-            val (Any, optional): Value to write or null to auto the level
-            duration (Quantity): Number with duration unit if setting level 8
-            who (str, optional): Optional username performing the write, otherwise user dis is used
-            date_version (datetime, optional): The optional date version to update
+            entity_id: The entity to update
+            level: Number from 1-17 for level to write
+            val: Value to write or null to auto the level
+            duration: Number with duration unit if setting level 8
+            who: Optional username performing the write, otherwise user dis is used
+            date_version: The optional date version to update
 
         Returns:
             None
@@ -2486,14 +2489,14 @@ the code detect that, and can calculate the set of implemented operations.</p></
             dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
             date_version: Optional[datetime] = None,
     ) -&gt; Grid:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;hisRead&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;hisRead&#39; ops.
 
         Args:
-            entity_id (Ref): The entity to read
-            dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date
-            range. May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
+            entity_id: The entity to read
+            dates_range: The date
+            range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
             {dateTime}
-            date_version ( datetime, optional): The optional date version to update
+            date_version: The optional date version to update
 
         Returns:
             A grid
@@ -2507,12 +2510,12 @@ the code detect that, and can calculate the set of implemented operations.</p></
             time_serie: Grid,
             date_version: Optional[datetime] = None
     ) -&gt; Grid:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;hisWrite&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;hisWrite&#39; ops.
 
         Args:
-            entity_id (Ref): The entity to read
-            time_serie (Grid): A grid with a time series
-            date_version (datetime, optional): The optional date version to update
+            entity_id: The entity to read
+            time_serie: A grid with a time series
+            date_version: The optional date version to update
 
         Returns:
             A grid
@@ -2527,13 +2530,13 @@ the code detect that, and can calculate the set of implemented operations.</p></
             params: Dict[str, Any],
             date_version: Optional[datetime] = None
     ) -&gt; Grid:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;invokeAction&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;invokeAction&#39; ops.
 
         Args:
-            entity_id (Ref): The entity to read
-            action (str): The action string
-            params (Dict[str, Any]): A dictionary with parameters
-            date_version (datetime, optional): The optional date version to update
+            entity_id: The entity to read
+            action: The action string
+            params: A dictionary with parameters
+            date_version: The optional date version to update
 
         Returns:
             A grid
@@ -2554,7 +2557,7 @@ the code detect that, and can calculate the set of implemented operations.</p></
 <dl>
 <dt id="haystackapi.HaystackInterface.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The name of the provider.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2562,6 +2565,7 @@ the code detect that, and can calculate the set of implemented operations.</p></
 <pre><code class="python">@property
 @abstractmethod
 def name(self) -&gt; str:
+    &#34;&#34;&#34; The name of the provider. &#34;&#34;&#34;
     raise NotImplementedError()</code></pre>
 </details>
 </dd>
@@ -2572,29 +2576,32 @@ def name(self) -&gt; str:
 <span>def <span class="ident">about</span></span>(<span>self, home: str) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'about' ops</p>
-<h2 id="note">Note</h2>
-<p>Must be completed with "productUri", "productVersion", "moduleName" abd "moduleVersion"</p>
+<div class="desc"><p>Implement the Haystack 'about' ops.</p>
+<p>The subclasse must complet the result with "productUri", "productVersion", "moduleName"
+and "moduleVersion"</p>
 <h2 id="args">Args</h2>
-<p>home (:obj:<code>str</code>): Home url of the API</p>
+<dl>
+<dt><strong><code>home</code></strong></dt>
+<dd>Home url of the API</dd>
+</dl>
 <h2 id="returns">Returns</h2>
-<p>(:obj:<code><a title="haystackapi.Grid" href="#haystackapi.Grid">Grid</a></code>) the default 'about' grid.</p></div>
+<p>The default 'about' grid.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
 def about(self, home: str) -&gt; Grid:
-    &#34;&#34;&#34;Implement the Haystack &#39;about&#39; ops
+    &#34;&#34;&#34;Implement the Haystack &#39;about&#39; ops.
 
-    Note:
-        Must be completed with &#34;productUri&#34;, &#34;productVersion&#34;, &#34;moduleName&#34; abd &#34;moduleVersion&#34;
+    The subclasse must complet the result with &#34;productUri&#34;, &#34;productVersion&#34;, &#34;moduleName&#34;
+    and &#34;moduleVersion&#34;
 
     Args:
-        home (:obj:`str`): Home url of the API
+        home: Home url of the API
 
     Returns:
-        (:obj:`Grid`) the default &#39;about&#39; grid.
+        The default &#39;about&#39; grid.
     &#34;&#34;&#34;
     grid = Grid(
         version=VER_3_0,
@@ -2633,21 +2640,25 @@ def about(self, home: str) -&gt; Grid:
 </details>
 </dd>
 <dt id="haystackapi.HaystackInterface.formats"><code class="name flex">
-<span>def <span class="ident">formats</span></span>(<span>self) ‑> haystackapi.grid.Grid</span>
+<span>def <span class="ident">formats</span></span>(<span>self) ‑> Union[haystackapi.grid.Grid, NoneType]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'formats' ops</p>
+<div class="desc"><p>Implement the Haystack 'formats' ops.</p>
 <h2 id="notes">Notes</h2>
-<p>Implement this method, only if you want to limit the format negotiation</p></div>
+<p>Implement this method, only if you want to limit the format negotiation</p>
+<h2 id="returns">Returns</h2>
+<p>The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def formats(self) -&gt; Grid:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;formats&#39; ops
+<pre><code class="python">def formats(self) -&gt; Optional[Grid]:  # pylint: disable=no-self-use
+    &#34;&#34;&#34; Implement the Haystack &#39;formats&#39; ops.
 
     Notes:
         Implement this method, only if you want to limit the format negotiation
+    Returns:
+        The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.
     &#34;&#34;&#34;
     return None  # type: ignore</code></pre>
 </details>
@@ -2656,13 +2667,16 @@ def about(self, home: str) -&gt; Grid:
 <span>def <span class="ident">get_customer_id</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Override this for multi-tenant</p></div>
+<div class="desc"><p>Override this for multi-tenant.
+May be, extract the curstomer id from the current <code>Principal</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_customer_id(self) -&gt; str:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Override this for multi-tenant&#34;&#34;&#34;
+    &#34;&#34;&#34; Override this for multi-tenant.
+    May be, extract the curstomer id from the current `Principal`.
+    &#34;&#34;&#34;
     return &#39;&#39;</code></pre>
 </details>
 </dd>
@@ -2670,12 +2684,13 @@ def about(self, home: str) -&gt; Grid:
 <span>def <span class="ident">get_tz</span></span>(<span>self) ‑> pytz.tzinfo.BaseTzInfo</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return server time zone.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_tz(self) -&gt; BaseTzInfo:  # pylint: disable=no-self-use
+    &#34;&#34;&#34; Return server time zone. &#34;&#34;&#34;
     return get_localzone()</code></pre>
 </details>
 </dd>
@@ -2683,16 +2698,17 @@ def about(self, home: str) -&gt; Grid:
 <span>def <span class="ident">his_read</span></span>(<span>self, entity_id: haystackapi.datatypes.Ref, dates_range: Union[datetime.datetime, str, Tuple[datetime.datetime, datetime.datetime]], date_version: Union[datetime.datetime, NoneType] = None) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'hisRead' ops</p>
+<div class="desc"><p>Implement the Haystack 'hisRead' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>entity_id</code></strong> :&ensp;<code><a title="haystackapi.Ref" href="#haystackapi.Ref">Ref</a></code></dt>
+<dt><strong><code>entity_id</code></strong></dt>
 <dd>The entity to read</dd>
-<dt><strong><code>dates_range</code></strong> :&ensp;<code>Union[Union[datetime, str], Tuple[datetime, datetime]]</code></dt>
+<dt><strong><code>dates_range</code></strong></dt>
 <dd>The date</dd>
-<dt>range. May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}),</dt>
+<dt><strong><code>range</code></strong></dt>
+<dd>May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}),</dd>
 <dt>{dateTime}</dt>
-<dt><strong><code>date_version</code></strong> :&ensp;<code> datetime</code>, optional</dt>
+<dt><strong><code>date_version</code></strong></dt>
 <dd>The optional date version to update</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -2708,14 +2724,14 @@ def his_read(
         dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
         date_version: Optional[datetime] = None,
 ) -&gt; Grid:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;hisRead&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;hisRead&#39; ops.
 
     Args:
-        entity_id (Ref): The entity to read
-        dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date
-        range. May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
+        entity_id: The entity to read
+        dates_range: The date
+        range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
         {dateTime}
-        date_version ( datetime, optional): The optional date version to update
+        date_version: The optional date version to update
 
     Returns:
         A grid
@@ -2727,14 +2743,14 @@ def his_read(
 <span>def <span class="ident">his_write</span></span>(<span>self, entity_id: haystackapi.datatypes.Ref, time_serie: haystackapi.grid.Grid, date_version: Union[datetime.datetime, NoneType] = None) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'hisWrite' ops</p>
+<div class="desc"><p>Implement the Haystack 'hisWrite' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>entity_id</code></strong> :&ensp;<code><a title="haystackapi.Ref" href="#haystackapi.Ref">Ref</a></code></dt>
+<dt><strong><code>entity_id</code></strong></dt>
 <dd>The entity to read</dd>
-<dt><strong><code>time_serie</code></strong> :&ensp;<code><a title="haystackapi.Grid" href="#haystackapi.Grid">Grid</a></code></dt>
+<dt><strong><code>time_serie</code></strong></dt>
 <dd>A grid with a time series</dd>
-<dt><strong><code>date_version</code></strong> :&ensp;<code>datetime</code>, optional</dt>
+<dt><strong><code>date_version</code></strong></dt>
 <dd>The optional date version to update</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -2750,12 +2766,12 @@ def his_write(
         time_serie: Grid,
         date_version: Optional[datetime] = None
 ) -&gt; Grid:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;hisWrite&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;hisWrite&#39; ops.
 
     Args:
-        entity_id (Ref): The entity to read
-        time_serie (Grid): A grid with a time series
-        date_version (datetime, optional): The optional date version to update
+        entity_id: The entity to read
+        time_serie: A grid with a time series
+        date_version: The optional date version to update
 
     Returns:
         A grid
@@ -2767,16 +2783,16 @@ def his_write(
 <span>def <span class="ident">invoke_action</span></span>(<span>self, entity_id: haystackapi.datatypes.Ref, action: str, params: Dict[str, Any], date_version: Union[datetime.datetime, NoneType] = None) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'invokeAction' ops</p>
+<div class="desc"><p>Implement the Haystack 'invokeAction' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>entity_id</code></strong> :&ensp;<code><a title="haystackapi.Ref" href="#haystackapi.Ref">Ref</a></code></dt>
+<dt><strong><code>entity_id</code></strong></dt>
 <dd>The entity to read</dd>
-<dt><strong><code>action</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>action</code></strong></dt>
 <dd>The action string</dd>
-<dt><strong><code>params</code></strong> :&ensp;<code>Dict[str, Any]</code></dt>
+<dt><strong><code>params</code></strong></dt>
 <dd>A dictionary with parameters</dd>
-<dt><strong><code>date_version</code></strong> :&ensp;<code>datetime</code>, optional</dt>
+<dt><strong><code>date_version</code></strong></dt>
 <dd>The optional date version to update</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -2793,13 +2809,13 @@ def invoke_action(
         params: Dict[str, Any],
         date_version: Optional[datetime] = None
 ) -&gt; Grid:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;invokeAction&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;invokeAction&#39; ops.
 
     Args:
-        entity_id (Ref): The entity to read
-        action (str): The action string
-        params (Dict[str, Any]): A dictionary with parameters
-        date_version (datetime, optional): The optional date version to update
+        entity_id: The entity to read
+        action: The action string
+        params: A dictionary with parameters
+        date_version: The optional date version to update
 
     Returns:
         A grid
@@ -2811,12 +2827,12 @@ def invoke_action(
 <span>def <span class="ident">nav</span></span>(<span>self, nav_id: str) ‑> Any</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'nav' ops
+<div class="desc"><p>Implement the Haystack 'nav' ops.
 This operation allows servers to expose the database in a human-friendly tree (or graph)
 that can be explored</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>nav_id</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>nav_id</code></strong></dt>
 <dd>The string for nav id column</dd>
 </dl></div>
 <details class="source">
@@ -2825,12 +2841,12 @@ that can be explored</p>
 </summary>
 <pre><code class="python">@abstractmethod
 def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;nav&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;nav&#39; ops.
     This operation allows servers to expose the database in a human-friendly tree (or graph)
     that can be explored
 
     Args:
-         nav_id (str): The string for nav id column
+         nav_id: The string for nav id column
     &#34;&#34;&#34;
     raise NotImplementedError()</code></pre>
 </details>
@@ -2839,7 +2855,7 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
 <span>def <span class="ident">ops</span></span>(<span>self) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'ops' ops</p>
+<div class="desc"><p>Implement the Haystack 'ops' ops.</p>
 <h2 id="notes">Notes</h2>
 <p>Automatically calculate the implemented version.</p>
 <h2 id="returns">Returns</h2>
@@ -2849,7 +2865,7 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def ops(self) -&gt; Grid:
-    &#34;&#34;&#34; Implement the Haystack &#39;ops&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;ops&#39; ops.
 
     Notes:
         Automatically calculate the implemented version.
@@ -2910,12 +2926,12 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
 <span>def <span class="ident">point_write_read</span></span>(<span>self, entity_id: haystackapi.datatypes.Ref, date_version: Union[datetime.datetime, NoneType]) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'pointWrite' ops</p>
+<div class="desc"><p>Implement the Haystack 'pointWrite' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>entity_id</code></strong> :&ensp;<code><a title="haystackapi.Ref" href="#haystackapi.Ref">Ref</a></code></dt>
+<dt><strong><code>entity_id</code></strong></dt>
 <dd>The entity to update</dd>
-<dt><strong><code>date_version</code></strong> :&ensp;<code>datetime</code>, optional</dt>
+<dt><strong><code>date_version</code></strong></dt>
 <dd>The optional date version to update</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -2928,11 +2944,11 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
 def point_write_read(
         self, entity_id: Ref, date_version: Optional[datetime]
 ) -&gt; Grid:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops.
 
     Args:
-        entity_id (Ref): The entity to update
-        date_version (datetime, optional): The optional date version to update
+        entity_id: The entity to update
+        date_version: The optional date version to update
 
     Returns:
         A Grid
@@ -2944,20 +2960,20 @@ def point_write_read(
 <span>def <span class="ident">point_write_write</span></span>(<span>self, entity_id: haystackapi.datatypes.Ref, level: int, val: Union[Any, NoneType], duration: haystackapi.datatypes.Quantity, who: Union[str, NoneType], date_version: Union[datetime.datetime, NoneType] = None) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'pointWrite' ops</p>
+<div class="desc"><p>Implement the Haystack 'pointWrite' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>entity_id</code></strong> :&ensp;<code><a title="haystackapi.Ref" href="#haystackapi.Ref">Ref</a></code></dt>
+<dt><strong><code>entity_id</code></strong></dt>
 <dd>The entity to update</dd>
-<dt><strong><code>level</code></strong> :&ensp;<code>int</code></dt>
+<dt><strong><code>level</code></strong></dt>
 <dd>Number from 1-17 for level to write</dd>
-<dt><strong><code>val</code></strong> :&ensp;<code>Any</code>, optional</dt>
+<dt><strong><code>val</code></strong></dt>
 <dd>Value to write or null to auto the level</dd>
-<dt><strong><code>duration</code></strong> :&ensp;<code><a title="haystackapi.Quantity" href="#haystackapi.Quantity">Quantity</a></code></dt>
+<dt><strong><code>duration</code></strong></dt>
 <dd>Number with duration unit if setting level 8</dd>
-<dt><strong><code>who</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dt><strong><code>who</code></strong></dt>
 <dd>Optional username performing the write, otherwise user dis is used</dd>
-<dt><strong><code>date_version</code></strong> :&ensp;<code>datetime</code>, optional</dt>
+<dt><strong><code>date_version</code></strong></dt>
 <dd>The optional date version to update</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -2976,15 +2992,15 @@ def point_write_write(
         who: Optional[str],
         date_version: Optional[datetime] = None,
 ) -&gt; None:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops.
 
     Args:
-        entity_id (Ref): The entity to update
-        level (int): Number from 1-17 for level to write
-        val (Any, optional): Value to write or null to auto the level
-        duration (Quantity): Number with duration unit if setting level 8
-        who (str, optional): Optional username performing the write, otherwise user dis is used
-        date_version (datetime, optional): The optional date version to update
+        entity_id: The entity to update
+        level: Number from 1-17 for level to write
+        val: Value to write or null to auto the level
+        duration: Number with duration unit if setting level 8
+        who: Optional username performing the write, otherwise user dis is used
+        date_version: The optional date version to update
 
     Returns:
         None
@@ -2996,19 +3012,19 @@ def point_write_write(
 <span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Union[str, NoneType], entity_ids: Union[List[haystackapi.datatypes.Ref], NoneType], grid_filter: Union[str, NoneType], date_version: Union[datetime.datetime, NoneType]) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'read' ops</p>
+<div class="desc"><p>Implement the Haystack 'read' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>limit</code></strong> :&ensp;<code>int</code></dt>
+<dt><strong><code>limit</code></strong></dt>
 <dd>The number of record to return or zero</dd>
-<dt><strong><code>select</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dt><strong><code>select</code></strong></dt>
 <dd>The selected tag separated with comma, else '' or '*'</dd>
-<dt><strong><code>entity_ids</code></strong> :&ensp;<code>List[<a title="haystackapi.Ref" href="#haystackapi.Ref">Ref</a>]</code>, optional</dt>
-<dd>A list en ids. If set, grid_filter and limit are ignored</dd>
-<dt><strong><code>grid_filter</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dt><strong><code>entity_ids</code></strong></dt>
+<dd>A list en ids. If set, grid_filter and limit are ignored.</dd>
+<dt><strong><code>grid_filter</code></strong></dt>
 <dd>A filter to apply. Ignored if entity_ids is set.</dd>
-<dt><strong><code>date_version</code></strong> :&ensp;<code>datetime</code>, optional</dt>
-<dd>The date to return of the last version.</dd>
+<dt><strong><code>date_version</code></strong></dt>
+<dd>The date of the ontology version.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>The requested Grid</p></div>
@@ -3026,14 +3042,14 @@ def read(
         date_version: Optional[datetime],
 ) -&gt; Grid:  # pylint: disable=no-self-use
     &#34;&#34;&#34;
-    Implement the Haystack &#39;read&#39; ops
+    Implement the Haystack &#39;read&#39; ops.
 
     Args:
-        limit (int): The number of record to return or zero
-        select (str, optional): The selected tag separated with comma, else &#39;&#39; or &#39;*&#39;
-        entity_ids (List[Ref], optional): A list en ids. If set, grid_filter and limit are ignored
-        grid_filter (str, optional): A filter to apply. Ignored if entity_ids is set.
-        date_version (datetime, optional): The date to return of the last version.
+        limit: The number of record to return or zero
+        select: The selected tag separated with comma, else &#39;&#39; or &#39;*&#39;
+        entity_ids: A list en ids. If set, grid_filter and limit are ignored.
+        grid_filter: A filter to apply. Ignored if entity_ids is set.
+        date_version: The date of the ontology version.
 
     Returns:
         The requested Grid
@@ -3046,26 +3062,30 @@ def read(
 <span>def <span class="ident">values_for_tag</span></span>(<span>self, tag: str, date_version: Union[datetime.datetime, NoneType] = None) ‑> List[Any]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Get all values for a given tag</p>
+<div class="desc"><p>Get all values for a given tag.</p>
 <h2 id="args">Args</h2>
-<p>tag (:obj:<code>str</code>): tag
-date_version (:obj:<code>datetime</code>, optional): version date</p>
+<dl>
+<dt><strong><code>tag</code></strong></dt>
+<dd>The tag to analyse.</dd>
+<dt><strong><code>date_version</code></strong></dt>
+<dd>version date of the ontology.</dd>
+</dl>
 <h2 id="returns">Returns</h2>
-<p>(:obj:<code>List[Any]</code>) All unique values for a specific tag</p></div>
+<p>All unique values for a specific tag</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def values_for_tag(self, tag: str,
                    date_version: Optional[datetime] = None) -&gt; List[Any]:
-    &#34;&#34;&#34;Get all values for a given tag
+    &#34;&#34;&#34;Get all values for a given tag.
 
     Args:
-        tag (:obj:`str`): tag
-        date_version (:obj:`datetime`, optional): version date
+        tag: The tag to analyse.
+        date_version: version date of the ontology.
 
     Returns:
-        (:obj:`List[Any]`) All unique values for a specific tag
+        All unique values for a specific tag
     &#34;&#34;&#34;
     raise NotImplementedError()</code></pre>
 </details>
@@ -3074,7 +3094,8 @@ date_version (:obj:<code>datetime</code>, optional): version date</p>
 <span>def <span class="ident">versions</span></span>(<span>self) ‑> List[datetime.datetime]</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="returns">Returns</h2>
+<div class="desc"><p>Return a list of versions fot the current ontology.</p>
+<h2 id="returns">Returns</h2>
 <p>datetime for each version or empty array if unknown</p></div>
 <details class="source">
 <summary>
@@ -3082,6 +3103,7 @@ date_version (:obj:<code>datetime</code>, optional): version date</p>
 </summary>
 <pre><code class="python">def versions(self) -&gt; List[datetime]:  # pylint: disable=no-self-use
     &#34;&#34;&#34;
+    Return a list of versions fot the current ontology.
     Returns:
         datetime for each version or empty array if unknown
     &#34;&#34;&#34;
@@ -3092,12 +3114,12 @@ date_version (:obj:<code>datetime</code>, optional): version date</p>
 <span>def <span class="ident">watch_poll</span></span>(<span>self, watch_id: str, refresh: bool) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'watchPoll' ops</p>
+<div class="desc"><p>Implement the Haystack 'watchPoll' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>watch_id</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>watch_id</code></strong></dt>
 <dd>The user watch_id to update or None</dd>
-<dt><strong><code>refresh</code></strong> :&ensp;<code>bool</code></dt>
+<dt><strong><code>refresh</code></strong></dt>
 <dd>Set to True for refreshing the data</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -3110,11 +3132,11 @@ date_version (:obj:<code>datetime</code>, optional): version date</p>
 def watch_poll(
         self, watch_id: str, refresh: bool
 ) -&gt; Grid:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;watchPoll&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;watchPoll&#39; ops.
 
     Args:
-        watch_id (str): The user watch_id to update or None
-        refresh (bool): Set to True for refreshing the data
+        watch_id: The user watch_id to update or None
+        refresh: Set to True for refreshing the data
 
     Returns:
         A Grid where each row corresponds to a watched entity.
@@ -3126,17 +3148,17 @@ def watch_poll(
 <span>def <span class="ident">watch_sub</span></span>(<span>self, watch_dis: str, watch_id: Union[str, NoneType], ids: List[haystackapi.datatypes.Ref], lease: Union[int, NoneType]) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'watchSub' ops</p>
+<div class="desc"><p>Implement the Haystack 'watchSub' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>watch_dis</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>watch_dis</code></strong></dt>
 <dd>Watch description</dd>
-<dt><strong><code>watch_id</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The user watch_id to update or None</dd>
-<dt><strong><code>ids</code></strong> :&ensp;<code>List[<a title="haystackapi.Ref" href="#haystackapi.Ref">Ref</a>]</code></dt>
-<dd>The list of ids to watch</dd>
-<dt><strong><code>lease</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Lease to apply</dd>
+<dt><strong><code>watch_id</code></strong></dt>
+<dd>The user watch_id to update or None.</dd>
+<dt><strong><code>ids</code></strong></dt>
+<dd>The list of ids to watch.</dd>
+<dt><strong><code>lease</code></strong></dt>
+<dd>Lease to apply.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>A Grid</p></div>
@@ -3153,13 +3175,13 @@ def watch_sub(
         lease: Optional[int],
 ) -&gt; Grid:  # pylint: disable=no-self-use
     &#34;&#34;&#34;
-    Implement the Haystack &#39;watchSub&#39; ops
+    Implement the Haystack &#39;watchSub&#39; ops.
 
     Args:
-        watch_dis (str): Watch description
-        watch_id (str, optional): The user watch_id to update or None
-        ids (List[Ref]): The list of ids to watch
-        lease (int, optional): Lease to apply
+        watch_dis: Watch description
+        watch_id: The user watch_id to update or None.
+        ids: The list of ids to watch.
+        lease: Lease to apply.
 
     Returns:
         A Grid
@@ -3171,14 +3193,14 @@ def watch_sub(
 <span>def <span class="ident">watch_unsub</span></span>(<span>self, watch_id: str, ids: List[haystackapi.datatypes.Ref], close: bool) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'watchUnsub' ops</p>
+<div class="desc"><p>Implement the Haystack 'watchUnsub' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>watch_id</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>watch_id</code></strong></dt>
 <dd>The user watch_id to update or None</dd>
-<dt><strong><code>ids</code></strong> :&ensp;<code>List[<a title="haystackapi.Ref" href="#haystackapi.Ref">Ref</a>]</code></dt>
+<dt><strong><code>ids</code></strong></dt>
 <dd>The list of ids to watch</dd>
-<dt><strong><code>close</code></strong> :&ensp;<code>bool</code></dt>
+<dt><strong><code>close</code></strong></dt>
 <dd>Set to True to close</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -3192,12 +3214,12 @@ def watch_unsub(
         self, watch_id: str, ids: List[Ref], close: bool
 ) -&gt; Grid:  # pylint: disable=no-self-use
     &#34;&#34;&#34;
-    Implement the Haystack &#39;watchUnsub&#39; ops
+    Implement the Haystack &#39;watchUnsub&#39; ops.
 
     Args:
-        watch_id (str): The user watch_id to update or None
-        ids (List[Ref]): The list of ids to watch
-        close (bool): Set to True to close
+        watch_id: The user watch_id to update or None
+        ids: The list of ids to watch
+        close: Set to True to close
 
     Returns:
         A Grid
@@ -3236,9 +3258,9 @@ def watch_unsub(
         &#34;&#34;&#34;Append the item to the metadata.
 
         Args:
-            key (str): The tag name
-            value (Any): The value
-            replace (bool): Flag to replace or not the value
+            key: The tag name
+            value: The value
+            replace: Flag to replace or not the value
         &#34;&#34;&#34;
         self.add_item(key, value, replace=replace)
         return self
@@ -3248,7 +3270,7 @@ def watch_unsub(
 
         Args:
             items: A list of items
-            replace (bool): Flag to replace or not the value
+            replace: Flag to replace or not the value
         &#34;&#34;&#34;
         if isinstance(items, (dict, SortableDict)):
             items = list(items.items())
@@ -3283,11 +3305,11 @@ def watch_unsub(
 <div class="desc"><p>Append the item to the metadata.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>key</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>key</code></strong></dt>
 <dd>The tag name</dd>
-<dt><strong><code>value</code></strong> :&ensp;<code>Any</code></dt>
+<dt><strong><code>value</code></strong></dt>
 <dd>The value</dd>
-<dt><strong><code>replace</code></strong> :&ensp;<code>bool</code></dt>
+<dt><strong><code>replace</code></strong></dt>
 <dd>Flag to replace or not the value</dd>
 </dl></div>
 <details class="source">
@@ -3298,9 +3320,9 @@ def watch_unsub(
     &#34;&#34;&#34;Append the item to the metadata.
 
     Args:
-        key (str): The tag name
-        value (Any): The value
-        replace (bool): Flag to replace or not the value
+        key: The tag name
+        value: The value
+        replace: Flag to replace or not the value
     &#34;&#34;&#34;
     self.add_item(key, value, replace=replace)
     return self</code></pre>
@@ -3335,7 +3357,7 @@ def watch_unsub(
 <dl>
 <dt><strong><code>items</code></strong></dt>
 <dd>A list of items</dd>
-<dt><strong><code>replace</code></strong> :&ensp;<code>bool</code></dt>
+<dt><strong><code>replace</code></strong></dt>
 <dd>Flag to replace or not the value</dd>
 </dl></div>
 <details class="source">
@@ -3347,7 +3369,7 @@ def watch_unsub(
 
     Args:
         items: A list of items
-        replace (bool): Flag to replace or not the value
+        replace: Flag to replace or not the value
     &#34;&#34;&#34;
     if isinstance(items, (dict, SortableDict)):
         items = list(items.items())
@@ -3363,21 +3385,25 @@ def watch_unsub(
 <span>(</span><span>m: float, unit: Union[str, NoneType] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A float value with with pint unit.</p></div>
+<div class="desc"><p>A float value with with pint unit.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt>m:The quantity</dt>
+<dt><strong><code>unit</code></strong></dt>
+<dd>An optional unit (must be compatible with pint)</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Quantity(six.with_metaclass(ABCMeta, object)):  # pylint: disable=too-few-public-methods
-    &#34;&#34;&#34;A float value with with pint unit.&#34;&#34;&#34;
+    &#34;&#34;&#34;A float value with with pint unit.
+        Args:
+            m:The quantity
+            unit: An optional unit (must be compatible with pint)
+    &#34;&#34;&#34;
 
     def __new__(cls, m: float, unit: Optional[str] = None):
-        &#34;&#34;&#34;
-        Create a new quantity
-        Args:
-            m (float):The quantity
-            unit: An optional unit (must be compatible with pint)
-        &#34;&#34;&#34;
         return _PintQuantity(m, to_pint(unit))
 
     # Fake ctr to help audit tools
@@ -3393,21 +3419,24 @@ def watch_unsub(
 <dd>
 <div class="desc"><p>A reference to an object in Project Haystack.</p>
 <h2 id="args">Args</h2>
-<p>name (str):
-value:</p></div>
+<dl>
+<dt><strong><code>name</code></strong></dt>
+<dd>the uniq id</dd>
+<dt><strong><code>value</code></strong></dt>
+<dd>the comment to describe the reference</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Ref:
-    &#34;&#34;&#34;A reference to an object in Project Haystack.&#34;&#34;&#34;
+    &#34;&#34;&#34;A reference to an object in Project Haystack.
+        Args:
+            name: the uniq id
+            value: the comment to describe the reference
+    &#34;&#34;&#34;
 
     def __init__(self, name: str, value: Optional[str] = None):
-        &#34;&#34;&#34;
-        Args:
-            name (str):
-            value:
-        &#34;&#34;&#34;
         assert isinstance(name, str) and re.match(&#34;^[a-zA-Z0-9_:\\-.~]+$&#34;, name)
         self.name = name
         self.value = value
@@ -3475,7 +3504,12 @@ def has_value(self):
 </code></dt>
 <dd>
 <div class="desc"><p>A convenience class to allow identification of a URI from other string
-types.</p></div>
+types.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>uri</code></strong></dt>
+<dd>The uri</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3483,6 +3517,8 @@ types.</p></div>
 <pre><code class="python">class Uri(str):
     &#34;&#34;&#34;A convenience class to allow identification of a URI from other string
     types.
+    Args:
+        uri: The uri
     &#34;&#34;&#34;
 
     def __repr__(self) -&gt; str:
@@ -3506,7 +3542,7 @@ types.</p></div>
 <div class="desc"><p>A Project Haystack version number</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>ver_str</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>ver_str</code></strong></dt>
 <dd>The version str</dd>
 </dl></div>
 <details class="source">
@@ -3516,10 +3552,10 @@ types.</p></div>
 <pre><code class="python">class Version:
     &#34;&#34;&#34;A Project Haystack version number&#34;&#34;&#34;
 
-    def __init__(self, ver_str: Union[str,&#39;Version&#39;]):
+    def __init__(self, ver_str: Union[str, &#39;Version&#39;]):
         &#34;&#34;&#34;
         Args:
-            ver_str (str): The version str
+            ver_str: The version str
         &#34;&#34;&#34;
         if isinstance(ver_str, Version):
             # Clone constructor
@@ -3732,12 +3768,12 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
 <span>(</span><span>encoding: str, data: str)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A convenience class to allow identification of a Xstr</p>
+<div class="desc"><p>A convenience class to allow identification of a XStr.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>encoding</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>encoding</code></strong></dt>
 <dd>encoding format (accept <code>hex</code> and <code>b64</code>)</dd>
-<dt><strong><code>data</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>data</code></strong></dt>
 <dd>The data</dd>
 </dl></div>
 <details class="source">
@@ -3745,14 +3781,14 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class XStr:
-    &#34;&#34;&#34;A convenience class to allow identification of a Xstr&#34;&#34;&#34;
+    &#34;&#34;&#34;A convenience class to allow identification of a XStr.
+
+        Args:
+            encoding: encoding format (accept `hex` and `b64`)
+            data: The data
+    &#34;&#34;&#34;
 
     def __init__(self, encoding: str, data: str):
-        &#34;&#34;&#34;
-        Args:
-            encoding (str): encoding format (accept `hex` and `b64`)
-            data (str): The data
-        &#34;&#34;&#34;
         self.encoding = encoding
         if encoding == &#34;hex&#34;:
             self.data = bytearray.fromhex(data)

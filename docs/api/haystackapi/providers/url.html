@@ -33,7 +33,7 @@ The file must be referenced with the environment variable HAYSTACK_URL and may b
 - s3://&hellip;/ontology.zinc (the lambda functions must have the privilege to read this file)
 - &hellip;</p>
 <p>If the suffix is .gz, the body is unzipped.</p>
-<p>If the AWS bucket use the versionning, the correct version are return, to correspond to
+<p>If the AWS bucket use the versioning, the correct version are return, to correspond to
 the version of the file at the <code>version_date</code>.</p>
 <p>The time series to manage history must be referenced in entity:
 - with inner ontology in tag 'history' or
@@ -61,7 +61,7 @@ The file must be referenced with the environment variable HAYSTACK_URL and may b
 
 If the suffix is .gz, the body is unzipped.
 
-If the AWS bucket use the versionning, the correct version are return, to correspond to
+If the AWS bucket use the versioning, the correct version are return, to correspond to
 the version of the file at the `version_date`.
 
 The time series to manage history must be referenced in entity:
@@ -94,12 +94,12 @@ from ..grid import Grid
 from ..parser import parse
 from ..parser import suffix_to_mode
 
-BOTO3_AVAILABLE = False
+_BOTO3_AVAILABLE = False
 try:
     import boto3
     from botocore.client import BaseClient
 
-    BOTO3_AVAILABLE = True
+    _BOTO3_AVAILABLE = True
 except ImportError:
     pass
 
@@ -107,9 +107,9 @@ Timestamp = datetime
 
 log = logging.getLogger(&#34;url.Provider&#34;)
 
-LRU_SIZE, PERIODIC_REFRESH = 15, int(os.environ.get(&#34;REFRESH&#34;, &#34;15&#34;))
+_LRU_SIZE, _PERIODIC_REFRESH = 15, int(os.environ.get(&#34;REFRESH&#34;, &#34;15&#34;))
 
-TLS_VERIFY = os.environ.get(&#34;TLS_VERIFY&#34;, &#34;true&#34;) == &#34;true&#34;
+_TLS_VERIFY = os.environ.get(&#34;TLS_VERIFY&#34;, &#34;true&#34;) == &#34;true&#34;
 
 
 class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attributes
@@ -257,7 +257,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             self._lambda_client = boto3.client(&#34;lambda&#34;,
                                                region_name=os.environ[&#34;AWS_REGION&#34;],
                                                endpoint_url=os.environ.get(&#34;AWS_S3_ENDPOINT&#34;, None),
-                                               verify=TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
+                                               verify=_TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
                                                )
         return self._lambda_client
 
@@ -278,7 +278,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             self._s3_client = boto3.client(
                 &#34;s3&#34;,
                 endpoint_url=os.environ.get(&#34;AWS_S3_ENDPOINT&#34;, None),
-                verify=TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
+                verify=_TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
             )
         return self._s3_client
 
@@ -294,7 +294,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
         assert effective_version
         log.info(&#34;_download_uri(&#39;%s&#39;)&#34;, parsed_uri.geturl())
         if parsed_uri.scheme == &#34;s3&#34;:
-            assert BOTO3_AVAILABLE, &#34;Use &#39;pip install boto3&#39;&#34;
+            assert _BOTO3_AVAILABLE, &#34;Use &#39;pip install boto3&#39;&#34;
             s3_client = self._s3()
             extra_args = None
             obj_versions = self._versions[parsed_uri.geturl()]
@@ -326,13 +326,13 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
         # Refresh at a rounded period, then all cloud instances refresh data at the same time.
         now = datetime.utcnow().replace(tzinfo=pytz.UTC)
         next_time = now.replace(minute=0, second=0) + timedelta(
-            minutes=(now.minute + PERIODIC_REFRESH) // PERIODIC_REFRESH * PERIODIC_REFRESH
+            minutes=(now.minute + _PERIODIC_REFRESH) // _PERIODIC_REFRESH * _PERIODIC_REFRESH
         )
         assert next_time &gt; now
         if parsed_uri.scheme == &#34;s3&#34;:
-            assert BOTO3_AVAILABLE, &#34;Use &#39;pip install boto3&#39;&#34;
+            assert _BOTO3_AVAILABLE, &#34;Use &#39;pip install boto3&#39;&#34;
             start_of_current_period = \
-                (next_time - timedelta(minutes=PERIODIC_REFRESH)).replace(tzinfo=pytz.UTC)
+                (next_time - timedelta(minutes=_PERIODIC_REFRESH)).replace(tzinfo=pytz.UTC)
             s3_client = self._s3()
             obj_versions = [
                 (v[&#34;LastModified&#34;], v[&#34;VersionId&#34;])
@@ -360,7 +360,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
         else:
             self._versions[parsed_uri.geturl()] = {datetime(1, 1, 1, tzinfo=pytz.UTC): &#34;direct_file&#34;}
 
-        if PERIODIC_REFRESH:
+        if _PERIODIC_REFRESH:
             partial_refresh = functools.partial(
                 self._periodic_refresh_versions, parsed_uri, False
             )
@@ -369,10 +369,10 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             self._timer.start()
 
     def _refresh_versions(self, parsed_uri: ParseResult) -&gt; None:
-        if not PERIODIC_REFRESH or parsed_uri.geturl() not in self._versions:
+        if not _PERIODIC_REFRESH or parsed_uri.geturl() not in self._versions:
             self._periodic_refresh_versions(parsed_uri, True)
 
-    @functools.lru_cache(maxsize=LRU_SIZE)
+    @functools.lru_cache(maxsize=_LRU_SIZE)
     def _download_grid_effective_version(self, uri: str,  # pylint: disable=method-hidden
                                          effective_version: datetime) -&gt; Grid:
         log.info(&#34;_download_grid(%s,%s)&#34;, uri, effective_version)
@@ -390,6 +390,14 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             )
         return cast(Grid, parse(body, mode))
 
+    def _download_grid(self, uri: str, date_version: Optional[datetime]) -&gt; Grid:
+        parsed_uri = urlparse(uri, allow_fragments=False)
+        self._refresh_versions(parsed_uri)
+        for version, _ in self._versions[uri].items():
+            if not date_version or version &lt;= date_version:
+                return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
+        raise ValueError(&#34;Empty body not supported&#34;)
+
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -&gt; None:
         self._download_grid_effective_version = \
@@ -399,15 +407,8 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
     # pylint: enable=no-member
 
     def cache_clear(self) -&gt; None:
-        self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member
-
-    def _download_grid(self, uri: str, date_version: Optional[datetime]) -&gt; Grid:
-        parsed_uri = urlparse(uri, allow_fragments=False)
-        self._refresh_versions(parsed_uri)
-        for version, _ in self._versions[uri].items():
-            if not date_version or version &lt;= date_version:
-                return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
-        raise ValueError(&#34;Empty body not supported&#34;)</code></pre>
+        &#34;&#34;&#34; Force to clear the local cache. &#34;&#34;&#34;
+        self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member</code></pre>
 </details>
 </section>
 <section>
@@ -573,7 +574,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             self._lambda_client = boto3.client(&#34;lambda&#34;,
                                                region_name=os.environ[&#34;AWS_REGION&#34;],
                                                endpoint_url=os.environ.get(&#34;AWS_S3_ENDPOINT&#34;, None),
-                                               verify=TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
+                                               verify=_TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
                                                )
         return self._lambda_client
 
@@ -594,7 +595,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             self._s3_client = boto3.client(
                 &#34;s3&#34;,
                 endpoint_url=os.environ.get(&#34;AWS_S3_ENDPOINT&#34;, None),
-                verify=TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
+                verify=_TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
             )
         return self._s3_client
 
@@ -610,7 +611,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
         assert effective_version
         log.info(&#34;_download_uri(&#39;%s&#39;)&#34;, parsed_uri.geturl())
         if parsed_uri.scheme == &#34;s3&#34;:
-            assert BOTO3_AVAILABLE, &#34;Use &#39;pip install boto3&#39;&#34;
+            assert _BOTO3_AVAILABLE, &#34;Use &#39;pip install boto3&#39;&#34;
             s3_client = self._s3()
             extra_args = None
             obj_versions = self._versions[parsed_uri.geturl()]
@@ -642,13 +643,13 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
         # Refresh at a rounded period, then all cloud instances refresh data at the same time.
         now = datetime.utcnow().replace(tzinfo=pytz.UTC)
         next_time = now.replace(minute=0, second=0) + timedelta(
-            minutes=(now.minute + PERIODIC_REFRESH) // PERIODIC_REFRESH * PERIODIC_REFRESH
+            minutes=(now.minute + _PERIODIC_REFRESH) // _PERIODIC_REFRESH * _PERIODIC_REFRESH
         )
         assert next_time &gt; now
         if parsed_uri.scheme == &#34;s3&#34;:
-            assert BOTO3_AVAILABLE, &#34;Use &#39;pip install boto3&#39;&#34;
+            assert _BOTO3_AVAILABLE, &#34;Use &#39;pip install boto3&#39;&#34;
             start_of_current_period = \
-                (next_time - timedelta(minutes=PERIODIC_REFRESH)).replace(tzinfo=pytz.UTC)
+                (next_time - timedelta(minutes=_PERIODIC_REFRESH)).replace(tzinfo=pytz.UTC)
             s3_client = self._s3()
             obj_versions = [
                 (v[&#34;LastModified&#34;], v[&#34;VersionId&#34;])
@@ -676,7 +677,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
         else:
             self._versions[parsed_uri.geturl()] = {datetime(1, 1, 1, tzinfo=pytz.UTC): &#34;direct_file&#34;}
 
-        if PERIODIC_REFRESH:
+        if _PERIODIC_REFRESH:
             partial_refresh = functools.partial(
                 self._periodic_refresh_versions, parsed_uri, False
             )
@@ -685,10 +686,10 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             self._timer.start()
 
     def _refresh_versions(self, parsed_uri: ParseResult) -&gt; None:
-        if not PERIODIC_REFRESH or parsed_uri.geturl() not in self._versions:
+        if not _PERIODIC_REFRESH or parsed_uri.geturl() not in self._versions:
             self._periodic_refresh_versions(parsed_uri, True)
 
-    @functools.lru_cache(maxsize=LRU_SIZE)
+    @functools.lru_cache(maxsize=_LRU_SIZE)
     def _download_grid_effective_version(self, uri: str,  # pylint: disable=method-hidden
                                          effective_version: datetime) -&gt; Grid:
         log.info(&#34;_download_grid(%s,%s)&#34;, uri, effective_version)
@@ -706,6 +707,14 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             )
         return cast(Grid, parse(body, mode))
 
+    def _download_grid(self, uri: str, date_version: Optional[datetime]) -&gt; Grid:
+        parsed_uri = urlparse(uri, allow_fragments=False)
+        self._refresh_versions(parsed_uri)
+        for version, _ in self._versions[uri].items():
+            if not date_version or version &lt;= date_version:
+                return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
+        raise ValueError(&#34;Empty body not supported&#34;)
+
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -&gt; None:
         self._download_grid_effective_version = \
@@ -715,36 +724,14 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
     # pylint: enable=no-member
 
     def cache_clear(self) -&gt; None:
-        self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member
-
-    def _download_grid(self, uri: str, date_version: Optional[datetime]) -&gt; Grid:
-        parsed_uri = urlparse(uri, allow_fragments=False)
-        self._refresh_versions(parsed_uri)
-        for version, _ in self._versions[uri].items():
-            if not date_version or version &lt;= date_version:
-                return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
-        raise ValueError(&#34;Empty body not supported&#34;)</code></pre>
+        &#34;&#34;&#34; Force to clear the local cache. &#34;&#34;&#34;
+        self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="haystackapi.providers.haystack_interface.HaystackInterface" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface">HaystackInterface</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Instance variables</h3>
-<dl>
-<dt id="haystackapi.providers.url.Provider.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def name(self) -&gt; str:
-    return &#34;URL&#34;</code></pre>
-</details>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="haystackapi.providers.url.Provider.about"><code class="name flex">
@@ -775,12 +762,13 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
 <span>def <span class="ident">cache_clear</span></span>(<span>self) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Force to clear the local cache.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def cache_clear(self) -&gt; None:
+    &#34;&#34;&#34; Force to clear the local cache. &#34;&#34;&#34;
     self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member</code></pre>
 </details>
 </dd>
@@ -909,8 +897,10 @@ def read(
 <ul class="hlist">
 <li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.formats" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.formats">formats</a></code></li>
 <li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.get_customer_id" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.get_customer_id">get_customer_id</a></code></li>
+<li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.get_tz" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.get_tz">get_tz</a></code></li>
 <li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.his_write" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.his_write">his_write</a></code></li>
 <li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.invoke_action" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.invoke_action">invoke_action</a></code></li>
+<li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.name" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.name">name</a></code></li>
 <li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.nav" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.nav">nav</a></code></li>
 <li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.ops" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.ops">ops</a></code></li>
 <li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.point_write_read" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.point_write_read">point_write_read</a></code></li>
@@ -942,11 +932,10 @@ def read(
 <ul>
 <li>
 <h4><code><a title="haystackapi.providers.url.Provider" href="#haystackapi.providers.url.Provider">Provider</a></code></h4>
-<ul class="two-column">
+<ul class="">
 <li><code><a title="haystackapi.providers.url.Provider.about" href="#haystackapi.providers.url.Provider.about">about</a></code></li>
 <li><code><a title="haystackapi.providers.url.Provider.cache_clear" href="#haystackapi.providers.url.Provider.cache_clear">cache_clear</a></code></li>
 <li><code><a title="haystackapi.providers.url.Provider.his_read" href="#haystackapi.providers.url.Provider.his_read">his_read</a></code></li>
-<li><code><a title="haystackapi.providers.url.Provider.name" href="#haystackapi.providers.url.Provider.name">name</a></code></li>
 <li><code><a title="haystackapi.providers.url.Provider.read" href="#haystackapi.providers.url.Provider.read">read</a></code></li>
 <li><code><a title="haystackapi.providers.url.Provider.set_lru_size" href="#haystackapi.providers.url.Provider.set_lru_size">set_lru_size</a></code></li>
 </ul>

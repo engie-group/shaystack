@@ -88,6 +88,14 @@ def _download_uri(parsed_uri: ParseResult) -&gt; bytes:
 
 
 def _read_grid(uri: str) -&gt; Grid:
+    &#34;&#34;&#34;
+    Read a grid from uri.
+    Args:
+        uri: The URI to reference the datas.
+
+    Returns:
+        The grid.
+    &#34;&#34;&#34;
     parsed_uri = urlparse(uri, allow_fragments=False)
 
     data = _download_uri(parsed_uri)
@@ -108,6 +116,17 @@ def import_in_db(source: str,
                  time_series: bool = True,
                  reset: bool = False,
                  version: Optional[datetime] = None) -&gt; None:
+    &#34;&#34;&#34;
+    Import source URI to database.
+    Args:
+        source: The source URI.
+        database_url: The database URI.
+        ts_url: The time-series database URI
+        customer_id: The current customer id to inject in each records.
+        time_series: True to import the time-series references via `hisURI` tag
+        reset: Remove all the current data before import the grid.
+        version: The associated version time.
+    &#34;&#34;&#34;
     os.environ[&#34;HAYSTACK_DB&#34;] = database_url
     provider_name = &#34;haystackapi.providers.sql&#34;
     if ts_url:
@@ -139,7 +158,7 @@ def import_in_db(source: str,
 
 def aws_handler(event, context):
     &#34;&#34;&#34;
-    AWS Handler.
+    AWS Lambda Handler.
     Set the environment variable HAYSTACK_URL and HAYSTACK_DB
     &#34;&#34;&#34;
     hs_url = os.environ.get(&#34;HAYSTACK_URL&#34;)
@@ -216,7 +235,7 @@ if __name__ == &#39;__main__&#39;:
 <span>def <span class="ident">aws_handler</span></span>(<span>event, context)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>AWS Handler.
+<div class="desc"><p>AWS Lambda Handler.
 Set the environment variable HAYSTACK_URL and HAYSTACK_DB</p></div>
 <details class="source">
 <summary>
@@ -224,7 +243,7 @@ Set the environment variable HAYSTACK_URL and HAYSTACK_DB</p></div>
 </summary>
 <pre><code class="python">def aws_handler(event, context):
     &#34;&#34;&#34;
-    AWS Handler.
+    AWS Lambda Handler.
     Set the environment variable HAYSTACK_URL and HAYSTACK_DB
     &#34;&#34;&#34;
     hs_url = os.environ.get(&#34;HAYSTACK_URL&#34;)
@@ -240,7 +259,24 @@ Set the environment variable HAYSTACK_URL and HAYSTACK_DB</p></div>
 <span>def <span class="ident">import_in_db</span></span>(<span>source: str, database_url: str, ts_url: Union[str, NoneType], customer_id: str = '', time_series: bool = True, reset: bool = False, version: Union[datetime.datetime, NoneType] = None) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Import source URI to database.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>source</code></strong></dt>
+<dd>The source URI.</dd>
+<dt><strong><code>database_url</code></strong></dt>
+<dd>The database URI.</dd>
+<dt><strong><code>ts_url</code></strong></dt>
+<dd>The time-series database URI</dd>
+<dt><strong><code>customer_id</code></strong></dt>
+<dd>The current customer id to inject in each records.</dd>
+<dt><strong><code>time_series</code></strong></dt>
+<dd>True to import the time-series references via <code>hisURI</code> tag</dd>
+<dt><strong><code>reset</code></strong></dt>
+<dd>Remove all the current data before import the grid.</dd>
+<dt><strong><code>version</code></strong></dt>
+<dd>The associated version time.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -252,6 +288,17 @@ Set the environment variable HAYSTACK_URL and HAYSTACK_DB</p></div>
                  time_series: bool = True,
                  reset: bool = False,
                  version: Optional[datetime] = None) -&gt; None:
+    &#34;&#34;&#34;
+    Import source URI to database.
+    Args:
+        source: The source URI.
+        database_url: The database URI.
+        ts_url: The time-series database URI
+        customer_id: The current customer id to inject in each records.
+        time_series: True to import the time-series references via `hisURI` tag
+        reset: Remove all the current data before import the grid.
+        version: The associated version time.
+    &#34;&#34;&#34;
     os.environ[&#34;HAYSTACK_DB&#34;] = database_url
     provider_name = &#34;haystackapi.providers.sql&#34;
     if ts_url:

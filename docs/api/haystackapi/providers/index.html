@@ -53,9 +53,12 @@ __pdoc__ = \
 
 def select_grid(grid: Grid, select: str) -&gt; Grid:
     &#34;&#34;&#34;
+    Select only some tags in the grid.
     Args:
-        grid (Grid):
-        select (str):
+        grid: The original grid
+        select: A list a tags
+    Returns:
+         A grid with entities with only the selected tags
     &#34;&#34;&#34;
     if select:
         select = select.strip()
@@ -134,11 +137,11 @@ and return an instance of this subclass. Then, the 'ops' method can analyse the 
 and detect the implemented and abstract methods.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>class_str</code></strong> :&ensp;<code>str</code></dt>
-<dd>An abstract class string provider</dd>
+<dt><strong><code>class_str</code></strong></dt>
+<dd>The name of the module that contains the provider.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
-<p>(HaystackInterface) A instance of this subclass if it exists</p></div>
+<p>A instance of this subclass if it exists</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -150,10 +153,10 @@ and detect the implemented and abstract methods.</p>
     and detect the implemented and abstract methods.
 
     Args:
-        class_str (str): An abstract class string provider
+        class_str: The name of the module that contains the provider.
 
     Returns:
-        (HaystackInterface) A instance of this subclass if it exists
+        A instance of this subclass if it exists
     &#34;&#34;&#34;
     try:
         if not class_str.endswith(&#34;.Provider&#34;):
@@ -271,7 +274,7 @@ and detect the implemented and abstract methods.</p>
 <dd>
 <div class="desc"><p>Interface to implement to be compatible with Haystack REST protocol.
 The subclasses may be abstract (implemented only a part of methods),
-the code detect that, and can calculate the set of implemented operations.</p></div>
+the 'ops' code detect that, and can calculate the set of implemented operations.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -280,12 +283,13 @@ the code detect that, and can calculate the set of implemented operations.</p></
     &#34;&#34;&#34;
     Interface to implement to be compatible with Haystack REST protocol.
     The subclasses may be abstract (implemented only a part of methods),
-    the code detect that, and can calculate the set of implemented operations.
+    the &#39;ops&#39; code detect that, and can calculate the set of implemented operations.
     &#34;&#34;&#34;
 
     @property
     @abstractmethod
     def name(self) -&gt; str:
+        &#34;&#34;&#34; The name of the provider. &#34;&#34;&#34;
         raise NotImplementedError()
 
     def __repr__(self) -&gt; str:
@@ -301,27 +305,31 @@ the code detect that, and can calculate the set of implemented operations.</p></
         pass
 
     def get_tz(self) -&gt; BaseTzInfo:  # pylint: disable=no-self-use
+        &#34;&#34;&#34; Return server time zone. &#34;&#34;&#34;
         return get_localzone()
 
     def get_customer_id(self) -&gt; str:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Override this for multi-tenant&#34;&#34;&#34;
+        &#34;&#34;&#34; Override this for multi-tenant.
+        May be, extract the curstomer id from the current `Principal`.
+        &#34;&#34;&#34;
         return &#39;&#39;
 
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -&gt; List[Any]:
-        &#34;&#34;&#34;Get all values for a given tag
+        &#34;&#34;&#34;Get all values for a given tag.
 
         Args:
-            tag (:obj:`str`): tag
-            date_version (:obj:`datetime`, optional): version date
+            tag: The tag to analyse.
+            date_version: version date of the ontology.
 
         Returns:
-            (:obj:`List[Any]`) All unique values for a specific tag
+            All unique values for a specific tag
         &#34;&#34;&#34;
         raise NotImplementedError()
 
     def versions(self) -&gt; List[datetime]:  # pylint: disable=no-self-use
         &#34;&#34;&#34;
+        Return a list of versions fot the current ontology.
         Returns:
             datetime for each version or empty array if unknown
         &#34;&#34;&#34;
@@ -329,16 +337,16 @@ the code detect that, and can calculate the set of implemented operations.</p></
 
     @abstractmethod
     def about(self, home: str) -&gt; Grid:
-        &#34;&#34;&#34;Implement the Haystack &#39;about&#39; ops
+        &#34;&#34;&#34;Implement the Haystack &#39;about&#39; ops.
 
-        Note:
-            Must be completed with &#34;productUri&#34;, &#34;productVersion&#34;, &#34;moduleName&#34; abd &#34;moduleVersion&#34;
+        The subclasse must complet the result with &#34;productUri&#34;, &#34;productVersion&#34;, &#34;moduleName&#34;
+        and &#34;moduleVersion&#34;
 
         Args:
-            home (:obj:`str`): Home url of the API
+            home: Home url of the API
 
         Returns:
-            (:obj:`Grid`) the default &#39;about&#39; grid.
+            The default &#39;about&#39; grid.
         &#34;&#34;&#34;
         grid = Grid(
             version=VER_3_0,
@@ -376,7 +384,7 @@ the code detect that, and can calculate the set of implemented operations.</p></
         return grid
 
     def ops(self) -&gt; Grid:
-        &#34;&#34;&#34; Implement the Haystack &#39;ops&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;ops&#39; ops.
 
         Notes:
             Automatically calculate the implemented version.
@@ -432,11 +440,13 @@ the code detect that, and can calculate the set of implemented operations.</p></
         )
         return grid
 
-    def formats(self) -&gt; Grid:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;formats&#39; ops
+    def formats(self) -&gt; Optional[Grid]:  # pylint: disable=no-self-use
+        &#34;&#34;&#34; Implement the Haystack &#39;formats&#39; ops.
 
         Notes:
             Implement this method, only if you want to limit the format negotiation
+        Returns:
+            The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.
         &#34;&#34;&#34;
         return None  # type: ignore
 
@@ -450,14 +460,14 @@ the code detect that, and can calculate the set of implemented operations.</p></
             date_version: Optional[datetime],
     ) -&gt; Grid:  # pylint: disable=no-self-use
         &#34;&#34;&#34;
-        Implement the Haystack &#39;read&#39; ops
+        Implement the Haystack &#39;read&#39; ops.
 
         Args:
-            limit (int): The number of record to return or zero
-            select (str, optional): The selected tag separated with comma, else &#39;&#39; or &#39;*&#39;
-            entity_ids (List[Ref], optional): A list en ids. If set, grid_filter and limit are ignored
-            grid_filter (str, optional): A filter to apply. Ignored if entity_ids is set.
-            date_version (datetime, optional): The date to return of the last version.
+            limit: The number of record to return or zero
+            select: The selected tag separated with comma, else &#39;&#39; or &#39;*&#39;
+            entity_ids: A list en ids. If set, grid_filter and limit are ignored.
+            grid_filter: A filter to apply. Ignored if entity_ids is set.
+            date_version: The date of the ontology version.
 
         Returns:
             The requested Grid
@@ -467,12 +477,12 @@ the code detect that, and can calculate the set of implemented operations.</p></
 
     @abstractmethod
     def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;nav&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;nav&#39; ops.
         This operation allows servers to expose the database in a human-friendly tree (or graph)
         that can be explored
 
         Args:
-             nav_id (str): The string for nav id column
+             nav_id: The string for nav id column
         &#34;&#34;&#34;
         raise NotImplementedError()
 
@@ -485,13 +495,13 @@ the code detect that, and can calculate the set of implemented operations.</p></
             lease: Optional[int],
     ) -&gt; Grid:  # pylint: disable=no-self-use
         &#34;&#34;&#34;
-        Implement the Haystack &#39;watchSub&#39; ops
+        Implement the Haystack &#39;watchSub&#39; ops.
 
         Args:
-            watch_dis (str): Watch description
-            watch_id (str, optional): The user watch_id to update or None
-            ids (List[Ref]): The list of ids to watch
-            lease (int, optional): Lease to apply
+            watch_dis: Watch description
+            watch_id: The user watch_id to update or None.
+            ids: The list of ids to watch.
+            lease: Lease to apply.
 
         Returns:
             A Grid
@@ -503,12 +513,12 @@ the code detect that, and can calculate the set of implemented operations.</p></
             self, watch_id: str, ids: List[Ref], close: bool
     ) -&gt; Grid:  # pylint: disable=no-self-use
         &#34;&#34;&#34;
-        Implement the Haystack &#39;watchUnsub&#39; ops
+        Implement the Haystack &#39;watchUnsub&#39; ops.
 
         Args:
-            watch_id (str): The user watch_id to update or None
-            ids (List[Ref]): The list of ids to watch
-            close (bool): Set to True to close
+            watch_id: The user watch_id to update or None
+            ids: The list of ids to watch
+            close: Set to True to close
 
         Returns:
             A Grid
@@ -519,11 +529,11 @@ the code detect that, and can calculate the set of implemented operations.</p></
     def watch_poll(
             self, watch_id: str, refresh: bool
     ) -&gt; Grid:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;watchPoll&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;watchPoll&#39; ops.
 
         Args:
-            watch_id (str): The user watch_id to update or None
-            refresh (bool): Set to True for refreshing the data
+            watch_id: The user watch_id to update or None
+            refresh: Set to True for refreshing the data
 
         Returns:
             A Grid where each row corresponds to a watched entity.
@@ -534,11 +544,11 @@ the code detect that, and can calculate the set of implemented operations.</p></
     def point_write_read(
             self, entity_id: Ref, date_version: Optional[datetime]
     ) -&gt; Grid:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops.
 
         Args:
-            entity_id (Ref): The entity to update
-            date_version (datetime, optional): The optional date version to update
+            entity_id: The entity to update
+            date_version: The optional date version to update
 
         Returns:
             A Grid
@@ -555,15 +565,15 @@ the code detect that, and can calculate the set of implemented operations.</p></
             who: Optional[str],
             date_version: Optional[datetime] = None,
     ) -&gt; None:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops.
 
         Args:
-            entity_id (Ref): The entity to update
-            level (int): Number from 1-17 for level to write
-            val (Any, optional): Value to write or null to auto the level
-            duration (Quantity): Number with duration unit if setting level 8
-            who (str, optional): Optional username performing the write, otherwise user dis is used
-            date_version (datetime, optional): The optional date version to update
+            entity_id: The entity to update
+            level: Number from 1-17 for level to write
+            val: Value to write or null to auto the level
+            duration: Number with duration unit if setting level 8
+            who: Optional username performing the write, otherwise user dis is used
+            date_version: The optional date version to update
 
         Returns:
             None
@@ -584,14 +594,14 @@ the code detect that, and can calculate the set of implemented operations.</p></
             dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
             date_version: Optional[datetime] = None,
     ) -&gt; Grid:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;hisRead&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;hisRead&#39; ops.
 
         Args:
-            entity_id (Ref): The entity to read
-            dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date
-            range. May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
+            entity_id: The entity to read
+            dates_range: The date
+            range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
             {dateTime}
-            date_version ( datetime, optional): The optional date version to update
+            date_version: The optional date version to update
 
         Returns:
             A grid
@@ -605,12 +615,12 @@ the code detect that, and can calculate the set of implemented operations.</p></
             time_serie: Grid,
             date_version: Optional[datetime] = None
     ) -&gt; Grid:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;hisWrite&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;hisWrite&#39; ops.
 
         Args:
-            entity_id (Ref): The entity to read
-            time_serie (Grid): A grid with a time series
-            date_version (datetime, optional): The optional date version to update
+            entity_id: The entity to read
+            time_serie: A grid with a time series
+            date_version: The optional date version to update
 
         Returns:
             A grid
@@ -625,13 +635,13 @@ the code detect that, and can calculate the set of implemented operations.</p></
             params: Dict[str, Any],
             date_version: Optional[datetime] = None
     ) -&gt; Grid:  # pylint: disable=no-self-use
-        &#34;&#34;&#34; Implement the Haystack &#39;invokeAction&#39; ops
+        &#34;&#34;&#34; Implement the Haystack &#39;invokeAction&#39; ops.
 
         Args:
-            entity_id (Ref): The entity to read
-            action (str): The action string
-            params (Dict[str, Any]): A dictionary with parameters
-            date_version (datetime, optional): The optional date version to update
+            entity_id: The entity to read
+            action: The action string
+            params: A dictionary with parameters
+            date_version: The optional date version to update
 
         Returns:
             A grid
@@ -652,7 +662,7 @@ the code detect that, and can calculate the set of implemented operations.</p></
 <dl>
 <dt id="haystackapi.providers.HaystackInterface.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The name of the provider.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -660,6 +670,7 @@ the code detect that, and can calculate the set of implemented operations.</p></
 <pre><code class="python">@property
 @abstractmethod
 def name(self) -&gt; str:
+    &#34;&#34;&#34; The name of the provider. &#34;&#34;&#34;
     raise NotImplementedError()</code></pre>
 </details>
 </dd>
@@ -670,29 +681,32 @@ def name(self) -&gt; str:
 <span>def <span class="ident">about</span></span>(<span>self, home: str) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'about' ops</p>
-<h2 id="note">Note</h2>
-<p>Must be completed with "productUri", "productVersion", "moduleName" abd "moduleVersion"</p>
+<div class="desc"><p>Implement the Haystack 'about' ops.</p>
+<p>The subclasse must complet the result with "productUri", "productVersion", "moduleName"
+and "moduleVersion"</p>
 <h2 id="args">Args</h2>
-<p>home (:obj:<code>str</code>): Home url of the API</p>
+<dl>
+<dt><strong><code>home</code></strong></dt>
+<dd>Home url of the API</dd>
+</dl>
 <h2 id="returns">Returns</h2>
-<p>(:obj:<code>Grid</code>) the default 'about' grid.</p></div>
+<p>The default 'about' grid.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
 def about(self, home: str) -&gt; Grid:
-    &#34;&#34;&#34;Implement the Haystack &#39;about&#39; ops
+    &#34;&#34;&#34;Implement the Haystack &#39;about&#39; ops.
 
-    Note:
-        Must be completed with &#34;productUri&#34;, &#34;productVersion&#34;, &#34;moduleName&#34; abd &#34;moduleVersion&#34;
+    The subclasse must complet the result with &#34;productUri&#34;, &#34;productVersion&#34;, &#34;moduleName&#34;
+    and &#34;moduleVersion&#34;
 
     Args:
-        home (:obj:`str`): Home url of the API
+        home: Home url of the API
 
     Returns:
-        (:obj:`Grid`) the default &#39;about&#39; grid.
+        The default &#39;about&#39; grid.
     &#34;&#34;&#34;
     grid = Grid(
         version=VER_3_0,
@@ -731,21 +745,25 @@ def about(self, home: str) -&gt; Grid:
 </details>
 </dd>
 <dt id="haystackapi.providers.HaystackInterface.formats"><code class="name flex">
-<span>def <span class="ident">formats</span></span>(<span>self) ‑> haystackapi.grid.Grid</span>
+<span>def <span class="ident">formats</span></span>(<span>self) ‑> Union[haystackapi.grid.Grid, NoneType]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'formats' ops</p>
+<div class="desc"><p>Implement the Haystack 'formats' ops.</p>
 <h2 id="notes">Notes</h2>
-<p>Implement this method, only if you want to limit the format negotiation</p></div>
+<p>Implement this method, only if you want to limit the format negotiation</p>
+<h2 id="returns">Returns</h2>
+<p>The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def formats(self) -&gt; Grid:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;formats&#39; ops
+<pre><code class="python">def formats(self) -&gt; Optional[Grid]:  # pylint: disable=no-self-use
+    &#34;&#34;&#34; Implement the Haystack &#39;formats&#39; ops.
 
     Notes:
         Implement this method, only if you want to limit the format negotiation
+    Returns:
+        The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.
     &#34;&#34;&#34;
     return None  # type: ignore</code></pre>
 </details>
@@ -754,13 +772,16 @@ def about(self, home: str) -&gt; Grid:
 <span>def <span class="ident">get_customer_id</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Override this for multi-tenant</p></div>
+<div class="desc"><p>Override this for multi-tenant.
+May be, extract the curstomer id from the current <code>Principal</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_customer_id(self) -&gt; str:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Override this for multi-tenant&#34;&#34;&#34;
+    &#34;&#34;&#34; Override this for multi-tenant.
+    May be, extract the curstomer id from the current `Principal`.
+    &#34;&#34;&#34;
     return &#39;&#39;</code></pre>
 </details>
 </dd>
@@ -768,12 +789,13 @@ def about(self, home: str) -&gt; Grid:
 <span>def <span class="ident">get_tz</span></span>(<span>self) ‑> pytz.tzinfo.BaseTzInfo</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return server time zone.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_tz(self) -&gt; BaseTzInfo:  # pylint: disable=no-self-use
+    &#34;&#34;&#34; Return server time zone. &#34;&#34;&#34;
     return get_localzone()</code></pre>
 </details>
 </dd>
@@ -781,16 +803,17 @@ def about(self, home: str) -&gt; Grid:
 <span>def <span class="ident">his_read</span></span>(<span>self, entity_id: haystackapi.datatypes.Ref, dates_range: Union[datetime.datetime, str, Tuple[datetime.datetime, datetime.datetime]], date_version: Union[datetime.datetime, NoneType] = None) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'hisRead' ops</p>
+<div class="desc"><p>Implement the Haystack 'hisRead' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>entity_id</code></strong> :&ensp;<code>Ref</code></dt>
+<dt><strong><code>entity_id</code></strong></dt>
 <dd>The entity to read</dd>
-<dt><strong><code>dates_range</code></strong> :&ensp;<code>Union[Union[datetime, str], Tuple[datetime, datetime]]</code></dt>
+<dt><strong><code>dates_range</code></strong></dt>
 <dd>The date</dd>
-<dt>range. May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}),</dt>
+<dt><strong><code>range</code></strong></dt>
+<dd>May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}),</dd>
 <dt>{dateTime}</dt>
-<dt><strong><code>date_version</code></strong> :&ensp;<code> datetime</code>, optional</dt>
+<dt><strong><code>date_version</code></strong></dt>
 <dd>The optional date version to update</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -806,14 +829,14 @@ def his_read(
         dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
         date_version: Optional[datetime] = None,
 ) -&gt; Grid:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;hisRead&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;hisRead&#39; ops.
 
     Args:
-        entity_id (Ref): The entity to read
-        dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date
-        range. May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
+        entity_id: The entity to read
+        dates_range: The date
+        range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
         {dateTime}
-        date_version ( datetime, optional): The optional date version to update
+        date_version: The optional date version to update
 
     Returns:
         A grid
@@ -825,14 +848,14 @@ def his_read(
 <span>def <span class="ident">his_write</span></span>(<span>self, entity_id: haystackapi.datatypes.Ref, time_serie: haystackapi.grid.Grid, date_version: Union[datetime.datetime, NoneType] = None) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'hisWrite' ops</p>
+<div class="desc"><p>Implement the Haystack 'hisWrite' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>entity_id</code></strong> :&ensp;<code>Ref</code></dt>
+<dt><strong><code>entity_id</code></strong></dt>
 <dd>The entity to read</dd>
-<dt><strong><code>time_serie</code></strong> :&ensp;<code>Grid</code></dt>
+<dt><strong><code>time_serie</code></strong></dt>
 <dd>A grid with a time series</dd>
-<dt><strong><code>date_version</code></strong> :&ensp;<code>datetime</code>, optional</dt>
+<dt><strong><code>date_version</code></strong></dt>
 <dd>The optional date version to update</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -848,12 +871,12 @@ def his_write(
         time_serie: Grid,
         date_version: Optional[datetime] = None
 ) -&gt; Grid:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;hisWrite&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;hisWrite&#39; ops.
 
     Args:
-        entity_id (Ref): The entity to read
-        time_serie (Grid): A grid with a time series
-        date_version (datetime, optional): The optional date version to update
+        entity_id: The entity to read
+        time_serie: A grid with a time series
+        date_version: The optional date version to update
 
     Returns:
         A grid
@@ -865,16 +888,16 @@ def his_write(
 <span>def <span class="ident">invoke_action</span></span>(<span>self, entity_id: haystackapi.datatypes.Ref, action: str, params: Dict[str, Any], date_version: Union[datetime.datetime, NoneType] = None) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'invokeAction' ops</p>
+<div class="desc"><p>Implement the Haystack 'invokeAction' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>entity_id</code></strong> :&ensp;<code>Ref</code></dt>
+<dt><strong><code>entity_id</code></strong></dt>
 <dd>The entity to read</dd>
-<dt><strong><code>action</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>action</code></strong></dt>
 <dd>The action string</dd>
-<dt><strong><code>params</code></strong> :&ensp;<code>Dict[str, Any]</code></dt>
+<dt><strong><code>params</code></strong></dt>
 <dd>A dictionary with parameters</dd>
-<dt><strong><code>date_version</code></strong> :&ensp;<code>datetime</code>, optional</dt>
+<dt><strong><code>date_version</code></strong></dt>
 <dd>The optional date version to update</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -891,13 +914,13 @@ def invoke_action(
         params: Dict[str, Any],
         date_version: Optional[datetime] = None
 ) -&gt; Grid:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;invokeAction&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;invokeAction&#39; ops.
 
     Args:
-        entity_id (Ref): The entity to read
-        action (str): The action string
-        params (Dict[str, Any]): A dictionary with parameters
-        date_version (datetime, optional): The optional date version to update
+        entity_id: The entity to read
+        action: The action string
+        params: A dictionary with parameters
+        date_version: The optional date version to update
 
     Returns:
         A grid
@@ -909,12 +932,12 @@ def invoke_action(
 <span>def <span class="ident">nav</span></span>(<span>self, nav_id: str) ‑> Any</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'nav' ops
+<div class="desc"><p>Implement the Haystack 'nav' ops.
 This operation allows servers to expose the database in a human-friendly tree (or graph)
 that can be explored</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>nav_id</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>nav_id</code></strong></dt>
 <dd>The string for nav id column</dd>
 </dl></div>
 <details class="source">
@@ -923,12 +946,12 @@ that can be explored</p>
 </summary>
 <pre><code class="python">@abstractmethod
 def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;nav&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;nav&#39; ops.
     This operation allows servers to expose the database in a human-friendly tree (or graph)
     that can be explored
 
     Args:
-         nav_id (str): The string for nav id column
+         nav_id: The string for nav id column
     &#34;&#34;&#34;
     raise NotImplementedError()</code></pre>
 </details>
@@ -937,7 +960,7 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
 <span>def <span class="ident">ops</span></span>(<span>self) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'ops' ops</p>
+<div class="desc"><p>Implement the Haystack 'ops' ops.</p>
 <h2 id="notes">Notes</h2>
 <p>Automatically calculate the implemented version.</p>
 <h2 id="returns">Returns</h2>
@@ -947,7 +970,7 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def ops(self) -&gt; Grid:
-    &#34;&#34;&#34; Implement the Haystack &#39;ops&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;ops&#39; ops.
 
     Notes:
         Automatically calculate the implemented version.
@@ -1008,12 +1031,12 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
 <span>def <span class="ident">point_write_read</span></span>(<span>self, entity_id: haystackapi.datatypes.Ref, date_version: Union[datetime.datetime, NoneType]) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'pointWrite' ops</p>
+<div class="desc"><p>Implement the Haystack 'pointWrite' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>entity_id</code></strong> :&ensp;<code>Ref</code></dt>
+<dt><strong><code>entity_id</code></strong></dt>
 <dd>The entity to update</dd>
-<dt><strong><code>date_version</code></strong> :&ensp;<code>datetime</code>, optional</dt>
+<dt><strong><code>date_version</code></strong></dt>
 <dd>The optional date version to update</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -1026,11 +1049,11 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
 def point_write_read(
         self, entity_id: Ref, date_version: Optional[datetime]
 ) -&gt; Grid:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops.
 
     Args:
-        entity_id (Ref): The entity to update
-        date_version (datetime, optional): The optional date version to update
+        entity_id: The entity to update
+        date_version: The optional date version to update
 
     Returns:
         A Grid
@@ -1042,20 +1065,20 @@ def point_write_read(
 <span>def <span class="ident">point_write_write</span></span>(<span>self, entity_id: haystackapi.datatypes.Ref, level: int, val: Union[Any, NoneType], duration: haystackapi.datatypes.Quantity, who: Union[str, NoneType], date_version: Union[datetime.datetime, NoneType] = None) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'pointWrite' ops</p>
+<div class="desc"><p>Implement the Haystack 'pointWrite' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>entity_id</code></strong> :&ensp;<code>Ref</code></dt>
+<dt><strong><code>entity_id</code></strong></dt>
 <dd>The entity to update</dd>
-<dt><strong><code>level</code></strong> :&ensp;<code>int</code></dt>
+<dt><strong><code>level</code></strong></dt>
 <dd>Number from 1-17 for level to write</dd>
-<dt><strong><code>val</code></strong> :&ensp;<code>Any</code>, optional</dt>
+<dt><strong><code>val</code></strong></dt>
 <dd>Value to write or null to auto the level</dd>
-<dt><strong><code>duration</code></strong> :&ensp;<code>Quantity</code></dt>
+<dt><strong><code>duration</code></strong></dt>
 <dd>Number with duration unit if setting level 8</dd>
-<dt><strong><code>who</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dt><strong><code>who</code></strong></dt>
 <dd>Optional username performing the write, otherwise user dis is used</dd>
-<dt><strong><code>date_version</code></strong> :&ensp;<code>datetime</code>, optional</dt>
+<dt><strong><code>date_version</code></strong></dt>
 <dd>The optional date version to update</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -1074,15 +1097,15 @@ def point_write_write(
         who: Optional[str],
         date_version: Optional[datetime] = None,
 ) -&gt; None:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;pointWrite&#39; ops.
 
     Args:
-        entity_id (Ref): The entity to update
-        level (int): Number from 1-17 for level to write
-        val (Any, optional): Value to write or null to auto the level
-        duration (Quantity): Number with duration unit if setting level 8
-        who (str, optional): Optional username performing the write, otherwise user dis is used
-        date_version (datetime, optional): The optional date version to update
+        entity_id: The entity to update
+        level: Number from 1-17 for level to write
+        val: Value to write or null to auto the level
+        duration: Number with duration unit if setting level 8
+        who: Optional username performing the write, otherwise user dis is used
+        date_version: The optional date version to update
 
     Returns:
         None
@@ -1094,19 +1117,19 @@ def point_write_write(
 <span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Union[str, NoneType], entity_ids: Union[List[haystackapi.datatypes.Ref], NoneType], grid_filter: Union[str, NoneType], date_version: Union[datetime.datetime, NoneType]) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'read' ops</p>
+<div class="desc"><p>Implement the Haystack 'read' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>limit</code></strong> :&ensp;<code>int</code></dt>
+<dt><strong><code>limit</code></strong></dt>
 <dd>The number of record to return or zero</dd>
-<dt><strong><code>select</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dt><strong><code>select</code></strong></dt>
 <dd>The selected tag separated with comma, else '' or '*'</dd>
-<dt><strong><code>entity_ids</code></strong> :&ensp;<code>List[Ref]</code>, optional</dt>
-<dd>A list en ids. If set, grid_filter and limit are ignored</dd>
-<dt><strong><code>grid_filter</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dt><strong><code>entity_ids</code></strong></dt>
+<dd>A list en ids. If set, grid_filter and limit are ignored.</dd>
+<dt><strong><code>grid_filter</code></strong></dt>
 <dd>A filter to apply. Ignored if entity_ids is set.</dd>
-<dt><strong><code>date_version</code></strong> :&ensp;<code>datetime</code>, optional</dt>
-<dd>The date to return of the last version.</dd>
+<dt><strong><code>date_version</code></strong></dt>
+<dd>The date of the ontology version.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>The requested Grid</p></div>
@@ -1124,14 +1147,14 @@ def read(
         date_version: Optional[datetime],
 ) -&gt; Grid:  # pylint: disable=no-self-use
     &#34;&#34;&#34;
-    Implement the Haystack &#39;read&#39; ops
+    Implement the Haystack &#39;read&#39; ops.
 
     Args:
-        limit (int): The number of record to return or zero
-        select (str, optional): The selected tag separated with comma, else &#39;&#39; or &#39;*&#39;
-        entity_ids (List[Ref], optional): A list en ids. If set, grid_filter and limit are ignored
-        grid_filter (str, optional): A filter to apply. Ignored if entity_ids is set.
-        date_version (datetime, optional): The date to return of the last version.
+        limit: The number of record to return or zero
+        select: The selected tag separated with comma, else &#39;&#39; or &#39;*&#39;
+        entity_ids: A list en ids. If set, grid_filter and limit are ignored.
+        grid_filter: A filter to apply. Ignored if entity_ids is set.
+        date_version: The date of the ontology version.
 
     Returns:
         The requested Grid
@@ -1144,26 +1167,30 @@ def read(
 <span>def <span class="ident">values_for_tag</span></span>(<span>self, tag: str, date_version: Union[datetime.datetime, NoneType] = None) ‑> List[Any]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Get all values for a given tag</p>
+<div class="desc"><p>Get all values for a given tag.</p>
 <h2 id="args">Args</h2>
-<p>tag (:obj:<code>str</code>): tag
-date_version (:obj:<code>datetime</code>, optional): version date</p>
+<dl>
+<dt><strong><code>tag</code></strong></dt>
+<dd>The tag to analyse.</dd>
+<dt><strong><code>date_version</code></strong></dt>
+<dd>version date of the ontology.</dd>
+</dl>
 <h2 id="returns">Returns</h2>
-<p>(:obj:<code>List[Any]</code>) All unique values for a specific tag</p></div>
+<p>All unique values for a specific tag</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def values_for_tag(self, tag: str,
                    date_version: Optional[datetime] = None) -&gt; List[Any]:
-    &#34;&#34;&#34;Get all values for a given tag
+    &#34;&#34;&#34;Get all values for a given tag.
 
     Args:
-        tag (:obj:`str`): tag
-        date_version (:obj:`datetime`, optional): version date
+        tag: The tag to analyse.
+        date_version: version date of the ontology.
 
     Returns:
-        (:obj:`List[Any]`) All unique values for a specific tag
+        All unique values for a specific tag
     &#34;&#34;&#34;
     raise NotImplementedError()</code></pre>
 </details>
@@ -1172,7 +1199,8 @@ date_version (:obj:<code>datetime</code>, optional): version date</p>
 <span>def <span class="ident">versions</span></span>(<span>self) ‑> List[datetime.datetime]</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="returns">Returns</h2>
+<div class="desc"><p>Return a list of versions fot the current ontology.</p>
+<h2 id="returns">Returns</h2>
 <p>datetime for each version or empty array if unknown</p></div>
 <details class="source">
 <summary>
@@ -1180,6 +1208,7 @@ date_version (:obj:<code>datetime</code>, optional): version date</p>
 </summary>
 <pre><code class="python">def versions(self) -&gt; List[datetime]:  # pylint: disable=no-self-use
     &#34;&#34;&#34;
+    Return a list of versions fot the current ontology.
     Returns:
         datetime for each version or empty array if unknown
     &#34;&#34;&#34;
@@ -1190,12 +1219,12 @@ date_version (:obj:<code>datetime</code>, optional): version date</p>
 <span>def <span class="ident">watch_poll</span></span>(<span>self, watch_id: str, refresh: bool) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'watchPoll' ops</p>
+<div class="desc"><p>Implement the Haystack 'watchPoll' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>watch_id</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>watch_id</code></strong></dt>
 <dd>The user watch_id to update or None</dd>
-<dt><strong><code>refresh</code></strong> :&ensp;<code>bool</code></dt>
+<dt><strong><code>refresh</code></strong></dt>
 <dd>Set to True for refreshing the data</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -1208,11 +1237,11 @@ date_version (:obj:<code>datetime</code>, optional): version date</p>
 def watch_poll(
         self, watch_id: str, refresh: bool
 ) -&gt; Grid:  # pylint: disable=no-self-use
-    &#34;&#34;&#34; Implement the Haystack &#39;watchPoll&#39; ops
+    &#34;&#34;&#34; Implement the Haystack &#39;watchPoll&#39; ops.
 
     Args:
-        watch_id (str): The user watch_id to update or None
-        refresh (bool): Set to True for refreshing the data
+        watch_id: The user watch_id to update or None
+        refresh: Set to True for refreshing the data
 
     Returns:
         A Grid where each row corresponds to a watched entity.
@@ -1224,17 +1253,17 @@ def watch_poll(
 <span>def <span class="ident">watch_sub</span></span>(<span>self, watch_dis: str, watch_id: Union[str, NoneType], ids: List[haystackapi.datatypes.Ref], lease: Union[int, NoneType]) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'watchSub' ops</p>
+<div class="desc"><p>Implement the Haystack 'watchSub' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>watch_dis</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>watch_dis</code></strong></dt>
 <dd>Watch description</dd>
-<dt><strong><code>watch_id</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The user watch_id to update or None</dd>
-<dt><strong><code>ids</code></strong> :&ensp;<code>List[Ref]</code></dt>
-<dd>The list of ids to watch</dd>
-<dt><strong><code>lease</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Lease to apply</dd>
+<dt><strong><code>watch_id</code></strong></dt>
+<dd>The user watch_id to update or None.</dd>
+<dt><strong><code>ids</code></strong></dt>
+<dd>The list of ids to watch.</dd>
+<dt><strong><code>lease</code></strong></dt>
+<dd>Lease to apply.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>A Grid</p></div>
@@ -1251,13 +1280,13 @@ def watch_sub(
         lease: Optional[int],
 ) -&gt; Grid:  # pylint: disable=no-self-use
     &#34;&#34;&#34;
-    Implement the Haystack &#39;watchSub&#39; ops
+    Implement the Haystack &#39;watchSub&#39; ops.
 
     Args:
-        watch_dis (str): Watch description
-        watch_id (str, optional): The user watch_id to update or None
-        ids (List[Ref]): The list of ids to watch
-        lease (int, optional): Lease to apply
+        watch_dis: Watch description
+        watch_id: The user watch_id to update or None.
+        ids: The list of ids to watch.
+        lease: Lease to apply.
 
     Returns:
         A Grid
@@ -1269,14 +1298,14 @@ def watch_sub(
 <span>def <span class="ident">watch_unsub</span></span>(<span>self, watch_id: str, ids: List[haystackapi.datatypes.Ref], close: bool) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'watchUnsub' ops</p>
+<div class="desc"><p>Implement the Haystack 'watchUnsub' ops.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>watch_id</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>watch_id</code></strong></dt>
 <dd>The user watch_id to update or None</dd>
-<dt><strong><code>ids</code></strong> :&ensp;<code>List[Ref]</code></dt>
+<dt><strong><code>ids</code></strong></dt>
 <dd>The list of ids to watch</dd>
-<dt><strong><code>close</code></strong> :&ensp;<code>bool</code></dt>
+<dt><strong><code>close</code></strong></dt>
 <dd>Set to True to close</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -1290,12 +1319,12 @@ def watch_unsub(
         self, watch_id: str, ids: List[Ref], close: bool
 ) -&gt; Grid:  # pylint: disable=no-self-use
     &#34;&#34;&#34;
-    Implement the Haystack &#39;watchUnsub&#39; ops
+    Implement the Haystack &#39;watchUnsub&#39; ops.
 
     Args:
-        watch_id (str): The user watch_id to update or None
-        ids (List[Ref]): The list of ids to watch
-        close (bool): Set to True to close
+        watch_id: The user watch_id to update or None
+        ids: The list of ids to watch
+        close: Set to True to close
 
     Returns:
         A Grid

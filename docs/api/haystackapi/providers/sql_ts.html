@@ -23,7 +23,7 @@
 </header>
 <section id="section-intro">
 <p>Add the persistance of time-series with TS database.</p>
-<p>Set the HAYSTACK_TS with Timeseries database connection URL,
+<p>Set the HAYSTACK_TS with Time-series database connection URL,
 (timestream://HaystackAPIDemo/?mem_ttl=1&amp;mag_ttl=100#haystack)</p>
 <details class="source">
 <summary>
@@ -38,7 +38,7 @@
 &#34;&#34;&#34;
 Add the persistance of time-series with TS database.
 
-Set the HAYSTACK_TS with Timeseries database connection URL,
+Set the HAYSTACK_TS with Time-series database connection URL,
 (timestream://HaystackAPIDemo/?mem_ttl=1&amp;mag_ttl=100#haystack)
 &#34;&#34;&#34;
 import os
@@ -59,9 +59,9 @@ from .sql import log
 from ..datatypes import Ref, MARKER, REMOVE, Coordinate, Quantity, NA, XStr
 from ..grid import Grid
 
-MAX_ROWS_BY_WRITE = 100
-DEFAULT_MEM_TTL = 8766
-DEFAULT_MAG_TTL = 400
+_MAX_ROWS_BY_WRITE = 100
+_DEFAULT_MEM_TTL = 8766
+_DEFAULT_MAG_TTL = 400
 
 
 def _create_database(client: BaseClient,
@@ -118,9 +118,8 @@ def _delete_table(client: BaseClient,
 
 class Provider(SQLProvider):
     &#34;&#34;&#34;
-    Expose an Haystack data via the Haystactk Rest API and SQL+TS databases
+    Expose an Haystack data via the Haystack Rest API and SQL+TS databases
     &#34;&#34;&#34;
-
     @property
     def name(self) -&gt; str:
         return &#34;SQL+timeseries&#34;
@@ -199,10 +198,10 @@ class Provider(SQLProvider):
                 &#34;MeasureValue&#34;: cast_fn(row[&#34;val&#34;]),
             } for row in time_series]
 
-            for i in range(0, len(records), MAX_ROWS_BY_WRITE):
+            for i in range(0, len(records), _MAX_ROWS_BY_WRITE):
                 result = client.write_records(DatabaseName=self._ts_database_name,
                                               TableName=self._ts_table_name,
-                                              Records=records[i:i + MAX_ROWS_BY_WRITE],
+                                              Records=records[i:i + _MAX_ROWS_BY_WRITE],
                                               CommonAttributes=common_attributs)
                 log.debug(&#34;WriteRecords Status: [%s]&#34;, result[&#39;ResponseMetadata&#39;][&#39;HTTPStatusCode&#39;])
         except client.exceptions.RejectedRecordsException as err:
@@ -271,7 +270,7 @@ class Provider(SQLProvider):
             return val
         if python_type == &#34;float&#34;:
             return float(val)
-        if python_type == &#34;PintQuantity&#34;:
+        if python_type == &#34;_PintQuantity&#34;:
             return Quantity(float(val), unit)
         if python_type == &#34;Quantity&#34;:
             return Quantity(float(val), unit)
@@ -279,11 +278,11 @@ class Provider(SQLProvider):
             return val.lower() == &#39;true&#39;
         if python_type == &#34;int&#34;:
             return int(float(val))
-        if python_type == &#34;MarkerType&#34;:
+        if python_type == &#34;_MarkerType&#34;:
             return MARKER if val else None
-        if python_type == &#34;RemoveType&#34;:
+        if python_type == &#34;_RemoveType&#34;:
             return REMOVE if val else None
-        if python_type == &#34;NAType&#34;:
+        if python_type == &#34;_NAType&#34;:
             return NA if val else None
         if python_type == &#34;Ref&#34;:
             return Ref(val)
@@ -384,14 +383,16 @@ class Provider(SQLProvider):
             raise
 
     def create_ts(self) -&gt; None:
+        &#34;&#34;&#34; Create the time serie database and schema. &#34;&#34;&#34;
         client = self._get_write_client()
         _create_database(client, self._ts_database_name)
         pqs = parse_qs(self._parsed_ts.query)
-        mem_ttl = int(pqs[&#34;mem_ttl&#34;][0]) if &#34;mem_ttl&#34; in pqs else DEFAULT_MEM_TTL
-        mag_ttl = int(pqs[&#34;mag_ttl&#34;][0]) if &#34;mag_ttl&#34; in pqs else DEFAULT_MAG_TTL
+        mem_ttl = int(pqs[&#34;mem_ttl&#34;][0]) if &#34;mem_ttl&#34; in pqs else _DEFAULT_MEM_TTL
+        mag_ttl = int(pqs[&#34;mag_ttl&#34;][0]) if &#34;mag_ttl&#34; in pqs else _DEFAULT_MAG_TTL
         _create_table(client, self._ts_database_name, self._ts_table_name, mem_ttl, mag_ttl)
 
     def purge_ts(self) -&gt; None:
+        &#34;&#34;&#34; Purge the timeserie database. &#34;&#34;&#34;
         _delete_table(self._get_write_client(), self._ts_database_name, self._ts_table_name)
 
     @overrides
@@ -413,16 +414,15 @@ class Provider(SQLProvider):
 <span>class <span class="ident">Provider</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Expose an Haystack data via the Haystactk Rest API and SQL+TS databases</p></div>
+<div class="desc"><p>Expose an Haystack data via the Haystack Rest API and SQL+TS databases</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Provider(SQLProvider):
     &#34;&#34;&#34;
-    Expose an Haystack data via the Haystactk Rest API and SQL+TS databases
+    Expose an Haystack data via the Haystack Rest API and SQL+TS databases
     &#34;&#34;&#34;
-
     @property
     def name(self) -&gt; str:
         return &#34;SQL+timeseries&#34;
@@ -501,10 +501,10 @@ class Provider(SQLProvider):
                 &#34;MeasureValue&#34;: cast_fn(row[&#34;val&#34;]),
             } for row in time_series]
 
-            for i in range(0, len(records), MAX_ROWS_BY_WRITE):
+            for i in range(0, len(records), _MAX_ROWS_BY_WRITE):
                 result = client.write_records(DatabaseName=self._ts_database_name,
                                               TableName=self._ts_table_name,
-                                              Records=records[i:i + MAX_ROWS_BY_WRITE],
+                                              Records=records[i:i + _MAX_ROWS_BY_WRITE],
                                               CommonAttributes=common_attributs)
                 log.debug(&#34;WriteRecords Status: [%s]&#34;, result[&#39;ResponseMetadata&#39;][&#39;HTTPStatusCode&#39;])
         except client.exceptions.RejectedRecordsException as err:
@@ -573,7 +573,7 @@ class Provider(SQLProvider):
             return val
         if python_type == &#34;float&#34;:
             return float(val)
-        if python_type == &#34;PintQuantity&#34;:
+        if python_type == &#34;_PintQuantity&#34;:
             return Quantity(float(val), unit)
         if python_type == &#34;Quantity&#34;:
             return Quantity(float(val), unit)
@@ -581,11 +581,11 @@ class Provider(SQLProvider):
             return val.lower() == &#39;true&#39;
         if python_type == &#34;int&#34;:
             return int(float(val))
-        if python_type == &#34;MarkerType&#34;:
+        if python_type == &#34;_MarkerType&#34;:
             return MARKER if val else None
-        if python_type == &#34;RemoveType&#34;:
+        if python_type == &#34;_RemoveType&#34;:
             return REMOVE if val else None
-        if python_type == &#34;NAType&#34;:
+        if python_type == &#34;_NAType&#34;:
             return NA if val else None
         if python_type == &#34;Ref&#34;:
             return Ref(val)
@@ -686,14 +686,16 @@ class Provider(SQLProvider):
             raise
 
     def create_ts(self) -&gt; None:
+        &#34;&#34;&#34; Create the time serie database and schema. &#34;&#34;&#34;
         client = self._get_write_client()
         _create_database(client, self._ts_database_name)
         pqs = parse_qs(self._parsed_ts.query)
-        mem_ttl = int(pqs[&#34;mem_ttl&#34;][0]) if &#34;mem_ttl&#34; in pqs else DEFAULT_MEM_TTL
-        mag_ttl = int(pqs[&#34;mag_ttl&#34;][0]) if &#34;mag_ttl&#34; in pqs else DEFAULT_MAG_TTL
+        mem_ttl = int(pqs[&#34;mem_ttl&#34;][0]) if &#34;mem_ttl&#34; in pqs else _DEFAULT_MEM_TTL
+        mag_ttl = int(pqs[&#34;mag_ttl&#34;][0]) if &#34;mag_ttl&#34; in pqs else _DEFAULT_MAG_TTL
         _create_table(client, self._ts_database_name, self._ts_table_name, mem_ttl, mag_ttl)
 
     def purge_ts(self) -&gt; None:
+        &#34;&#34;&#34; Purge the timeserie database. &#34;&#34;&#34;
         _delete_table(self._get_write_client(), self._ts_database_name, self._ts_table_name)
 
     @overrides
@@ -707,139 +709,38 @@ class Provider(SQLProvider):
 <li><a title="haystackapi.providers.haystack_interface.HaystackInterface" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface">HaystackInterface</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Instance variables</h3>
-<dl>
-<dt id="haystackapi.providers.sql_ts.Provider.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def name(self) -&gt; str:
-    return &#34;SQL+timeseries&#34;</code></pre>
-</details>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="haystackapi.providers.sql_ts.Provider.create_db"><code class="name flex">
-<span>def <span class="ident">create_db</span></span>(<span>self) ‑> NoneType</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@overrides
-def create_db(self) -&gt; None:
-    super().create_db()
-    self.create_ts()</code></pre>
-</details>
-</dd>
 <dt id="haystackapi.providers.sql_ts.Provider.create_ts"><code class="name flex">
 <span>def <span class="ident">create_ts</span></span>(<span>self) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Create the time serie database and schema.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def create_ts(self) -&gt; None:
+    &#34;&#34;&#34; Create the time serie database and schema. &#34;&#34;&#34;
     client = self._get_write_client()
     _create_database(client, self._ts_database_name)
     pqs = parse_qs(self._parsed_ts.query)
-    mem_ttl = int(pqs[&#34;mem_ttl&#34;][0]) if &#34;mem_ttl&#34; in pqs else DEFAULT_MEM_TTL
-    mag_ttl = int(pqs[&#34;mag_ttl&#34;][0]) if &#34;mag_ttl&#34; in pqs else DEFAULT_MAG_TTL
+    mem_ttl = int(pqs[&#34;mem_ttl&#34;][0]) if &#34;mem_ttl&#34; in pqs else _DEFAULT_MEM_TTL
+    mag_ttl = int(pqs[&#34;mag_ttl&#34;][0]) if &#34;mag_ttl&#34; in pqs else _DEFAULT_MAG_TTL
     _create_table(client, self._ts_database_name, self._ts_table_name, mem_ttl, mag_ttl)</code></pre>
-</details>
-</dd>
-<dt id="haystackapi.providers.sql_ts.Provider.import_ts_in_db"><code class="name flex">
-<span>def <span class="ident">import_ts_in_db</span></span>(<span>self, time_series: haystackapi.grid.Grid, entity_id: haystackapi.datatypes.Ref, customer_id: Union[str, NoneType], now: Union[datetime.datetime, NoneType] = None) ‑> NoneType</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@overrides
-def import_ts_in_db(self, time_series: Grid,
-                    entity_id: Ref,
-                    customer_id: Optional[str],
-                    now: Optional[datetime] = None
-                    ) -&gt; None:
-    client = self._get_write_client()
-    try:
-        if not time_series:
-            return  # Empty
-        value = time_series[0][&#34;val&#34;]  # Suppose all values share the same type
-        cast_fn, target_type = Provider._hs_to_timestream_type(value)
-        if not customer_id:  # Empty string ?
-            customer_id = None
-        common_attributs = {
-            &#39;Dimensions&#39;: list(filter(lambda x: x[&#39;Value&#39;] is not None, [
-                {&#39;Name&#39;: &#39;id&#39;, &#39;Value&#39;: entity_id.name},
-                {&#39;Name&#39;: &#39;hs_type&#39;, &#39;Value&#39;: type(value).__name__},
-                {&#39;Name&#39;: &#39;unit&#39;, &#39;Value&#39;: value.unit if isinstance(value, Quantity) else &#34; &#34;},
-                {&#39;Name&#39;: &#39;customer_id&#39;, &#39;Value&#39;: customer_id}
-            ])),
-            &#39;MeasureName&#39;: &#39;val&#39;,
-            &#39;MeasureValueType&#39;: target_type,  # DOUBLE | BIGINT | VARCHAR | BOOLEAN
-            &#39;TimeUnit&#39;: &#39;MICROSECONDS&#39;,  # MILLISECONDS | SECONDS | MICROSECONDS | NANOSECONDS
-            &#39;Version&#39;: int(round(datetime.now().timestamp() * 1000000))
-        }
-
-        records = [{
-            &#39;Time&#39;: str(int(round(row[&#34;ts&#34;].timestamp() * 1000000))),
-            &#34;MeasureValue&#34;: cast_fn(row[&#34;val&#34;]),
-        } for row in time_series]
-
-        for i in range(0, len(records), MAX_ROWS_BY_WRITE):
-            result = client.write_records(DatabaseName=self._ts_database_name,
-                                          TableName=self._ts_table_name,
-                                          Records=records[i:i + MAX_ROWS_BY_WRITE],
-                                          CommonAttributes=common_attributs)
-            log.debug(&#34;WriteRecords Status: [%s]&#34;, result[&#39;ResponseMetadata&#39;][&#39;HTTPStatusCode&#39;])
-    except client.exceptions.RejectedRecordsException as err:
-        log.error(&#34;RejectedRecords: %s&#34;, err)
-        for rejected_record in err.response[&#34;RejectedRecords&#34;]:
-            log.error(&#39; [%s:%s]: %s&#39;,
-                      str(rejected_record[&#34;RecordIndex&#34;]),
-                      time_series[rejected_record[&#34;RecordIndex&#34;]][&#34;ts&#34;],
-                      rejected_record[&#34;Reason&#34;]
-                      )
-        raise</code></pre>
-</details>
-</dd>
-<dt id="haystackapi.providers.sql_ts.Provider.purge_db"><code class="name flex">
-<span>def <span class="ident">purge_db</span></span>(<span>self) ‑> NoneType</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@overrides
-def purge_db(self) -&gt; None:
-    super().purge_db()
-    self.purge_ts()</code></pre>
 </details>
 </dd>
 <dt id="haystackapi.providers.sql_ts.Provider.purge_ts"><code class="name flex">
 <span>def <span class="ident">purge_ts</span></span>(<span>self) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Purge the timeserie database.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def purge_ts(self) -&gt; None:
+    &#34;&#34;&#34; Purge the timeserie database. &#34;&#34;&#34;
     _delete_table(self._get_write_client(), self._ts_database_name, self._ts_table_name)</code></pre>
 </details>
 </dd>
@@ -849,17 +750,24 @@ def purge_db(self) -&gt; None:
 <li><code><b><a title="haystackapi.providers.sql.Provider" href="sql.html#haystackapi.providers.sql.Provider">Provider</a></b></code>:
 <ul class="hlist">
 <li><code><a title="haystackapi.providers.sql.Provider.about" href="sql.html#haystackapi.providers.sql.Provider.about">about</a></code></li>
+<li><code><a title="haystackapi.providers.sql.Provider.create_db" href="sql.html#haystackapi.providers.sql.Provider.create_db">create_db</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.formats" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.formats">formats</a></code></li>
+<li><code><a title="haystackapi.providers.sql.Provider.get_connect" href="sql.html#haystackapi.providers.sql.Provider.get_connect">get_connect</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.get_customer_id" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.get_customer_id">get_customer_id</a></code></li>
+<li><code><a title="haystackapi.providers.sql.Provider.get_tz" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.get_tz">get_tz</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.his_read" href="sql.html#haystackapi.providers.sql.Provider.his_read">his_read</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.his_write" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.his_write">his_write</a></code></li>
+<li><code><a title="haystackapi.providers.sql.Provider.import_ts_in_db" href="sql.html#haystackapi.providers.sql.Provider.import_ts_in_db">import_ts_in_db</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.invoke_action" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.invoke_action">invoke_action</a></code></li>
+<li><code><a title="haystackapi.providers.sql.Provider.name" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.name">name</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.nav" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.nav">nav</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.ops" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.ops">ops</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.point_write_read" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.point_write_read">point_write_read</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.point_write_write" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.point_write_write">point_write_write</a></code></li>
+<li><code><a title="haystackapi.providers.sql.Provider.purge_db" href="sql.html#haystackapi.providers.sql.Provider.purge_db">purge_db</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.read" href="sql.html#haystackapi.providers.sql.Provider.read">read</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.read_grid_from_db" href="sql.html#haystackapi.providers.sql.Provider.read_grid_from_db">read_grid_from_db</a></code></li>
+<li><code><a title="haystackapi.providers.sql.Provider.update_grid_in_db" href="sql.html#haystackapi.providers.sql.Provider.update_grid_in_db">update_grid_in_db</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.values_for_tag" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.values_for_tag">values_for_tag</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.versions" href="sql.html#haystackapi.providers.sql.Provider.versions">versions</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.watch_poll" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.watch_poll">watch_poll</a></code></li>
@@ -887,12 +795,8 @@ def purge_db(self) -&gt; None:
 <ul>
 <li>
 <h4><code><a title="haystackapi.providers.sql_ts.Provider" href="#haystackapi.providers.sql_ts.Provider">Provider</a></code></h4>
-<ul class="two-column">
-<li><code><a title="haystackapi.providers.sql_ts.Provider.create_db" href="#haystackapi.providers.sql_ts.Provider.create_db">create_db</a></code></li>
+<ul class="">
 <li><code><a title="haystackapi.providers.sql_ts.Provider.create_ts" href="#haystackapi.providers.sql_ts.Provider.create_ts">create_ts</a></code></li>
-<li><code><a title="haystackapi.providers.sql_ts.Provider.import_ts_in_db" href="#haystackapi.providers.sql_ts.Provider.import_ts_in_db">import_ts_in_db</a></code></li>
-<li><code><a title="haystackapi.providers.sql_ts.Provider.name" href="#haystackapi.providers.sql_ts.Provider.name">name</a></code></li>
-<li><code><a title="haystackapi.providers.sql_ts.Provider.purge_db" href="#haystackapi.providers.sql_ts.Provider.purge_db">purge_db</a></code></li>
 <li><code><a title="haystackapi.providers.sql_ts.Provider.purge_ts" href="#haystackapi.providers.sql_ts.Provider.purge_ts">purge_ts</a></code></li>
 </ul>
 </li>

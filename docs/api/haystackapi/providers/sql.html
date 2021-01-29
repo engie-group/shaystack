@@ -29,6 +29,7 @@ May be:
 - postgresql://scott:tiger@localhost/mydatabase#mytable
 - postgresql+psycopg2://scott:tiger@localhost/mydatabase
 - sqlite3://test.db#haystack</p>
+<p>Each entity was save in one SQL row. A column save the JSON version of entity.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -48,6 +49,8 @@ May be:
 - postgresql://scott:tiger@localhost/mydatabase#mytable
 - postgresql+psycopg2://scott:tiger@localhost/mydatabase
 - sqlite3://test.db#haystack
+
+Each entity was save in one SQL row. A column save the JSON version of entity.
 &#34;&#34;&#34;
 import base64
 import importlib
@@ -82,11 +85,11 @@ except ImportError:
 
 log = logging.getLogger(&#34;sql.Provider&#34;)
 
-BOTO3_AVAILABLE = False
+_BOTO3_AVAILABLE = False
 try:
     import boto3
 
-    BOTO3_AVAILABLE = True
+    _BOTO3_AVAILABLE = True
 except ImportError:
     pass
 
@@ -144,7 +147,7 @@ def _fix_dialect_alias(dialect: str) -&gt; str:
 
 class Provider(HaystackInterface):
     &#34;&#34;&#34;
-    Expose an Haystack data via the Haystactk Rest API and SQL databases
+    Expose an Haystack data via the Haystack Rest API and SQL databases
     &#34;&#34;&#34;
 
     @property
@@ -169,6 +172,9 @@ class Provider(HaystackInterface):
         return os.environ[&#34;HAYSTACK_DB&#34;]
 
     def create_db(self) -&gt; None:
+        &#34;&#34;&#34;
+        Create the database and schema.
+        &#34;&#34;&#34;
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -188,6 +194,7 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
+    @overrides
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -&gt; List[Any]:
         customer_id = self.get_customer_id()
@@ -205,6 +212,7 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
+    @overrides
     def versions(self) -&gt; List[datetime]:
         &#34;&#34;&#34;
         Return datetime for each versions or empty array if is unknown
@@ -349,6 +357,7 @@ class Provider(HaystackInterface):
         self._connect = False
 
     def get_connect(self) -&gt; DBConnection:  # PPR: monothread ? No with Zappa
+        &#34;&#34;&#34; Return current connection to database. &#34;&#34;&#34;
         if not self._connect and self._dialect:  # Lazy connection
             if self._dialect not in self._default_driver:
                 raise ValueError(f&#34;Dialect &#39;{self._dialect}&#39; not supported&#34;)
@@ -379,7 +388,7 @@ class Provider(HaystackInterface):
         return self._connect
 
     def _get_secret_manager_secret(self) -&gt; str:  # pylint: disable=no-self-use
-        if not BOTO3_AVAILABLE:
+        if not _BOTO3_AVAILABLE:
             return &#34;secretManager&#34;
 
         secret_name = os.environ[&#39;HAYSTACK_DB_SECRET&#39;]
@@ -446,6 +455,21 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
+    def _dialect_request(self, dialect: str) -&gt; Dict[str, Any]:
+        table_name = self._parsed_db.fragment
+        if dialect == &#34;sqlite3&#34;:
+            # Lazy import
+            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
+            return get_sqlite_parameters(table_name)
+        if dialect == &#34;supersqlite&#34;:
+            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
+            return get_sqlite_parameters(table_name)
+        if dialect == &#34;postgresql&#34;:
+            from .db_postgres import \
+                get_db_parameters as get_postgres_parameters  # pylint: disable=import-outside-toplevel
+            return get_postgres_parameters(table_name)
+        raise ValueError(&#34;Dialog not implemented&#34;)
+
     def read_grid_from_db(self,
                           customer: Optional[str],
                           version: Optional[datetime]) -&gt; Grid:
@@ -479,6 +503,7 @@ class Provider(HaystackInterface):
             cursor.close()
 
     def purge_db(self) -&gt; None:
+        &#34;&#34;&#34; Purge the current database. &#34;&#34;&#34;
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -495,6 +520,13 @@ class Provider(HaystackInterface):
                           version: Optional[datetime],
                           customer_id: Optional[str],
                           now: Optional[datetime] = None) -&gt; None:
+        &#34;&#34;&#34;Import the diff_grid inside the database.
+        Args:
+            diff_grid: The difference to apply in database.
+            version: The version to save.
+            customer_id: The customer id to insert in each row.
+            now: The pseudo &#39;now&#39; datetime.
+        &#34;&#34;&#34;
 
         init_grid = self._init_grid_from_db(version)
         new_grid = init_grid + diff_grid
@@ -566,6 +598,15 @@ class Provider(HaystackInterface):
                         customer_id: Optional[str],
                         now: Optional[datetime] = None
                         ) -&gt; None:
+        &#34;&#34;&#34;
+        Import the Time series inside the database.
+
+        Args:
+            time_series: The time-serie grid.
+            entity_id: The corresponding entity.
+            customer_id: The current customer id.
+            now: The pseudo &#39;now&#39; datetime.
+        &#34;&#34;&#34;
         assert &#39;ts&#39; in time_series.column, &#34;TS must have a column &#39;ts&#39;&#34;
         if not customer_id:
             customer_id = &#34;&#34;
@@ -604,22 +645,7 @@ class Provider(HaystackInterface):
             cursor.close()
             conn.commit()
         finally:
-            pass
-
-    def _dialect_request(self, dialect: str) -&gt; Dict[str, Any]:
-        table_name = self._parsed_db.fragment
-        if dialect == &#34;sqlite3&#34;:
-            # Lazy import
-            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
-            return get_sqlite_parameters(table_name)
-        if dialect == &#34;supersqlite&#34;:
-            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
-            return get_sqlite_parameters(table_name)
-        if dialect == &#34;postgresql&#34;:
-            from .db_postgres import \
-                get_db_parameters as get_postgres_parameters  # pylint: disable=import-outside-toplevel
-            return get_postgres_parameters(table_name)
-        raise ValueError(&#34;Dialog not implemented&#34;)</code></pre>
+            pass</code></pre>
 </details>
 </section>
 <section>
@@ -635,14 +661,14 @@ class Provider(HaystackInterface):
 <span>class <span class="ident">Provider</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Expose an Haystack data via the Haystactk Rest API and SQL databases</p></div>
+<div class="desc"><p>Expose an Haystack data via the Haystack Rest API and SQL databases</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Provider(HaystackInterface):
     &#34;&#34;&#34;
-    Expose an Haystack data via the Haystactk Rest API and SQL databases
+    Expose an Haystack data via the Haystack Rest API and SQL databases
     &#34;&#34;&#34;
 
     @property
@@ -667,6 +693,9 @@ class Provider(HaystackInterface):
         return os.environ[&#34;HAYSTACK_DB&#34;]
 
     def create_db(self) -&gt; None:
+        &#34;&#34;&#34;
+        Create the database and schema.
+        &#34;&#34;&#34;
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -686,6 +715,7 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
+    @overrides
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -&gt; List[Any]:
         customer_id = self.get_customer_id()
@@ -703,6 +733,7 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
+    @overrides
     def versions(self) -&gt; List[datetime]:
         &#34;&#34;&#34;
         Return datetime for each versions or empty array if is unknown
@@ -847,6 +878,7 @@ class Provider(HaystackInterface):
         self._connect = False
 
     def get_connect(self) -&gt; DBConnection:  # PPR: monothread ? No with Zappa
+        &#34;&#34;&#34; Return current connection to database. &#34;&#34;&#34;
         if not self._connect and self._dialect:  # Lazy connection
             if self._dialect not in self._default_driver:
                 raise ValueError(f&#34;Dialect &#39;{self._dialect}&#39; not supported&#34;)
@@ -877,7 +909,7 @@ class Provider(HaystackInterface):
         return self._connect
 
     def _get_secret_manager_secret(self) -&gt; str:  # pylint: disable=no-self-use
-        if not BOTO3_AVAILABLE:
+        if not _BOTO3_AVAILABLE:
             return &#34;secretManager&#34;
 
         secret_name = os.environ[&#39;HAYSTACK_DB_SECRET&#39;]
@@ -944,6 +976,21 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
+    def _dialect_request(self, dialect: str) -&gt; Dict[str, Any]:
+        table_name = self._parsed_db.fragment
+        if dialect == &#34;sqlite3&#34;:
+            # Lazy import
+            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
+            return get_sqlite_parameters(table_name)
+        if dialect == &#34;supersqlite&#34;:
+            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
+            return get_sqlite_parameters(table_name)
+        if dialect == &#34;postgresql&#34;:
+            from .db_postgres import \
+                get_db_parameters as get_postgres_parameters  # pylint: disable=import-outside-toplevel
+            return get_postgres_parameters(table_name)
+        raise ValueError(&#34;Dialog not implemented&#34;)
+
     def read_grid_from_db(self,
                           customer: Optional[str],
                           version: Optional[datetime]) -&gt; Grid:
@@ -977,6 +1024,7 @@ class Provider(HaystackInterface):
             cursor.close()
 
     def purge_db(self) -&gt; None:
+        &#34;&#34;&#34; Purge the current database. &#34;&#34;&#34;
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -993,6 +1041,13 @@ class Provider(HaystackInterface):
                           version: Optional[datetime],
                           customer_id: Optional[str],
                           now: Optional[datetime] = None) -&gt; None:
+        &#34;&#34;&#34;Import the diff_grid inside the database.
+        Args:
+            diff_grid: The difference to apply in database.
+            version: The version to save.
+            customer_id: The customer id to insert in each row.
+            now: The pseudo &#39;now&#39; datetime.
+        &#34;&#34;&#34;
 
         init_grid = self._init_grid_from_db(version)
         new_grid = init_grid + diff_grid
@@ -1064,6 +1119,15 @@ class Provider(HaystackInterface):
                         customer_id: Optional[str],
                         now: Optional[datetime] = None
                         ) -&gt; None:
+        &#34;&#34;&#34;
+        Import the Time series inside the database.
+
+        Args:
+            time_series: The time-serie grid.
+            entity_id: The corresponding entity.
+            customer_id: The current customer id.
+            now: The pseudo &#39;now&#39; datetime.
+        &#34;&#34;&#34;
         assert &#39;ts&#39; in time_series.column, &#34;TS must have a column &#39;ts&#39;&#34;
         if not customer_id:
             customer_id = &#34;&#34;
@@ -1102,22 +1166,7 @@ class Provider(HaystackInterface):
             cursor.close()
             conn.commit()
         finally:
-            pass
-
-    def _dialect_request(self, dialect: str) -&gt; Dict[str, Any]:
-        table_name = self._parsed_db.fragment
-        if dialect == &#34;sqlite3&#34;:
-            # Lazy import
-            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
-            return get_sqlite_parameters(table_name)
-        if dialect == &#34;supersqlite&#34;:
-            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
-            return get_sqlite_parameters(table_name)
-        if dialect == &#34;postgresql&#34;:
-            from .db_postgres import \
-                get_db_parameters as get_postgres_parameters  # pylint: disable=import-outside-toplevel
-            return get_postgres_parameters(table_name)
-        raise ValueError(&#34;Dialog not implemented&#34;)</code></pre>
+            pass</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1128,21 +1177,6 @@ class Provider(HaystackInterface):
 <ul class="hlist">
 <li><a title="haystackapi.providers.sql_ts.Provider" href="sql_ts.html#haystackapi.providers.sql_ts.Provider">Provider</a></li>
 </ul>
-<h3>Instance variables</h3>
-<dl>
-<dt id="haystackapi.providers.sql.Provider.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def name(self) -&gt; str:
-    return &#34;SQL&#34;</code></pre>
-</details>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="haystackapi.providers.sql.Provider.about"><code class="name flex">
@@ -1173,12 +1207,15 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
 <span>def <span class="ident">create_db</span></span>(<span>self) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Create the database and schema.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def create_db(self) -&gt; None:
+    &#34;&#34;&#34;
+    Create the database and schema.
+    &#34;&#34;&#34;
     conn = self.get_connect()
     # with conn.cursor() as cursor:
     cursor = conn.cursor()
@@ -1203,12 +1240,13 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
 <span>def <span class="ident">get_connect</span></span>(<span>self) ‑> haystackapi.providers.sqldb_protocol.DBConnection</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return current connection to database.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_connect(self) -&gt; DBConnection:  # PPR: monothread ? No with Zappa
+    &#34;&#34;&#34; Return current connection to database. &#34;&#34;&#34;
     if not self._connect and self._dialect:  # Lazy connection
         if self._dialect not in self._default_driver:
             raise ValueError(f&#34;Dialect &#39;{self._dialect}&#39; not supported&#34;)
@@ -1305,7 +1343,18 @@ def his_read(
 <span>def <span class="ident">import_ts_in_db</span></span>(<span>self, time_series: haystackapi.grid.Grid, entity_id: haystackapi.datatypes.Ref, customer_id: Union[str, NoneType], now: Union[datetime.datetime, NoneType] = None) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Import the Time series inside the database.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>time_series</code></strong></dt>
+<dd>The time-serie grid.</dd>
+<dt><strong><code>entity_id</code></strong></dt>
+<dd>The corresponding entity.</dd>
+<dt><strong><code>customer_id</code></strong></dt>
+<dd>The current customer id.</dd>
+<dt><strong><code>now</code></strong></dt>
+<dd>The pseudo 'now' datetime.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1316,6 +1365,15 @@ def his_read(
                     customer_id: Optional[str],
                     now: Optional[datetime] = None
                     ) -&gt; None:
+    &#34;&#34;&#34;
+    Import the Time series inside the database.
+
+    Args:
+        time_series: The time-serie grid.
+        entity_id: The corresponding entity.
+        customer_id: The current customer id.
+        now: The pseudo &#39;now&#39; datetime.
+    &#34;&#34;&#34;
     assert &#39;ts&#39; in time_series.column, &#34;TS must have a column &#39;ts&#39;&#34;
     if not customer_id:
         customer_id = &#34;&#34;
@@ -1361,12 +1419,13 @@ def his_read(
 <span>def <span class="ident">purge_db</span></span>(<span>self) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Purge the current database.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def purge_db(self) -&gt; None:
+    &#34;&#34;&#34; Purge the current database. &#34;&#34;&#34;
     conn = self.get_connect()
     # with conn.cursor() as cursor:
     cursor = conn.cursor()
@@ -1489,7 +1548,18 @@ def read(
 <span>def <span class="ident">update_grid_in_db</span></span>(<span>self, diff_grid: haystackapi.grid.Grid, version: Union[datetime.datetime, NoneType], customer_id: Union[str, NoneType], now: Union[datetime.datetime, NoneType] = None) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Import the diff_grid inside the database.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>diff_grid</code></strong></dt>
+<dd>The difference to apply in database.</dd>
+<dt><strong><code>version</code></strong></dt>
+<dd>The version to save.</dd>
+<dt><strong><code>customer_id</code></strong></dt>
+<dd>The customer id to insert in each row.</dd>
+<dt><strong><code>now</code></strong></dt>
+<dd>The pseudo 'now' datetime.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1499,6 +1569,13 @@ def read(
                       version: Optional[datetime],
                       customer_id: Optional[str],
                       now: Optional[datetime] = None) -&gt; None:
+    &#34;&#34;&#34;Import the diff_grid inside the database.
+    Args:
+        diff_grid: The difference to apply in database.
+        version: The version to save.
+        customer_id: The customer id to insert in each row.
+        now: The pseudo &#39;now&#39; datetime.
+    &#34;&#34;&#34;
 
     init_grid = self._init_grid_from_db(version)
     new_grid = init_grid + diff_grid
@@ -1574,7 +1651,8 @@ def read(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def versions(self) -&gt; List[datetime]:
+<pre><code class="python">@overrides
+def versions(self) -&gt; List[datetime]:
     &#34;&#34;&#34;
     Return datetime for each versions or empty array if is unknown
     &#34;&#34;&#34;
@@ -1600,8 +1678,10 @@ def read(
 <ul class="hlist">
 <li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.formats" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.formats">formats</a></code></li>
 <li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.get_customer_id" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.get_customer_id">get_customer_id</a></code></li>
+<li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.get_tz" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.get_tz">get_tz</a></code></li>
 <li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.his_write" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.his_write">his_write</a></code></li>
 <li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.invoke_action" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.invoke_action">invoke_action</a></code></li>
+<li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.name" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.name">name</a></code></li>
 <li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.nav" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.nav">nav</a></code></li>
 <li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.ops" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.ops">ops</a></code></li>
 <li><code><a title="haystackapi.providers.haystack_interface.HaystackInterface.point_write_read" href="haystack_interface.html#haystackapi.providers.haystack_interface.HaystackInterface.point_write_read">point_write_read</a></code></li>
@@ -1638,7 +1718,6 @@ def read(
 <li><code><a title="haystackapi.providers.sql.Provider.get_connect" href="#haystackapi.providers.sql.Provider.get_connect">get_connect</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.his_read" href="#haystackapi.providers.sql.Provider.his_read">his_read</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.import_ts_in_db" href="#haystackapi.providers.sql.Provider.import_ts_in_db">import_ts_in_db</a></code></li>
-<li><code><a title="haystackapi.providers.sql.Provider.name" href="#haystackapi.providers.sql.Provider.name">name</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.purge_db" href="#haystackapi.providers.sql.Provider.purge_db">purge_db</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.read" href="#haystackapi.providers.sql.Provider.read">read</a></code></li>
 <li><code><a title="haystackapi.providers.sql.Provider.read_grid_from_db" href="#haystackapi.providers.sql.Provider.read_grid_from_db">read_grid_from_db</a></code></li>

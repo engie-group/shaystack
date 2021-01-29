@@ -45,7 +45,7 @@ import logging
 import textwrap
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Any, Optional, List, Tuple, Union, Iterator
+from typing import Dict, Any, Optional, List, Tuple, Union, Iterator, Callable
 
 import pytz
 
@@ -313,7 +313,14 @@ def _exec_sql_filter(params: Dict[str, Any],
     return cursor
 
 
-def get_db_parameters(table_name: str) -&gt; Dict[str, Any]:
+def get_db_parameters(table_name: str) -&gt; Dict[str, Union[Callable, str]]:
+    &#34;&#34;&#34; Return the SQL request and some lambda to manipulate a SuperSQLite database.
+
+    Args:
+        table_name: The table name to use.
+    Returns:
+        A dictionary with SQL request or lamdas
+    &#34;&#34;&#34;
     return {
         &#34;sql_type_to_json&#34;: json.loads,
         &#34;exec_sql_filter&#34;: _exec_sql_filter,
@@ -440,15 +447,29 @@ def get_db_parameters(table_name: str) -&gt; Dict[str, Any]:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="haystackapi.providers.db_sqlite.get_db_parameters"><code class="name flex">
-<span>def <span class="ident">get_db_parameters</span></span>(<span>table_name: str) ‑> Dict[str, Any]</span>
+<span>def <span class="ident">get_db_parameters</span></span>(<span>table_name: str) ‑> Dict[str, Union[Callable, str]]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return the SQL request and some lambda to manipulate a SuperSQLite database.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>table_name</code></strong></dt>
+<dd>The table name to use.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A dictionary with SQL request or lamdas</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_db_parameters(table_name: str) -&gt; Dict[str, Any]:
+<pre><code class="python">def get_db_parameters(table_name: str) -&gt; Dict[str, Union[Callable, str]]:
+    &#34;&#34;&#34; Return the SQL request and some lambda to manipulate a SuperSQLite database.
+
+    Args:
+        table_name: The table name to use.
+    Returns:
+        A dictionary with SQL request or lamdas
+    &#34;&#34;&#34;
     return {
         &#34;sql_type_to_json&#34;: json.loads,
         &#34;exec_sql_filter&#34;: _exec_sql_filter,

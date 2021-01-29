@@ -1,0 +1,2048 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>app.graphql_model API documentation</title>
+<meta name="description" content="Model to inject a another graphene model, to manage the haystack layer.
+See the `blueprint_graphql` to see how to integrate this part of global …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>app.graphql_model</code></h1>
+</header>
+<section id="section-intro">
+<p>Model to inject a another graphene model, to manage the haystack layer.
+See the <code>blueprint_graphql</code> to see how to integrate this part of global GraphQL model.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+# Haystack API Provider module
+# See the accompanying LICENSE file.
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
+&#34;&#34;&#34;
+Model to inject a another graphene model, to manage the haystack layer.
+See the `blueprint_graphql` to see how to integrate this part of global GraphQL model.
+&#34;&#34;&#34;
+import json
+import logging
+from datetime import datetime, date, time
+from typing import Optional, List, Any, Dict, Union, Type
+
+import graphene
+import pytz
+from graphql import ResolveInfo
+from graphql.language.ast import StringValue, IntValue, FloatValue, BooleanValue, EnumValue
+
+import haystackapi
+from haystackapi import Ref, Uri, Coordinate, parse_hs_datetime_format, Grid
+from haystackapi.grid_filter import parse_hs_time_format, parse_hs_date_format
+from haystackapi.providers.haystack_interface import get_singleton_provider, parse_date_range
+from haystackapi.zincdumper import _dump_hs_date_time, _dump_hs_time, _dump_hs_date
+
+BOTO3_AVAILABLE = False
+try:
+    # Check the presence of boto3
+    import boto3  # pylint: disable=unused-import
+
+    BOTO3_AVAILABLE = True
+except ImportError:
+    pass
+
+log = logging.getLogger(&#34;haystackapi&#34;)
+
+
+class HSScalar(graphene.Scalar):
+    &#34;&#34;&#34;Haystack Scalar&#34;&#34;&#34;
+
+    class Meta:  # pylint: disable=too-few-public-methods
+        &#34;&#34;&#34;Update name for AWS&#34;&#34;&#34;
+        name = &#34;AWSJSON&#34; if BOTO3_AVAILABLE else &#34;JSONString&#34;
+
+    @staticmethod
+    def serialize(hs_scalar: Any) -&gt; Any:
+        &#34;&#34;&#34;
+        Convert scala value to Json
+        Args:
+            hs_scalar: Any value
+        &#34;&#34;&#34;
+        return json.loads(haystackapi.dump_scalar(hs_scalar,
+                                                  haystackapi.MODE_JSON,
+                                                  version=haystackapi.VER_3_0))
+
+    @staticmethod
+    def parse_literal(node: Union[IntValue, FloatValue, StringValue, BooleanValue, EnumValue]) -&gt; Any:
+        &#34;&#34;&#34;
+        Parse to scalar value
+        Args:
+            node: The graphql node
+        &#34;&#34;&#34;
+        if isinstance(node, StringValue):
+            str_value = node.value
+            if len(str_value) &gt;= 2 and str_value[1] == &#39;:&#39;:
+                return haystackapi.parse_scalar(node.value,
+                                                haystackapi.MODE_JSON)
+        return node.value
+
+    @staticmethod
+    def parse_value(value: str) -&gt; Any:
+        &#34;&#34;&#34;
+        Args:
+            value: The value to parse
+        &#34;&#34;&#34;
+        return haystackapi.parse_scalar(value, haystackapi.MODE_JSON)
+
+
+class HSDateTime(graphene.String):
+    &#34;&#34;&#34;Haystack compatible date format.&#34;&#34;&#34;
+
+    class Meta:  # pylint: disable=missing-class-docstring
+        name = &#34;AWSDateTime&#34; if BOTO3_AVAILABLE else &#34;DateTime&#34;
+
+    @staticmethod
+    def serialize(date_time: datetime) -&gt; str:
+        &#34;&#34;&#34;
+        Convert date_time to json compatible string
+        Args:
+            date_time: The date time to convert to json
+        &#34;&#34;&#34;
+        assert isinstance(date_time, datetime), \
+            &#39;Received not compatible datetime &#34;{}&#34;&#39;.format(repr(date_time))
+        return _dump_hs_date_time(date_time)
+
+    @staticmethod
+    def parse_literal(node: StringValue) -&gt; datetime:  # pylint: disable=arguments-differ
+        # Call to convert graphql parameter to python object
+        &#34;&#34;&#34;
+        Convert a haystack json string to data time
+        Args:
+            node: GraphQL node to convert
+        &#34;&#34;&#34;
+        assert isinstance(node, StringValue), \
+            &#39;Received not compatible datetime &#34;{}&#34;&#39;.format(repr(node))
+        return HSDateTime.parse_value(node.value)
+
+    @staticmethod
+    def parse_value(value: Union[datetime, date, str]) -&gt; datetime:
+        # Call to convert graphql variable to python object
+        &#34;&#34;&#34;
+        Args:
+            value:
+        &#34;&#34;&#34;
+        if isinstance(value, datetime):
+            return value
+        if isinstance(value, date):
+            return datetime.combine(value, datetime.max.time()).replace(tzinfo=pytz.UTC)
+        return parse_hs_datetime_format(value)
+
+
+class HSDate(graphene.String):
+    &#34;&#34;&#34;Haystack date for GraphQL&#34;&#34;&#34;
+
+    class Meta:  # pylint: disable=missing-class-docstring
+        name = &#34;AWSDate&#34; if BOTO3_AVAILABLE else &#34;Date&#34;
+
+    @staticmethod
+    def serialize(a_date: date) -&gt; str:
+        &#34;&#34;&#34;
+        Convert date to haystack json string.
+        Args:
+            a_date: A date
+        &#34;&#34;&#34;
+        assert isinstance(a_date, date), &#39;Received not compatible date &#34;{}&#34;&#39;.format(repr(a_date))
+        return _dump_hs_date(a_date)
+
+    @staticmethod
+    def parse_literal(node: StringValue) -&gt; date:  # pylint: disable=arguments-differ
+        &#34;&#34;&#34;
+        Convert the Graphql string to date.
+        Args:
+            node: The graphql string
+        &#34;&#34;&#34;
+        assert isinstance(node, StringValue), &#39;Received not compatible date &#34;{}&#34;&#39;.format(repr(node))
+        return HSDate.parse_value(node.value)
+
+    @staticmethod
+    def parse_value(value: Union[date, str]) -&gt; date:
+        &#34;&#34;&#34;
+        Convert a date to haystack json.
+        Args:
+            value: The date
+        &#34;&#34;&#34;
+        if isinstance(value, date):
+            return value
+        return parse_hs_date_format(value)
+
+
+class HSTime(graphene.String):
+    &#34;&#34;&#34;Haystack time for GraphQL&#34;&#34;&#34;
+
+    class Meta:  # pylint: disable=missing-class-docstring
+        name = &#34;AWSTime&#34; if BOTO3_AVAILABLE else &#34;Time&#34;
+
+    @staticmethod
+    def serialize(a_time: time) -&gt; str:
+        &#34;&#34;&#34;
+        Convert a time to Haystack json string
+        Args:
+            a_time: The time.
+        &#34;&#34;&#34;
+        assert isinstance(a_time, time), &#39;Received not compatible time &#34;{}&#34;&#39;.format(repr(a_time))
+        return _dump_hs_time(a_time)
+
+    @staticmethod
+    def parse_literal(node: StringValue) -&gt; time:  # pylint: disable=arguments-differ
+        &#34;&#34;&#34;
+        Convert a haystack json string to time
+        Args:
+            node: The string
+        &#34;&#34;&#34;
+        assert isinstance(node, StringValue), &#39;Received not compatible time &#34;{}&#34;&#39;.format(repr(node))
+        return HSTime.parse_value(node.value)
+
+    @staticmethod
+    def parse_value(value: Union[time, str]) -&gt; time:
+        &#34;&#34;&#34;
+        Args:
+            value:
+        &#34;&#34;&#34;
+        if isinstance(value, time):
+            return value
+        return parse_hs_time_format(value)
+
+
+class HSUri(graphene.String):
+    &#34;&#34;&#34;Haystack URI for GraphQL&#34;&#34;&#34;
+
+    class Meta:  # pylint: disable=too-few-public-methods,missing-class-docstring
+        name = &#34;AWSURL&#34; if BOTO3_AVAILABLE else &#34;HSURL&#34;
+
+    @staticmethod
+    def serialize(a_uri: Uri) -&gt; str:
+        &#34;&#34;&#34;
+        Convert an Uri to Haystack json string
+        Args:
+            a_uri: The Uri
+        &#34;&#34;&#34;
+        assert isinstance(a_uri, Uri), &#39;Received not compatible uri &#34;{}&#34;&#39;.format(repr(a_uri))
+        return str(a_uri)
+
+    @staticmethod
+    def parse_literal(node: StringValue) -&gt; Uri:  # pylint: disable=arguments-differ
+        &#34;&#34;&#34;
+        Convert the Graphql string to Uri
+        Args:
+            node: The string
+        &#34;&#34;&#34;
+        return HSUri.parse_value(node.value)
+
+    @staticmethod
+    def parse_value(value: str) -&gt; Uri:
+        &#34;&#34;&#34;
+        Convert a haystack json string to Uri.
+        Args:
+            value: The string
+        &#34;&#34;&#34;
+        if value.startswith(&#34;u:&#34;):
+            return haystackapi.parse_scalar(value, haystackapi.MODE_JSON, version=haystackapi.VER_3_0)
+        return Uri(value)
+
+
+class HSCoordinate(graphene.ObjectType):  # pylint: disable=too-few-public-methods
+    &#34;&#34;&#34;Haystack coordinate for GraphQL&#34;&#34;&#34;
+    latitude = graphene.Float(required=True,
+                              description=&#34;Latitude&#34;)
+    longitude = graphene.Float(required=True,
+                               description=&#34;Longitude&#34;)
+
+
+class HSAbout(graphene.ObjectType):  # pylint: disable=too-few-public-methods
+    &#34;&#34;&#34;Result of &#39;about&#39; haystack operation&#34;&#34;&#34;
+    haystackVersion = graphene.String(required=True,
+                                      description=&#34;Haystack version implemented&#34;)
+    tz = graphene.String(required=True,
+                         description=&#34;Server time zone&#34;)
+    serverName = graphene.String(required=True,
+                                 description=&#34;Server name&#34;)
+    serverTime = graphene.Field(graphene.NonNull(HSDateTime),
+                                description=&#34;Server current time&#34;)
+    serverBootTime = graphene.Field(graphene.NonNull(HSDateTime),
+                                    description=&#34;Server boot time&#34;)
+    productName = graphene.String(required=True,
+                                  description=&#34;Server Product name&#34;)
+    productUri = graphene.Field(graphene.NonNull(HSUri),
+                                description=&#34;Server URL&#34;)
+    productVersion = graphene.String(required=True,
+                                     description=&#34;Product version&#34;)
+    moduleName = graphene.String(required=True,
+                                 description=&#34;Module name&#34;)
+    moduleVersion = graphene.String(required=True,
+                                    description=&#34;Module version&#34;)
+
+
+class HSOps(graphene.ObjectType):  # pylint: disable=too-few-public-methods
+    &#34;&#34;&#34;Result of &#39;ops&#39; haystack operation&#34;&#34;&#34;
+
+    name = graphene.String(description=&#34;Name of operation (see https://project-haystack.org/doc/Ops)&#34;)
+    summary = graphene.String(description=&#34;Summary of operation&#34;)
+
+
+class HSTS(graphene.ObjectType):  # pylint: disable=too-few-public-methods,too-many-instance-attributes
+    &#34;&#34;&#34;Result of &#39;hisRead&#39; haystack operation&#34;&#34;&#34;
+    ts = graphene.Field(HSDateTime, description=&#34;Date time of event&#34;)
+    val = graphene.Field(HSScalar, description=&#34;Haystack JSON format of value&#34;)
+
+    int = graphene.Int(required=False, description=&#34;Integer version of the value&#34;)
+    float = graphene.Float(required=False, description=&#34;Float version of the value&#34;)
+    str = graphene.String(required=False, description=&#34;Float version of the value&#34;)
+    bool = graphene.Boolean(required=False, description=&#34;Boolean version of the value&#34;)
+    uri = graphene.String(required=False, description=&#34;URI version of the value&#34;)
+    ref = graphene.String(required=False, description=&#34;Reference version of the value&#34;)
+    date = HSDate(required=False, description=&#34;Date version of the value&#34;)
+    time = HSTime(required=False, description=&#34;Time version of the value&#34;)
+    datetime = HSDateTime(required=False, description=&#34;Date time version of the value&#34;)
+    coord = graphene.Field(HSCoordinate,
+                           description=&#34;Geographic Coordinate&#34;)
+
+
+class HSPointWrite(graphene.ObjectType):  # pylint: disable=too-few-public-methods
+    &#34;&#34;&#34;Result of &#39;pointWrite&#39; haystack operation&#34;&#34;&#34;
+    level = graphene.Int(description=&#34;Current level&#34;)
+    levelDis = graphene.String(description=&#34;Description of level&#34;)
+    val = graphene.Field(HSScalar, description=&#34;Value&#34;)
+    who = graphene.String(description=&#34;Who has updated the value&#34;)
+
+
+# PPR: see the batch approach
+class ReadHaystack(graphene.ObjectType):
+    &#34;&#34;&#34;Ontology conform with Haystack project&#34;&#34;&#34;
+
+    class Meta:  # pylint: disable=too-few-public-methods,missing-class-docstring
+        name = &#34;Haystack&#34;
+
+    about = graphene.NonNull(HSAbout,
+                             description=&#34;Versions of api&#34;)
+
+    ops = graphene.NonNull(graphene.List(
+        graphene.NonNull(HSOps)),
+        description=&#34;List of operation implemented&#34;)
+
+    tag_values = graphene.NonNull(graphene.List(graphene.NonNull(graphene.String),
+                                                ),
+                                  tag=graphene.String(required=True,
+                                                      description=&#34;Tag name&#34;),
+                                  version=HSDateTime(description=&#34;Date of the version &#34;
+                                                                 &#34;or nothing for the last version&#34;),
+                                  description=&#34;All values for a specific tag&#34;)
+
+    versions = graphene.NonNull(graphene.List(graphene.NonNull(HSDateTime)),
+                                description=&#34;All versions of data&#34;)
+
+    entities = graphene.List(
+        graphene.NonNull(HSScalar),
+        ids=graphene.List(graphene.ID,
+                          description=&#34;List of ids to return (if set, ignore filter and limit)&#34;),
+        select=graphene.String(default_value=&#39;*&#39;,
+                               description=&#34;List of tags to return&#34;),
+        limit=graphene.Int(default_value=0,
+                           description=&#34;Maximum number of items to return&#34;),
+        filter=graphene.String(default_value=&#39;&#39;,
+                               description=&#34;Filter or item (see https://project-haystack.org/doc/Filters&#34;),
+        version=HSDateTime(description=&#34;Date of the version or nothing for the last version&#34;),
+        description=&#34;Selected entities of ontology&#34;
+    )
+
+    histories = graphene.List(graphene.NonNull(graphene.List(graphene.NonNull(HSTS))),
+                              ids=graphene.List(graphene.ID,
+                                                description=&#34;List of ids to return&#34;),
+                              dates_range=graphene.String(description=&#34;today, yesterday, &#34;
+                                                                      &#34;{date}, {date},{date}, &#34;
+                                                                      &#34;{datetime}, &#34;
+                                                                      &#34;{datetime},{datetime}&#34;
+                                                          ),
+                              version=HSDateTime(
+                                  description=&#34;Date of the version or nothing for the last version&#34;),
+                              description=&#34;Selected time series&#34;)
+
+    point_write = graphene.List(
+        graphene.NonNull(HSPointWrite),
+        id=graphene.ID(required=True,
+                       description=&#34;Id to read (accept @xxx, r:xxx or xxx)&#34;),
+        version=HSDateTime(description=&#34;Date of the version or nothing for the last version&#34;),
+        description=&#34;Point write values&#34;
+    )
+
+    @staticmethod
+    def resolve_about(parent: &#39;ReadHaystack&#39;,
+                      info: ResolveInfo):
+        log.debug(&#34;resolve_about(parent,info)&#34;)
+        grid = get_singleton_provider().about(&#34;http://localhost&#34;)
+        result = ReadHaystack._conv_entity(HSAbout, grid[0])
+        result.serverTime = grid[0][&#34;serverTime&#34;]  # pylint: disable=invalid-name
+        result.bootTime = grid[0][&#34;serverBootTime&#34;]  # pylint: disable=invalid-name, attribute-defined-outside-init
+        return result
+
+    @staticmethod
+    def resolve_ops(parent: &#39;ReadHaystack&#39;,
+                    info: ResolveInfo):
+        log.debug(&#34;resolve_about(parent,info)&#34;)
+        grid = get_singleton_provider().ops()
+        return ReadHaystack._conv_list_to_object_type(HSOps, grid)
+
+    @staticmethod
+    def resolve_tag_values(parent: &#39;ReadHaystack&#39;,
+                           info: ResolveInfo,
+                           tag: str,
+                           version: Optional[HSDateTime] = None):
+        log.debug(&#34;resolve_values(parent,info,%s)&#34;, tag)
+        return get_singleton_provider().values_for_tag(tag, version)
+
+    @staticmethod
+    def resolve_versions(parent: &#39;ReadHaystack&#39;,
+                         info: ResolveInfo):
+        log.debug(&#34;resolve_versions(parent,info)&#34;)
+        return get_singleton_provider().versions()
+
+    @staticmethod
+    def resolve_entities(parent: &#39;ReadHaystack&#39;,
+                         info: ResolveInfo,
+                         ids: Optional[List[str]] = None,
+                         select: str = &#39;*&#39;,
+                         filter: str = &#39;&#39;,  # pylint: disable=redefined-builtin
+                         limit: int = 0,
+                         version: Optional[HSDateTime] = None):
+        log.debug(
+            &#34;resolve_entities(parent,info,ids=%s, &#34;
+            &#34;select=%s, filter=%s, &#34;
+            &#34;limit=%s, version=%s)&#34;, ids, select, filter, limit, version)
+        if ids:
+            ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]
+        grid = get_singleton_provider().read(limit, select, ids, filter, version)
+        return grid
+
+    @staticmethod
+    def resolve_histories(parent: &#39;ReadHaystack&#39;,
+                          info: ResolveInfo,
+                          ids: Optional[List[str]] = None,
+                          dates_range: Optional[str] = None,
+                          version: Union[str, datetime, date, None] = None):
+        if version:
+            version = HSDateTime.parse_value(version)
+        log.debug(&#34;resolve_histories(parent,info,ids=%s, range=%s, version=%s)&#34;,
+                  ids, dates_range, version)
+        provider = get_singleton_provider()
+        grid_date_range = parse_date_range(dates_range, provider.get_tz())
+        return [ReadHaystack._conv_history(
+            provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version),
+            info
+        )
+            for entity_id in ids]
+
+    @staticmethod
+    def resolve_point_write(parent: &#39;ReadHaystack&#39;,
+                            info: ResolveInfo,
+                            entity_id: str,
+                            version: Union[datetime, str, None] = None):
+        if version:
+            version = HSDateTime.parse_value(version)
+        log.debug(&#34;resolve_point_write(parent,info, entity_id=%s, version=%s)&#34;,
+                  entity_id, version)
+        ref = Ref(ReadHaystack._filter_id(entity_id))
+        grid = get_singleton_provider().point_write_read(ref, version)
+        return ReadHaystack._conv_list_to_object_type(HSPointWrite, grid)
+
+    @staticmethod
+    def _conv_value(entity: Dict[str, Any],
+                    info: ResolveInfo) -&gt; HSTS:
+        selection = info.field_asts[0].selection_set.selections
+        cast_value = HSTS()
+        value = entity[&#34;val&#34;]
+        cast_value.ts = entity[&#34;ts&#34;]  # pylint: disable=invalid-name
+        cast_value.val = value
+        for sel in selection:
+            name = sel.name.value
+            if name in [&#39;ts&#39;, &#39;val&#39;]:
+                continue
+
+            if name == &#39;int&#39; and isinstance(value, (int, float)):
+                cast_value.int = int(value)
+            elif name == &#39;float&#39; and isinstance(value, float):
+                cast_value.float = value
+            elif name == &#39;str&#39;:
+                cast_value.str = str(value)
+            elif name == &#39;bool&#39;:
+                cast_value.bool = bool(value)
+            elif name == &#39;uri&#39; and isinstance(value, Uri):
+                cast_value.uri = str(value)
+            elif name == &#39;ref&#39; and isinstance(value, Ref):
+                cast_value.ref = &#39;@&#39; + value.name
+            elif name == &#39;date&#39; and isinstance(value, date):
+                cast_value.date = value
+            elif name == &#39;date&#39; and isinstance(value, datetime):
+                cast_value.date = value.date()
+            elif name == &#39;time&#39; and isinstance(value, time):
+                cast_value.time = value
+            elif name == &#39;time&#39; and isinstance(value, datetime):
+                cast_value.time = value.time()
+            elif name == &#39;datetime&#39; and isinstance(value, datetime):
+                cast_value.datetime = value
+            elif name == &#39;coord&#39; and isinstance(value, Coordinate):
+                cast_value.coord = HSCoordinate(value.latitude, value.longitude)
+        return cast_value
+
+    @staticmethod
+    def _conv_history(entities: Dict[str, Any], info: ResolveInfo):
+        return [ReadHaystack._conv_value(entity, info) for entity in entities]
+
+    @staticmethod
+    def _filter_id(entity_id: str) -&gt; str:
+        if entity_id.startswith(&#34;r:&#34;):
+            return entity_id[2:]
+        if entity_id.startswith(&#39;@&#39;):
+            return entity_id[1:]
+        return entity_id
+
+    @staticmethod
+    def _conv_entity(target_class: Type, entity: Dict[str, Any]):
+        entity_result = target_class()
+        for key, val in entity.items():
+            if key in entity:
+                entity_result.__setattr__(key, val)
+        return entity_result
+
+    @staticmethod
+    def _conv_list_to_object_type(target_class: Type, grid: Grid):
+        result = []
+        for row in grid:
+            result.append(ReadHaystack._conv_entity(target_class, row))
+        return result</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="app.graphql_model.HSAbout"><code class="flex name class">
+<span>class <span class="ident">HSAbout</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Result of 'about' haystack operation</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HSAbout(graphene.ObjectType):  # pylint: disable=too-few-public-methods
+    &#34;&#34;&#34;Result of &#39;about&#39; haystack operation&#34;&#34;&#34;
+    haystackVersion = graphene.String(required=True,
+                                      description=&#34;Haystack version implemented&#34;)
+    tz = graphene.String(required=True,
+                         description=&#34;Server time zone&#34;)
+    serverName = graphene.String(required=True,
+                                 description=&#34;Server name&#34;)
+    serverTime = graphene.Field(graphene.NonNull(HSDateTime),
+                                description=&#34;Server current time&#34;)
+    serverBootTime = graphene.Field(graphene.NonNull(HSDateTime),
+                                    description=&#34;Server boot time&#34;)
+    productName = graphene.String(required=True,
+                                  description=&#34;Server Product name&#34;)
+    productUri = graphene.Field(graphene.NonNull(HSUri),
+                                description=&#34;Server URL&#34;)
+    productVersion = graphene.String(required=True,
+                                     description=&#34;Product version&#34;)
+    moduleName = graphene.String(required=True,
+                                 description=&#34;Module name&#34;)
+    moduleVersion = graphene.String(required=True,
+                                    description=&#34;Module version&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>graphene.types.objecttype.ObjectType</li>
+<li>graphene.types.base.BaseType</li>
+<li>graphene.utils.subclass_with_meta.SubclassWithMeta</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="app.graphql_model.HSAbout.haystackVersion"><code class="name">var <span class="ident">haystackVersion</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSAbout.moduleName"><code class="name">var <span class="ident">moduleName</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSAbout.moduleVersion"><code class="name">var <span class="ident">moduleVersion</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSAbout.productName"><code class="name">var <span class="ident">productName</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSAbout.productUri"><code class="name">var <span class="ident">productUri</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSAbout.productVersion"><code class="name">var <span class="ident">productVersion</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSAbout.serverBootTime"><code class="name">var <span class="ident">serverBootTime</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSAbout.serverName"><code class="name">var <span class="ident">serverName</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSAbout.serverTime"><code class="name">var <span class="ident">serverTime</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSAbout.tz"><code class="name">var <span class="ident">tz</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="app.graphql_model.HSCoordinate"><code class="flex name class">
+<span>class <span class="ident">HSCoordinate</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Haystack coordinate for GraphQL</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HSCoordinate(graphene.ObjectType):  # pylint: disable=too-few-public-methods
+    &#34;&#34;&#34;Haystack coordinate for GraphQL&#34;&#34;&#34;
+    latitude = graphene.Float(required=True,
+                              description=&#34;Latitude&#34;)
+    longitude = graphene.Float(required=True,
+                               description=&#34;Longitude&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>graphene.types.objecttype.ObjectType</li>
+<li>graphene.types.base.BaseType</li>
+<li>graphene.utils.subclass_with_meta.SubclassWithMeta</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="app.graphql_model.HSCoordinate.latitude"><code class="name">var <span class="ident">latitude</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSCoordinate.longitude"><code class="name">var <span class="ident">longitude</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="app.graphql_model.HSDate"><code class="flex name class">
+<span>class <span class="ident">HSDate</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Haystack date for GraphQL</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HSDate(graphene.String):
+    &#34;&#34;&#34;Haystack date for GraphQL&#34;&#34;&#34;
+
+    class Meta:  # pylint: disable=missing-class-docstring
+        name = &#34;AWSDate&#34; if BOTO3_AVAILABLE else &#34;Date&#34;
+
+    @staticmethod
+    def serialize(a_date: date) -&gt; str:
+        &#34;&#34;&#34;
+        Convert date to haystack json string.
+        Args:
+            a_date: A date
+        &#34;&#34;&#34;
+        assert isinstance(a_date, date), &#39;Received not compatible date &#34;{}&#34;&#39;.format(repr(a_date))
+        return _dump_hs_date(a_date)
+
+    @staticmethod
+    def parse_literal(node: StringValue) -&gt; date:  # pylint: disable=arguments-differ
+        &#34;&#34;&#34;
+        Convert the Graphql string to date.
+        Args:
+            node: The graphql string
+        &#34;&#34;&#34;
+        assert isinstance(node, StringValue), &#39;Received not compatible date &#34;{}&#34;&#39;.format(repr(node))
+        return HSDate.parse_value(node.value)
+
+    @staticmethod
+    def parse_value(value: Union[date, str]) -&gt; date:
+        &#34;&#34;&#34;
+        Convert a date to haystack json.
+        Args:
+            value: The date
+        &#34;&#34;&#34;
+        if isinstance(value, date):
+            return value
+        return parse_hs_date_format(value)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>graphene.types.scalars.String</li>
+<li>graphene.types.scalars.Scalar</li>
+<li>graphene.types.unmountedtype.UnmountedType</li>
+<li>graphene.utils.orderedtype.OrderedType</li>
+<li>graphene.types.base.BaseType</li>
+<li>graphene.utils.subclass_with_meta.SubclassWithMeta</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="app.graphql_model.HSDate.parse_literal"><code class="name flex">
+<span>def <span class="ident">parse_literal</span></span>(<span>node: graphql.language.ast.StringValue) ‑> datetime.date</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert the Graphql string to date.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>node</code></strong></dt>
+<dd>The graphql string</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def parse_literal(node: StringValue) -&gt; date:  # pylint: disable=arguments-differ
+    &#34;&#34;&#34;
+    Convert the Graphql string to date.
+    Args:
+        node: The graphql string
+    &#34;&#34;&#34;
+    assert isinstance(node, StringValue), &#39;Received not compatible date &#34;{}&#34;&#39;.format(repr(node))
+    return HSDate.parse_value(node.value)</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.HSDate.parse_value"><code class="name flex">
+<span>def <span class="ident">parse_value</span></span>(<span>value: Union[datetime.date, str]) ‑> datetime.date</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert a date to haystack json.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>The date</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def parse_value(value: Union[date, str]) -&gt; date:
+    &#34;&#34;&#34;
+    Convert a date to haystack json.
+    Args:
+        value: The date
+    &#34;&#34;&#34;
+    if isinstance(value, date):
+        return value
+    return parse_hs_date_format(value)</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.HSDate.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>a_date: datetime.date) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert date to haystack json string.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>a_date</code></strong></dt>
+<dd>A date</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def serialize(a_date: date) -&gt; str:
+    &#34;&#34;&#34;
+    Convert date to haystack json string.
+    Args:
+        a_date: A date
+    &#34;&#34;&#34;
+    assert isinstance(a_date, date), &#39;Received not compatible date &#34;{}&#34;&#39;.format(repr(a_date))
+    return _dump_hs_date(a_date)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="app.graphql_model.HSDateTime"><code class="flex name class">
+<span>class <span class="ident">HSDateTime</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Haystack compatible date format.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HSDateTime(graphene.String):
+    &#34;&#34;&#34;Haystack compatible date format.&#34;&#34;&#34;
+
+    class Meta:  # pylint: disable=missing-class-docstring
+        name = &#34;AWSDateTime&#34; if BOTO3_AVAILABLE else &#34;DateTime&#34;
+
+    @staticmethod
+    def serialize(date_time: datetime) -&gt; str:
+        &#34;&#34;&#34;
+        Convert date_time to json compatible string
+        Args:
+            date_time: The date time to convert to json
+        &#34;&#34;&#34;
+        assert isinstance(date_time, datetime), \
+            &#39;Received not compatible datetime &#34;{}&#34;&#39;.format(repr(date_time))
+        return _dump_hs_date_time(date_time)
+
+    @staticmethod
+    def parse_literal(node: StringValue) -&gt; datetime:  # pylint: disable=arguments-differ
+        # Call to convert graphql parameter to python object
+        &#34;&#34;&#34;
+        Convert a haystack json string to data time
+        Args:
+            node: GraphQL node to convert
+        &#34;&#34;&#34;
+        assert isinstance(node, StringValue), \
+            &#39;Received not compatible datetime &#34;{}&#34;&#39;.format(repr(node))
+        return HSDateTime.parse_value(node.value)
+
+    @staticmethod
+    def parse_value(value: Union[datetime, date, str]) -&gt; datetime:
+        # Call to convert graphql variable to python object
+        &#34;&#34;&#34;
+        Args:
+            value:
+        &#34;&#34;&#34;
+        if isinstance(value, datetime):
+            return value
+        if isinstance(value, date):
+            return datetime.combine(value, datetime.max.time()).replace(tzinfo=pytz.UTC)
+        return parse_hs_datetime_format(value)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>graphene.types.scalars.String</li>
+<li>graphene.types.scalars.Scalar</li>
+<li>graphene.types.unmountedtype.UnmountedType</li>
+<li>graphene.utils.orderedtype.OrderedType</li>
+<li>graphene.types.base.BaseType</li>
+<li>graphene.utils.subclass_with_meta.SubclassWithMeta</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="app.graphql_model.HSDateTime.parse_literal"><code class="name flex">
+<span>def <span class="ident">parse_literal</span></span>(<span>node: graphql.language.ast.StringValue) ‑> datetime.datetime</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert a haystack json string to data time</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>node</code></strong></dt>
+<dd>GraphQL node to convert</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def parse_literal(node: StringValue) -&gt; datetime:  # pylint: disable=arguments-differ
+    # Call to convert graphql parameter to python object
+    &#34;&#34;&#34;
+    Convert a haystack json string to data time
+    Args:
+        node: GraphQL node to convert
+    &#34;&#34;&#34;
+    assert isinstance(node, StringValue), \
+        &#39;Received not compatible datetime &#34;{}&#34;&#39;.format(repr(node))
+    return HSDateTime.parse_value(node.value)</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.HSDateTime.parse_value"><code class="name flex">
+<span>def <span class="ident">parse_value</span></span>(<span>value: Union[datetime.datetime, datetime.date, str]) ‑> datetime.datetime</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="args">Args</h2>
+<p>value:</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def parse_value(value: Union[datetime, date, str]) -&gt; datetime:
+    # Call to convert graphql variable to python object
+    &#34;&#34;&#34;
+    Args:
+        value:
+    &#34;&#34;&#34;
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, date):
+        return datetime.combine(value, datetime.max.time()).replace(tzinfo=pytz.UTC)
+    return parse_hs_datetime_format(value)</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.HSDateTime.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>date_time: datetime.datetime) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert date_time to json compatible string</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>date_time</code></strong></dt>
+<dd>The date time to convert to json</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def serialize(date_time: datetime) -&gt; str:
+    &#34;&#34;&#34;
+    Convert date_time to json compatible string
+    Args:
+        date_time: The date time to convert to json
+    &#34;&#34;&#34;
+    assert isinstance(date_time, datetime), \
+        &#39;Received not compatible datetime &#34;{}&#34;&#39;.format(repr(date_time))
+    return _dump_hs_date_time(date_time)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="app.graphql_model.HSOps"><code class="flex name class">
+<span>class <span class="ident">HSOps</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Result of 'ops' haystack operation</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HSOps(graphene.ObjectType):  # pylint: disable=too-few-public-methods
+    &#34;&#34;&#34;Result of &#39;ops&#39; haystack operation&#34;&#34;&#34;
+
+    name = graphene.String(description=&#34;Name of operation (see https://project-haystack.org/doc/Ops)&#34;)
+    summary = graphene.String(description=&#34;Summary of operation&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>graphene.types.objecttype.ObjectType</li>
+<li>graphene.types.base.BaseType</li>
+<li>graphene.utils.subclass_with_meta.SubclassWithMeta</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="app.graphql_model.HSOps.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSOps.summary"><code class="name">var <span class="ident">summary</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="app.graphql_model.HSPointWrite"><code class="flex name class">
+<span>class <span class="ident">HSPointWrite</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Result of 'pointWrite' haystack operation</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HSPointWrite(graphene.ObjectType):  # pylint: disable=too-few-public-methods
+    &#34;&#34;&#34;Result of &#39;pointWrite&#39; haystack operation&#34;&#34;&#34;
+    level = graphene.Int(description=&#34;Current level&#34;)
+    levelDis = graphene.String(description=&#34;Description of level&#34;)
+    val = graphene.Field(HSScalar, description=&#34;Value&#34;)
+    who = graphene.String(description=&#34;Who has updated the value&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>graphene.types.objecttype.ObjectType</li>
+<li>graphene.types.base.BaseType</li>
+<li>graphene.utils.subclass_with_meta.SubclassWithMeta</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="app.graphql_model.HSPointWrite.level"><code class="name">var <span class="ident">level</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSPointWrite.levelDis"><code class="name">var <span class="ident">levelDis</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSPointWrite.val"><code class="name">var <span class="ident">val</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSPointWrite.who"><code class="name">var <span class="ident">who</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="app.graphql_model.HSScalar"><code class="flex name class">
+<span>class <span class="ident">HSScalar</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Haystack Scalar</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HSScalar(graphene.Scalar):
+    &#34;&#34;&#34;Haystack Scalar&#34;&#34;&#34;
+
+    class Meta:  # pylint: disable=too-few-public-methods
+        &#34;&#34;&#34;Update name for AWS&#34;&#34;&#34;
+        name = &#34;AWSJSON&#34; if BOTO3_AVAILABLE else &#34;JSONString&#34;
+
+    @staticmethod
+    def serialize(hs_scalar: Any) -&gt; Any:
+        &#34;&#34;&#34;
+        Convert scala value to Json
+        Args:
+            hs_scalar: Any value
+        &#34;&#34;&#34;
+        return json.loads(haystackapi.dump_scalar(hs_scalar,
+                                                  haystackapi.MODE_JSON,
+                                                  version=haystackapi.VER_3_0))
+
+    @staticmethod
+    def parse_literal(node: Union[IntValue, FloatValue, StringValue, BooleanValue, EnumValue]) -&gt; Any:
+        &#34;&#34;&#34;
+        Parse to scalar value
+        Args:
+            node: The graphql node
+        &#34;&#34;&#34;
+        if isinstance(node, StringValue):
+            str_value = node.value
+            if len(str_value) &gt;= 2 and str_value[1] == &#39;:&#39;:
+                return haystackapi.parse_scalar(node.value,
+                                                haystackapi.MODE_JSON)
+        return node.value
+
+    @staticmethod
+    def parse_value(value: str) -&gt; Any:
+        &#34;&#34;&#34;
+        Args:
+            value: The value to parse
+        &#34;&#34;&#34;
+        return haystackapi.parse_scalar(value, haystackapi.MODE_JSON)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>graphene.types.scalars.Scalar</li>
+<li>graphene.types.unmountedtype.UnmountedType</li>
+<li>graphene.utils.orderedtype.OrderedType</li>
+<li>graphene.types.base.BaseType</li>
+<li>graphene.utils.subclass_with_meta.SubclassWithMeta</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="app.graphql_model.HSScalar.parse_literal"><code class="name flex">
+<span>def <span class="ident">parse_literal</span></span>(<span>node: Union[graphql.language.ast.IntValue, graphql.language.ast.FloatValue, graphql.language.ast.StringValue, graphql.language.ast.BooleanValue, graphql.language.ast.EnumValue]) ‑> Any</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Parse to scalar value</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>node</code></strong></dt>
+<dd>The graphql node</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def parse_literal(node: Union[IntValue, FloatValue, StringValue, BooleanValue, EnumValue]) -&gt; Any:
+    &#34;&#34;&#34;
+    Parse to scalar value
+    Args:
+        node: The graphql node
+    &#34;&#34;&#34;
+    if isinstance(node, StringValue):
+        str_value = node.value
+        if len(str_value) &gt;= 2 and str_value[1] == &#39;:&#39;:
+            return haystackapi.parse_scalar(node.value,
+                                            haystackapi.MODE_JSON)
+    return node.value</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.HSScalar.parse_value"><code class="name flex">
+<span>def <span class="ident">parse_value</span></span>(<span>value: str) ‑> Any</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>The value to parse</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def parse_value(value: str) -&gt; Any:
+    &#34;&#34;&#34;
+    Args:
+        value: The value to parse
+    &#34;&#34;&#34;
+    return haystackapi.parse_scalar(value, haystackapi.MODE_JSON)</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.HSScalar.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>hs_scalar: Any) ‑> Any</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert scala value to Json</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>hs_scalar</code></strong></dt>
+<dd>Any value</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def serialize(hs_scalar: Any) -&gt; Any:
+    &#34;&#34;&#34;
+    Convert scala value to Json
+    Args:
+        hs_scalar: Any value
+    &#34;&#34;&#34;
+    return json.loads(haystackapi.dump_scalar(hs_scalar,
+                                              haystackapi.MODE_JSON,
+                                              version=haystackapi.VER_3_0))</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="app.graphql_model.HSTS"><code class="flex name class">
+<span>class <span class="ident">HSTS</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Result of 'hisRead' haystack operation</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HSTS(graphene.ObjectType):  # pylint: disable=too-few-public-methods,too-many-instance-attributes
+    &#34;&#34;&#34;Result of &#39;hisRead&#39; haystack operation&#34;&#34;&#34;
+    ts = graphene.Field(HSDateTime, description=&#34;Date time of event&#34;)
+    val = graphene.Field(HSScalar, description=&#34;Haystack JSON format of value&#34;)
+
+    int = graphene.Int(required=False, description=&#34;Integer version of the value&#34;)
+    float = graphene.Float(required=False, description=&#34;Float version of the value&#34;)
+    str = graphene.String(required=False, description=&#34;Float version of the value&#34;)
+    bool = graphene.Boolean(required=False, description=&#34;Boolean version of the value&#34;)
+    uri = graphene.String(required=False, description=&#34;URI version of the value&#34;)
+    ref = graphene.String(required=False, description=&#34;Reference version of the value&#34;)
+    date = HSDate(required=False, description=&#34;Date version of the value&#34;)
+    time = HSTime(required=False, description=&#34;Time version of the value&#34;)
+    datetime = HSDateTime(required=False, description=&#34;Date time version of the value&#34;)
+    coord = graphene.Field(HSCoordinate,
+                           description=&#34;Geographic Coordinate&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>graphene.types.objecttype.ObjectType</li>
+<li>graphene.types.base.BaseType</li>
+<li>graphene.utils.subclass_with_meta.SubclassWithMeta</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="app.graphql_model.HSTS.bool"><code class="name">var <span class="ident">bool</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSTS.coord"><code class="name">var <span class="ident">coord</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSTS.date"><code class="name">var <span class="ident">date</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSTS.datetime"><code class="name">var <span class="ident">datetime</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSTS.float"><code class="name">var <span class="ident">float</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSTS.int"><code class="name">var <span class="ident">int</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSTS.ref"><code class="name">var <span class="ident">ref</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSTS.str"><code class="name">var <span class="ident">str</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSTS.time"><code class="name">var <span class="ident">time</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSTS.ts"><code class="name">var <span class="ident">ts</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSTS.uri"><code class="name">var <span class="ident">uri</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.HSTS.val"><code class="name">var <span class="ident">val</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="app.graphql_model.HSTime"><code class="flex name class">
+<span>class <span class="ident">HSTime</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Haystack time for GraphQL</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HSTime(graphene.String):
+    &#34;&#34;&#34;Haystack time for GraphQL&#34;&#34;&#34;
+
+    class Meta:  # pylint: disable=missing-class-docstring
+        name = &#34;AWSTime&#34; if BOTO3_AVAILABLE else &#34;Time&#34;
+
+    @staticmethod
+    def serialize(a_time: time) -&gt; str:
+        &#34;&#34;&#34;
+        Convert a time to Haystack json string
+        Args:
+            a_time: The time.
+        &#34;&#34;&#34;
+        assert isinstance(a_time, time), &#39;Received not compatible time &#34;{}&#34;&#39;.format(repr(a_time))
+        return _dump_hs_time(a_time)
+
+    @staticmethod
+    def parse_literal(node: StringValue) -&gt; time:  # pylint: disable=arguments-differ
+        &#34;&#34;&#34;
+        Convert a haystack json string to time
+        Args:
+            node: The string
+        &#34;&#34;&#34;
+        assert isinstance(node, StringValue), &#39;Received not compatible time &#34;{}&#34;&#39;.format(repr(node))
+        return HSTime.parse_value(node.value)
+
+    @staticmethod
+    def parse_value(value: Union[time, str]) -&gt; time:
+        &#34;&#34;&#34;
+        Args:
+            value:
+        &#34;&#34;&#34;
+        if isinstance(value, time):
+            return value
+        return parse_hs_time_format(value)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>graphene.types.scalars.String</li>
+<li>graphene.types.scalars.Scalar</li>
+<li>graphene.types.unmountedtype.UnmountedType</li>
+<li>graphene.utils.orderedtype.OrderedType</li>
+<li>graphene.types.base.BaseType</li>
+<li>graphene.utils.subclass_with_meta.SubclassWithMeta</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="app.graphql_model.HSTime.parse_literal"><code class="name flex">
+<span>def <span class="ident">parse_literal</span></span>(<span>node: graphql.language.ast.StringValue) ‑> datetime.time</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert a haystack json string to time</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>node</code></strong></dt>
+<dd>The string</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def parse_literal(node: StringValue) -&gt; time:  # pylint: disable=arguments-differ
+    &#34;&#34;&#34;
+    Convert a haystack json string to time
+    Args:
+        node: The string
+    &#34;&#34;&#34;
+    assert isinstance(node, StringValue), &#39;Received not compatible time &#34;{}&#34;&#39;.format(repr(node))
+    return HSTime.parse_value(node.value)</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.HSTime.parse_value"><code class="name flex">
+<span>def <span class="ident">parse_value</span></span>(<span>value: Union[datetime.time, str]) ‑> datetime.time</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="args">Args</h2>
+<p>value:</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def parse_value(value: Union[time, str]) -&gt; time:
+    &#34;&#34;&#34;
+    Args:
+        value:
+    &#34;&#34;&#34;
+    if isinstance(value, time):
+        return value
+    return parse_hs_time_format(value)</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.HSTime.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>a_time: datetime.time) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert a time to Haystack json string</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>a_time</code></strong></dt>
+<dd>The time.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def serialize(a_time: time) -&gt; str:
+    &#34;&#34;&#34;
+    Convert a time to Haystack json string
+    Args:
+        a_time: The time.
+    &#34;&#34;&#34;
+    assert isinstance(a_time, time), &#39;Received not compatible time &#34;{}&#34;&#39;.format(repr(a_time))
+    return _dump_hs_time(a_time)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="app.graphql_model.HSUri"><code class="flex name class">
+<span>class <span class="ident">HSUri</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Haystack URI for GraphQL</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HSUri(graphene.String):
+    &#34;&#34;&#34;Haystack URI for GraphQL&#34;&#34;&#34;
+
+    class Meta:  # pylint: disable=too-few-public-methods,missing-class-docstring
+        name = &#34;AWSURL&#34; if BOTO3_AVAILABLE else &#34;HSURL&#34;
+
+    @staticmethod
+    def serialize(a_uri: Uri) -&gt; str:
+        &#34;&#34;&#34;
+        Convert an Uri to Haystack json string
+        Args:
+            a_uri: The Uri
+        &#34;&#34;&#34;
+        assert isinstance(a_uri, Uri), &#39;Received not compatible uri &#34;{}&#34;&#39;.format(repr(a_uri))
+        return str(a_uri)
+
+    @staticmethod
+    def parse_literal(node: StringValue) -&gt; Uri:  # pylint: disable=arguments-differ
+        &#34;&#34;&#34;
+        Convert the Graphql string to Uri
+        Args:
+            node: The string
+        &#34;&#34;&#34;
+        return HSUri.parse_value(node.value)
+
+    @staticmethod
+    def parse_value(value: str) -&gt; Uri:
+        &#34;&#34;&#34;
+        Convert a haystack json string to Uri.
+        Args:
+            value: The string
+        &#34;&#34;&#34;
+        if value.startswith(&#34;u:&#34;):
+            return haystackapi.parse_scalar(value, haystackapi.MODE_JSON, version=haystackapi.VER_3_0)
+        return Uri(value)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>graphene.types.scalars.String</li>
+<li>graphene.types.scalars.Scalar</li>
+<li>graphene.types.unmountedtype.UnmountedType</li>
+<li>graphene.utils.orderedtype.OrderedType</li>
+<li>graphene.types.base.BaseType</li>
+<li>graphene.utils.subclass_with_meta.SubclassWithMeta</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="app.graphql_model.HSUri.parse_literal"><code class="name flex">
+<span>def <span class="ident">parse_literal</span></span>(<span>node: graphql.language.ast.StringValue) ‑> haystackapi.datatypes.Uri</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert the Graphql string to Uri</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>node</code></strong></dt>
+<dd>The string</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def parse_literal(node: StringValue) -&gt; Uri:  # pylint: disable=arguments-differ
+    &#34;&#34;&#34;
+    Convert the Graphql string to Uri
+    Args:
+        node: The string
+    &#34;&#34;&#34;
+    return HSUri.parse_value(node.value)</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.HSUri.parse_value"><code class="name flex">
+<span>def <span class="ident">parse_value</span></span>(<span>value: str) ‑> haystackapi.datatypes.Uri</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert a haystack json string to Uri.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>The string</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def parse_value(value: str) -&gt; Uri:
+    &#34;&#34;&#34;
+    Convert a haystack json string to Uri.
+    Args:
+        value: The string
+    &#34;&#34;&#34;
+    if value.startswith(&#34;u:&#34;):
+        return haystackapi.parse_scalar(value, haystackapi.MODE_JSON, version=haystackapi.VER_3_0)
+    return Uri(value)</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.HSUri.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>a_uri: haystackapi.datatypes.Uri) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert an Uri to Haystack json string</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>a_uri</code></strong></dt>
+<dd>The Uri</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def serialize(a_uri: Uri) -&gt; str:
+    &#34;&#34;&#34;
+    Convert an Uri to Haystack json string
+    Args:
+        a_uri: The Uri
+    &#34;&#34;&#34;
+    assert isinstance(a_uri, Uri), &#39;Received not compatible uri &#34;{}&#34;&#39;.format(repr(a_uri))
+    return str(a_uri)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="app.graphql_model.ReadHaystack"><code class="flex name class">
+<span>class <span class="ident">ReadHaystack</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Ontology conform with Haystack project</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ReadHaystack(graphene.ObjectType):
+    &#34;&#34;&#34;Ontology conform with Haystack project&#34;&#34;&#34;
+
+    class Meta:  # pylint: disable=too-few-public-methods,missing-class-docstring
+        name = &#34;Haystack&#34;
+
+    about = graphene.NonNull(HSAbout,
+                             description=&#34;Versions of api&#34;)
+
+    ops = graphene.NonNull(graphene.List(
+        graphene.NonNull(HSOps)),
+        description=&#34;List of operation implemented&#34;)
+
+    tag_values = graphene.NonNull(graphene.List(graphene.NonNull(graphene.String),
+                                                ),
+                                  tag=graphene.String(required=True,
+                                                      description=&#34;Tag name&#34;),
+                                  version=HSDateTime(description=&#34;Date of the version &#34;
+                                                                 &#34;or nothing for the last version&#34;),
+                                  description=&#34;All values for a specific tag&#34;)
+
+    versions = graphene.NonNull(graphene.List(graphene.NonNull(HSDateTime)),
+                                description=&#34;All versions of data&#34;)
+
+    entities = graphene.List(
+        graphene.NonNull(HSScalar),
+        ids=graphene.List(graphene.ID,
+                          description=&#34;List of ids to return (if set, ignore filter and limit)&#34;),
+        select=graphene.String(default_value=&#39;*&#39;,
+                               description=&#34;List of tags to return&#34;),
+        limit=graphene.Int(default_value=0,
+                           description=&#34;Maximum number of items to return&#34;),
+        filter=graphene.String(default_value=&#39;&#39;,
+                               description=&#34;Filter or item (see https://project-haystack.org/doc/Filters&#34;),
+        version=HSDateTime(description=&#34;Date of the version or nothing for the last version&#34;),
+        description=&#34;Selected entities of ontology&#34;
+    )
+
+    histories = graphene.List(graphene.NonNull(graphene.List(graphene.NonNull(HSTS))),
+                              ids=graphene.List(graphene.ID,
+                                                description=&#34;List of ids to return&#34;),
+                              dates_range=graphene.String(description=&#34;today, yesterday, &#34;
+                                                                      &#34;{date}, {date},{date}, &#34;
+                                                                      &#34;{datetime}, &#34;
+                                                                      &#34;{datetime},{datetime}&#34;
+                                                          ),
+                              version=HSDateTime(
+                                  description=&#34;Date of the version or nothing for the last version&#34;),
+                              description=&#34;Selected time series&#34;)
+
+    point_write = graphene.List(
+        graphene.NonNull(HSPointWrite),
+        id=graphene.ID(required=True,
+                       description=&#34;Id to read (accept @xxx, r:xxx or xxx)&#34;),
+        version=HSDateTime(description=&#34;Date of the version or nothing for the last version&#34;),
+        description=&#34;Point write values&#34;
+    )
+
+    @staticmethod
+    def resolve_about(parent: &#39;ReadHaystack&#39;,
+                      info: ResolveInfo):
+        log.debug(&#34;resolve_about(parent,info)&#34;)
+        grid = get_singleton_provider().about(&#34;http://localhost&#34;)
+        result = ReadHaystack._conv_entity(HSAbout, grid[0])
+        result.serverTime = grid[0][&#34;serverTime&#34;]  # pylint: disable=invalid-name
+        result.bootTime = grid[0][&#34;serverBootTime&#34;]  # pylint: disable=invalid-name, attribute-defined-outside-init
+        return result
+
+    @staticmethod
+    def resolve_ops(parent: &#39;ReadHaystack&#39;,
+                    info: ResolveInfo):
+        log.debug(&#34;resolve_about(parent,info)&#34;)
+        grid = get_singleton_provider().ops()
+        return ReadHaystack._conv_list_to_object_type(HSOps, grid)
+
+    @staticmethod
+    def resolve_tag_values(parent: &#39;ReadHaystack&#39;,
+                           info: ResolveInfo,
+                           tag: str,
+                           version: Optional[HSDateTime] = None):
+        log.debug(&#34;resolve_values(parent,info,%s)&#34;, tag)
+        return get_singleton_provider().values_for_tag(tag, version)
+
+    @staticmethod
+    def resolve_versions(parent: &#39;ReadHaystack&#39;,
+                         info: ResolveInfo):
+        log.debug(&#34;resolve_versions(parent,info)&#34;)
+        return get_singleton_provider().versions()
+
+    @staticmethod
+    def resolve_entities(parent: &#39;ReadHaystack&#39;,
+                         info: ResolveInfo,
+                         ids: Optional[List[str]] = None,
+                         select: str = &#39;*&#39;,
+                         filter: str = &#39;&#39;,  # pylint: disable=redefined-builtin
+                         limit: int = 0,
+                         version: Optional[HSDateTime] = None):
+        log.debug(
+            &#34;resolve_entities(parent,info,ids=%s, &#34;
+            &#34;select=%s, filter=%s, &#34;
+            &#34;limit=%s, version=%s)&#34;, ids, select, filter, limit, version)
+        if ids:
+            ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]
+        grid = get_singleton_provider().read(limit, select, ids, filter, version)
+        return grid
+
+    @staticmethod
+    def resolve_histories(parent: &#39;ReadHaystack&#39;,
+                          info: ResolveInfo,
+                          ids: Optional[List[str]] = None,
+                          dates_range: Optional[str] = None,
+                          version: Union[str, datetime, date, None] = None):
+        if version:
+            version = HSDateTime.parse_value(version)
+        log.debug(&#34;resolve_histories(parent,info,ids=%s, range=%s, version=%s)&#34;,
+                  ids, dates_range, version)
+        provider = get_singleton_provider()
+        grid_date_range = parse_date_range(dates_range, provider.get_tz())
+        return [ReadHaystack._conv_history(
+            provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version),
+            info
+        )
+            for entity_id in ids]
+
+    @staticmethod
+    def resolve_point_write(parent: &#39;ReadHaystack&#39;,
+                            info: ResolveInfo,
+                            entity_id: str,
+                            version: Union[datetime, str, None] = None):
+        if version:
+            version = HSDateTime.parse_value(version)
+        log.debug(&#34;resolve_point_write(parent,info, entity_id=%s, version=%s)&#34;,
+                  entity_id, version)
+        ref = Ref(ReadHaystack._filter_id(entity_id))
+        grid = get_singleton_provider().point_write_read(ref, version)
+        return ReadHaystack._conv_list_to_object_type(HSPointWrite, grid)
+
+    @staticmethod
+    def _conv_value(entity: Dict[str, Any],
+                    info: ResolveInfo) -&gt; HSTS:
+        selection = info.field_asts[0].selection_set.selections
+        cast_value = HSTS()
+        value = entity[&#34;val&#34;]
+        cast_value.ts = entity[&#34;ts&#34;]  # pylint: disable=invalid-name
+        cast_value.val = value
+        for sel in selection:
+            name = sel.name.value
+            if name in [&#39;ts&#39;, &#39;val&#39;]:
+                continue
+
+            if name == &#39;int&#39; and isinstance(value, (int, float)):
+                cast_value.int = int(value)
+            elif name == &#39;float&#39; and isinstance(value, float):
+                cast_value.float = value
+            elif name == &#39;str&#39;:
+                cast_value.str = str(value)
+            elif name == &#39;bool&#39;:
+                cast_value.bool = bool(value)
+            elif name == &#39;uri&#39; and isinstance(value, Uri):
+                cast_value.uri = str(value)
+            elif name == &#39;ref&#39; and isinstance(value, Ref):
+                cast_value.ref = &#39;@&#39; + value.name
+            elif name == &#39;date&#39; and isinstance(value, date):
+                cast_value.date = value
+            elif name == &#39;date&#39; and isinstance(value, datetime):
+                cast_value.date = value.date()
+            elif name == &#39;time&#39; and isinstance(value, time):
+                cast_value.time = value
+            elif name == &#39;time&#39; and isinstance(value, datetime):
+                cast_value.time = value.time()
+            elif name == &#39;datetime&#39; and isinstance(value, datetime):
+                cast_value.datetime = value
+            elif name == &#39;coord&#39; and isinstance(value, Coordinate):
+                cast_value.coord = HSCoordinate(value.latitude, value.longitude)
+        return cast_value
+
+    @staticmethod
+    def _conv_history(entities: Dict[str, Any], info: ResolveInfo):
+        return [ReadHaystack._conv_value(entity, info) for entity in entities]
+
+    @staticmethod
+    def _filter_id(entity_id: str) -&gt; str:
+        if entity_id.startswith(&#34;r:&#34;):
+            return entity_id[2:]
+        if entity_id.startswith(&#39;@&#39;):
+            return entity_id[1:]
+        return entity_id
+
+    @staticmethod
+    def _conv_entity(target_class: Type, entity: Dict[str, Any]):
+        entity_result = target_class()
+        for key, val in entity.items():
+            if key in entity:
+                entity_result.__setattr__(key, val)
+        return entity_result
+
+    @staticmethod
+    def _conv_list_to_object_type(target_class: Type, grid: Grid):
+        result = []
+        for row in grid:
+            result.append(ReadHaystack._conv_entity(target_class, row))
+        return result</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>graphene.types.objecttype.ObjectType</li>
+<li>graphene.types.base.BaseType</li>
+<li>graphene.utils.subclass_with_meta.SubclassWithMeta</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="app.graphql_model.ReadHaystack.about"><code class="name">var <span class="ident">about</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.ReadHaystack.entities"><code class="name">var <span class="ident">entities</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.ReadHaystack.histories"><code class="name">var <span class="ident">histories</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.ReadHaystack.ops"><code class="name">var <span class="ident">ops</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.ReadHaystack.point_write"><code class="name">var <span class="ident">point_write</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.ReadHaystack.tag_values"><code class="name">var <span class="ident">tag_values</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="app.graphql_model.ReadHaystack.versions"><code class="name">var <span class="ident">versions</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="app.graphql_model.ReadHaystack.resolve_about"><code class="name flex">
+<span>def <span class="ident">resolve_about</span></span>(<span>parent: <a title="app.graphql_model.ReadHaystack" href="#app.graphql_model.ReadHaystack">ReadHaystack</a>, info: graphql.execution.base.ResolveInfo)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def resolve_about(parent: &#39;ReadHaystack&#39;,
+                  info: ResolveInfo):
+    log.debug(&#34;resolve_about(parent,info)&#34;)
+    grid = get_singleton_provider().about(&#34;http://localhost&#34;)
+    result = ReadHaystack._conv_entity(HSAbout, grid[0])
+    result.serverTime = grid[0][&#34;serverTime&#34;]  # pylint: disable=invalid-name
+    result.bootTime = grid[0][&#34;serverBootTime&#34;]  # pylint: disable=invalid-name, attribute-defined-outside-init
+    return result</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.ReadHaystack.resolve_entities"><code class="name flex">
+<span>def <span class="ident">resolve_entities</span></span>(<span>parent: <a title="app.graphql_model.ReadHaystack" href="#app.graphql_model.ReadHaystack">ReadHaystack</a>, info: graphql.execution.base.ResolveInfo, ids: Union[List[str], NoneType] = None, select: str = '*', filter: str = '', limit: int = 0, version: Union[<a title="app.graphql_model.HSDateTime" href="#app.graphql_model.HSDateTime">HSDateTime</a>, NoneType] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def resolve_entities(parent: &#39;ReadHaystack&#39;,
+                     info: ResolveInfo,
+                     ids: Optional[List[str]] = None,
+                     select: str = &#39;*&#39;,
+                     filter: str = &#39;&#39;,  # pylint: disable=redefined-builtin
+                     limit: int = 0,
+                     version: Optional[HSDateTime] = None):
+    log.debug(
+        &#34;resolve_entities(parent,info,ids=%s, &#34;
+        &#34;select=%s, filter=%s, &#34;
+        &#34;limit=%s, version=%s)&#34;, ids, select, filter, limit, version)
+    if ids:
+        ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]
+    grid = get_singleton_provider().read(limit, select, ids, filter, version)
+    return grid</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.ReadHaystack.resolve_histories"><code class="name flex">
+<span>def <span class="ident">resolve_histories</span></span>(<span>parent: <a title="app.graphql_model.ReadHaystack" href="#app.graphql_model.ReadHaystack">ReadHaystack</a>, info: graphql.execution.base.ResolveInfo, ids: Union[List[str], NoneType] = None, dates_range: Union[str, NoneType] = None, version: Union[str, datetime.datetime, datetime.date, NoneType] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def resolve_histories(parent: &#39;ReadHaystack&#39;,
+                      info: ResolveInfo,
+                      ids: Optional[List[str]] = None,
+                      dates_range: Optional[str] = None,
+                      version: Union[str, datetime, date, None] = None):
+    if version:
+        version = HSDateTime.parse_value(version)
+    log.debug(&#34;resolve_histories(parent,info,ids=%s, range=%s, version=%s)&#34;,
+              ids, dates_range, version)
+    provider = get_singleton_provider()
+    grid_date_range = parse_date_range(dates_range, provider.get_tz())
+    return [ReadHaystack._conv_history(
+        provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version),
+        info
+    )
+        for entity_id in ids]</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.ReadHaystack.resolve_ops"><code class="name flex">
+<span>def <span class="ident">resolve_ops</span></span>(<span>parent: <a title="app.graphql_model.ReadHaystack" href="#app.graphql_model.ReadHaystack">ReadHaystack</a>, info: graphql.execution.base.ResolveInfo)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def resolve_ops(parent: &#39;ReadHaystack&#39;,
+                info: ResolveInfo):
+    log.debug(&#34;resolve_about(parent,info)&#34;)
+    grid = get_singleton_provider().ops()
+    return ReadHaystack._conv_list_to_object_type(HSOps, grid)</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.ReadHaystack.resolve_point_write"><code class="name flex">
+<span>def <span class="ident">resolve_point_write</span></span>(<span>parent: <a title="app.graphql_model.ReadHaystack" href="#app.graphql_model.ReadHaystack">ReadHaystack</a>, info: graphql.execution.base.ResolveInfo, entity_id: str, version: Union[datetime.datetime, str, NoneType] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def resolve_point_write(parent: &#39;ReadHaystack&#39;,
+                        info: ResolveInfo,
+                        entity_id: str,
+                        version: Union[datetime, str, None] = None):
+    if version:
+        version = HSDateTime.parse_value(version)
+    log.debug(&#34;resolve_point_write(parent,info, entity_id=%s, version=%s)&#34;,
+              entity_id, version)
+    ref = Ref(ReadHaystack._filter_id(entity_id))
+    grid = get_singleton_provider().point_write_read(ref, version)
+    return ReadHaystack._conv_list_to_object_type(HSPointWrite, grid)</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.ReadHaystack.resolve_tag_values"><code class="name flex">
+<span>def <span class="ident">resolve_tag_values</span></span>(<span>parent: <a title="app.graphql_model.ReadHaystack" href="#app.graphql_model.ReadHaystack">ReadHaystack</a>, info: graphql.execution.base.ResolveInfo, tag: str, version: Union[<a title="app.graphql_model.HSDateTime" href="#app.graphql_model.HSDateTime">HSDateTime</a>, NoneType] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def resolve_tag_values(parent: &#39;ReadHaystack&#39;,
+                       info: ResolveInfo,
+                       tag: str,
+                       version: Optional[HSDateTime] = None):
+    log.debug(&#34;resolve_values(parent,info,%s)&#34;, tag)
+    return get_singleton_provider().values_for_tag(tag, version)</code></pre>
+</details>
+</dd>
+<dt id="app.graphql_model.ReadHaystack.resolve_versions"><code class="name flex">
+<span>def <span class="ident">resolve_versions</span></span>(<span>parent: <a title="app.graphql_model.ReadHaystack" href="#app.graphql_model.ReadHaystack">ReadHaystack</a>, info: graphql.execution.base.ResolveInfo)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def resolve_versions(parent: &#39;ReadHaystack&#39;,
+                     info: ResolveInfo):
+    log.debug(&#34;resolve_versions(parent,info)&#34;)
+    return get_singleton_provider().versions()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="app" href="index.html">app</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="app.graphql_model.HSAbout" href="#app.graphql_model.HSAbout">HSAbout</a></code></h4>
+<ul class="two-column">
+<li><code><a title="app.graphql_model.HSAbout.haystackVersion" href="#app.graphql_model.HSAbout.haystackVersion">haystackVersion</a></code></li>
+<li><code><a title="app.graphql_model.HSAbout.moduleName" href="#app.graphql_model.HSAbout.moduleName">moduleName</a></code></li>
+<li><code><a title="app.graphql_model.HSAbout.moduleVersion" href="#app.graphql_model.HSAbout.moduleVersion">moduleVersion</a></code></li>
+<li><code><a title="app.graphql_model.HSAbout.productName" href="#app.graphql_model.HSAbout.productName">productName</a></code></li>
+<li><code><a title="app.graphql_model.HSAbout.productUri" href="#app.graphql_model.HSAbout.productUri">productUri</a></code></li>
+<li><code><a title="app.graphql_model.HSAbout.productVersion" href="#app.graphql_model.HSAbout.productVersion">productVersion</a></code></li>
+<li><code><a title="app.graphql_model.HSAbout.serverBootTime" href="#app.graphql_model.HSAbout.serverBootTime">serverBootTime</a></code></li>
+<li><code><a title="app.graphql_model.HSAbout.serverName" href="#app.graphql_model.HSAbout.serverName">serverName</a></code></li>
+<li><code><a title="app.graphql_model.HSAbout.serverTime" href="#app.graphql_model.HSAbout.serverTime">serverTime</a></code></li>
+<li><code><a title="app.graphql_model.HSAbout.tz" href="#app.graphql_model.HSAbout.tz">tz</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="app.graphql_model.HSCoordinate" href="#app.graphql_model.HSCoordinate">HSCoordinate</a></code></h4>
+<ul class="">
+<li><code><a title="app.graphql_model.HSCoordinate.latitude" href="#app.graphql_model.HSCoordinate.latitude">latitude</a></code></li>
+<li><code><a title="app.graphql_model.HSCoordinate.longitude" href="#app.graphql_model.HSCoordinate.longitude">longitude</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="app.graphql_model.HSDate" href="#app.graphql_model.HSDate">HSDate</a></code></h4>
+<ul class="">
+<li><code><a title="app.graphql_model.HSDate.parse_literal" href="#app.graphql_model.HSDate.parse_literal">parse_literal</a></code></li>
+<li><code><a title="app.graphql_model.HSDate.parse_value" href="#app.graphql_model.HSDate.parse_value">parse_value</a></code></li>
+<li><code><a title="app.graphql_model.HSDate.serialize" href="#app.graphql_model.HSDate.serialize">serialize</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="app.graphql_model.HSDateTime" href="#app.graphql_model.HSDateTime">HSDateTime</a></code></h4>
+<ul class="">
+<li><code><a title="app.graphql_model.HSDateTime.parse_literal" href="#app.graphql_model.HSDateTime.parse_literal">parse_literal</a></code></li>
+<li><code><a title="app.graphql_model.HSDateTime.parse_value" href="#app.graphql_model.HSDateTime.parse_value">parse_value</a></code></li>
+<li><code><a title="app.graphql_model.HSDateTime.serialize" href="#app.graphql_model.HSDateTime.serialize">serialize</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="app.graphql_model.HSOps" href="#app.graphql_model.HSOps">HSOps</a></code></h4>
+<ul class="">
+<li><code><a title="app.graphql_model.HSOps.name" href="#app.graphql_model.HSOps.name">name</a></code></li>
+<li><code><a title="app.graphql_model.HSOps.summary" href="#app.graphql_model.HSOps.summary">summary</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="app.graphql_model.HSPointWrite" href="#app.graphql_model.HSPointWrite">HSPointWrite</a></code></h4>
+<ul class="">
+<li><code><a title="app.graphql_model.HSPointWrite.level" href="#app.graphql_model.HSPointWrite.level">level</a></code></li>
+<li><code><a title="app.graphql_model.HSPointWrite.levelDis" href="#app.graphql_model.HSPointWrite.levelDis">levelDis</a></code></li>
+<li><code><a title="app.graphql_model.HSPointWrite.val" href="#app.graphql_model.HSPointWrite.val">val</a></code></li>
+<li><code><a title="app.graphql_model.HSPointWrite.who" href="#app.graphql_model.HSPointWrite.who">who</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="app.graphql_model.HSScalar" href="#app.graphql_model.HSScalar">HSScalar</a></code></h4>
+<ul class="">
+<li><code><a title="app.graphql_model.HSScalar.parse_literal" href="#app.graphql_model.HSScalar.parse_literal">parse_literal</a></code></li>
+<li><code><a title="app.graphql_model.HSScalar.parse_value" href="#app.graphql_model.HSScalar.parse_value">parse_value</a></code></li>
+<li><code><a title="app.graphql_model.HSScalar.serialize" href="#app.graphql_model.HSScalar.serialize">serialize</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="app.graphql_model.HSTS" href="#app.graphql_model.HSTS">HSTS</a></code></h4>
+<ul class="two-column">
+<li><code><a title="app.graphql_model.HSTS.bool" href="#app.graphql_model.HSTS.bool">bool</a></code></li>
+<li><code><a title="app.graphql_model.HSTS.coord" href="#app.graphql_model.HSTS.coord">coord</a></code></li>
+<li><code><a title="app.graphql_model.HSTS.date" href="#app.graphql_model.HSTS.date">date</a></code></li>
+<li><code><a title="app.graphql_model.HSTS.datetime" href="#app.graphql_model.HSTS.datetime">datetime</a></code></li>
+<li><code><a title="app.graphql_model.HSTS.float" href="#app.graphql_model.HSTS.float">float</a></code></li>
+<li><code><a title="app.graphql_model.HSTS.int" href="#app.graphql_model.HSTS.int">int</a></code></li>
+<li><code><a title="app.graphql_model.HSTS.ref" href="#app.graphql_model.HSTS.ref">ref</a></code></li>
+<li><code><a title="app.graphql_model.HSTS.str" href="#app.graphql_model.HSTS.str">str</a></code></li>
+<li><code><a title="app.graphql_model.HSTS.time" href="#app.graphql_model.HSTS.time">time</a></code></li>
+<li><code><a title="app.graphql_model.HSTS.ts" href="#app.graphql_model.HSTS.ts">ts</a></code></li>
+<li><code><a title="app.graphql_model.HSTS.uri" href="#app.graphql_model.HSTS.uri">uri</a></code></li>
+<li><code><a title="app.graphql_model.HSTS.val" href="#app.graphql_model.HSTS.val">val</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="app.graphql_model.HSTime" href="#app.graphql_model.HSTime">HSTime</a></code></h4>
+<ul class="">
+<li><code><a title="app.graphql_model.HSTime.parse_literal" href="#app.graphql_model.HSTime.parse_literal">parse_literal</a></code></li>
+<li><code><a title="app.graphql_model.HSTime.parse_value" href="#app.graphql_model.HSTime.parse_value">parse_value</a></code></li>
+<li><code><a title="app.graphql_model.HSTime.serialize" href="#app.graphql_model.HSTime.serialize">serialize</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="app.graphql_model.HSUri" href="#app.graphql_model.HSUri">HSUri</a></code></h4>
+<ul class="">
+<li><code><a title="app.graphql_model.HSUri.parse_literal" href="#app.graphql_model.HSUri.parse_literal">parse_literal</a></code></li>
+<li><code><a title="app.graphql_model.HSUri.parse_value" href="#app.graphql_model.HSUri.parse_value">parse_value</a></code></li>
+<li><code><a title="app.graphql_model.HSUri.serialize" href="#app.graphql_model.HSUri.serialize">serialize</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="app.graphql_model.ReadHaystack" href="#app.graphql_model.ReadHaystack">ReadHaystack</a></code></h4>
+<ul class="two-column">
+<li><code><a title="app.graphql_model.ReadHaystack.about" href="#app.graphql_model.ReadHaystack.about">about</a></code></li>
+<li><code><a title="app.graphql_model.ReadHaystack.entities" href="#app.graphql_model.ReadHaystack.entities">entities</a></code></li>
+<li><code><a title="app.graphql_model.ReadHaystack.histories" href="#app.graphql_model.ReadHaystack.histories">histories</a></code></li>
+<li><code><a title="app.graphql_model.ReadHaystack.ops" href="#app.graphql_model.ReadHaystack.ops">ops</a></code></li>
+<li><code><a title="app.graphql_model.ReadHaystack.point_write" href="#app.graphql_model.ReadHaystack.point_write">point_write</a></code></li>
+<li><code><a title="app.graphql_model.ReadHaystack.resolve_about" href="#app.graphql_model.ReadHaystack.resolve_about">resolve_about</a></code></li>
+<li><code><a title="app.graphql_model.ReadHaystack.resolve_entities" href="#app.graphql_model.ReadHaystack.resolve_entities">resolve_entities</a></code></li>
+<li><code><a title="app.graphql_model.ReadHaystack.resolve_histories" href="#app.graphql_model.ReadHaystack.resolve_histories">resolve_histories</a></code></li>
+<li><code><a title="app.graphql_model.ReadHaystack.resolve_ops" href="#app.graphql_model.ReadHaystack.resolve_ops">resolve_ops</a></code></li>
+<li><code><a title="app.graphql_model.ReadHaystack.resolve_point_write" href="#app.graphql_model.ReadHaystack.resolve_point_write">resolve_point_write</a></code></li>
+<li><code><a title="app.graphql_model.ReadHaystack.resolve_tag_values" href="#app.graphql_model.ReadHaystack.resolve_tag_values">resolve_tag_values</a></code></li>
+<li><code><a title="app.graphql_model.ReadHaystack.resolve_versions" href="#app.graphql_model.ReadHaystack.resolve_versions">resolve_versions</a></code></li>
+<li><code><a title="app.graphql_model.ReadHaystack.tag_values" href="#app.graphql_model.ReadHaystack.tag_values">tag_values</a></code></li>
+<li><code><a title="app.graphql_model.ReadHaystack.versions" href="#app.graphql_model.ReadHaystack.versions">versions</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

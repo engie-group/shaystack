@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+* - Second pass - Add Pycharm runner
+* - Reset md files
+* - Update the docstring
+* fix doc
+* - Update the docstring
 * - Update the Makefile to produce the documentation
 * - Generate new docs with github pages
 * Change doc and licence

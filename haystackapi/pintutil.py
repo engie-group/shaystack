@@ -129,11 +129,13 @@ _PINT_CONVERSION = [
 ]
 
 
-def to_haystack(unit: str):
+def to_haystack(unit: str) -> str:
     """Some parsing tweaks to fit pint units / handling of edge cases.
 
     Args:
         unit: unit
+    Returns:
+        Haystack unit
     """
     global _HAYSTACK_CONVERSION  # pylint: disable=global-statement
     global _PINT_CONVERSION  # pylint: disable=global-statement

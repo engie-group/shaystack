@@ -347,10 +347,10 @@ compile-all:
 .PHONY: docs
 
 docs/api: $(REQUIREMENTS)
+	pdoc -f --html -o docs/api haystackapi app
 
 ## Generate the API HTML documentation
 docs: docs/api
-	pdoc -f --html -o docs/api haystackapi app
 
 ## Start the pdoc server to update the docstrings
 start-docs:

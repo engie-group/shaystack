@@ -35,13 +35,12 @@ _VERSION_RE = re.compile(r'^(\d[\d.]*)([^\d].*)*$')
 
 
 class Version:
-    """A Project Haystack version number"""
+    """A Project Haystack version number.
+    Args:
+        ver_str: The version str
+    """
 
     def __init__(self, ver_str: Union[str, 'Version']):
-        """
-        Args:
-            ver_str: The version str
-        """
         if isinstance(ver_str, Version):
             # Clone constructor
             self.version_nums = ver_str.version_nums

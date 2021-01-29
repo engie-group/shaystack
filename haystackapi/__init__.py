@@ -36,7 +36,7 @@ __all__ = ['Grid', 'dump', 'parse', 'dump_scalar', 'parse_scalar', 'parse_filter
            'Coordinate', 'Uri', 'Bin', 'XStr', 'Quantity', 'MARKER', 'NA', 'REMOVE', 'Ref',
            'MODE_JSON', 'MODE_ZINC', 'MODE_CSV', 'suffix_to_mode', 'mode_to_suffix',
            'parse_hs_datetime_format',
-           'VER_2_0', 'VER_3_0', 'LATEST_VER', 'Version', '__version__',
+           'VER_2_0', 'VER_3_0', 'LATEST_VER', 'Version',
 
            "HaystackInterface",
            "about",
@@ -85,6 +85,5 @@ __credits__ = ['Philippe PRADOS',
                'joyfun'
                ]
 __license__ = 'BSD'
-__version__ = '0.8'
 __maintainer__ = 'Philippe PRADOS'
 __email__ = 'haystackapi@prados.fr'

@@ -46,11 +46,15 @@ class HaystackHttpRequest:
     A wrapper between http request and Haystack API provider.
 
     Convert the custom technology HTTP request to this format
+
+    Args:
+        body: The http body in string
+        args: The http argument in an map of string
+        headers: All HTTP headers
     """
 
     body: str = ""
     args: Dict[str, str] = field(default_factory=lambda: ({}))
-    is_base64: bool = False
     headers: Dict[str, str] = field(
         default_factory=lambda: (
             {"Host": "localhost", "Content-Type": "text/text", "Accept": "*/*"}
@@ -64,6 +68,12 @@ class HaystackHttpResponse:
     A wrapper between http response and Haystack API provider.
 
     Convert the custom technology HTTP request to this format
+
+    Args:
+        status_code: The HTTP status code
+        status: The message
+        headers: The HTTP headers for the response
+        body: The body
     """
 
     status_code: int = 200

@@ -126,7 +126,6 @@ __credits__ = [&#39;Philippe PRADOS&#39;,
                &#39;joyfun&#39;
                ]
 __license__ = &#39;BSD&#39;
-__version__ = &#39;0.8&#39;
 __maintainer__ = &#39;Philippe PRADOS&#39;
 __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 </details>
@@ -652,7 +651,7 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 (Python, SQL, etc.)</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>grid_filter</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>grid_filter</code></strong></dt>
 <dd>A filter request</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -666,7 +665,7 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
     (Python, SQL, etc.)
 
     Args:
-        grid_filter (str): A filter request
+        grid_filter: A filter request
     Returns:
         A `FilterAST`
     &#34;&#34;&#34;
@@ -1326,8 +1325,8 @@ followed by zero or more rows.</p>
         Compare two values with a tolerance
 
         Args:
-            version_1(Any): value one
-            version_2(Any): value two
+            version_1: value one
+            version_2: value two
         Returns:
             true if the values are approximately identical
         &#34;&#34;&#34;
@@ -1363,10 +1362,9 @@ followed by zero or more rows.</p>
         &#34;&#34;&#34;
         Campare two grid with tolerance.
         Args:
-            other(Grid): Other grid
-
+            other: Other grid
         Returns:
-
+            true if equals
         &#34;&#34;&#34;
         if not isinstance(other, Grid):
             return False
@@ -1425,7 +1423,9 @@ followed by zero or more rows.</p>
         At all time, with gridA and gridB, gridA + (gridB - gridA) == gridB
 
         Args:
-            other:
+            other: grid to substract
+        Returns:
+            Only the difference between grid.
         &#34;&#34;&#34;
         assert isinstance(other, Grid)
         from .grid_diff import grid_diff  # pylint: disable: import-outside-toplevel
@@ -1440,7 +1440,9 @@ followed by zero or more rows.</p>
         time, with `gridA` and `gridB`, `gridA + (gridB - gridA) == gridB`
 
         Args:
-            other(Grid): List of entities to updates
+            other: List of entities to updates
+        Returns:
+            A new grid
         &#34;&#34;&#34;
         assert isinstance(other, Grid)
         from .grid_diff import grid_merge  # pylint: disable: import-outside-toplevel
@@ -1486,7 +1488,7 @@ followed by zero or more rows.</p>
 
     def __getitem__(self, key: Union[int, Ref, slice]) -&gt; Union[Dict[str, Any], &#39;Grid&#39;]:
         &#34;&#34;&#34;Retrieve the row at index. :param key: index, Haystack reference or
-        slide :return: a new grid with a selection of entities
+        slide
 
         Args:
             key: the position, the Reference or a slice
@@ -1513,7 +1515,7 @@ followed by zero or more rows.</p>
             key: The position of id of entity
 
         Returns:
-            `True` if the referenced entity is present
+            &#39;True&#39; if the referenced entity is present
         &#34;&#34;&#34;
         if isinstance(key, int):
             return 0 &lt;= key &lt; len(self._row)
@@ -1563,7 +1565,7 @@ followed by zero or more rows.</p>
         Returns:
             The entity or `None`
         &#34;&#34;&#34;
-        self.pop(key)
+        return self.pop(key)
 
     @property
     def version(self) -&gt; Version:  # pragma: no cover
@@ -1583,14 +1585,18 @@ followed by zero or more rows.</p>
             default: The default value if the entity is not found
 
         Returns:
-            Dict[str, Any]: The entity with the id == index or the default value
+            The entity with the id == index or the default value
         &#34;&#34;&#34;
         if not self._index:
             self.reindex()
         return self._index.get(index, default)
 
     def keys(self) -&gt; KeysView[Ref]:
-        &#34;&#34;&#34; The list of ids of entities with `id` &#34;&#34;&#34;
+        &#34;&#34;&#34; Return the list of ids of entities with `id`
+
+        Returns:
+             The list of ids of entities with `id`
+        &#34;&#34;&#34;
         if not self._index:
             self.reindex()
         return self._index.keys()
@@ -1623,12 +1629,14 @@ followed by zero or more rows.</p>
                     ret_value = self._index.pop(key)
         return ret_value
 
-    def insert(self, index: int, value: Dict[str, Any]):
+    def insert(self, index: int, value: Dict[str, Any]) -&gt; &#39;Grid&#39;:
         &#34;&#34;&#34;Insert a new entity before the index position.
 
         Args:
             index: The position where to insert
             value: The new entity to add
+        Returns
+            `self`
         &#34;&#34;&#34;
         if not isinstance(value, dict):
             raise TypeError(&#39;value must be a dict&#39;)
@@ -1642,7 +1650,10 @@ followed by zero or more rows.</p>
         return self
 
     def reindex(self) -&gt; &#39;Grid&#39;:
-        &#34;&#34;&#34;Reindex the grid if the user, update directly an id of a row&#34;&#34;&#34;
+        &#34;&#34;&#34;Reindex the grid if the user, update directly an id of a row.
+        Returns
+            `self`
+        &#34;&#34;&#34;
         self._index = {}
         for item in self._row:
             if &#34;id&#34; in item:
@@ -1764,9 +1775,6 @@ followed by zero or more rows.</p>
     def _assert_version(self, version: Version) -&gt; None:
         &#34;&#34;&#34;Assert that the grid version is equal to or above the given value. If
         no version is set, set the version.
-
-        Args:
-            version (Version):
         &#34;&#34;&#34;
         if self.nearest_version &lt; version:
             if self._version_given:
@@ -1957,19 +1965,16 @@ and rows</p>
 <span>def <span class="ident">get</span></span>(<span>self, index: haystackapi.datatypes.Ref, default: Dict[str, Any] = None) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Return an entity with the corresponding id.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>index</code></strong></dt>
-<dd>The id of entity</dd>
-<dt><strong><code>default</code></strong></dt>
-<dd>The default value if the entity is not found</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>Dict[str, Any]</code></dt>
-<dd>The entity with the id == index or the default value</dd>
-</dl></div>
+    <div class="desc"><p>Return an entity with the corresponding id.</p>
+        <h2 id="args">Args</h2>
+        <dl>
+            <dt><strong><code>index</code></strong></dt>
+            <dd>The id of entity</dd>
+            <dt><strong><code>default</code></strong></dt>
+            <dd>The default value if the entity is not found</dd>
+        </dl>
+        <h2 id="returns">Returns</h2>
+        <p>The entity with the id == index or the default value</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1982,7 +1987,7 @@ and rows</p>
         default: The default value if the entity is not found
 
     Returns:
-        Dict[str, Any]: The entity with the id == index or the default value
+        The entity with the id == index or the default value
     &#34;&#34;&#34;
     if not self._index:
         self.reindex()
@@ -1990,27 +1995,31 @@ and rows</p>
 </details>
 </dd>
 <dt id="haystackapi.Grid.insert"><code class="name flex">
-<span>def <span class="ident">insert</span></span>(<span>self, index: int, value: Dict[str, Any])</span>
+    <span>def <span class="ident">insert</span></span>(<span>self, index: int, value: Dict[str, Any]) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Insert a new entity before the index position.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>index</code></strong></dt>
-<dd>The position where to insert</dd>
-<dt><strong><code>value</code></strong></dt>
-<dd>The new entity to add</dd>
-</dl></div>
+    <div class="desc"><p>Insert a new entity before the index position.</p>
+        <h2 id="args">Args</h2>
+        <dl>
+            <dt><strong><code>index</code></strong></dt>
+            <dd>The position where to insert</dd>
+            <dt><strong><code>value</code></strong></dt>
+            <dd>The new entity to add</dd>
+        </dl>
+        <p>Returns
+            <code>self</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def insert(self, index: int, value: Dict[str, Any]):
+    <pre><code class="python">def insert(self, index: int, value: Dict[str, Any]) -&gt; &#39;Grid&#39;:
     &#34;&#34;&#34;Insert a new entity before the index position.
 
     Args:
         index: The position where to insert
         value: The new entity to add
+    Returns
+        `self`
     &#34;&#34;&#34;
     if not isinstance(value, dict):
         raise TypeError(&#39;value must be a dict&#39;)
@@ -2028,13 +2037,19 @@ and rows</p>
 <span>def <span class="ident">keys</span></span>(<span>self) ‑> KeysView[haystackapi.datatypes.Ref]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>The list of ids of entities with <code>id</code></p></div>
+    <div class="desc"><p>Return the list of ids of entities with <code>id</code></p>
+        <h2 id="returns">Returns</h2>
+        <p>The list of ids of entities with <code>id</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def keys(self) -&gt; KeysView[Ref]:
-    &#34;&#34;&#34; The list of ids of entities with `id` &#34;&#34;&#34;
+    &#34;&#34;&#34; Return the list of ids of entities with `id`
+
+    Returns:
+         The list of ids of entities with `id`
+    &#34;&#34;&#34;
     if not self._index:
         self.reindex()
     return self._index.keys()</code></pre>
@@ -2118,13 +2133,18 @@ the first deleted item.</p>
 <span>def <span class="ident">reindex</span></span>(<span>self) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Reindex the grid if the user, update directly an id of a row</p></div>
+    <div class="desc"><p>Reindex the grid if the user, update directly an id of a row.
+        Returns
+        <code>self</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def reindex(self) -&gt; &#39;Grid&#39;:
-    &#34;&#34;&#34;Reindex the grid if the user, update directly an id of a row&#34;&#34;&#34;
+    &#34;&#34;&#34;Reindex the grid if the user, update directly an id of a row.
+    Returns
+        `self`
+    &#34;&#34;&#34;
     self._index = {}
     for item in self._row:
         if &#34;id&#34; in item:
@@ -3261,22 +3281,27 @@ def watch_unsub(
             key: The tag name
             value: The value
             replace: Flag to replace or not the value
+        Returns
+            `self`
         &#34;&#34;&#34;
         self.add_item(key, value, replace=replace)
         return self
 
-    def extend(self, items: Iterable[Any], replace: bool = True) -&gt; None:
+    def extend(self, items: Iterable[Any], replace: bool = True) -&gt; &#39;MetadataObject&#39;:
         &#34;&#34;&#34;Append the items to the metadata.
 
         Args:
             items: A list of items
             replace: Flag to replace or not the value
+        Returns
+            `self`
         &#34;&#34;&#34;
         if isinstance(items, (dict, SortableDict)):
             items = list(items.items())
 
         for (key, value) in items:
             self.append(key, value, replace=replace)
+        return self
 
     def copy(self) -&gt; &#39;MetadataObject&#39;:
         &#34;&#34;&#34;
@@ -3302,16 +3327,18 @@ def watch_unsub(
 <span>def <span class="ident">append</span></span>(<span>self, key: str, value: Any = MARKER, replace: bool = True) ‑> haystackapi.metadata.MetadataObject</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Append the item to the metadata.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>key</code></strong></dt>
-<dd>The tag name</dd>
-<dt><strong><code>value</code></strong></dt>
-<dd>The value</dd>
-<dt><strong><code>replace</code></strong></dt>
-<dd>Flag to replace or not the value</dd>
-</dl></div>
+    <div class="desc"><p>Append the item to the metadata.</p>
+        <h2 id="args">Args</h2>
+        <dl>
+            <dt><strong><code>key</code></strong></dt>
+            <dd>The tag name</dd>
+            <dt><strong><code>value</code></strong></dt>
+            <dd>The value</dd>
+            <dt><strong><code>replace</code></strong></dt>
+            <dd>Flag to replace or not the value</dd>
+        </dl>
+        <p>Returns
+            <code>self</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3323,6 +3350,8 @@ def watch_unsub(
         key: The tag name
         value: The value
         replace: Flag to replace or not the value
+    Returns
+        `self`
     &#34;&#34;&#34;
     self.add_item(key, value, replace=replace)
     return self</code></pre>
@@ -3349,33 +3378,38 @@ def watch_unsub(
 </details>
 </dd>
 <dt id="haystackapi.MetadataObject.extend"><code class="name flex">
-<span>def <span class="ident">extend</span></span>(<span>self, items: Iterable[Any], replace: bool = True) ‑> NoneType</span>
+    <span>def <span class="ident">extend</span></span>(<span>self, items: Iterable[Any], replace: bool = True) ‑> haystackapi.metadata.MetadataObject</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Append the items to the metadata.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>items</code></strong></dt>
-<dd>A list of items</dd>
-<dt><strong><code>replace</code></strong></dt>
-<dd>Flag to replace or not the value</dd>
-</dl></div>
+    <div class="desc"><p>Append the items to the metadata.</p>
+        <h2 id="args">Args</h2>
+        <dl>
+            <dt><strong><code>items</code></strong></dt>
+            <dd>A list of items</dd>
+            <dt><strong><code>replace</code></strong></dt>
+            <dd>Flag to replace or not the value</dd>
+        </dl>
+        <p>Returns
+            <code>self</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def extend(self, items: Iterable[Any], replace: bool = True) -&gt; None:
+    <pre><code class="python">def extend(self, items: Iterable[Any], replace: bool = True) -&gt; &#39;MetadataObject&#39;:
     &#34;&#34;&#34;Append the items to the metadata.
 
     Args:
         items: A list of items
         replace: Flag to replace or not the value
+    Returns
+        `self`
     &#34;&#34;&#34;
     if isinstance(items, (dict, SortableDict)):
         items = list(items.items())
 
     for (key, value) in items:
-        self.append(key, value, replace=replace)</code></pre>
+        self.append(key, value, replace=replace)
+    return self</code></pre>
 </details>
 </dd>
 </dl>
@@ -3539,24 +3573,255 @@ types.</p>
 <span>(</span><span>ver_str: Union[str, ForwardRef('<a title="haystackapi.Version" href="#haystackapi.Version">Version</a>')])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A Project Haystack version number</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>ver_str</code></strong></dt>
-<dd>The version str</dd>
-</dl></div>
+    <div class="desc"><p>A Project Haystack version number.</p>
+        <h2 id="args">Args</h2>
+        <dl>
+            <dt><strong><code>ver_str</code></strong></dt>
+            <dd>The version str</dd>
+        </dl>
+    </div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Version:
-    &#34;&#34;&#34;A Project Haystack version number&#34;&#34;&#34;
+    &#34;&#34;&#34;A Project Haystack version number.
+    Args:
+        ver_str: The version str
+    &#34;&#34;&#34;
 
     def __init__(self, ver_str: Union[str, &#39;Version&#39;]):
-        &#34;&#34;&#34;
+        if isinstance(ver_str, Version):
+            # Clone constructor
+            self.version_nums = ver_str.version_nums
+            self.version_extra = ver_str.version_extra
+        else:
+            match = _VERSION_RE.match(ver_str)
+            if match is None:
+                raise ValueError(&#39;Not a valid version string: %r&#39; % ver_str)
+
+            # We should have a nice friendly dotted decimal, followed
+            # by anything else not recognised.  Parse out the first bit.
+            (version_nums, version_extra) = match.groups()
+            if not version_nums:
+                raise ValueError(&#39;Not a valid version string: %r&#39; % ver_str)
+            self.version_nums = tuple([int(p or 0)
+                                       for p in version_nums.split(&#39;.&#39;)])
+            self.version_extra = version_extra
+
+    def __str__(self) -&gt; str:
+        base = &#39;.&#39;.join([str(p) for p in self.version_nums])
+        if self.version_extra:
+            base += self.version_extra
+        return base
+
+    def _cmp(self, other: Union[&#39;Version&#39;, str]) -&gt; int:
+        &#34;&#34;&#34;Compare two Project Haystack version strings
+
         Args:
-            ver_str: The version str
+            other: Other version
+        Returns
+             -1 if self &lt; other, 0 if self == other or 1 if self &gt; other.
         &#34;&#34;&#34;
+        if isinstance(other, str):
+            other = Version(other)
+
+        num1 = self.version_nums
+        num2 = other.version_nums
+
+        # Pad both to be the same length
+        ver_len = max(len(num1), len(num2))
+        num1 += tuple([0 for _ in range(len(num1), ver_len)])
+        num2 += tuple([0 for _ in range(len(num2), ver_len)])
+
+        # Compare the versions
+        for (pair_1, pair_2) in zip(num1, num2):
+            if pair_1 &lt; pair_2:
+                return -1
+            if pair_1 &gt; pair_2:
+                return 1
+
+        # All the same, compare the extra strings.
+        # If a version misses the extra part; we consider that as coming *before*.
+        if self.version_extra is None:
+            if other.version_extra is None:
+                return 0
+            return -1
+        if other.version_extra is None:
+            return 1
+        if self.version_extra == other.version_extra:
+            return 0
+        if self.version_extra &lt; other.version_extra:
+            return -1
+        return 1
+
+    def __hash__(self) -&gt; int:
+        return hash(str(self))
+
+    # Comparison operators
+
+    def __lt__(self, other) -&gt; bool:
+        return self._cmp(other) &lt; 0
+
+    def __le__(self, other) -&gt; bool:
+        return self._cmp(other) &lt; 1
+
+    def __eq__(self, other) -&gt; bool:
+        return self._cmp(other) == 0
+
+    def __ne__(self, other) -&gt; bool:
+        return self._cmp(other) != 0
+
+    def __ge__(self, other) -&gt; bool:
+        return self._cmp(other) &gt; -1
+
+    def __gt__(self, other) -&gt; bool:
+        return self._cmp(other) &gt; 0
+
+    @classmethod
+    def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
+        &#34;&#34;&#34;Retrieve the official version nearest the one given.
+
+        Args:
+            ver: The version to analyse
+        Returns:
+            The version nearest the one given
+        &#34;&#34;&#34;
+        if isinstance(ver, str):
+            ver = Version(ver)
+
+        if ver in OFFICIAL_VERSIONS:
+            return ver
+
+        # We might not have an exact match for that.
+        # See if we have one that&#39;s newer than the grid we&#39;re looking at.
+        versions = list(OFFICIAL_VERSIONS)
+        versions.sort(reverse=True)
+        best = None
+        for candidate in versions:
+            # Due to ambiguities, we might have an exact match and not know it.
+            # &#39;2.0&#39; will not hash to the same value as &#39;2.0.0&#39;, but both are
+            # equivalent.
+            if candidate == ver:
+                # We can&#39;t beat this, make a note of the match for later
+                return candidate
+
+            # If we have not seen a better candidate, and this is older
+            # then we may have to settle for that.
+            if (best is None) and (candidate &lt; ver):
+                warnings.warn(&#39;This version of haystackapi does not yet &#39;
+                              &#39;support version %s, please seek a newer version &#39;
+                              &#39;or file a bug.  Closest (older) version supported is %s.&#39;
+                              % (ver, candidate))
+                return candidate
+
+            # Probably the best so far, but see if we can go closer
+            if candidate &gt; ver:
+                best = candidate
+
+        # Unhappy path, no best option?  This should not happen.
+        assert best is not None
+        warnings.warn(&#39;This version of haystackapi does not yet &#39;
+                      &#39;support version %s, please seek a newer version &#39;
+                      &#39;or file a bug.  Closest (newer) version supported is %s.&#39;
+                      % (ver, best))
+        return best</code></pre>
+</details>
+    <h3>Static methods</h3>
+    <dl>
+        <dt id="haystackapi.Version.nearest"><code class="name flex">
+            <span>def <span class="ident">nearest</span></span>(<span>ver: Union[str, ForwardRef('<a
+                href="#haystackapi.Version"
+                title="haystackapi.Version">Version</a>')]) ‑> haystackapi.version.Version</span>
+        </code></dt>
+        <dd>
+            <div class="desc"><p>Retrieve the official version nearest the one given.</p>
+                <h2 id="args">Args</h2>
+                <dl>
+                    <dt><strong><code>ver</code></strong></dt>
+                    <dd>The version to analyse</dd>
+                </dl>
+                <h2 id="returns">Returns</h2>
+                <p>The version nearest the one given</p></div>
+            <details class="source">
+                <summary>
+                    <span>Expand source code</span>
+                </summary>
+                <pre><code class="python">@classmethod
+def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
+    &#34;&#34;&#34;Retrieve the official version nearest the one given.
+
+    Args:
+        ver: The version to analyse
+    Returns:
+        The version nearest the one given
+    &#34;&#34;&#34;
+    if isinstance(ver, str):
+        ver = Version(ver)
+
+    if ver in OFFICIAL_VERSIONS:
+        return ver
+
+    # We might not have an exact match for that.
+    # See if we have one that&#39;s newer than the grid we&#39;re looking at.
+    versions = list(OFFICIAL_VERSIONS)
+    versions.sort(reverse=True)
+    best = None
+    for candidate in versions:
+        # Due to ambiguities, we might have an exact match and not know it.
+        # &#39;2.0&#39; will not hash to the same value as &#39;2.0.0&#39;, but both are
+        # equivalent.
+        if candidate == ver:
+            # We can&#39;t beat this, make a note of the match for later
+            return candidate
+
+        # If we have not seen a better candidate, and this is older
+        # then we may have to settle for that.
+        if (best is None) and (candidate &lt; ver):
+            warnings.warn(&#39;This version of haystackapi does not yet &#39;
+                          &#39;support version %s, please seek a newer version &#39;
+                          &#39;or file a bug.  Closest (older) version supported is %s.&#39;
+                          % (ver, candidate))
+            return candidate
+
+        # Probably the best so far, but see if we can go closer
+        if candidate &gt; ver:
+            best = candidate
+
+    # Unhappy path, no best option?  This should not happen.
+    assert best is not None
+    warnings.warn(&#39;This version of haystackapi does not yet &#39;
+                  &#39;support version %s, please seek a newer version &#39;
+                  &#39;or file a bug.  Closest (newer) version supported is %s.&#39;
+                  % (ver, best))
+    return best</code></pre>
+            </details>
+        </dd>
+    </dl>
+</dd>
+    <dt id="haystackapi.Version"><code class="flex name class">
+        <span>class <span class="ident">__version__</span></span>
+        <span>(</span><span>ver_str: Union[str, ForwardRef('<a href="#haystackapi.Version" title="haystackapi.Version">Version</a>')])</span>
+    </code></dt>
+    <dd>
+        <div class="desc"><p>A Project Haystack version number.</p>
+            <h2 id="args">Args</h2>
+            <dl>
+                <dt><strong><code>ver_str</code></strong></dt>
+                <dd>The version str</dd>
+            </dl>
+        </div>
+        <details class="source">
+            <summary>
+                <span>Expand source code</span>
+            </summary>
+            <pre><code class="python">class Version:
+    &#34;&#34;&#34;A Project Haystack version number.
+    Args:
+        ver_str: The version str
+    &#34;&#34;&#34;
+
+    def __init__(self, ver_str: Union[str, &#39;Version&#39;]):
         if isinstance(ver_str, Version):
             # Clone constructor
             self.version_nums = ver_str.version_nums
@@ -3950,24 +4215,31 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
 <li>
 <h4><code><a title="haystackapi.Ref" href="#haystackapi.Ref">Ref</a></code></h4>
 <ul class="">
-<li><code><a title="haystackapi.Ref.has_value" href="#haystackapi.Ref.has_value">has_value</a></code></li>
+    <li><code><a title="haystackapi.Ref.has_value" href="#haystackapi.Ref.has_value">has_value</a></code></li>
 </ul>
 </li>
-<li>
-<h4><code><a title="haystackapi.Uri" href="#haystackapi.Uri">Uri</a></code></h4>
-</li>
-<li>
-<h4><code><a title="haystackapi.Version" href="#haystackapi.Version">Version</a></code></h4>
-<ul class="">
-<li><code><a title="haystackapi.Version.nearest" href="#haystackapi.Version.nearest">nearest</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="haystackapi.XStr" href="#haystackapi.XStr">XStr</a></code></h4>
-<ul class="">
-<li><code><a title="haystackapi.XStr.data_to_string" href="#haystackapi.XStr.data_to_string">data_to_string</a></code></li>
-</ul>
-</li>
+    <li>
+        <h4><code><a title="haystackapi.Uri" href="#haystackapi.Uri">Uri</a></code></h4>
+    </li>
+    <li>
+        <h4><code><a title="haystackapi.Version" href="#haystackapi.Version">Version</a></code></h4>
+        <ul class="">
+            <li><code><a title="haystackapi.Version.nearest" href="#haystackapi.Version.nearest">nearest</a></code></li>
+        </ul>
+    </li>
+    <li>
+        <h4><code><a href="#haystackapi.Version" title="haystackapi.Version">Version</a></code></h4>
+        <ul class="">
+            <li><code><a href="#haystackapi.Version.nearest" title="haystackapi.Version.nearest">nearest</a></code></li>
+        </ul>
+    </li>
+    <li>
+        <h4><code><a title="haystackapi.XStr" href="#haystackapi.XStr">XStr</a></code></h4>
+        <ul class="">
+            <li><code><a title="haystackapi.XStr.data_to_string"
+                         href="#haystackapi.XStr.data_to_string">data_to_string</a></code></li>
+        </ul>
+    </li>
 </ul>
 </li>
 </ul>

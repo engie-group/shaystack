@@ -10,6 +10,7 @@
 Implementation of all haystack types.
 See https://www.project-haystack.org/doc/TagModel#tagKinds
 """
+
 import base64
 import binascii
 import re

@@ -56,38 +56,6 @@ COORD_RE = re.compile(r'c:(-?\d*\.?\d*),(-?\d*\.?\d*)$',
 STR_ESC_RE = re.compile(r'\\([bfnrt"\\$]|u[0-9a-fA-F]{4})')
 
 
-def parse_grid(grid_str: str) -> Grid:
-    """
-    Parse a grid from json string.
-    Args:
-        grid_str: The json string
-    Returns:
-        The corresponding grid.
-    """
-    if isinstance(grid_str, str):
-        parsed = json.loads(grid_str)
-    else:
-        parsed = copy.deepcopy(grid_str)
-    meta = parsed.pop('meta')
-    # Decode version
-    version = Version(meta.pop('ver'))
-
-    # Parse the remaining elements
-    metadata = _parse_metadata(meta, version)
-
-    grid = Grid(version=version, metadata=metadata)
-
-    # Grab the columns in the order given
-    _parse_cols(grid, parsed.pop('cols'), version)
-
-    # Parse the rows
-    for row in (parsed.pop('rows', []) or []):
-        parsed_row = _parse_row(row, version)
-        grid.append(parsed_row)
-
-    return grid
-
-
 def _parse_metadata(meta: Dict[str, Any], version: Version) -> MetadataObject:
     metadata = MetadataObject()
     for name, value in meta.items():
@@ -260,3 +228,35 @@ def parse_scalar(scalar: str, version: Version = LATEST_VER) -> Any:
         scalar = json.loads(scalar)
 
     return _parse_embedded_scalar(scalar, version=version)
+
+
+def parse_grid(grid_str: str) -> Grid:
+    """
+    Parse a grid from json string.
+    Args:
+        grid_str: The json string
+    Returns:
+        The corresponding grid.
+    """
+    if isinstance(grid_str, str):
+        parsed = json.loads(grid_str)
+    else:
+        parsed = copy.deepcopy(grid_str)
+    meta = parsed.pop('meta')
+    # Decode version
+    version = Version(meta.pop('ver'))
+
+    # Parse the remaining elements
+    metadata = _parse_metadata(meta, version)
+
+    grid = Grid(version=version, metadata=metadata)
+
+    # Grab the columns in the order given
+    _parse_cols(grid, parsed.pop('cols'), version)
+
+    # Parse the rows
+    for row in (parsed.pop('rows', []) or []):
+        parsed_row = _parse_row(row, version)
+        grid.append(parsed_row)
+
+    return grid

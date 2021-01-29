@@ -181,9 +181,9 @@ def grid_merge(orig_grid: Grid, diff: Grid) -> Grid:  # pylint: disable=too-many
         If an entity with `id` in `diff`:
         - has a tag with value, add or update the corresponding entity in `original_grid`
         - has a tag with `REMOVE`, remove the tag in the corresponding entity in `original_grid`
-        - has the tag `removed_`, remove the entity in `original_grid`
+        - has the tag `remove_`, remove the entity in `original_grid`
         If an entity without `id` in `diff`:
-        - has the tag `removed_`, search an entity with all the same tags and values in `original_grid`
+        - has the tag `remove_`, search an entity with all the same tags and values in `original_grid`
         and remove it
     Returns:
         A new grid

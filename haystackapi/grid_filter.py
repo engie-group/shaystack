@@ -34,10 +34,6 @@ def _parse_time(toks):
 
 def _parse_datetime(toks: Tuple[datetime, Union[str, None]]) -> List[datetime]:
     # Made up of parts: ISO8601 Date/Time, time zone label
-    """
-    Args:
-        toks:
-    """
     isodt = toks[0]
     if len(toks) > 1:
         tzname = toks[1]
@@ -252,7 +248,7 @@ def parse_filter(grid_filter: str) -> FilterAST:
     (Python, SQL, etc.)
 
     Args:
-        grid_filter (str): A filter request
+        grid_filter: A filter request
     Returns:
         A `FilterAST`
     """
@@ -261,7 +257,7 @@ def parse_filter(grid_filter: str) -> FilterAST:
 
 # --- Generate python to apply filter
 # Maximum number of generated python function
-FILTER_CACHE_LRU_SIZE = 500
+_FILTER_CACHE_LRU_SIZE = 500
 # Id of next generated function
 _ID_FUNCTION = 0  # pylint: disable=C0103
 
@@ -361,15 +357,12 @@ class _FnWrapper:
     """
     A wrapper to manage the lifecycle of generated python methods.
     Can be used with @lru to remove the generated method if this wrapper is deleted.
+    Args:
+        fun_name: The function name to manage.
+        function_template: The body of the function.
     """
 
     def __init__(self, fun_name: str, function_template: str):
-        """
-        Create a wrapper.
-        Args:
-            fun_name: The function name to manage.
-            function_template: The body of the function.
-        """
         self.fun_name = fun_name
         # Import the function inside Python engine
         exec(function_template, globals(), globals())  # pylint: disable=W0122
@@ -383,7 +376,7 @@ class _FnWrapper:
         return globals()[self.fun_name]
 
 
-@lru_cache(maxsize=FILTER_CACHE_LRU_SIZE)
+@lru_cache(maxsize=_FILTER_CACHE_LRU_SIZE)
 def _filter_function(grid_filter: str) -> _FnWrapper:
     """
     Generate and manage the life cycle of generation python function.

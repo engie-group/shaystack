@@ -71,7 +71,7 @@ class SortableDict(col.MutableMapping):
                  after: bool = False,
                  index: Optional[int] = None,
                  pos_key: Union[None, str, int] = None,
-                 replace: bool = True) -> None:
+                 replace: bool = True) -> 'SortableDict':
         """Add an item at a specific location, possibly replacing the existing
         item.
 
@@ -93,6 +93,8 @@ class SortableDict(col.MutableMapping):
             index: Position to add after or before
             pos_key: Key position
             replace: Replace the data ?
+        Returns:
+            `self`
         """
         if self._validate_fn:
             self._validate_fn(value)
@@ -121,7 +123,7 @@ class SortableDict(col.MutableMapping):
             else:
                 # We are updating
                 self._values[key] = value
-                return
+                return self
 
         if index is not None:
             # Place at given position
@@ -130,6 +132,7 @@ class SortableDict(col.MutableMapping):
             # Place at end
             self._order.append(key)
         self._values[key] = value
+        return self
 
     def at(self, index: int) -> Any:  # pylint: disable=C0103
         """Return the key at the given index.

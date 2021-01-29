@@ -145,7 +145,7 @@ class Provider(HaystackInterface):
 
     @overrides
     def his_write(
-            self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime] = None
+            self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime]
     ) -&gt; Grid:  # pylint: disable=no-self-use
         &#34;&#34;&#34;Return EmptyGrid.&#34;&#34;&#34;
         log.info(
@@ -345,7 +345,7 @@ class Provider(HaystackInterface):
 
     @overrides
     def his_write(
-            self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime] = None
+            self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime]
     ) -&gt; Grid:  # pylint: disable=no-self-use
         &#34;&#34;&#34;Return EmptyGrid.&#34;&#34;&#34;
         log.info(
@@ -486,7 +486,7 @@ def his_read(
 </details>
 </dd>
 <dt id="haystackapi.providers.ping.Provider.his_write"><code class="name flex">
-<span>def <span class="ident">his_write</span></span>(<span>self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime] = None) ‑> haystackapi.grid.Grid</span>
+    <span>def <span class="ident">his_write</span></span>(<span>self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime]) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Return EmptyGrid.</p></div>
@@ -496,7 +496,7 @@ def his_read(
 </summary>
 <pre><code class="python">@overrides
 def his_write(
-        self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime] = None
+        self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime]
 ) -&gt; Grid:  # pylint: disable=no-self-use
     &#34;&#34;&#34;Return EmptyGrid.&#34;&#34;&#34;
     log.info(

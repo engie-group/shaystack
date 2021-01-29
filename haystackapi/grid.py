@@ -104,8 +104,8 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         Compare two values with a tolerance
 
         Args:
-            version_1(Any): value one
-            version_2(Any): value two
+            version_1: value one
+            version_2: value two
         Returns:
             true if the values are approximately identical
         """
@@ -141,10 +141,9 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """
         Campare two grid with tolerance.
         Args:
-            other(Grid): Other grid
-
+            other: Other grid
         Returns:
-
+            true if equals
         """
         if not isinstance(other, Grid):
             return False
@@ -203,7 +202,9 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         At all time, with gridA and gridB, gridA + (gridB - gridA) == gridB
 
         Args:
-            other:
+            other: grid to substract
+        Returns:
+            Only the difference between grid.
         """
         assert isinstance(other, Grid)
         from .grid_diff import grid_diff  # pylint: disable: import-outside-toplevel
@@ -218,7 +219,9 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         time, with `gridA` and `gridB`, `gridA + (gridB - gridA) == gridB`
 
         Args:
-            other(Grid): List of entities to updates
+            other: List of entities to updates
+        Returns:
+            A new grid
         """
         assert isinstance(other, Grid)
         from .grid_diff import grid_merge  # pylint: disable: import-outside-toplevel
@@ -264,7 +267,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
 
     def __getitem__(self, key: Union[int, Ref, slice]) -> Union[Dict[str, Any], 'Grid']:
         """Retrieve the row at index. :param key: index, Haystack reference or
-        slide :return: a new grid with a selection of entities
+        slide
 
         Args:
             key: the position, the Reference or a slice
@@ -291,7 +294,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             key: The position of id of entity
 
         Returns:
-            `True` if the referenced entity is present
+            'True' if the referenced entity is present
         """
         if isinstance(key, int):
             return 0 <= key < len(self._row)
@@ -341,7 +344,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         Returns:
             The entity or `None`
         """
-        self.pop(key)
+        return self.pop(key)
 
     @property
     def version(self) -> Version:  # pragma: no cover
@@ -361,14 +364,18 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             default: The default value if the entity is not found
 
         Returns:
-            Dict[str, Any]: The entity with the id == index or the default value
+            The entity with the id == index or the default value
         """
         if not self._index:
             self.reindex()
         return self._index.get(index, default)
 
     def keys(self) -> KeysView[Ref]:
-        """ The list of ids of entities with `id` """
+        """ Return the list of ids of entities with `id`
+
+        Returns:
+             The list of ids of entities with `id`
+        """
         if not self._index:
             self.reindex()
         return self._index.keys()
@@ -401,12 +408,14 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                     ret_value = self._index.pop(key)
         return ret_value
 
-    def insert(self, index: int, value: Dict[str, Any]):
+    def insert(self, index: int, value: Dict[str, Any]) -> 'Grid':
         """Insert a new entity before the index position.
 
         Args:
             index: The position where to insert
             value: The new entity to add
+        Returns
+            `self`
         """
         if not isinstance(value, dict):
             raise TypeError('value must be a dict')
@@ -420,7 +429,10 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         return self
 
     def reindex(self) -> 'Grid':
-        """Reindex the grid if the user, update directly an id of a row"""
+        """Reindex the grid if the user, update directly an id of a row.
+        Returns
+            `self`
+        """
         self._index = {}
         for item in self._row:
             if "id" in item:
@@ -542,9 +554,6 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
     def _assert_version(self, version: Version) -> None:
         """Assert that the grid version is equal to or above the given value. If
         no version is set, set the version.
-
-        Args:
-            version (Version):
         """
         if self.nearest_version < version:
             if self._version_given:

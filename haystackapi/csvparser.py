@@ -17,6 +17,8 @@ from .grid import Grid
 from .version import VER_3_0, Version, LATEST_VER
 from .zincparser import parse_scalar as zinc_parse_scalar, ZincParseException
 
+_EMPTY = "<empty>"
+
 
 def parse_grid(grid_str: str) -> Grid:
     """
@@ -43,9 +45,6 @@ def parse_grid(grid_str: str) -> Grid:
                     a_map[headers[idx]] = value
         grid.append(a_map)
     return grid
-
-
-_EMPTY = "<empty>"
 
 
 def parse_scalar(scalar: str, version: Version = LATEST_VER) -> Any:

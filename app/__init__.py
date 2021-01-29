@@ -14,6 +14,8 @@ import sys
 import click
 from flask_cors import CORS
 
+from app.blueprint_haystack import haystack_blueprint
+
 USE_GRAPHQL = False
 try:
     from app.blueprint_graphql import graphql_blueprint
@@ -25,8 +27,6 @@ except ImportError:
 To use GraphQL,use
 pip install "haystackapi[flask,graphql]"  
 """, file=sys.stderr)
-
-from app.blueprint_haystack import haystack_blueprint
 
 try:
     from flask import Flask, send_from_directory

@@ -79,8 +79,8 @@ from ..version import VER_3_0
 try:
     from botocore.exceptions import ClientError
 except ImportError:
-    @dataclass  # pylint: disable=missing-class-docstring
-    class ClientError(Exception):
+    @dataclass
+    class ClientError(Exception):  # pylint: disable=missing-class-docstring
         response: List[Any]
 
 log = logging.getLogger(&#34;sql.Provider&#34;)

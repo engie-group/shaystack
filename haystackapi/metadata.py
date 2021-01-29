@@ -28,22 +28,27 @@ class MetadataObject(SortableDict):  # pylint: disable=too-many-ancestors
             key: The tag name
             value: The value
             replace: Flag to replace or not the value
+        Returns
+            `self`
         """
         self.add_item(key, value, replace=replace)
         return self
 
-    def extend(self, items: Iterable[Any], replace: bool = True) -> None:
+    def extend(self, items: Iterable[Any], replace: bool = True) -> 'MetadataObject':
         """Append the items to the metadata.
 
         Args:
             items: A list of items
             replace: Flag to replace or not the value
+        Returns
+            `self`
         """
         if isinstance(items, (dict, SortableDict)):
             items = list(items.items())
 
         for (key, value) in items:
             self.append(key, value, replace=replace)
+        return self
 
     def copy(self) -> 'MetadataObject':
         """

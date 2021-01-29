@@ -62,22 +62,6 @@ def _uri_sub(match: Match) -> AnyStr:
     return char
 
 
-def dump_grid(grid: Grid) -> AnyStr:
-    """Dump a single grid to its CSV representation.
-
-    Args:
-        grid (Grid): The grid to dump
-    Returns:
-        a string with a CSV representation
-    """
-
-    # Use list and join
-    csv_result = []
-    _dump_columns(csv_result, grid.column)
-    _dump_rows(csv_result, grid)
-    return ''.join(csv_result)
-
-
 def _dump_columns(csv_result: List[str], cols: SortableDict) -> None:
     _dump = functools.partial(_dump_column)
     csv_result.extend(map(_dump, cols.keys()))
@@ -88,10 +72,6 @@ def _dump_columns(csv_result: List[str], cols: SortableDict) -> None:
 
 
 def _dump_column(col: str) -> str:
-    """
-    Args:
-        col (str):
-    """
     return _dump_id(col) + ","
 
 
@@ -224,3 +204,19 @@ def dump_scalar(scalar: Any, version: Version = LATEST_VER) -> str:
     if isinstance(scalar, Grid):
         return '"' + _str_csv_escape("<<" + zinc_dump_grid(scalar) + ">>") + '"'
     return '"' + _str_csv_escape(zinc_dump_scalar(scalar)) + '"'
+
+
+def dump_grid(grid: Grid) -> AnyStr:
+    """Dump a single grid to its CSV representation.
+
+    Args:
+        grid: The grid to dump
+    Returns:
+        a string with a CSV representation
+    """
+
+    # Use list and join
+    csv_result = []
+    _dump_columns(csv_result, grid.column)
+    _dump_rows(csv_result, grid)
+    return ''.join(csv_result)

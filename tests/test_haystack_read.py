@@ -14,7 +14,7 @@ def test_read_with_zinc_and_filter(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     grid = haystackapi.Grid(columns={'filter': {}, "limit": {}})
@@ -41,7 +41,7 @@ def test_read_with_arg_and_filter(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = DEFAULT_MIME_TYPE
     request = HaystackHttpRequest()
     request.args["filter"] = "id==@me"
@@ -66,7 +66,7 @@ def test_read_with_zinc_and_id(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     grid = haystackapi.Grid(columns=['id'])
@@ -95,7 +95,7 @@ def test_read_with_arg_and_id(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = DEFAULT_MIME_TYPE
     request = HaystackHttpRequest()
     request.args["id"] = Ref("me").name
@@ -120,7 +120,7 @@ def test_read_with_zinc_and_select(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     grid = haystackapi.Grid(columns={'filter': {}, "limit": {}, "select": {}})
@@ -147,7 +147,7 @@ def test_read_with_arg_and_select(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = DEFAULT_MIME_TYPE
     request = HaystackHttpRequest()
     request.args["filter"] = "id==@me"

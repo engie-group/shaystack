@@ -74,8 +74,8 @@ def main(host: str, port: int) -> int:
     """Stack a flask server. The command line must set the host and port.
 
     Args:
-        host (str):
-        port (int):
+        host: Network to listen (0.0.0.0 to accept call from all network)
+        port: Port to listen
     """
     debug = (os.environ.get("FLASK_DEBUG", "0") == "1")
     app.run(host=host,

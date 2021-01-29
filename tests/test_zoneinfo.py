@@ -17,7 +17,7 @@ from haystackapi import zoneinfo
 
 def test_get_tz_map():
     # This should return a mapping of all possible timezone names.
-    tz_map = zoneinfo.get_tz_map()
+    tz_map = zoneinfo._get_tz_map()
     assert isinstance(tz_map, dict)
 
     # There are some timezones that aren't supported in pytz but are present
@@ -34,9 +34,9 @@ def test_get_tz_map():
 
 def test_get_tz_rmap():
     # This should return a mapping of all possible timezone names.
-    # The keys and values are swapped compared to get_tz_map.
-    tz_rmap = zoneinfo.get_tz_rmap()
-    tz_map = zoneinfo.get_tz_map()
+    # The keys and values are swapped compared to _get_tz_map.
+    tz_rmap = zoneinfo._get_tz_rmap()
+    tz_map = zoneinfo._get_tz_map()
 
     for iana_tz, hs_tz in tz_rmap.items():
         assert tz_map[hs_tz] == iana_tz

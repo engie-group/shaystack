@@ -22,4 +22,4 @@ On the server side, it also implements [Haystack Rest API](https://www.project-h
 Haystack data you host.
 
 The [full documentation is here](https://pprados.github.io/haystackapi/)
-and the [documentation of API is here](https://pprados.github.io/haystackapi/api/haystackapi/)
+and the [documentation of API is here](https://pprados.github.io/haystackapi/api/index.html)

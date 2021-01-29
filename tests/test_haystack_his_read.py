@@ -20,7 +20,7 @@ def test_his_read_with_zinc(mock, no_cache) -> None:
         mock:
         no_cache:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     no_cache.return_value = True
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
@@ -50,7 +50,7 @@ def test_his_read_with_args(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = DEFAULT_MIME_TYPE
     request = HaystackHttpRequest()
     request.args['id'] = str(Ref("1234"))
@@ -76,7 +76,7 @@ def test_his_read_with_range_today(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     grid = haystackapi.Grid(columns=['id', 'range'])
@@ -107,7 +107,7 @@ def test_his_read_with_range_yesterday(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     grid = haystackapi.Grid(columns=['id', 'range'])
@@ -137,7 +137,7 @@ def test_his_read_with_range_two_datetime(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     grid = haystackapi.Grid(columns=['id', 'range'])
@@ -166,7 +166,7 @@ def test_his_read_with_range_one_datetime(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     grid = haystackapi.Grid(columns=['id', 'range'])
@@ -198,7 +198,7 @@ def test_his_read_with_range_two_date(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     grid = haystackapi.Grid(columns=['id', 'range'])
@@ -232,7 +232,7 @@ def test_his_read_with_range_one_date(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     grid = haystackapi.Grid(columns=['id', 'range'])

@@ -346,11 +346,15 @@ compile-all:
 # -------------------------------------- Docs
 .PHONY: docs
 
-docs: $(REQUIREMENTS)
-	pdoc -f --html -o docs/api haystackapi
+docs/api: $(REQUIREMENTS)
 
+## Generate the API HTML documentation
+docs: docs/api
+	pdoc -f --html -o docs/api haystackapi app
+
+## Start the pdoc server to update the docstrings
 start-docs:
-	pdoc --http : -f --html -o docs/api haystackapi
+	pdoc --http : -f --html -o docs/api haystackapi app
 
 # -------------------------------------- Client API
 .PHONY: api
@@ -890,7 +894,6 @@ docker-inspect-dmake:
 	docker inspect --format '{{join .Config.Env "\n" }}' $(DOCKER_REPOSITORY)/$(PRJ)-dmake
 
 # Remove the dmake image
-# FIXME: a tester
 docker-rm-dmake:
 	@docker image rm $(DOCKER_REPOSITORY)/$(PRJ)-dmake
 	echo -e "$(cyan)Docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' removed$(normal)"

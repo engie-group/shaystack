@@ -468,7 +468,8 @@ the code detect that, and can calculate the set of implemented operations.</p></
     @abstractmethod
     def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
         &#34;&#34;&#34; Implement the Haystack &#39;nav&#39; ops
-        This operation allows servers to expose the database in a human-friendly tree (or graph) that can be explored
+        This operation allows servers to expose the database in a human-friendly tree (or graph)
+        that can be explored
 
         Args:
              nav_id (str): The string for nav id column
@@ -587,7 +588,9 @@ the code detect that, and can calculate the set of implemented operations.</p></
 
         Args:
             entity_id (Ref): The entity to read
-            dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date range. May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}), {dateTime}
+            dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date
+            range. May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
+            {dateTime}
             date_version ( datetime, optional): The optional date version to update
 
         Returns:
@@ -784,7 +787,9 @@ def about(self, home: str) -&gt; Grid:
 <dt><strong><code>entity_id</code></strong> :&ensp;<code>Ref</code></dt>
 <dd>The entity to read</dd>
 <dt><strong><code>dates_range</code></strong> :&ensp;<code>Union[Union[datetime, str], Tuple[datetime, datetime]]</code></dt>
-<dd>The date range. May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}), {dateTime}</dd>
+<dd>The date</dd>
+<dt>range. May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}),</dt>
+<dt>{dateTime}</dt>
 <dt><strong><code>date_version</code></strong> :&ensp;<code> datetime</code>, optional</dt>
 <dd>The optional date version to update</dd>
 </dl>
@@ -805,7 +810,9 @@ def his_read(
 
     Args:
         entity_id (Ref): The entity to read
-        dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date range. May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}), {dateTime}
+        dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date
+        range. May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
+        {dateTime}
         date_version ( datetime, optional): The optional date version to update
 
     Returns:
@@ -903,7 +910,8 @@ def invoke_action(
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'nav' ops
-This operation allows servers to expose the database in a human-friendly tree (or graph) that can be explored</p>
+This operation allows servers to expose the database in a human-friendly tree (or graph)
+that can be explored</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>nav_id</code></strong> :&ensp;<code>str</code></dt>
@@ -916,7 +924,8 @@ This operation allows servers to expose the database in a human-friendly tree (o
 <pre><code class="python">@abstractmethod
 def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
     &#34;&#34;&#34; Implement the Haystack &#39;nav&#39; ops
-    This operation allows servers to expose the database in a human-friendly tree (or graph) that can be explored
+    This operation allows servers to expose the database in a human-friendly tree (or graph)
+    that can be explored
 
     Args:
          nav_id (str): The string for nav id column

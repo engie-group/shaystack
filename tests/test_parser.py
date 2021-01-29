@@ -327,8 +327,7 @@ def test_simple_csv():
 
 
 def test_simple_encoded_zinc():
-    grid = haystackapi.parse(SIMPLE_EXAMPLE_ZINC.encode('us-ascii'),
-                             charset='us-ascii')
+    grid = haystackapi.parse(SIMPLE_EXAMPLE_ZINC)
     _check_simple(grid)
 
 
@@ -1667,10 +1666,10 @@ def test_nodehaystack_11_zinc():
 
 def test_scalar_bytestring_zinc():
     assert haystackapi.parse_scalar(b'"Testing"',
-                                    mode=haystackapi.MODE_ZINC, charset='us-ascii') \
+                                    mode=haystackapi.MODE_ZINC) \
            == "Testing"
     assert haystackapi.parse_scalar(b'50Hz',
-                                    mode=haystackapi.MODE_ZINC, charset='us-ascii') \
+                                    mode=haystackapi.MODE_ZINC) \
            == haystackapi.Quantity(50, unit='Hz')
 
 
@@ -1729,10 +1728,10 @@ def test_scalar_preparsed_json():
 
 def test_scalar_bytestring_json():
     assert haystackapi.parse_scalar(b'"s:Testing"',
-                                    mode=haystackapi.MODE_JSON, charset='us-ascii') \
+                                    mode=haystackapi.MODE_JSON) \
            == "Testing"
     assert haystackapi.parse_scalar(b'"n:50 Hz"',
-                                    mode=haystackapi.MODE_JSON, charset='us-ascii') \
+                                    mode=haystackapi.MODE_JSON) \
            == haystackapi.Quantity(50, unit='Hz')
 
 

@@ -9,9 +9,9 @@
 Parse the filter syntax to produce a FilterAST.
 See https://www.project-haystack.org/doc/Filters
 """
-from datetime import datetime, time
+from datetime import datetime, time, date
 from functools import lru_cache
-from typing import Any, List, Callable, Dict
+from typing import Any, List, Callable, Dict, Tuple, Union
 
 from iso8601 import iso8601
 from pyparsing import Word, ZeroOrMore, Literal, Forward, Combine, Optional, Regex, OneOrMore, \
@@ -20,8 +20,48 @@ from pyparsing import Word, ZeroOrMore, Literal, Forward, Combine, Optional, Reg
 from . import Grid
 from .datatypes import REMOVE, MARKER, Coordinate, NA, Bin, Ref, XStr, Uri, Quantity
 from .filter_ast import FilterPath, FilterBinary, FilterUnary, FilterAST, FilterNode
-from .zincparser import DelimitedList, to_dict
+from .zincparser import DelimitedList, _to_dict
 from .zoneinfo import timezone
+
+
+def _parse_time(toks):
+    time_str = toks[0]
+    time_fmt = '%H:%M:%S'
+    if '.' in time_str:
+        time_fmt += '.%f'
+    return [datetime.strptime(time_str, time_fmt).time()]
+
+
+def _parse_datetime(toks: Tuple[datetime, Union[str, None]]) -> List[datetime]:
+    # Made up of parts: ISO8601 Date/Time, time zone label
+    """
+    Args:
+        toks:
+    """
+    isodt = toks[0]
+    if len(toks) > 1:
+        tzname = toks[1]
+    else:
+        tzname = None
+
+    assert not ((isodt.tzinfo is None) and tzname)
+    if tzname:
+        try:
+            return [isodt.astimezone(timezone(tzname))]
+        except  ValueError:  # noqa: E722 pragma: no cover
+            # Unlikely to occur, might do though if Project Haystack changes
+            # its timezone list or if a system doesn't recognise a particular
+            # timezone.
+            return [isodt]  # Failed, leave alone
+    else:
+        return [isodt]
+
+
+def _merge_and_or(key: str, toks: List[FilterBinary]) -> FilterBinary:
+    if len(toks) == 1:
+        return toks[0]
+    return FilterBinary(key, _merge_and_or(key, toks[:-2]), toks[-1])
+
 
 hs_filter = Forward()
 hs_strChar = Regex(r"([^\x00-\x1f\\\"]|\\[bfnrt\\\"$]|\\[uU][0-9a-fA-F]{4})")
@@ -118,19 +158,6 @@ hs_time_str = Combine(
         Literal('.') +
         OneOrMore(hs_digit)))
 
-
-def _parse_time(toks):
-    """
-    Args:
-        toks:
-    """
-    time_str = toks[0]
-    time_fmt = '%H:%M:%S'
-    if '.' in time_str:
-        time_fmt += '.%f'
-    return [datetime.strptime(time_str, time_fmt).time()]
-
-
 hs_time = hs_time_str.copy().setParseAction(_parse_time)
 
 hs_tzHHMMOffset = Combine(
@@ -151,34 +178,6 @@ hs_tzUTCOffset = Combine(
     hs_tzUTCGMT + Optional(
         Literal('0') | (hs_plusMinus + OneOrMore(hs_digit))))
 hs_timeZoneName = hs_tzUTCOffset | hs_tzName
-
-
-def _parse_datetime(toks: List[datetime]) -> List[datetime]:
-    # Made up of parts: ISO8601 Date/Time, time zone label
-    """
-    Args:
-        toks:
-    """
-    isodt = toks[0]
-    if len(toks) > 1:
-        tzname = toks[1]
-    else:
-        tzname = None
-
-    if (isodt.tzinfo is None) and bool(tzname):  # pragma: no cover
-        # This technically shouldn't happen according to Zinc specs
-        return [timezone(tzname).localize(isodt)]
-    if bool(tzname):
-        try:
-            return [isodt.astimezone(timezone(tzname))]
-        except  ValueError:  # noqa: E722 pragma: no cover
-            # Unlikely to occur, might do though if Project Haystack changes
-            # its timezone list or if a system doesn't recognise a particular
-            # timezone.
-            return [isodt]  # Failed, leave alone
-    else:
-        return [isodt]
-
 
 hs_dateTime = (hs_isoDateTime +
                Optional(
@@ -204,7 +203,7 @@ hs_tags = ZeroOrMore(hs_tag)
 
 hs_dict = (Suppress(Literal('{')) +
            hs_tags +
-           Suppress(Literal('}'))).setParseAction(to_dict)
+           Suppress(Literal('}'))).setParseAction(_to_dict)
 
 hs_refChar = hs_alpha | hs_digit | Word('_:-.~', exact=1)
 hs_ref = (Suppress(Literal('@')) + Combine(ZeroOrMore(hs_refChar)) + Optional(
@@ -239,18 +238,6 @@ hs_parens = (Suppress(Literal("(")) + hs_filter + Suppress(Literal(")"))).setPar
 )
 hs_term = hs_parens | hs_missing | hs_cmp | hs_has
 
-
-def _merge_and_or(key: str, toks: List[FilterBinary]) -> FilterBinary:
-    """
-    Args:
-        key (str):
-        toks:
-    """
-    if len(toks) == 1:
-        return toks[0]
-    return FilterBinary(key, _merge_and_or(key, toks[:-2]), toks[-1])
-
-
 hs_condAnd = (hs_term + ZeroOrMore(Literal("and") + hs_term)).setParseAction(
     lambda toks: _merge_and_or("and", toks)
 )
@@ -262,20 +249,28 @@ hs_filter <<= hs_condOr
 
 def parse_filter(grid_filter: str) -> FilterAST:
     """Return an AST tree of filter. Can be used to generate other language
-    (SQL, etc.)
+    (Python, SQL, etc.)
 
     Args:
-        grid_filter (str):
+        grid_filter (str): A filter request
+    Returns:
+        A `FilterAST`
     """
     return FilterAST(hs_filter.parseString(grid_filter, parseAll=True)[0])
 
 
 # --- Generate python to apply filter
+# Maximum number of generated python function
 FILTER_CACHE_LRU_SIZE = 500
+# Id of next generated function
 _ID_FUNCTION = 0  # pylint: disable=C0103
 
 
 class _NotFoundValue:
+    """ Hack to easely manage the 'not found' value.
+    All operators return `False`.
+    """
+
     def __repr__(self):
         return 'NOT_FOUND'
 
@@ -306,10 +301,14 @@ NOT_FOUND = _NotFoundValue()
 
 def _get_path(grid: Grid, obj: Any, paths: List[str]) -> Any:
     """
+    Return the value at a specific path.
+
     Args:
-        grid (Grid):
-        obj (Any):
-        paths:
+        grid: The root grid to use.
+        obj: The current object
+        paths: The path to apply
+    Returns:
+        The value of the tag at this `path`
     """
     try:
         for i, path in enumerate(paths):
@@ -327,9 +326,12 @@ def _get_path(grid: Grid, obj: Any, paths: List[str]) -> Any:
 
 def _generate_filter_in_python(node: FilterNode, def_filter: List[str]) -> List[str]:
     """
+    Generate a partial python code to represent the current node.
     Args:
-        node (FilterNode):
-        def_filter:
+        node: Node to convert to python
+        def_filter: Current generated code.
+    Returns:
+        The extends generated code.
     """
     if isinstance(node, FilterPath):
         def_filter.append("_get_path(_grid, _entity, %s)" % node.paths)
@@ -356,27 +358,39 @@ def _generate_filter_in_python(node: FilterNode, def_filter: List[str]) -> List[
 
 
 class _FnWrapper:
+    """
+    A wrapper to manage the lifecycle of generated python methods.
+    Can be used with @lru to remove the generated method if this wrapper is deleted.
+    """
+
     def __init__(self, fun_name: str, function_template: str):
         """
+        Create a wrapper.
         Args:
-            fun_name (str):
-            function_template (str):
+            fun_name: The function name to manage.
+            function_template: The body of the function.
         """
         self.fun_name = fun_name
+        # Import the function inside Python engine
         exec(function_template, globals(), globals())  # pylint: disable=W0122
 
     def __del__(self) -> None:  # pragma: no cover
+        # Remove the corresponding python function from Python engine
         del globals()[self.fun_name]  # Remove generated function if the LRU ask that
 
     def get(self) -> Callable[[Grid, Dict[str, Any]], bool]:
+        # Gest the python function.
         return globals()[self.fun_name]
 
 
 @lru_cache(maxsize=FILTER_CACHE_LRU_SIZE)
 def _filter_function(grid_filter: str) -> _FnWrapper:
     """
+    Generate and manage the life cycle of generation python function.
     Args:
-        grid_filter (str):
+        grid_filter: The filter request
+    Returns:
+        A wrapper to manage the life cycle of generated function
     """
     global _ID_FUNCTION  # pylint: disable=global-statement
     def_filter = _generate_filter_in_python(
@@ -389,10 +403,10 @@ def _filter_function(grid_filter: str) -> _FnWrapper:
 
 
 def filter_set_lru_size(lru_size: int) -> None:
-    """Change the lru size for the compiled filter functions
+    """Change the lru size for the compiled filter functions.
 
     Args:
-        lru_size (int):
+        lru_size: The new LRU size
     """
     global _filter_function  # pylint: disable=W0601, C0103
     original_function = _filter_function.__wrapped__  # pylint: disable=E1101
@@ -401,31 +415,50 @@ def filter_set_lru_size(lru_size: int) -> None:
 
 def filter_function(grid_filter: str) -> Callable[[Grid, Dict[str, Any]], bool]:
     """
+    Convert the request filter to a python function.
+
     Args:
-        grid_filter (str):
+        grid_filter: The request filter.
+    Returns:
+        The corresponding python function to apply to the grid
     """
     return _filter_function(grid_filter).get()
 
 
 def parse_hs_datetime_format(datetime_str: str) -> datetime:
     """
+    Parse the haystack date time (for filter).
     Args:
-        datetime_str (str):
+        datetime_str: The string to parse
+    Returns:
+        the corresponding `datetime`
+    Raises:
+        `pyparsing.ParseException` if the string does not conform
     """
     return hs_all_date.parseString(datetime_str, parseAll=True)[0]
 
 
-def parse_hs_date_format(date_str) -> datetime:
+def parse_hs_date_format(date_str) -> date:
     """
+    Parse the haystack date (for filter).
     Args:
-        date_str:
+        date_str: The string to parse
+    Returns:
+        the corresponding `date`
+    Raises:
+        `pyparsing.ParseException` if the string does not conform
     """
     return hs_date.parseString(date_str, parseAll=True)[0]
 
 
 def parse_hs_time_format(time_str) -> time:
     """
+    Parse the haystack date (for filter).
     Args:
-        time_str:
+        time_str: The string to parse
+    Returns:
+        the corresponding `time`
+    Raises:
+        `pyparsing.ParseException` if the string does not conform
     """
     return hs_time.parseString(time_str, parseAll=True)[0]

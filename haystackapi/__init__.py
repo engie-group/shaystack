@@ -85,6 +85,6 @@ __credits__ = ['Philippe PRADOS',
                'joyfun'
                ]
 __license__ = 'BSD'
-__version__ = '0.1'
+__version__ = '0.8'
 __maintainer__ = 'Philippe PRADOS'
 __email__ = 'haystackapi@prados.fr'

@@ -273,17 +273,16 @@ def test_grid_str():
     ]
     grid.column['test'] = {}
     grid.extend(rows)
-    assert repr(grid) == '<Grid>\n' \
-                         '\tVersion: 3.0\n' \
-                         '\tColumns:\n' \
-                         '\t\ttest\n' \
-                         '\tRow    0:\n' \
-                         '\ttest=1\n' \
-                         '\tRow    1:\n' \
-                         '\ttest=2\n' \
-                         '\tRow    2:\n' \
-                         '\ttest=3\n' \
-                         '</Grid>'
+    assert repr(grid) == 'Grid\n' + \
+           '\tVersion: 3.0\n' + \
+           '\tColumns:\n' + \
+           '\t\ttest\n' + \
+           '\tRow    0:\n' + \
+           '\ttest=1\n' + \
+           '\tRow    1:\n' + \
+           '\ttest=2\n' + \
+           '\tRow    2:\n' + \
+           '\ttest=3\n'
 
 
 def test_grid_equal():

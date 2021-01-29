@@ -7,7 +7,7 @@
 """
 Add the persistance of time-series with TS database.
 
-Set the HAYSTACK_TS with Timeseries database connection URL,
+Set the HAYSTACK_TS with Time-series database connection URL,
 (timestream://HaystackAPIDemo/?mem_ttl=1&mag_ttl=100#haystack)
 """
 import os
@@ -28,9 +28,9 @@ from .sql import log
 from ..datatypes import Ref, MARKER, REMOVE, Coordinate, Quantity, NA, XStr
 from ..grid import Grid
 
-MAX_ROWS_BY_WRITE = 100
-DEFAULT_MEM_TTL = 8766
-DEFAULT_MAG_TTL = 400
+_MAX_ROWS_BY_WRITE = 100
+_DEFAULT_MEM_TTL = 8766
+_DEFAULT_MAG_TTL = 400
 
 
 def _create_database(client: BaseClient,
@@ -87,9 +87,8 @@ def _delete_table(client: BaseClient,
 
 class Provider(SQLProvider):
     """
-    Expose an Haystack data via the Haystactk Rest API and SQL+TS databases
+    Expose an Haystack data via the Haystack Rest API and SQL+TS databases
     """
-
     @property
     def name(self) -> str:
         return "SQL+timeseries"
@@ -168,10 +167,10 @@ class Provider(SQLProvider):
                 "MeasureValue": cast_fn(row["val"]),
             } for row in time_series]
 
-            for i in range(0, len(records), MAX_ROWS_BY_WRITE):
+            for i in range(0, len(records), _MAX_ROWS_BY_WRITE):
                 result = client.write_records(DatabaseName=self._ts_database_name,
                                               TableName=self._ts_table_name,
-                                              Records=records[i:i + MAX_ROWS_BY_WRITE],
+                                              Records=records[i:i + _MAX_ROWS_BY_WRITE],
                                               CommonAttributes=common_attributs)
                 log.debug("WriteRecords Status: [%s]", result['ResponseMetadata']['HTTPStatusCode'])
         except client.exceptions.RejectedRecordsException as err:
@@ -240,7 +239,7 @@ class Provider(SQLProvider):
             return val
         if python_type == "float":
             return float(val)
-        if python_type == "PintQuantity":
+        if python_type == "_PintQuantity":
             return Quantity(float(val), unit)
         if python_type == "Quantity":
             return Quantity(float(val), unit)
@@ -248,11 +247,11 @@ class Provider(SQLProvider):
             return val.lower() == 'true'
         if python_type == "int":
             return int(float(val))
-        if python_type == "MarkerType":
+        if python_type == "_MarkerType":
             return MARKER if val else None
-        if python_type == "RemoveType":
+        if python_type == "_RemoveType":
             return REMOVE if val else None
-        if python_type == "NAType":
+        if python_type == "_NAType":
             return NA if val else None
         if python_type == "Ref":
             return Ref(val)
@@ -353,14 +352,16 @@ class Provider(SQLProvider):
             raise
 
     def create_ts(self) -> None:
+        """ Create the time serie database and schema. """
         client = self._get_write_client()
         _create_database(client, self._ts_database_name)
         pqs = parse_qs(self._parsed_ts.query)
-        mem_ttl = int(pqs["mem_ttl"][0]) if "mem_ttl" in pqs else DEFAULT_MEM_TTL
-        mag_ttl = int(pqs["mag_ttl"][0]) if "mag_ttl" in pqs else DEFAULT_MAG_TTL
+        mem_ttl = int(pqs["mem_ttl"][0]) if "mem_ttl" in pqs else _DEFAULT_MEM_TTL
+        mag_ttl = int(pqs["mag_ttl"][0]) if "mag_ttl" in pqs else _DEFAULT_MAG_TTL
         _create_table(client, self._ts_database_name, self._ts_table_name, mem_ttl, mag_ttl)
 
     def purge_ts(self) -> None:
+        """ Purge the timeserie database. """
         _delete_table(self._get_write_client(), self._ts_database_name, self._ts_table_name)
 
     @overrides

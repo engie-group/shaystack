@@ -27,8 +27,8 @@ def dump(grids: Union[Grid, List[Grid]], mode: str = MODE_ZINC) -> str:
     """Dump the given grids in the specified over-the-wire format.
 
     Args:
-        grids:
-        mode (str):
+        grids: The grid or list of grids to dump.
+        mode: The format. Must be MODE_ZINC, MODE_CSV or MODE_JSON
     """
     if isinstance(grids, Grid):
         return dump_grid(grids, mode=mode)
@@ -44,9 +44,10 @@ def dump(grids: Union[Grid, List[Grid]], mode: str = MODE_ZINC) -> str:
 
 def dump_grid(grid: Grid, mode: str = MODE_ZINC) -> str:
     """
+    Dump a single grid in the specified over-the-wire format.
     Args:
-        grid (Grid):
-        mode (str):
+        grid: The grid to dump.
+        mode: The format. Must be MODE_ZINC, MODE_CSV or MODE_JSON
     """
     if mode == MODE_ZINC:
         return dump_zinc_grid(grid)
@@ -59,10 +60,11 @@ def dump_grid(grid: Grid, mode: str = MODE_ZINC) -> str:
 
 def dump_scalar(scalar: Any, mode: str = MODE_ZINC, version: Version = LATEST_VER) -> Optional[str]:
     """
+    Dump a scalar value in the specified over-the-wire format and version.
     Args:
-        scalar (Any):
-        mode (str):
-        version (Version):
+        scalar: The value to dump
+        mode: The format. Must be MODE_ZINC, MODE_CSV or MODE_JSON
+        version: The Haystack version to apply
     """
     if mode == MODE_ZINC:
         return dump_zinc_scalar(scalar, version=version)

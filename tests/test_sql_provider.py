@@ -19,10 +19,6 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 
 def skip(msg: str) -> None:
-    """
-    Args:
-        msg (str):
-    """
     raise SkipTest(msg)
 
 
@@ -52,10 +48,6 @@ def _get_grids():
 
 
 def _populate_db(provider: SQLProvider) -> None:
-    """
-    Args:
-        provider (SQLProvider):
-    """
     provider.purge_db()
     for grid, version in _get_grids():
         provider.update_grid_in_db(grid, None, "", version)

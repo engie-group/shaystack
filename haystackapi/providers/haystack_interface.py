@@ -35,7 +35,7 @@ def _to_camel(snake_str: str) -> str:
 @dataclass
 class HttpError(Exception):
     """
-    Exception to propagate specific HTTP error
+    Exception to propagate a specific HTTP error
     """
     error: int
     msg: str
@@ -45,12 +45,13 @@ class HaystackInterface(ABC):
     """
     Interface to implement to be compatible with Haystack REST protocol.
     The subclasses may be abstract (implemented only a part of methods),
-    the code detect that, and can calculate the set of implemented operations.
+    the 'ops' code detect that, and can calculate the set of implemented operations.
     """
 
     @property
     @abstractmethod
     def name(self) -> str:
+        """ The name of the provider. """
         raise NotImplementedError()
 
     def __repr__(self) -> str:
@@ -66,27 +67,31 @@ class HaystackInterface(ABC):
         pass
 
     def get_tz(self) -> BaseTzInfo:  # pylint: disable=no-self-use
+        """ Return server time zone. """
         return get_localzone()
 
     def get_customer_id(self) -> str:  # pylint: disable=no-self-use
-        """ Override this for multi-tenant"""
+        """ Override this for multi-tenant.
+        May be, extract the curstomer id from the current `Principal`.
+        """
         return ''
 
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -> List[Any]:
-        """Get all values for a given tag
+        """Get all values for a given tag.
 
         Args:
-            tag (:obj:`str`): tag
-            date_version (:obj:`datetime`, optional): version date
+            tag: The tag to analyse.
+            date_version: version date of the ontology.
 
         Returns:
-            (:obj:`List[Any]`) All unique values for a specific tag
+            All unique values for a specific tag
         """
         raise NotImplementedError()
 
     def versions(self) -> List[datetime]:  # pylint: disable=no-self-use
         """
+        Return a list of versions fot the current ontology.
         Returns:
             datetime for each version or empty array if unknown
         """
@@ -94,16 +99,16 @@ class HaystackInterface(ABC):
 
     @abstractmethod
     def about(self, home: str) -> Grid:
-        """Implement the Haystack 'about' ops
+        """Implement the Haystack 'about' ops.
 
-        Note:
-            Must be completed with "productUri", "productVersion", "moduleName" abd "moduleVersion"
+        The subclasse must complet the result with "productUri", "productVersion", "moduleName"
+        and "moduleVersion"
 
         Args:
-            home (:obj:`str`): Home url of the API
+            home: Home url of the API
 
         Returns:
-            (:obj:`Grid`) the default 'about' grid.
+            The default 'about' grid.
         """
         grid = Grid(
             version=VER_3_0,
@@ -141,7 +146,7 @@ class HaystackInterface(ABC):
         return grid
 
     def ops(self) -> Grid:
-        """ Implement the Haystack 'ops' ops
+        """ Implement the Haystack 'ops' ops.
 
         Notes:
             Automatically calculate the implemented version.
@@ -197,11 +202,13 @@ class HaystackInterface(ABC):
         )
         return grid
 
-    def formats(self) -> Grid:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'formats' ops
+    def formats(self) -> Optional[Grid]:  # pylint: disable=no-self-use
+        """ Implement the Haystack 'formats' ops.
 
         Notes:
             Implement this method, only if you want to limit the format negotiation
+        Returns:
+            The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.
         """
         return None  # type: ignore
 
@@ -215,14 +222,14 @@ class HaystackInterface(ABC):
             date_version: Optional[datetime],
     ) -> Grid:  # pylint: disable=no-self-use
         """
-        Implement the Haystack 'read' ops
+        Implement the Haystack 'read' ops.
 
         Args:
-            limit (int): The number of record to return or zero
-            select (str, optional): The selected tag separated with comma, else '' or '*'
-            entity_ids (List[Ref], optional): A list en ids. If set, grid_filter and limit are ignored
-            grid_filter (str, optional): A filter to apply. Ignored if entity_ids is set.
-            date_version (datetime, optional): The date to return of the last version.
+            limit: The number of record to return or zero
+            select: The selected tag separated with comma, else '' or '*'
+            entity_ids: A list en ids. If set, grid_filter and limit are ignored.
+            grid_filter: A filter to apply. Ignored if entity_ids is set.
+            date_version: The date of the ontology version.
 
         Returns:
             The requested Grid
@@ -232,12 +239,12 @@ class HaystackInterface(ABC):
 
     @abstractmethod
     def nav(self, nav_id: str) -> Any:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'nav' ops
+        """ Implement the Haystack 'nav' ops.
         This operation allows servers to expose the database in a human-friendly tree (or graph)
         that can be explored
 
         Args:
-             nav_id (str): The string for nav id column
+             nav_id: The string for nav id column
         """
         raise NotImplementedError()
 
@@ -250,13 +257,13 @@ class HaystackInterface(ABC):
             lease: Optional[int],
     ) -> Grid:  # pylint: disable=no-self-use
         """
-        Implement the Haystack 'watchSub' ops
+        Implement the Haystack 'watchSub' ops.
 
         Args:
-            watch_dis (str): Watch description
-            watch_id (str, optional): The user watch_id to update or None
-            ids (List[Ref]): The list of ids to watch
-            lease (int, optional): Lease to apply
+            watch_dis: Watch description
+            watch_id: The user watch_id to update or None.
+            ids: The list of ids to watch.
+            lease: Lease to apply.
 
         Returns:
             A Grid
@@ -268,12 +275,12 @@ class HaystackInterface(ABC):
             self, watch_id: str, ids: List[Ref], close: bool
     ) -> Grid:  # pylint: disable=no-self-use
         """
-        Implement the Haystack 'watchUnsub' ops
+        Implement the Haystack 'watchUnsub' ops.
 
         Args:
-            watch_id (str): The user watch_id to update or None
-            ids (List[Ref]): The list of ids to watch
-            close (bool): Set to True to close
+            watch_id: The user watch_id to update or None
+            ids: The list of ids to watch
+            close: Set to True to close
 
         Returns:
             A Grid
@@ -284,11 +291,11 @@ class HaystackInterface(ABC):
     def watch_poll(
             self, watch_id: str, refresh: bool
     ) -> Grid:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'watchPoll' ops
+        """ Implement the Haystack 'watchPoll' ops.
 
         Args:
-            watch_id (str): The user watch_id to update or None
-            refresh (bool): Set to True for refreshing the data
+            watch_id: The user watch_id to update or None
+            refresh: Set to True for refreshing the data
 
         Returns:
             A Grid where each row corresponds to a watched entity.
@@ -299,11 +306,11 @@ class HaystackInterface(ABC):
     def point_write_read(
             self, entity_id: Ref, date_version: Optional[datetime]
     ) -> Grid:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'pointWrite' ops
+        """ Implement the Haystack 'pointWrite' ops.
 
         Args:
-            entity_id (Ref): The entity to update
-            date_version (datetime, optional): The optional date version to update
+            entity_id: The entity to update
+            date_version: The optional date version to update
 
         Returns:
             A Grid
@@ -320,15 +327,15 @@ class HaystackInterface(ABC):
             who: Optional[str],
             date_version: Optional[datetime] = None,
     ) -> None:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'pointWrite' ops
+        """ Implement the Haystack 'pointWrite' ops.
 
         Args:
-            entity_id (Ref): The entity to update
-            level (int): Number from 1-17 for level to write
-            val (Any, optional): Value to write or null to auto the level
-            duration (Quantity): Number with duration unit if setting level 8
-            who (str, optional): Optional username performing the write, otherwise user dis is used
-            date_version (datetime, optional): The optional date version to update
+            entity_id: The entity to update
+            level: Number from 1-17 for level to write
+            val: Value to write or null to auto the level
+            duration: Number with duration unit if setting level 8
+            who: Optional username performing the write, otherwise user dis is used
+            date_version: The optional date version to update
 
         Returns:
             None
@@ -349,14 +356,14 @@ class HaystackInterface(ABC):
             dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
             date_version: Optional[datetime] = None,
     ) -> Grid:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'hisRead' ops
+        """ Implement the Haystack 'hisRead' ops.
 
         Args:
-            entity_id (Ref): The entity to read
-            dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date
-            range. May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}),
+            entity_id: The entity to read
+            dates_range: The date
+            range: May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}),
             {dateTime}
-            date_version ( datetime, optional): The optional date version to update
+            date_version: The optional date version to update
 
         Returns:
             A grid
@@ -370,12 +377,12 @@ class HaystackInterface(ABC):
             time_serie: Grid,
             date_version: Optional[datetime] = None
     ) -> Grid:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'hisWrite' ops
+        """ Implement the Haystack 'hisWrite' ops.
 
         Args:
-            entity_id (Ref): The entity to read
-            time_serie (Grid): A grid with a time series
-            date_version (datetime, optional): The optional date version to update
+            entity_id: The entity to read
+            time_serie: A grid with a time series
+            date_version: The optional date version to update
 
         Returns:
             A grid
@@ -390,13 +397,13 @@ class HaystackInterface(ABC):
             params: Dict[str, Any],
             date_version: Optional[datetime] = None
     ) -> Grid:  # pylint: disable=no-self-use
-        """ Implement the Haystack 'invokeAction' ops
+        """ Implement the Haystack 'invokeAction' ops.
 
         Args:
-            entity_id (Ref): The entity to read
-            action (str): The action string
-            params (Dict[str, Any]): A dictionary with parameters
-            date_version (datetime, optional): The optional date version to update
+            entity_id: The entity to read
+            action: The action string
+            params: A dictionary with parameters
+            date_version: The optional date version to update
 
         Returns:
             A grid
@@ -419,10 +426,10 @@ def get_provider(class_str: str) -> HaystackInterface:
     and detect the implemented and abstract methods.
 
     Args:
-        class_str (str): An abstract class string provider
+        class_str: The name of the module that contains the provider.
 
     Returns:
-        (HaystackInterface) A instance of this subclass if it exists
+        A instance of this subclass if it exists
     """
     try:
         if not class_str.endswith(".Provider"):
@@ -533,6 +540,11 @@ SINGLETON_PROVIDER = None
 
 
 def get_singleton_provider() -> HaystackInterface:
+    """
+    Return the current provider, deduce from the `HAYSTACK_PROVIDER` variable.
+    Returns:
+        The current provider for the process.
+    """
     global SINGLETON_PROVIDER  # pylint: disable=global-statement
     assert (
             "HAYSTACK_PROVIDER" in os.environ
@@ -544,6 +556,15 @@ def get_singleton_provider() -> HaystackInterface:
 
 
 def parse_date_range(date_range: str, timezone: tzinfo) -> Tuple[datetime, datetime]:
+    """
+    Parse a date_range string.
+    Args:
+        date_range: The string with differents acceptable format.
+        timezone: The current time-zone to convert the date to datetime.
+
+    Returns:
+        A tuple with the begin and end datetime.
+    """
     if not date_range:
         return datetime.min.replace(tzinfo=pytz.UTC), \
                datetime.max.replace(tzinfo=pytz.UTC)

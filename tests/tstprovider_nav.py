@@ -8,8 +8,4 @@ from haystackapi.providers import HaystackInterface
 class Provider(HaystackInterface):
     @overrides
     def nav(self, nav_id: str) -> Any:
-        """
-        Args:
-            nav_id (str):
-        """
         return None

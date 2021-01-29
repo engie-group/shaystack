@@ -17,7 +17,7 @@ The file must be referenced with the environment variable HAYSTACK_URL and may b
 
 If the suffix is .gz, the body is unzipped.
 
-If the AWS bucket use the versionning, the correct version are return, to correspond to
+If the AWS bucket use the versioning, the correct version are return, to correspond to
 the version of the file at the `version_date`.
 
 The time series to manage history must be referenced in entity:
@@ -50,12 +50,12 @@ from ..grid import Grid
 from ..parser import parse
 from ..parser import suffix_to_mode
 
-BOTO3_AVAILABLE = False
+_BOTO3_AVAILABLE = False
 try:
     import boto3
     from botocore.client import BaseClient
 
-    BOTO3_AVAILABLE = True
+    _BOTO3_AVAILABLE = True
 except ImportError:
     pass
 
@@ -63,9 +63,9 @@ Timestamp = datetime
 
 log = logging.getLogger("url.Provider")
 
-LRU_SIZE, PERIODIC_REFRESH = 15, int(os.environ.get("REFRESH", "15"))
+_LRU_SIZE, _PERIODIC_REFRESH = 15, int(os.environ.get("REFRESH", "15"))
 
-TLS_VERIFY = os.environ.get("TLS_VERIFY", "true") == "true"
+_TLS_VERIFY = os.environ.get("TLS_VERIFY", "true") == "true"
 
 
 class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attributes
@@ -213,7 +213,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             self._lambda_client = boto3.client("lambda",
                                                region_name=os.environ["AWS_REGION"],
                                                endpoint_url=os.environ.get("AWS_S3_ENDPOINT", None),
-                                               verify=TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
+                                               verify=_TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
                                                )
         return self._lambda_client
 
@@ -234,7 +234,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             self._s3_client = boto3.client(
                 "s3",
                 endpoint_url=os.environ.get("AWS_S3_ENDPOINT", None),
-                verify=TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
+                verify=_TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
             )
         return self._s3_client
 
@@ -250,7 +250,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
         assert effective_version
         log.info("_download_uri('%s')", parsed_uri.geturl())
         if parsed_uri.scheme == "s3":
-            assert BOTO3_AVAILABLE, "Use 'pip install boto3'"
+            assert _BOTO3_AVAILABLE, "Use 'pip install boto3'"
             s3_client = self._s3()
             extra_args = None
             obj_versions = self._versions[parsed_uri.geturl()]
@@ -282,13 +282,13 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
         # Refresh at a rounded period, then all cloud instances refresh data at the same time.
         now = datetime.utcnow().replace(tzinfo=pytz.UTC)
         next_time = now.replace(minute=0, second=0) + timedelta(
-            minutes=(now.minute + PERIODIC_REFRESH) // PERIODIC_REFRESH * PERIODIC_REFRESH
+            minutes=(now.minute + _PERIODIC_REFRESH) // _PERIODIC_REFRESH * _PERIODIC_REFRESH
         )
         assert next_time > now
         if parsed_uri.scheme == "s3":
-            assert BOTO3_AVAILABLE, "Use 'pip install boto3'"
+            assert _BOTO3_AVAILABLE, "Use 'pip install boto3'"
             start_of_current_period = \
-                (next_time - timedelta(minutes=PERIODIC_REFRESH)).replace(tzinfo=pytz.UTC)
+                (next_time - timedelta(minutes=_PERIODIC_REFRESH)).replace(tzinfo=pytz.UTC)
             s3_client = self._s3()
             obj_versions = [
                 (v["LastModified"], v["VersionId"])
@@ -316,7 +316,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
         else:
             self._versions[parsed_uri.geturl()] = {datetime(1, 1, 1, tzinfo=pytz.UTC): "direct_file"}
 
-        if PERIODIC_REFRESH:
+        if _PERIODIC_REFRESH:
             partial_refresh = functools.partial(
                 self._periodic_refresh_versions, parsed_uri, False
             )
@@ -325,10 +325,10 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             self._timer.start()
 
     def _refresh_versions(self, parsed_uri: ParseResult) -> None:
-        if not PERIODIC_REFRESH or parsed_uri.geturl() not in self._versions:
+        if not _PERIODIC_REFRESH or parsed_uri.geturl() not in self._versions:
             self._periodic_refresh_versions(parsed_uri, True)
 
-    @functools.lru_cache(maxsize=LRU_SIZE)
+    @functools.lru_cache(maxsize=_LRU_SIZE)
     def _download_grid_effective_version(self, uri: str,  # pylint: disable=method-hidden
                                          effective_version: datetime) -> Grid:
         log.info("_download_grid(%s,%s)", uri, effective_version)
@@ -346,6 +346,14 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             )
         return cast(Grid, parse(body, mode))
 
+    def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
+        parsed_uri = urlparse(uri, allow_fragments=False)
+        self._refresh_versions(parsed_uri)
+        for version, _ in self._versions[uri].items():
+            if not date_version or version <= date_version:
+                return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
+        raise ValueError("Empty body not supported")
+
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -> None:
         self._download_grid_effective_version = \
@@ -355,12 +363,5 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
     # pylint: enable=no-member
 
     def cache_clear(self) -> None:
+        """ Force to clear the local cache. """
         self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member
-
-    def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
-        parsed_uri = urlparse(uri, allow_fragments=False)
-        self._refresh_versions(parsed_uri)
-        for version, _ in self._versions[uri].items():
-            if not date_version or version <= date_version:
-                return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
-        raise ValueError("Empty body not supported")

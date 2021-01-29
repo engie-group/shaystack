@@ -9,7 +9,7 @@ Tools to convert haystack unit to pint unit.
 """
 from pint import UnitRegistry
 
-HAYSTACK_CONVERSION = [
+_HAYSTACK_CONVERSION = [
     ('_', ' '),
     ('°', 'deg'),
     ('per ', '/ '),
@@ -118,7 +118,7 @@ HAYSTACK_CONVERSION = [
     ('of', '')
 ]
 
-PINT_CONVERSION = [
+_PINT_CONVERSION = [
     ('foot ** 3', 'cubic_foot'),
     ('/', 'per'),
     ('hectofoot ** 3', 'hecto_cubic_foot'),
@@ -133,10 +133,10 @@ def to_haystack(unit: str):
     """Some parsing tweaks to fit pint units / handling of edge cases.
 
     Args:
-        unit (str):
+        unit: unit
     """
-    global HAYSTACK_CONVERSION  # pylint: disable=global-statement
-    global PINT_CONVERSION  # pylint: disable=global-statement
+    global _HAYSTACK_CONVERSION  # pylint: disable=global-statement
+    global _PINT_CONVERSION  # pylint: disable=global-statement
     if unit == 'per_minute' or \
             unit == '/min' or \
             unit == 'per_second' or \
@@ -147,9 +147,9 @@ def to_haystack(unit: str):
         return ''
         # Those units are not units... they are impossible to fit anywhere in Pint
 
-    for pint_value, haystack_value in PINT_CONVERSION:
+    for pint_value, haystack_value in _PINT_CONVERSION:
         unit = unit.replace(pint_value, haystack_value)
-    for haystack_value, pint_value in HAYSTACK_CONVERSION:
+    for haystack_value, pint_value in _HAYSTACK_CONVERSION:
         if pint_value == '':
             continue
         unit = unit.replace(pint_value, haystack_value)  # PPR: optimise this big loop
@@ -160,9 +160,11 @@ def to_pint(unit: str) -> str:
     """Some parsing tweaks to fit pint units / handling of edge cases.
 
     Args:
-        unit (str):
+        unit: The unit
+    Returns:
+         the corresponding pint unit
     """
-    global HAYSTACK_CONVERSION  # pylint: disable=global-statement
+    global _HAYSTACK_CONVERSION  # pylint: disable=global-statement
     if unit == 'per_minute' or \
             unit == '/min' or \
             unit == 'per_second' or \
@@ -172,12 +174,12 @@ def to_pint(unit: str) -> str:
             unit is None:
         return ''
         # Those units are not units... they are impossible to fit anywhere in Pint
-    for haystack_value, pint_value in HAYSTACK_CONVERSION:  # PPR: leasy ?
+    for haystack_value, pint_value in _HAYSTACK_CONVERSION:  # PPR: leasy ?
         unit = unit.replace(haystack_value, pint_value)
     return unit
 
 
-def define_haystack_units() -> UnitRegistry:
+def _define_haystack_units() -> UnitRegistry:
     """Missing units found in project-haystack Added to the registry"""
     unit_ureg = UnitRegistry(on_redefinition='ignore')
     unit_ureg.define('% = [] = percent')
@@ -244,4 +246,4 @@ def define_haystack_units() -> UnitRegistry:
     return unit_ureg
 
 
-unit_reg = define_haystack_units()
+unit_reg = _define_haystack_units()

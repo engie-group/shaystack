@@ -52,7 +52,9 @@ def suffix_to_mode(ext: str) -> Optional[str]:
     """Convert a file suffix to Haystack mode
 
     Args:
-        ext (str):
+        ext: The file suffix (`.zinc`, `.json`, `.csv`)
+    Returns:
+        The corresponding haystack mode (`MODE_...`)
     """
     return _suffix_to_mode.get(ext, None)
 
@@ -61,24 +63,26 @@ def mode_to_suffix(mode: str) -> Optional[str]:
     """Convert haystackapi mode to file suffix
 
     Args:
-        mode (str):
+        mode: The haystack mode (`MODE_...`)
+    Returns:
+        The file suffix (`.zinc`, `.json`, `.csv`)
     """
     return _mode_to_suffix.get(mode, None)
 
 
 def parse(grid_str: Union[AnyStr, List[str]],
           mode: str = MODE_ZINC,
-          charset: str = 'utf-8',
           single: bool = True) -> Union[Grid, List[Grid]]:
-    """Parse the given Zinc text and return the equivalent data.
+    """Parse the given text and return the grids.
 
     Args:
-        grid_str:
-        mode (str):
-        charset (str):
-        single (bool):
+        grid_str: The string to parse
+        mode: The format (`MODE_...`)
+        single: Parse only ony grid (deprecated)
+    Returns:
+        A grid or a list of grids
     """
-
+    charset = 'utf-8'
     # Decode incoming text (or python3 will whine!)
     if isinstance(grid_str, bytes):
         grid_str = grid_str.decode(encoding=charset)
@@ -86,8 +90,7 @@ def parse(grid_str: Union[AnyStr, List[str]],
     # Split the separate grids up, the grammar definition has trouble splitting
     # them up normally.  This will truncate the newline off the end of the last
     # row.
-    _parse = functools.partial(parse_grid, mode=mode,
-                               charset=charset)
+    _parse = functools.partial(parse_grid, mode=mode)
     if mode == MODE_JSON:
         if isinstance(grid_str, str):
             grid_data = json.loads(grid_str)
@@ -114,14 +117,17 @@ def parse(grid_str: Union[AnyStr, List[str]],
     return grids
 
 
-def parse_grid(grid_str: str, mode: str = MODE_ZINC, charset: str = 'utf-8') -> Grid:
+def parse_grid(grid_str: str, mode: str = MODE_ZINC) -> Grid:
     # Decode incoming text
     """
+    Parse a grid.
     Args:
-        grid_str (str):
-        mode (str):
-        charset (str):
+        grid_str: The string to parse
+        mode: The format (`MODE_...`)
+    Returns:
+        a grid
     """
+    charset = 'utf-8'
     if isinstance(grid_str, bytes):  # pragma: no cover
         # No coverage here, because it *should* be handled above unless the user
         # is preempting us by calling `parse_grid` directly.
@@ -137,16 +143,18 @@ def parse_grid(grid_str: str, mode: str = MODE_ZINC, charset: str = 'utf-8') -> 
 
 
 def parse_scalar(scalar: Union[bytes, str], mode: str = MODE_ZINC,
-                 version: Union[Version, str] = LATEST_VER,
-                 charset: str = 'utf-8') -> Any:
+                 version: Union[Version, str] = LATEST_VER) -> Any:
     # Decode version string
     """
+    Parse a scalar value
     Args:
-        scalar:
-        mode (str):
-        version:
-        charset (str):
+        scalar: The scalar data to parse
+        mode: The haystack mode
+        version: The haystack version
+    Returns:
+        a value
     """
+    charset = 'utf-8'
     if not isinstance(version, Version):
         version = Version(version)
 

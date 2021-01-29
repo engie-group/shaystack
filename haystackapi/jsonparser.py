@@ -57,10 +57,12 @@ STR_ESC_RE = re.compile(r'\\([bfnrt"\\$]|u[0-9a-fA-F]{4})')
 
 
 def parse_grid(grid_str: str) -> Grid:
-    # Grab the metadata
     """
+    Parse a grid from json string.
     Args:
-        grid_str (str):
+        grid_str: The json string
+    Returns:
+        The corresponding grid.
     """
     if isinstance(grid_str, str):
         parsed = json.loads(grid_str)
@@ -71,72 +73,51 @@ def parse_grid(grid_str: str) -> Grid:
     version = Version(meta.pop('ver'))
 
     # Parse the remaining elements
-    metadata = parse_metadata(meta, version)
+    metadata = _parse_metadata(meta, version)
 
     grid = Grid(version=version, metadata=metadata)
 
     # Grab the columns in the order given
-    parse_cols(grid, parsed.pop('cols'), version)
+    _parse_cols(grid, parsed.pop('cols'), version)
 
     # Parse the rows
     for row in (parsed.pop('rows', []) or []):
-        parsed_row = parse_row(row, version)
+        parsed_row = _parse_row(row, version)
         grid.append(parsed_row)
 
     return grid
 
 
-def parse_metadata(meta: Dict[str, Any], version: Version) -> MetadataObject:
-    """
-    Args:
-        meta:
-        version (Version):
-    """
+def _parse_metadata(meta: Dict[str, Any], version: Version) -> MetadataObject:
     metadata = MetadataObject()
     for name, value in meta.items():
-        metadata[name] = parse_embedded_scalar(value, version=version)
+        metadata[name] = _parse_embedded_scalar(value, version=version)
     return metadata
 
 
-def parse_cols(grid: Grid, parsed: List[Dict[str, Any]], version: Version) -> None:
-    """
-    Args:
-        grid (Grid):
-        parsed:
-        version (Version):
-    """
+def _parse_cols(grid: Grid, parsed: List[Dict[str, Any]], version: Version) -> None:
     for col in parsed:
         name = col.pop('name')
         meta = {}
         for key, value in col.items():
-            value = parse_embedded_scalar(value, version=version)
+            value = _parse_embedded_scalar(value, version=version)
             if value is not None:
                 meta[key] = value
         grid.column[name] = meta
 
 
-def parse_row(row: Dict[str, Any], version: Version) -> Dict[str, Any]:
-    """
-    Args:
-        row:
-        version (Version):
-    """
+def _parse_row(row: Dict[str, Any], version: Version) -> Dict[str, Any]:
     parsed_row = {}
     for col, value in row.items():
-        value = parse_embedded_scalar(value, version=version)
+        value = _parse_embedded_scalar(value, version=version)
         if value is not None:
             parsed_row[col] = value
     return parsed_row
 
 
-def parse_embedded_scalar(scalar: Union[None, List, Dict, str],
-                          version: Version = LATEST_VER) -> Any:  # pylint: disable=too-many-locals
+def _parse_embedded_scalar(scalar: Union[None, List, Dict, str],
+                           version: Version = LATEST_VER) -> Any:  # pylint: disable=too-many-locals
     # Simple cases
-    """
-    Args:
-        scalar:
-        version (Version):
-    """
     if scalar is None:
         return None
     if isinstance(scalar, list):
@@ -201,7 +182,7 @@ def parse_embedded_scalar(scalar: Union[None, List, Dict, str],
     if match:
         matched = match.groups()
         if matched[-1] is not None:
-            return Ref(matched[0], matched[-1], has_value=True)
+            return Ref(matched[0], matched[-1])
         return Ref(matched[0])
 
     # Is it a date?
@@ -264,11 +245,13 @@ def parse_embedded_scalar(scalar: Union[None, List, Dict, str],
 
 
 def parse_scalar(scalar: str, version: Version = LATEST_VER) -> Any:
-    # If we're given a string, decode the JSON data.
     """
+    Parse a scalar.
     Args:
-        scalar (str):
-        version (Version):
+        scalar: The string with the scalar value.
+        version: The Haysack version
+    Returns:
+        The scalar value.
     """
     if isinstance(scalar, str) and \
             (len(scalar) >= 2) and \
@@ -276,4 +259,4 @@ def parse_scalar(scalar: str, version: Version = LATEST_VER) -> Any:
             (scalar[-1] in ('"', ']', '}')):
         scalar = json.loads(scalar)
 
-    return parse_embedded_scalar(scalar, version=version)
+    return _parse_embedded_scalar(scalar, version=version)

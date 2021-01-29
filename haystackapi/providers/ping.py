@@ -23,7 +23,7 @@ from ..grid import Grid, VER_3_0, Ref, Quantity
 
 log = logging.getLogger("ping.Provider")
 
-PingGrid = Grid(
+_PingGrid = Grid(
     version=VER_3_0, columns={"empty": {}}, metadata={"dis": "Ping Provider"}
 )
 
@@ -38,11 +38,6 @@ class Provider(HaystackInterface):
     @overrides
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -> List[Any]:
-        """
-        Args:
-            tag (str):
-            date_version:
-        """
         return ["value1", "value2"]
 
     @overrides
@@ -53,11 +48,6 @@ class Provider(HaystackInterface):
 
     @overrides
     def about(self, home: str) -> Grid:  # pylint: disable=no-self-use
-        """Implement the Haystack 'about' ops
-
-        Args:
-            home (str):
-        """
         log.info("about()")
         grid = super().about(home)
         grid_row = cast(Dict[str, Any], grid[0])
@@ -81,15 +71,7 @@ class Provider(HaystackInterface):
             grid_filter: Optional[str] = None,
             date_version: Optional[datetime] = None,
     ) -> Grid:  # pylint: disable=no-self-use
-        """Return EmptyGrid
-
-        Args:
-            limit (int):
-            select:
-            entity_ids:
-            grid_filter:
-            date_version:
-        """
+        """Return EmptyGrid."""
         log.debug(
             "read(limit=%s, select='%s', ids=%s grid_filter='%s' date_version=%s)",
             limit,
@@ -109,13 +91,7 @@ class Provider(HaystackInterface):
             dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
             date_version: Optional[datetime] = None
     ) -> Grid:
-        """Return EmptyGrid
-
-        Args:
-            entity_id (Ref):
-            dates_range:
-            date_version:
-        """
+        """Return EmptyGrid."""
         log.info(
             "his_read(id=%s, range=%s, date_version=%s)",
             entity_id,
@@ -140,30 +116,20 @@ class Provider(HaystackInterface):
     def his_write(
             self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime] = None
     ) -> Grid:  # pylint: disable=no-self-use
-        """Return EmptyGrid
-
-        Args:
-            entity_id (Ref):
-            time_serie (Grid):
-            date_version:
-        """
+        """Return EmptyGrid."""
         log.info(
             'his_write(id=%s, ts=%s, date_version=%s")',
             entity_id,
             time_serie,
             date_version,
         )
-        return PingGrid
+        return _PingGrid
 
     @overrides
     def nav(self, nav_id: str) -> Any:  # pylint: disable=no-self-use
-        """Return EmptyGrid
-
-        Args:
-            nav_id (str):
-        """
+        """Return EmptyGrid."""
         log.info('nav(nav_id="%s")', nav_id)
-        return PingGrid
+        return _PingGrid
 
     @overrides
     def watch_sub(
@@ -173,14 +139,7 @@ class Provider(HaystackInterface):
             ids: List[Ref],
             lease: Optional[int],
     ) -> Grid:  # pylint: disable=no-self-use
-        """Return EmptyGrid
-
-        Args:
-            watch_dis (str):
-            watch_id:
-            ids:
-            lease:
-        """
+        """Return EmptyGrid."""
         log.info(
             'watch_sub(watch_dis="%s", ' 'watch_id="%s", ids=%s, lease=%s)',
             watch_dis,
@@ -196,13 +155,7 @@ class Provider(HaystackInterface):
     def watch_unsub(
             self, watch_id: str, ids: List[Ref], close: bool
     ) -> None:  # pylint: disable=no-self-use
-        """Return EmptyGrid
-
-        Args:
-            watch_id (str):
-            ids:
-            close (bool):
-        """
+        """Return EmptyGrid."""
         log.info(
             'watch_unsub(watch_id="%s", ids=%s, close_all=%s)', watch_id, ids, close
         )
@@ -211,12 +164,7 @@ class Provider(HaystackInterface):
     def watch_poll(
             self, watch_id: str, refresh: bool
     ) -> Grid:  # pylint: disable=no-self-use
-        """Return EmptyGrid
-
-        Args:
-            watch_id (str):
-            refresh (bool):
-        """
+        """Return EmptyGrid."""
         log.info('watch_poll(watch_id="%s", refresh=%s)', watch_id, refresh)
         grid = Grid(VER_3_0)
         grid.append({"id": Ref("id1"), "val": Quantity(100, "°")})
@@ -226,12 +174,7 @@ class Provider(HaystackInterface):
     def point_write_read(
             self, entity_id: Ref, date_version: Optional[datetime]
     ) -> Grid:  # pylint: disable=no-self-use
-        """Return EmptyGrid
-
-        Args:
-            entity_id (Ref):
-            date_version:
-        """
+        """Return EmptyGrid."""
         log.info('point_write_read(id=%s, date_version=%s")', entity_id, date_version)
         grid = Grid(VER_3_0)
         grid.append({"level": 1,
@@ -250,16 +193,7 @@ class Provider(HaystackInterface):
                           who: Optional[str],
                           date_version: Optional[datetime] = None,
                           ) -> None:  # pylint: disable=no-self-use
-        """Return EmptyGrid
-
-        Args:
-            entity_id (Ref):
-            level (int):
-            val:
-            duration (Quantity):
-            who:
-            date_version:
-        """
+        """Return EmptyGrid."""
         log.info('point_write_write(id=%s, level=%s, val=%s, duration=%s, who=%s, date_version=%s")',
                  entity_id, level, val, duration, who, date_version)
 
@@ -268,16 +202,9 @@ class Provider(HaystackInterface):
             self, entity_id: Ref, action: str, params: Dict[str, Any],
             date_version: Optional[datetime] = None
     ) -> Grid:  # pylint: disable=no-self-use
-        """Return EmptyGrid
-
-        Args:
-            entity_id (Ref):
-            action (str):
-            params:
-            date_version:
-        """
+        """Return EmptyGrid."""
         log.info(
             'invoke_action(id=%s,action="%s",params=%s, date_version=%s)',
             entity_id, action, params, date_version
         )
-        return PingGrid
+        return _PingGrid

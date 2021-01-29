@@ -14,7 +14,7 @@ def test_invoke_action_with_zinc(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     grid = haystackapi.Grid(metadata={'id': Ref('123'), 'action': 'doIt'},
@@ -42,7 +42,7 @@ def test_invoke_action_without_params_with_zinc(mock):
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     grid = haystackapi.Grid(metadata={'id': Ref('123'), 'action': 'doIt'},

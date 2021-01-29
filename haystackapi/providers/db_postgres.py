@@ -15,7 +15,7 @@ import textwrap
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Type, Any, Union, Tuple, Optional, Dict, Iterator
+from typing import List, Type, Any, Union, Tuple, Optional, Dict, Iterator, Callable
 
 from .sqldb_protocol import DBCursor
 from .. import parse_filter, jsondumper, Quantity, Ref
@@ -417,7 +417,14 @@ def _exec_sql_filter(params: Dict[str, Any],
 MAX_DATE = '9999-12-31T23:59:59'
 
 
-def get_db_parameters(table_name: str) -> Dict[str, Any]:
+def get_db_parameters(table_name: str) -> Dict[str, Union[Callable, str]]:
+    """ Return the SQL request and some lambda to manipulate a Postgres database.
+
+    Args:
+        table_name: The table name to use.
+    Returns:
+        A dictionary with SQL request or lamdas
+    """
     return {
         "sql_type_to_json": lambda x: x,
         "exec_sql_filter": _exec_sql_filter,

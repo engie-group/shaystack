@@ -13,7 +13,7 @@ def test_formats_with_zinc(mock):
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     request.headers["Content-Type"] = mime_type

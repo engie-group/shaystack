@@ -16,7 +16,7 @@ from haystackapi.dumper import dump
 from haystackapi.grid import Grid, VER_3_0
 from haystackapi.metadata import MetadataObject
 from haystackapi.parser import MODE_ZINC, parse, MODE_JSON, MODE_CSV
-from haystackapi.zoneinfo import get_tz_map, timezone
+from haystackapi.zoneinfo import _get_tz_map, timezone
 
 STR_CHARSET = string.ascii_letters + string.digits + '\n\r\t\f\b'
 
@@ -96,7 +96,7 @@ def gen_random_time():
 
 def gen_random_date_time():
     # Pick a random timezone
-    tz_name = random.choice(list(get_tz_map().keys()))
+    tz_name = random.choice(list(_get_tz_map().keys()))
     time_zone = timezone(tz_name)
     return time_zone.localize(datetime.datetime.combine(
         gen_random_date(), gen_random_time()))

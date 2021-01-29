@@ -59,6 +59,14 @@ def _download_uri(parsed_uri: ParseResult) -> bytes:
 
 
 def _read_grid(uri: str) -> Grid:
+    """
+    Read a grid from uri.
+    Args:
+        uri: The URI to reference the datas.
+
+    Returns:
+        The grid.
+    """
     parsed_uri = urlparse(uri, allow_fragments=False)
 
     data = _download_uri(parsed_uri)
@@ -79,6 +87,17 @@ def import_in_db(source: str,
                  time_series: bool = True,
                  reset: bool = False,
                  version: Optional[datetime] = None) -> None:
+    """
+    Import source URI to database.
+    Args:
+        source: The source URI.
+        database_url: The database URI.
+        ts_url: The time-series database URI
+        customer_id: The current customer id to inject in each records.
+        time_series: True to import the time-series references via `hisURI` tag
+        reset: Remove all the current data before import the grid.
+        version: The associated version time.
+    """
     os.environ["HAYSTACK_DB"] = database_url
     provider_name = "haystackapi.providers.sql"
     if ts_url:
@@ -110,7 +129,7 @@ def import_in_db(source: str,
 
 def aws_handler(event, context):
     """
-    AWS Handler.
+    AWS Lambda Handler.
     Set the environment variable HAYSTACK_URL and HAYSTACK_DB
     """
     hs_url = os.environ.get("HAYSTACK_URL")

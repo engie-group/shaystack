@@ -17,7 +17,7 @@ def test_his_write_with_zinc(mock):
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     grid = haystackapi.Grid(columns={'id': {}})
@@ -47,7 +47,7 @@ def test_his_write_with_args(mock):
     time_serie = [
         (datetime(2020, 1, 1, tzinfo=pytz.utc).isoformat() + " UTC", 100),
         (datetime(2020, 1, 2, tzinfo=pytz.utc).isoformat() + " UTC", 200)]
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = DEFAULT_MIME_TYPE
     request = HaystackHttpRequest()
     request.args['id'] = str(Ref("1234"))

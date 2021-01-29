@@ -56,11 +56,11 @@ def test_import_ts_grid_in_db_and_his_read(mock):
         entity_id = Ref("abc")
 
         for val, kind in values:
-            # Clean DB
+            # Clean DB for the specific kind
             provider.purge_db()
             provider.create_db()
 
-            # Insert an antity for the TS, with an attribut "kind"
+            # Insert an entity for the TS, with an attribut "kind"
             grid = Grid(columns=["id", "kind"])
             grid.append({"id": entity_id, "kind": kind})  # Without "kind", the default is "Number" or "float"
             version = datetime.datetime.now(tz=pytz.UTC)

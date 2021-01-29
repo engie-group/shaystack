@@ -6,7 +6,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """
 Model to inject a another graphene model, to manage the haystack layer.
-See the blueprint_graphql to see how to integrate this part of global GraphQL model.
+See the `blueprint_graphql` to see how to integrate this part of global GraphQL model.
 """
 import json
 import logging
@@ -22,7 +22,7 @@ import haystackapi
 from haystackapi import Ref, Uri, Coordinate, parse_hs_datetime_format, Grid
 from haystackapi.grid_filter import parse_hs_time_format, parse_hs_date_format
 from haystackapi.providers.haystack_interface import get_singleton_provider, parse_date_range
-from haystackapi.zincdumper import dump_hs_date_time, dump_hs_time, dump_hs_date
+from haystackapi.zincdumper import _dump_hs_date_time, _dump_hs_time, _dump_hs_date
 
 BOTO3_AVAILABLE = False
 try:
@@ -46,8 +46,9 @@ class HSScalar(graphene.Scalar):
     @staticmethod
     def serialize(hs_scalar: Any) -> Any:
         """
+        Convert scala value to Json
         Args:
-            hs_scalar (Any):
+            hs_scalar: Any value
         """
         return json.loads(haystackapi.dump_scalar(hs_scalar,
                                                   haystackapi.MODE_JSON,
@@ -56,8 +57,9 @@ class HSScalar(graphene.Scalar):
     @staticmethod
     def parse_literal(node: Union[IntValue, FloatValue, StringValue, BooleanValue, EnumValue]) -> Any:
         """
+        Parse to scalar value
         Args:
-            node:
+            node: The graphql node
         """
         if isinstance(node, StringValue):
             str_value = node.value
@@ -67,10 +69,10 @@ class HSScalar(graphene.Scalar):
         return node.value
 
     @staticmethod
-    def parse_value(value: Any) -> Any:
+    def parse_value(value: str) -> Any:
         """
         Args:
-            value (Any):
+            value: The value to parse
         """
         return haystackapi.parse_scalar(value, haystackapi.MODE_JSON)
 
@@ -83,21 +85,22 @@ class HSDateTime(graphene.String):
 
     @staticmethod
     def serialize(date_time: datetime) -> str:
-        # Call to convert python object to graphql result
         """
+        Convert date_time to json compatible string
         Args:
-            date_time (datetime):
+            date_time: The date time to convert to json
         """
         assert isinstance(date_time, datetime), \
             'Received not compatible datetime "{}"'.format(repr(date_time))
-        return dump_hs_date_time(date_time)
+        return _dump_hs_date_time(date_time)
 
     @staticmethod
     def parse_literal(node: StringValue) -> datetime:  # pylint: disable=arguments-differ
         # Call to convert graphql parameter to python object
         """
+        Convert a haystack json string to data time
         Args:
-            node (StringValue):
+            node: GraphQL node to convert
         """
         assert isinstance(node, StringValue), \
             'Received not compatible datetime "{}"'.format(repr(node))
@@ -126,17 +129,19 @@ class HSDate(graphene.String):
     @staticmethod
     def serialize(a_date: date) -> str:
         """
+        Convert date to haystack json string.
         Args:
-            a_date (date):
+            a_date: A date
         """
         assert isinstance(a_date, date), 'Received not compatible date "{}"'.format(repr(a_date))
-        return dump_hs_date(a_date)
+        return _dump_hs_date(a_date)
 
     @staticmethod
     def parse_literal(node: StringValue) -> date:  # pylint: disable=arguments-differ
         """
+        Convert the Graphql string to date.
         Args:
-            node (StringValue):
+            node: The graphql string
         """
         assert isinstance(node, StringValue), 'Received not compatible date "{}"'.format(repr(node))
         return HSDate.parse_value(node.value)
@@ -144,8 +149,9 @@ class HSDate(graphene.String):
     @staticmethod
     def parse_value(value: Union[date, str]) -> date:
         """
+        Convert a date to haystack json.
         Args:
-            value:
+            value: The date
         """
         if isinstance(value, date):
             return value
@@ -161,17 +167,19 @@ class HSTime(graphene.String):
     @staticmethod
     def serialize(a_time: time) -> str:
         """
+        Convert a time to Haystack json string
         Args:
-            a_time (time):
+            a_time: The time.
         """
         assert isinstance(a_time, time), 'Received not compatible time "{}"'.format(repr(a_time))
-        return dump_hs_time(a_time)
+        return _dump_hs_time(a_time)
 
     @staticmethod
     def parse_literal(node: StringValue) -> time:  # pylint: disable=arguments-differ
         """
+        Convert a haystack json string to time
         Args:
-            node (StringValue):
+            node: The string
         """
         assert isinstance(node, StringValue), 'Received not compatible time "{}"'.format(repr(node))
         return HSTime.parse_value(node.value)
@@ -196,8 +204,9 @@ class HSUri(graphene.String):
     @staticmethod
     def serialize(a_uri: Uri) -> str:
         """
+        Convert an Uri to Haystack json string
         Args:
-            a_uri (Uri):
+            a_uri: The Uri
         """
         assert isinstance(a_uri, Uri), 'Received not compatible uri "{}"'.format(repr(a_uri))
         return str(a_uri)
@@ -205,16 +214,18 @@ class HSUri(graphene.String):
     @staticmethod
     def parse_literal(node: StringValue) -> Uri:  # pylint: disable=arguments-differ
         """
+        Convert the Graphql string to Uri
         Args:
-            node (StringValue):
+            node: The string
         """
         return HSUri.parse_value(node.value)
 
     @staticmethod
     def parse_value(value: str) -> Uri:
         """
+        Convert a haystack json string to Uri.
         Args:
-            value (str):
+            value: The string
         """
         if value.startswith("u:"):
             return haystackapi.parse_scalar(value, haystackapi.MODE_JSON, version=haystackapi.VER_3_0)
@@ -348,11 +359,6 @@ class ReadHaystack(graphene.ObjectType):
     @staticmethod
     def resolve_about(parent: 'ReadHaystack',
                       info: ResolveInfo):
-        """
-        Args:
-            parent:
-            info (ResolveInfo):
-        """
         log.debug("resolve_about(parent,info)")
         grid = get_singleton_provider().about("http://localhost")
         result = ReadHaystack._conv_entity(HSAbout, grid[0])
@@ -363,11 +369,6 @@ class ReadHaystack(graphene.ObjectType):
     @staticmethod
     def resolve_ops(parent: 'ReadHaystack',
                     info: ResolveInfo):
-        """
-        Args:
-            parent:
-            info (ResolveInfo):
-        """
         log.debug("resolve_about(parent,info)")
         grid = get_singleton_provider().ops()
         return ReadHaystack._conv_list_to_object_type(HSOps, grid)
@@ -377,24 +378,12 @@ class ReadHaystack(graphene.ObjectType):
                            info: ResolveInfo,
                            tag: str,
                            version: Optional[HSDateTime] = None):
-        """
-        Args:
-            parent:
-            info (ResolveInfo):
-            tag (str):
-            version:
-        """
         log.debug("resolve_values(parent,info,%s)", tag)
         return get_singleton_provider().values_for_tag(tag, version)
 
     @staticmethod
     def resolve_versions(parent: 'ReadHaystack',
                          info: ResolveInfo):
-        """
-        Args:
-            parent:
-            info (ResolveInfo):
-        """
         log.debug("resolve_versions(parent,info)")
         return get_singleton_provider().versions()
 
@@ -406,16 +395,6 @@ class ReadHaystack(graphene.ObjectType):
                          filter: str = '',  # pylint: disable=redefined-builtin
                          limit: int = 0,
                          version: Optional[HSDateTime] = None):
-        """
-        Args:
-            parent:
-            info (ResolveInfo):
-            ids:
-            select (str):
-            filter (str):
-            limit (int):
-            version:
-        """
         log.debug(
             "resolve_entities(parent,info,ids=%s, "
             "select=%s, filter=%s, "
@@ -431,14 +410,6 @@ class ReadHaystack(graphene.ObjectType):
                           ids: Optional[List[str]] = None,
                           dates_range: Optional[str] = None,
                           version: Union[str, datetime, date, None] = None):
-        """
-        Args:
-            parent:
-            info (ResolveInfo):
-            ids:
-            dates_range:
-            version:
-        """
         if version:
             version = HSDateTime.parse_value(version)
         log.debug("resolve_histories(parent,info,ids=%s, range=%s, version=%s)",
@@ -456,13 +427,6 @@ class ReadHaystack(graphene.ObjectType):
                             info: ResolveInfo,
                             entity_id: str,
                             version: Union[datetime, str, None] = None):
-        """
-        Args:
-            parent:
-            info (ResolveInfo):
-            entity_id (str):
-            version:
-        """
         if version:
             version = HSDateTime.parse_value(version)
         log.debug("resolve_point_write(parent,info, entity_id=%s, version=%s)",
@@ -474,11 +438,6 @@ class ReadHaystack(graphene.ObjectType):
     @staticmethod
     def _conv_value(entity: Dict[str, Any],
                     info: ResolveInfo) -> HSTS:
-        """
-        Args:
-            entity:
-            info (ResolveInfo):
-        """
         selection = info.field_asts[0].selection_set.selections
         cast_value = HSTS()
         value = entity["val"]
@@ -516,20 +475,11 @@ class ReadHaystack(graphene.ObjectType):
         return cast_value
 
     @staticmethod
-    def _conv_history(entities, info: ResolveInfo):
-        """
-        Args:
-            entities:
-            info (ResolveInfo):
-        """
+    def _conv_history(entities: Dict[str, Any], info: ResolveInfo):
         return [ReadHaystack._conv_value(entity, info) for entity in entities]
 
     @staticmethod
     def _filter_id(entity_id: str) -> str:
-        """
-        Args:
-            entity_id (str):
-        """
         if entity_id.startswith("r:"):
             return entity_id[2:]
         if entity_id.startswith('@'):
@@ -538,11 +488,6 @@ class ReadHaystack(graphene.ObjectType):
 
     @staticmethod
     def _conv_entity(target_class: Type, entity: Dict[str, Any]):
-        """
-        Args:
-            target_class (Type):
-            entity:
-        """
         entity_result = target_class()
         for key, val in entity.items():
             if key in entity:
@@ -551,11 +496,6 @@ class ReadHaystack(graphene.ObjectType):
 
     @staticmethod
     def _conv_list_to_object_type(target_class: Type, grid: Grid):
-        """
-        Args:
-            target_class (Type):
-            grid (Grid):
-        """
         result = []
         for row in grid:
             result.append(ReadHaystack._conv_entity(target_class, row))

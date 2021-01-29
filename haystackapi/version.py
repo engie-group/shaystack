@@ -31,23 +31,23 @@ import re
 import warnings
 from typing import Union
 
-VERSION_RE = re.compile(r'^(\d[\d.]*)([^\d].*)*$')
+_VERSION_RE = re.compile(r'^(\d[\d.]*)([^\d].*)*$')
 
 
 class Version:
     """A Project Haystack version number"""
 
-    def __init__(self, ver_str: str):
+    def __init__(self, ver_str: Union[str, 'Version']):
         """
         Args:
-            ver_str (str):
+            ver_str: The version str
         """
         if isinstance(ver_str, Version):
             # Clone constructor
             self.version_nums = ver_str.version_nums
             self.version_extra = ver_str.version_extra
         else:
-            match = VERSION_RE.match(ver_str)
+            match = _VERSION_RE.match(ver_str)
             if match is None:
                 raise ValueError('Not a valid version string: %r' % ver_str)
 
@@ -67,11 +67,12 @@ class Version:
         return base
 
     def _cmp(self, other: Union['Version', str]) -> int:
-        """Compare two Project Haystack version strings, then return
-            -1 if self < other, 0 if self == other or 1 if self > other.
+        """Compare two Project Haystack version strings
 
         Args:
-            other:
+            other: Other version
+        Returns
+             -1 if self < other, 0 if self == other or 1 if self > other.
         """
         if isinstance(other, str):
             other = Version(other)
@@ -133,7 +134,9 @@ class Version:
         """Retrieve the official version nearest the one given.
 
         Args:
-            ver:
+            ver: The version to analyse
+        Returns:
+            The version nearest the one given
         """
         if isinstance(ver, str):
             ver = Version(ver)

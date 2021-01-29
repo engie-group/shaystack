@@ -20,8 +20,11 @@ from .zincparser import parse_scalar as zinc_parse_scalar, ZincParseException
 
 def parse_grid(grid_str: str) -> Grid:
     """
+    Parse a CSV string to create a new Grid.
     Args:
-        grid_str (str):
+        grid_str: String to parse
+    Returns:
+        The corresponding Grid
     """
     version = VER_3_0
     # for row in csv.reader(grid_str.splitlines()): print(row)
@@ -47,9 +50,12 @@ _EMPTY = "<empty>"
 
 def parse_scalar(scalar: str, version: Version = LATEST_VER) -> Any:
     """
+    Parse a scalar CSV string
     Args:
-        scalar (str):
-        version (Version):
+        scalar: The string who represent the scalar value
+        version: The Haystack version to apply
+    Returns:
+        A value (see datatypes)
     """
     if scalar == '':
         return _EMPTY

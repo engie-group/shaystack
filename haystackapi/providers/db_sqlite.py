@@ -14,7 +14,7 @@ import logging
 import textwrap
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Any, Optional, List, Tuple, Union, Iterator
+from typing import Dict, Any, Optional, List, Tuple, Union, Iterator, Callable
 
 import pytz
 
@@ -282,7 +282,14 @@ def _exec_sql_filter(params: Dict[str, Any],
     return cursor
 
 
-def get_db_parameters(table_name: str) -> Dict[str, Any]:
+def get_db_parameters(table_name: str) -> Dict[str, Union[Callable, str]]:
+    """ Return the SQL request and some lambda to manipulate a SuperSQLite database.
+
+    Args:
+        table_name: The table name to use.
+    Returns:
+        A dictionary with SQL request or lamdas
+    """
     return {
         "sql_type_to_json": json.loads,
         "exec_sql_filter": _exec_sql_filter,

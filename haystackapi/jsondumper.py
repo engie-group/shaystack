@@ -29,92 +29,67 @@ from .zoneinfo import timezone_name
 
 def dump_grid(grid: Grid) -> str:
     """
+    Dump a grid to JSON
     Args:
-        grid (Grid):
+        grid: The grid.
+    Returns:
+        A json string
     """
     return json.dumps(_dump_grid_to_json(grid))
 
 
 def _dump_grid_to_json(grid: Grid) -> Dict[str, Union[List[str], Dict[str, str]]]:
     """
+    Convert a grid to JSON object
     Args:
-        grid (Grid):
+        grid: The grid to dump
+    Returns:
+        A json object.
     """
     return {
-        'meta': dump_meta(grid.metadata, version=grid.version, for_grid=True),
-        'cols': dump_columns(grid.column, version=grid.version),
-        'rows': dump_rows(grid),
+        'meta': _dump_meta(grid.metadata, version=grid.version, for_grid=True),
+        'cols': _dump_columns(grid.column, version=grid.version),
+        'rows': _dump_rows(grid),
     }
 
 
-def dump_meta(meta: MetadataObject,
-              version: Version = LATEST_VER,
-              for_grid: Optional[bool] = False) -> Dict[str, str]:
-    """
-    Args:
-        meta (MetadataObject):
-        version (Version):
-        for_grid:
-    """
-    _dump = functools.partial(dump_meta_item, version=version)
+def _dump_meta(meta: MetadataObject,
+               version: Version = LATEST_VER,
+               for_grid: Optional[bool] = False) -> Dict[str, str]:
+    _dump = functools.partial(_dump_meta_item, version=version)
     _meta = dict(map(_dump, list(meta.items())))
     if for_grid:
         _meta['ver'] = str(version)
     return _meta
 
 
-def dump_meta_item(item: str, version: Version = LATEST_VER) \
+def _dump_meta_item(item: str, version: Version = LATEST_VER) \
         -> Tuple[str, Union[None, bool, str, List[str], Dict[str, Any]]]:
-    """
-    Args:
-        item (str):
-        version (Version):
-    """
     (item_id, item_value) = item
-    return (dump_id(item_id),
+    return (_dump_id(item_id),
             _dump_scalar(item_value, version=version))
 
 
-def dump_columns(cols: SortableDict, version: Version = LATEST_VER) -> List[str]:
-    """
-    Args:
-        cols (SortableDict):
-        version (Version):
-    """
-    _dump = functools.partial(dump_column, version=version)
+def _dump_columns(cols: SortableDict, version: Version = LATEST_VER) -> List[str]:
+    _dump = functools.partial(_dump_column, version=version)
     _cols = list(zip(*list(cols.items())))
     return list(map(_dump, *_cols))
 
 
-def dump_column(col: str, col_meta: MetadataObject, version: Version = LATEST_VER) -> Dict[str, str]:
-    """
-    Args:
-        col (str):
-        col_meta (MetadataObject):
-        version (Version):
-    """
+def _dump_column(col: str, col_meta: MetadataObject, version: Version = LATEST_VER) -> Dict[str, str]:
     if bool(col_meta):
-        _meta = dump_meta(col_meta, version=version)
+        _meta = _dump_meta(col_meta, version=version)
     else:
         _meta = {}
     _meta['name'] = col
     return _meta
 
 
-def dump_rows(grid: Grid) -> List[str]:
-    """
-    Args:
-        grid (Grid):
-    """
-    return list(map(functools.partial(dump_row, grid), grid))
+def _dump_rows(grid: Grid) -> List[str]:
+    return list(map(functools.partial(_dump_row, grid), grid))
 
 
-def dump_row(grid: Grid, row: Dict[str, Any]) -> Dict[str, str]:
-    """
-    Args:
-        grid (Grid):
-        row:
-    """
+def _dump_row(grid: Grid, row: Dict[str, Any]) -> Dict[str, str]:
     return {
         c: _dump_scalar(row.get(c), version=grid.version)
         for c in list(grid.column.keys()) if c in row
@@ -123,11 +98,6 @@ def dump_row(grid: Grid, row: Dict[str, Any]) -> Dict[str, str]:
 
 def _dump_scalar(scalar: Any, version: Version = LATEST_VER) \
         -> Union[None, str, bool, List[str], Dict[str, Any]]:
-    """
-    Args:
-        scalar (Any):
-        version (Version):
-    """
     if scalar is None:
         return None
     if scalar is MARKER:
@@ -142,175 +112,116 @@ def _dump_scalar(scalar: Any, version: Version = LATEST_VER) \
             return REMOVE2_STR
         return REMOVE3_STR
     if isinstance(scalar, list):
-        return dump_list(scalar, version=version)
+        return _dump_list(scalar, version=version)
     if isinstance(scalar, dict):
-        return dump_dict(scalar, version=version)
+        return _dump_dict(scalar, version=version)
     if isinstance(scalar, bool):
-        return dump_bool(scalar)
+        return _dump_bool(scalar)
     if isinstance(scalar, Ref):
-        return dump_ref(scalar)
+        return _dump_ref(scalar)
     if isinstance(scalar, Bin):
-        return dump_bin(scalar)
+        return _dump_bin(scalar)
     if isinstance(scalar, XStr):
-        return dump_xstr(scalar)
+        return _dump_xstr(scalar)
     if isinstance(scalar, Uri):
-        return dump_uri(scalar)
+        return _dump_uri(scalar)
     if isinstance(scalar, str):
-        return dump_str(scalar)
+        return _dump_str(scalar)
     if isinstance(scalar, datetime.datetime):
-        return dump_date_time(scalar)
+        return _dump_date_time(scalar)
     if isinstance(scalar, datetime.time):
-        return dump_time(scalar)
+        return _dump_time(scalar)
     if isinstance(scalar, datetime.date):
-        return dump_date(scalar)
+        return _dump_date(scalar)
     if isinstance(scalar, Coordinate):
-        return dump_coord(scalar)
+        return _dump_coord(scalar)
     if isinstance(scalar, Quantity):
-        return dump_quantity(scalar)
+        return _dump_quantity(scalar)
     if isinstance(scalar, (float, int)):
-        return dump_decimal(scalar)
+        return _dump_decimal(scalar)
     if isinstance(scalar, Grid):
         return _dump_grid_to_json(scalar)
     raise NotImplementedError('Unhandled case: %r' % scalar)
 
 
-def dump_scalar(scalar: Any, version: Version = LATEST_VER) -> str:
-    """
-    Args:
-        scalar (Any):
-        version (Version):
-    """
-    return json.dumps(_dump_scalar(scalar, version))
-
-
-def dump_id(id_str: str) -> str:
-    """
-    Args:
-        id_str (str):
-    """
+def _dump_id(id_str: str) -> str:
     return id_str
 
 
-def dump_str(str_value: str) -> str:
-    """
-    Args:
-        str_value (str):
-    """
+def _dump_str(str_value: str) -> str:
     return 's:%s' % str_value
 
 
-def dump_uri(uri_value: Uri) -> str:
-    """
-    Args:
-        uri_value (Uri):
-    """
+def _dump_uri(uri_value: Uri) -> str:
     return 'u:%s' % uri_value
 
 
-def dump_bin(bin_value: Bin) -> str:
-    """
-    Args:
-        bin_value (Bin):
-    """
+def _dump_bin(bin_value: Bin) -> str:
     return 'b:%s' % bin_value
 
 
-def dump_xstr(xstr_value: XStr) -> str:
-    """
-    Args:
-        xstr_value (XStr):
-    """
+def _dump_xstr(xstr_value: XStr) -> str:
     return 'x:%s:%s' % (xstr_value.encoding, xstr_value.data_to_string())
 
 
-def dump_quantity(quantity: Quantity) -> str:
-    """
-    Args:
-        quantity (Quantity):
-    """
+def _dump_quantity(quantity: Quantity) -> str:
     if (quantity.unit is None) or (quantity.unit == ''):
-        return dump_decimal(quantity.m)
+        return _dump_decimal(quantity.m)
     return 'n:%f %s' % (quantity.m, quantity.unit)
 
 
-def dump_decimal(decimal: float) -> str:
-    """
-    Args:
-        decimal (float):
-    """
+def _dump_decimal(decimal: float) -> str:
     return 'n:%f' % decimal
 
 
-def dump_bool(bool_value: bool) -> bool:
-    """
-    Args:
-        bool_value (bool):
-    """
+def _dump_bool(bool_value: bool) -> bool:
     return bool_value
 
 
-def dump_coord(coordinate: Coordinate) -> str:
-    """
-    Args:
-        coordinate (Coordinate):
-    """
+def _dump_coord(coordinate: Coordinate) -> str:
     return 'c:%f,%f' % (coordinate.latitude, coordinate.longitude)
 
 
-def dump_ref(ref: Ref) -> str:
-    """
-    Args:
-        ref (Ref):
-    """
+def _dump_ref(ref: Ref) -> str:
     if ref.has_value:
         return 'r:%s %s' % (ref.name, ref.value)
     return 'r:%s' % ref.name
 
 
-def dump_date(date: datetime.date) -> str:
-    """
-    Args:
-        date (datetime.date):
-    """
+def _dump_date(date: datetime.date) -> str:
     return 'd:%s' % date.isoformat()
 
 
-def dump_time(time: datetime.time) -> str:
-    """
-    Args:
-        time (datetime.time):
-    """
+def _dump_time(time: datetime.time) -> str:
     return 'h:%s' % time.isoformat()
 
 
-def dump_date_time(date_time: datetime.datetime) -> str:
-    """
-    Args:
-        date_time (datetime.datetime):
-    """
+def _dump_date_time(date_time: datetime.datetime) -> str:
     tz_name = timezone_name(date_time)
     return 't:%s %s' % (date_time.isoformat(), tz_name)
 
 
-def dump_list(lst: List[Any], version: Version = LATEST_VER) -> List[str]:
-    """
-    Args:
-        lst:
-        version (Version):
-    """
+def _dump_list(lst: List[Any], version: Version = LATEST_VER) -> List[str]:
     if version < VER_3_0:
         raise ValueError('Project Haystack %s '
                          'does not support lists' % version)
     return list(map(functools.partial(_dump_scalar, version=version), lst))
 
 
-def dump_dict(dic: Dict[str, Any], version: Version = LATEST_VER) -> Dict[str, str]:
-    """
-    Args:
-        dic:
-        version (Version):
-    """
+def _dump_dict(dic: Dict[str, Any], version: Version = LATEST_VER) -> Dict[str, str]:
     if version < VER_3_0:
         raise ValueError('Project Haystack %s '
                          'does not support dict' % version)
     return {k: _dump_scalar(v, version=version) for (k, v) in dic.items()}
+
+
+def dump_scalar(scalar: Any, version: Version = LATEST_VER) -> str:
+    """
+    Dump a scalar to JSON
+    Args:
+        scalar: The scalar value
+        version: The Haystack version
+    Returns:
+        The JSON string
+    """
+    return json.dumps(_dump_scalar(scalar, version))

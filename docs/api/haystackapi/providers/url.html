@@ -394,19 +394,19 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
     def set_lru_size(self, size: int) -&gt; None:
         self._download_grid_effective_version = \
             functools.lru_cache(size,  # type: ignore
-                                Provider._download_grid_effective_version.__wrapped__)
+                                Provider._download_grid_effective_version.__wrapped__)  # type: ignore
 
     # pylint: enable=no-member
 
     def cache_clear(self) -&gt; None:
-        self._download_grid_effective_version.cache_clear()
+        self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member
 
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -&gt; Grid:
         parsed_uri = urlparse(uri, allow_fragments=False)
         self._refresh_versions(parsed_uri)
         for version, _ in self._versions[uri].items():
             if not date_version or version &lt;= date_version:
-                return self._download_grid_effective_version(uri, version)
+                return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
         raise ValueError(&#34;Empty body not supported&#34;)</code></pre>
 </details>
 </section>
@@ -710,19 +710,19 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
     def set_lru_size(self, size: int) -&gt; None:
         self._download_grid_effective_version = \
             functools.lru_cache(size,  # type: ignore
-                                Provider._download_grid_effective_version.__wrapped__)
+                                Provider._download_grid_effective_version.__wrapped__)  # type: ignore
 
     # pylint: enable=no-member
 
     def cache_clear(self) -&gt; None:
-        self._download_grid_effective_version.cache_clear()
+        self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member
 
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -&gt; Grid:
         parsed_uri = urlparse(uri, allow_fragments=False)
         self._refresh_versions(parsed_uri)
         for version, _ in self._versions[uri].items():
             if not date_version or version &lt;= date_version:
-                return self._download_grid_effective_version(uri, version)
+                return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
         raise ValueError(&#34;Empty body not supported&#34;)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -781,7 +781,7 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def cache_clear(self) -&gt; None:
-    self._download_grid_effective_version.cache_clear()</code></pre>
+    self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member</code></pre>
 </details>
 </dd>
 <dt id="haystackapi.providers.url.Provider.his_read"><code class="name flex">
@@ -899,7 +899,7 @@ def read(
 <pre><code class="python">def set_lru_size(self, size: int) -&gt; None:
     self._download_grid_effective_version = \
         functools.lru_cache(size,  # type: ignore
-                            Provider._download_grid_effective_version.__wrapped__)</code></pre>
+                            Provider._download_grid_effective_version.__wrapped__)  # type: ignore</code></pre>
 </details>
 </dd>
 </dl>

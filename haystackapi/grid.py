@@ -15,8 +15,7 @@ import copy
 import datetime
 import logging
 import numbers
-from collections import MutableSequence  # pylint: disable=no-name-in-module
-from collections.abc import Sequence
+from collections import MutableSequence, Sequence  # pylint: disable=no-name-in-module
 from typing import Union, Dict, Iterable, Any, Optional, KeysView, Tuple
 
 import pytz
@@ -33,6 +32,24 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
     """A grid is basically a series of tabular records. The grid has a header
     which describes some metadata about the grid and its columns. This is
     followed by zero or more rows.
+
+    The grid propose different standard operator.
+
+    - It's possible to access an entity with the position in the grid: `grid[1]`
+    - or if the entity has an `id`, with this `id`: `grid[Ref("abc")]`
+    - To extract a portion of grid, use a slice: `grid[10:12]`
+    - To check if a specific `id` is in the grid: `Ref("abc") in grid`
+    - To calculate the difference between grid: `grid_v2 - grid_v1`
+    - To merge two grid: `grid_a + grid_b`
+    - To compare a grid: `grid_v1 + (grid_v2 - grid_v1) == grid_v2`
+    - Size of grid: `len(grid)`
+    - Replace an entity with `id`: `grid[Ref("abc")] = new_entity`
+    - Delete an entity with `id`: `del grid[Ref("abc")]`
+
+    Args:
+        version: The haystack version (See VERSION_...)
+        metadata: A dictionary with the metadata associated with the grid.
+        columns: A list of columns, or a dictionary with columns name and corresponding metadata
     """
 
     def __init__(self,
@@ -42,13 +59,6 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                                 Dict[str, Any],
                                 Iterable[Union[Tuple[str, Any], str]],
                                 SortableDict] = None):
-        """Create a new Grid.
-
-        Args:
-            version:
-            metadata:
-            columns:
-        """
         version_given = version is not None
         if version_given:
             version = Version(version)
@@ -89,12 +99,15 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                 self.column.add_item(col_id, metadata_object)
 
     @staticmethod
-    def _approx_check(version_1: 'Grid', version_2: 'Grid'):
-        # Check types match
+    def _approx_check(version_1: Any, version_2: Any) -> bool:
         """
+        Compare two values with a tolerance
+
         Args:
-            version_1:
-            version_2:
+            version_1(Any): value one
+            version_2(Any): value two
+        Returns:
+            true if the values are approximately identical
         """
         if isinstance(version_1, numbers.Number) and isinstance(version_2, numbers.Number):
             return abs(version_1 - version_2) < 0.000001
@@ -125,6 +138,14 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         return version_1 == version_2
 
     def __eq__(self, other: 'Grid') -> bool:
+        """
+        Campare two grid with tolerance.
+        Args:
+            other(Grid): Other grid
+
+        Returns:
+
+        """
         if not isinstance(other, Grid):
             return False
         if set(self.metadata.keys()) != set(other.metadata.keys()):
@@ -189,15 +210,15 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         return grid_diff(other, self)
 
     def __add__(self, other: 'Grid') -> 'Grid':
-        """Merge two grid. The metadata can be modified with the values from
-        other. Some attributs can be removed if the other attributs is REMOVE.
+        """Merge two grids. The metadata can be modified with the values from
+        other. Some attributs can be removed if the `other` attributs is REMOVE.
         If a row have a 'remove_' tag, the corresponding row was removed.
 
         The result of __sub__() can be used to patch the current grid. At all
-        time, with gridA and gridB, gridA + (gridB - gridA) == gridB
+        time, with `gridA` and `gridB`, `gridA + (gridB - gridA) == gridB`
 
         Args:
-            other:
+            other(Grid): List of entities to updates
         """
         assert isinstance(other, Grid)
         from .grid_diff import grid_merge  # pylint: disable: import-outside-toplevel
@@ -205,25 +226,10 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             return grid_merge(other.copy(), self)
         return grid_merge(self.copy(), other)
 
-    @property
-    def version(self) -> Version:  # pragma: no cover
-        # Trivial function
-        return self._version
-
-    @property
-    def nearest_version(self) -> Version:  # pragma: no cover
-        # Trivial function
-        return Version.nearest(self._version)
-
-    @property
-    def ver_str(self) -> str:  # pragma: no cover
-        # Trivial function
-        return str(self.version)
 
     def __repr__(self) -> str:  # pragma: no cover
-        # Not critical to the operation of the library.
         """Return a representation of this grid."""
-        parts = ['\tVersion: %s' % self.ver_str]
+        parts = ['\tVersion: %s' % str(self.version)]
         if bool(self.metadata):
             parts.append('\tMetadata: %s' % self.metadata)
 
@@ -251,10 +257,9 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             ])
         else:
             parts.append('\tNo rows')
-        # Represent as pseudo-XML
         class_name = self.__class__.__name__
-        return '<%s>\n%s\n</%s>' % (
-            class_name, '\n'.join(parts), class_name
+        return '%s\n%s\n' % (
+            class_name, '\n'.join(parts)
         )
 
     def __getitem__(self, key: Union[int, Ref, slice]) -> Union[Dict[str, Any], 'Grid']:
@@ -262,7 +267,10 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         slide :return: a new grid with a selection of entities
 
         Args:
-            key:
+            key: the position, the Reference or a slice
+
+        Returns:
+            The entity of an new grid with a portion of entities, with the same metadata and columns
         """
         if isinstance(key, int):
             return self._row[key]
@@ -280,44 +288,16 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """Return an entity with the corresponding id.
 
         Args:
-            key:
+            key: The position of id of entity
 
         Returns:
-            Dict[str, Any]: The entity with the id == index
+            `True` if the referenced entity is present
         """
         if isinstance(key, int):
             return 0 <= key < len(self._row)
         if not self._index:
             self.reindex()
         return key in self._index
-
-    def get(self, index: Ref, default: Dict[str, Any] = None) -> Dict[str, Any]:
-        """Return an entity with the corresponding id.
-
-        Args:
-            index (Ref): The id of entity
-            default (Dict[str, Any]): The default value if the entity is not
-                found
-
-        Returns:
-            Dict[str, Any]: The entity with the id == index
-        """
-        # '''
-        # Return an entity with the corresponding id.
-        #
-        # Attributes:
-        #     :param index: A haystack reference
-        #
-        #     :param default: Value if the reference was not founded
-        # '''
-        if not self._index:
-            self.reindex()
-        return self._index.get(index, default)
-
-    def keys(self) -> KeysView[Ref]:
-        if not self._index:
-            self.reindex()
-        return self._index.keys()
 
     def __len__(self) -> int:
         """Return the number of rows in the grid."""
@@ -327,8 +307,10 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """Replace the row at index.
 
         Args:
-            index:
-            value:
+            index: position of reference
+            value: the new entity
+        Returns:
+            `self`
         """
         if not isinstance(value, dict):
             raise TypeError('value must be a dict')
@@ -351,21 +333,53 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                 self._index[value["id"]] = value
         return self
 
-    def __delitem__(self, key: Union[int, Ref]) -> Optional[Dict]:
+    def __delitem__(self, key: Union[int, Ref]) -> Optional[Dict[str, Any]]:
         """Delete the row at index.
 
         Args:
-            key:
+            key: The key to find the corresponding entity
+        Returns:
+            The entity or `None`
         """
-        return self.pop(key)
+        self.pop(key)
 
-    def pop(self, *index) -> Optional[Dict[str, Any]]:  # pylint: disable=W0222
+    @property
+    def version(self) -> Version:  # pragma: no cover
+        """ The haystack version of grid """
+        return self._version
+
+    @property
+    def nearest_version(self) -> Version:  # pragma: no cover
+        """ The nearest haystack version of grid """
+        return Version.nearest(self._version)
+
+    def get(self, index: Ref, default: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Return an entity with the corresponding id.
+
+        Args:
+            index: The id of entity
+            default: The default value if the entity is not found
+
+        Returns:
+            Dict[str, Any]: The entity with the id == index or the default value
+        """
+        if not self._index:
+            self.reindex()
+        return self._index.get(index, default)
+
+    def keys(self) -> KeysView[Ref]:
+        """ The list of ids of entities with `id` """
+        if not self._index:
+            self.reindex()
+        return self._index.keys()
+
+    def pop(self, *index: Union[int, Ref]) -> Optional[Dict[str, Any]]:
         """Delete the row at index or with specified Ref id. If multiple
         index/key was specified, all row was removed. Return the old value of
         the first deleted item.
 
         Args:
-            *index:
+            *index: A list of index (position or reference)
         """
         ret_value = None
         for key in sorted(index, reverse=True):  # Remove index at the end
@@ -388,11 +402,11 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         return ret_value
 
     def insert(self, index: int, value: Dict[str, Any]):
-        """Insert a new row before index.
+        """Insert a new entity before the index position.
 
         Args:
-            index (int):
-            value:
+            index: The position where to insert
+            value: The new entity to add
         """
         if not isinstance(value, dict):
             raise TypeError('value must be a dict')
@@ -406,7 +420,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         return self
 
     def reindex(self) -> 'Grid':
-        """Reindex the grid if a user, update directly an id of a row"""
+        """Reindex the grid if the user, update directly an id of a row"""
         self._index = {}
         for item in self._row:
             if "id" in item:
@@ -415,6 +429,11 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         return self
 
     def pack_columns(self) -> 'Grid':
+        """
+        Remove unused columns.
+        Returns:
+            `self`
+        """
         using_columns = set()
         columns_keys = self.column.keys()
         for row in self._row:
@@ -427,6 +446,12 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         return self
 
     def extends_columns(self) -> 'Grid':
+        """
+        Add missing columns
+
+        Returns:
+            `self`
+        """
         new_cols = self.column.copy()
         for row in self._row:
             for k in row.keys():
@@ -437,8 +462,12 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
 
     def extend(self, values: Iterable[Dict[str, Any]]) -> 'Grid':
         """
+        Add a list of entities inside the grid
+
         Args:
-            values:
+            values: The list of entities to insert.
+        Returns:
+            `self`
         """
         super().extend(values)
         for item in self._row:
@@ -448,27 +477,41 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
 
     def sort(self, tag: str) -> 'Grid':
         """
+        Sort the entity by a specific tag
         Args:
-            tag (str):
+            tag: The tag to use to sort the entity
+        Returns:
+            `self`
         """
         self._row = sorted(self._row, key=lambda row: row[tag])
         return self
 
     def copy(self) -> 'Grid':
+        """ Create a copy of current grid.
+
+        The corresponding entities were duplicate
+
+        Returns:
+            A copy of the current grid.
+        """
         a_copy = copy.deepcopy(self)
         a_copy._index = None  # Remove index pylint: disable=protected-access
         return a_copy
 
     def filter(self, grid_filter: str, limit: int = 0) -> 'Grid':
-        """Return a filter version of this grid. Warning, use a
-        grid.filter(...).deepcopy() if you not want to share metadata, columns
-        and rows)
+        """Return a filter version of this grid.
+
+        The entities were share between original grid and the result.
+
+        Use a `grid.filter(...).deepcopy()` if you not want to share metadata, columns
+        and rows
 
         Args:
-            grid_filter (str):
-            limit (int):
+            grid_filter: The filter expression (see specification)
+            limit: The maximum number of result
+        Returns:
+            A new grid with only the selected entities.
         """
-        assert isinstance(limit, int)
         assert limit >= 0
         from .grid_filter import filter_function  # pylint: disable: import-outside-toplevel
         if grid_filter is None or grid_filter.strip() == '':
@@ -490,9 +533,6 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
     def _detect_or_validate(self, val: Any) -> None:
         """Detect the version used from the row content, or validate against the
         version if given.
-
-        Args:
-            val (Any):
         """
         if (val is NA) \
                 or isinstance(val, (list, dict, SortableDict, Grid)):

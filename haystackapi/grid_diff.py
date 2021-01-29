@@ -20,9 +20,19 @@ from .sortabledict import SortableDict
 
 def grid_diff(left: Grid, right: Grid) -> Grid:  # pylint: disable=too-many-nested-blocks,too-many-locals
     """
+    Calculate the difference between grids.
+
     Args:
-        left (Grid):
-        right (Grid):
+        left: Left version
+        right: Right version
+    Returns:
+        A grid with only the differences.
+        For a specific entity, with same `id` or without `id`,
+        - if a tag is missing in right, set the tag value to `REMOVE`
+        - if a tag has a new value or is new in right, set the tag and value
+        - if a tag is present in left and right with the same value, add nothing
+        - if a specific entity is removed in right, add the tag `removed_` with `REMOVE`
+        - Do the same with metadata and columns
     """
     diff = Grid(version=right.version, metadata={})
     metadata = diff.metadata
@@ -161,16 +171,29 @@ def grid_diff(left: Grid, right: Grid) -> Grid:  # pylint: disable=too-many-nest
 
 def grid_merge(orig_grid: Grid, diff: Grid) -> Grid:  # pylint: disable=too-many-nested-blocks
     """
+    Merge two grid.
+
+    Apply the difference describe in `diff` to the `original_grid` and produce a new grid.
+
     Args:
-        orig_grid (Grid):
-        diff (Grid):
+        orig_grid: The original grid
+        diff: The description of the patch.
+        If an entity with `id` in `diff`:
+        - has a tag with value, add or update the corresponding entity in `original_grid`
+        - has a tag with `REMOVE`, remove the tag in the corresponding entity in `original_grid`
+        - has the tag `removed_`, remove the entity in `original_grid`
+        If an entity without `id` in `diff`:
+        - has the tag `removed_`, search an entity with all the same tags and values in `original_grid`
+        and remove it
+    Returns:
+        A new grid
     """
     orig_grid._version = diff.version  # pylint: disable=protected-access
 
     # Apply diff of metadata
     left_metadata = orig_grid.metadata
-    merge_metadata(diff.metadata, left_metadata)
-    orig_grid.column = merge_cols(diff.column, orig_grid.column)
+    _merge_metadata(diff.metadata, left_metadata)
+    orig_grid.column = _merge_cols(diff.column, orig_grid.column)
 
     # Apply diff of rows
     for diff_row in diff:
@@ -208,12 +231,12 @@ def grid_merge(orig_grid: Grid, diff: Grid) -> Grid:  # pylint: disable=too-many
     return orig_grid
 
 
-def merge_cols(column: SortableDict, orig_column: SortableDict) -> SortableDict:
-    # Apply diff of columns
+def _merge_cols(column: SortableDict, orig_column: SortableDict) -> SortableDict:
     """
+    Apply diff of columns.
     Args:
-        column (SortableDict):
-        orig_column (SortableDict):
+        column: New version of columns
+        orig_column: Original columns
     """
     new_cols = column.copy()  # Order describe by diff
     for col, v_col in column.items():
@@ -236,16 +259,17 @@ def merge_cols(column: SortableDict, orig_column: SortableDict) -> SortableDict:
     return new_cols
 
 
-def merge_metadata(metadata: MetadataObject, left_metadata: MetadataObject) -> None:
+def _merge_metadata(metadata: MetadataObject, original_metadata: MetadataObject) -> None:
     """
+    Merge metatdatas
     Args:
-        metadata (MetadataObject):
-        left_metadata (MetadataObject):
+        metadata: New metadata
+        original_metadata: Original metadata
     """
     for k_metadata, v_metadata in metadata.items():
         if k_metadata == 'diff_' and v_metadata == MARKER:
             pass
         elif REMOVE == v_metadata:
-            del left_metadata[k_metadata]
+            del original_metadata[k_metadata]
         else:
-            left_metadata[k_metadata] = v_metadata
+            original_metadata[k_metadata] = v_metadata

@@ -16,17 +16,18 @@ from .sortabledict import SortableDict
 
 
 class MetadataObject(SortableDict):  # pylint: disable=too-many-ancestors
-    """An object that contains some metadata fields. Used as a convenience
-    base-class for grids and columns, both of which have metadata.
+    """An object that contains some metadata fields.
+
+    Used as a convenience base-class for grids and columns, both of which have metadata.
     """
 
     def append(self, key: str, value: Any = MARKER, replace: bool = True) -> 'MetadataObject':
         """Append the item to the metadata.
 
         Args:
-            key (str):
-            value (Any):
-            replace (bool):
+            key: The tag name
+            value: The value
+            replace: Flag to replace or not the value
         """
         self.add_item(key, value, replace=replace)
         return self
@@ -35,8 +36,8 @@ class MetadataObject(SortableDict):  # pylint: disable=too-many-ancestors
         """Append the items to the metadata.
 
         Args:
-            items:
-            replace (bool):
+            items: A list of items
+            replace: Flag to replace or not the value
         """
         if isinstance(items, (dict, SortableDict)):
             items = list(items.items())
@@ -45,4 +46,9 @@ class MetadataObject(SortableDict):  # pylint: disable=too-many-ancestors
             self.append(key, value, replace=replace)
 
     def copy(self) -> 'MetadataObject':
+        """
+        Deep copy of metadata
+        Returns:
+            A new metadata object
+        """
         return copy.deepcopy(self)

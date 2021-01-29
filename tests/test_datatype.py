@@ -303,7 +303,7 @@ def test_qty_cmp():
 
 def test_qty_std_method():
     quantity_repr = repr(haystackapi.Quantity(4, unit='A'))
-    assert quantity_repr in ("BasicQuantity(4, \'A\')", "PintQuantity(4, \'A\')")
+    assert quantity_repr in ("_BasicQuantity(4, \'A\')", "_PintQuantity(4, \'A\')")
     assert str(haystackapi.Quantity(4, unit='A')) == '4 A'
 
 

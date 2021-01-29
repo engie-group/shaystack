@@ -16,7 +16,7 @@ import re
 from typing import AnyStr, List, Dict, Any, Match
 
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
-    MARKER, NA, REMOVE, STR_SUB, XStr
+    MARKER, NA, REMOVE, _STR_SUB, XStr
 from .grid import Grid
 from .sortabledict import SortableDict
 from .version import LATEST_VER, VER_3_0, Version
@@ -33,11 +33,7 @@ CSV_SUB = [
 ]
 
 
-def str_sub(match: Match) -> AnyStr:
-    """
-    Args:
-        match (Match):
-    """
+def _str_sub(match: Match) -> AnyStr:
     char = match.group(0)
     order = ord(char)
     if order >= 0x0080:
@@ -48,22 +44,14 @@ def str_sub(match: Match) -> AnyStr:
     return char
 
 
-def str_csv_escape(str_value: str) -> AnyStr:
-    """
-    Args:
-        str_value (str):
-    """
-    str_value = STR_META.sub(str_sub, str_value)
+def _str_csv_escape(str_value: str) -> AnyStr:
+    str_value = STR_META.sub(_str_sub, str_value)
     for orig, esc in CSV_SUB:
         str_value = str_value.replace(orig, esc)
     return str_value
 
 
-def uri_sub(match: Match) -> AnyStr:
-    """
-    Args:
-        match (Match):
-    """
+def _uri_sub(match: Match) -> AnyStr:
     char = match.group(0)
     order = ord(char)
     if order >= 0x80:
@@ -78,23 +66,20 @@ def dump_grid(grid: Grid) -> AnyStr:
     """Dump a single grid to its CSV representation.
 
     Args:
-        grid (Grid):
+        grid (Grid): The grid to dump
+    Returns:
+        a string with a CSV representation
     """
 
     # Use list and join
     csv_result = []
-    dump_columns(csv_result, grid.column)
-    dump_rows(csv_result, grid)
+    _dump_columns(csv_result, grid.column)
+    _dump_rows(csv_result, grid)
     return ''.join(csv_result)
 
 
-def dump_columns(csv_result: List[str], cols: SortableDict) -> None:
-    """
-    Args:
-        csv_result:
-        cols (SortableDict):
-    """
-    _dump = functools.partial(dump_column)
+def _dump_columns(csv_result: List[str], cols: SortableDict) -> None:
+    _dump = functools.partial(_dump_column)
     csv_result.extend(map(_dump, cols.keys()))
     # Remove last comma
     if csv_result:
@@ -102,30 +87,19 @@ def dump_columns(csv_result: List[str], cols: SortableDict) -> None:
     csv_result.append('\n')
 
 
-def dump_column(col: str) -> str:
+def _dump_column(col: str) -> str:
     """
     Args:
         col (str):
     """
-    return dump_id(col) + ","
+    return _dump_id(col) + ","
 
 
-def dump_rows(csv_result: List[str], grid: Grid) -> None:
-    """
-    Args:
-        csv_result:
-        grid (Grid):
-    """
-    list(map(functools.partial(dump_row, csv_result, grid), grid))
+def _dump_rows(csv_result: List[str], grid: Grid) -> None:
+    list(map(functools.partial(_dump_row, csv_result, grid), grid))
 
 
-def dump_row(csv_result: List[str], grid: Grid, row: Dict[str, Any]) -> None:
-    """
-    Args:
-        csv_result:
-        grid (Grid):
-        row:
-    """
+def _dump_row(csv_result: List[str], grid: Grid, row: Dict[str, Any]) -> None:
     row_in_csv = [dump_scalar(row.get(c), version=grid.version) + "," for c in grid.column.keys()]
     row_in_csv[-1] = row_in_csv[-1][:-1] + '\n'
     if len(row_in_csv) == 1 and row_in_csv[0] == '\n':
@@ -133,91 +107,51 @@ def dump_row(csv_result: List[str], grid: Grid, row: Dict[str, Any]) -> None:
     csv_result.extend(row_in_csv)
 
 
-def dump_id(id_str: str) -> str:
-    """
-    Args:
-        id_str (str):
-    """
+def _dump_id(id_str: str) -> str:
     return id_str
 
 
-def dump_str(str_value: str) -> str:
-    """
-    Args:
-        str_value (str):
-    """
-    return '"' + str_csv_escape(str_value) + '"'
+def _dump_str(str_value: str) -> str:
+    return '"' + _str_csv_escape(str_value) + '"'
 
 
-def dump_uri(uri_value: Uri) -> str:
+def _dump_uri(uri_value: Uri) -> str:
     # Replace special characters.
-    """
-    Args:
-        uri_value (Uri):
-    """
-    uri_value = URI_META.sub(uri_sub, str(uri_value))
+    uri_value = URI_META.sub(_uri_sub, str(uri_value))
     # Replace other escapes.
-    for orig, esc in STR_SUB:
+    for orig, esc in _STR_SUB:
         uri_value = uri_value.replace(orig, esc)
     return '`%s`' % uri_value
 
 
-def dump_bin(bin_value: Bin) -> str:
-    """
-    Args:
-        bin_value (Bin):
-    """
+def _dump_bin(bin_value: Bin) -> str:
     return 'Bin(%s)' % bin_value
 
 
-def dump_xstr(xstr_value: XStr) -> str:
-    """
-    Args:
-        xstr_value (XStr):
-    """
-    return '"' + str_csv_escape(str(xstr_value)) + '"'
+def _dump_xstr(xstr_value: XStr) -> str:
+    return '"' + _str_csv_escape(str(xstr_value)) + '"'
 
 
-def dump_quantity(quantity: Quantity) -> str:
-    """
-    Args:
-        quantity (Quantity):
-    """
+def _dump_quantity(quantity: Quantity) -> str:
     if (quantity.unit is None) or (quantity.unit == ''):
-        return dump_decimal(quantity.m)
-    return '%s%s' % (dump_decimal(quantity.m),
+        return _dump_decimal(quantity.m)
+    return '%s%s' % (_dump_decimal(quantity.m),
                      quantity.unit)
 
 
-def dump_decimal(decimal: float) -> str:
-    """
-    Args:
-        decimal (float):
-    """
+def _dump_decimal(decimal: float) -> str:
     return str(decimal)
 
 
-def dump_bool(bool_value: bool) -> str:
-    """
-    Args:
-        bool_value (bool):
-    """
+def _dump_bool(bool_value: bool) -> str:
     return 'true' if bool(bool_value) else 'false'
 
 
-def dump_coord(coordinate: Coordinate) -> str:
-    """
-    Args:
-        coordinate (Coordinate):
-    """
+def _dump_coord(coordinate: Coordinate) -> str:
     return '"' + zinc_dump_scalar(coordinate) + '"'
 
 
-def dump_ref(ref: Ref) -> str:
-    """
-    Args:
-        ref (Ref):
-    """
+def _dump_ref(ref: Ref) -> str:
     if ref.has_value:
         str_ref = '@%s %s' % (ref.name, ref.value)
         if '"' in str_ref or ',' in str_ref:
@@ -226,37 +160,26 @@ def dump_ref(ref: Ref) -> str:
     return '@%s' % ref.name
 
 
-def dump_date(a_date: datetime.date) -> str:
-    """
-    Args:
-        a_date (datetime.date):
-    """
+def _dump_date(a_date: datetime.date) -> str:
     return a_date.isoformat()
 
 
-def dump_time(time: datetime.time) -> str:
-    """
-    Args:
-        time (datetime.time):
-    """
+def _dump_time(time: datetime.time) -> str:
     return time.isoformat()
 
 
-def dump_date_time(date_time: datetime.datetime) -> str:
+def _dump_date_time(date_time: datetime.datetime) -> str:
     # tz_name = timezone_name(date_time)
     # return '%s %s' % (date_time.isoformat(), tz_name)
-    """
-    Args:
-        date_time (datetime.datetime):
-    """
     return '%s' % (date_time.isoformat())  # Note: Excel can not parse the date time with tz_name
 
 
 def dump_scalar(scalar: Any, version: Version = LATEST_VER) -> str:
     """
+    Dump scala to CSV.
     Args:
-        scalar (Any):
-        version (Version):
+        scalar: The scalar value
+        version: The haystack version
     """
     if scalar is None:
         return ''
@@ -271,33 +194,33 @@ def dump_scalar(scalar: Any, version: Version = LATEST_VER) -> str:
     if scalar is REMOVE:
         return 'R'
     if isinstance(scalar, bool):
-        return dump_bool(scalar)
+        return _dump_bool(scalar)
     if isinstance(scalar, Ref):
-        return dump_ref(scalar)
+        return _dump_ref(scalar)
     if isinstance(scalar, Bin):
-        return dump_bin(scalar)
+        return _dump_bin(scalar)
     if isinstance(scalar, XStr):
-        return dump_xstr(scalar)
+        return _dump_xstr(scalar)
     if isinstance(scalar, Uri):
-        return dump_uri(scalar)
+        return _dump_uri(scalar)
     if isinstance(scalar, str):
-        return dump_str(scalar)
+        return _dump_str(scalar)
     if isinstance(scalar, datetime.datetime):
-        return dump_date_time(scalar)
+        return _dump_date_time(scalar)
     if isinstance(scalar, datetime.time):
-        return dump_time(scalar)
+        return _dump_time(scalar)
     if isinstance(scalar, datetime.date):
-        return dump_date(scalar)
+        return _dump_date(scalar)
     if isinstance(scalar, Coordinate):
-        return dump_coord(scalar)
+        return _dump_coord(scalar)
     if isinstance(scalar, Quantity):
-        return dump_quantity(scalar)
+        return _dump_quantity(scalar)
     if isinstance(scalar, (float, int)):
-        return dump_decimal(scalar)
+        return _dump_decimal(scalar)
     if isinstance(scalar, list):
-        return '"' + str_csv_escape(zinc_dump_scalar(scalar, version=version)) + '"'
+        return '"' + _str_csv_escape(zinc_dump_scalar(scalar, version=version)) + '"'
     if isinstance(scalar, dict):
-        return '"' + str_csv_escape(zinc_dump_scalar(scalar, version=version)) + '"'
+        return '"' + _str_csv_escape(zinc_dump_scalar(scalar, version=version)) + '"'
     if isinstance(scalar, Grid):
-        return '"' + str_csv_escape("<<" + zinc_dump_grid(scalar) + ">>") + '"'
-    return '"' + str_csv_escape(zinc_dump_scalar(scalar)) + '"'
+        return '"' + _str_csv_escape("<<" + zinc_dump_grid(scalar) + ">>") + '"'
+    return '"' + _str_csv_escape(zinc_dump_scalar(scalar)) + '"'

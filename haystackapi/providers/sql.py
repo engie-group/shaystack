@@ -13,6 +13,8 @@ May be:
 - postgresql://scott:tiger@localhost/mydatabase#mytable
 - postgresql+psycopg2://scott:tiger@localhost/mydatabase
 - sqlite3://test.db#haystack
+
+Each entity was save in one SQL row. A column save the JSON version of entity.
 """
 import base64
 import importlib
@@ -34,8 +36,8 @@ from .haystack_interface import HaystackInterface
 from .sqldb_protocol import DBConnection
 from ..datatypes import Ref
 from ..grid import Grid
-from ..jsondumper import dump_scalar, dump_meta, dump_columns, dump_row
-from ..jsonparser import parse_scalar, parse_row, parse_metadata, parse_cols
+from ..jsondumper import dump_scalar, _dump_meta, _dump_columns, _dump_row
+from ..jsonparser import parse_scalar, _parse_row, _parse_metadata, _parse_cols
 from ..version import VER_3_0
 
 try:
@@ -47,11 +49,11 @@ except ImportError:
 
 log = logging.getLogger("sql.Provider")
 
-BOTO3_AVAILABLE = False
+_BOTO3_AVAILABLE = False
 try:
     import boto3
 
-    BOTO3_AVAILABLE = True
+    _BOTO3_AVAILABLE = True
 except ImportError:
     pass
 
@@ -109,7 +111,7 @@ def _fix_dialect_alias(dialect: str) -> str:
 
 class Provider(HaystackInterface):
     """
-    Expose an Haystack data via the Haystactk Rest API and SQL databases
+    Expose an Haystack data via the Haystack Rest API and SQL databases
     """
 
     @property
@@ -134,6 +136,9 @@ class Provider(HaystackInterface):
         return os.environ["HAYSTACK_DB"]
 
     def create_db(self) -> None:
+        """
+        Create the database and schema.
+        """
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -153,6 +158,7 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
+    @overrides
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -> List[Any]:
         customer_id = self.get_customer_id()
@@ -170,6 +176,7 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
+    @overrides
     def versions(self) -> List[datetime]:
         """
         Return datetime for each versions or empty array if is unknown
@@ -239,7 +246,7 @@ class Provider(HaystackInterface):
                                          )
                 grid = self._init_grid_from_db(date_version)
                 for row in cursor:
-                    grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
+                    grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
                 conn.commit()
                 return select_grid(grid, select)
             customer_id = self.get_customer_id()
@@ -250,7 +257,7 @@ class Provider(HaystackInterface):
 
             grid = self._init_grid_from_db(date_version)
             for row in cursor:
-                grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
+                grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
             conn.commit()
             return select_grid(grid, select)
         finally:
@@ -314,6 +321,7 @@ class Provider(HaystackInterface):
         self._connect = False
 
     def get_connect(self) -> DBConnection:  # PPR: monothread ? No with Zappa
+        """ Return current connection to database. """
         if not self._connect and self._dialect:  # Lazy connection
             if self._dialect not in self._default_driver:
                 raise ValueError(f"Dialect '{self._dialect}' not supported")
@@ -344,7 +352,7 @@ class Provider(HaystackInterface):
         return self._connect
 
     def _get_secret_manager_secret(self) -> str:  # pylint: disable=no-self-use
-        if not BOTO3_AVAILABLE:
+        if not _BOTO3_AVAILABLE:
             return "secretManager"
 
         secret_name = os.environ['HAYSTACK_DB_SECRET']
@@ -404,12 +412,27 @@ class Provider(HaystackInterface):
             row = cursor.fetchone()
             if row:
                 meta, cols = row
-                grid.metadata = parse_metadata(sql_type_to_json(meta), VER_3_0)
-                parse_cols(grid, sql_type_to_json(cols), VER_3_0)
+                grid.metadata = _parse_metadata(sql_type_to_json(meta), VER_3_0)
+                _parse_cols(grid, sql_type_to_json(cols), VER_3_0)
             conn.commit()
             return grid
         finally:
             cursor.close()
+
+    def _dialect_request(self, dialect: str) -> Dict[str, Any]:
+        table_name = self._parsed_db.fragment
+        if dialect == "sqlite3":
+            # Lazy import
+            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
+            return get_sqlite_parameters(table_name)
+        if dialect == "supersqlite":
+            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
+            return get_sqlite_parameters(table_name)
+        if dialect == "postgresql":
+            from .db_postgres import \
+                get_db_parameters as get_postgres_parameters  # pylint: disable=import-outside-toplevel
+            return get_postgres_parameters(table_name)
+        raise ValueError("Dialog not implemented")
 
     def read_grid_from_db(self,
                           customer: Optional[str],
@@ -429,14 +452,14 @@ class Provider(HaystackInterface):
             row = cursor.fetchone()
             if row:
                 meta, cols = row
-                grid.metadata = parse_metadata(sql_type_to_json(meta), VER_3_0)
-                parse_cols(grid, sql_type_to_json(cols), VER_3_0)
+                grid.metadata = _parse_metadata(sql_type_to_json(meta), VER_3_0)
+                _parse_cols(grid, sql_type_to_json(cols), VER_3_0)
 
             cursor.execute(self._sql["SELECT_ENTITY"],
                            (version, customer))
 
             for row in cursor:
-                grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
+                grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
             conn.commit()
             assert _validate_grid(grid), "Error in grid"
             return grid
@@ -444,6 +467,7 @@ class Provider(HaystackInterface):
             cursor.close()
 
     def purge_db(self) -> None:
+        """ Purge the current database. """
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -460,6 +484,13 @@ class Provider(HaystackInterface):
                           version: Optional[datetime],
                           customer_id: Optional[str],
                           now: Optional[datetime] = None) -> None:
+        """Import the diff_grid inside the database.
+        Args:
+            diff_grid: The difference to apply in database.
+            version: The version to save.
+            customer_id: The customer id to insert in each row.
+            now: The pseudo 'now' datetime.
+        """
 
         init_grid = self._init_grid_from_db(version)
         new_grid = init_grid + diff_grid
@@ -491,8 +522,8 @@ class Provider(HaystackInterface):
                                (
                                    customer_id,
                                    now,
-                                   json.dumps(dump_meta(new_grid.metadata)),
-                                   json.dumps(dump_columns(new_grid.column))
+                                   json.dumps(_dump_meta(new_grid.metadata)),
+                                   json.dumps(_dump_columns(new_grid.column))
                                )
                                )
                 log.debug("Update metadatas")
@@ -514,7 +545,7 @@ class Provider(HaystackInterface):
                                        sql_id,
                                        customer_id,
                                        now,
-                                       json.dumps(dump_row(new_grid, new_grid[row["id"]]))
+                                       json.dumps(_dump_row(new_grid, new_grid[row["id"]]))
                                    )
                                    )
                     log.debug("Update record %s in DB", row['id'].name)
@@ -531,6 +562,15 @@ class Provider(HaystackInterface):
                         customer_id: Optional[str],
                         now: Optional[datetime] = None
                         ) -> None:
+        """
+        Import the Time series inside the database.
+
+        Args:
+            time_series: The time-serie grid.
+            entity_id: The corresponding entity.
+            customer_id: The current customer id.
+            now: The pseudo 'now' datetime.
+        """
         assert 'ts' in time_series.column, "TS must have a column 'ts'"
         if not customer_id:
             customer_id = ""
@@ -570,18 +610,3 @@ class Provider(HaystackInterface):
             conn.commit()
         finally:
             pass
-
-    def _dialect_request(self, dialect: str) -> Dict[str, Any]:
-        table_name = self._parsed_db.fragment
-        if dialect == "sqlite3":
-            # Lazy import
-            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
-            return get_sqlite_parameters(table_name)
-        if dialect == "supersqlite":
-            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
-            return get_sqlite_parameters(table_name)
-        if dialect == "postgresql":
-            from .db_postgres import \
-                get_db_parameters as get_postgres_parameters  # pylint: disable=import-outside-toplevel
-            return get_postgres_parameters(table_name)
-        raise ValueError("Dialog not implemented")

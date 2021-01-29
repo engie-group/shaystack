@@ -1,4 +1,5 @@
 name: Haystack API
+title: Haystack API
 description: The implementation of Haystack specification
 theme: jekyll-theme-slate
 markdown: GFM

@@ -14,7 +14,7 @@ def test_watch_unsub_with_zinc(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     grid = haystackapi.Grid(metadata={"close": True,
@@ -44,7 +44,7 @@ def test_watch_unsub_with_args(mock) -> None:
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     request.headers["Accept"] = mime_type

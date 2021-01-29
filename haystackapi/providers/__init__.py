@@ -24,9 +24,12 @@ __pdoc__ = \
 
 def select_grid(grid: Grid, select: str) -> Grid:
     """
+    Select only some tags in the grid.
     Args:
-        grid (Grid):
-        select (str):
+        grid: The original grid
+        select: A list a tags
+    Returns:
+         A grid with entities with only the selected tags
     """
     if select:
         select = select.strip()

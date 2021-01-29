@@ -14,7 +14,7 @@ def test_nav_with_zinc(mock):
     Args:
         mock:
     """
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     grid: Grid = haystackapi.Grid(columns=['navId'])

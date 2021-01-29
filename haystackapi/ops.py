@@ -6,13 +6,10 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 """ Wrapper between HTTP request and Haystack provider
 
-    Instancier `HaystackHttpRequest` and `HaystackHttpResponse`
+    Create an `HaystackHttpRequest` and `HaystackHttpResponse`
     to create a link between HTTP technology and HaystackAPI,
     and invoke the corresponding function.
 """
-import base64
-import codecs
-import gzip
 import logging
 import os
 import re
@@ -47,6 +44,8 @@ log = logging.getLogger("haystackapi")
 class HaystackHttpRequest:
     """
     A wrapper between http request and Haystack API provider.
+
+    Convert the custom technology HTTP request to this format
     """
 
     body: str = ""
@@ -63,6 +62,8 @@ class HaystackHttpRequest:
 class HaystackHttpResponse:
     """
     A wrapper between http response and Haystack API provider.
+
+    Convert the custom technology HTTP request to this format
     """
 
     status_code: int = 200
@@ -128,7 +129,7 @@ class _AcceptableEncoding:
         return self.weight < other.weight
 
 
-def get_best_encoding_match(
+def _get_best_encoding_match(
         header: str,
         available_encoding: List[str]
 ) -> Optional[str]:
@@ -178,14 +179,25 @@ def _get_weight(tail: str) -> Number:
 
 
 def _parse_body(request: HaystackHttpRequest) -> Grid:
-    if "Content-Encoding" in request.headers and request.is_base64:
-        content_encoding = request.headers["Content-Encoding"]
-        if content_encoding != "gzip":
-            raise ValueError(f"Content-Encoding '{content_encoding}' not supported")
-        body = codecs.decode(str.encode(request.body), "unicode-escape")
-        log.debug("decode body=%s", body)
-        request.body = gzip.decompress(base64.b64decode(body)).decode("utf-8")
-        request.isBase64Encoded = False
+    """
+    Convert the HTTP request to grid.
+
+    Use the `Content-Type` in header.
+    If the `Content-Type` is not found, use the DEFAULT_MIME_TYPE
+    Args:
+        request: The HTTP request
+
+    Returns:
+        The grid
+    """
+    # if "Content-Encoding" in request.headers and request.is_base64:
+    #     content_encoding = request.headers["Content-Encoding"]
+    #     if content_encoding != "gzip":
+    #         raise ValueError(f"Content-Encoding '{content_encoding}' not supported")
+    #     body = codecs.decode(str.encode(request.body), "unicode-escape")
+    #     log.debug("decode body=%s", body)
+    #     request.body = gzip.decompress(base64.b64decode(body)).decode("utf-8")
+    #     request.isBase64Encoded = False
     if "Content-Type" not in request.headers:
         grid = parse(request.body, mode=DEFAULT_MIME_TYPE)
     else:
@@ -208,6 +220,19 @@ def _format_response(
         status_msg: str,
         default=None,
 ) -> HaystackHttpResponse:
+    """
+    Convert the grid and HTTP status to HTTP response.
+
+    Args:
+        headers: A list of headers
+        grid_response: The grid to return
+        status_code: The status code
+        status_msg: and corresponding message
+        default: Use the default MIME_TYPE
+
+    Returns:
+
+    """
     hs_response = _dump_response(
         headers.get("Accept", DEFAULT_MIME_TYPE), grid_response, default=default
     )
@@ -222,6 +247,16 @@ def _format_response(
 def _dump_response(
         accept: str, grid: Grid, default: Optional[str] = None
 ) -> Tuple[str, str]:
+    """
+    Dump the response and return the mime type and body
+    Args:
+        accept: the `Accept` header
+        grid: The grid to dump
+        default: The default `Accept` value
+
+    Returns:
+        A tuple with the mime type and the body
+    """
     accept_type = get_best_match(
         accept, ["*/*", MODE_CSV, MODE_ZINC, MODE_JSON]
     )
@@ -258,6 +293,16 @@ def _dump_response(
 def _manage_exception(
         headers: Dict[str, str], ex: Exception, stage: str
 ) -> HaystackHttpResponse:
+    """
+    Manage an exception to generate an HTTP response.
+    Args:
+        headers: The headers
+        ex: The exception
+        stage: The current stage
+
+    Returns:
+        An HTTP response.
+    """
     log.error(traceback.format_exc())
     error_grid = Grid(
         version=_DEFAULT_VERSION,
@@ -284,7 +329,15 @@ def _manage_exception(
 
 
 def about(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
-    """ Implement Haystack 'about' with AWS Lambda """
+    """
+    Implement Haystack 'about'.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (`prod`, `dev`, etc.)
+
+    Returns:
+        The HTTP Response
+    """
     headers = request.headers
     log.debug("HAYSTACK_PROVIDER=%s", os.environ.get("HAYSTACK_PROVIDER", None))
     log.debug("HAYSTACK_URL=%s", os.environ.get("HAYSTACK_URL", None))
@@ -303,7 +356,15 @@ def about(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
 
 
 def ops(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
-    """ Implement Haystack 'ops' with AWS Lambda """
+    """
+    Implement Haystack `ops`.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (`prod`, `dev`, etc.)
+
+    Returns:
+        The HTTP Response
+    """
     headers = request.headers
     try:
         provider = get_singleton_provider()
@@ -316,7 +377,15 @@ def ops(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
 
 
 def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
-    """ Implement Haystack 'formats' with AWS Lambda """
+    """
+    Implement Haystack 'formats'.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (`prod`, `dev`, etc.)
+
+    Returns:
+        The HTTP Response
+    """
     headers = request.headers
     try:
         provider = get_singleton_provider()
@@ -356,7 +425,15 @@ def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
 
 
 def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
-    """Implement the haystack `read` operation"""
+    """
+    Implement Haystack `read`
+    Args:
+        request: The HTTP Request
+        stage: The current stage (`prod`, `dev`, etc.)
+
+    Returns:
+        The HTTP Response
+    """
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -416,7 +493,15 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
 
 
 def nav(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
-    """Implement the haystack `nav` operation"""
+    """
+    Implement Haystack 'nav'.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (`prod`, `dev`, etc.)
+
+    Returns:
+        The HTTP Response
+    """
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -437,7 +522,15 @@ def nav(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
 
 
 def watch_sub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
-    """Implement the haystack `watch_sub` operation"""
+    """
+    Implement Haystack 'watchSub'.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (`prod`, `dev`, etc.)
+
+    Returns:
+        The HTTP Response
+    """
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -473,7 +566,15 @@ def watch_sub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
 
 
 def watch_unsub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
-    """Implement the haystack `watch_unsub` operation"""
+    """
+    Implement Haystack 'watchUnsub'.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (`prod`, `dev`, etc.)
+
+    Returns:
+        The HTTP Response
+    """
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -507,7 +608,15 @@ def watch_unsub(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
 
 
 def watch_poll(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
-    """Implement the haystack `watch_poll` operation"""
+    """
+    Implement Haystack 'watchPoll'.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (`prod`, `dev`, etc.)
+
+    Returns:
+        The HTTP Response
+    """
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -534,7 +643,15 @@ def watch_poll(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse
 
 
 def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
-    """Implement the haystack `point_write_read` operation"""
+    """
+    Implement Haystack 'pointWrite'.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (`prod`, `dev`, etc.)
+
+    Returns:
+        The HTTP Response
+    """
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -589,7 +706,15 @@ def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
 
 
 def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
-    """Implement the haystack `his_read` operation"""
+    """
+    Implement Haystack 'hisRead'.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (`prod`, `dev`, etc.)
+
+    Returns:
+        The HTTP Response
+    """
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -633,7 +758,15 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
 
 
 def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
-    """Implement the haystack `his_write` operation"""
+    """
+    Implement Haystack 'hisWrite'.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (`prod`, `dev`, etc.)
+
+    Returns:
+        The HTTP Response
+    """
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -665,7 +798,15 @@ def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
 
 
 def invoke_action(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
-    """Implement the haystack `invoke_action` operation"""
+    """
+    Implement Haystack 'invokeAction'.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (`prod`, `dev`, etc.)
+
+    Returns:
+        The HTTP Response
+    """
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()

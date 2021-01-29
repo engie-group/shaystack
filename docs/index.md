@@ -104,6 +104,7 @@ $ pip install jupyter
 $ jupyter notebook
 ```
 
+# Python API
 The [documentation of the API is here](api/haystackapi/).
 
 # Data science

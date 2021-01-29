@@ -69,15 +69,15 @@ from .haystack_interface import HaystackInterface
 from .sqldb_protocol import DBConnection
 from ..datatypes import Ref
 from ..grid import Grid
-from ..jsondumper import dump_scalar, dump_meta, dump_columns, dump_row
-from ..jsonparser import parse_scalar, parse_row, parse_metadata, parse_cols
+from ..jsondumper import dump_scalar, _dump_meta, _dump_columns, _dump_row
+from ..jsonparser import parse_scalar, _parse_row, _parse_metadata, _parse_cols
 from ..version import VER_3_0
 
 try:
     from botocore.exceptions import ClientError
 except ImportError:
-    @dataclass
-    class ClientError(Exception):  # pylint: disable=missing-class-docstring
+    @dataclass  # pylint: disable=missing-class-docstring
+    class ClientError(Exception):
         response: List[Any]
 
 log = logging.getLogger(&#34;sql.Provider&#34;)
@@ -274,7 +274,7 @@ class Provider(HaystackInterface):
                                          )
                 grid = self._init_grid_from_db(date_version)
                 for row in cursor:
-                    grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
+                    grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
                 conn.commit()
                 return select_grid(grid, select)
             customer_id = self.get_customer_id()
@@ -285,7 +285,7 @@ class Provider(HaystackInterface):
 
             grid = self._init_grid_from_db(date_version)
             for row in cursor:
-                grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
+                grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
             conn.commit()
             return select_grid(grid, select)
         finally:
@@ -439,8 +439,8 @@ class Provider(HaystackInterface):
             row = cursor.fetchone()
             if row:
                 meta, cols = row
-                grid.metadata = parse_metadata(sql_type_to_json(meta), VER_3_0)
-                parse_cols(grid, sql_type_to_json(cols), VER_3_0)
+                grid.metadata = _parse_metadata(sql_type_to_json(meta), VER_3_0)
+                _parse_cols(grid, sql_type_to_json(cols), VER_3_0)
             conn.commit()
             return grid
         finally:
@@ -464,14 +464,14 @@ class Provider(HaystackInterface):
             row = cursor.fetchone()
             if row:
                 meta, cols = row
-                grid.metadata = parse_metadata(sql_type_to_json(meta), VER_3_0)
-                parse_cols(grid, sql_type_to_json(cols), VER_3_0)
+                grid.metadata = _parse_metadata(sql_type_to_json(meta), VER_3_0)
+                _parse_cols(grid, sql_type_to_json(cols), VER_3_0)
 
             cursor.execute(self._sql[&#34;SELECT_ENTITY&#34;],
                            (version, customer))
 
             for row in cursor:
-                grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
+                grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
             conn.commit()
             assert _validate_grid(grid), &#34;Error in grid&#34;
             return grid
@@ -526,8 +526,8 @@ class Provider(HaystackInterface):
                                (
                                    customer_id,
                                    now,
-                                   json.dumps(dump_meta(new_grid.metadata)),
-                                   json.dumps(dump_columns(new_grid.column))
+                                   json.dumps(_dump_meta(new_grid.metadata)),
+                                   json.dumps(_dump_columns(new_grid.column))
                                )
                                )
                 log.debug(&#34;Update metadatas&#34;)
@@ -549,7 +549,7 @@ class Provider(HaystackInterface):
                                        sql_id,
                                        customer_id,
                                        now,
-                                       json.dumps(dump_row(new_grid, new_grid[row[&#34;id&#34;]]))
+                                       json.dumps(_dump_row(new_grid, new_grid[row[&#34;id&#34;]]))
                                    )
                                    )
                     log.debug(&#34;Update record %s in DB&#34;, row[&#39;id&#39;].name)
@@ -772,7 +772,7 @@ class Provider(HaystackInterface):
                                          )
                 grid = self._init_grid_from_db(date_version)
                 for row in cursor:
-                    grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
+                    grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
                 conn.commit()
                 return select_grid(grid, select)
             customer_id = self.get_customer_id()
@@ -783,7 +783,7 @@ class Provider(HaystackInterface):
 
             grid = self._init_grid_from_db(date_version)
             for row in cursor:
-                grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
+                grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
             conn.commit()
             return select_grid(grid, select)
         finally:
@@ -937,8 +937,8 @@ class Provider(HaystackInterface):
             row = cursor.fetchone()
             if row:
                 meta, cols = row
-                grid.metadata = parse_metadata(sql_type_to_json(meta), VER_3_0)
-                parse_cols(grid, sql_type_to_json(cols), VER_3_0)
+                grid.metadata = _parse_metadata(sql_type_to_json(meta), VER_3_0)
+                _parse_cols(grid, sql_type_to_json(cols), VER_3_0)
             conn.commit()
             return grid
         finally:
@@ -962,14 +962,14 @@ class Provider(HaystackInterface):
             row = cursor.fetchone()
             if row:
                 meta, cols = row
-                grid.metadata = parse_metadata(sql_type_to_json(meta), VER_3_0)
-                parse_cols(grid, sql_type_to_json(cols), VER_3_0)
+                grid.metadata = _parse_metadata(sql_type_to_json(meta), VER_3_0)
+                _parse_cols(grid, sql_type_to_json(cols), VER_3_0)
 
             cursor.execute(self._sql[&#34;SELECT_ENTITY&#34;],
                            (version, customer))
 
             for row in cursor:
-                grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
+                grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
             conn.commit()
             assert _validate_grid(grid), &#34;Error in grid&#34;
             return grid
@@ -1024,8 +1024,8 @@ class Provider(HaystackInterface):
                                (
                                    customer_id,
                                    now,
-                                   json.dumps(dump_meta(new_grid.metadata)),
-                                   json.dumps(dump_columns(new_grid.column))
+                                   json.dumps(_dump_meta(new_grid.metadata)),
+                                   json.dumps(_dump_columns(new_grid.column))
                                )
                                )
                 log.debug(&#34;Update metadatas&#34;)
@@ -1047,7 +1047,7 @@ class Provider(HaystackInterface):
                                        sql_id,
                                        customer_id,
                                        now,
-                                       json.dumps(dump_row(new_grid, new_grid[row[&#34;id&#34;]]))
+                                       json.dumps(_dump_row(new_grid, new_grid[row[&#34;id&#34;]]))
                                    )
                                    )
                     log.debug(&#34;Update record %s in DB&#34;, row[&#39;id&#39;].name)
@@ -1425,7 +1425,7 @@ def read(
                                      )
             grid = self._init_grid_from_db(date_version)
             for row in cursor:
-                grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
+                grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
             conn.commit()
             return select_grid(grid, select)
         customer_id = self.get_customer_id()
@@ -1436,7 +1436,7 @@ def read(
 
         grid = self._init_grid_from_db(date_version)
         for row in cursor:
-            grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
+            grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
         conn.commit()
         return select_grid(grid, select)
     finally:
@@ -1470,14 +1470,14 @@ def read(
         row = cursor.fetchone()
         if row:
             meta, cols = row
-            grid.metadata = parse_metadata(sql_type_to_json(meta), VER_3_0)
-            parse_cols(grid, sql_type_to_json(cols), VER_3_0)
+            grid.metadata = _parse_metadata(sql_type_to_json(meta), VER_3_0)
+            _parse_cols(grid, sql_type_to_json(cols), VER_3_0)
 
         cursor.execute(self._sql[&#34;SELECT_ENTITY&#34;],
                        (version, customer))
 
         for row in cursor:
-            grid.append(parse_row(sql_type_to_json(row[0]), VER_3_0))
+            grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
         conn.commit()
         assert _validate_grid(grid), &#34;Error in grid&#34;
         return grid
@@ -1530,8 +1530,8 @@ def read(
                            (
                                customer_id,
                                now,
-                               json.dumps(dump_meta(new_grid.metadata)),
-                               json.dumps(dump_columns(new_grid.column))
+                               json.dumps(_dump_meta(new_grid.metadata)),
+                               json.dumps(_dump_columns(new_grid.column))
                            )
                            )
             log.debug(&#34;Update metadatas&#34;)
@@ -1553,7 +1553,7 @@ def read(
                                    sql_id,
                                    customer_id,
                                    now,
-                                   json.dumps(dump_row(new_grid, new_grid[row[&#34;id&#34;]]))
+                                   json.dumps(_dump_row(new_grid, new_grid[row[&#34;id&#34;]]))
                                )
                                )
                 log.debug(&#34;Update record %s in DB&#34;, row[&#39;id&#39;].name)

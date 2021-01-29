@@ -11,13 +11,14 @@ A support of Haystack timezone
 """
 import datetime
 import sys
+from typing import Any
 
 import pytz
 import six
 
 # The official list of timezones as of 6th Jan 2016:
 # Yes, that's *without* the usual country prefix.
-HAYSTACK_TIMEZONES = """Abidjan
+_HAYSTACK_TIMEZONES = """Abidjan
 Accra
 Adak
 Addis_Ababa
@@ -402,7 +403,7 @@ Yellowknife
 Yerevan
 Zaporozhye
 Zurich""".split('\n')
-HAYSTACK_TIMEZONES_SET = set(HAYSTACK_TIMEZONES)
+_HAYSTACK_TIMEZONES_SET = set(_HAYSTACK_TIMEZONES)
 
 # Mapping of pytz-recognised timezones to Haystack timezones.
 _TZ_MAP = None
@@ -412,7 +413,7 @@ _TZ_RMAP = None
 def _map_timezones():
     """Map the official Haystack timezone list to those recognised by pytz."""
     tz_map = {}
-    todo = HAYSTACK_TIMEZONES_SET.copy()
+    todo = _HAYSTACK_TIMEZONES_SET.copy()
     for full_tz in pytz.all_timezones:
         # Finished case:
         if not bool(todo):  # pragma: no cover
@@ -451,25 +452,27 @@ def _gen_map():
     return _TZ_MAP, _TZ_RMAP
 
 
-def get_tz_map():
+def _get_tz_map():
     """Return the timezone map, generating it if needed."""
     tz_map, _ = _gen_map()
     return tz_map
 
 
-def get_tz_rmap():
+def _get_tz_rmap():
     """Return the reverse timezone map, generating it if needed."""
     _, tz_rmap = _gen_map()
     return tz_rmap
 
 
-def timezone(haystack_tz):
+def timezone(haystack_tz: str) -> Any:
     """Retrieve the Haystack timezone
 
     Args:
-        haystack_tz:
+        haystack_tz: Haystack time zone
+    Returns:
+        Time zone
     """
-    tz_map = get_tz_map()
+    tz_map = _get_tz_map()
     try:
         tz_name = tz_map[haystack_tz]
         return pytz.timezone(tz_name)
@@ -480,20 +483,21 @@ def timezone(haystack_tz):
                     sys.exc_info()[2])
 
 
-
-def timezone_name(date_time):
+def timezone_name(date_time: datetime.datetime) -> str:
     """Determine an appropriate timezone for the given date/time object
 
     Args:
-        date_time:
+        date_time: a datetime object
+    Returns:
+        An haystack timezone
     """
-    tz_rmap = get_tz_rmap()
+    tz_rmap = _get_tz_rmap()
     if date_time.tzinfo is None:
         raise ValueError('%r has no timezone' % date_time)
 
     # Easy case: pytz timezone.
     try:
-        tz_name = date_time.tzinfo.zone
+        tz_name = date_time.tzinfo.zone  # type: ignore
         return tz_rmap[tz_name]
     except KeyError:
         # Not in timezone map

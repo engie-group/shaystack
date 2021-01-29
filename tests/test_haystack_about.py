@@ -17,7 +17,7 @@ def test_about_with_zinc(mock, no_cache) -> None:
         no_cache:
     """
     no_cache.return_value = True
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     request.headers["Content-Type"] = mime_type
@@ -70,7 +70,7 @@ def test_about_with_multivalues_headers(mock, no_cache) -> None:
         no_cache:
     """
     no_cache.return_value = True
-    mock.return_value = ping.PingGrid
+    mock.return_value = ping._PingGrid
     mime_type = haystackapi.MODE_ZINC
     request = HaystackHttpRequest()
     request.headers["Accept"] = "text/zinc, application/json"

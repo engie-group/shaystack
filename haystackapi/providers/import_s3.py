@@ -61,8 +61,7 @@ def _download_uri(parsed_uri: ParseResult) -> bytes:
     return data
 
 
-def _get_hash_of_s3_file(s3_client,
-                         parsed):
+def _get_hash_of_s3_file(s3_client, parsed: ParseResult) -> str:
     try:
         head = s3_client.head_object(Bucket=parsed.hostname,
                                      Key=parsed.path[1:],
@@ -79,10 +78,11 @@ def merge_timeseries(source_grid: Grid,
                      destination_grid: Grid,
                      mode: str,
                      compress: bool) -> Tuple[bytes, str]:
-    """ Merge time series.
+    """ Merge differents time series.
+
         If the destination time series has older values, insert these values at the beginning
         of the current time series.
-        It is not to forget values
+        It is not to forget values.
     """
     assert 'ts' in source_grid.column, "The source grid must have ts,value columns"
     if 'ts' in destination_grid.column:
@@ -101,14 +101,14 @@ def merge_timeseries(source_grid: Grid,
     return source_data, b64_digest
 
 
-def update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-locals
-                      parsed_destination: ParseResult,
-                      compare_grid: bool,
-                      time_series: bool,
-                      force: bool,
-                      merge_ts: bool,
-                      use_thread: bool = True
-                      ) -> None:
+def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-locals
+                       parsed_destination: ParseResult,
+                       compare_grid: bool,
+                       time_series: bool,
+                       force: bool,
+                       merge_ts: bool,
+                       use_thread: bool = True
+                       ) -> None:
     log.debug("update %s", (parsed_source.geturl(),))
     s3_client = boto3.client(
         "s3",
@@ -218,7 +218,7 @@ def update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-lo
                         force,
                         True))
                 else:
-                    update_grid_on_s3(
+                    _update_grid_on_s3(
                         urlparse(source_time_serie),
                         urlparse(destination_time_serie),
                         compare_grid=False,
@@ -227,18 +227,25 @@ def update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-lo
                         merge_ts=True)
         if requests:
             with ThreadPool(processes=POOL_SIZE) as pool:
-                pool.starmap(update_grid_on_s3, requests)
+                pool.starmap(_update_grid_on_s3, requests)
 
 
 def import_in_s3(source: str,
                  destination: str,
                  compare: bool = False,
                  time_series: bool = True,
-                 force: bool = False):
+                 force: bool = False) -> None:
     """
     Import source grid file on destination, only if something was changed.
     The source can use all kind of URL or relative path.
-    The destination must be an s3 URL. If this URL end with '/' the source filename was used.
+    The destination must be a s3 URL. If this URL end with '/' the source filename was used.
+
+    Args:
+        source: The source URI
+        destination: The destination URI
+        compare: True to compare the destination and the source data
+        time_series: True to import the time-series referenced via 'hisURL'
+        force: True to force the update.
     """
     parsed_source = urlparse(source)
     parsed_destination = urlparse(destination)
@@ -248,18 +255,18 @@ def import_in_s3(source: str,
         destination += Path(parsed_source.path).name
     parsed_destination = urlparse(destination)
 
-    update_grid_on_s3(parsed_source,
-                      parsed_destination,
-                      compare,
-                      time_series,
-                      force,
-                      merge_ts=False
-                      )
+    _update_grid_on_s3(parsed_source,
+                       parsed_destination,
+                       compare,
+                       time_series,
+                       force,
+                       merge_ts=False
+                       )
 
 
 def aws_handler(event, context):
     """
-    AWS Handler.
+    AWS Lambda Handler.
     Set the environment variable HAYSTACK_URL and HAYSTACK_DB
     """
     hs_source_url = os.environ.get("HAYSTACK_SOURCE_URL")

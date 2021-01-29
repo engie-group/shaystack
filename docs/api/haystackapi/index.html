@@ -149,13 +149,30 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <span>def <span class="ident">about</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement Haystack 'about' with AWS Lambda</p></div>
+<div class="desc"><p>Implement Haystack 'about' with AWS Lambda.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>request</code></strong></dt>
+<dd>The HTTP Request</dd>
+<dt><strong><code>stage</code></strong></dt>
+<dd>The current stage ('prod', 'dev', etc.)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The HTTP Response</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def about(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
-    &#34;&#34;&#34; Implement Haystack &#39;about&#39; with AWS Lambda &#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Implement Haystack &#39;about&#39; with AWS Lambda.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+
+    Returns:
+        The HTTP Response
+    &#34;&#34;&#34;
     headers = request.headers
     log.debug(&#34;HAYSTACK_PROVIDER=%s&#34;, os.environ.get(&#34;HAYSTACK_PROVIDER&#34;, None))
     log.debug(&#34;HAYSTACK_URL=%s&#34;, os.environ.get(&#34;HAYSTACK_URL&#34;, None))
@@ -179,8 +196,12 @@ __email__ = &#39;haystackapi@prados.fr&#39;</code></pre>
 <dd>
 <div class="desc"><p>Dump the given grids in the specified over-the-wire format.</p>
 <h2 id="args">Args</h2>
-<p>grids:
-mode (str):</p></div>
+<dl>
+<dt><strong><code>grids</code></strong></dt>
+<dd>The grid or list of grid to dump.</dd>
+<dt><strong><code>mode</code></strong> :&ensp;<code>str</code></dt>
+<dd>The format. Must be MODE_ZINC, MODE_CSV or MODE_JSON</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -189,8 +210,8 @@ mode (str):</p></div>
     &#34;&#34;&#34;Dump the given grids in the specified over-the-wire format.
 
     Args:
-        grids:
-        mode (str):
+        grids: The grid or list of grid to dump.
+        mode (str): The format. Must be MODE_ZINC, MODE_CSV or MODE_JSON
     &#34;&#34;&#34;
     if isinstance(grids, Grid):
         return dump_grid(grids, mode=mode)
@@ -208,20 +229,27 @@ mode (str):</p></div>
 <span>def <span class="ident">dump_scalar</span></span>(<span>scalar: Any, mode: str = 'text/zinc', version: haystackapi.version.Version = &lt;haystackapi.version.Version object&gt;) ‑> Union[str, NoneType]</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="args">Args</h2>
-<p>scalar (Any):
-mode (str):
-version (Version):</p></div>
+<div class="desc"><p>Dump a scalar value in the specified over-the-wire format and version.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>scalar</code></strong> :&ensp;<code>Any</code></dt>
+<dd>The value to dump</dd>
+<dt><strong><code>mode</code></strong> :&ensp;<code>str</code></dt>
+<dd>The format. Must be MODE_ZINC, MODE_CSV or MODE_JSON</dd>
+<dt><strong><code>version</code></strong> :&ensp;<code><a title="haystackapi.Version" href="#haystackapi.Version">Version</a></code></dt>
+<dd>The Haystack version to apply</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def dump_scalar(scalar: Any, mode: str = MODE_ZINC, version: Version = LATEST_VER) -&gt; Optional[str]:
     &#34;&#34;&#34;
+    Dump a scalar value in the specified over-the-wire format and version.
     Args:
-        scalar (Any):
-        mode (str):
-        version (Version):
+        scalar (Any): The value to dump
+        mode (str): The format. Must be MODE_ZINC, MODE_CSV or MODE_JSON
+        version (Version): The Haystack version to apply
     &#34;&#34;&#34;
     if mode == MODE_ZINC:
         return dump_zinc_scalar(scalar, version=version)
@@ -236,13 +264,30 @@ version (Version):</p></div>
 <span>def <span class="ident">formats</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement Haystack 'formats' with AWS Lambda</p></div>
+<div class="desc"><p>Implement Haystack 'formats' with AWS Lambda.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>request</code></strong></dt>
+<dd>The HTTP Request</dd>
+<dt><strong><code>stage</code></strong></dt>
+<dd>The current stage ('prod', 'dev', etc.)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The HTTP Response</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def formats(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
-    &#34;&#34;&#34; Implement Haystack &#39;formats&#39; with AWS Lambda &#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Implement Haystack &#39;formats&#39; with AWS Lambda.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+
+    Returns:
+        The HTTP Response
+    &#34;&#34;&#34;
     headers = request.headers
     try:
         provider = get_singleton_provider()
@@ -285,13 +330,30 @@ version (Version):</p></div>
 <span>def <span class="ident">his_read</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the haystack <code><a title="haystackapi.his_read" href="#haystackapi.his_read">his_read()</a></code> operation</p></div>
+<div class="desc"><p>Implement Haystack 'hisRead' with AWS Lambda.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>request</code></strong></dt>
+<dd>The HTTP Request</dd>
+<dt><strong><code>stage</code></strong></dt>
+<dd>The current stage ('prod', 'dev', etc.)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The HTTP Response</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def his_read(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
-    &#34;&#34;&#34;Implement the haystack `his_read` operation&#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Implement Haystack &#39;hisRead&#39; with AWS Lambda.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+
+    Returns:
+        The HTTP Response
+    &#34;&#34;&#34;
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -338,13 +400,30 @@ version (Version):</p></div>
 <span>def <span class="ident">his_write</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the haystack <code><a title="haystackapi.his_write" href="#haystackapi.his_write">his_write()</a></code> operation</p></div>
+<div class="desc"><p>Implement Haystack 'hisWrite' with AWS Lambda.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>request</code></strong></dt>
+<dd>The HTTP Request</dd>
+<dt><strong><code>stage</code></strong></dt>
+<dd>The current stage ('prod', 'dev', etc.)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The HTTP Response</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def his_write(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
-    &#34;&#34;&#34;Implement the haystack `his_write` operation&#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Implement Haystack &#39;hisWrite&#39; with AWS Lambda.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+
+    Returns:
+        The HTTP Response
+    &#34;&#34;&#34;
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -379,13 +458,30 @@ version (Version):</p></div>
 <span>def <span class="ident">invoke_action</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the haystack <code><a title="haystackapi.invoke_action" href="#haystackapi.invoke_action">invoke_action()</a></code> operation</p></div>
+<div class="desc"><p>Implement Haystack 'invokeAction' with AWS Lambda.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>request</code></strong></dt>
+<dd>The HTTP Request</dd>
+<dt><strong><code>stage</code></strong></dt>
+<dd>The current stage ('prod', 'dev', etc.)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The HTTP Response</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def invoke_action(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
-    &#34;&#34;&#34;Implement the haystack `invoke_action` operation&#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Implement Haystack &#39;invokeAction&#39; with AWS Lambda.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+
+    Returns:
+        The HTTP Response
+    &#34;&#34;&#34;
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -413,7 +509,12 @@ version (Version):</p></div>
 <dd>
 <div class="desc"><p>Convert haystackapi mode to file suffix</p>
 <h2 id="args">Args</h2>
-<p>mode (str):</p></div>
+<dl>
+<dt><strong><code>mode</code></strong> :&ensp;<code>str</code></dt>
+<dd>The haystack mode (<code>MODE_&hellip;</code>)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>the file suffix (<code>.zinc</code>, <code>.json</code>, <code>.csv</code>)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -422,7 +523,9 @@ version (Version):</p></div>
     &#34;&#34;&#34;Convert haystackapi mode to file suffix
 
     Args:
-        mode (str):
+        mode (str): The haystack mode (`MODE_...`)
+    Returns:
+        the file suffix (`.zinc`, `.json`, `.csv`)
     &#34;&#34;&#34;
     return _mode_to_suffix.get(mode, None)</code></pre>
 </details>
@@ -431,13 +534,30 @@ version (Version):</p></div>
 <span>def <span class="ident">nav</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the haystack <code><a title="haystackapi.nav" href="#haystackapi.nav">nav()</a></code> operation</p></div>
+<div class="desc"><p>Implement Haystack 'nav' with AWS Lambda.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>request</code></strong></dt>
+<dd>The HTTP Request</dd>
+<dt><strong><code>stage</code></strong></dt>
+<dd>The current stage ('prod', 'dev', etc.)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The HTTP Response</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def nav(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
-    &#34;&#34;&#34;Implement the haystack `nav` operation&#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Implement Haystack &#39;nav&#39; with AWS Lambda.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+
+    Returns:
+        The HTTP Response
+    &#34;&#34;&#34;
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -458,32 +578,38 @@ version (Version):</p></div>
 </details>
 </dd>
 <dt id="haystackapi.parse"><code class="name flex">
-<span>def <span class="ident">parse</span></span>(<span>grid_str: Union[~AnyStr, List[str]], mode: str = 'text/zinc', charset: str = 'utf-8', single: bool = True) ‑> Union[haystackapi.grid.Grid, List[haystackapi.grid.Grid]]</span>
+<span>def <span class="ident">parse</span></span>(<span>grid_str: Union[~AnyStr, List[str]], mode: str = 'text/zinc', single: bool = True) ‑> Union[haystackapi.grid.Grid, List[haystackapi.grid.Grid]]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Parse the given Zinc text and return the equivalent data.</p>
+<div class="desc"><p>Parse the given text and return the equivalent data.</p>
 <h2 id="args">Args</h2>
-<p>grid_str:
-mode (str):
-charset (str):
-single (bool):</p></div>
+<dl>
+<dt><strong><code>grid_str</code></strong></dt>
+<dd>The string to parse</dd>
+<dt><strong><code>mode</code></strong> :&ensp;<code>str</code></dt>
+<dd>The format (<code>MODE_&hellip;</code>)</dd>
+<dt><strong><code>single</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Parse only ony grid (deprecated)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A grid or a list of grids</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def parse(grid_str: Union[AnyStr, List[str]],
           mode: str = MODE_ZINC,
-          charset: str = &#39;utf-8&#39;,
           single: bool = True) -&gt; Union[Grid, List[Grid]]:
-    &#34;&#34;&#34;Parse the given Zinc text and return the equivalent data.
+    &#34;&#34;&#34;Parse the given text and return the equivalent data.
 
     Args:
-        grid_str:
-        mode (str):
-        charset (str):
-        single (bool):
+        grid_str: The string to parse
+        mode (str): The format (`MODE_...`)
+        single (bool): Parse only ony grid (deprecated)
+    Returns:
+        A grid or a list of grids
     &#34;&#34;&#34;
-
+    charset = &#39;utf-8&#39;
     # Decode incoming text (or python3 will whine!)
     if isinstance(grid_str, bytes):
         grid_str = grid_str.decode(encoding=charset)
@@ -491,8 +617,7 @@ single (bool):</p></div>
     # Split the separate grids up, the grammar definition has trouble splitting
     # them up normally.  This will truncate the newline off the end of the last
     # row.
-    _parse = functools.partial(parse_grid, mode=mode,
-                               charset=charset)
+    _parse = functools.partial(parse_grid, mode=mode)
     if mode == MODE_JSON:
         if isinstance(grid_str, str):
             grid_data = json.loads(grid_str)
@@ -524,19 +649,26 @@ single (bool):</p></div>
 </code></dt>
 <dd>
 <div class="desc"><p>Return an AST tree of filter. Can be used to generate other language
-(SQL, etc.)</p>
+(Python, SQL, etc.)</p>
 <h2 id="args">Args</h2>
-<p>grid_filter (str):</p></div>
+<dl>
+<dt><strong><code>grid_filter</code></strong> :&ensp;<code>str</code></dt>
+<dd>A filter request</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A <code>FilterAST</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def parse_filter(grid_filter: str) -&gt; FilterAST:
     &#34;&#34;&#34;Return an AST tree of filter. Can be used to generate other language
-    (SQL, etc.)
+    (Python, SQL, etc.)
 
     Args:
-        grid_filter (str):
+        grid_filter (str): A filter request
+    Returns:
+        A `FilterAST`
     &#34;&#34;&#34;
     return FilterAST(hs_filter.parseString(grid_filter, parseAll=True)[0])</code></pre>
 </details>
@@ -545,44 +677,66 @@ single (bool):</p></div>
 <span>def <span class="ident">parse_hs_datetime_format</span></span>(<span>datetime_str: str) ‑> datetime.datetime</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="args">Args</h2>
-<p>datetime_str (str):</p></div>
+<div class="desc"><p>Parse the haystack date time.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>datetime_str</code></strong> :&ensp;<code>str</code></dt>
+<dd>The string to parse</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>the corresponding <code>datetime</code></p>
+<h2 id="raises">Raises</h2>
+<p><code>pyparsing.ParseException</code> if the string does not conform</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def parse_hs_datetime_format(datetime_str: str) -&gt; datetime:
     &#34;&#34;&#34;
+    Parse the haystack date time.
     Args:
-        datetime_str (str):
+        datetime_str (str): The string to parse
+    Returns:
+        the corresponding `datetime`
+    Raises:
+        `pyparsing.ParseException` if the string does not conform
     &#34;&#34;&#34;
     return hs_all_date.parseString(datetime_str, parseAll=True)[0]</code></pre>
 </details>
 </dd>
 <dt id="haystackapi.parse_scalar"><code class="name flex">
-<span>def <span class="ident">parse_scalar</span></span>(<span>scalar: Union[bytes, str], mode: str = 'text/zinc', version: Union[haystackapi.version.Version, str] = &lt;haystackapi.version.Version object&gt;, charset: str = 'utf-8') ‑> Any</span>
+<span>def <span class="ident">parse_scalar</span></span>(<span>scalar: Union[bytes, str], mode: str = 'text/zinc', version: Union[haystackapi.version.Version, str] = &lt;haystackapi.version.Version object&gt;) ‑> Any</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="args">Args</h2>
-<p>scalar:
-mode (str):
-version:
-charset (str):</p></div>
+<div class="desc"><p>Parse a scalar value</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>scalar</code></strong></dt>
+<dd>The scalar data to parse</dd>
+<dt><strong><code>mode</code></strong> :&ensp;<code>str</code></dt>
+<dd>The haystack mode</dd>
+<dt><strong><code>version</code></strong></dt>
+<dd>The haystack version</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>a value</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def parse_scalar(scalar: Union[bytes, str], mode: str = MODE_ZINC,
-                 version: Union[Version, str] = LATEST_VER,
-                 charset: str = &#39;utf-8&#39;) -&gt; Any:
+                 version: Union[Version, str] = LATEST_VER) -&gt; Any:
     # Decode version string
     &#34;&#34;&#34;
+    Parse a scalar value
     Args:
-        scalar:
-        mode (str):
-        version:
-        charset (str):
+        scalar: The scalar data to parse
+        mode (str): The haystack mode
+        version: The haystack version
+    Returns:
+        a value
     &#34;&#34;&#34;
+    charset = &#39;utf-8&#39;
     if not isinstance(version, Version):
         version = Version(version)
 
@@ -603,13 +757,30 @@ charset (str):</p></div>
 <span>def <span class="ident">point_write</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the haystack <code>point_write_read</code> operation</p></div>
+<div class="desc"><p>Implement Haystack 'pointWrite' with AWS Lambda.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>request</code></strong></dt>
+<dd>The HTTP Request</dd>
+<dt><strong><code>stage</code></strong></dt>
+<dd>The current stage ('prod', 'dev', etc.)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The HTTP Response</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def point_write(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
-    &#34;&#34;&#34;Implement the haystack `point_write_read` operation&#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Implement Haystack &#39;pointWrite&#39; with AWS Lambda.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+
+    Returns:
+        The HTTP Response
+    &#34;&#34;&#34;
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -667,13 +838,30 @@ charset (str):</p></div>
 <span>def <span class="ident">read</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the haystack <code><a title="haystackapi.read" href="#haystackapi.read">read()</a></code> operation</p></div>
+<div class="desc"><p>Implement Haystack 'read' with AWS Lambda.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>request</code></strong></dt>
+<dd>The HTTP Request</dd>
+<dt><strong><code>stage</code></strong></dt>
+<dd>The current stage ('prod', 'dev', etc.)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The HTTP Response</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def read(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
-    &#34;&#34;&#34;Implement the haystack `read` operation&#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Implement Haystack &#39;read&#39; with AWS Lambda.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+
+    Returns:
+        The HTTP Response
+    &#34;&#34;&#34;
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -738,7 +926,12 @@ charset (str):</p></div>
 <dd>
 <div class="desc"><p>Convert a file suffix to Haystack mode</p>
 <h2 id="args">Args</h2>
-<p>ext (str):</p></div>
+<dl>
+<dt><strong><code>ext</code></strong> :&ensp;<code>str</code></dt>
+<dd>The file suffix (<code>.zinc</code>, <code>.json</code>, <code>.csv</code>)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The corresponding haystack mode (<code>MODE_&hellip;</code>)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -747,7 +940,9 @@ charset (str):</p></div>
     &#34;&#34;&#34;Convert a file suffix to Haystack mode
 
     Args:
-        ext (str):
+        ext (str): The file suffix (`.zinc`, `.json`, `.csv`)
+    Returns:
+        The corresponding haystack mode (`MODE_...`)
     &#34;&#34;&#34;
     return _suffix_to_mode.get(ext, None)</code></pre>
 </details>
@@ -756,13 +951,30 @@ charset (str):</p></div>
 <span>def <span class="ident">watch_poll</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the haystack <code><a title="haystackapi.watch_poll" href="#haystackapi.watch_poll">watch_poll()</a></code> operation</p></div>
+<div class="desc"><p>Implement Haystack 'watch_poll' with AWS Lambda.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>request</code></strong></dt>
+<dd>The HTTP Request</dd>
+<dt><strong><code>stage</code></strong></dt>
+<dd>The current stage ('prod', 'dev', etc.)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The HTTP Response</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def watch_poll(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
-    &#34;&#34;&#34;Implement the haystack `watch_poll` operation&#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Implement Haystack &#39;watch_poll&#39; with AWS Lambda.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+
+    Returns:
+        The HTTP Response
+    &#34;&#34;&#34;
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -792,13 +1004,30 @@ charset (str):</p></div>
 <span>def <span class="ident">watch_sub</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the haystack <code><a title="haystackapi.watch_sub" href="#haystackapi.watch_sub">watch_sub()</a></code> operation</p></div>
+<div class="desc"><p>Implement Haystack 'watch_sub' with AWS Lambda.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>request</code></strong></dt>
+<dd>The HTTP Request</dd>
+<dt><strong><code>stage</code></strong></dt>
+<dd>The current stage ('prod', 'dev', etc.)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The HTTP Response</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def watch_sub(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
-    &#34;&#34;&#34;Implement the haystack `watch_sub` operation&#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Implement Haystack &#39;watch_sub&#39; with AWS Lambda.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+
+    Returns:
+        The HTTP Response
+    &#34;&#34;&#34;
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -837,13 +1066,30 @@ charset (str):</p></div>
 <span>def <span class="ident">watch_unsub</span></span>(<span>request: haystackapi.ops.HaystackHttpRequest, stage: str) ‑> haystackapi.ops.HaystackHttpResponse</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the haystack <code><a title="haystackapi.watch_unsub" href="#haystackapi.watch_unsub">watch_unsub()</a></code> operation</p></div>
+<div class="desc"><p>Implement Haystack 'watch_unsub' with AWS Lambda.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>request</code></strong></dt>
+<dd>The HTTP Request</dd>
+<dt><strong><code>stage</code></strong></dt>
+<dd>The current stage ('prod', 'dev', etc.)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The HTTP Response</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def watch_unsub(request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
-    &#34;&#34;&#34;Implement the haystack `watch_unsub` operation&#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Implement Haystack &#39;watch_unsub&#39; with AWS Lambda.
+    Args:
+        request: The HTTP Request
+        stage: The current stage (&#39;prod&#39;, &#39;dev&#39;, etc.)
+
+    Returns:
+        The HTTP Response
+    &#34;&#34;&#34;
     headers, args = (request.headers, request.args)
     try:
         provider = get_singleton_provider()
@@ -916,9 +1162,14 @@ types.</p></div>
 </code></dt>
 <dd>
 <div class="desc"><p>A 2D co-ordinate in degrees latitude and longitude.</p>
+<p>Create a 2D co-ordinate.</p>
 <h2 id="args">Args</h2>
-<p>latitude (float):
-longitude (float):</p></div>
+<dl>
+<dt><strong><code>latitude</code></strong> :&ensp;<code>float</code></dt>
+<dd>the latitude</dd>
+<dt><strong><code>longitude</code></strong> :&ensp;<code>float</code></dt>
+<dd>the longitude</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -928,9 +1179,10 @@ longitude (float):</p></div>
 
     def __init__(self, latitude: float, longitude: float):
         &#34;&#34;&#34;
+        Create a 2D co-ordinate.
         Args:
-            latitude (float):
-            longitude (float):
+            latitude (float): the latitude
+            longitude (float): the longitude
         &#34;&#34;&#34;
         self.latitude = latitude
         self.longitude = longitude
@@ -968,11 +1220,29 @@ longitude (float):</p></div>
 <div class="desc"><p>A grid is basically a series of tabular records. The grid has a header
 which describes some metadata about the grid and its columns. This is
 followed by zero or more rows.</p>
-<p>Create a new Grid.</p>
+<p>The grid propose different standard operator.</p>
+<ul>
+<li>It's possible to access an entity with the position in the grid: <code>grid[1]</code></li>
+<li>or if the entity has an <code>id</code>, with this <code>id</code>: <code>grid[Ref("abc")]</code></li>
+<li>To extract a portion of grid, use a slice: <code>grid[10:12]</code></li>
+<li>To check if a specific <code>id</code> is in the grid: <code>Ref("abc") in grid</code></li>
+<li>To calculate the difference between grid: <code>grid_v2 - grid_v1</code></li>
+<li>To merge two grid: <code>grid_a + grid_b</code></li>
+<li>To compare a grid: <code>grid_v1 + (grid_v2 - grid_v1) == grid_v2</code></li>
+<li>Size of grid: <code>len(grid)</code></li>
+<li>Replace an entity with <code>id</code>: <code>grid[Ref("abc")] = new_entity</code></li>
+<li>Delete an entity with <code>id</code>: <code>del grid[Ref("abc")]</code></li>
+</ul>
+<p>Create a new Grid for a specific version, metadata and columns.</p>
 <h2 id="args">Args</h2>
-<p>version:
-metadata:
-columns:</p></div>
+<dl>
+<dt><strong><code>version</code></strong></dt>
+<dd>The haystack version (See VERSION_&hellip;)</dd>
+<dt><strong><code>metadata</code></strong></dt>
+<dd>A dictionary with the metadata associated with the grid.</dd>
+<dt><strong><code>columns</code></strong></dt>
+<dd>A list of columns, or a dictionary with columns name and corresponding metadata</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -981,6 +1251,19 @@ columns:</p></div>
     &#34;&#34;&#34;A grid is basically a series of tabular records. The grid has a header
     which describes some metadata about the grid and its columns. This is
     followed by zero or more rows.
+
+    The grid propose different standard operator.
+
+    - It&#39;s possible to access an entity with the position in the grid: `grid[1]`
+    - or if the entity has an `id`, with this `id`: `grid[Ref(&#34;abc&#34;)]`
+    - To extract a portion of grid, use a slice: `grid[10:12]`
+    - To check if a specific `id` is in the grid: `Ref(&#34;abc&#34;) in grid`
+    - To calculate the difference between grid: `grid_v2 - grid_v1`
+    - To merge two grid: `grid_a + grid_b`
+    - To compare a grid: `grid_v1 + (grid_v2 - grid_v1) == grid_v2`
+    - Size of grid: `len(grid)`
+    - Replace an entity with `id`: `grid[Ref(&#34;abc&#34;)] = new_entity`
+    - Delete an entity with `id`: `del grid[Ref(&#34;abc&#34;)]`
     &#34;&#34;&#34;
 
     def __init__(self,
@@ -990,12 +1273,12 @@ columns:</p></div>
                                 Dict[str, Any],
                                 Iterable[Union[Tuple[str, Any], str]],
                                 SortableDict] = None):
-        &#34;&#34;&#34;Create a new Grid.
+        &#34;&#34;&#34;Create a new Grid for a specific version, metadata and columns.
 
         Args:
-            version:
-            metadata:
-            columns:
+            version: The haystack version (See VERSION_...)
+            metadata: A dictionary with the metadata associated with the grid.
+            columns: A list of columns, or a dictionary with columns name and corresponding metadata
         &#34;&#34;&#34;
         version_given = version is not None
         if version_given:
@@ -1037,12 +1320,15 @@ columns:</p></div>
                 self.column.add_item(col_id, metadata_object)
 
     @staticmethod
-    def _approx_check(version_1: &#39;Grid&#39;, version_2: &#39;Grid&#39;):
-        # Check types match
+    def _approx_check(version_1: Any, version_2: Any) -&gt; bool:
         &#34;&#34;&#34;
+        Compare two values with a tolerance
+
         Args:
-            version_1:
-            version_2:
+            version_1(Any): value one
+            version_2(Any): value two
+        Returns:
+            true if the values are approximately identical
         &#34;&#34;&#34;
         if isinstance(version_1, numbers.Number) and isinstance(version_2, numbers.Number):
             return abs(version_1 - version_2) &lt; 0.000001
@@ -1073,6 +1359,14 @@ columns:</p></div>
         return version_1 == version_2
 
     def __eq__(self, other: &#39;Grid&#39;) -&gt; bool:
+        &#34;&#34;&#34;
+        Campare two grid with tolerance.
+        Args:
+            other(Grid): Other grid
+
+        Returns:
+
+        &#34;&#34;&#34;
         if not isinstance(other, Grid):
             return False
         if set(self.metadata.keys()) != set(other.metadata.keys()):
@@ -1137,15 +1431,15 @@ columns:</p></div>
         return grid_diff(other, self)
 
     def __add__(self, other: &#39;Grid&#39;) -&gt; &#39;Grid&#39;:
-        &#34;&#34;&#34;Merge two grid. The metadata can be modified with the values from
-        other. Some attributs can be removed if the other attributs is REMOVE.
+        &#34;&#34;&#34;Merge two grids. The metadata can be modified with the values from
+        other. Some attributs can be removed if the `other` attributs is REMOVE.
         If a row have a &#39;remove_&#39; tag, the corresponding row was removed.
 
         The result of __sub__() can be used to patch the current grid. At all
-        time, with gridA and gridB, gridA + (gridB - gridA) == gridB
+        time, with `gridA` and `gridB`, `gridA + (gridB - gridA) == gridB`
 
         Args:
-            other:
+            other(Grid): List of entities to updates
         &#34;&#34;&#34;
         assert isinstance(other, Grid)
         from .grid_diff import grid_merge  # pylint: disable: import-outside-toplevel
@@ -1153,25 +1447,10 @@ columns:</p></div>
             return grid_merge(other.copy(), self)
         return grid_merge(self.copy(), other)
 
-    @property
-    def version(self) -&gt; Version:  # pragma: no cover
-        # Trivial function
-        return self._version
-
-    @property
-    def nearest_version(self) -&gt; Version:  # pragma: no cover
-        # Trivial function
-        return Version.nearest(self._version)
-
-    @property
-    def ver_str(self) -&gt; str:  # pragma: no cover
-        # Trivial function
-        return str(self.version)
 
     def __repr__(self) -&gt; str:  # pragma: no cover
-        # Not critical to the operation of the library.
         &#34;&#34;&#34;Return a representation of this grid.&#34;&#34;&#34;
-        parts = [&#39;\tVersion: %s&#39; % self.ver_str]
+        parts = [&#39;\tVersion: %s&#39; % str(self.version)]
         if bool(self.metadata):
             parts.append(&#39;\tMetadata: %s&#39; % self.metadata)
 
@@ -1199,10 +1478,9 @@ columns:</p></div>
             ])
         else:
             parts.append(&#39;\tNo rows&#39;)
-        # Represent as pseudo-XML
         class_name = self.__class__.__name__
-        return &#39;&lt;%s&gt;\n%s\n&lt;/%s&gt;&#39; % (
-            class_name, &#39;\n&#39;.join(parts), class_name
+        return &#39;%s\n%s\n&#39; % (
+            class_name, &#39;\n&#39;.join(parts)
         )
 
     def __getitem__(self, key: Union[int, Ref, slice]) -&gt; Union[Dict[str, Any], &#39;Grid&#39;]:
@@ -1210,7 +1488,10 @@ columns:</p></div>
         slide :return: a new grid with a selection of entities
 
         Args:
-            key:
+            key: the position, the Reference or a slice
+
+        Returns:
+            The entity of an new grid with a portion of entities, with the same metadata and columns
         &#34;&#34;&#34;
         if isinstance(key, int):
             return self._row[key]
@@ -1228,44 +1509,16 @@ columns:</p></div>
         &#34;&#34;&#34;Return an entity with the corresponding id.
 
         Args:
-            key:
+            key: The position of id of entity
 
         Returns:
-            Dict[str, Any]: The entity with the id == index
+            `True` if the referenced entity is present
         &#34;&#34;&#34;
         if isinstance(key, int):
             return 0 &lt;= key &lt; len(self._row)
         if not self._index:
             self.reindex()
         return key in self._index
-
-    def get(self, index: Ref, default: Dict[str, Any] = None) -&gt; Dict[str, Any]:
-        &#34;&#34;&#34;Return an entity with the corresponding id.
-
-        Args:
-            index (Ref): The id of entity
-            default (Dict[str, Any]): The default value if the entity is not
-                found
-
-        Returns:
-            Dict[str, Any]: The entity with the id == index
-        &#34;&#34;&#34;
-        # &#39;&#39;&#39;
-        # Return an entity with the corresponding id.
-        #
-        # Attributes:
-        #     :param index: A haystack reference
-        #
-        #     :param default: Value if the reference was not founded
-        # &#39;&#39;&#39;
-        if not self._index:
-            self.reindex()
-        return self._index.get(index, default)
-
-    def keys(self) -&gt; KeysView[Ref]:
-        if not self._index:
-            self.reindex()
-        return self._index.keys()
 
     def __len__(self) -&gt; int:
         &#34;&#34;&#34;Return the number of rows in the grid.&#34;&#34;&#34;
@@ -1275,8 +1528,10 @@ columns:</p></div>
         &#34;&#34;&#34;Replace the row at index.
 
         Args:
-            index:
-            value:
+            index: position of reference
+            value: the new entity
+        Returns:
+            `self`
         &#34;&#34;&#34;
         if not isinstance(value, dict):
             raise TypeError(&#39;value must be a dict&#39;)
@@ -1299,21 +1554,55 @@ columns:</p></div>
                 self._index[value[&#34;id&#34;]] = value
         return self
 
-    def __delitem__(self, key: Union[int, Ref]) -&gt; Optional[Dict]:
+    def __delitem__(self, key: Union[int, Ref]) -&gt; Optional[Dict[str,Any]]:
         &#34;&#34;&#34;Delete the row at index.
 
         Args:
-            key:
+            key: The key to find the corresponding entity
+        Returns:
+            The entity or `None`
         &#34;&#34;&#34;
-        return self.pop(key)
+        self.pop(key)
 
-    def pop(self, *index) -&gt; Optional[Dict[str, Any]]:  # pylint: disable=W0222
+    @property
+    def version(self) -&gt; Version:  # pragma: no cover
+        &#34;&#34;&#34; The haystack version of grid &#34;&#34;&#34;
+        return self._version
+
+
+    @property
+    def nearest_version(self) -&gt; Version:  # pragma: no cover
+        &#34;&#34;&#34; The nearest haystack version of grid &#34;&#34;&#34;
+        return Version.nearest(self._version)
+
+
+    def get(self, index: Ref, default: Dict[str, Any] = None) -&gt; Dict[str, Any]:
+        &#34;&#34;&#34;Return an entity with the corresponding id.
+
+        Args:
+            index (Ref): The id of entity
+            default (Dict[str, Any]): The default value if the entity is not found
+
+        Returns:
+            Dict[str, Any]: The entity with the id == index or the default value
+        &#34;&#34;&#34;
+        if not self._index:
+            self.reindex()
+        return self._index.get(index, default)
+
+    def keys(self) -&gt; KeysView[Ref]:
+        &#34;&#34;&#34; The list of ids of entities with `id` &#34;&#34;&#34;
+        if not self._index:
+            self.reindex()
+        return self._index.keys()
+
+    def pop(self, *index: Union[int,Ref]) -&gt; Optional[Dict[str, Any]]:
         &#34;&#34;&#34;Delete the row at index or with specified Ref id. If multiple
         index/key was specified, all row was removed. Return the old value of
         the first deleted item.
 
         Args:
-            *index:
+            *index: A list of index (position or reference)
         &#34;&#34;&#34;
         ret_value = None
         for key in sorted(index, reverse=True):  # Remove index at the end
@@ -1336,11 +1625,11 @@ columns:</p></div>
         return ret_value
 
     def insert(self, index: int, value: Dict[str, Any]):
-        &#34;&#34;&#34;Insert a new row before index.
+        &#34;&#34;&#34;Insert a new entity before the index position.
 
         Args:
-            index (int):
-            value:
+            index (int): The position where to insert
+            value: The new entity to add
         &#34;&#34;&#34;
         if not isinstance(value, dict):
             raise TypeError(&#39;value must be a dict&#39;)
@@ -1354,7 +1643,7 @@ columns:</p></div>
         return self
 
     def reindex(self) -&gt; &#39;Grid&#39;:
-        &#34;&#34;&#34;Reindex the grid if a user, update directly an id of a row&#34;&#34;&#34;
+        &#34;&#34;&#34;Reindex the grid if the user, update directly an id of a row&#34;&#34;&#34;
         self._index = {}
         for item in self._row:
             if &#34;id&#34; in item:
@@ -1363,6 +1652,11 @@ columns:</p></div>
         return self
 
     def pack_columns(self) -&gt; &#39;Grid&#39;:
+        &#34;&#34;&#34;
+        Remove unused columns.
+        Returns:
+            `self`
+        &#34;&#34;&#34;
         using_columns = set()
         columns_keys = self.column.keys()
         for row in self._row:
@@ -1375,6 +1669,12 @@ columns:</p></div>
         return self
 
     def extends_columns(self) -&gt; &#39;Grid&#39;:
+        &#34;&#34;&#34;
+        Add missing columns
+
+        Returns:
+            `self`
+        &#34;&#34;&#34;
         new_cols = self.column.copy()
         for row in self._row:
             for k in row.keys():
@@ -1385,8 +1685,12 @@ columns:</p></div>
 
     def extend(self, values: Iterable[Dict[str, Any]]) -&gt; &#39;Grid&#39;:
         &#34;&#34;&#34;
+        Add a list of entities inside the grid
+
         Args:
-            values:
+            values: The list of entities to insert.
+        Returns:
+            `self`
         &#34;&#34;&#34;
         super().extend(values)
         for item in self._row:
@@ -1396,27 +1700,41 @@ columns:</p></div>
 
     def sort(self, tag: str) -&gt; &#39;Grid&#39;:
         &#34;&#34;&#34;
+        Sort the entity by a specific tag
         Args:
-            tag (str):
+            tag (str): The tag to use to sort the entity
+        Returns:
+            `self`
         &#34;&#34;&#34;
         self._row = sorted(self._row, key=lambda row: row[tag])
         return self
 
     def copy(self) -&gt; &#39;Grid&#39;:
+        &#34;&#34;&#34; Create a copy of current grid.
+
+        The corresponding entities were duplicate
+
+        Returns:
+            A copy of the current grid.
+        &#34;&#34;&#34;
         a_copy = copy.deepcopy(self)
         a_copy._index = None  # Remove index pylint: disable=protected-access
         return a_copy
 
     def filter(self, grid_filter: str, limit: int = 0) -&gt; &#39;Grid&#39;:
-        &#34;&#34;&#34;Return a filter version of this grid. Warning, use a
-        grid.filter(...).deepcopy() if you not want to share metadata, columns
-        and rows)
+        &#34;&#34;&#34;Return a filter version of this grid.
+
+        The entities were share between original grid and the result.
+
+        Use a `grid.filter(...).deepcopy()` if you not want to share metadata, columns
+        and rows
 
         Args:
-            grid_filter (str):
-            limit (int):
+            grid_filter (str): The filter expression (see specification)
+            limit (int): The maximum number of result
+        Returns:
+            A new grid with only the selected entities.
         &#34;&#34;&#34;
-        assert isinstance(limit, int)
         assert limit &gt;= 0
         from .grid_filter import filter_function  # pylint: disable: import-outside-toplevel
         if grid_filter is None or grid_filter.strip() == &#39;&#39;:
@@ -1474,40 +1792,27 @@ columns:</p></div>
 <dl>
 <dt id="haystackapi.Grid.nearest_version"><code class="name">var <span class="ident">nearest_version</span> : haystackapi.version.Version</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The nearest haystack version of grid</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def nearest_version(self) -&gt; Version:  # pragma: no cover
-    # Trivial function
+    &#34;&#34;&#34; The nearest haystack version of grid &#34;&#34;&#34;
     return Version.nearest(self._version)</code></pre>
-</details>
-</dd>
-<dt id="haystackapi.Grid.ver_str"><code class="name">var <span class="ident">ver_str</span> : str</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def ver_str(self) -&gt; str:  # pragma: no cover
-    # Trivial function
-    return str(self.version)</code></pre>
 </details>
 </dd>
 <dt id="haystackapi.Grid.version"><code class="name">var <span class="ident">version</span> : haystackapi.version.Version</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The haystack version of grid</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def version(self) -&gt; Version:  # pragma: no cover
-    # Trivial function
+    &#34;&#34;&#34; The haystack version of grid &#34;&#34;&#34;
     return self._version</code></pre>
 </details>
 </dd>
@@ -1518,12 +1823,22 @@ def version(self) -&gt; Version:  # pragma: no cover
 <span>def <span class="ident">copy</span></span>(<span>self) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Create a copy of current grid.</p>
+<p>The corresponding entities were duplicate</p>
+<h2 id="returns">Returns</h2>
+<p>A copy of the current grid.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def copy(self) -&gt; &#39;Grid&#39;:
+    &#34;&#34;&#34; Create a copy of current grid.
+
+    The corresponding entities were duplicate
+
+    Returns:
+        A copy of the current grid.
+    &#34;&#34;&#34;
     a_copy = copy.deepcopy(self)
     a_copy._index = None  # Remove index pylint: disable=protected-access
     return a_copy</code></pre>
@@ -1533,16 +1848,26 @@ def version(self) -&gt; Version:  # pragma: no cover
 <span>def <span class="ident">extend</span></span>(<span>self, values: Iterable[Dict[str, Any]]) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="args">Args</h2>
-<p>values:</p></div>
+<div class="desc"><p>Add a list of entities inside the grid</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>values</code></strong></dt>
+<dd>The list of entities to insert.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p><code>self</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def extend(self, values: Iterable[Dict[str, Any]]) -&gt; &#39;Grid&#39;:
     &#34;&#34;&#34;
+    Add a list of entities inside the grid
+
     Args:
-        values:
+        values: The list of entities to insert.
+    Returns:
+        `self`
     &#34;&#34;&#34;
     super().extend(values)
     for item in self._row:
@@ -1555,12 +1880,20 @@ def version(self) -&gt; Version:  # pragma: no cover
 <span>def <span class="ident">extends_columns</span></span>(<span>self) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Add missing columns</p>
+<h2 id="returns">Returns</h2>
+<p><code>self</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def extends_columns(self) -&gt; &#39;Grid&#39;:
+    &#34;&#34;&#34;
+    Add missing columns
+
+    Returns:
+        `self`
+    &#34;&#34;&#34;
     new_cols = self.column.copy()
     for row in self._row:
         for k in row.keys():
@@ -1574,26 +1907,37 @@ def version(self) -&gt; Version:  # pragma: no cover
 <span>def <span class="ident">filter</span></span>(<span>self, grid_filter: str, limit: int = 0) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Return a filter version of this grid. Warning, use a
-grid.filter(&hellip;).deepcopy() if you not want to share metadata, columns
-and rows)</p>
+<div class="desc"><p>Return a filter version of this grid.</p>
+<p>The entities were share between original grid and the result.</p>
+<p>Use a <code>grid.filter(&hellip;).deepcopy()</code> if you not want to share metadata, columns
+and rows</p>
 <h2 id="args">Args</h2>
-<p>grid_filter (str):
-limit (int):</p></div>
+<dl>
+<dt><strong><code>grid_filter</code></strong> :&ensp;<code>str</code></dt>
+<dd>The filter expression (see specification)</dd>
+<dt><strong><code>limit</code></strong> :&ensp;<code>int</code></dt>
+<dd>The maximum number of result</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A new grid with only the selected entities.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def filter(self, grid_filter: str, limit: int = 0) -&gt; &#39;Grid&#39;:
-    &#34;&#34;&#34;Return a filter version of this grid. Warning, use a
-    grid.filter(...).deepcopy() if you not want to share metadata, columns
-    and rows)
+    &#34;&#34;&#34;Return a filter version of this grid.
+
+    The entities were share between original grid and the result.
+
+    Use a `grid.filter(...).deepcopy()` if you not want to share metadata, columns
+    and rows
 
     Args:
-        grid_filter (str):
-        limit (int):
+        grid_filter (str): The filter expression (see specification)
+        limit (int): The maximum number of result
+    Returns:
+        A new grid with only the selected entities.
     &#34;&#34;&#34;
-    assert isinstance(limit, int)
     assert limit &gt;= 0
     from .grid_filter import filter_function  # pylint: disable: import-outside-toplevel
     if grid_filter is None or grid_filter.strip() == &#39;&#39;:
@@ -1623,13 +1967,12 @@ limit (int):</p></div>
 <dt><strong><code>index</code></strong> :&ensp;<code><a title="haystackapi.Ref" href="#haystackapi.Ref">Ref</a></code></dt>
 <dd>The id of entity</dd>
 <dt><strong><code>default</code></strong> :&ensp;<code>Dict[str, Any]</code></dt>
-<dd>The default value if the entity is not
-found</dd>
+<dd>The default value if the entity is not found</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>Dict[str, Any]</code></dt>
-<dd>The entity with the id == index</dd>
+<dd>The entity with the id == index or the default value</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -1640,20 +1983,11 @@ found</dd>
 
     Args:
         index (Ref): The id of entity
-        default (Dict[str, Any]): The default value if the entity is not
-            found
+        default (Dict[str, Any]): The default value if the entity is not found
 
     Returns:
-        Dict[str, Any]: The entity with the id == index
+        Dict[str, Any]: The entity with the id == index or the default value
     &#34;&#34;&#34;
-    # &#39;&#39;&#39;
-    # Return an entity with the corresponding id.
-    #
-    # Attributes:
-    #     :param index: A haystack reference
-    #
-    #     :param default: Value if the reference was not founded
-    # &#39;&#39;&#39;
     if not self._index:
         self.reindex()
     return self._index.get(index, default)</code></pre>
@@ -1663,20 +1997,24 @@ found</dd>
 <span>def <span class="ident">insert</span></span>(<span>self, index: int, value: Dict[str, Any])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Insert a new row before index.</p>
+<div class="desc"><p>Insert a new entity before the index position.</p>
 <h2 id="args">Args</h2>
-<p>index (int):
-value:</p></div>
+<dl>
+<dt><strong><code>index</code></strong> :&ensp;<code>int</code></dt>
+<dd>The position where to insert</dd>
+<dt><strong><code>value</code></strong></dt>
+<dd>The new entity to add</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def insert(self, index: int, value: Dict[str, Any]):
-    &#34;&#34;&#34;Insert a new row before index.
+    &#34;&#34;&#34;Insert a new entity before the index position.
 
     Args:
-        index (int):
-        value:
+        index (int): The position where to insert
+        value: The new entity to add
     &#34;&#34;&#34;
     if not isinstance(value, dict):
         raise TypeError(&#39;value must be a dict&#39;)
@@ -1694,12 +2032,13 @@ value:</p></div>
 <span>def <span class="ident">keys</span></span>(<span>self) ‑> KeysView[haystackapi.datatypes.Ref]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The list of ids of entities with <code>id</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def keys(self) -&gt; KeysView[Ref]:
+    &#34;&#34;&#34; The list of ids of entities with `id` &#34;&#34;&#34;
     if not self._index:
         self.reindex()
     return self._index.keys()</code></pre>
@@ -1709,12 +2048,19 @@ value:</p></div>
 <span>def <span class="ident">pack_columns</span></span>(<span>self) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Remove unused columns.</p>
+<h2 id="returns">Returns</h2>
+<p><code>self</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def pack_columns(self) -&gt; &#39;Grid&#39;:
+    &#34;&#34;&#34;
+    Remove unused columns.
+    Returns:
+        `self`
+    &#34;&#34;&#34;
     using_columns = set()
     columns_keys = self.column.keys()
     for row in self._row:
@@ -1728,25 +2074,28 @@ value:</p></div>
 </details>
 </dd>
 <dt id="haystackapi.Grid.pop"><code class="name flex">
-<span>def <span class="ident">pop</span></span>(<span>self, *index) ‑> Union[Dict[str, Any], NoneType]</span>
+<span>def <span class="ident">pop</span></span>(<span>self, *index: Union[int, haystackapi.datatypes.Ref]) ‑> Union[Dict[str, Any], NoneType]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Delete the row at index or with specified Ref id. If multiple
 index/key was specified, all row was removed. Return the old value of
 the first deleted item.</p>
 <h2 id="args">Args</h2>
-<p>*index:</p></div>
+<dl>
+<dt><strong><code>*index</code></strong></dt>
+<dd>A list of index (position or reference)</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def pop(self, *index) -&gt; Optional[Dict[str, Any]]:  # pylint: disable=W0222
+<pre><code class="python">def pop(self, *index: Union[int,Ref]) -&gt; Optional[Dict[str, Any]]:
     &#34;&#34;&#34;Delete the row at index or with specified Ref id. If multiple
     index/key was specified, all row was removed. Return the old value of
     the first deleted item.
 
     Args:
-        *index:
+        *index: A list of index (position or reference)
     &#34;&#34;&#34;
     ret_value = None
     for key in sorted(index, reverse=True):  # Remove index at the end
@@ -1773,13 +2122,13 @@ the first deleted item.</p>
 <span>def <span class="ident">reindex</span></span>(<span>self) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Reindex the grid if a user, update directly an id of a row</p></div>
+<div class="desc"><p>Reindex the grid if the user, update directly an id of a row</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def reindex(self) -&gt; &#39;Grid&#39;:
-    &#34;&#34;&#34;Reindex the grid if a user, update directly an id of a row&#34;&#34;&#34;
+    &#34;&#34;&#34;Reindex the grid if the user, update directly an id of a row&#34;&#34;&#34;
     self._index = {}
     for item in self._row:
         if &#34;id&#34; in item:
@@ -1792,16 +2141,25 @@ the first deleted item.</p>
 <span>def <span class="ident">sort</span></span>(<span>self, tag: str) ‑> haystackapi.grid.Grid</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="args">Args</h2>
-<p>tag (str):</p></div>
+<div class="desc"><p>Sort the entity by a specific tag</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>tag</code></strong> :&ensp;<code>str</code></dt>
+<dd>The tag to use to sort the entity</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p><code>self</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sort(self, tag: str) -&gt; &#39;Grid&#39;:
     &#34;&#34;&#34;
+    Sort the entity by a specific tag
     Args:
-        tag (str):
+        tag (str): The tag to use to sort the entity
+    Returns:
+        `self`
     &#34;&#34;&#34;
     self._row = sorted(self._row, key=lambda row: row[tag])
     return self</code></pre>
@@ -2012,7 +2370,8 @@ the code detect that, and can calculate the set of implemented operations.</p></
     @abstractmethod
     def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
         &#34;&#34;&#34; Implement the Haystack &#39;nav&#39; ops
-        This operation allows servers to expose the database in a human-friendly tree (or graph) that can be explored
+        This operation allows servers to expose the database in a human-friendly tree (or graph)
+        that can be explored
 
         Args:
              nav_id (str): The string for nav id column
@@ -2131,7 +2490,9 @@ the code detect that, and can calculate the set of implemented operations.</p></
 
         Args:
             entity_id (Ref): The entity to read
-            dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date range. May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}), {dateTime}
+            dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date
+            range. May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
+            {dateTime}
             date_version ( datetime, optional): The optional date version to update
 
         Returns:
@@ -2328,7 +2689,9 @@ def about(self, home: str) -&gt; Grid:
 <dt><strong><code>entity_id</code></strong> :&ensp;<code><a title="haystackapi.Ref" href="#haystackapi.Ref">Ref</a></code></dt>
 <dd>The entity to read</dd>
 <dt><strong><code>dates_range</code></strong> :&ensp;<code>Union[Union[datetime, str], Tuple[datetime, datetime]]</code></dt>
-<dd>The date range. May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}), {dateTime}</dd>
+<dd>The date</dd>
+<dt>range. May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}),</dt>
+<dt>{dateTime}</dt>
 <dt><strong><code>date_version</code></strong> :&ensp;<code> datetime</code>, optional</dt>
 <dd>The optional date version to update</dd>
 </dl>
@@ -2349,7 +2712,9 @@ def his_read(
 
     Args:
         entity_id (Ref): The entity to read
-        dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date range. May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}), {dateTime}
+        dates_range (Union[Union[datetime, str], Tuple[datetime, datetime]]): The date
+        range. May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
+        {dateTime}
         date_version ( datetime, optional): The optional date version to update
 
     Returns:
@@ -2447,7 +2812,8 @@ def invoke_action(
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'nav' ops
-This operation allows servers to expose the database in a human-friendly tree (or graph) that can be explored</p>
+This operation allows servers to expose the database in a human-friendly tree (or graph)
+that can be explored</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>nav_id</code></strong> :&ensp;<code>str</code></dt>
@@ -2460,7 +2826,8 @@ This operation allows servers to expose the database in a human-friendly tree (o
 <pre><code class="python">@abstractmethod
 def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
     &#34;&#34;&#34; Implement the Haystack &#39;nav&#39; ops
-    This operation allows servers to expose the database in a human-friendly tree (or graph) that can be explored
+    This operation allows servers to expose the database in a human-friendly tree (or graph)
+    that can be explored
 
     Args:
          nav_id (str): The string for nav id column
@@ -2845,27 +3212,33 @@ def watch_unsub(
 <span>(</span><span>initial: Union[NoneType, List[Tuple[str, Any]], Dict[str, Any]] = None, validate_fn: Union[Callable[[Any], bool], NoneType] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>An object that contains some metadata fields. Used as a convenience
-base-class for grids and columns, both of which have metadata.</p>
+<div class="desc"><p>An object that contains some metadata fields.</p>
+<p>Used as a convenience base-class for grids and columns, both of which have metadata.</p>
+<p>A dict-like object that permits value ordering/re-ordering.</p>
 <h2 id="args">Args</h2>
-<p>initial:
-validate_fn:</p></div>
+<dl>
+<dt><strong><code>initial</code></strong></dt>
+<dd>Initial values</dd>
+<dt><strong><code>validate_fn</code></strong></dt>
+<dd>A validated function</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class MetadataObject(SortableDict):  # pylint: disable=too-many-ancestors
-    &#34;&#34;&#34;An object that contains some metadata fields. Used as a convenience
-    base-class for grids and columns, both of which have metadata.
+    &#34;&#34;&#34;An object that contains some metadata fields.
+
+    Used as a convenience base-class for grids and columns, both of which have metadata.
     &#34;&#34;&#34;
 
     def append(self, key: str, value: Any = MARKER, replace: bool = True) -&gt; &#39;MetadataObject&#39;:
         &#34;&#34;&#34;Append the item to the metadata.
 
         Args:
-            key (str):
-            value (Any):
-            replace (bool):
+            key (str): The tag name
+            value (Any): The value
+            replace (bool): Flag to replace or not the value
         &#34;&#34;&#34;
         self.add_item(key, value, replace=replace)
         return self
@@ -2874,8 +3247,8 @@ validate_fn:</p></div>
         &#34;&#34;&#34;Append the items to the metadata.
 
         Args:
-            items:
-            replace (bool):
+            items: A list of items
+            replace (bool): Flag to replace or not the value
         &#34;&#34;&#34;
         if isinstance(items, (dict, SortableDict)):
             items = list(items.items())
@@ -2884,6 +3257,11 @@ validate_fn:</p></div>
             self.append(key, value, replace=replace)
 
     def copy(self) -&gt; &#39;MetadataObject&#39;:
+        &#34;&#34;&#34;
+        Deep copy of metadata
+        Returns:
+            A new metadata object
+        &#34;&#34;&#34;
         return copy.deepcopy(self)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -2904,9 +3282,14 @@ validate_fn:</p></div>
 <dd>
 <div class="desc"><p>Append the item to the metadata.</p>
 <h2 id="args">Args</h2>
-<p>key (str):
-value (Any):
-replace (bool):</p></div>
+<dl>
+<dt><strong><code>key</code></strong> :&ensp;<code>str</code></dt>
+<dd>The tag name</dd>
+<dt><strong><code>value</code></strong> :&ensp;<code>Any</code></dt>
+<dd>The value</dd>
+<dt><strong><code>replace</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Flag to replace or not the value</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2915,9 +3298,9 @@ replace (bool):</p></div>
     &#34;&#34;&#34;Append the item to the metadata.
 
     Args:
-        key (str):
-        value (Any):
-        replace (bool):
+        key (str): The tag name
+        value (Any): The value
+        replace (bool): Flag to replace or not the value
     &#34;&#34;&#34;
     self.add_item(key, value, replace=replace)
     return self</code></pre>
@@ -2927,12 +3310,19 @@ replace (bool):</p></div>
 <span>def <span class="ident">copy</span></span>(<span>self) ‑> haystackapi.metadata.MetadataObject</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Deep copy of metadata</p>
+<h2 id="returns">Returns</h2>
+<p>A new metadata object</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def copy(self) -&gt; &#39;MetadataObject&#39;:
+    &#34;&#34;&#34;
+    Deep copy of metadata
+    Returns:
+        A new metadata object
+    &#34;&#34;&#34;
     return copy.deepcopy(self)</code></pre>
 </details>
 </dd>
@@ -2942,8 +3332,12 @@ replace (bool):</p></div>
 <dd>
 <div class="desc"><p>Append the items to the metadata.</p>
 <h2 id="args">Args</h2>
-<p>items:
-replace (bool):</p></div>
+<dl>
+<dt><strong><code>items</code></strong></dt>
+<dd>A list of items</dd>
+<dt><strong><code>replace</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Flag to replace or not the value</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2952,8 +3346,8 @@ replace (bool):</p></div>
     &#34;&#34;&#34;Append the items to the metadata.
 
     Args:
-        items:
-        replace (bool):
+        items: A list of items
+        replace (bool): Flag to replace or not the value
     &#34;&#34;&#34;
     if isinstance(items, (dict, SortableDict)):
         items = list(items.items())
@@ -2969,10 +3363,7 @@ replace (bool):</p></div>
 <span>(</span><span>m: float, unit: Union[str, NoneType] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A float value with with pint unit.</p>
-<h2 id="args">Args</h2>
-<p>m (float):
-unit:</p></div>
+<div class="desc"><p>A float value with with pint unit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2982,33 +3373,28 @@ unit:</p></div>
 
     def __new__(cls, m: float, unit: Optional[str] = None):
         &#34;&#34;&#34;
+        Create a new quantity
         Args:
-            m (float):
-            unit:
+            m (float):The quantity
+            unit: An optional unit (must be compatible with pint)
         &#34;&#34;&#34;
-        return PintQuantity(m, to_pint(unit))
+        return _PintQuantity(m, to_pint(unit))
 
     # Fake ctr to help audit tools
     def __init__(self, m: float, unit: Optional[str] = None):
-        &#34;&#34;&#34;
-        Args:
-            m (float):
-            unit:
-        &#34;&#34;&#34;
         self.m = m  # pylint: disable=invalid-name
         self.unit = unit</code></pre>
 </details>
 </dd>
 <dt id="haystackapi.Ref"><code class="flex name class">
 <span>class <span class="ident">Ref</span></span>
-<span>(</span><span>name: str, value: Union[str, NoneType] = None, has_value: bool = False)</span>
+<span>(</span><span>name: str, value: Union[str, NoneType] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A reference to an object in Project Haystack.</p>
 <h2 id="args">Args</h2>
 <p>name (str):
-value:
-has_value (bool):</p></div>
+value:</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3016,25 +3402,23 @@ has_value (bool):</p></div>
 <pre><code class="python">class Ref:
     &#34;&#34;&#34;A reference to an object in Project Haystack.&#34;&#34;&#34;
 
-    # The grammar specifies that it can have a string following a space,
-    # but the documentation does not specify what this string encodes.  This is
-    # distinct from the reference name itself immediately following the @
-    # symbol.  I&#39;m guessing it&#39;s some kind of value.
-    def __init__(self, name: str, value: Optional[str] = None, has_value: bool = False):
+    def __init__(self, name: str, value: Optional[str] = None):
         &#34;&#34;&#34;
         Args:
             name (str):
             value:
-            has_value (bool):
         &#34;&#34;&#34;
         assert isinstance(name, str) and re.match(&#34;^[a-zA-Z0-9_:\\-.~]+$&#34;, name)
         self.name = name
         self.value = value
-        self.has_value = has_value or (value is not None)
+
+    @property
+    def has_value(self):
+        return self.value is not None
 
     def __repr__(self) -&gt; str:
-        return &#39;%s(%r, %r, %r)&#39; % (
-            self.__class__.__name__, self.name, self.value, self.has_value
+        return &#39;%s(%r, %r)&#39; % (
+            self.__class__.__name__, self.name, self.value
         )
 
     def __str__(self) -&gt; str:
@@ -3069,6 +3453,21 @@ has_value (bool):</p></div>
     def __hash__(self) -&gt; int:
         return hash(self.name)</code></pre>
 </details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="haystackapi.Ref.has_value"><code class="name">var <span class="ident">has_value</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def has_value(self):
+    return self.value is not None</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="haystackapi.Uri"><code class="flex name class">
 <span>class <span class="ident">Uri</span></span>
@@ -3101,12 +3500,15 @@ types.</p></div>
 </dd>
 <dt id="haystackapi.Version"><code class="flex name class">
 <span>class <span class="ident">Version</span></span>
-<span>(</span><span>ver_str: str)</span>
+<span>(</span><span>ver_str: Union[str, ForwardRef('<a title="haystackapi.Version" href="#haystackapi.Version">Version</a>')])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A Project Haystack version number</p>
 <h2 id="args">Args</h2>
-<p>ver_str (str):</p></div>
+<dl>
+<dt><strong><code>ver_str</code></strong> :&ensp;<code>str</code></dt>
+<dd>The version str</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3114,17 +3516,17 @@ types.</p></div>
 <pre><code class="python">class Version:
     &#34;&#34;&#34;A Project Haystack version number&#34;&#34;&#34;
 
-    def __init__(self, ver_str: str):
+    def __init__(self, ver_str: Union[str,&#39;Version&#39;]):
         &#34;&#34;&#34;
         Args:
-            ver_str (str):
+            ver_str (str): The version str
         &#34;&#34;&#34;
         if isinstance(ver_str, Version):
             # Clone constructor
             self.version_nums = ver_str.version_nums
             self.version_extra = ver_str.version_extra
         else:
-            match = VERSION_RE.match(ver_str)
+            match = _VERSION_RE.match(ver_str)
             if match is None:
                 raise ValueError(&#39;Not a valid version string: %r&#39; % ver_str)
 
@@ -3144,11 +3546,12 @@ types.</p></div>
         return base
 
     def _cmp(self, other: Union[&#39;Version&#39;, str]) -&gt; int:
-        &#34;&#34;&#34;Compare two Project Haystack version strings, then return
-            -1 if self &lt; other, 0 if self == other or 1 if self &gt; other.
+        &#34;&#34;&#34;Compare two Project Haystack version strings
 
         Args:
-            other:
+            other: Other version
+        Returns
+             -1 if self &lt; other, 0 if self == other or 1 if self &gt; other.
         &#34;&#34;&#34;
         if isinstance(other, str):
             other = Version(other)
@@ -3210,7 +3613,9 @@ types.</p></div>
         &#34;&#34;&#34;Retrieve the official version nearest the one given.
 
         Args:
-            ver:
+            ver: The version to analyse
+        Returns:
+            The version nearest the one given
         &#34;&#34;&#34;
         if isinstance(ver, str):
             ver = Version(ver)
@@ -3260,7 +3665,12 @@ types.</p></div>
 <dd>
 <div class="desc"><p>Retrieve the official version nearest the one given.</p>
 <h2 id="args">Args</h2>
-<p>ver:</p></div>
+<dl>
+<dt><strong><code>ver</code></strong></dt>
+<dd>The version to analyse</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The version nearest the one given</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3270,7 +3680,9 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
     &#34;&#34;&#34;Retrieve the official version nearest the one given.
 
     Args:
-        ver:
+        ver: The version to analyse
+    Returns:
+        The version nearest the one given
     &#34;&#34;&#34;
     if isinstance(ver, str):
         ver = Version(ver)
@@ -3322,8 +3734,12 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
 <dd>
 <div class="desc"><p>A convenience class to allow identification of a Xstr</p>
 <h2 id="args">Args</h2>
-<p>encoding (str):
-data (str):</p></div>
+<dl>
+<dt><strong><code>encoding</code></strong> :&ensp;<code>str</code></dt>
+<dd>encoding format (accept <code>hex</code> and <code>b64</code>)</dd>
+<dt><strong><code>data</code></strong> :&ensp;<code>str</code></dt>
+<dd>The data</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3334,8 +3750,8 @@ data (str):</p></div>
     def __init__(self, encoding: str, data: str):
         &#34;&#34;&#34;
         Args:
-            encoding (str):
-            data (str):
+            encoding (str): encoding format (accept `hex` and `b64`)
+            data (str): The data
         &#34;&#34;&#34;
         self.encoding = encoding
         if encoding == &#34;hex&#34;:
@@ -3346,6 +3762,11 @@ data (str):</p></div>
             self.data = data.encode(&#39;ascii&#39;)  # Not decoded
 
     def data_to_string(self) -&gt; str:
+        &#34;&#34;&#34;
+        Dump the binary data to string with the corresponding encoding.
+        Returns:
+            A string
+        &#34;&#34;&#34;
         if self.encoding == &#34;hex&#34;:
             return binascii.b2a_hex(self.data).decode(&#34;ascii&#34;)
         if self.encoding == &#34;b64&#34;:
@@ -3371,12 +3792,19 @@ data (str):</p></div>
 <span>def <span class="ident">data_to_string</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Dump the binary data to string with the corresponding encoding.</p>
+<h2 id="returns">Returns</h2>
+<p>A string</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def data_to_string(self) -&gt; str:
+    &#34;&#34;&#34;
+    Dump the binary data to string with the corresponding encoding.
+    Returns:
+        A string
+    &#34;&#34;&#34;
     if self.encoding == &#34;hex&#34;:
         return binascii.b2a_hex(self.data).decode(&#34;ascii&#34;)
     if self.encoding == &#34;b64&#34;:
@@ -3446,7 +3874,6 @@ data (str):</p></div>
 <li><code><a title="haystackapi.Grid.pop" href="#haystackapi.Grid.pop">pop</a></code></li>
 <li><code><a title="haystackapi.Grid.reindex" href="#haystackapi.Grid.reindex">reindex</a></code></li>
 <li><code><a title="haystackapi.Grid.sort" href="#haystackapi.Grid.sort">sort</a></code></li>
-<li><code><a title="haystackapi.Grid.ver_str" href="#haystackapi.Grid.ver_str">ver_str</a></code></li>
 <li><code><a title="haystackapi.Grid.version" href="#haystackapi.Grid.version">version</a></code></li>
 </ul>
 </li>
@@ -3486,6 +3913,9 @@ data (str):</p></div>
 </li>
 <li>
 <h4><code><a title="haystackapi.Ref" href="#haystackapi.Ref">Ref</a></code></h4>
+<ul class="">
+<li><code><a title="haystackapi.Ref.has_value" href="#haystackapi.Ref.has_value">has_value</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="haystackapi.Uri" href="#haystackapi.Uri">Uri</a></code></h4>

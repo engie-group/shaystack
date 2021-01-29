@@ -29,10 +29,11 @@ At this time (2021/1/1), here are the differences.
 
 To port a code from `hszinc` to `haystackapi`:
 
-|  hszinc                   | haystackapi                   |
-| ------------------------- | ----------------------------- |
-| `import hszinc`           | `import haystackapi`          |
-| `Grid()`                  | `Grid(version=VER_2_0)`       |
-| `g[0]["not"]==None`       | `"not" in g[0]`               |
-| `g.append({"id":"@abc"})` | `g.append({"id":Ref("abc")}`  |
-| `Quantity(1,'kg').value`  | `Quantity(1,'kg').m`          |
+|  hszinc                       | haystackapi                   |
+| ----------------------------- | ----------------------------- |
+| `import hszinc`               | `import haystackapi`          |
+| `Grid()`                      | `Grid(version=VER_2_0)`       |
+| `g[0]["not"]==None`           | `"not" in g[0]`               |
+| `g.append({"id":"@abc"})`     | `g.append({"id":Ref("abc")}`  |
+| `Quantity(1,'kg').value`      | `Quantity(1,'kg').m`          |
+| `Ref('abc','an entity',True)` | `Ref('abc','an entity')`      |

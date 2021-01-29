@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+* - Update the Makefile to produce the documentation
+* - Generate new docs with github pages
 * Change doc and licence
 * - Switch to PBR
 * Delete index.md

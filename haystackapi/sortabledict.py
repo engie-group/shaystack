@@ -9,7 +9,7 @@
 """
 A sortable dictionary
 """
-import collections.abc as col
+import collections as col
 import copy
 import sys
 from typing import Callable, Any, Optional, Dict, Iterator, Union, List, Tuple
@@ -24,9 +24,10 @@ class SortableDict(col.MutableMapping):
                  initial: Union[None, List[Tuple[str, Any]], Dict[str, Any]] = None,
                  validate_fn: Optional[Callable[[Any], bool]] = None):
         """
+        A dict-like object that permits value ordering/re-ordering.
         Args:
-            initial:
-            validate_fn:
+            initial: Initial values
+            validate_fn: A validated function
         """
         self._values = {}
         self._order = []
@@ -49,25 +50,12 @@ class SortableDict(col.MutableMapping):
                            ]))
 
     def __getitem__(self, key: Union[str, int]) -> Any:
-        """
-        Args:
-            key:
-        """
         return self._values[key]
 
     def __setitem__(self, key: Union[str, int], value: Any) -> Any:
-        """
-        Args:
-            key:
-            value (Any):
-        """
         return self.add_item(key, value)
 
     def __delitem__(self, key: Union[str, int]) -> None:
-        """
-        Args:
-            key:
-        """
         del self._values[key]
         self._order.remove(key)
 
@@ -99,12 +87,12 @@ class SortableDict(col.MutableMapping):
         location is specified explicitly.
 
         Args:
-            key:
-            value (Any):
-            after (bool):
-            index:
-            pos_key:
-            replace (bool):
+            key: The key value or position
+            value: The value to insert
+            after: Flag after or before
+            index: Position to add after or before
+            pos_key: Key position
+            replace: Replace the data ?
         """
         if self._validate_fn:
             self._validate_fn(value)
@@ -147,7 +135,9 @@ class SortableDict(col.MutableMapping):
         """Return the key at the given index.
 
         Args:
-            index (int):
+            index: Index
+        Returns
+            key at position
         """
         return self._order[index]
 
@@ -155,7 +145,9 @@ class SortableDict(col.MutableMapping):
         """Return the value at the given index.
 
         Args:
-            index (int):
+            index: Index
+        Returns:
+            Value at position
         """
         return self[self.at(index)]
 
@@ -168,14 +160,22 @@ class SortableDict(col.MutableMapping):
         return self._order.index(*args, **kwargs)
 
     def reverse(self) -> 'SortableDict':
+        """
+        Reverse the orders
+        Returns:
+            `self`
+        """
         self._order.reverse()
         return self
 
     def sort(self, *args, **kwargs) -> 'SortableDict':
         """
+        Sort the dictionary
         Args:
             *args:
             **kwargs:
+        Returns:
+            `self`
         """
         self._order.sort(*args, **kwargs)
         return self
@@ -184,9 +184,16 @@ class SortableDict(col.MutableMapping):
         """Remove the key at the given index and return its value.
 
         Args:
-            index (int):
+            index: Position
+        Returns:
+            the value
         """
         return self.pop(self.at(index))
 
     def copy(self) -> 'SortableDict':
+        """
+        Deep copy.
+        Returns:
+            a new instance
+        """
         return copy.deepcopy(self)

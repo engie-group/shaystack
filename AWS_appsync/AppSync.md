@@ -4,7 +4,7 @@ With AWS AppSync, it's possible to merge the Haystack GraphQL API with another G
 
 ## Schema
 
-The current GraphQL schema for Hystack is [here](https://github.com/pprados/haystackapi/blob/develop/schema.graphql)
+The current GraphQL schema for Hystack is [here](../schema.graphql)
 
 ## Delegate part of global GraphQL to haystack GraphQL API
 
@@ -41,8 +41,7 @@ In the AWS AppSync console:
 ![alt New Data Source][newFunction]
 
 * Import the schema
-  - Copy the body of [`schema.graphql`](https://github.com/pprados/haystackapi/blob/develop/schema.graphql) in the
-    schema of AppSync
+  - Copy the body of [`schema.graphql`](../schema.graphql) in the schema of AppSync
   - Save the schema
   - Add the end of the Resolver list, attach a resolver for the filed `haystack`
 

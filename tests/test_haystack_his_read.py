@@ -1,8 +1,8 @@
 from datetime import datetime, date, timedelta
 
-import pytz  # pylint: disable=wrong-import-order
-from mock import patch  # pylint: disable=wrong-import-order
-from tzlocal.unix import get_localzone  # pylint: disable=wrong-import-order
+import pytz
+from mock import patch
+from tzlocal.unix import get_localzone
 
 import haystackapi
 from haystackapi import Ref

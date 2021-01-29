@@ -114,7 +114,7 @@ class Provider(HaystackInterface):
 
     @overrides
     def his_write(
-            self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime] = None
+            self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime]
     ) -> Grid:  # pylint: disable=no-self-use
         """Return EmptyGrid."""
         log.info(

@@ -31,8 +31,11 @@ ARG PIP_INDEX_URL=https://pypi.python.org/pypi
 ARG PIP_EXTRA_INDEX_URL=
 ARG PORT=3000
 
+# PPR OK    apt-get install -y build-essential git nano vim libpq-dev python-dev docker.io ;
+# PPR OK    apt-get install -y make git nano vim libpq-dev python-dev docker.io ;
+# PPR OK    apt-get install -y make git nano vim docker.io ;
 RUN apt-get update ; \
-    apt-get install -y make nano vim docker.io gettext ; \
+    apt-get install -y make nano vim docker.io ; \
     apt-get clean ; \
     rm -rf /var/lib/apt/lists/*
 RUN adduser --disabled-password --uid ${UID} --gecos '' ${USERNAME} && \

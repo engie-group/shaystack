@@ -267,11 +267,13 @@ import haystackapi
 ...
 ```
 
-To release a new official public version:
+To release a new official public version, publish the code in `master` branch, and:
 
 ```shell
 $ # Commit
 $ git commit -a
+$ # Create a branch for the realase
+$ git checkout -b release/X.Y.Z
 $ # Tag the version
 $ git tag vX.Y.Z
 $ # Publish the tag

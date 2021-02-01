@@ -22,7 +22,7 @@ You can add some environment variable in `.env` file (See `.env.template`).
 
 This project use a `Makefile` (>4.0) to integrate all tools
 and [Conda](https://docs.conda.io/projects/conda/en/latest/index.html)
-to manage dependencies and others tools.
+to manage dependencies and others tools and gitflow (https://github.com/nvie/gitflow).
 
 To initialise the Conda environment, use `make configure` and activate the conda environment. Then, it's possible
 to `test`, `start-api`, etc. See `make help` to print all major target.
@@ -272,12 +272,11 @@ To release a new official public version, publish the code in `master` branch, a
 ```shell
 $ # Commit
 $ git commit -a
-$ # Create a branch for the realase
-$ git checkout -b release/X.Y.Z
-$ # Tag the version
-$ git tag vX.Y.Z
-$ # Publish the tag
-$ git push origin vX.Y.Z
+$ # Start release
+$ git flow release start X.Y
+$ ...
+$ # Stop the release
+$ git flow release stop X.Y
 $ # Publish the release
 $ make release
 ```

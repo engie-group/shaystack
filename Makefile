@@ -918,9 +918,13 @@ dist/$(PRJ_PACKAGE)-*.tar.gz: $(REQUIREMENTS) schema.graphql | dist/
 sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
 sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
 
-.PHONY: dist
+.PHONY: clean-dist dist
+
+clean-dist:
+	rm -Rf dist/*
+
 ## Create a full distribution
-dist: bdist sdist docker-build
+dist: clean-dist bdist sdist docker-build
 	@echo -e "$(yellow)Package for distribution created$(normal)"
 
 .PHONY: check-twine

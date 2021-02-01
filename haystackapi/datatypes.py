@@ -14,13 +14,9 @@ See https://www.project-haystack.org/doc/TagModel#tagKinds
 import base64
 import binascii
 import re
-from abc import ABCMeta
-from numbers import Number
-from typing import Optional, Tuple, Union
+from typing import Optional
 
-import six
-
-from .pintutil import to_pint, unit_reg
+from .pintutil import unit_reg, _to_pint_unit
 
 _STR_SUB = [
     ('\b', '\\b'),
@@ -31,281 +27,24 @@ _STR_SUB = [
 ]
 
 
-# Will keep in memory the way we want Quantity being created
+# Update the unit when create a pint.Quantity
+class Quantity(unit_reg.Quantity):
+    """
+    A quantity with unit.
+    The quantity use the pint framework and can be converted.
+    See [here](https://pint.readthedocs.io/en/stable/tutorial.html#defining-a-quantity)
 
-class Quantity(six.with_metaclass(ABCMeta, object)):  # pylint: disable=too-few-public-methods
-    """A float value with with pint unit.
-        Args:
-            m:The quantity
-            unit: An optional unit (must be compatible with pint)
+    Properties:
+        value: The magnitude
+        units: Pint unit
+        symbol: The original symbol
     """
 
-    def __new__(cls, m: float, unit: Optional[str] = None):
-        return _PintQuantity(m, to_pint(unit))
-
-    # Fake ctr to help audit tools
-    def __init__(self, m: float, unit: Optional[str] = None):
-        self.m = m  # pylint: disable=invalid-name
-        self.unit = unit
-
-
-class Qty:
-    """A quantity is a scalar value (floating point) with a unit.
-        Args:
-            m:The quantity
-            unit: An optional unit (must be compatible with pint)
-    """
-
-    def __init__(self, value: float, unit: Optional[str]):
-        self.value = value
-        self.unit = unit
-
-    def __repr__(self) -> str:
-        return '%s(%r, %r)' % (
-            self.__class__.__name__, self.value, self.unit
-        )
-
-    def __str__(self) -> str:
-        return '%s %s' % (
-            self.value, self.unit
-        )
-
-    def __index__(self) -> float:
-        return self.value.__index__()
-
-    def __oct__(self) -> str:  # pragma: no cover
-        return oct(int(self.value))
-
-    def __hex__(self) -> str:  # pragma: no cover
-        return hex(int(self.value))
-
-    def __int__(self) -> int:  # pragma: no cover
-        return int(self.value)
-
-    def __complex__(self) -> complex:
-        return complex(self.value)
-
-    def __float__(self) -> float:
-        return float(self.value)
-
-    def __neg__(self) -> 'Qty':
-        return Qty(-self.value, self.unit)
-
-    def __pos__(self) -> 'Qty':
-        return self
-
-    def __abs__(self) -> 'Qty':
-        return Qty(abs(self.value), self.unit)
-
-    def __invert__(self) -> 'Qty':
-        return Qty(~self.value, self.unit)
-
-    def __add__(self, other: Union[Number, 'Qty']) -> 'Qty':
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(self.value + other, self.unit)
-
-    def __sub__(self, other: Union[Number, 'Qty']) -> 'Qty':
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(self.value - other, self.unit)
-
-    def __mul__(self, other: Union[Number, 'Qty']) -> 'Qty':
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(self.value * other, self.unit)
-
-    def __div__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(self.value / other, self.unit)
-
-    def __truediv__(self, other: Union[Number, 'Qty']) -> 'Qty':
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(self.value / other, self.unit)
-
-    def __floordiv__(self, other: Union[Number, 'Qty']) -> 'Qty':
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(self.value // other, self.unit)
-
-    def __mod__(self, other: Union[Number, 'Qty']) -> 'Qty':
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(self.value % other, self.unit)
-
-    def __divmod__(self, other: Union[Number, 'Qty']) -> Tuple[float, float]:
-        if isinstance(other, Qty):
-            other = other.value
-
-        return divmod(self.value, other)
-
-    def __pow__(self, other: Union[Number, 'Qty'], modulo: Optional[int] = None) -> complex:
-        if isinstance(other, Qty):
-            other = other.value
-        return pow(self.value, other, modulo)
-
-    def __lshift__(self, other: Union[Number, 'Qty']) -> 'Qty':
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(self.value << other, self.unit)
-
-    def __rshift__(self, other: Union[Number, 'Qty']) -> 'Qty':
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(self.value >> other, self.unit)
-
-    def __and__(self, other: Union[Number, 'Qty']) -> 'Qty':
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(self.value & other, self.unit)
-
-    def __xor__(self, other: Union[Number, 'Qty']) -> 'Qty':
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(self.value ^ other, self.unit)
-
-    def __or__(self, other: Union[Number, 'Qty']) -> 'Qty':
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(self.value | other, self.unit)
-
-    def __radd__(self, other: Union[Number, 'Qty']) -> 'Qty':
-        if isinstance(other, Qty):  # pragma: no cover
-            # Unlikely due to Qty supporting these ops directly
-            other = other.value
-        return Qty(other + self.value, self.unit)
-
-    def __rsub__(self, other: Union[Number, 'Qty']) -> 'Qty':
-        if isinstance(other, Qty):  # pragma: no cover
-            # Unlikely due to Qty supporting these ops directly
-            other = other.value
-        return Qty(other - self.value, self.unit)
-
-    def __rmul__(self, other: Union[Number, 'Qty']) -> 'Qty':
-        if isinstance(other, Qty):  # pragma: no cover
-            # Unlikely due to Qty supporting these ops directly
-            other = other.value
-        return Qty(other * self.value, self.unit)
-
-    def __rdiv__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
-        if isinstance(other, Qty):
-            # Unlikely due to Qty supporting these ops directly
-            other = other.value
-        return Qty(other / self.value, self.unit)
-
-    def __rtruediv__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
-        # Unlikely due to Qty supporting these ops directly
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(other / self.value, self.unit)
-
-    def __rfloordiv__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
-        # Unlikely due to Qty supporting these ops directly
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(other // self.value, self.unit)
-
-    def __rmod__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
-        # Unlikely due to Qty supporting these ops directly
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(other % self.value, self.unit)
-
-    def __rdivmod__(self, other: Union[Number, 'Qty']) -> Tuple[float, float]:  # pragma: no cover
-        # Unlikely due to Qty supporting these ops directly
-        if isinstance(other, Qty):
-            other = other.value
-        return divmod(other, self.value)
-
-    def __rpow__(self, other: Union[Number, 'Qty']) -> complex:  # pragma: no cover
-        # Unlikely due to Qty supporting these ops directly
-        if isinstance(other, Qty):
-            other = other.value
-        return pow(other, self.value)
-
-    def __rlshift__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
-        # Unlikely due to Qty supporting these ops directly
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(other << self.value, self.unit)
-
-    def __rrshift__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
-        # Unlikely due to Qty supporting these ops directly
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(other >> self.value, self.unit)
-
-    def __rand__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
-        # Unlikely due to Qty supporting these ops directly
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(other & self.value, self.unit)
-
-    def __rxor__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
-        # Unlikely due to Qty supporting these ops directly
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(other ^ self.value, self.unit)
-
-    def __ror__(self, other: Union[Number, 'Qty']) -> 'Qty':  # pragma: no cover
-        # Unlikely due to Qty supporting these ops directly
-        if isinstance(other, Qty):
-            other = other.value
-        return Qty(other | self.value, self.unit)
-
-    def _cmp_op(self, other: Union[Number, 'Qty'], operator) -> bool:  # PPR: type
-        if isinstance(other, Qty):
-            if other.unit != self.unit:
-                raise TypeError('Quantity units differ: %s vs %s' % (self.unit, other.unit))
-            return operator(self.value, other.value)
-        return operator(self.value, other)
-
-    def __lt__(self, other: Union[Number, 'Qty']) -> bool:
-        return self._cmp_op(other, lambda x, y: x < y)
-
-    def __le__(self, other: Union[Number, 'Qty']) -> bool:
-        return self._cmp_op(other, lambda x, y: x <= y)
-
-    def __eq__(self, other: Union[Number, 'Qty']) -> bool:
-        return self._cmp_op(other, lambda x, y: x == y)
-
-    def __ge__(self, other: Union[Number, 'Qty']) -> bool:
-        return self._cmp_op(other, lambda x, y: x >= y)
-
-    def __gt__(self, other: Union[Number, 'Qty']) -> bool:
-        return self._cmp_op(other, lambda x, y: x > y)
-
-    def __ne__(self, other: Union[Number, 'Qty']) -> bool:
-        return self._cmp_op(other, lambda x, y: x != y)
-
-    def __cmp__(self, other: Union[Number, 'Qty']) -> int:
-        if self == other:
-            return 0
-        if self < other:
-            return -1
-        return 1
-
-    def __hash__(self) -> int:
-        return hash((self.value, self.unit))
-
-
-class _PintQuantity(Qty, unit_reg.Quantity):
-    """A quantity is a scalar value (floating point) with a unit. This object
-    uses Pint feature allowing conversion between units for example :
-
-        a = haystackapi.Q_(19, 'degC') a.to('degF')
-
-    See https://pint.readthedocs.io for details
-    """
-
-
-Quantity.register(_PintQuantity)  # noqa: E303
-
-
-# PPR Quantity = unit_reg.Quantity
-
+    def __new__(cls, value, units=None):
+        new_quantity = unit_reg.Quantity.__new__(Quantity, value,
+                                                 _to_pint_unit(units) if units else None)
+        new_quantity.symbol = units
+        return new_quantity
 
 class Coordinate:
     """A 2D co-ordinate in degrees latitude and longitude.
@@ -355,7 +94,8 @@ class Uri(str):
                            super().__repr__())
 
     def __eq__(self, other: 'Uri') -> bool:
-        assert isinstance(other, Uri)
+        if not isinstance(other, Uri):
+            return False
         return super().__eq__(other)
 
 

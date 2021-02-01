@@ -1,0 +1,168 @@
+-- dimensionless --
+percent,%
+percent_relative_humidity,%RH
+grams_of_water_per_kilogram_dry_air,gH₂O/kgAir
+degree_days_celsius,°daysC
+degree_days_fahrenheit,°daysF
+percent_obscuration_per_foot,%obsc/ft
+percent_obscuration_per_meter,%obsc/m
+ampere_square_meter,Am²
+
+-- currency --
+cedi,₵
+costa_rican_colon,₡
+dong,₫
+baht,฿
+cedi,₵
+costa_rican_colon,₡
+euro,€
+guarani,₲
+hryvnia,₴
+indian_rupee,₹
+kip,₭
+naira,₦
+new_israeli_shekel,₪
+pakistan_rupee,₨
+philippine_peso,₱
+pound_sterling,£
+south_korean_won,₩
+us_dollar,$
+taka,৳
+tenge,〒
+tugrik,₮
+turkish_lira,₤
+yen,¥
+
+-- acceleration --
+
+-- angular acceleration --
+
+-- angular momentum --
+
+-- angular velocity --
+
+-- area --
+
+-- capacitance --
+
+-- cooling efficiency --
+
+-- density --
+
+-- electric charge --
+A * h,Ah
+
+-- electric conductance --
+
+-- electric current --
+
+-- electromagnetic moment --
+ampere_square_meter,Am²
+
+-- electric current density --
+
+-- electric field strength --
+
+-- electric potential --
+
+-- electric resistance --
+
+-- electrical conductivity --
+
+-- electrical resistivity --
+
+-- energy --
+MBTU,MMBTU
+hundred_cubic_feet_natural_gas
+thousand_cubic_feet_natural_gas
+million_cubic_feet_natural_gas
+
+-- apparent energy --
+
+-- reactive energy --
+
+-- energy by area --
+
+-- enthalpy --
+
+-- entropy --
+
+-- force --
+
+-- frequency --
+air_changes_per_hour,ACH
+
+-- grammage --
+
+-- heating rate --
+
+-- illuminance --
+lux,lx
+footcandle,fc
+phot
+
+-- inductance --
+
+-- irradiance --
+square_meter_irradiance,m²_irr
+square_feet_irradiance,ft²_irr
+W/square_meter_irradiance,W/m²_irr
+W/square_feet_irradiance,W/ft²_irr
+
+-- length --
+
+-- luminance --
+
+-- luminous flux --
+
+-- luminous intensity --
+
+-- magnetic field strength --
+
+-- magnetic flux --
+
+-- magnetic flux density --
+
+-- mass --
+
+-- mass flow --
+
+-- momentum --
+
+-- power --
+megabtus_per_hour,MBTU/h,MMBTU/h
+
+-- power by area --
+
+-- power by volumetric flow --
+
+-- apparent power --
+
+-- reactive power --
+
+-- pressure --
+
+-- specific entropy --
+
+-- surface tension --
+
+-- temperature --
+
+-- temperature differential --
+delta_fahrenheit_degrees,Δ°F
+delta_celsius_degrees,Δ°C
+delta_kelvin_degrees,ΔK
+
+-- thermal conductivity --
+
+-- time --
+
+-- velocity --
+
+-- volume --
+gal / h,gph
+
+-- volumetric flow --
+
+-- bytes --
+

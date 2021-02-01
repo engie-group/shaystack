@@ -23,7 +23,7 @@ At this time (2021/1/1), here are the differences.
 | Haystack REST API              |     |  Y  |
 | Haystack GraphQL API           |     |  Y  |
 | Default haystack version       | 2.0 | 3.0 |
-| Use 'pint' for unit            | opt.|  Y  |
+| Use pint.Quantity              |     |  Y  |
 | Check type of 'id'             |     |  Y  |
 | Python                         | 2+  | 3.7+|
 | Typing                         |     |  Y  |

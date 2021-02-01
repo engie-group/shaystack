@@ -258,6 +258,7 @@ PPR*
 *.zip
 .okta_aws_login_config
 sample/*.gz
+demo/
 
 test.db
 zappa_settings.json

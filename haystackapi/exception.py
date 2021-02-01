@@ -1,5 +1,17 @@
+"""
+Specific exceptions for Haystack API
+"""
+
+
 class HaystackException(Exception):
-    def __init__(self, msg):
+    """
+    Exception when the haystack protocol have a problem.
+
+    Parameters:
+        msg: The error message
+    """
+
+    def __init__(self, msg: str):  # pylint: disable=useless-super-delegation
         # Call the base class constructor with the parameters it needs
         super().__init__(msg)
 

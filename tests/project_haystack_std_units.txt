@@ -1,10 +1,9 @@
--- See https://project-haystack.org/download/units.txt
 -- dimensionless --
 percent,%
 pixel,px
 decibel,db
 power_factor,pf
-pH
+ph,pH
 percent_relative_humidity,%RH
 grams_of_water_per_kilogram_dry_air,gH₂O/kgAir
 volts_per_degree_kelvin,V/K
@@ -15,9 +14,8 @@ percent_obscuration_per_meter,%obsc/m
 psi_per_degree_fahrenheit,psi/°F
 square_meters_per_newton,m²/N
 watts_per_square_meter_degree_kelvin,W/m²K
-ampere_square_meter,Am²
-db_milliVolt,dBmV
-db_microVolt,dBµV
+db_millivolt,dBmV
+db_microvolt,dBµV
 parts_per_unit,ppu
 parts_per_million,ppm
 parts_per_billion,ppb
@@ -32,21 +30,155 @@ power_usage_effectiveness,PUE
 data_center_infrastructure_efficiency,DCIE
 
 -- currency --
+afghani,AFN,Af
+algerian_dinar,DZD
+argentine_peso,ARS
+armenian_dram,AMD,Դ
+aruban_guilder_florin,AWG,ƒ
 australian_dollar,AUD
-british_pound,GBP,£
+azerbaijanian_manat,AZN,ман
+bahamian_dollar,BSD
+bahraini_dinar,BHD
+#baht,THB,฿
+balboa,PAB
+barbados_dollar,BBD
+belarussian_ruble,BYR,Br
+belize_dollar,BZD
+bermudian_dollar,BMD
+bolivar_fuerte,VEF
+boliviano,BOB
+brazilian_real,BRL,R$
+brunei_dollar,BND
+bulgarian_lev,BGN,лв
+burundi_franc,BIF
 canadian_dollar,CAD
+cape_verde_escudo,CVE
+cayman_islands_dollar,KYD
+#cedi,GHS,₵
+cfa_franc_bceao,XAF
+cfp_franc,XPF
+chilean_peso,CLP
 chinese_yuan,CNY,元
-emerati_dirham,AED
+congolese_franc,CDF
+cordoba_oro,NIO,C$
+#costa_rican_colon,CRC,₡
+croatian_kuna,HRK,Kn
+cuban_peso,CUP
+czech_koruna,CZK,Kč
+dalasi,GMD
+danish_krone,DKK,kr
+denar,MKD,ден
+djibouti_franc,DJF
+dobra,STD,Db
+dominican_peso,DOP
+#dong,VND,₫
+east_caribbean_dollar,XCD
+egyptian_pound,EGP
+ethiopian_birr,ETB
 euro,EUR,€
-indian_rupee,INR,₹
-japanese_yen,JPY,¥
-russian_ruble,RUB,руб
-south_korean_won,KRW,₩
-swedish_krona,SEK,kr
-swiss_franc,CHF,Fr
+falkland_islands_pound,FKP
+fiji_dollar,FJD
+forint,HUF
+gibraltar_pound,GIP
+gourde,HTG
+#guarani,PYG,₲
+guinea_franc,GNF
+guyana_dollar,GYD
+hong_kong_dollar,HKD
+#hryvnia,UAH,₴
+iceland_krona,ISK,Kr
+#indian_rupee,INR,₹
+iranian_rial,IRR
+iraqi_dinar,IQD
+jamaican_dollar,JMD
+jordanian_dinar,JOD
+kenyan_shilling,KES,Sh
+kina,PGK
+#kip,LAK,₭
+konvertibilna_marka,BAM,КМ
+kuwaiti_dinar,KWD
+kwacha,MWK,MK
+kwanza,AOA,Kz
+kyat,MMK
+lari,GEL,ლ
+lebanese_pound,LBP
+lek,ALL
+lempira,HNL
+leone,SLL,Le
+leu,RON
+liberian_dollar,LRD
+libyan_dinar,LYD
+lilangeni,SZL
+loti,LSL
+malagasy_ariary,MGA
+malaysian_ringgit,MYR,RM
+manat,TMT
+mauritius_rupee,MUR
+metical,MZN,MTn
+mexican_peso,MXN
+moldavian_leu,MDL
+moroccan_dirham,MAD
+#naira,NGN,₦
+nakfa,ERN,Nfk
+namibia_dollar,NAD
+nepalese_rupee,NPR
+#new_israeli_shekel,ILS,₪
+new_zealand_dollar,NZD
+ngultrum,BTN
+north_korean_won,KPW
+norwegian_krone,NOK
+nuevo_sol,PEN
+ouguiya,MRO,UM
+#pakistan_rupee,PKR,₨
+pataca,MOP
+peso_uruguayo,UYU
+#philippine_peso,PHP,₱
+pound_sterling,GBP,£
+pula,BWP
+pzloty,PLN,zł
+qatari_rial,QAR
+quetzal,GTQ
+rand,ZAR
+rial_omani,OMR
+riel,KHR
+rufiyaa,MVR
+rupiah,IDR,Rp
+russian_ruble,RUB
+rwanda_franc,RWF
+saint_helena_pound,SHP
+saudi_riyal,SAR
+serbian_dinar,RSD,din
+seychelles_rupee,SCR
+singapore_dollar,SGD
+solomon_islands_dollar,SBD
+som,KGS
+somali_shilling,SOS
+somoni,TJS,ЅМ
+#south_korean_won,KRW,₩
+sri_lanka_rupee,LKR,Rs
+sudanese_pound,SDG
+suriname_dollar,SRD
+swedish_krona,SEK
+swiss_franc,CHF,SFr
+syrian_pound,SYP
 taiwan_dollar,TWD
+#taka,BDT,৳
+tala,WST
+tanzanian_shilling,TZS
+#tenge,KZT,〒
+trinidad_and_tobago_dollar,TTD
+#tugrik,MNT,₮
+tunisian_dinar,TND
+#turkish_lira,TRY,₤
+uae_dirham,AED
+uganda_shilling,UGX
 us_dollar,USD,$
-new_israeli_shekel,NIS
+uzbekistan_sum,UZS
+vatu,VUV,Vt
+yemeni_rial,YER
+yen,JPY,¥
+zambian_kwacha,ZMW,ZK
+zimbabwe_dollar,ZWL
 
 -- acceleration --
 meters_per_second_squared,m/s²
@@ -77,8 +209,8 @@ farad,F
 
 -- cooling efficiency --
 coefficient_of_performance,COP
-kilowatt_per_ton,kW/ton
 energy_efficiency_ratio,Btu/Wh,EER
+kilowatt_per_ton,kW/ton
 
 -- density --
 kilograms_per_cubic_meter,kg/m³
@@ -86,6 +218,7 @@ micrograms_per_cubic_meter,µg/m³
 
 -- electric charge --
 coulomb,C
+ampere_hour,Ah
 
 -- electric conductance --
 siemens,S
@@ -94,6 +227,9 @@ siemens,S
 ampere,A
 milliampere,mA
 
+-- electromagnetic moment --
+ampere_square_meter,Am²
+
 -- electric current density --
 amperes_per_square_meter,A/m²
 
@@ -101,10 +237,10 @@ amperes_per_square_meter,A/m²
 volts_per_meter,V/m
 
 -- electric potential --
-Volt,V
-milliVolt,mV
-kiloVolt,kV
-megaVolt,MV
+volt,Volt,V
+millivolt,mV
+kilovolt,kV
+megavolt,MV
 
 -- electric resistance --
 ohm,Ω,Ω
@@ -136,6 +272,9 @@ gigajoule,GJ
 newton_meter,Nm
 cubic_meters_natural_gas,m³_gas
 cubic_feet_natural_gas,ft³_gas
+# hundred_cubic_feet_natural_gas,
+# thousand_cubic_feet_natural_gas
+# million_cubic_feet_natural_gas
 
 -- apparent energy --
 volt_ampere_hour,VAh
@@ -186,10 +325,11 @@ kilohertz,kHz
 cycles_per_hour,cph
 cycles_per_minute,cpm
 megahertz,MHz
-per_minute,/min
-per_second,/s
-per_hour,/h
-percent_per_second,%/s
+# per_minute,/min
+# per_second,/s
+# per_hour,/h
+# percent_per_second,%/s
+air_changes_per_hour,ACH
 
 -- grammage --
 kilograms_per_square_meter,kg/m²
@@ -206,7 +346,8 @@ degrees_kelvin_per_minute,K/min
 
 -- illuminance --
 lux,lx
-candelas_per_square_meter,cd/m²
+footcandle,fc
+phot
 
 -- inductance --
 henry,H
@@ -226,12 +367,15 @@ foot,ft
 yard,yd
 mile
 
--- luminescence --
-candela,cd
-footcandle,ftcd
+-- luminance --
+candelas_per_square_meter,cd/m²
+candels_per_square_foot,cd/ft²
 
 -- luminous flux --
 lumen,lm
+
+-- luminous intensity --
+candela,cd
 
 -- magnetic field strength --
 amperes_per_meter,A/m
@@ -283,6 +427,7 @@ megabtus_per_hour,MBTU/h,MMBTU/h
 joules_per_hour,J/h
 kilojoules_per_hour,kJ/h
 megajoules_per_hour,MJ/h
+gigajoules_per_hour,GJ/h
 
 -- power by area --
 watts_per_square_meter,W/m²
@@ -314,7 +459,7 @@ bar
 atmosphere,atm
 pounds_per_square_inch,psi
 centimeters_of_water,cmH₂O
-inches_of_water,inH₂O
+inches_of_water,in/wc,inH₂O
 millimeters_of_mercury,mmHg
 centimeters_of_mercury,cmHg
 inches_of_mercury,inHg
@@ -398,6 +543,7 @@ kilocubic_feet_per_minute,kcfm
 imperial_gallons_per_minute,galUK/min
 liters_per_minute,L/min
 gallons_per_minute,gal/min
+gallons_per_hour,gal/hr,gph
 liters_per_hour,L/h
 cubic_meters_per_minute,m³/min
 cubic_meters_per_hour,m³/h

@@ -16,8 +16,7 @@ from copy import copy, deepcopy
 from nose.tools import eq_
 
 import haystackapi
-from haystackapi.datatypes import XStr, Uri, Bin, MARKER, NA, REMOVE
-from haystackapi.pintutil import to_haystack, to_pint
+from haystackapi.datatypes import XStr, Uri, Bin, MARKER, NA, REMOVE, Quantity
 
 
 def check_singleton_deepcopy(a_singleton):
@@ -156,8 +155,8 @@ def test_qty_unary_ops():
 
     # These work for integers
     for a_lambda in (
-            oct,
-            hex,
+            lambda v: oct(int(v)),
+            lambda v: hex(int(v)),
             lambda v: v.__index__(),
             int,
             complex,
@@ -165,15 +164,16 @@ def test_qty_unary_ops():
             lambda v: -v,
             lambda v: +v,
             abs,
-            lambda v: ~v,):
+            lambda v: ~int(v),
+    ):
         yield _check_qty_op, a_lambda, 123, -123
 
 
 def test_qty_hash():
     # Test that independent copies hash to the same value
     def _check_hash(val, unit=None):
-        quantity_a = haystackapi.Quantity(val, unit=unit)
-        quantity_b = haystackapi.Quantity(val, unit=unit)
+        quantity_a = haystackapi.Quantity(val, unit)
+        quantity_b = haystackapi.Quantity(val, unit)
 
         assert quantity_a is not quantity_b
         assert hash(quantity_a) == hash(quantity_b)
@@ -183,128 +183,6 @@ def test_qty_hash():
     _check_hash(12345)
     _check_hash(-12345)
     _check_hash(50, 'Hz')
-
-
-def test_qty_binary_ops():  # pylint: disable=too-many-branches
-    def _check_qty_op(_fn, _a, _b):
-        quantity_a = haystackapi.Quantity(_a)
-        quantity_b = haystackapi.Quantity(_b)
-
-        # Reference value
-        ref = _fn(_a, _b)
-
-        assert _fn(quantity_a, quantity_b) == ref
-        assert _fn(quantity_a, _b) == ref
-        assert _fn(_a, quantity_b) == ref
-
-    # Try some float values
-    floats = (1.12, 2.23, -4.56, 141.2, -399.5)
-    for small_int_left in floats:
-        for small_int_right in floats:
-            if small_int_left == small_int_right:
-                continue
-
-            for a_lambda in (lambda a, b: a + b,
-                             lambda a, b: a - b,
-                             lambda a, b: a * b,
-                             lambda a, b: a / b,
-                             lambda a, b: a // b,
-                             lambda a, b: a % b,
-                             divmod,
-                             lambda a, b: a < b,
-                             lambda a, b: a <= b,
-                             lambda a, b: a == b,
-                             lambda a, b: a != b,
-                             lambda a, b: a >= b,
-                             lambda a, b: a > b):
-                yield _check_qty_op, a_lambda, small_int_left, small_int_right
-
-    # Exponentiation, we can't use all the values above
-    # as some go out of dates_range.
-    small_floats = tuple(filter(lambda f: abs(f) < 10, floats))
-    for small_int_left in small_floats:
-        for small_int_right in small_floats:
-            if small_int_left == small_int_right:
-                continue
-
-            # Python2 won't allow raising negative numbers
-            # to a fractional power
-            if small_int_left < 0:
-                continue
-
-            yield _check_qty_op, lambda a, b: a ** b, small_int_left, small_int_right
-
-    # Try some integer values
-    ints = (1, 2, -4, 141, -399, 0x10, 0xff, 0x55)
-    for small_int_left in ints:
-        for small_int_right in ints:
-            if small_int_left == small_int_right:
-                continue
-
-            for a_lambda in (lambda a, b: a + b,
-                             lambda a, b: a - b,
-                             lambda a, b: a * b,
-                             lambda a, b: a / b,
-                             lambda a, b: a // b,
-                             lambda a, b: a % b,
-                             divmod,
-                             lambda a, b: a & b,
-                             lambda a, b: a ^ b,
-                             lambda a, b: a | b,
-                             lambda a, b: a < b,
-                             lambda a, b: a <= b,
-                             lambda a, b: a == b,
-                             lambda a, b: a != b,
-                             lambda a, b: a >= b,
-                             lambda a, b: a > b):
-                yield _check_qty_op, a_lambda, small_int_left, small_int_right
-
-            if small_int_right >= 0:
-                for a_lambda in (lambda a, b: a << b,
-                                 lambda a, b: a >> b):
-                    yield _check_qty_op, a_lambda, small_int_left, small_int_right
-
-    # Exponentiation, we can't use all the values above
-    # as some go out of dates_range.
-    small_ints = tuple(filter(lambda f: abs(f) < 10, ints))
-    for small_int_left in small_ints:
-        for small_int_right in small_ints:
-            if small_int_left == small_int_right:
-                continue
-
-            yield _check_qty_op, lambda a, b: a ** b, small_int_left, small_int_right
-
-
-def test_qty_cmp():
-    if 'cmp' not in set(locals().keys()):
-        def cmp(_a, _b):
-            return _a.__cmp__(_b)
-    else:
-        cmd = locals()['cmp']  # pylint: disable=W0612
-
-    quantity_1 = haystackapi.Quantity(-3)
-    quantity_2 = haystackapi.Quantity(432)
-    quantity_3 = haystackapi.Quantity(4, unit='A')
-    quantity_4 = haystackapi.Quantity(10, unit='A')
-    quantity_5 = haystackapi.Quantity(12, unit='V')
-
-    assert cmp(quantity_1, quantity_2) < 0
-    assert cmp(quantity_2, quantity_1) > 0
-    assert cmp(quantity_1, haystackapi.Quantity(-3)) == 0
-    assert cmp(quantity_3, quantity_4) < 0
-    assert cmp(quantity_4, quantity_3) > 0
-    assert cmp(quantity_3, haystackapi.Quantity(4, unit='A')) == 0
-
-    try:
-        cmp(quantity_3, quantity_5)
-    except TypeError as ex:
-        assert str(ex) == 'Quantity units differ: A vs V'
-
-
-def test_qty_std_method():
-    quantity_repr = repr(haystackapi.Quantity(4, unit='A'))
-    assert quantity_repr in ("_BasicQuantity(4, \'A\')", "_PintQuantity(4, \'A\')")
-    assert str(haystackapi.Quantity(4, unit='A')) == '4 A'
 
 
 class MyCoordinate:
@@ -439,12 +317,5 @@ def test_remove():
     assert repr(REMOVE) == 'REMOVE'
 
 
-def test_to_haystack():
-    assert to_haystack('/h') == ''
-    assert to_haystack('foot ** 3') == 'cubic_foot'
-    assert to_haystack('deg') == '\N{DEGREE SIGN}'
-
-
-def test_to_pint():
-    assert to_pint('\N{DEGREE SIGN}') == 'deg'
-    assert to_pint('cubic_foot') == 'cubic foot'
+def test_new_quantity():
+    Quantity(1, '$')

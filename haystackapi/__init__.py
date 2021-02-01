@@ -75,15 +75,8 @@ __pdoc__ = {
     "zoneinfo": False,
 }
 __author__ = 'Ph. Prados, VRT Systems'
-__copyright__ = 'Copyright 2016-2020, Ph. Prados & VRT System'
-__credits__ = ['Philippe PRADOS',
-               'VRT Systems',
-               'Engie digital'
-               'Christian Tremblay',
-               'SamuelToh',
-               'Stuart Longland',
-               'joyfun'
-               ]
+__copyright__ = 'Copyright 2016-2020, Engie Digital & VRT System'
+__credits__ = ['See AUTHORS']
 __license__ = 'BSD'
 __maintainer__ = 'Philippe PRADOS'
 __email__ = 'haystackapi@prados.fr'

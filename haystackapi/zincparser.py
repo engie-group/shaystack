@@ -403,7 +403,7 @@ hs_decimal = Combine(And([
 ])).setParseAction(lambda toks: [float(toks[0])])
 
 hs_quantity = And([hs_decimal, hs_unit]).setParseAction(
-    lambda toks: [Quantity(toks[0], unit=toks[1])])
+    lambda toks: [Quantity(*toks)])
 hs_number = Or([
     hs_quantity,
     hs_decimal,

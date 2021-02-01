@@ -3,6 +3,7 @@ from unittest.mock import patch
 import haystackapi
 from haystackapi import Grid, Ref
 from haystackapi.ops import HaystackHttpRequest
+from haystackapi.providers.haystack_interface import HttpError
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
@@ -128,11 +129,11 @@ def test_negociation_without_accept() -> None:
     request.body = haystackapi.dump(grid, mode=mime_type)
 
     # WHEN
-    response = haystackapi.read(request, "dev")
-
-    # THEN
-    assert response.status_code == 200
-    assert response.headers["Content-Type"].startswith(mime_type)  # Default value
+    try:
+        haystackapi.read(request, "dev")
+        assert False, "Must generate exception"
+    except HttpError as ex:
+        assert ex.error == 406
 
 
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})

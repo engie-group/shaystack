@@ -58,7 +58,7 @@ try:
 
     _BOTO3_AVAILABLE = True
 except ImportError:
-    pass
+    BaseClient = Any
 
 Timestamp = datetime
 

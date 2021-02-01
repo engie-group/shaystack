@@ -74,6 +74,7 @@ class _AndHasTags(_TypesHasTags):
 class _OrHasTags(_TypesHasTags):
     pass
 
+
 @dataclass
 class _Intersect(_Root):
     left: _Root
@@ -188,7 +189,7 @@ def _generate_sql_block(table_name: str,
         SELECT t{num_table}.entity
         FROM {table_name} as t{num_table}
         """)]
-    where = [_select_version(version, num_table) + \
+    where = [_select_version(version, num_table) +
              f"AND t{num_table}.customer_id='{customer_id}'\n"
              f"AND "
              ]

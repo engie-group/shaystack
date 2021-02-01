@@ -153,7 +153,7 @@ class Provider(SQLProvider):
                 'Dimensions': list(filter(lambda x: x['Value'] is not None, [
                     {'Name': 'id', 'Value': entity_id.name},
                     {'Name': 'hs_type', 'Value': type(value).__name__},
-                    {'Name': 'unit', 'Value': value.unit if isinstance(value, Quantity) else " "},
+                    {'Name': 'unit', 'Value': value.symbol if isinstance(value, Quantity) else " "},
                     {'Name': 'customer_id', 'Value': customer_id}
                 ])),
                 'MeasureName': 'val',

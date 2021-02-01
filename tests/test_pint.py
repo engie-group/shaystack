@@ -1,36 +1,33 @@
 import importlib.resources as pkg_resources
 
-from pint import UndefinedUnitError
-
 import haystackapi
 
-units = []
 
-
-def get_units():
+def _load_haystack_units():
+    haystack_unit = []
     with pkg_resources.open_text(__package__,
-                                 'project_haystack_units.txt', encoding='UTF-8') as file:
+                                 'project_haystack_std_units.txt', encoding='UTF-8') as file:
         for line in file:
             if '--' not in line and line != '':
-                res = line.rstrip().split(',')
-                if res[0] != '':
-                    units.append(res[0])
-                if len(res) > 1:
-                    units.append(res[1])
-    assert len(units) > 0
+                if line.startswith("#"):
+                    continue
+                canonical, *alias = line.rstrip().split(',')
+                if not alias:
+                    haystack_unit.append((canonical, [canonical]))
+                else:
+                    haystack_unit.append((canonical, alias))
+    assert len(haystack_unit) > 0
+    return haystack_unit
 
 
 def test_all_units():
-    get_units()
+    haystack_unit = _load_haystack_units()
     not_defined = []
-    defined = []
-    for each in units:
-        try:
-            # if to_haystack(each) != each:
-            #     assert to_pint(to_haystack(each)) == each
-            haystackapi.Quantity(1, each)
-            defined.append(each)
-        except UndefinedUnitError as error:
-            not_defined.append(each)
-            print(error, each)
+    for _, alias in haystack_unit:
+        for symbol in alias:
+            try:
+                haystackapi.Quantity(1, symbol)  # Try to convert
+            except Exception as error:  # pylint: disable=broad-except
+                not_defined.append(symbol)
+                print("***", error, symbol)
     assert (len(not_defined)) == 0

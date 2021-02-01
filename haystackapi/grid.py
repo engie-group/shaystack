@@ -122,8 +122,8 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             dt1, dt2 = version_1.replace(tzinfo=pytz.UTC), version_2.replace(tzinfo=pytz.UTC)
             return dt1.date() == dt2.date() and Grid._approx_check(dt1.time(), dt2.time())
         if isinstance(version_1, Quantity):
-            return version_1.unit == version_2.unit and \
-                   Grid._approx_check(version_1.m, version_2.value)
+            return version_1.units == version_2.units and \
+                   Grid._approx_check(version_1.m, version_2.m)
         if isinstance(version_1, Coordinate):
             return Grid._approx_check(version_1.latitude, version_2.latitude) and \
                    Grid._approx_check(version_1.longitude, version_2.longitude)
@@ -228,7 +228,6 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         if 'diff_' in self.metadata:
             return grid_merge(other.copy(), self)
         return grid_merge(self.copy(), other)
-
 
     def __repr__(self) -> str:  # pragma: no cover
         """Return a representation of this grid."""

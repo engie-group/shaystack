@@ -729,7 +729,7 @@ start-pg:
 
 ## Stop postgres database
 stop-pg:
-	@docker stop postgres 2>&1 >/dev/null || true
+	@docker stop postgres 2>/dev/null >/dev/null || true
 	echo -e "$(green)Postgres stopped$(normal)"
 
 ## Print postgres db url connection
@@ -760,7 +760,7 @@ start-pgadmin:
 
 ## Stop PGAdmin
 stop-pgadmin:
-	@docker stop pgadmin 2>&1 >/dev/null || true
+	@docker stop pgadmin 2>/dev/null >/dev/null || true
 	echo -e "$(green)PGAdmin stopped$(normal)"
 
 # --------------------------- Docker
@@ -807,7 +807,7 @@ async-docker-start: docker-rm
 
 ## Stop the background docker with a Flask server
 async-docker-stop:
-	@docker stop '$(PRJ)' 2>&1 >/dev/null || true
+	@docker stop '$(PRJ)' 2>/dev/null >/dev/null || true
 	echo -e "$(green)'$(DOCKER_REPOSITORY)/$(PRJ)' docker stopped$(normal)"
 
 ## Remove the docker image

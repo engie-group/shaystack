@@ -1,0 +1,495 @@
+# Haystack Pint units definition file
+# See https://pint.readthedocs.io/en/latest/defining-quantities.html
+
+@defaults
+    group = international
+    system = haystack
+@end
+
+@alias water = H₂O = wc
+
+# -- dimensionless --
+# percent = [] = percent = %
+million = 1 ** 6
+billion = 1 ** 9
+pixel = 1 = px
+power_factor = 1 = pf
+percent_relative_humidity = [] = %RH = percentRH
+grams_of_water_per_kilogram_dry_air = [] = gH₂O/kgAir
+degree_days_celsius = [] = °daysC
+degree_days_fahrenheit = 1 = °daysF
+percent_obscuration = [] = %obsc = obscuration
+percent_obscuration_per_foot = percent_obscuration / foot = %obsc/ft
+percent_obscuration_per_meter = percent_obscuration / meter = %obsc/m
+psi_per_degree_fahrenheit = psi / degree_Fahrenheit = psi/°F
+ampere_square_meter = ampere * meter ** 2 = Am²
+db_microvolt = dB * microvolt = dBµV
+db_milivolt = dB * milivolt = dBmV
+part = 1
+parts_per_unit = part / 1 = ppu
+parts_per_million = part / 1 ** 6 = ppm
+parts_per_billion = part / 1 ** 9 = ppb
+grams_per_kilogram = gram / kilogram = g/kg
+@alias degree = degrees_angular
+degrees_phase = [] = degPh
+nephelometric_turbidity_units = [] = ntu
+formazin_nephelometric_unit = [] = fnu
+power_usage_effectiveness = [] = PUE
+data_center_infrastructure_efficiency = [] = DCIE
+co2e = kg * gas
+
+# -- Currency --
+afghani = [] = AFN = Af
+algerian_dinar = [] = DZD
+argentine_peso = [] = ARS
+armenian_dram = [] = Դ = AMD
+aruban_guilder_florin = [] = ƒ = AWG
+australian_dollar = [] = AUD
+azerbaijanian_manat = [] = ман = AZN
+bahamian_dollar = [] = BSD
+bahraini_dinar = [] = BHD
+baht = [] = ฿ = THB
+balboa = [] = PAB
+barbados_dollar = [] = BBD
+belarussian_ruble = [] = Br = BYR
+belize_dollar = [] = BZD
+bermudian_dollar = [] = BMD
+bolivar_fuerte = [] = VEF
+boliviano = [] = BOB
+brazilian_real = [] = R$ = BRL
+brunei_dollar = [] = BND
+bulgarian_lev = [] = лв = BGN
+burundi_franc = [] = BIF
+canadian_dollar = [] = CAD
+cape_verde_escudo = [] = CVE
+cayman_islands_dollar = [] = KYD
+cedi = [] = ₵ = GHS
+cfa_franc_bceao = [] = XAF
+cfp_franc = [] = XPF
+chilean_peso = [] = CLP
+chinese_yuan = [] = 元 = CNY
+congolese_franc = [] = CDF
+cordoba_oro = [] = C$ = NIO
+costa_rican_colon = [] = ₡ = CRC
+croatian_kuna = [] = Kn = HRK
+cuban_peso = [] = CUP
+czech_koruna = [] = Kč = CZK
+dalasi = [] = GMD
+danish_krone = [] = kr = DKK
+denar = [] = ден = MKD
+djibouti_franc = [] = DJF
+dobra = [] = Db = STD
+dominican_peso = [] = DOP
+#dong = [] = ₫ = VND
+east_caribbean_dollar = [] = XCD
+egyptian_pound = [] = EGP
+ethiopian_birr = [] = ETB
+euro = [] = € = EUR
+falkland_islands_pound = [] = FKP
+fiji_dollar = [] = FJD
+forint = [] = HUF
+gibraltar_pound = [] = GIP
+gourde = [] = HTG
+guarani = [] = ₲ = PYG
+guinea_franc = [] = GNF
+guyana_dollar = [] = GYD
+hong_kong_dollar = [] = HKD
+hryvnia = [] = ₴ = UAH
+iceland_krona = [] = Kr = ISK
+indian_rupee = [] = ₹ = INR
+iranian_rial = [] = IRR
+iraqi_dinar = [] = IQD
+jamaican_dollar = [] = JMD
+jordanian_dinar = [] = JOD
+kenyan_shilling = [] = Sh = KES
+kina = [] = PGK
+kip = [] = ₭ = LAK
+konvertibilna_marka = [] = КМ = BAM
+kuwaiti_dinar = [] = KWD
+kwacha = [] = MK = MWK
+kwanza = [] = Kz = AOA
+kyat = [] = MMK
+lari = [] = ლ = GEL
+lebanese_pound = [] = LBP
+lek = [] = ALL
+lempira = [] = HNL
+leone = [] = Le = SLL
+leu = [] = RON
+liberian_dollar = [] = LRD
+libyan_dinar = [] = LYD
+lilangeni = [] = SZL
+loti = [] = LSL
+malagasy_ariary = [] = MGA
+malaysian_ringgit = [] = RM = MYR
+manat = [] = TMT
+mauritius_rupee = [] = MUR
+metical = [] = MTn = MZN
+mexican_peso = [] = MXN
+moldavian_leu = [] = MDL
+moroccan_dirham = [] = MAD
+naira = [] = ₦ = NGN
+nakfa = [] = Nfk = ERN
+namibia_dollar = [] = NAD
+nepalese_rupee = [] = NPR
+new_israeli_shekel = [] = ₪ = ILS
+new_zealand_dollar = [] = NZD
+ngultrum = [] = BTN
+north_korean_won = [] = KPW
+norwegian_krone = [] = NOK
+nuevo_sol = [] = PEN
+ouguiya = [] = MRO = UM
+pakistan_rupee = [] = ₨ = PKR
+pataca = [] = MOP
+peso_uruguayo = [] = UYU
+philippine_peso = [] = ₱ = PHP
+pound_sterling = [] = £ = GBP
+pula = [] = BWP
+pzloty = [] = zł = PLN
+qatari_rial = [] = QAR
+quetzal = [] = GTQ
+rand = [] = ZAR
+rial_omani = [] = OMR
+riel = [] = KHR
+rufiyaa = [] = MVR
+rupiah = [] = Rp = IDR
+russian_ruble = [] = RUB
+rwanda_franc = [] = RWF
+saint_helena_pound = [] = SHP
+saudi_riyal = [] = SAR
+serbian_dinar = [] = din = RSD
+seychelles_rupee = [] = SCR
+singapore_dollar = [] = SGD
+solomon_islands_dollar = [] = SBD
+som = [] = KGS
+somali_shilling = [] = SOS
+somoni = [] = ЅМ = TJS
+south_korean_won = [] = ₩ = KRW
+sri_lanka_rupee = [] = Rs = LKR
+sudanese_pound = [] = SDG
+suriname_dollar = [] = SRD
+swedish_krona = [] = SEK
+swiss_franc = [] = SFr = CHF
+syrian_pound = [] = SYP
+taiwan_dollar = [] = TWD
+taka = [] = ৳ = BDT
+tala = [] = WST
+tanzanian_shilling = [] = TZS
+tenge = [] = 〒 = KZT
+trinidad_and_tobago_dollar = [] = TTD
+tugrik = [] = ₮ = MNT
+tunisian_dinar = [] = TND
+turkish_lira = [] = ₤ = TRY
+uae_dirham = [] = AED
+uganda_shilling = [] = UGX
+us_dollar = [] = $ = USD
+uzbekistan_sum = [] = UZS
+vatu = [] = Vt = VUV
+yemeni_rial = [] = YER
+yen = [] = ¥ = JPY
+zambian_kwacha = [] = ZK = ZMW
+zimbabwe_dollar = [] = ZWL
+
+# -- acceleration --
+meters_per_second_squared = meters_per_second ** 2 = m/s²
+
+# -- angular acceleration --
+radians_per_second_squared = radians_per_second ** 2 = rad/s²
+
+# -- angular momentum --
+joule_second = joule * second = Js
+
+# -- angular velocity --
+radians_per_second = radian / second = rad/s
+
+# -- area --
+square_meter = meter ** 2 = m²
+square_millimeter = millimeter ** 2 = mm²
+square_centimeter = centimeter ** 2 = cm²
+square_kilometer = kilometer ** 2 = km²
+square_inch = inch ** 2 = in²
+square_foot = foot ** 2 = ft²
+square_yard = yard ** 2 = yd²
+square_mile = mile ** 2 = mile²
+
+# -- capacitance --
+farad = [] = F
+
+# -- cooling efficiency --
+coefficient_of_performance = [] = COP
+kilowatt_per_ton = kilowatt / ton = kW/ton
+energy_efficiency_ratio = [] = Btu/Wh = EER
+
+# -- density --
+cubic_meter = meter ** 3
+kilograms_per_cubic_meter = kilogram / cubic_meter = kg/m³
+micrograms_per_cubic_meter= microgram / cubic_meter = µg/m³
+
+# -- electric charge --
+
+#-- electric conductance --
+
+# -- electric current --
+milliampere = ampere / 1000 = mA
+
+# -- electric current density --
+amperes_per_square_meter = ampere / square_meter = A/m²
+
+# -- electric field strength --
+volts_per_meter = volts / meter = V/m
+
+# -- electric potential --
+@alias volt = Volt
+milliVolt = volt / 1000 = mV
+kiloVolt = volt * 1000 = kV
+megaVolt = volt * 10 ** 6 = MV
+
+#-- electric resistance --
+@alias ohm = Ω
+kilohm = kiloohm = kΩ = kΩ
+megohm = megahohm mΩ = mΩ
+
+
+#-- electrical conductivity --
+siemens_per_meter = siemens / meter = S/m
+
+# -- electrical resistivity --
+ohm_meter = ohm / meter = Ωm = Ωm
+
+# -- energy --
+hph = horsepower / hour
+watt_hour = watt * hour = Wh
+btu = Btu
+@alias refrigeration_ton = tons_refrigeration
+tons_refrigeration_hour = refrigeration_ton * hour = tonrefh
+newton_meter = newton * meter = Nm
+natural_gas = [] = _gas = gas
+cubic_meters_natural_gas = cubic_meters * gas = m³_gas
+cubic_feet_natural_gas = cubit_feet * gas = ft³_gas
+
+#-- apparent energy --
+volt_ampere_hour= volt * ampere * hour = VAh
+
+#-- reactive energy --
+volt_ampere_reactive = [] = VAR
+volt_ampere_reactive_hour = VAR / h = VARh
+
+#-- energy by area --
+joules_per_square_meter = joules / square_meter = J/m²
+watt_hours_per_square_meter = watt * hours / square_meter = Wh/m²
+watt_hours_per_square_foot = watt * hours / square_foot = Wh/ft²
+kilowatt_hours_per_square_meter = kilowatthour / square_meter = kWh/m²
+kilowatt_hours_per_square_foot = kilowatthour / square_foot = kWh/ft²
+megawatt_hours_per_square_meter = megawatthour / square_meter = MWh/m²
+megawatt_hours_per_square_foot = megawatthour / square_foot = MWh/ft²
+megajoules_per_square_meter = megajoule / square_meter = MJ/m²
+megajoules_per_square_foot = megajoule / square_foot = MJ/ft²
+kilobtu_per_square_meter = kiloBtu / square_meter = kBTU/m²
+kilobtu_per_square_foot = kiloBtu / square_foot = kBTU/ft²
+megabtu_per_square_foot = megaBtu / square_foot = MBTU/ft²
+megabtu_per_square_meter = megaBtu / square_meter = MBTU/m²
+
+#-- enthalpy --
+dry = []
+dry_air = []
+lb_dry = []
+kg_dry = 1000 * dry
+joules_per_gram = joule / gram = J/g
+joules_per_kilogram = joule / kilogram = J/kg
+joules_per_kilogram_dry_air = [] = J/kg_dry
+btu_per_pound = Btu / pound = BTU/lb
+btus_per_pound_dry_air = [] = btu/lb_dry
+kilojoules_per_kilogram = kilojoule / kilogram = kJ/kg
+kilojoules_per_kilogram_dry_air = [] = kJ/kg_dry
+megajoules_per_kilogram_dry_air = [] = MJ/kg_dry
+calorie_per_gram = calorie / gram = cal/g
+
+#-- entropy --
+joules_per_degree_kelvin = joule / kelvin = J/°K
+kilojoules_per_degree_kelvin = kilojoule / kelvin = kJ/°K
+megajoules_per_degree_kelvin = megajoule / kelvin = MJ/°K
+
+#-- force --
+
+# -- frequency --
+cycles_per_hour = cycle / hour = cph
+cycles_per_minute = cycle / minute = cpm
+per_minute = [] = /min
+per_second = [] = /s
+per_hour = [] = /h
+percent_per_second = [] = %/s
+air_changes_per_hour = [] = ACH
+
+#-- grammage --
+kilograms_per_square_meter = kilogram / square_meter = kg/m²
+grams_per_square_meter = gram / square_meter = g/m²
+
+# -- heating rate --
+degrees_kelvin_per_second = kelvin / second = K/s
+degrees_celsius_per_hour = degree_Celsius / hour = °C/h
+degrees_celsius_per_minute = degree_Celsius / minute = °C/min
+degrees_fahrenheit_per_hour = degree_Fahrenheit / hour = °F/h
+degrees_fahrenheit_per_minute = degree_Fahrenheit / minute = °F/min
+degrees_kelvin_per_hour = kelvin / hour = K/h
+degrees_kelvin_per_minute = kelvin / minute = K/min
+
+
+#-- illuminance --
+candelas_per_square_meter = candela / square_meter = cd/m²
+phot = []
+
+#-- inductance --
+
+#-- irradiance --
+square_meter_irradiance = [] = m²_irr
+square_feet_irradiance = [] = ft²_irr
+square_foot_irradiance = [] = ft²_irr
+#watts_per_square_meter_irradiance = [] = W/m²_irr
+#watts_per_square_foot_irradiance = [] = W/ft²_irr
+
+#-- length --
+
+#-- luminescence --
+footcandle = [] = ftcd
+
+#-- luminous flux --
+
+#-- magnetic field strength --
+amperes_per_meter = ampere / meter = A/m
+
+#-- magnetic flux --
+
+#-- magnetic flux density --
+
+# -- mass --
+ounce = [] = oz
+
+#-- mass flow --
+kilograms_per_second = kilogram / second = kg/s
+kilograms_per_minute = kilogram / minute = kg/min
+kilograms_per_hour = kilogram / hour = kg/h
+pounds_per_minute = pounds / minute = lb/min
+pounds_per_hour = pounds / hour = lb/h
+pounds_per_second = pounds / second = lb/s
+kilopounds_per_hour = kilopointds / hour = klb/h
+grams_per_second = gram / second = g/s
+grams_per_minute = gram / minute = g/min
+metric_tons_per_hour = metric_ton / hour = ton/h
+
+#-- momentum --
+newton_second = newton * second = Ns
+
+#-- power --
+btus_per_hour = Btu / hour = BTU/h
+therms_per_hour = therm / hour = therm/h
+horsepower_hour = horsepower / hour = hp/h
+foot_pounds_per_second = foot_pound / second = ftlbs/sec
+@alias refrigeration_ton = tons_refrigeration = tonref
+kilobtus_per_hour = kilobtu / hour = kBTU/h
+megabtus_per_hour = megabtu / hour = MBTU/h,MMBTU/h
+joules_per_hour = joule / hour = J/h
+kilojoules_per_hour = kilojoule / hour = kJ/h
+megajoules_per_hour = megajoule / hour = MJ/h
+
+#-- power by area --
+watts_per_square_meter = watt / square_meter = W/m²
+watts_per_square_foot = watt / square_foot = W/ft²
+kilowatts_per_square_meter = kilowatt / square_meter = kW/m²
+kilowatts_per_square_foot = kilowatt / square_foot = kW/ft²
+kilobtus_per_hour_per_square_foot = kilobtu / hour / square_foot = kBTU/h/ft²
+kilobtus_per_hour_per_square_meter = kilobtu / hour / square_meter = kBTU/h/m²
+
+#-- power by volumetric flow --
+watts_per_cubic_meters_per_second = watt / cubic_meters / second = W/m³/s
+watts_per_cubic_feet_per_minute = watt / cubic_feets / minute = W/cfm
+kilowatts_per_kilocubic_feet_per_minute = kilowatt / kilocubic_feets / minute = kW/kcfm
+kilowatts_per_gallons_per_minute = kilowatt / gallons / minute = kW/gal/min
+
+#-- apparent power --
+volt_ampere = volt * ampere = VA
+
+# -- reactive power --
+volt_ampere_reactive = [] = VAR
+
+#-- pressure --
+pH = 1
+@alias standard_atmosphere = atmosphere
+pounds_per_square_inch = [] = psi
+centimeters_of_water = cm * h2O = cmH₂O
+inches_of_water = inch * h20 = inH₂O
+mercury = []
+millimeters_of_mercury = milimter * mercury = mmHg
+centimeters_of_mercury = centimeter * mercury = cmHg
+inches_of_mercury = inche * mercury = inHg
+
+# -- specific entropy --
+joules_per_kilogram_degree_kelvin = joule / kilogram * kelvin = J/kg°K
+
+# -- surface tension --
+newtons_per_meter = newton / merter = N/m
+
+# -- temperature --
+
+# -- temperature differential --
+delta = [] = Δ
+delta_fahrenheit_degrees = delta * degree_Fahrenheit = Δ°F
+delta_celsius_degrees = delta * degree_Celsius = Δ°C
+delta_kelvin_degrees = delta * kelvin = ΔK
+
+#-- thermal conductivity --
+watts_per_meter_degree_kelvin = watt / meter * kelvin = W/m°K
+
+#-- time --
+@alias hour = h
+@alias week = wk
+@alias month = mo
+hundredths_second = sec / 100 = cs
+tenths_second = sec / 10 = ds
+@alias month = julian_month
+
+#-- velocity --
+meters_per_second = meter / second = m/s
+kilometers_per_second = kilometer / second = km/s
+kilometers_per_hour = kilometer / hour = km/h
+miles_per_hour = miles / hour = mph
+feet_per_second = feet / second = ft/s
+feet_per_minute = feet / minute = ft/min
+millimeters_per_second = millimters / second = mm/s
+millimeters_per_minute = millimeter / minute = mm/min
+meters_per_minute = meter / minute = m/min
+meters_per_hour = meter / hour = m/h
+
+#-- volume --
+@alias fluid_ounce = fl_oz
+@alias imperial_gallon = galUK
+cubic_meter = meter ** 3 = m³
+cubic_millimeter = milimeter ** 3 = mm³
+cubic_centimeter = centimeter ** 3 = cm³
+cubic_inch = inch ** 3 = in³
+cubic_foot = foot ** 3 = ft³
+cubic_yard = yard ** 3 = yd³
+hecto_cubic_foot = [] = hft³
+
+#-- volumetric flow --
+cubic_meters_per_second = cubic_meters / second = m³/s
+milliliters_per_second = milliliters / second = mL/s
+hectoliters_per_second = hectoliters / second  = hL/s
+liters_per_second = liters / second = L/s
+cubic_feet_per_second = cubic_feet / second = cfs
+cubic_feet_per_minute = cubic_feet / minute = cfm
+cubic_feet_per_hour = cubic_feet / hour = cfh
+kilocubic_feet_per_minute = kilocubic_feet / minute = kcfm
+imperial_gallons_per_minute = imperial_gallon / minute = galUK/min
+liters_per_minute = liters / minute = L/min
+gallons_per_minute = gallons / minute = gal/min
+liters_per_hour = liters / hour = L/h
+cubic_meters_per_minute = cubic_meters / minute = m³/min
+cubic_meters_per_hour = cubic_meters / hour = m³/h
+
+#-- bytes --
+byte = 1
+kilobyte = 10 ** 3 * byte = kB
+megabyte = 10 ** 6 * byte  = MB
+gigabyte = 10 ** 9 * byte = GB
+terabyte = 10 ** 12 * byte = TB
+petabyte = 10 ** 15 * byte = PB
+

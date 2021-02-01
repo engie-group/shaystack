@@ -205,7 +205,7 @@ def _check_metadata(grid, force_metadata_order=True):
     val = row['val']
     assert isinstance(val, haystackapi.Quantity)
     assert val.m == 356.214
-    assert val.unit == 'kW'
+    assert val.units == 'kilowatt'
 
     # Second row:
     row = grid[1]
@@ -214,7 +214,7 @@ def _check_metadata(grid, force_metadata_order=True):
     val = row['val']
     assert isinstance(val, haystackapi.Quantity)
     assert val.m == 463.028
-    assert val.unit == 'kW'
+    assert val.units == 'kilowatt'
 
 
 def _check_null(grid):
@@ -331,7 +331,6 @@ def test_simple_encoded_zinc():
     _check_simple(grid)
 
 
-
 def test_wc1382_unicode_str_zinc():
     # Don't use pint for this, we wish to see the actual quantity value.
 
@@ -342,8 +341,8 @@ def test_wc1382_unicode_str_zinc():
     assert len(grid) == 3
 
     # The values of all the 'temperature' points should have degree symbols.
-    assert grid[0]['v1'].unit == 'degC'
-    assert grid[1]['v6'].unit == 'degC'
+    assert grid[0]['v1'].units == 'degree_Celsius'
+    assert grid[1]['v6'].units == 'degree_Celsius'
 
 
 def test_unsupported_old_zinc():
@@ -945,8 +944,8 @@ def test_list_v3_zinc():
     assert grid[3]['list'] == [1.0, 2.0, 3.0]
     assert grid[4]['list'] == [1.1, 2.2, 3.3]
     assert grid[5]['list'] == [1.1e3, 2.2e6, 3.3e9]
-    assert grid[6]['list'] == [haystackapi.Quantity(3.14, unit='rad'),
-                               haystackapi.Quantity(180, unit='°')]
+    assert grid[6]['list'] == [haystackapi.Quantity(3.14, units='rad'),
+                               haystackapi.Quantity(180, units='°')]
     assert grid[7]['list'] == ["a", "b", "c"]
     assert grid[8]['list'] == [datetime.date(1970, 1, 1),
                                datetime.date(2000, 1, 1),
@@ -959,7 +958,7 @@ def test_list_v3_zinc():
         pytz.timezone('Australia/Brisbane').localize(
             datetime.datetime(1970, 1, 1, 10, 0))]
     assert grid[11]['list'] == [None, True, 1.0, 1.1, 1.1e3,
-                                haystackapi.Quantity(3.14, unit='rad'),
+                                haystackapi.Quantity(3.14, units='rad'),
                                 "a"]
     assert grid[12]['list'] == [1.0, 2.0, 3.0, 4.0]
     assert grid[13]['list'] == [1.0, 2.0, 3.0, 4.0]
@@ -1019,8 +1018,8 @@ def test_list_v3_csv():
     assert grid[3]['list'] == [1.0, 2.0, 3.0]
     assert grid[4]['list'] == [1.1, 2.2, 3.3]
     assert grid[5]['list'] == [1.1e3, 2.2e6, 3.3e9]
-    assert grid[6]['list'] == [haystackapi.Quantity(3.14, unit='rad'),
-                               haystackapi.Quantity(180, unit='°')]
+    assert grid[6]['list'] == [haystackapi.Quantity(3.14, units='rad'),
+                               haystackapi.Quantity(180, units='°')]
     assert grid[7]['list'] == ["a", "b", "c"]
     assert grid[8]['list'] == [datetime.date(1970, 1, 1),
                                datetime.date(2000, 1, 1),
@@ -1033,7 +1032,7 @@ def test_list_v3_csv():
         pytz.timezone('Australia/Brisbane').localize(
             datetime.datetime(1970, 1, 1, 10, 0))]
     assert grid[11]['list'] == [None, True, 1.0, 1.1, 1.1e3,
-                                haystackapi.Quantity(3.14, unit='rad'),
+                                haystackapi.Quantity(3.14, units='rad'),
                                 "a"]
     assert grid[12]['list'] == [1.0, 2.0, 3.0, 4.0]
     assert grid[13]['list'] == [1.0, 2.0, 3.0, 4.0]
@@ -1277,7 +1276,7 @@ def test_grid_meta_zinc():
     assert_is(meta['anotherMarker'], haystackapi.MARKER)
     assert isinstance(meta['aQuantity'], haystackapi.Quantity)
     assert meta['aQuantity'].m == 123
-    assert meta['aQuantity'].unit == 'Hz'
+    assert meta['aQuantity'].units == 'hertz'
     assert isinstance(meta['aDate'], datetime.date)
     assert meta['aDate'] == datetime.date(2016, 1, 13)
     assert isinstance(meta['aTime'], datetime.time)
@@ -1317,7 +1316,7 @@ def test_col_meta_zinc():
     assert_is(meta['anotherMarker'], haystackapi.MARKER)
     assert isinstance(meta['aQuantity'], haystackapi.Quantity)
     assert meta['aQuantity'].m == 123
-    assert meta['aQuantity'].unit == 'Hz'
+    assert meta['aQuantity'].units == 'hertz'
     assert isinstance(meta['aDate'], datetime.date)
     assert meta['aDate'] == datetime.date(2016, 1, 13)
     assert isinstance(meta['aTime'], datetime.time)
@@ -1497,8 +1496,8 @@ def test_nodehaystack_07_zinc():
     assert row['a'] == haystackapi.Quantity(-3.1, 'kg')
     assert row['b'] == haystackapi.Quantity(4, 'kg')
     row = grid.pop(0)
-    assert row['a'] == haystackapi.Quantity(5, '%')
-    assert row['b'] == haystackapi.Quantity(3.2, '%')
+    assert row['a'] == haystackapi.Quantity(5, 'percent')
+    assert row['b'] == haystackapi.Quantity(3.2, 'percent')
     row = grid.pop(0)
     assert row['a'] == haystackapi.Quantity(5, 'kWh/ft\u00b2')
     assert row['b'] == haystackapi.Quantity(-15, 'kWh/m\u00b2')
@@ -1636,7 +1635,7 @@ def test_scalar_bytestring_zinc():
            == "Testing"
     assert haystackapi.parse_scalar(b'50Hz',
                                     mode=haystackapi.MODE_ZINC) \
-           == haystackapi.Quantity(50, unit='Hz')
+           == haystackapi.Quantity(50, units='Hz')
 
 
 def test_scalar_version_zinc():
@@ -1659,7 +1658,6 @@ def test_scalar_version_json():
         pass
 
 
-
 # Scalar parsing tests… no need to be exhaustive here because the grid tests
 # cover the underlying cases.  This is basically checking that bytestring decoding
 # works and versions are passed through.
@@ -1668,28 +1666,28 @@ def test_scalar_simple_zinc():
     assert haystackapi.parse_scalar('"Testing"', mode=haystackapi.MODE_ZINC) \
            == "Testing"
     assert haystackapi.parse_scalar('50Hz', mode=haystackapi.MODE_ZINC) \
-           == haystackapi.Quantity(50, unit='Hz')
+           == haystackapi.Quantity(50, units='Hz')
 
 
 def test_scalar_simple_json():
     assert haystackapi.parse_scalar('"s:Testing"', mode=haystackapi.MODE_JSON) \
            == "Testing"
     assert haystackapi.parse_scalar('"n:50 Hz"', mode=haystackapi.MODE_JSON) \
-           == haystackapi.Quantity(50, unit='Hz')
+           == haystackapi.Quantity(50, units='Hz')
 
 
 def test_scalar_simple_csv():
     assert haystackapi.parse_scalar('Testing', mode=haystackapi.MODE_CSV) \
            == "Testing"
     assert haystackapi.parse_scalar('50Hz', mode=haystackapi.MODE_CSV) \
-           == haystackapi.Quantity(50, unit='Hz')
+           == haystackapi.Quantity(50, units='Hz')
 
 
 def test_scalar_preparsed_json():
     assert haystackapi.parse_scalar('s:Testing', mode=haystackapi.MODE_JSON) \
            == "Testing"
     assert haystackapi.parse_scalar('n:50 Hz', mode=haystackapi.MODE_JSON) \
-           == haystackapi.Quantity(50, unit='Hz')
+           == haystackapi.Quantity(50, units='Hz')
 
 
 def test_scalar_bytestring_json():
@@ -1698,7 +1696,7 @@ def test_scalar_bytestring_json():
            == "Testing"
     assert haystackapi.parse_scalar(b'"n:50 Hz"',
                                     mode=haystackapi.MODE_JSON) \
-           == haystackapi.Quantity(50, unit='Hz')
+           == haystackapi.Quantity(50, units='Hz')
 
 
 def test_str_version():
@@ -1748,7 +1746,6 @@ def test_malformed_row_zinc():
     except haystackapi.zincparser.ZincParseException as zpe:
         assert zpe.line == 4
         assert zpe.col == 1
-
 
 
 def test_malformed_scalar_zinc():
@@ -1870,7 +1867,6 @@ def test_grid_in_grid_in_grid_csv():
     assert len(inner) == 1
     assert isinstance(inner[0]['innerinner'], Grid)
     assert inner[0]['innerinner'][0]['comment'] == "A innerinnergrid"
-
 
 
 def test_unescape():

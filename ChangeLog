@@ -1,9 +1,10 @@
 CHANGES
 =======
 
-v0.0.1
-------
-
+* - Refactory the management of unit, to be fully compatible with pint
+* - Manage Haystack errors to be conform of the specification
+* - Remove unused multi-grids parsing and dumper - Fix HAYSTACK\_URL with '..'
+* Add gitglow
 * test gitflow release
 * Update authors and changelog
 * - Second pass - Add Pycharm runner

@@ -113,10 +113,10 @@ def _dump_xstr(xstr_value: XStr) -> str:
 
 
 def _dump_quantity(quantity: Quantity) -> str:
-    if (quantity.unit is None) or (quantity.unit == ''):
+    if (quantity.symbol is None) or (quantity.symbol == ''):
         return _dump_decimal(quantity.m)
     return '%s%s' % (_dump_decimal(quantity.m),
-                     quantity.unit)
+                     quantity.symbol)
 
 
 def _dump_decimal(decimal: float) -> str:

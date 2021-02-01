@@ -109,35 +109,6 @@ def test_metadata_csv():
     assert grid_csv == METADATA_EXAMPLE_CSV
 
 
-def test_multi_grid_zinc():
-    grids = [make_simple_grid(), make_metadata_grid()]
-    grid_str = haystackapi.dump(grids)
-
-    assert grid_str == '\n'.join([SIMPLE_EXAMPLE_ZINC, METADATA_EXAMPLE])
-
-
-def test_multi_grid_json():
-    grids = [make_simple_grid(), make_metadata_grid()]
-    grid_json = json.loads(haystackapi.dump(grids, mode=haystackapi.MODE_JSON))
-
-    assert grid_json[0] == SIMPLE_EXAMPLE_JSON
-    assert grid_json[1] == METADATA_EXAMPLE_JSON
-
-
-def test_multi_grid_csv():
-    grids = [make_simple_grid(), make_metadata_grid()]
-    grid_csv = haystackapi.dump(grids, mode=haystackapi.MODE_CSV)
-    assert list(reader(grid_csv.splitlines()))
-    assert grid_csv == '''firstName,bday
-"Jack",1973-07-23
-"Jill",1975-11-15
-
-siteName,val
-"Site 1",356.214kW
-"Site 2",463.028kW
-'''
-
-
 def make_grid_meta(version=haystackapi.VER_2_0):
     """
     Args:

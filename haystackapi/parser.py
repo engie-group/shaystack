@@ -8,11 +8,8 @@
 """
 Generic parser from file to `Grid`. The mode can be `MODE_ZINC`, `MODE_JSON` or `MODE_CSV`
 """
-import functools
-import json
 import logging
-import re
-from typing import Optional, Any, AnyStr, Union, List
+from typing import Optional, Any, Union
 
 from .csvparser import parse_grid as parse_csv_grid
 from .csvparser import parse_scalar as parse_csv_scalar
@@ -28,10 +25,6 @@ EmptyGrid = Grid(version=VER_3_0, columns={"empty": {}})
 
 LOG = logging.getLogger(__name__)
 
-# Trailing newline sanitation
-TRAILING_NL_RE = re.compile(r'\n+$')
-
-GRID_SEP = re.compile(r'(?<=\n)\n+')  # It's may be not enough if a string has an empty line
 
 MODE_ZINC = 'text/zinc'
 MODE_JSON = 'application/json'
@@ -70,54 +63,7 @@ def mode_to_suffix(mode: str) -> Optional[str]:
     return _mode_to_suffix.get(mode, None)
 
 
-def parse(grid_str: Union[AnyStr, List[str]],
-          mode: str = MODE_ZINC,
-          single: bool = True) -> Union[Grid, List[Grid]]:
-    """Parse the given text and return the grids.
-
-    Args:
-        grid_str: The string to parse
-        mode: The format (`MODE_...`)
-        single: Parse only ony grid (deprecated)
-    Returns:
-        A grid or a list of grids
-    """
-    charset = 'utf-8'
-    # Decode incoming text (or python3 will whine!)
-    if isinstance(grid_str, bytes):
-        grid_str = grid_str.decode(encoding=charset)
-
-    # Split the separate grids up, the grammar definition has trouble splitting
-    # them up normally.  This will truncate the newline off the end of the last
-    # row.
-    _parse = functools.partial(parse_grid, mode=mode)
-    if mode == MODE_JSON:
-        if isinstance(grid_str, str):
-            grid_data = json.loads(grid_str)
-        else:
-            grid_data = grid_str
-
-        # Normally JSON only permits a single grid, but we'll support an
-        # extension where a JSON array of grid objects represents multiple.
-        # To simplify programming, we'll "normalise" to array-of-grids here.
-        if isinstance(grid_data, dict):
-            grid_data = [grid_data]
-    else:
-        if not single:
-            grid_data = GRID_SEP.split(TRAILING_NL_RE.sub('\n', grid_str))
-        else:
-            grid_data = [grid_str]
-
-    grids = list(map(_parse, grid_data))
-    if single:
-        # Most of the time, we will only want one grid.
-        if grids:
-            return grids[0]
-        return EmptyGrid
-    return grids
-
-
-def parse_grid(grid_str: str, mode: str = MODE_ZINC) -> Grid:
+def parse(grid_str: str, mode: str = MODE_ZINC) -> Grid:
     # Decode incoming text
     """
     Parse a grid.

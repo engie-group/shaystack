@@ -28,6 +28,8 @@ def parse_grid(grid_str: str) -> Grid:
     Returns:
         The corresponding Grid
     """
+    if not grid_str:
+        return Grid(version=VER_3_0, columns={"empty": {}})
     version = VER_3_0
     # for row in csv.reader(grid_str.splitlines()): print(row)
     csv_reader = reader(StringIO(grid_str))

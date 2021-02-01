@@ -1252,40 +1252,6 @@ def test_coord_csv():
     assert grid[0]['coord'] == haystackapi.Coordinate(37.55, -77.45)
 
 
-def test_multi_grid_zinc():
-    # Multiple grids are separated by newlines.
-    grid_list = haystackapi.parse('\n'.join([
-        SIMPLE_EXAMPLE_ZINC, METADATA_EXAMPLE_ZINC, NULL_EXAMPLE_ZINC]),
-        single=False)
-    assert len(grid_list) == 3
-    _check_simple(grid_list[0])
-    _check_metadata(grid_list[1])
-    _check_null(grid_list[2])
-
-
-def test_multi_grid_json():
-    # Multiple grids are separated by newlines.
-    grid_list = haystackapi.parse([json.dumps(SIMPLE_EXAMPLE_JSON),
-                                   json.dumps(METADATA_EXAMPLE_JSON),
-                                   json.dumps(NULL_EXAMPLE_JSON)], mode=haystackapi.MODE_JSON, single=False)
-    assert len(grid_list) == 3
-    _check_simple(grid_list[0])
-    _check_metadata(grid_list[1], force_metadata_order=False)
-    _check_null(grid_list[2])
-
-
-def test_multi_grid_csv():
-    # Multiple grids are separated by newlines.
-    grid_list = haystackapi.parse(list(map(json.dumps, [SIMPLE_EXAMPLE_JSON,
-                                                        METADATA_EXAMPLE_JSON,
-                                                        NULL_EXAMPLE_JSON])),
-                                  mode=haystackapi.MODE_JSON, single=False)
-    assert len(grid_list) == 3
-    _check_simple(grid_list[0])
-    _check_metadata(grid_list[1], force_metadata_order=False)
-    _check_null(grid_list[2])
-
-
 def test_grid_meta_zinc():
     grid = haystackapi.parse('ver:"3.0" '
                              'aString:"aValue" '

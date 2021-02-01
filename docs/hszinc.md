@@ -7,6 +7,7 @@ At this time (2021/1/1), here are the differences.
 | Parse zinc                     |  Y  |  Y  |
 | Parse json                     |  Y  |  Y  |
 | Parse csv                      |     |  Y  |
+| Parse multiple grid            |  Y  |  N  |
 | Haystack V2                    |  Y  |  Y  |
 | Haystack V3                    |  Y  |  Y  |
 | Filter                         |  Y  |  Y  |

@@ -270,7 +270,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             # Manage default cwd
             uri = parsed_uri.geturl()
             if not parsed_uri.scheme:
-                uri = Path.cwd().joinpath(parsed_uri.geturl()).as_uri()
+                uri = Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri()
             with urllib.request.urlopen(uri) as response:
                 data = response.read()
         if parsed_uri.path.endswith(".gz"):

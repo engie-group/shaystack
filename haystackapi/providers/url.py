@@ -46,6 +46,7 @@ from overrides import overrides
 from . import select_grid
 from .haystack_interface import HaystackInterface
 from ..datatypes import Ref
+from ..exception import HaystackException
 from ..grid import Grid
 from ..parser import parse
 from ..parser import suffix_to_mode
@@ -194,7 +195,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             if "history" in entity:
                 return entity["history"]
             raise ValueError(f"{entity_id} has no history")
-        raise ValueError(f"id '{entity_id}' not found")
+        raise HaystackException(f"id '{entity_id}' not found")
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         """ Stop the timer """

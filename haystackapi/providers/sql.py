@@ -34,6 +34,7 @@ from overrides import overrides
 from . import select_grid
 from .haystack_interface import HaystackInterface
 from .sqldb_protocol import DBConnection
+from .. import HaystackException
 from ..datatypes import Ref
 from ..grid import Grid
 from ..jsondumper import dump_scalar, _dump_meta, _dump_columns, _dump_row
@@ -298,6 +299,8 @@ class Provider(HaystackInterface):
                         "val": parse_scalar(row[1])
                     }
                 )
+            if not history:
+                raise HaystackException(f"id '{entity_id}' not found")
             min_date = datetime.max.replace(tzinfo=pytz.UTC)
             max_date = datetime.min.replace(tzinfo=pytz.UTC)
 

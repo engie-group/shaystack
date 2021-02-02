@@ -23,9 +23,11 @@ from typing import Optional, Any, List, cast
 from typing import Tuple, Dict
 
 from accept_types import AcceptableType, get_best_match
+from pyparsing import ParseException
 
 from .datatypes import Ref, Quantity, MARKER
 from .dumper import dump
+from .exception import HaystackException
 from .grid import Grid, VER_3_0
 from .grid_filter import parse_hs_datetime_format
 from .parser import MODE_ZINC, MODE_CSV, MODE_JSON, parse_scalar, parse, mode_to_suffix, EmptyGrid
@@ -243,6 +245,8 @@ def _format_response(
     Returns:
 
     """
+    if "Accept" not in headers:
+        raise HttpError(406, "required header 'Accept' not found")
     hs_response = _dump_response(
         headers.get("Accept", DEFAULT_MIME_TYPE), grid_response, default=default
     )
@@ -318,7 +322,7 @@ def _manage_exception(
         version=_DEFAULT_VERSION,
         metadata={
             "err": MARKER,
-            "id": "badId",
+            "dis": "Error",
             "errTrace": traceback.format_exc() if stage == "dev" else "",
         },
         columns=[("id", [("meta", None)])],
@@ -329,6 +333,14 @@ def _manage_exception(
         ex_http = cast(HttpError, ex)
         status_code = ex_http.error
         status_msg = ex_http.msg
+    if isinstance(ex, ParseException):
+        status_code = 200
+        status_msg = f"Parsing error with '{ex.line}'"
+        error_grid.metadata["dis"] = status_msg
+    if isinstance(ex, HaystackException):
+        status_code = 200
+        status_msg = ex.msg
+        error_grid.metadata["dis"] = status_msg
     return _format_response(
         headers,
         error_grid,

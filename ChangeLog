@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+v0.8.0rc1
+---------
+
 * - Refactory the management of unit, to be fully compatible with pint
 * - Manage Haystack errors to be conform of the specification
 * - Remove unused multi-grids parsing and dumper - Fix HAYSTACK\_URL with '..'

@@ -10,13 +10,18 @@ A top GraphQL query.
 You can use a similar code to integrate the haystack graphql api in a bigger environment.
 """
 import logging
+import os
 import sys
 
 import click
-import graphene
-from flask import Blueprint
-from flask_graphql import GraphQLView
 
+try:
+    from flask import Blueprint
+    from flask_graphql import GraphQLView
+except ImportError:
+    os.abort()
+
+import graphene
 from .graphql_model import ReadHaystack
 
 log = logging.getLogger("haystackapi")

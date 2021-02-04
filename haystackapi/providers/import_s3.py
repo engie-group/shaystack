@@ -22,9 +22,7 @@ from threading import Lock
 from typing import Tuple
 from urllib.parse import ParseResult, urlparse
 
-import boto3
 import click
-from botocore.exceptions import ClientError
 
 from ..dumper import dump
 from ..grid import Grid
@@ -32,6 +30,17 @@ from ..parser import parse, suffix_to_mode, EmptyGrid
 from ..zincparser import ZincParseException
 
 log = logging.getLogger("import_s3")
+
+BOTO3_AVAILABLE = False
+try:
+    # Check the presence of boto3
+    import boto3  # pylint: disable=unused-import
+    from botocore.exceptions import ClientError
+
+    BOTO3_AVAILABLE = True
+except ImportError:
+    print("Use 'pip install boto3' before using AWS features", file=sys.stderr)
+    sys.exit(-1)
 
 VERIFY = True  # See https://tinyurl.com/y5tap6ys
 POOL_SIZE = 20

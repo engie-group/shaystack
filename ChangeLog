@@ -1,9 +1,10 @@
 CHANGES
 =======
 
-v0.8.0rc2
+v0.8.0rc3
 ---------
 
+* Update changelog
 * - Fixe the packaging (add the package app)
 * - Refactory the management of unit, to be fully compatible with pint
 * - Manage Haystack errors to be conform of the specification

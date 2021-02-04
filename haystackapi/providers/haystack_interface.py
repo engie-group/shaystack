@@ -9,7 +9,6 @@ Base of haystack implementation.
 """
 import logging
 import os
-import traceback
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, date, timedelta, tzinfo
@@ -532,7 +531,6 @@ def get_provider(class_str: str) -> HaystackInterface:
         _providers[class_str] = FullInterface()
         return _providers[class_str]
     except (ImportError, AttributeError):
-        traceback.print_exc()
         raise
 
 

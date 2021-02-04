@@ -12,33 +12,26 @@ import os
 import sys
 
 import click
-from flask_cors import CORS
-
-from app.blueprint_haystack import haystack_blueprint
-
-USE_GRAPHQL = False
-try:
-    from app.blueprint_graphql import graphql_blueprint
-    import graphene  # pylint: disable=ungrouped-imports
-
-    USE_GRAPHQL = True
-except ImportError:
-    print("""
-To use GraphQL,use
-pip install "haystackapi[flask,graphql]"  
-""", file=sys.stderr)
 
 try:
     from flask import Flask, send_from_directory
+    from flask_cors import CORS
+    from app.blueprint_haystack import haystack_blueprint
+except ImportError as ex:
+    print('To start haystackapi, use \'pip install "haystackapi[flask]"\' or '
+          '\'pip install "haystackapi[flask,graphql]"\' and set \'HAYSTACK_PROVIDER\' variable',
+          file=sys.stderr)
+    sys.exit(-1)
+
+USE_GRAPHQL = False
+try:
+    import graphene  # pylint: disable=ungrouped-imports
+    from app.blueprint_graphql import graphql_blueprint
+
+    USE_GRAPHQL = True
 except ImportError:
-    print("""
-To start haystackapi, use
-pip install "haystackapi[flask]"
-or
-pip install "haystackapi[flask,graphql]"
-and set HAYSTACK_PROVIDER variable
-HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi
-""", file=sys.stderr)
+    print("To use GraphQL feature, use "
+          "'pip install \"haystackapi[graphql]\"'", file=sys.stderr)
     sys.exit(-1)
 
 app = Flask(__name__)
@@ -77,6 +70,10 @@ def main(host: str, port: int) -> int:
         host: Network to listen (0.0.0.0 to accept call from all network)
         port: Port to listen
     """
+    if not "HAYSTACKAPI_PROVIDER" in os.environ:
+        print("Set 'HAYSTACKAPI_PROVIDER' to use 'haystackapi'", file=sys.stderr)
+        sys.exit(-1)
+
     debug = (os.environ.get("FLASK_DEBUG", "0") == "1")
     app.run(host=host,
             port=port,

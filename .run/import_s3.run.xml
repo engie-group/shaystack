@@ -4,7 +4,6 @@
         <option name="INTERPRETER_OPTIONS" value=""/>
         <option name="PARENT_ENVS" value="true"/>
         <envs>
-            <env name="PYTHONUNBUFFERED" value="1"/>
             <env name="AWS_PROFILE" value="haystackapi"/>
             <env name="LOG_LEVEL" value="INFO"/>
         </envs>

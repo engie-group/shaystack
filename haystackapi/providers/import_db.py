@@ -22,15 +22,20 @@ from urllib.parse import urlparse, ParseResult
 import click
 import pytz
 
-from app.graphql_model import BOTO3_AVAILABLE
 from . import sql
 from .haystack_interface import get_provider
 from .. import suffix_to_mode, parse, Grid
 
-log = logging.getLogger(__name__)
+BOTO3_AVAILABLE = False
+try:
+    # Check the presence of boto3
+    import boto3  # pylint: disable=unused-import
 
-if BOTO3_AVAILABLE:
-    import boto3
+    BOTO3_AVAILABLE = True
+except ImportError:
+    pass
+
+log = logging.getLogger(__name__)
 
 
 def _download_uri(parsed_uri: ParseResult) -> bytes:
@@ -106,25 +111,28 @@ def import_in_db(source: str,
 
     if not version:
         version = datetime.now(tz=pytz.UTC)
-    with get_provider(provider_name) as provider:
-        provider = cast(sql.Provider, provider)
-        if reset:
-            provider.purge_db()
-        provider.create_db()
-        original_grid = provider.read_grid_from_db(customer_id, version)
-        target_grid = _read_grid(source)
-        provider.update_grid_in_db(target_grid - original_grid, version, customer_id)
-        log.debug("%s imported", source)
+    try:
+        with get_provider(provider_name) as provider:
+            provider = cast(sql.Provider, provider)
+            if reset:
+                provider.purge_db()
+            provider.create_db()
+            original_grid = provider.read_grid_from_db(customer_id, version)
+            target_grid = _read_grid(source)
+            provider.update_grid_in_db(target_grid - original_grid, version, customer_id)
+            log.debug("%s imported", source)
 
-        if time_series:
-            dir_name = dirname(source)
-            for row in target_grid:
-                if "hisURI" in row:
-                    assert "id" in row, "TS must have an id"
-                    uri = dir_name + '/' + row['hisURI']
-                    ts_grid = _read_grid(uri)
-                    provider.import_ts_in_db(ts_grid, row["id"], customer_id)
-                    log.debug("%s imported", uri)
+            if time_series:
+                dir_name = dirname(source)
+                for row in target_grid:
+                    if "hisURI" in row:
+                        assert "id" in row, "TS must have an id"
+                        uri = dir_name + '/' + row['hisURI']
+                        ts_grid = _read_grid(uri)
+                        provider.import_ts_in_db(ts_grid, row["id"], customer_id)
+                        log.debug("%s imported", uri)
+    except ModuleNotFoundError as ex:
+        log.error("Call `pip install` with the database driver - %s", ex.msg)
 
 
 def aws_handler(event, context):
@@ -182,12 +190,16 @@ def main(haystack_url: str,
         customer = ''
     if clean is None:
         clean = False
-    import_in_db(haystack_url, database_url, ts_url, customer, time_series, clean)
-    if ts_url:
-        print(f"{haystack_url} imported in {database_url} and {ts_url}")
-    else:
-        print(f"{haystack_url} imported in {database_url}")
-    return 0
+    try:
+        import_in_db(haystack_url, database_url, ts_url, customer, time_series, clean)
+        if ts_url:
+            print(f"{haystack_url} imported in {database_url} and {ts_url}")
+        else:
+            print(f"{haystack_url} imported in {database_url}")
+        return 0
+    except Exception as ex:
+        print(f"Impossible to import data ({ex})", file=sys.stderr)
+        return -1
 
 
 if __name__ == '__main__':

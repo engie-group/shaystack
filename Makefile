@@ -927,14 +927,18 @@ clean-dist:
 dist: clean-dist bdist sdist docker-build
 	@echo -e "$(yellow)Package for distribution created$(normal)"
 
-.PHONY: check-twine
+.PHONY: check-twine test-keyring test-twine
 ## Check the distribution before publication
 check-twine: bdist
 	@$(VALIDATE_VENV)
 	twine check \
 		$(shell find dist/ -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
 
-.PHONY: test-twine
+## Create keyring for Test-twine
+test-keyring:
+	[ -s "$TWINE_USERNAME"] && read -p "Test Twine username:" TWINE_USERNAME
+	keyring set https://test.pypi.org/legacy/ $TWINE_USERNAME
+
 ## Publish distribution on test.pypi.org
 test-twine: dist check-twine
 	@$(VALIDATE_VENV)
@@ -949,7 +953,14 @@ test-twine: dist check-twine
 	echo -e "$(green)export PIP_INDEX_URL=https://test.pypi.org/simple$(normal)"
 	echo -e "$(green)export PIP_EXTRA_INDEX_URL=https://pypi.org/simple$(normal)"
 
-.PHONY: release
+.PHONY: keyring release
+
+## Create keyring for release
+keyring:
+	[ -s "$TWINE_USERNAME"] && read -p "Twine username:" TWINE_USERNAME
+	keyring set https://upload.pypi.org/legacy/ $TWINE_USERNAME
+
+
 ## Publish distribution on pypi.org
 release: clean check-twine
 	@$(VALIDATE_VENV)

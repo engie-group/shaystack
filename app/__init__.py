@@ -70,8 +70,8 @@ def main(host: str, port: int) -> int:
         host: Network to listen (0.0.0.0 to accept call from all network)
         port: Port to listen
     """
-    if not "HAYSTACKAPI_PROVIDER" in os.environ:
-        print("Set 'HAYSTACKAPI_PROVIDER' to use 'haystackapi'", file=sys.stderr)
+    if not "HAYSTACK_PROVIDER" in os.environ:
+        print("Set 'HAYSTACK_PROVIDER' to use 'haystackapi'", file=sys.stderr)
         sys.exit(-1)
 
     debug = (os.environ.get("FLASK_DEBUG", "0") == "1")

@@ -163,14 +163,8 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             # Different solution to retrieve the history value
             # 1. use a file in the dir(HAYSTACK_URL)+entity['hisURI']
             if "hisURI" in entity:
-                his_uri = str(entity["hisURI"])
                 base = dirname(self._get_url())
-                parsed_relative = urlparse(his_uri, allow_fragments=False)
-                if his_uri.find(':') <= 3:
-                    his_uri = base + '/' + his_uri
-                if not parsed_relative.scheme:
-                    his_uri = base[: base.rfind("/")] + "/" + his_uri
-
+                his_uri =  base + '/' + str(entity["hisURI"])
                 history = self._download_grid(his_uri, date_version)
                 # assert history is sorted by date time
                 # Remove data after the date_version
@@ -185,7 +179,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
                     min_date = min(min_date, time_serie["ts"])
                     max_date = max(max_date, time_serie["ts"])
 
-                grid.metadata = {
+                history.metadata = {
                     "id": entity_id,
                     "hisStart": min_date,
                     "hisEnd": max_date,
@@ -194,7 +188,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             # 2. use the inner time series in tag 'history' with the type 'Grid'
             if "history" in entity:
                 return entity["history"]
-            raise ValueError(f"{entity_id} has no history")
+            raise HaystackException(f"{entity_id} has no history")
         raise HaystackException(f"id '{entity_id}' not found")
 
     def __exit__(self, exc_type, exc_value, exc_traceback):

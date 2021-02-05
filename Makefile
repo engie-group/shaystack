@@ -338,6 +338,10 @@ clean-all: clean docker-rm docker-rm-dmake remove-venv
 # -------------------------------------- Build
 .PHONY: dist build compile-all api api-read api-hisRead
 
+app/static/toto.js: haystack-front-demo/dist
+	(cd haystack-front-demo ; npm install)
+	cp haystack-front-demo/dist/* app/static/
+
 # Compile all python files
 compile-all:
 	@echo -e "$(cyan)Compile all python file...$(normal)"
@@ -923,6 +927,7 @@ sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
 clean-dist:
 	rm -Rf dist/*
 
+# see https://packaging.python.org/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
 ## Create a full distribution
 dist: clean-dist bdist sdist docker-build
 	@echo -e "$(yellow)Package for distribution created$(normal)"

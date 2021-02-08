@@ -16,7 +16,7 @@ import datetime
 import logging
 import numbers
 from collections import MutableSequence, Sequence  # pylint: disable=no-name-in-module
-from typing import Union, Dict, Iterable, Any, Optional, KeysView, Tuple
+from typing import Union, Dict, Iterable, Any, Optional, KeysView, Tuple, List
 
 import pytz
 
@@ -44,6 +44,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
     - To compare a grid: `grid_v1 + (grid_v2 - grid_v1) == grid_v2`
     - Size of grid: `len(grid)`
     - Replace an entity with `id`: `grid[Ref("abc")] = new_entity`
+    - Replace a group of entities: `grid[2:3] = [new_entity1,new_entity2]`
     - Delete an entity with `id`: `del grid[Ref("abc")]`
 
     Args:
@@ -266,7 +267,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
 
     def __getitem__(self, key: Union[int, Ref, slice]) -> Union[Dict[str, Any], 'Grid']:
         """Retrieve the row at index. :param key: index, Haystack reference or
-        slide
+        slice
 
         Args:
             key: the position, the Reference or a slice
@@ -305,26 +306,37 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """Return the number of rows in the grid."""
         return len(self._row)
 
-    def __setitem__(self, index: Union[int, Ref], value: Dict[str, Any]) -> 'Grid':
+    def __setitem__(self, index: Union[int, Ref, slice], value: Union[Dict[str, Any], List[Dict[str, Any]]]) -> 'Grid':
         """Replace the row at index.
 
         Args:
-            index: position of reference
+            index: position of reference, reference of slice
             value: the new entity
         Returns:
             `self`
         """
-        if not isinstance(value, dict):
-            raise TypeError('value must be a dict')
-        for val in value.values():
-            self._detect_or_validate(val)
+        if isinstance(value, dict):
+            for val in value.values():
+                self._detect_or_validate(val)
         if isinstance(index, int):
+            if not isinstance(value, dict):
+                raise TypeError('value must be a dict')
             if "id" in self._row[index]:
                 self._index.pop(self._row[index]['id'], None)
             self._row[index] = value
             if "id" in value:
                 self._index[value["id"]] = value
+        elif isinstance(index, slice):
+            if isinstance(value, dict):
+                raise TypeError('value must be iterable, not a dict')
+            self._index = None
+            self._row[index] = value
+            for v in value:
+                for val in v.values():
+                    self._detect_or_validate(val)
         else:
+            if not isinstance(value, dict):
+                raise TypeError('value must be a dict')
             if not self._index:
                 self.reindex()
             idx = list.index(self._row, self._index[index])

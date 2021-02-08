@@ -593,3 +593,18 @@ def test_mode_to_suffix():
     assert mode_to_suffix(suffix_to_mode(".csv")) == ".csv"
     assert mode_to_suffix(suffix_to_mode(".zinc")) == ".zinc"
     assert mode_to_suffix(suffix_to_mode(".json")) == ".json"
+
+
+def test_grid_update_slide():
+    grid = Grid(columns=["id", "a"])
+    grid.append({"id": Ref("myid1")})
+    grid.append({"id": Ref("myid2")})
+    grid.append({"id": Ref("myid3")})
+    grid.append({"id": Ref("myid4")})
+    grid[0:1] = [{"id": Ref("myid5")}]
+    assert grid[0]['id'] == Ref("myid5")
+    grid[1:3] = [{"id": Ref("myid6")}, {"id": Ref("myid7")}]
+    assert grid[0]['id'] == Ref("myid5")
+    assert grid[1]['id'] == Ref("myid6")
+    assert grid[2]['id'] == Ref("myid7")
+    assert grid[3]['id'] == Ref("myid4")

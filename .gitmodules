@@ -1,6 +1,0 @@
-[submodule "haystackapi-demo"]
-	path = haystackapi-demo
-	url = https://github.tools.digital.engie.com/PR6075/haystackapi-demo.git
-[submodule "haystack-front-demo"]
-	path = haystack-front-demo
-	url = git@github.com:totocto/haystack-front-demo.git

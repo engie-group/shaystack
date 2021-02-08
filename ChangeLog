@@ -1,9 +1,11 @@
 CHANGES
 =======
 
-v0.8.0rc4
+v0.8.0rc7
 ---------
 
+* - Fix the relalive location of hisURL
+* - Fix HAYSTACKAPI\_PROVIDER
 * - Add alert for different scenario with and without module for flask or graphql
 * Update changelog
 * - Fixe the packaging (add the package app)

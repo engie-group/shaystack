@@ -9,7 +9,7 @@ A flask blueprint to manage Haystack API
 """
 import os
 
-from flask import Blueprint, Response
+from flask import Blueprint, Response, send_from_directory, safe_join
 from flask import request as flash_request
 
 # from werkzeug.local import LocalProxy
@@ -20,7 +20,7 @@ from haystackapi import \
 from haystackapi.ops import HaystackHttpRequest, HaystackHttpResponse
 
 haystack_blueprint = Blueprint('haystack', __name__,
-                               static_folder='app/static',
+                               static_folder=safe_join(os.path.dirname(__file__), 'haystackui'),
                                url_prefix='/haystack')
 
 
@@ -151,3 +151,10 @@ def flask_invoke_action() -> Response:
     """
     return _as_response(invoke_action(_as_request(flash_request),
                                       os.environ.get("FLASK_ENV", "prod")))
+
+
+@haystack_blueprint.route('/', methods=['GET'], defaults={'filename': 'index.html'})
+@haystack_blueprint.route('/<path:filename>', methods=['GET'])
+def flash_web_ui(filename) -> Response:
+    return send_from_directory(haystack_blueprint.static_folder, filename)
+

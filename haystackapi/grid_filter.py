@@ -11,6 +11,7 @@ See https://www.project-haystack.org/doc/Filters
 """
 from datetime import datetime, time, date
 from functools import lru_cache
+from threading import Lock
 from typing import Any, List, Callable, Dict, Tuple, Union
 
 from iso8601 import iso8601
@@ -242,7 +243,7 @@ hs_condOr = (hs_condAnd + ZeroOrMore(Literal("or") + hs_condAnd)).setParseAction
 )
 hs_filter <<= hs_condOr
 
-
+_lock = Lock()
 def parse_filter(grid_filter: str) -> FilterAST:
     """Return an AST tree of filter. Can be used to generate other language
     (Python, SQL, etc.)
@@ -252,7 +253,8 @@ def parse_filter(grid_filter: str) -> FilterAST:
     Returns:
         A `FilterAST`
     """
-    return FilterAST(hs_filter.parseString(grid_filter, parseAll=True)[0])
+    with _lock:
+        return FilterAST(hs_filter.parseString(grid_filter, parseAll=True)[0])
 
 
 # --- Generate python to apply filter

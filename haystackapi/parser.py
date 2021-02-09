@@ -25,7 +25,6 @@ EmptyGrid = Grid(version=VER_3_0, columns={"empty": {}})
 
 LOG = logging.getLogger(__name__)
 
-
 MODE_ZINC = 'text/zinc'
 MODE_JSON = 'application/json'
 MODE_CSV = 'text/csv'
@@ -73,11 +72,14 @@ def parse(grid_str: AnyStr, mode: str = MODE_ZINC) -> Grid:
     Returns:
         a grid
     """
-    charset = 'utf-8'
     if isinstance(grid_str, bytes):  # pragma: no cover
         # No coverage here, because it *should* be handled above unless the user
         # is preempting us by calling `parse_grid` directly.
-        grid_str = grid_str.decode(encoding=charset)
+        charset = 'utf-8'
+        if '\xef\xbb' == grid_str[:2]:
+            grid_str = grid_str.decode(encoding="utf-8-sig")
+        else:
+            grid_str = grid_str.decode(encoding="utf-8")
 
     if mode == MODE_ZINC:
         return parse_zinc_grid(grid_str)

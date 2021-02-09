@@ -15,6 +15,7 @@ import datetime
 import logging
 import re
 import sys
+from threading import Lock
 from typing import Dict, Any, Callable, List, Tuple
 from typing import Optional as Typing_Optional
 
@@ -115,16 +116,16 @@ def _gen_grid(toks: List[Any]) -> Grid:
     return grid
 
 
-def _to_dict(token_list: List[Any]) -> Dict[str, Any]:
+def _to_dict(toks: List[Any]) -> Dict[str, Any]:
     """
     Args:
-        token_list:
+        toks:
     """
     result = {}
-    iterator = enumerate(token_list)
+    iterator = enumerate(toks)
     for i, tok in iterator:
-        if i < len(token_list) - 2 and token_list[i + 1] == ':':
-            result[token_list[i]] = token_list[i + 2]
+        if i < len(toks) - 2 and toks[i + 1] == ':':
+            result[toks[i]] = toks[i + 2]
             next(iterator)
             next(iterator)
         else:
@@ -376,7 +377,7 @@ hs_dateTime = And([
         Suppress(Literal(' ')),
         hs_timeZoneName
     ]))
-]).setParseAction(_parse_datetime)
+]).setParseAction(lambda toks: _parse_datetime(toks))
 
 # Quantities and raw numeric values
 hs_unitChar = Or([
@@ -629,7 +630,7 @@ hs_grid_3_0 <<= And([
     hs_rows[VER_3_0],
 ]).setParseAction(_gen_grid)
 
-
+_lock = Lock()
 def parse_grid(grid_data: str, parse_all: bool = True) -> Grid:
     """Parse the incoming grid.
 
@@ -640,16 +641,17 @@ def parse_grid(grid_data: str, parse_all: bool = True) -> Grid:
         The grid
     """
     try:
-        # First element is the grid metadata
-        ver_match = _VERSION_RE.match(grid_data)
-        if ver_match is None:
-            raise ZincParseException(
-                'Could not determine version from %r' % _NEWLINE_RE.split(grid_data)[0],
-                grid_data, 1, 1)
-        version = Version(ver_match.group(1))
+        with _lock:
+            # First element is the grid metadata
+            ver_match = _VERSION_RE.match(grid_data)
+            if ver_match is None:
+                raise ZincParseException(
+                    'Could not determine version from %r' % _NEWLINE_RE.split(grid_data)[0],
+                    grid_data, 1, 1)
+            version = Version(ver_match.group(1))
 
-        # Now parse the grid of the grid accordingly
-        return hs_grid[version].parseString(grid_data, parseAll=parse_all)[0]
+            # Now parse the grid of the grid accordingly
+            return hs_grid[version].parseString(grid_data, parseAll=parse_all)[0]
     except pp.ParseException as parse_exception:
         LOG.debug('Failing grid: %r', grid_data)
         raise ZincParseException(

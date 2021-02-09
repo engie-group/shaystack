@@ -14,7 +14,7 @@ export PIP_EXTRA_INDEX_URL=https://pypi.org/simple
 ```
 
 Haystackapi is a set of API to implement [Haystack project specification](https://project-haystack.org/). It's
-compatible with Flask server in data center, Edge (Raspberry?) or in AWS Lambda function.
+compatible with moderne Python, Flask server in data center, Edge (Raspberry?) or in AWS Lambda function.
 
 ## About Haystack, and who is it for
 
@@ -430,9 +430,10 @@ See [here](./contribute.md)
 See [LICENCE](LICENSE-2.0.txt) file
 
 # TODO
-- [ ] coverage
+
 - [ ] MySQL
-- [ ] Pypy (when pip install typed-ast running)
 - [ ] Implements watch in GraphQL
 - [ ] Implements *write* in GraphQL
+- [ ] FastAPI
+- [ ] Pypy (when pip install typed-ast running)
 - [ ] Docker images with ARM

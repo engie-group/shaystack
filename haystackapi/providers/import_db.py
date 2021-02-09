@@ -132,7 +132,7 @@ def import_in_db(source: str,
                         provider.import_ts_in_db(ts_grid, row["id"], customer_id)
                         log.debug("%s imported", uri)
     except ModuleNotFoundError as ex:
-        log.error("Call `pip install` with the database driver - %s", ex.msg)
+        log.error("Call `pip install` with the database driver - %s", ex.msg)  # type: ignore[attribute-error]
 
 
 def aws_handler(event, context):

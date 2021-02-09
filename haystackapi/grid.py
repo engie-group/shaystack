@@ -16,7 +16,7 @@ import datetime
 import logging
 import numbers
 from collections import MutableSequence, Sequence  # pylint: disable=no-name-in-module
-from typing import Union, Dict, Iterable, Any, Optional, KeysView, Tuple, List
+from typing import Union, Dict, Iterable, Any, Optional, KeysView, Tuple, List, cast
 
 import pytz
 
@@ -75,10 +75,10 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         self.column = SortableDict()
 
         # Rows
-        self._row = []
+        self._row: List[Dict[str, Any]] = []
 
         # Internal index
-        self._index = None
+        self._index: Optional[Dict[str, Dict[str, Any]]] = None
 
         if metadata is not None:
             self.metadata.update(metadata.items())
@@ -276,7 +276,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             The entity of an new grid with a portion of entities, with the same metadata and columns
         """
         if isinstance(key, int):
-            return self._row[key]
+            return cast(Dict[str, Any], self._row[key])
         if isinstance(key, slice):
             result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
             result._row = self._row[key]
@@ -285,7 +285,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         assert isinstance(key, Ref), "The 'key' must be a Ref or int"
         if not self._index:
             self.reindex()
-        return self._index[key]
+        return cast(Dict[str, Any], self._index[key])
 
     def __contains__(self, key: Union[int, Ref]) -> bool:
         """Return an entity with the corresponding id.
@@ -379,7 +379,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """
         if not self._index:
             self.reindex()
-        return self._index.get(index, default)
+        return cast(Dict[str, Any], self._index.get(index, default))
 
     def keys(self) -> KeysView[Ref]:
         """ Return the list of ids of entities with `id`
@@ -417,7 +417,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                 else:
                     self._row.remove(self._index[key])
                     ret_value = self._index.pop(key)
-        return ret_value
+        return cast(Optional[Dict[str, Any]], ret_value)
 
     def insert(self, index: int, value: Dict[str, Any]) -> 'Grid':
         """Insert a new entity before the index position.

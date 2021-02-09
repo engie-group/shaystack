@@ -29,10 +29,12 @@ from .parser import parse, parse_scalar, MODE_JSON, MODE_ZINC, MODE_CSV, \
     suffix_to_mode, mode_to_suffix
 from .pintutil import unit_reg
 from .providers import HaystackInterface
+from .type import HaystackType, Entity
 from .version import Version, VER_2_0, VER_3_0, LATEST_VER
 
 __all__ = ['Grid', 'dump', 'parse', 'dump_scalar', 'parse_scalar', 'parse_filter',
            'MetadataObject', 'unit_reg', 'zoneinfo',
+           'HaystackType', 'Entity',
            'Coordinate', 'Uri', 'Bin', 'XStr', 'Quantity', 'MARKER', 'NA', 'REMOVE', 'Ref',
            'MODE_JSON', 'MODE_ZINC', 'MODE_CSV', 'suffix_to_mode', 'mode_to_suffix',
            'parse_hs_datetime_format',

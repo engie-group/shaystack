@@ -26,6 +26,7 @@ from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
     MARKER, NA, REMOVE, XStr
 from .grid import Grid
 from .metadata import MetadataObject
+from .type import Entity
 from .version import LATEST_VER, Version, VER_3_0
 from .zoneinfo import timezone
 
@@ -56,14 +57,14 @@ COORD_RE = re.compile(r'c:(-?\d*\.?\d*),(-?\d*\.?\d*)$',
 STR_ESC_RE = re.compile(r'\\([bfnrt"\\$]|u[0-9a-fA-F]{4})')
 
 
-def _parse_metadata(meta: Dict[str, Any], version: Version) -> MetadataObject:
+def _parse_metadata(meta: Entity, version: Version) -> MetadataObject:
     metadata = MetadataObject()
     for name, value in meta.items():
         metadata[name] = _parse_embedded_scalar(value, version=version)
     return metadata
 
 
-def _parse_cols(grid: Grid, parsed: List[Dict[str, Any]], version: Version) -> None:
+def _parse_cols(grid: Grid, parsed: List[Entity], version: Version) -> None:
     for col in parsed:
         name = col.pop('name')
         meta = {}
@@ -74,7 +75,7 @@ def _parse_cols(grid: Grid, parsed: List[Dict[str, Any]], version: Version) -> N
         grid.column[name] = meta
 
 
-def _parse_row(row: Dict[str, Any], version: Version) -> Dict[str, Any]:
+def _parse_row(row: Dict[str, Any], version: Version) -> Entity:
     parsed_row = {}
     for col, value in row.items():
         value = _parse_embedded_scalar(value, version=version)

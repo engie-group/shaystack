@@ -16,13 +16,14 @@ import datetime
 import logging
 import numbers
 from collections import MutableSequence, Sequence  # pylint: disable=no-name-in-module
-from typing import Union, Dict, Iterable, Any, Optional, KeysView, Tuple, List, cast
+from typing import Union, Iterable, Any, Optional, KeysView, Tuple, List, cast
 
 import pytz
 
 from .datatypes import NA, Quantity, Coordinate, Ref
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
+from .type import Entity
 from .version import Version, VER_3_0
 
 log = logging.getLogger("ping.Provider")
@@ -55,9 +56,9 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
 
     def __init__(self,
                  version: Union[str, Version, None] = None,
-                 metadata: Union[None, Dict[str, Any], MetadataObject, SortableDict] = None,
+                 metadata: Union[None, Entity, MetadataObject, SortableDict] = None,
                  columns: Union[None,
-                                Dict[str, Any],
+                                Entity,
                                 Iterable[Union[Tuple[str, Any], str]],
                                 SortableDict] = None):
         version_given = version is not None
@@ -75,10 +76,10 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         self.column = SortableDict()
 
         # Rows
-        self._row: List[Dict[str, Any]] = []
+        self._row: List[Entity] = []
 
         # Internal index
-        self._index: Optional[Dict[str, Dict[str, Any]]] = None
+        self._index: Optional[Entity] = None
 
         if metadata is not None:
             self.metadata.update(metadata.items())
@@ -265,7 +266,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             class_name, '\n'.join(parts)
         )
 
-    def __getitem__(self, key: Union[int, Ref, slice]) -> Union[Dict[str, Any], 'Grid']:
+    def __getitem__(self, key: Union[int, Ref, slice]) -> Union[Entity, 'Grid']:
         """Retrieve the row at index. :param key: index, Haystack reference or
         slice
 
@@ -276,7 +277,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             The entity of an new grid with a portion of entities, with the same metadata and columns
         """
         if isinstance(key, int):
-            return cast(Dict[str, Any], self._row[key])
+            return self._row[key]
         if isinstance(key, slice):
             result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
             result._row = self._row[key]
@@ -285,7 +286,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         assert isinstance(key, Ref), "The 'key' must be a Ref or int"
         if not self._index:
             self.reindex()
-        return cast(Dict[str, Any], self._index[key])
+        return cast(Entity, self._index[key])
 
     def __contains__(self, key: Union[int, Ref]) -> bool:
         """Return an entity with the corresponding id.
@@ -306,7 +307,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """Return the number of rows in the grid."""
         return len(self._row)
 
-    def __setitem__(self, index: Union[int, Ref, slice], value: Union[Dict[str, Any], List[Dict[str, Any]]]) -> 'Grid':
+    def __setitem__(self, index: Union[int, Ref, slice], value: Union[Entity, List[Entity]]) -> 'Grid':
         """Replace the row at index.
 
         Args:
@@ -347,7 +348,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                 self._index[value["id"]] = value
         return self
 
-    def __delitem__(self, key: Union[int, Ref]) -> Optional[Dict[str, Any]]:
+    def __delitem__(self, key: Union[int, Ref]) -> Optional[Entity]:
         """Delete the row at index.
 
         Args:
@@ -367,7 +368,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """ The nearest haystack version of grid """
         return Version.nearest(self._version)
 
-    def get(self, index: Ref, default: Dict[str, Any] = None) -> Dict[str, Any]:
+    def get(self, index: Ref, default: Optional[Entity] = None) -> Entity:
         """Return an entity with the corresponding id.
 
         Args:
@@ -379,7 +380,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """
         if not self._index:
             self.reindex()
-        return cast(Dict[str, Any], self._index.get(index, default))
+        return cast(Entity, self._index.get(index, default))
 
     def keys(self) -> KeysView[Ref]:
         """ Return the list of ids of entities with `id`
@@ -391,7 +392,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             self.reindex()
         return self._index.keys()
 
-    def pop(self, *index: Union[int, Ref]) -> Optional[Dict[str, Any]]:
+    def pop(self, *index: Union[int, Ref]) -> Optional[Entity]:
         """Delete the row at index or with specified Ref id. If multiple
         index/key was specified, all row was removed. Return the old value of
         the first deleted item.
@@ -417,9 +418,9 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                 else:
                     self._row.remove(self._index[key])
                     ret_value = self._index.pop(key)
-        return cast(Optional[Dict[str, Any]], ret_value)
+        return cast(Optional[Entity], ret_value)
 
-    def insert(self, index: int, value: Dict[str, Any]) -> 'Grid':
+    def insert(self, index: int, value: Entity) -> 'Grid':
         """Insert a new entity before the index position.
 
         Args:
@@ -483,7 +484,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         self.column = new_cols
         return self
 
-    def extend(self, values: Iterable[Dict[str, Any]]) -> 'Grid':
+    def extend(self, values: Iterable[Entity]) -> 'Grid':
         """
         Add a list of entities inside the grid
 

@@ -37,7 +37,7 @@ from io import BytesIO
 from os.path import dirname
 from pathlib import Path
 from threading import Lock
-from typing import Optional, Union, Tuple, Dict, Any, List, cast
+from typing import Optional, Union, Tuple, Any, List, cast
 from urllib.parse import urlparse, ParseResult
 
 import pytz
@@ -50,6 +50,7 @@ from ..exception import HaystackException
 from ..grid import Grid
 from ..parser import parse
 from ..parser import suffix_to_mode
+from ..type import Entity
 
 _BOTO3_AVAILABLE = False
 try:
@@ -104,7 +105,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
     def about(self, home: str) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'about' operation """
         grid = super().about(home)
-        about_data = cast(Dict[str, Any], grid[0])
+        about_data = cast(Entity, grid[0])
         about_data.update(
             {  # pylint: disable=no-member
                 "productVersion": "1.0",
@@ -343,7 +344,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
             raise ValueError(
                 "The file extension must be .(json|zinc|csv)[.gz]"
             )
-        return cast(Grid, parse(body, mode))
+        return parse(body, mode)
 
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
         parsed_uri = urlparse(uri, allow_fragments=False)

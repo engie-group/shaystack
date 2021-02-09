@@ -12,7 +12,7 @@ See https://www.project-haystack.org/doc/Filters
 from datetime import datetime, time, date
 from functools import lru_cache
 from threading import Lock
-from typing import Any, List, Callable, Dict, Tuple, Union
+from typing import Any, List, Callable, Tuple, Union
 
 from iso8601 import iso8601
 from pyparsing import Word, ZeroOrMore, Literal, Forward, Combine, Optional, Regex, OneOrMore, \
@@ -21,6 +21,7 @@ from pyparsing import Word, ZeroOrMore, Literal, Forward, Combine, Optional, Reg
 from . import Grid
 from .datatypes import REMOVE, MARKER, Coordinate, NA, Bin, Ref, XStr, Uri, Quantity
 from .filter_ast import FilterPath, FilterBinary, FilterUnary, FilterAST, FilterNode
+from .type import Entity
 from .zincparser import DelimitedList, _to_dict
 from .zoneinfo import timezone
 
@@ -373,7 +374,7 @@ class _FnWrapper:
         # Remove the corresponding python function from Python engine
         del globals()[self.fun_name]  # Remove generated function if the LRU ask that
 
-    def get(self) -> Callable[[Grid, Dict[str, Any]], bool]:
+    def get(self) -> Callable[[Grid, Entity], bool]:
         # Gest the python function.
         return globals()[self.fun_name]
 
@@ -408,7 +409,7 @@ def filter_set_lru_size(lru_size: int) -> None:
     _filter_function = lru_cache(lru_size, original_function)  # type: ignore
 
 
-def filter_function(grid_filter: str) -> Callable[[Grid, Dict[str, Any]], bool]:
+def filter_function(grid_filter: str) -> Callable[[Grid, Entity], bool]:
     """
     Convert the request filter to a python function.
 

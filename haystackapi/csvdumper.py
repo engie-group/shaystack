@@ -13,12 +13,13 @@ from __future__ import unicode_literals
 import datetime
 import functools
 import re
-from typing import AnyStr, List, Dict, Any, Match
+from typing import AnyStr, List, Any, Match
 
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
     MARKER, NA, REMOVE, _STR_SUB, XStr
 from .grid import Grid
 from .sortabledict import SortableDict
+from .type import Entity
 from .version import LATEST_VER, VER_3_0, Version
 from .zincdumper import dump_grid as zinc_dump_grid
 from .zincdumper import dump_scalar as zinc_dump_scalar
@@ -79,7 +80,7 @@ def _dump_rows(csv_result: List[str], grid: Grid) -> None:
     list(map(functools.partial(_dump_row, csv_result, grid), grid))
 
 
-def _dump_row(csv_result: List[str], grid: Grid, row: Dict[str, Any]) -> None:
+def _dump_row(csv_result: List[str], grid: Grid, row: Entity) -> None:
     row_in_csv = [dump_scalar(row.get(c), version=grid.version) + "," for c in grid.column.keys()]
     row_in_csv[-1] = row_in_csv[-1][:-1] + '\n'
     if len(row_in_csv) == 1 and row_in_csv[0] == '\n':

@@ -11,7 +11,7 @@ See the `blueprint_graphql` to see how to integrate this part of global GraphQL 
 import json
 import logging
 from datetime import datetime, date, time
-from typing import Optional, List, Any, Dict, Union, Type
+from typing import Optional, List, Any, Union, Type
 
 import graphene
 import pytz
@@ -22,6 +22,7 @@ import haystackapi
 from haystackapi import Ref, Uri, Coordinate, parse_hs_datetime_format, Grid
 from haystackapi.grid_filter import parse_hs_time_format, parse_hs_date_format
 from haystackapi.providers.haystack_interface import get_singleton_provider, parse_date_range
+from haystackapi.type import Entity
 from haystackapi.zincdumper import _dump_hs_date_time, _dump_hs_time, _dump_hs_date
 
 BOTO3_AVAILABLE = False
@@ -436,7 +437,7 @@ class ReadHaystack(graphene.ObjectType):
         return ReadHaystack._conv_list_to_object_type(HSPointWrite, grid)
 
     @staticmethod
-    def _conv_value(entity: Dict[str, Any],
+    def _conv_value(entity: Entity,
                     info: ResolveInfo) -> HSTS:
         selection = info.field_asts[0].selection_set.selections
         cast_value = HSTS()
@@ -475,7 +476,7 @@ class ReadHaystack(graphene.ObjectType):
         return cast_value
 
     @staticmethod
-    def _conv_history(entities: Dict[str, Any], info: ResolveInfo):
+    def _conv_history(entities: Entity, info: ResolveInfo):
         return [ReadHaystack._conv_value(entity, info) for entity in entities]
 
     @staticmethod
@@ -487,7 +488,7 @@ class ReadHaystack(graphene.ObjectType):
         return entity_id
 
     @staticmethod
-    def _conv_entity(target_class: Type, entity: Dict[str, Any]):
+    def _conv_entity(target_class: Type, entity: Entity):
         entity_result = target_class()
         for key, val in entity.items():
             if key in entity:

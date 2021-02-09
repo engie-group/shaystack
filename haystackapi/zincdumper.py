@@ -15,13 +15,14 @@ from __future__ import unicode_literals
 import datetime
 import functools
 import re
-from typing import Match, Tuple, Any, List, Dict
+from typing import Match, Tuple, Any, List
 
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
     MARKER, NA, REMOVE, _STR_SUB, XStr
 from .grid import Grid
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
+from .type import Entity
 from .version import LATEST_VER, VER_3_0, Version
 from .zoneinfo import timezone_name
 
@@ -84,7 +85,7 @@ def _dump_rows(grid: Grid) -> List[str]:
     return list(map(functools.partial(_dump_row, grid), grid))
 
 
-def _dump_row(grid: Grid, row: Dict[str, Any]) -> str:
+def _dump_row(grid: Grid, row: Entity) -> str:
     if len(grid.column.keys()) > 1:
         return ','.join([dump_scalar(row.get(c, _EMPTY), version=grid.version) for
                          c in grid.column.keys()])

@@ -23,6 +23,7 @@ from .grid import Grid
 from .jsonparser import MARKER_STR, NA_STR, REMOVE2_STR, REMOVE3_STR
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
+from .type import Entity
 from .version import LATEST_VER, VER_3_0, Version
 from .zoneinfo import timezone_name
 
@@ -64,7 +65,7 @@ def _dump_meta(meta: MetadataObject,
 
 
 def _dump_meta_item(item: str, version: Version = LATEST_VER) \
-        -> Tuple[str, Union[None, bool, str, List[str], Dict[str, Any]]]:
+        -> Tuple[str, Union[None, bool, str, List[str], Entity]]:
     (item_id, item_value) = item
     return (_dump_id(item_id),
             _dump_scalar(item_value, version=version))
@@ -89,7 +90,7 @@ def _dump_rows(grid: Grid) -> List[str]:
     return list(map(functools.partial(_dump_row, grid), grid))
 
 
-def _dump_row(grid: Grid, row: Dict[str, Any]) -> Dict[str, str]:
+def _dump_row(grid: Grid, row: Entity) -> Dict[str, str]:
     return {
         c: _dump_scalar(row.get(c), version=grid.version)
         for c in list(grid.column.keys()) if c in row
@@ -97,7 +98,7 @@ def _dump_row(grid: Grid, row: Dict[str, Any]) -> Dict[str, str]:
 
 
 def _dump_scalar(scalar: Any, version: Version = LATEST_VER) \
-        -> Union[None, str, bool, List[str], Dict[str, Any]]:
+        -> Union[None, str, bool, List[str], Entity]:
     if scalar is None:
         return None
     if scalar is MARKER:

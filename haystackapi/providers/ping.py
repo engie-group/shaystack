@@ -20,6 +20,7 @@ from overrides import overrides
 from .haystack_interface import HaystackInterface
 from ..datatypes import MARKER
 from ..grid import Grid, VER_3_0, Ref, Quantity
+from ..type import Entity
 
 log = logging.getLogger("ping.Provider")
 
@@ -50,7 +51,7 @@ class Provider(HaystackInterface):
     def about(self, home: str) -> Grid:  # pylint: disable=no-self-use
         log.info("about()")
         grid = super().about(home)
-        grid_row = cast(Dict[str, Any], grid[0])
+        grid_row = cast(Entity, grid[0])
         grid_row.update(
             {  # pylint: disable=no-member
                 "productVersion": "1.0",
@@ -114,13 +115,13 @@ class Provider(HaystackInterface):
 
     @overrides
     def his_write(
-            self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime] = None
+            self, entity_id: Ref, time_series: Grid, date_version: Optional[datetime] = None
     ) -> Grid:  # pylint: disable=no-self-use
         """Return EmptyGrid."""
         log.info(
             'his_write(id=%s, ts=%s, date_version=%s")',
             entity_id,
-            time_serie,
+            time_series,
             date_version,
         )
         return _PingGrid

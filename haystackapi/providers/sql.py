@@ -39,6 +39,7 @@ from ..datatypes import Ref
 from ..grid import Grid
 from ..jsondumper import dump_scalar, _dump_meta, _dump_columns, _dump_row
 from ..jsonparser import parse_scalar, _parse_row, _parse_metadata, _parse_cols
+from ..type import Entity
 from ..version import VER_3_0
 
 try:
@@ -200,7 +201,7 @@ class Provider(HaystackInterface):
     def about(self, home: str) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'about' operation """
         grid = super().about(home)
-        about_data = cast(Dict[str, Any], grid[0])
+        about_data = cast(Entity, grid[0])
         about_data.update(
             {  # pylint: disable=no-member
                 "productVersion": "1.0",

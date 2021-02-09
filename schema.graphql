@@ -13,61 +13,61 @@ scalar AWSTime
 scalar AWSURL
 
 type HSAbout {
-    haystackVersion: String!
-    tz: String!
-    serverName: String!
-    serverTime: AWSDateTime!
-    serverBootTime: AWSDateTime!
-    productName: String!
-    productUri: AWSURL!
-    productVersion: String!
-    moduleName: String!
-    moduleVersion: String!
+  haystackVersion: String!
+  tz: String!
+  serverName: String!
+  serverTime: AWSDateTime!
+  serverBootTime: AWSDateTime!
+  productName: String!
+  productUri: AWSURL!
+  productVersion: String!
+  moduleName: String!
+  moduleVersion: String!
 }
 
 type HSCoordinate {
-    latitude: Float!
-    longitude: Float!
+  latitude: Float!
+  longitude: Float!
 }
 
 type HSOps {
-    name: String
-    summary: String
+  name: String
+  summary: String
 }
 
 type HSPointWrite {
-    level: Int
-    levelDis: String
-    val: AWSJSON
-    who: String
+  level: Int
+  levelDis: String
+  val: AWSJSON
+  who: String
 }
 
 type HSTS {
-    ts: AWSDateTime
-    val: AWSJSON
-    int: Int
-    float: Float
-    str: String
-    bool: Boolean
-    uri: String
-    ref: String
-    date: AWSDate
-    time: AWSTime
-    datetime: AWSDateTime
-    coord: HSCoordinate
+  ts: AWSDateTime
+  val: AWSJSON
+  int: Int
+  float: Float
+  str: String
+  bool: Boolean
+  uri: String
+  ref: String
+  date: AWSDate
+  time: AWSTime
+  datetime: AWSDateTime
+  coord: HSCoordinate
 }
 
 type Haystack {
-    about: HSAbout!
-    ops: [HSOps!]!
-    tagValues(tag: String!, version: AWSDateTime): [String!]!
-    versions: [AWSDateTime!]!
-    entities(ids: [ID], select: String = "*", limit: Int = 0, filter: String = "", version: AWSDateTime): [AWSJSON!]
-    histories(ids: [ID], datesRange: String, version: AWSDateTime): [[HSTS!]!]
-    pointWrite(id: ID!, version: AWSDateTime): [HSPointWrite!]
+  about: HSAbout!
+  ops: [HSOps!]!
+  tagValues(tag: String!, version: AWSDateTime): [String!]!
+  versions: [AWSDateTime!]!
+  entities(ids: [ID], select: String = "*", limit: Int = 0, filter: String = "", version: AWSDateTime): [AWSJSON!]
+  histories(ids: [ID], datesRange: String, version: AWSDateTime): [[HSTS!]!]
+  pointWrite(id: ID!, version: AWSDateTime): [HSPointWrite!]
 }
 
 type Query {
-    haystack: Haystack!
+  haystack: Haystack!
 }
 

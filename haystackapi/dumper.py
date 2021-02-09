@@ -16,13 +16,13 @@ from .csvdumper import dump_grid as dump_csv_grid, \
 from .grid import Grid
 from .jsondumper import dump_grid as dump_json_grid, \
     dump_scalar as dump_json_scalar
-from .parser import MODE_ZINC, MODE_JSON, MODE_CSV
+from .parser import MODE_ZINC, MODE_JSON, MODE_CSV, MODE
 from .version import LATEST_VER, Version
 from .zincdumper import dump_grid as dump_zinc_grid, \
     dump_scalar as dump_zinc_scalar
 
 
-def dump(grid: Grid, mode: str = MODE_ZINC) -> str:
+def dump(grid: Grid, mode: MODE = MODE_ZINC) -> str:
     """
     Dump a single grid in the specified over-the-wire format.
     Args:
@@ -38,7 +38,7 @@ def dump(grid: Grid, mode: str = MODE_ZINC) -> str:
     raise NotImplementedError('Format not implemented: %s' % mode)
 
 
-def dump_scalar(scalar: Any, mode: str = MODE_ZINC, version: Version = LATEST_VER) -> Optional[str]:
+def dump_scalar(scalar: Any, mode: MODE = MODE_ZINC, version: Version = LATEST_VER) -> Optional[str]:
     """
     Dump a scalar value in the specified over-the-wire format and version.
     Args:

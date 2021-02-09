@@ -26,7 +26,7 @@ import click
 
 from ..dumper import dump
 from ..grid import Grid
-from ..parser import parse, suffix_to_mode, EmptyGrid
+from ..parser import parse, suffix_to_mode, EmptyGrid, MODE
 from ..zincparser import ZincParseException
 
 log = logging.getLogger("import_s3")
@@ -85,7 +85,7 @@ def _get_hash_of_s3_file(s3_client, parsed: ParseResult) -> str:
 
 def merge_timeseries(source_grid: Grid,
                      destination_grid: Grid,
-                     mode: str,
+                     mode: MODE,
                      compress: bool) -> Tuple[bytes, str]:
     """ Merge differents time series.
 

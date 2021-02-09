@@ -157,4 +157,3 @@ def flask_invoke_action() -> Response:
 @haystack_blueprint.route('/<path:filename>', methods=['GET'])
 def flash_web_ui(filename) -> Response:
     return send_from_directory(haystack_blueprint.static_folder, filename)
-

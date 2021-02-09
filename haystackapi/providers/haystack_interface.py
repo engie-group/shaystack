@@ -373,14 +373,14 @@ class HaystackInterface(ABC):
     def his_write(
             self,
             entity_id: Ref,
-            time_serie: Grid,
+            time_series: Grid,
             date_version: Optional[datetime] = None
     ) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'hisWrite' ops.
 
         Args:
             entity_id: The entity to read
-            time_serie: A grid with a time series
+            time_series: A grid with a time series
             date_version: The optional date version to update
 
         Returns:
@@ -430,108 +430,105 @@ def get_provider(class_str: str) -> HaystackInterface:
     Returns:
         A instance of this subclass if it exists
     """
-    try:
-        if not class_str.endswith(".Provider"):
-            class_str += ".Provider"
-        if class_str in _providers:
-            return _providers[class_str]
-        module_path, class_name = class_str.rsplit(".", 1)
-        module = import_module(module_path)
-        # Get the abstract class name
-        provider_class = getattr(module, class_name)
-
-        # Implement all abstract method.
-        # Then, it's possible to generate the Ops operator dynamically
-        # pylint: disable=missing-function-docstring,useless-super-delegation
-        class FullInterface(provider_class):  # pylint: disable=missing-class-docstring
-            def __init__(self):
-                super().__init__()
-
-            def name(self) -> str:
-                return super().name()
-
-            def about(
-                    self, home: str
-            ) -> Grid:  # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().about(home)
-
-            def read(
-                    self,
-                    limit: int,
-                    select: Optional[str],
-                    entity_ids: Optional[List[Ref]],
-                    grid_filter: Optional[str],
-                    date_version: Optional[datetime],
-            ) -> Grid:
-                # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().read(limit, select, entity_ids, grid_filter, date_version)
-
-            def nav(self, nav_id: str) -> Any:
-                # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().nav(nav_id)
-
-            def watch_sub(
-                    self,
-                    watch_dis: str,
-                    watch_id: Optional[str],
-                    ids: List[Ref],
-                    lease: Optional[int],
-            ) -> Grid:
-                # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().watch_sub(watch_dis, watch_id, ids, lease)
-
-            def watch_unsub(
-                    self, watch_id: str, ids: List[Ref], close_all: bool
-            ) -> None:
-                # pylint: disable=missing-function-docstring,useless-super-delegation
-                return super().watch_unsub(watch_id, ids, close_all)
-
-            def watch_poll(self, watch_id: str, refresh: bool) -> Grid:
-                return super().watch_poll(watch_id, refresh)
-
-            def point_write_read(  # pylint: disable=missing-function-docstring,useless-super-delegation
-                    self, entity_id: Ref, date_version: Optional[datetime]
-            ) -> Grid:
-                return super().point_write_read(entity_id, date_version)
-
-            def point_write_write(  # pylint: disable=missing-function-docstring,useless-super-delegation
-                    self,
-                    entity_id: Ref,
-                    level: int,
-                    val: Optional[Any],
-                    duration: Quantity,
-                    who: Optional[str],
-                    date_version: Optional[datetime],
-            ) -> None:  # pylint: disable=no-self-use
-                return super().point_write_write(
-                    entity_id, level, val, duration, who, date_version
-                )
-
-            def his_read(  # pylint: disable=missing-function-docstring,useless-super-delegation
-                    self,
-                    entity_id: Ref,
-                    date_range: Optional[Tuple[datetime, datetime]],
-                    date_version: Optional[datetime],
-            ) -> Grid:
-                return super().his_read(entity_id, date_range, date_version)
-
-            def his_write(  # pylint: disable=missing-function-docstring, useless-super-delegation
-                    self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime]
-            ) -> Grid:
-                return super().his_write(entity_id, time_serie, date_version)
-
-            def invoke_action(  # pylint: disable=missing-function-docstring,useless-super-delegation
-                    self,
-                    entity_id: Ref,
-                    action: str,
-                    params: Dict[str, Any],
-            ) -> Grid:
-                return super().invoke_action(entity_id, action, params)
-
-        _providers[class_str] = FullInterface()
+    if not class_str.endswith(".Provider"):
+        class_str += ".Provider"
+    if class_str in _providers:
         return _providers[class_str]
-    except (ImportError, AttributeError):
-        raise
+    module_path, class_name = class_str.rsplit(".", 1)
+    module = import_module(module_path)
+    # Get the abstract class name
+    provider_class = getattr(module, class_name)
+
+    # Implement all abstract method.
+    # Then, it's possible to generate the Ops operator dynamically
+    # pylint: disable=missing-function-docstring,useless-super-delegation
+    class FullInterface(provider_class):  # pylint: disable=missing-class-docstring
+        def __init__(self):
+            super().__init__()
+
+        def name(self) -> str:
+            return super().name()
+
+        def about(
+                self, home: str
+        ) -> Grid:  # pylint: disable=missing-function-docstring,useless-super-delegation
+            return super().about(home)
+
+        def read(
+                self,
+                limit: int,
+                select: Optional[str],
+                entity_ids: Optional[List[Ref]],
+                grid_filter: Optional[str],
+                date_version: Optional[datetime],
+        ) -> Grid:
+            # pylint: disable=missing-function-docstring,useless-super-delegation
+            return super().read(limit, select, entity_ids, grid_filter, date_version)
+
+        def nav(self, nav_id: str) -> Any:
+            # pylint: disable=missing-function-docstring,useless-super-delegation
+            return super().nav(nav_id)
+
+        def watch_sub(
+                self,
+                watch_dis: str,
+                watch_id: Optional[str],
+                ids: List[Ref],
+                lease: Optional[int],
+        ) -> Grid:
+            # pylint: disable=missing-function-docstring,useless-super-delegation
+            return super().watch_sub(watch_dis, watch_id, ids, lease)
+
+        def watch_unsub(
+                self, watch_id: str, ids: List[Ref], close_all: bool
+        ) -> None:
+            # pylint: disable=missing-function-docstring,useless-super-delegation
+            return super().watch_unsub(watch_id, ids, close_all)
+
+        def watch_poll(self, watch_id: str, refresh: bool) -> Grid:
+            return super().watch_poll(watch_id, refresh)
+
+        def point_write_read(  # pylint: disable=missing-function-docstring,useless-super-delegation
+                self, entity_id: Ref, date_version: Optional[datetime]
+        ) -> Grid:
+            return super().point_write_read(entity_id, date_version)
+
+        def point_write_write(  # pylint: disable=missing-function-docstring,useless-super-delegation
+                self,
+                entity_id: Ref,
+                level: int,
+                val: Optional[Any],
+                duration: Quantity,
+                who: Optional[str],
+                date_version: Optional[datetime],
+        ) -> None:  # pylint: disable=no-self-use
+            return super().point_write_write(
+                entity_id, level, val, duration, who, date_version
+            )
+
+        def his_read(  # pylint: disable=missing-function-docstring,useless-super-delegation
+                self,
+                entity_id: Ref,
+                date_range: Optional[Tuple[datetime, datetime]],
+                date_version: Optional[datetime],
+        ) -> Grid:
+            return super().his_read(entity_id, date_range, date_version)
+
+        def his_write(  # pylint: disable=missing-function-docstring, useless-super-delegation
+                self, entity_id: Ref, time_serie: Grid, date_version: Optional[datetime]
+        ) -> Grid:
+            return super().his_write(entity_id, time_serie, date_version)
+
+        def invoke_action(  # pylint: disable=missing-function-docstring,useless-super-delegation
+                self,
+                entity_id: Ref,
+                action: str,
+                params: Dict[str, Any],
+        ) -> Grid:
+            return super().invoke_action(entity_id, action, params)
+
+    _providers[class_str] = FullInterface()
+    return _providers[class_str]
 
 
 SINGLETON_PROVIDER = None

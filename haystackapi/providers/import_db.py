@@ -197,7 +197,7 @@ def main(haystack_url: str,
         else:
             print(f"{haystack_url} imported in {database_url}")
         return 0
-    except Exception as ex:
+    except Exception as ex:  # pylint: disable=broad-except
         print(f"Impossible to import data ({ex})", file=sys.stderr)
         return -1
 

@@ -377,7 +377,7 @@ hs_dateTime = And([
         Suppress(Literal(' ')),
         hs_timeZoneName
     ]))
-]).setParseAction(lambda toks: _parse_datetime(toks))
+]).setParseAction(_parse_datetime)
 
 # Quantities and raw numeric values
 hs_unitChar = Or([
@@ -631,6 +631,8 @@ hs_grid_3_0 <<= And([
 ]).setParseAction(_gen_grid)
 
 _lock = Lock()
+
+
 def parse_grid(grid_data: str, parse_all: bool = True) -> Grid:
     """Parse the incoming grid.
 

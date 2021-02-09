@@ -27,6 +27,6 @@ class Provider(HaystackInterface):
     @overrides
     def his_write(self,
                   entity_id: Ref,
-                  time_serie: Grid,
+                  time_series: Grid,
                   date_version: Optional[datetime] = None) -> Grid:
         raise NotImplementedError()

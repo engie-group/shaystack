@@ -332,8 +332,8 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                 raise TypeError('value must be iterable, not a dict')
             self._index = None
             self._row[index] = value
-            for v in value:
-                for val in v.values():
+            for row in value:
+                for val in row.values():
                     self._detect_or_validate(val)
         else:
             if not isinstance(value, dict):

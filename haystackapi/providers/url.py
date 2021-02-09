@@ -329,11 +329,11 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
                                          effective_version: datetime) -> Grid:
         log.info("_download_grid(%s,%s)", uri, effective_version)
         parsed_uri = urlparse(uri, allow_fragments=False)
-        by = self._download_uri(parsed_uri, effective_version)
-        if '\xef\xbb' == by[:2]:
-            body = by.decode("utf-8-sig")
+        byte_array = self._download_uri(parsed_uri, effective_version)
+        if byte_array[:2] == b'\xef\xbb':
+            body = byte_array.decode("utf-8-sig")
         else:
-            body = by.decode("utf-8")
+            body = byte_array.decode("utf-8")
         if body is None:
             raise ValueError("Empty body not supported")
         if uri.endswith(".gz"):

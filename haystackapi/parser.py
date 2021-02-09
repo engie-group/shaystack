@@ -9,10 +9,11 @@
 Generic parser from file to `Grid`. The mode can be `MODE_ZINC`, `MODE_JSON` or `MODE_CSV`
 """
 import logging
-from typing import Optional, Any, Union, AnyStr
+from typing import Optional, Any, Union, AnyStr, cast
 
 from .csvparser import parse_grid as parse_csv_grid
 from .csvparser import parse_scalar as parse_csv_scalar
+from .datatypes import MODE_ZINC, MODE_JSON, MODE_CSV, MODE
 from .grid import Grid
 from .jsonparser import parse_grid as parse_json_grid, \
     parse_scalar as parse_json_scalar
@@ -25,10 +26,6 @@ EmptyGrid = Grid(version=VER_3_0, columns={"empty": {}})
 
 LOG = logging.getLogger(__name__)
 
-MODE_ZINC = 'text/zinc'
-MODE_JSON = 'application/json'
-MODE_CSV = 'text/csv'
-
 _suffix_to_mode = {".zinc": MODE_ZINC,
                    ".json": MODE_JSON,
                    ".csv": MODE_CSV
@@ -40,7 +37,7 @@ _mode_to_suffix = {MODE_ZINC: ".zinc",
                    }
 
 
-def suffix_to_mode(ext: str) -> Optional[str]:
+def suffix_to_mode(ext: str) -> Optional[MODE]:
     """Convert a file suffix to Haystack mode
 
     Args:
@@ -48,10 +45,10 @@ def suffix_to_mode(ext: str) -> Optional[str]:
     Returns:
         The corresponding haystack mode (`MODE_...`)
     """
-    return _suffix_to_mode.get(ext, None)
+    return cast(Optional[MODE], _suffix_to_mode.get(ext, None))
 
 
-def mode_to_suffix(mode: str) -> Optional[str]:
+def mode_to_suffix(mode: MODE) -> Optional[str]:
     """Convert haystackapi mode to file suffix
 
     Args:
@@ -62,7 +59,7 @@ def mode_to_suffix(mode: str) -> Optional[str]:
     return _mode_to_suffix.get(mode, None)
 
 
-def parse(grid_str: AnyStr, mode: str = MODE_ZINC) -> Grid:
+def parse(grid_str: AnyStr, mode: MODE = MODE_ZINC) -> Grid:
     # Decode incoming text
     """
     Parse a grid.
@@ -75,8 +72,7 @@ def parse(grid_str: AnyStr, mode: str = MODE_ZINC) -> Grid:
     if isinstance(grid_str, bytes):  # pragma: no cover
         # No coverage here, because it *should* be handled above unless the user
         # is preempting us by calling `parse_grid` directly.
-        charset = 'utf-8'
-        if '\xef\xbb' == grid_str[:2]:
+        if grid_str[:2] == b'\xef\xbb':
             grid_str = grid_str.decode(encoding="utf-8-sig")
         else:
             grid_str = grid_str.decode(encoding="utf-8")
@@ -90,7 +86,7 @@ def parse(grid_str: AnyStr, mode: str = MODE_ZINC) -> Grid:
     raise NotImplementedError('Format not implemented: %s' % mode)
 
 
-def parse_scalar(scalar: Union[bytes, str], mode: str = MODE_ZINC,
+def parse_scalar(scalar: Union[bytes, str], mode: MODE = MODE_ZINC,
                  version: Union[Version, str] = LATEST_VER) -> Any:
     # Decode version string
     """

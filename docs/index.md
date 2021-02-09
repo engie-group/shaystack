@@ -14,7 +14,7 @@ export PIP_EXTRA_INDEX_URL=https://pypi.org/simple
 ```
 
 Haystackapi is a set of API to implement [Haystack project specification](https://project-haystack.org/). It's
-compatible with moderne Python, Flask server in data center, Edge (Raspberry?) or in AWS Lambda function.
+compatible with moderne Python with typing, Flask server in data center, Edge (Raspberry?) or in AWS Lambda function.
 
 ## About Haystack, and who is it for
 

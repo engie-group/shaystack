@@ -36,7 +36,7 @@ nephelometric_turbidity_units = [] = ntu
 formazin_nephelometric_unit = [] = fnu
 power_usage_effectiveness = [] = PUE
 data_center_infrastructure_efficiency = [] = DCIE
-co2e = kg * gas
+co2e = kg * gas = co²e
 
 # -- Currency --
 afghani = [] = AFN = Af

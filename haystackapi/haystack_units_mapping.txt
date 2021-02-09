@@ -8,6 +8,7 @@ percent_obscuration_per_foot,%obsc/ft
 percent_obscuration_per_meter,%obsc/m
 ampere_square_meter,Am²
 
+
 -- currency --
 cedi,₵
 costa_rican_colon,₡
@@ -76,6 +77,7 @@ MBTU,MMBTU
 hundred_cubic_feet_natural_gas
 thousand_cubic_feet_natural_gas
 million_cubic_feet_natural_gas
+co2e,co²e
 
 -- apparent energy --
 

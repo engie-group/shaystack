@@ -13,7 +13,7 @@ from typing import Union, Dict
 
 from .datatypes import Quantity, Coordinate, Uri, Bin, XStr, _MarkerType, _NAType, _RemoveType, Ref
 
-HaystackType = Union[str, int, float,
+HaystackType = Union[str, int, float, bool,
                      date, time, datetime,
                      Ref, Quantity, Coordinate, Uri, Bin, XStr,
                      _MarkerType, _NAType, _RemoveType, None]

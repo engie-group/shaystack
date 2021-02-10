@@ -9,8 +9,6 @@
             <env name="HAYSTACK_PROVIDER" value="haystackapi.providers.url"/>
             <env name="HAYSTACK_URL" value="sample/carytown.zinc"/>
             <env name="LOG_LEVEL" value="DEBUG"/>
-            <env name="HAYSTACK_DB" value="postgresql://postgres:password@172.17.0.2:5432/postgres#haystack"/>
-            <env name="HAYSTACK_DB_SECRET" value="alpha-Haystack"/>
         </envs>
         <option name="SDK_HOME" value=""/>
         <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$"/>

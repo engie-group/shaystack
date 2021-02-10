@@ -8,12 +8,12 @@ The current GraphQL schema for Hystack is [here](../schema.graphql)
 
 ## Delegate part of global GraphQL to haystack GraphQL API
 
-This sample help demonstrate how it's possible to delegate a part of GraphQL request to Haystack GraphQL API with AWS
+This sample demonstrate how it's possible to delegate a part of GraphQL request to Haystack GraphQL API with AWS
 AppSync.
 
 In the AWS AppSync console:
 
-* First, deploy you AWS Lambda function with Haystack GraphQL API
+* First, deploy your AWS Lambda function with Haystack GraphQL API
 * Build from scratch a new API with the name `HaystackAPI`
 * Create a datasource `HaystackLambda` with an AWS Lambda function
   - Select "Lambda Function"

@@ -31,6 +31,15 @@ pressure,heat,return,storeNum,his,metro,stage,hisURI
 "VA","23221",,,,,,1.0,,"Richmond",,
 ```
 
+To use a *pure URL*, use this sample:
+
+```console
+$ # Demo
+$ HAYSTACK_PROVIDER=haystackapi.providers.url \
+  HAYSTACK_URL=https://haystackapi.s3.eu-west-3.amazonaws.com/carytown.zinc \
+  haystackapi
+```
+
 ##### Limitations
 
 Because this provider use a local cache with the parsing version of S3 file, it's may be possible to see different

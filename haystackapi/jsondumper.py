@@ -74,6 +74,8 @@ def _dump_meta_item(item: str, version: Version = LATEST_VER) \
 def _dump_columns(cols: SortableDict, version: Version = LATEST_VER) -> List[str]:
     _dump = functools.partial(_dump_column, version=version)
     _cols = list(zip(*list(cols.items())))
+    if not _cols:
+        raise ValueError("Empty columns is not valide. Use `grid.extends_columns()`")
     return list(map(_dump, *_cols))
 
 

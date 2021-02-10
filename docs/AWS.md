@@ -106,13 +106,13 @@ You can use the Lambda API to invoke the REST or GraphQL API.
 $ # Extract the API URL
 $ HAYSTACK_ROOT_API=$(zappa status --json | jq -r '."API Gateway URL"')
 $ # Try the classic haystack API
-$ curl $HAYSTACK_ROOT_API/haystack/about
+$ xdg-open "$HAYSTACK_ROOT_API/haystack"
 $ # Try the Graphql API
 $ xdg-open "$HAYSTACK_ROOT_API/graphql"
 ```
 
 ## AWS AppSync
 
-Appsync is a technology to agregate differents API in one Graphql API. It's possible to merge the haystack GraphQL with
-other GraphQL API with AppSync. To do that, read [this file](aws%20appsync/AppSync.md).
+Appsync is a technology to aggregate different API in one GraphQL API. It's possible to merge the haystack GraphQL with
+other GraphQL API with AppSync. To do that, read [this](AppSync.md).
 

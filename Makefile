@@ -53,6 +53,7 @@ PORT?=3000
 INPUT_NETWORK?=localhost
 HOST_API?=localhost
 COOKIE_SECRET_KEY?=2d1a12a6-3232-4328-9365-b5b65e64a68f
+SIGN_IDENTITY?=$(USER)
 
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 
@@ -212,6 +213,7 @@ env:
 	@git config --local core.autocrlf input
 	# Set tabulation to 4 when use 'git diff'
 	git config --local core.page 'less -x4'
+	git config --local push.followTags true
 
 # Rule to add a validation before pushing in master branch.
 # Use FORCE=y git push to override this validation.
@@ -248,6 +250,9 @@ fetch:
 
 pull:
 	@git pull
+
+push:
+	@git push --atomic origin develop v0.7.1rc
 
 # -------------------------------------- Initialize Virtual env
 .PHONY: configure _configure _check_configure
@@ -953,7 +958,7 @@ test-twine: dist check-twine
 		; exit 1 )
 	rm -f dist/*.asc
 	echo -e "$(green)Enter the Pypi password$(normal)"
-	twine upload --sign --repository-url https://test.pypi.org/legacy/ \
+	twine upload --sign - i $(SIGN_IDENTITY) --repository-url https://test.pypi.org/legacy/ \
 		$(shell find dist/ -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
 	echo -e "To the test repositiry"
 	echo -e "$(green)export PIP_INDEX_URL=https://test.pypi.org/simple$(normal)"

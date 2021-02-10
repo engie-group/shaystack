@@ -258,8 +258,9 @@ PPR*
 *.zip
 .okta_aws_login_config
 sample/*.gz
-demo/
+default_pint/
 
+haystaclapi-demo/
 test.db
 zappa_settings.json
 ChangeLog

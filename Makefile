@@ -500,6 +500,7 @@ _zappa_pre_install: clean-zappa
 	source $(ZAPPA_ENV)/bin/activate
 	pip install -U pip setuptools
 	pip install -e '.[graphql,lambda]'
+	find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
 
 _zappa_settings: zappa_settings.json.template
 	@envsubst <zappa_settings.json.template >zappa_settings.json

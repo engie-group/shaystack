@@ -235,7 +235,15 @@ To validate all the code, use `make validate`. This target check the unit test, 
 
 ## Release
 
-Before to release a version, you must create a new tag for this release candidate.
+Before to release a version,
+You must be capable to sign the package. Create a GPG key and select this key with the variable SIGN_IDENTITY.
+```shell
+$ gpg --full-generate-key
+...
+$ export SIGN_IDENTITY=$USER
+```
+
+Then, add a new tag for this release candidate.
 
 ```shell
 $ # Commit the version
@@ -268,6 +276,7 @@ import haystackapi
 
 To release a new official public version, publish the code in `master` branch, and:
 
+Then
 ```shell
 $ # Commit
 $ git commit -a

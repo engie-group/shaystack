@@ -53,6 +53,7 @@ PORT?=3000
 INPUT_NETWORK?=localhost
 HOST_API?=localhost
 COOKIE_SECRET_KEY?=2d1a12a6-3232-4328-9365-b5b65e64a68f
+SIGN_IDENTITY?=$(USER)
 
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 
@@ -953,7 +954,7 @@ test-twine: dist check-twine
 		; exit 1 )
 	rm -f dist/*.asc
 	echo -e "$(green)Enter the Pypi password$(normal)"
-	twine upload --sign --repository-url https://test.pypi.org/legacy/ \
+	twine upload --sign - i $(SIGN_IDENTITY) --repository-url https://test.pypi.org/legacy/ \
 		$(shell find dist/ -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
 	echo -e "To the test repositiry"
 	echo -e "$(green)export PIP_INDEX_URL=https://test.pypi.org/simple$(normal)"

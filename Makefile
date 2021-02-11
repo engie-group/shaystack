@@ -213,6 +213,7 @@ env:
 	@git config --local core.autocrlf input
 	# Set tabulation to 4 when use 'git diff'
 	git config --local core.page 'less -x4'
+	git config --local push.followTags true
 
 # Rule to add a validation before pushing in master branch.
 # Use FORCE=y git push to override this validation.
@@ -249,6 +250,9 @@ fetch:
 
 pull:
 	@git pull
+
+push:
+	@git push --atomic origin develop v0.7.1rc
 
 # -------------------------------------- Initialize Virtual env
 .PHONY: configure _configure _check_configure

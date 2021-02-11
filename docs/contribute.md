@@ -243,16 +243,23 @@ $ gpg --full-generate-key
 $ export SIGN_IDENTITY=$USER
 ```
 
-Then, add a new tag for this release candidate.
+Then, add a new tag for this release candidate (4 numbers and finish with `rc`).
 
 ```shell
 $ # Commit the version
 $ git commit -a
 $ # Add a tag for the release candidate
-$ git tag vX.Y.Z.0a0
+$ git tag vX.Y.Z.0rc
+$ # Validate the module
+$ make check-twine
+```
+Then, two solutions:
+```shell
 $ # Publish the module in test twine repository (https://test.pypi.org/legacy/):
 $ make test-twine
 ```
+
+or push the tag. The github action publish the release in TestPypi if the tag is in form: `vX.Y.Zrc`
 
 It's possible to test a last time all the project, with this release candidate. To do this:
 

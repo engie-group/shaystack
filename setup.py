@@ -7,7 +7,6 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 from setuptools import setup
-import pbr
 # See setup.cfg
 setup(setup_requires=['pbr'],
       pbr=True,

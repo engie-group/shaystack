@@ -37,9 +37,10 @@ PYTHON_SRC=$(shell find . -name '*.py')
 PYTHON_VERSION?=3.7
 PRJ_PACKAGE:=$(PRJ)
 VENV ?= $(PRJ)
+CONDA ?=conda
 CONDA_PYTHON_EXE?=/opt/conda/bin/conda
-CONDA_BASE:=$(shell conda info --base || '/opt/conda')
-CONDA_EXE:=$(CONDA_BASE)/bin/conda
+CONDA_EXE?=$(shell which conda)
+CONDA_BASE:=$(shell $(CONDA_EXE) info --base || '/opt/conda')
 CONDA_PACKAGE:=$(CONDA_PREFIX)/lib/python$(PYTHON_VERSION)/site-packages
 CONDA_PYTHON:=$(CONDA_PREFIX)/bin/python
 CONDA_ARGS?=
@@ -251,13 +252,14 @@ fetch:
 pull:
 	@git pull
 
+## Push the source code to git and the tag simultaneously
 push:
-	@git push --atomic origin develop v0.7.1rc
+	@git push --atomic origin develop $(shell git describe --tag)
 
 # -------------------------------------- Initialize Virtual env
 .PHONY: configure _configure _check_configure
 
-## Prepare the work environment (conda venv, ...)
+## Prepare the working environment (conda venv, ...)
 configure: _check_configure _configure
 
 _check_configure:
@@ -286,11 +288,11 @@ endif
 	echo -e "$(cyan)Install binary dependencies ...$(normal)"
 	conda install -y -c conda-forge conda setuptools compilers make git jq libpq curl psycopg2
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
-	pip install --no-cache-dir supersqlite
-	echo -e "$(cyan)pip install -e .$(normal)"
-	pip install -e .
+	pip install supersqlite
 	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"
 	pip install -e '.[dev,flask,graphql,lambda]'
+	echo -e "$(cyan)pip install -e .$(normal)"
+	pip install -e .
 	touch $(PIP_PACKAGE)
 
 # All dependencies of the project must be here
@@ -324,7 +326,7 @@ clean-pip:
 clean-$(VENV): remove-venv
 	@conda create -y -q -n $(VENV) $(CONDA_ARGS)
 	echo -e "$(yellow)Warning: Conda virtualenv $(VENV) is empty.$(normal)"
-## Set the current VENV empty
+## Clean the environment (Remove all components)
 clean-venv : clean-$(VENV)
 
 # clean-zappa
@@ -343,12 +345,9 @@ clean-all: clean docker-rm docker-rm-dmake remove-venv
 # -------------------------------------- Build
 .PHONY: dist build compile-all api api-read api-hisRead
 
-app/static/toto.js: haystack-front-demo/dist
-	(cd haystack-front-demo ; npm install)
-	cp haystack-front-demo/dist/* app/static/
-
 # Compile all python files
 compile-all:
+	@$(VALIDATE_VENV)
 	@echo -e "$(cyan)Compile all python file...$(normal)"
 	$(CONDA_PYTHON) -m compileall
 
@@ -356,6 +355,7 @@ compile-all:
 .PHONY: docs
 
 docs/api: $(REQUIREMENTS)
+	@$(VALIDATE_VENV)
 	pdoc -f --html -o docs/api haystackapi app
 
 ## Generate the API HTML documentation
@@ -363,32 +363,30 @@ docs: docs/api
 
 ## Start the pdoc server to update the docstrings
 start-docs:
+	@$(VALIDATE_VENV)
 	pdoc --http : -f --html -o docs/api haystackapi app
 
 # -------------------------------------- Client API
 .PHONY: api
-## Print API URL
+## Print API endpoint URL
 api:
 	@echo http://$(HOST_API):$(PORT)/haystack
 
 .PHONY: api-*
 ## Invoke local API (eg. make api-about)
 api-%:
-	@$(VALIDATE_VENV)
-	TARGET="$(HOST_API):$(PORT)"
+	@TARGET="$(HOST_API):$(PORT)"
 	curl -H "Accept: text/zinc" \
 			"$${TARGET}/haystack/$*"
 
 api-read:
-	@$(VALIDATE_VENV)
-	echo -e "Use $(yellow)READ_PARAMS=$(READ_PARAMS)$(normal)"
+	@echo -e "Use $(yellow)READ_PARAMS=$(READ_PARAMS)$(normal)"
 	TARGET="$(HOST_API):$(PORT)"
 	curl -H "Accept: text/zinc" \
 			"$${TARGET}/haystack/read$(READ_PARAMS)"
 
 api-hisRead:
-	@$(VALIDATE_VENV)
-	echo -e "Use $(yellow)HISREAD_PARAMS=$(HISREAD_PARAMS)$(normal)"
+	@echo -e "Use $(yellow)HISREAD_PARAMS=$(HISREAD_PARAMS)$(normal)"
 	TARGET="$(HOST_API):$(PORT)"
 	curl -H "Accept: text/zinc" \
 			"$${TARGET}/haystack/hisRead$(HISREAD_PARAMS)"
@@ -427,7 +425,7 @@ async-stop-api:
 
 # -------------------------------------- GraphQL
 .PHONY: graphql-schema graphql-api
-## Print GraphQL API url
+## Print GraphQL endpoint API URL
 graphql-api:
 	@echo "http://$(HOST_API):$(PORT)/graphql"
 
@@ -482,7 +480,7 @@ async-start-minio: .minio $(REQUIREMENTS)
 	echo -e "$(yellow)Local Minio was started$(normal)"
 
 
-## Stop all async server
+## Stop all background server
 async-stop: async-stop-api async-stop-minio stop-pg stop-pgadmin async-docker-stop
 
 
@@ -543,11 +541,11 @@ endif
 	@zappa undeploy $(AWS_STAGE) --remove-logs
 
 .PHONY: aws-api
-## Print AWS API URL
+## Print AWS API endpoint URL
 aws-api: aws-update-token
 	@echo $(AWS_API_HOME)
 
-## Print GraphQL API url
+## Print GraphQL API endpoint URL
 aws-graphql-api: aws-update-token
 	@echo $(AWS_API_HOME)/graphql/
 
@@ -717,17 +715,13 @@ lint: .make-lint
 validate: .make-validate
 
 
-.PHONY: release
-## Release the project
-release: clean .make-validate
-
 # ------------- Postgres database
 ## Print sqlite db url connection
 sqlite-url:
 	@echo "sqlite3://test.db#haystack"
 
 # ------------- Postgres database
-## Start postgres database
+## Start Postgres database in background
 start-pg:
 	@docker start postgres || docker run \
 		--name postgres \
@@ -742,7 +736,7 @@ stop-pg:
 	@docker stop postgres 2>/dev/null >/dev/null || true
 	echo -e "$(green)Postgres stopped$(normal)"
 
-## Print postgres db url connection
+## Print Postgres db url connection
 pg-url: start-pg
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
 	echo "postgres://postgres:password@$$IP:5432/postgres#haystack"
@@ -757,7 +751,7 @@ clean-pg: start-pg
 	-c 'drop table if exists haystack;drop table if exists haystack_meta_datas;drop table if exists haystack_ts;'
 
 
-## Start PGAdmin
+## Start PGAdmin in background
 start-pgadmin:
 	@docker start pgadmin || docker run \
 	--name pgadmin \
@@ -798,7 +792,7 @@ docker-build:
 	echo -e "$(green)Docker image '$(yellow)$(DOCKER_REPOSITORY)/$(PRJ)$(green)' build with$(normal)"
 	$(MAKE) dump-params
 
-## Run the docker (set environement variable)
+## Run the docker image
 docker-run: async-docker-stop docker-rm docker-inspect
 	docker run --rm \
 		-it \
@@ -881,8 +875,8 @@ docker-alias-dmake:
 docker-configure-dmake: $(CONDA_BASE)/envs/docker-$(PRJ)
 
 $(CONDA_BASE)/envs/docker-$(PRJ): docker/DMake.Dockerfile
-	source $$(conda info --base)/etc/profile.d/conda.sh
-	conda deactivate
+	source $$($(CONDA_EXE) info --base)/etc/profile.d/conda.sh
+	$(CONDA_EXE) deactivate
 	$(DMAKE) \
 		CONDA_PREFIX=/opt/conda \
 		VALIDATE_VENV='exit' \
@@ -972,7 +966,7 @@ keyring:
 	keyring set https://upload.pypi.org/legacy/ $TWINE_USERNAME
 
 
-## Publish distribution on pypi.org
+## Publish a distribution on pypi.org
 release: clean check-twine
 	@$(VALIDATE_VENV)
 	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \

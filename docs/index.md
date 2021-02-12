@@ -356,6 +356,10 @@ This parameter must have the datetime when you want to ask the ontology. The res
 of these data at this time.
 
 To return only some tag, it's possible to add a parameter `select` in `read` request.
+```python
+grid.select("id,dis")
+grid.select("!hisURL")
+```
 
 The syntax to analyse the daterange in `hisRead` is extended to accept a comma without value before or after (`date,`
 , `,datetime`, etc.)

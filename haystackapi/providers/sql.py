@@ -31,7 +31,6 @@ from urllib.parse import urlparse, ParseResult
 import pytz
 from overrides import overrides
 
-from . import select_grid
 from .haystack_interface import HaystackInterface
 from .sqldb_protocol import DBConnection
 from .. import HaystackException
@@ -250,7 +249,7 @@ class Provider(HaystackInterface):
                 for row in cursor:
                     grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
                 conn.commit()
-                return select_grid(grid, select)
+                return grid.select(select)
             customer_id = self.get_customer_id()
             sql_ids = "('" + "','".join([entity_id.name
                                          for entity_id in entity_ids]) + "')"
@@ -261,7 +260,7 @@ class Provider(HaystackInterface):
             for row in cursor:
                 grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
             conn.commit()
-            return select_grid(grid, select)
+            return grid.select(select)
         finally:
             cursor.close()
 

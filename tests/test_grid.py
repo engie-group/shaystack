@@ -608,3 +608,21 @@ def test_grid_update_slide():
     assert grid[1]['id'] == Ref("myid6")
     assert grid[2]['id'] == Ref("myid7")
     assert grid[3]['id'] == Ref("myid4")
+
+
+def test_select_grid():
+    grid = Grid(columns=["id", "a", "b"])
+    grid.append({"id": Ref("myid1"), "a": 1, "b": 2})
+    grid.append({"id": Ref("myid2"), "a": 1, "b": 2})
+    assert grid.select("id,a").column == {"id": {}, 'a': {}}
+    assert grid.select("id,b").column == {"id": {}, 'b': {}}
+    assert grid.select("!a").column == {"id": {}, 'b': {}}
+    assert grid.select("!id,!b").column == {'a': {}}
+
+
+def test_purge_grid():
+    grid = Grid(columns=["id", "a", "b"])
+    grid.append({"id": Ref("myid1"), "a": 1, "b": 2, "c": 3})
+    grid.append({"id": Ref("myid2"), "a": 1, "b": 2, "d": 4})
+    assert grid.purge()[0] == {"id": Ref("myid1"), "a": 1, "b": 2}
+    assert grid.purge()[1] == {"id": Ref("myid2"), "a": 1, "b": 2}

@@ -15,6 +15,7 @@ import copy
 import datetime
 import logging
 import numbers
+import re
 from collections import MutableSequence, Sequence  # pylint: disable=no-name-in-module
 from typing import Union, Iterable, Any, Optional, KeysView, Tuple, List, cast
 
@@ -277,7 +278,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             The entity of an new grid with a portion of entities, with the same metadata and columns
         """
         if isinstance(key, int):
-            return self._row[key]
+            return cast(Entity, self._row[key])
         if isinstance(key, slice):
             result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
             result._row = self._row[key]
@@ -553,6 +554,55 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             if limit and len(result) == limit:
                 break
         return result
+
+    def select(self, select: str) -> 'Grid':
+        """
+        Select only some tags in the grid.
+        Args:
+            select: A list a tags (accept operator ! to exclude some columns)
+        Returns:
+             A new grid with only selected columns. Use grid.purge_grid() to update the entities.
+        """
+        if select:
+            select = select.strip()
+            if select not in ["*", '']:
+                if '!' in select:
+                    new_cols = copy.deepcopy(self.column)
+                    new_grid = Grid(version=self.version, metadata=self.metadata, columns=new_cols)
+                    for col in re.split('[, ]', select):
+                        col = col.strip()
+                        if not col.startswith('!'):
+                            raise ValueError("Impossible to merge positive and negative selection")
+                        if col[1:] in new_cols:
+                            del new_cols[col[1:]]
+                    new_grid.column = new_cols
+                    return new_grid
+                new_cols = SortableDict()
+                new_grid = cast(Grid, self[:])
+                for col in re.split('[, ]', select):
+                    col = col.strip()
+                    if col.startswith('!'):
+                        raise ValueError("Impossible to merge positive and negative selection")
+                    if col in self.column:
+                        new_cols[col] = self.column[col]
+                    else:
+                        new_cols[col] = {}
+
+                new_grid.column = new_cols
+                return cast(Grid, new_grid)
+        return self.copy()
+
+    def purge(self) -> 'Grid':
+        """
+        Remove all tags in all entities, not in columns
+        Returns:
+             A new grid with entities compatible with the columns
+        """
+        cols = self.column
+        new_grid = Grid(version=self.version, metadata=self.metadata, columns=cols)
+        for row in self:
+            new_grid.append({key: val for key, val in row.items() if key in cols})
+        return new_grid
 
     def _detect_or_validate(self, val: Any) -> None:
         """Detect the version used from the row content, or validate against the

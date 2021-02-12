@@ -403,7 +403,7 @@ class ReadHaystack(graphene.ObjectType):
         if ids:
             ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]
         grid = get_singleton_provider().read(limit, select, ids, filter, version)
-        return grid
+        return grid.purge()
 
     @staticmethod
     def resolve_histories(parent: 'ReadHaystack',

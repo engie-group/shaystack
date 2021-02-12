@@ -43,7 +43,6 @@ from urllib.parse import urlparse, ParseResult
 import pytz
 from overrides import overrides
 
-from . import select_grid
 from .haystack_interface import HaystackInterface
 from ..datatypes import Ref
 from ..exception import HaystackException
@@ -140,7 +139,7 @@ class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attribut
                 result.append(grid[ref])
         else:
             result = grid.filter(grid_filter, limit if limit else 0)
-        return select_grid(result, select)
+        return result.select(select)
 
     @overrides
     def his_read(

@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>shaystack.providers.url API documentation</title>
+<meta name="description" content="An Haystack Read-Only API provider to expose an Haystack file via the Haystack API.
+The file must be referenced with the environment variable …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>shaystack.providers.url</code></h1>
+</header>
+<section id="section-intro">
+<p>An Haystack Read-Only API provider to expose an Haystack file via the Haystack API.
+The file must be referenced with the environment variable HAYSTACK_URL and may be the form:
+- <a href="http://.../ontology.json">http://.../ontology.json</a>
+- <a href="http://.../ontology.zinc.gz">http://.../ontology.zinc.gz</a>
+- file:///var/task/&hellip;/ontology.json
+- &hellip;/ontology.json (implicitly prefixed with file:///var/task/)
+- <a href="ftp://.../ontology.json">ftp://.../ontology.json</a>
+- s3://&hellip;/ontology.zinc (the lambda functions must have the privilege to read this file)
+- &hellip;</p>
+<p>If the suffix is .gz, the body is unzipped.</p>
+<p>If the AWS bucket use the versioning, the correct version are return, to correspond to
+the version of the file at the <code>version_date</code>.</p>
+<p>The time series to manage history must be referenced in entity:
+- with inner ontology in tag 'history' or
+- with the <code>hisURI</code> tag. This URI may be relative and MUST be in grid format.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+# URL Provider
+# See the accompanying LICENSE file.
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
+&#34;&#34;&#34;
+An Haystack Read-Only API provider to expose an Haystack file via the Haystack API.
+The file must be referenced with the environment variable HAYSTACK_URL and may be the form:
+- http://.../ontology.json
+- http://.../ontology.zinc.gz
+- file:///var/task/.../ontology.json
+- .../ontology.json (implicitly prefixed with file:///var/task/)
+- ftp://.../ontology.json
+- s3://.../ontology.zinc (the lambda functions must have the privilege to read this file)
+- ...
+
+If the suffix is .gz, the body is unzipped.
+
+If the AWS bucket use the versioning, the correct version are return, to correspond to
+the version of the file at the `version_date`.
+
+The time series to manage history must be referenced in entity:
+- with inner ontology in tag &#39;history&#39; or
+- with the `hisURI` tag. This URI may be relative and MUST be in grid format.
+&#34;&#34;&#34;
+
+import functools
+import gzip
+import logging
+import os
+import threading
+import urllib.request
+from collections import OrderedDict
+from datetime import datetime, MAXYEAR, MINYEAR, timedelta
+from io import BytesIO
+from os.path import dirname
+from pathlib import Path
+from threading import Lock
+from typing import Optional, Union, Tuple, Any, List, cast
+from urllib.parse import urlparse, ParseResult
+
+import pytz
+from overrides import overrides
+
+from .haystack_interface import HaystackInterface
+from ..datatypes import Ref
+from ..exception import HaystackException
+from ..grid import Grid
+from ..parser import parse
+from ..parser import suffix_to_mode
+from ..type import Entity
+
+_BOTO3_AVAILABLE = False
+try:
+    import boto3
+    from botocore.client import BaseClient
+
+    _BOTO3_AVAILABLE = True
+except ImportError:
+    BaseClient = Any
+
+Timestamp = datetime
+
+log = logging.getLogger(&#34;url.Provider&#34;)
+
+_LRU_SIZE, _PERIODIC_REFRESH = 15, int(os.environ.get(&#34;REFRESH&#34;, &#34;15&#34;))
+
+_TLS_VERIFY = os.environ.get(&#34;TLS_VERIFY&#34;, &#34;true&#34;) == &#34;true&#34;
+
+
+class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attributes
+    &#34;&#34;&#34;
+    Expose an Haystack file via the Haystactk Rest API.
+    &#34;&#34;&#34;
+
+    @property
+    def name(self) -&gt; str:
+        return &#34;URL&#34;
+
+    def __init__(self):
+        self._s3_client = None
+        self._lambda_client = None
+        self._lock = Lock()
+        self._versions = {}  # Dict of OrderedDict with date_version:version_id
+        self._lru = []
+        self._timer = None
+        self._concurrency = None
+        log.info(&#34;Use %s&#34;, self._get_url())
+
+    @overrides
+    def values_for_tag(self, tag: str,
+                       date_version: Optional[datetime] = None) -&gt; List[Any]:
+        grid = self._download_grid(self._get_url(), date_version)
+        return sorted({row[tag] for row in grid.filter(tag)})
+
+    @overrides
+    def versions(self) -&gt; List[datetime]:
+        parsed_uri = urlparse(self._get_url(), allow_fragments=False)
+        self._refresh_versions(parsed_uri)
+        return [date_version for date_version, _ in self._versions[parsed_uri.geturl()].items()]
+
+    @overrides
+    def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
+        &#34;&#34;&#34; Implement the Haystack &#39;about&#39; operation &#34;&#34;&#34;
+        grid = super().about(home)
+        about_data = cast(Entity, grid[0])
+        about_data.update(
+            {  # pylint: disable=no-member
+                &#34;productVersion&#34;: &#34;1.0&#34;,
+                &#34;moduleName&#34;: &#34;URLProvider&#34;,
+                &#34;moduleVersion&#34;: &#34;1.0&#34;,
+            }
+        )
+        return grid
+
+    @overrides
+    def read(
+            self,
+            limit: int,
+            select: Optional[str],
+            entity_ids: Optional[Grid] = None,
+            grid_filter: Optional[str] = None,
+            date_version: Optional[datetime] = None,
+    ) -&gt; Grid:
+        &#34;&#34;&#34; Implement Haystack &#39;read&#39; &#34;&#34;&#34;
+        log.debug(
+            &#34;----&gt; Call read(limit=%s, select=&#39;%s&#39;, ids=%s grid_filter=&#39;%s&#39; date_version=%s)&#34;,
+            limit,
+            select,
+            entity_ids,
+            grid_filter,
+            date_version,
+        )
+        grid = self._download_grid(self._get_url(), date_version)
+        if entity_ids:
+            result = Grid(grid.version, metadata=grid.metadata, columns=grid.column)
+            for ref in entity_ids:
+                result.append(grid[ref])
+        else:
+            result = grid.filter(grid_filter, limit if limit else 0)
+        return result.select(select)
+
+    @overrides
+    def his_read(
+            self,
+            entity_id: Ref,
+            dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+            date_version: Optional[datetime] = None
+    ) -&gt; Grid:
+        &#34;&#34;&#34; Implement Haystack &#39;hisRead&#39; &#34;&#34;&#34;
+        log.debug(
+            &#34;----&gt; Call his_read(id=%s , range=%s, &#34; &#34;date_version=%s)&#34;,
+            entity_id,
+            dates_range,
+            date_version,
+        )
+        if not date_version:
+            date_version = datetime.now().replace(tzinfo=pytz.UTC)
+        grid = self._download_grid(self._get_url(), date_version)
+        if entity_id in grid:
+            entity = grid[entity_id]
+            # Different solution to retrieve the history value
+            # 1. use a file in the dir(HAYSTACK_URL)+entity[&#39;hisURI&#39;]
+            if &#34;hisURI&#34; in entity:
+                base = dirname(self._get_url())
+                his_uri =  base + &#39;/&#39; + str(entity[&#34;hisURI&#34;])
+                history = self._download_grid(his_uri, date_version)
+                # assert history is sorted by date time
+                # Remove data after the date_version
+                for row in history:
+                    if row[&#39;ts&#39;] &gt;= date_version:
+                        history = history[0:history.index(row)]
+                        break
+                min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
+                max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
+
+                for time_serie in history:
+                    min_date = min(min_date, time_serie[&#34;ts&#34;])
+                    max_date = max(max_date, time_serie[&#34;ts&#34;])
+
+                history.metadata = {
+                    &#34;id&#34;: entity_id,
+                    &#34;hisStart&#34;: min_date,
+                    &#34;hisEnd&#34;: max_date,
+                }
+                return history
+            # 2. use the inner time series in tag &#39;history&#39; with the type &#39;Grid&#39;
+            if &#34;history&#34; in entity:
+                return entity[&#34;history&#34;]
+            raise HaystackException(f&#34;{entity_id} has no history&#34;)
+        raise HaystackException(f&#34;id &#39;{entity_id}&#39; not found&#34;)
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        &#34;&#34;&#34; Stop the timer &#34;&#34;&#34;
+        if self._timer:
+            self._timer.cancel()
+
+    def __del__(self):
+        self.__exit__(None, None, None)
+
+    def _get_url(self) -&gt; str:  # pylint: disable=no-self-use
+        &#34;&#34;&#34; Return the url to the file to expose. &#34;&#34;&#34;
+        return os.environ.get(&#34;HAYSTACK_URL&#34;, &#34;&#34;)
+
+    def _lambda(self) -&gt; BaseClient:
+        if not self._lambda_client:  # Lazy init
+            self._lambda_client = boto3.client(&#34;lambda&#34;,
+                                               region_name=os.environ[&#34;AWS_REGION&#34;],
+                                               endpoint_url=os.environ.get(&#34;AWS_S3_ENDPOINT&#34;, None),
+                                               verify=_TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
+                                               )
+        return self._lambda_client
+
+    def _function_concurrency(self) -&gt; int:  # pylint: disable=no-self-use
+        # if not self._concurrency:
+        #     try:
+        #         self._concurrency = self._lambda().get_function_concurrency(
+        #             FunctionName=os.environ[&#39;AWS_LAMBDA_FUNCTION_NAME&#39;])[&#39;ReservedConcurrentExecutions&#39;]
+        #     except (KeyError):
+        #         log.warning(&#34;Impossible to get `ReservedConcurrentExecutions`&#34;)
+        #         self._concurrency = 1000  # Default value if error
+        # return self._concurrency
+        return 1000
+
+    def _s3(self) -&gt; BaseClient:
+        # AWS_S3_ENDPOINT may be http://localhost:9000 to use minio (make start-minio)
+        if not self._s3_client:  # Lazy init
+            self._s3_client = boto3.client(
+                &#34;s3&#34;,
+                endpoint_url=os.environ.get(&#34;AWS_S3_ENDPOINT&#34;, None),
+                verify=_TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
+            )
+        return self._s3_client
+
+    def _download_uri(self, parsed_uri: ParseResult, effective_version: datetime) -&gt; bytes:
+        &#34;&#34;&#34;Download bytes from URI.
+        The uri must be a classic url (file://, http:// ...)
+        or a s3 urn (s3://).
+        The suffix describe the file format.
+
+        Return decompressed data
+        &#34;&#34;&#34;
+        assert parsed_uri
+        assert effective_version
+        log.info(&#34;_download_uri(&#39;%s&#39;)&#34;, parsed_uri.geturl())
+        if parsed_uri.scheme == &#34;s3&#34;:
+            assert _BOTO3_AVAILABLE, &#34;Use &#39;pip install boto3&#39;&#34;
+            s3_client = self._s3()
+            extra_args = None
+            obj_versions = self._versions[parsed_uri.geturl()]
+            version_id = None
+            for date_version, version_id in obj_versions.items():
+                if date_version == effective_version:
+                    extra_args = {&#34;VersionId&#34;: version_id}
+                    break
+            assert version_id, &#34;Version not found&#34;
+
+            stream = BytesIO()
+            s3_client.download_fileobj(
+                parsed_uri.netloc, parsed_uri.path[1:], stream, ExtraArgs=extra_args
+            )
+            data = stream.getvalue()
+        else:
+            # Manage default cwd
+            uri = parsed_uri.geturl()
+            if not parsed_uri.scheme:
+                uri = Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri()
+            with urllib.request.urlopen(uri) as response:
+                data = response.read()
+        if parsed_uri.path.endswith(&#34;.gz&#34;):
+            return gzip.decompress(data)
+        return data
+
+    def _periodic_refresh_versions(self, parsed_uri: ParseResult, first_time: bool) -&gt; None:
+        &#34;&#34;&#34; Refresh list of versions &#34;&#34;&#34;
+        # Refresh at a rounded period, then all cloud instances refresh data at the same time.
+        now = datetime.utcnow().replace(tzinfo=pytz.UTC)
+        next_time = now.replace(minute=0, second=0) + timedelta(
+            minutes=(now.minute + _PERIODIC_REFRESH) // _PERIODIC_REFRESH * _PERIODIC_REFRESH
+        )
+        assert next_time &gt; now
+        if parsed_uri.scheme == &#34;s3&#34;:
+            assert _BOTO3_AVAILABLE, &#34;Use &#39;pip install boto3&#39;&#34;
+            start_of_current_period = \
+                (next_time - timedelta(minutes=_PERIODIC_REFRESH)).replace(tzinfo=pytz.UTC)
+            s3_client = self._s3()
+            obj_versions = [
+                (v[&#34;LastModified&#34;], v[&#34;VersionId&#34;])
+                for v in s3_client.list_object_versions(
+                    Bucket=parsed_uri.netloc, Prefix=parsed_uri.path[1:]
+                )[&#34;Versions&#34;]
+            ]
+            obj_versions = sorted(obj_versions, key=lambda x: x[0], reverse=True)
+            self._lock.acquire()
+            all_versions = self._versions.get(parsed_uri.geturl(), OrderedDict())
+            concurrency = self._function_concurrency()
+            for date_version, version_id in obj_versions:
+                if date_version not in all_versions:
+                    # Purge refresh during current period. Then, all AWS instance see the
+                    # same data and wait the end of the current period to refresh.
+                    # Else, it&#39;s may be possible to have two different versions if an
+                    # new AWS Lambda instance was created after an updated version.
+                    if not first_time or concurrency &lt;= 1 or date_version &lt; start_of_current_period:
+                        all_versions[date_version] = version_id  # Add a slot
+                    else:
+                        log.warning(&#34;Ignore the version &#39;%s&#39; ignore until the next period.\n&#34; +
+                                    &#34;Then, all lambda instance are synchronized.&#34;, version_id)
+            self._versions[parsed_uri.geturl()] = all_versions  # Lru and versions)
+            self._lock.release()
+        else:
+            self._versions[parsed_uri.geturl()] = {datetime(1, 1, 1, tzinfo=pytz.UTC): &#34;direct_file&#34;}
+
+        if _PERIODIC_REFRESH:
+            partial_refresh = functools.partial(
+                self._periodic_refresh_versions, parsed_uri, False
+            )
+            self._timer = threading.Timer((next_time - now).seconds, partial_refresh)
+            self._timer.daemon = True
+            self._timer.start()
+
+    def _refresh_versions(self, parsed_uri: ParseResult) -&gt; None:
+        if not _PERIODIC_REFRESH or parsed_uri.geturl() not in self._versions:
+            self._periodic_refresh_versions(parsed_uri, True)
+
+    @functools.lru_cache(maxsize=_LRU_SIZE)
+    def _download_grid_effective_version(self, uri: str,  # pylint: disable=method-hidden
+                                         effective_version: datetime) -&gt; Grid:
+        log.info(&#34;_download_grid(%s,%s)&#34;, uri, effective_version)
+        parsed_uri = urlparse(uri, allow_fragments=False)
+        byte_array = self._download_uri(parsed_uri, effective_version)
+        if byte_array[:2] == b&#39;\xef\xbb&#39;:
+            body = byte_array.decode(&#34;utf-8-sig&#34;)
+        else:
+            body = byte_array.decode(&#34;utf-8&#34;)
+        if body is None:
+            raise ValueError(&#34;Empty body not supported&#34;)
+        if uri.endswith(&#34;.gz&#34;):
+            uri = uri[:-3]
+
+        mode = suffix_to_mode(os.path.splitext(uri)[1])
+        if not mode:
+            raise ValueError(
+                &#34;The file extension must be .(json|zinc|csv)[.gz]&#34;
+            )
+        return parse(body, mode)
+
+    def _download_grid(self, uri: str, date_version: Optional[datetime]) -&gt; Grid:
+        parsed_uri = urlparse(uri, allow_fragments=False)
+        self._refresh_versions(parsed_uri)
+        for version, _ in self._versions[uri].items():
+            if not date_version or version &lt;= date_version:
+                return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
+        raise ValueError(&#34;Empty body not supported&#34;)
+
+    # pylint: disable=no-member
+    def set_lru_size(self, size: int) -&gt; None:
+        self._download_grid_effective_version = \
+            functools.lru_cache(size,  # type: ignore
+                                Provider._download_grid_effective_version.__wrapped__)  # type: ignore
+
+    # pylint: enable=no-member
+
+    def cache_clear(self) -&gt; None:
+        &#34;&#34;&#34; Force to clear the local cache. &#34;&#34;&#34;
+        self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="shaystack.providers.url.Provider"><code class="flex name class">
+<span>class <span class="ident">Provider</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Expose an Haystack file via the Haystactk Rest API.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Provider(HaystackInterface):  # pylint: disable=too-many-instance-attributes
+    &#34;&#34;&#34;
+    Expose an Haystack file via the Haystactk Rest API.
+    &#34;&#34;&#34;
+
+    @property
+    def name(self) -&gt; str:
+        return &#34;URL&#34;
+
+    def __init__(self):
+        self._s3_client = None
+        self._lambda_client = None
+        self._lock = Lock()
+        self._versions = {}  # Dict of OrderedDict with date_version:version_id
+        self._lru = []
+        self._timer = None
+        self._concurrency = None
+        log.info(&#34;Use %s&#34;, self._get_url())
+
+    @overrides
+    def values_for_tag(self, tag: str,
+                       date_version: Optional[datetime] = None) -&gt; List[Any]:
+        grid = self._download_grid(self._get_url(), date_version)
+        return sorted({row[tag] for row in grid.filter(tag)})
+
+    @overrides
+    def versions(self) -&gt; List[datetime]:
+        parsed_uri = urlparse(self._get_url(), allow_fragments=False)
+        self._refresh_versions(parsed_uri)
+        return [date_version for date_version, _ in self._versions[parsed_uri.geturl()].items()]
+
+    @overrides
+    def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
+        &#34;&#34;&#34; Implement the Haystack &#39;about&#39; operation &#34;&#34;&#34;
+        grid = super().about(home)
+        about_data = cast(Entity, grid[0])
+        about_data.update(
+            {  # pylint: disable=no-member
+                &#34;productVersion&#34;: &#34;1.0&#34;,
+                &#34;moduleName&#34;: &#34;URLProvider&#34;,
+                &#34;moduleVersion&#34;: &#34;1.0&#34;,
+            }
+        )
+        return grid
+
+    @overrides
+    def read(
+            self,
+            limit: int,
+            select: Optional[str],
+            entity_ids: Optional[Grid] = None,
+            grid_filter: Optional[str] = None,
+            date_version: Optional[datetime] = None,
+    ) -&gt; Grid:
+        &#34;&#34;&#34; Implement Haystack &#39;read&#39; &#34;&#34;&#34;
+        log.debug(
+            &#34;----&gt; Call read(limit=%s, select=&#39;%s&#39;, ids=%s grid_filter=&#39;%s&#39; date_version=%s)&#34;,
+            limit,
+            select,
+            entity_ids,
+            grid_filter,
+            date_version,
+        )
+        grid = self._download_grid(self._get_url(), date_version)
+        if entity_ids:
+            result = Grid(grid.version, metadata=grid.metadata, columns=grid.column)
+            for ref in entity_ids:
+                result.append(grid[ref])
+        else:
+            result = grid.filter(grid_filter, limit if limit else 0)
+        return result.select(select)
+
+    @overrides
+    def his_read(
+            self,
+            entity_id: Ref,
+            dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+            date_version: Optional[datetime] = None
+    ) -&gt; Grid:
+        &#34;&#34;&#34; Implement Haystack &#39;hisRead&#39; &#34;&#34;&#34;
+        log.debug(
+            &#34;----&gt; Call his_read(id=%s , range=%s, &#34; &#34;date_version=%s)&#34;,
+            entity_id,
+            dates_range,
+            date_version,
+        )
+        if not date_version:
+            date_version = datetime.now().replace(tzinfo=pytz.UTC)
+        grid = self._download_grid(self._get_url(), date_version)
+        if entity_id in grid:
+            entity = grid[entity_id]
+            # Different solution to retrieve the history value
+            # 1. use a file in the dir(HAYSTACK_URL)+entity[&#39;hisURI&#39;]
+            if &#34;hisURI&#34; in entity:
+                base = dirname(self._get_url())
+                his_uri =  base + &#39;/&#39; + str(entity[&#34;hisURI&#34;])
+                history = self._download_grid(his_uri, date_version)
+                # assert history is sorted by date time
+                # Remove data after the date_version
+                for row in history:
+                    if row[&#39;ts&#39;] &gt;= date_version:
+                        history = history[0:history.index(row)]
+                        break
+                min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
+                max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
+
+                for time_serie in history:
+                    min_date = min(min_date, time_serie[&#34;ts&#34;])
+                    max_date = max(max_date, time_serie[&#34;ts&#34;])
+
+                history.metadata = {
+                    &#34;id&#34;: entity_id,
+                    &#34;hisStart&#34;: min_date,
+                    &#34;hisEnd&#34;: max_date,
+                }
+                return history
+            # 2. use the inner time series in tag &#39;history&#39; with the type &#39;Grid&#39;
+            if &#34;history&#34; in entity:
+                return entity[&#34;history&#34;]
+            raise HaystackException(f&#34;{entity_id} has no history&#34;)
+        raise HaystackException(f&#34;id &#39;{entity_id}&#39; not found&#34;)
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        &#34;&#34;&#34; Stop the timer &#34;&#34;&#34;
+        if self._timer:
+            self._timer.cancel()
+
+    def __del__(self):
+        self.__exit__(None, None, None)
+
+    def _get_url(self) -&gt; str:  # pylint: disable=no-self-use
+        &#34;&#34;&#34; Return the url to the file to expose. &#34;&#34;&#34;
+        return os.environ.get(&#34;HAYSTACK_URL&#34;, &#34;&#34;)
+
+    def _lambda(self) -&gt; BaseClient:
+        if not self._lambda_client:  # Lazy init
+            self._lambda_client = boto3.client(&#34;lambda&#34;,
+                                               region_name=os.environ[&#34;AWS_REGION&#34;],
+                                               endpoint_url=os.environ.get(&#34;AWS_S3_ENDPOINT&#34;, None),
+                                               verify=_TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
+                                               )
+        return self._lambda_client
+
+    def _function_concurrency(self) -&gt; int:  # pylint: disable=no-self-use
+        # if not self._concurrency:
+        #     try:
+        #         self._concurrency = self._lambda().get_function_concurrency(
+        #             FunctionName=os.environ[&#39;AWS_LAMBDA_FUNCTION_NAME&#39;])[&#39;ReservedConcurrentExecutions&#39;]
+        #     except (KeyError):
+        #         log.warning(&#34;Impossible to get `ReservedConcurrentExecutions`&#34;)
+        #         self._concurrency = 1000  # Default value if error
+        # return self._concurrency
+        return 1000
+
+    def _s3(self) -&gt; BaseClient:
+        # AWS_S3_ENDPOINT may be http://localhost:9000 to use minio (make start-minio)
+        if not self._s3_client:  # Lazy init
+            self._s3_client = boto3.client(
+                &#34;s3&#34;,
+                endpoint_url=os.environ.get(&#34;AWS_S3_ENDPOINT&#34;, None),
+                verify=_TLS_VERIFY,  # See https://tinyurl.com/y5tap6ys
+            )
+        return self._s3_client
+
+    def _download_uri(self, parsed_uri: ParseResult, effective_version: datetime) -&gt; bytes:
+        &#34;&#34;&#34;Download bytes from URI.
+        The uri must be a classic url (file://, http:// ...)
+        or a s3 urn (s3://).
+        The suffix describe the file format.
+
+        Return decompressed data
+        &#34;&#34;&#34;
+        assert parsed_uri
+        assert effective_version
+        log.info(&#34;_download_uri(&#39;%s&#39;)&#34;, parsed_uri.geturl())
+        if parsed_uri.scheme == &#34;s3&#34;:
+            assert _BOTO3_AVAILABLE, &#34;Use &#39;pip install boto3&#39;&#34;
+            s3_client = self._s3()
+            extra_args = None
+            obj_versions = self._versions[parsed_uri.geturl()]
+            version_id = None
+            for date_version, version_id in obj_versions.items():
+                if date_version == effective_version:
+                    extra_args = {&#34;VersionId&#34;: version_id}
+                    break
+            assert version_id, &#34;Version not found&#34;
+
+            stream = BytesIO()
+            s3_client.download_fileobj(
+                parsed_uri.netloc, parsed_uri.path[1:], stream, ExtraArgs=extra_args
+            )
+            data = stream.getvalue()
+        else:
+            # Manage default cwd
+            uri = parsed_uri.geturl()
+            if not parsed_uri.scheme:
+                uri = Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri()
+            with urllib.request.urlopen(uri) as response:
+                data = response.read()
+        if parsed_uri.path.endswith(&#34;.gz&#34;):
+            return gzip.decompress(data)
+        return data
+
+    def _periodic_refresh_versions(self, parsed_uri: ParseResult, first_time: bool) -&gt; None:
+        &#34;&#34;&#34; Refresh list of versions &#34;&#34;&#34;
+        # Refresh at a rounded period, then all cloud instances refresh data at the same time.
+        now = datetime.utcnow().replace(tzinfo=pytz.UTC)
+        next_time = now.replace(minute=0, second=0) + timedelta(
+            minutes=(now.minute + _PERIODIC_REFRESH) // _PERIODIC_REFRESH * _PERIODIC_REFRESH
+        )
+        assert next_time &gt; now
+        if parsed_uri.scheme == &#34;s3&#34;:
+            assert _BOTO3_AVAILABLE, &#34;Use &#39;pip install boto3&#39;&#34;
+            start_of_current_period = \
+                (next_time - timedelta(minutes=_PERIODIC_REFRESH)).replace(tzinfo=pytz.UTC)
+            s3_client = self._s3()
+            obj_versions = [
+                (v[&#34;LastModified&#34;], v[&#34;VersionId&#34;])
+                for v in s3_client.list_object_versions(
+                    Bucket=parsed_uri.netloc, Prefix=parsed_uri.path[1:]
+                )[&#34;Versions&#34;]
+            ]
+            obj_versions = sorted(obj_versions, key=lambda x: x[0], reverse=True)
+            self._lock.acquire()
+            all_versions = self._versions.get(parsed_uri.geturl(), OrderedDict())
+            concurrency = self._function_concurrency()
+            for date_version, version_id in obj_versions:
+                if date_version not in all_versions:
+                    # Purge refresh during current period. Then, all AWS instance see the
+                    # same data and wait the end of the current period to refresh.
+                    # Else, it&#39;s may be possible to have two different versions if an
+                    # new AWS Lambda instance was created after an updated version.
+                    if not first_time or concurrency &lt;= 1 or date_version &lt; start_of_current_period:
+                        all_versions[date_version] = version_id  # Add a slot
+                    else:
+                        log.warning(&#34;Ignore the version &#39;%s&#39; ignore until the next period.\n&#34; +
+                                    &#34;Then, all lambda instance are synchronized.&#34;, version_id)
+            self._versions[parsed_uri.geturl()] = all_versions  # Lru and versions)
+            self._lock.release()
+        else:
+            self._versions[parsed_uri.geturl()] = {datetime(1, 1, 1, tzinfo=pytz.UTC): &#34;direct_file&#34;}
+
+        if _PERIODIC_REFRESH:
+            partial_refresh = functools.partial(
+                self._periodic_refresh_versions, parsed_uri, False
+            )
+            self._timer = threading.Timer((next_time - now).seconds, partial_refresh)
+            self._timer.daemon = True
+            self._timer.start()
+
+    def _refresh_versions(self, parsed_uri: ParseResult) -&gt; None:
+        if not _PERIODIC_REFRESH or parsed_uri.geturl() not in self._versions:
+            self._periodic_refresh_versions(parsed_uri, True)
+
+    @functools.lru_cache(maxsize=_LRU_SIZE)
+    def _download_grid_effective_version(self, uri: str,  # pylint: disable=method-hidden
+                                         effective_version: datetime) -&gt; Grid:
+        log.info(&#34;_download_grid(%s,%s)&#34;, uri, effective_version)
+        parsed_uri = urlparse(uri, allow_fragments=False)
+        byte_array = self._download_uri(parsed_uri, effective_version)
+        if byte_array[:2] == b&#39;\xef\xbb&#39;:
+            body = byte_array.decode(&#34;utf-8-sig&#34;)
+        else:
+            body = byte_array.decode(&#34;utf-8&#34;)
+        if body is None:
+            raise ValueError(&#34;Empty body not supported&#34;)
+        if uri.endswith(&#34;.gz&#34;):
+            uri = uri[:-3]
+
+        mode = suffix_to_mode(os.path.splitext(uri)[1])
+        if not mode:
+            raise ValueError(
+                &#34;The file extension must be .(json|zinc|csv)[.gz]&#34;
+            )
+        return parse(body, mode)
+
+    def _download_grid(self, uri: str, date_version: Optional[datetime]) -&gt; Grid:
+        parsed_uri = urlparse(uri, allow_fragments=False)
+        self._refresh_versions(parsed_uri)
+        for version, _ in self._versions[uri].items():
+            if not date_version or version &lt;= date_version:
+                return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
+        raise ValueError(&#34;Empty body not supported&#34;)
+
+    # pylint: disable=no-member
+    def set_lru_size(self, size: int) -&gt; None:
+        self._download_grid_effective_version = \
+            functools.lru_cache(size,  # type: ignore
+                                Provider._download_grid_effective_version.__wrapped__)  # type: ignore
+
+    # pylint: enable=no-member
+
+    def cache_clear(self) -&gt; None:
+        &#34;&#34;&#34; Force to clear the local cache. &#34;&#34;&#34;
+        self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="shaystack.providers.haystack_interface.HaystackInterface" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface">HaystackInterface</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="shaystack.providers.url.Provider.about"><code class="name flex">
+<span>def <span class="ident">about</span></span>(<span>self, home: str) ‑> shaystack.grid.Grid</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Implement the Haystack 'about' operation</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@overrides
+def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
+    &#34;&#34;&#34; Implement the Haystack &#39;about&#39; operation &#34;&#34;&#34;
+    grid = super().about(home)
+    about_data = cast(Entity, grid[0])
+    about_data.update(
+        {  # pylint: disable=no-member
+            &#34;productVersion&#34;: &#34;1.0&#34;,
+            &#34;moduleName&#34;: &#34;URLProvider&#34;,
+            &#34;moduleVersion&#34;: &#34;1.0&#34;,
+        }
+    )
+    return grid</code></pre>
+</details>
+</dd>
+<dt id="shaystack.providers.url.Provider.cache_clear"><code class="name flex">
+<span>def <span class="ident">cache_clear</span></span>(<span>self) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Force to clear the local cache.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cache_clear(self) -&gt; None:
+    &#34;&#34;&#34; Force to clear the local cache. &#34;&#34;&#34;
+    self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member</code></pre>
+</details>
+</dd>
+<dt id="shaystack.providers.url.Provider.his_read"><code class="name flex">
+<span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Union[datetime.datetime, str, Tuple[datetime.datetime, datetime.datetime]], date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Implement Haystack 'hisRead'</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@overrides
+def his_read(
+        self,
+        entity_id: Ref,
+        dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+        date_version: Optional[datetime] = None
+) -&gt; Grid:
+    &#34;&#34;&#34; Implement Haystack &#39;hisRead&#39; &#34;&#34;&#34;
+    log.debug(
+        &#34;----&gt; Call his_read(id=%s , range=%s, &#34; &#34;date_version=%s)&#34;,
+        entity_id,
+        dates_range,
+        date_version,
+    )
+    if not date_version:
+        date_version = datetime.now().replace(tzinfo=pytz.UTC)
+    grid = self._download_grid(self._get_url(), date_version)
+    if entity_id in grid:
+        entity = grid[entity_id]
+        # Different solution to retrieve the history value
+        # 1. use a file in the dir(HAYSTACK_URL)+entity[&#39;hisURI&#39;]
+        if &#34;hisURI&#34; in entity:
+            base = dirname(self._get_url())
+            his_uri =  base + &#39;/&#39; + str(entity[&#34;hisURI&#34;])
+            history = self._download_grid(his_uri, date_version)
+            # assert history is sorted by date time
+            # Remove data after the date_version
+            for row in history:
+                if row[&#39;ts&#39;] &gt;= date_version:
+                    history = history[0:history.index(row)]
+                    break
+            min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
+            max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
+
+            for time_serie in history:
+                min_date = min(min_date, time_serie[&#34;ts&#34;])
+                max_date = max(max_date, time_serie[&#34;ts&#34;])
+
+            history.metadata = {
+                &#34;id&#34;: entity_id,
+                &#34;hisStart&#34;: min_date,
+                &#34;hisEnd&#34;: max_date,
+            }
+            return history
+        # 2. use the inner time series in tag &#39;history&#39; with the type &#39;Grid&#39;
+        if &#34;history&#34; in entity:
+            return entity[&#34;history&#34;]
+        raise HaystackException(f&#34;{entity_id} has no history&#34;)
+    raise HaystackException(f&#34;id &#39;{entity_id}&#39; not found&#34;)</code></pre>
+</details>
+</dd>
+<dt id="shaystack.providers.url.Provider.read"><code class="name flex">
+<span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Union[str, NoneType], entity_ids: Union[shaystack.grid.Grid, NoneType] = None, grid_filter: Union[str, NoneType] = None, date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Implement Haystack 'read'</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@overrides
+def read(
+        self,
+        limit: int,
+        select: Optional[str],
+        entity_ids: Optional[Grid] = None,
+        grid_filter: Optional[str] = None,
+        date_version: Optional[datetime] = None,
+) -&gt; Grid:
+    &#34;&#34;&#34; Implement Haystack &#39;read&#39; &#34;&#34;&#34;
+    log.debug(
+        &#34;----&gt; Call read(limit=%s, select=&#39;%s&#39;, ids=%s grid_filter=&#39;%s&#39; date_version=%s)&#34;,
+        limit,
+        select,
+        entity_ids,
+        grid_filter,
+        date_version,
+    )
+    grid = self._download_grid(self._get_url(), date_version)
+    if entity_ids:
+        result = Grid(grid.version, metadata=grid.metadata, columns=grid.column)
+        for ref in entity_ids:
+            result.append(grid[ref])
+    else:
+        result = grid.filter(grid_filter, limit if limit else 0)
+    return result.select(select)</code></pre>
+</details>
+</dd>
+<dt id="shaystack.providers.url.Provider.set_lru_size"><code class="name flex">
+<span>def <span class="ident">set_lru_size</span></span>(<span>self, size: int) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_lru_size(self, size: int) -&gt; None:
+    self._download_grid_effective_version = \
+        functools.lru_cache(size,  # type: ignore
+                            Provider._download_grid_effective_version.__wrapped__)  # type: ignore</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="shaystack.providers.haystack_interface.HaystackInterface" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface">HaystackInterface</a></b></code>:
+<ul class="hlist">
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.formats" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.formats">formats</a></code></li>
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.get_customer_id" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.get_customer_id">get_customer_id</a></code></li>
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.get_tz" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.get_tz">get_tz</a></code></li>
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.his_write" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.his_write">his_write</a></code></li>
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.invoke_action" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.invoke_action">invoke_action</a></code></li>
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.name" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.name">name</a></code></li>
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.nav" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.nav">nav</a></code></li>
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.ops" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.ops">ops</a></code></li>
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.point_write_read" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.point_write_read">point_write_read</a></code></li>
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.point_write_write" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.point_write_write">point_write_write</a></code></li>
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.values_for_tag" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.values_for_tag">values_for_tag</a></code></li>
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.versions" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.versions">versions</a></code></li>
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.watch_poll" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.watch_poll">watch_poll</a></code></li>
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.watch_sub" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.watch_sub">watch_sub</a></code></li>
+<li><code><a title="shaystack.providers.haystack_interface.HaystackInterface.watch_unsub" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.watch_unsub">watch_unsub</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="shaystack.providers" href="index.html">shaystack.providers</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="shaystack.providers.url.Provider" href="#shaystack.providers.url.Provider">Provider</a></code></h4>
+<ul class="">
+<li><code><a title="shaystack.providers.url.Provider.about" href="#shaystack.providers.url.Provider.about">about</a></code></li>
+<li><code><a title="shaystack.providers.url.Provider.cache_clear" href="#shaystack.providers.url.Provider.cache_clear">cache_clear</a></code></li>
+<li><code><a title="shaystack.providers.url.Provider.his_read" href="#shaystack.providers.url.Provider.his_read">his_read</a></code></li>
+<li><code><a title="shaystack.providers.url.Provider.read" href="#shaystack.providers.url.Provider.read">read</a></code></li>
+<li><code><a title="shaystack.providers.url.Provider.set_lru_size" href="#shaystack.providers.url.Provider.set_lru_size">set_lru_size</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

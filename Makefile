@@ -16,6 +16,8 @@ HAYSTACK_DB?=sqlite3:///:memory:#haystack
 USE_OKTA?=N
 AWS_PROFILE?=default
 AWS_REGION?=eu-west-3
+AWS_CLUSTER_NAME=haystack
+AWS_STAGE?=$(STAGE)
 LOGLEVEL?=WARNING
 PG_PASSWORD?=password
 PGADMIN_USER?=$(USER)@domain.com
@@ -574,6 +576,20 @@ aws-logs:
 	@$(VALIDATE_VENV)
 	zappa tail
 
+_aws_check_repositoy:
+	@[ ! -z "$(AWS_REPOSITORY)" ] || (echo "Set AWS_REPOSITORY" ; exit 1)
+
+~/.docker/config.json: Makefile
+	@aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $(AWS_REPOSITORY)
+
+## Push the docker image to AWS repository
+aws-docker-push: _aws_check_repositoy ~/.docker/config.json docker-build aws-update-token
+	@docker tag $(DOCKER_REPOSITORY)/$(PRJ):latest $(AWS_REPOSITORY)/$(PRJ):latest
+	docker image push $(AWS_REPOSITORY)/$(PRJ):latest
+
+aws-docker-deploy: aws-update-token ~/.docker/config.json
+	aws ecs run-task -task-definition task-def-name -cluster $(AWS_CLUSTER_NAME)
+
 # -------------------------------------- Tests
 .PHONY: unit-test
 .make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile | .env
@@ -967,7 +983,7 @@ keyring:
 
 
 ## Publish a distribution on pypi.org
-release: clean check-twine
+release: clean .make-validate check-twine
 	@$(VALIDATE_VENV)
 	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \
 		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \

@@ -24,4 +24,4 @@ On the server side, it also implements [Haystack Rest API](https://www.project-h
 Haystack data you host.
 
 The [full documentation is here](https://pprados.github.io/shaystack/)
-and the [documentation of API is here](https://pprados.github.io/shaystack/api/index.html)
+and the [documentation of API is here](https://pprados.github.io/shaystack/api/shaystack/index.html)

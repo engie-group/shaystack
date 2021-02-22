@@ -284,7 +284,7 @@ _configure:
 
 # -------------------------------------- Standard requirements
 # Rule to update the current venv, with the dependencies describe in `setup.py`
-$(PIP_PACKAGE): $(CONDA_PYTHON) setup.* | .git # Install pip dependencies
+$(PIP_PACKAGE): $(CONDA_PYTHON) setup.* requirements.txt | .git # Install pip dependencies
 	@$(VALIDATE_VENV)
 	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"
 ifeq ($(USE_OKTA),Y)
@@ -292,7 +292,7 @@ ifeq ($(USE_OKTA),Y)
 endif
 	echo -e "$(cyan)Install binary dependencies ...$(normal)"
 	conda install -y -c conda-forge conda setuptools compilers make git jq libpq curl psycopg2
-	conda install -c judowill gitflow
+	conda install -y -c judowill gitflow
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	pip install supersqlite
 	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"

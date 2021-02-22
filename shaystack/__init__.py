@@ -8,12 +8,14 @@
 """
 Implementation of Haystack project https://www.project-haystack.org/
 Propose API :
+
 - to read or write Haystack file (Zinc, JSon, CSV)
 - to manipulate ontology in memory (Grid class)
 - to implement REST API (https://www.project-haystack.org/doc/Rest)
 - to implement GraphQL API
 
 With some sample provider:
+
 - Import ontology on S3 bucket
 - Import ontology on SQLite or Postgres
 - and expose the data via Flask or AWS Lambda
@@ -76,7 +78,7 @@ __pdoc__ = {
     "zincparser": False,
     "zoneinfo": False,
 }
-__author__ = 'Ph. Prados, VRT Systems'
+__author__ = 'Engie Digital, VRT Systems'
 __copyright__ = 'Copyright 2016-2020, Engie Digital & VRT System'
 __credits__ = ['See AUTHORS']
 __license__ = 'BSD'

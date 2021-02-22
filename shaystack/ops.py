@@ -352,7 +352,7 @@ def _manage_exception(
 
 def about(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
-    Implement Haystack 'about'.
+    Implement Haystack about.
     Args:
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)

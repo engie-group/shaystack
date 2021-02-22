@@ -1,4 +1,4 @@
-![Logo](https://github.com/pprados/shaystack/tree/develop/docs/logo.png)
+![Logo](https://github.com/pprados/shaystack/blob/develop/docs/logo.png?raw=true)
 
 # Shift-4-Haystack
 

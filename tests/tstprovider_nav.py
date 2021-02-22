@@ -2,7 +2,7 @@ from typing import Any
 
 from overrides import overrides
 
-from haystackapi.providers import HaystackInterface
+from shaystack.providers import HaystackInterface
 
 
 class Provider(HaystackInterface):

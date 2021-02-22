@@ -4,17 +4,17 @@ With AWS AppSync, it's possible to merge the Haystack GraphQL API with another G
 
 ## Schema
 
-The current GraphQL schema for Hystack is [here](../schema.graphql)
+The current GraphQL schema for Haystack is [here](../schema.graphql)
 
 ## Delegate part of global GraphQL to haystack GraphQL API
 
-This sample demonstrate how it's possible to delegate a part of GraphQL request to Haystack GraphQL API with AWS
+This sample demonstrates how it's possible to delegate a part of GraphQL request to Haystack GraphQL API with AWS
 AppSync.
 
 In the AWS AppSync console:
 
 * First, deploy your AWS Lambda function with Haystack GraphQL API
-* Build from scratch a new API with the name `HaystackAPI`
+* Build from scratch a new API with the name `SHaystack`
 * Create a datasource `HaystackLambda` with an AWS Lambda function
   - Select "Lambda Function"
   - Select the AWS Lambda for Haystack
@@ -24,8 +24,8 @@ In the AWS AppSync console:
 ![alt New Data Source][newDataSource]
 
 * Create a function
-  - Choose the data source `HaystackAPILambda`
-  - Function name `HaystackAPIWrapper`
+  - Choose the data source `SHaystackLambda`
+  - Function name `SHaystackWrapper`
   - Description `Delegate part of Graphql request to Haystack GraphQL API`
   - import the body of [`request-filter.json`](request-filter.json) inside the
     `Configure the request mapping template`
@@ -47,8 +47,8 @@ In the AWS AppSync console:
 
 ![alt Attach Resolver][attachResolver]
 
-- select the datasource `HaystackAPILambda`
-- Convert to pipeline resolver and add the function `HaystackAPIWrapper`
+- select the datasource `HaystackLambda`
+- Convert to pipeline resolver and add the function `SHaystackWrapper`
 - Create and save the resolver
 
 ![alt Create Pipeline Resolver][createPipelineResolver]

@@ -10,9 +10,9 @@ from __future__ import unicode_literals
 import copy
 import datetime
 
-from haystackapi import mode_to_suffix, suffix_to_mode, Ref
-from haystackapi.grid import Grid, Version, VER_3_0, Quantity, Coordinate
-from haystackapi.sortabledict import SortableDict
+from shaystack import mode_to_suffix, suffix_to_mode, Ref
+from shaystack.grid import Grid, Version, VER_3_0, Quantity, Coordinate
+from shaystack.sortabledict import SortableDict
 
 
 def test_grid_given_metadata():

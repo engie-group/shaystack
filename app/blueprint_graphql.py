@@ -24,7 +24,7 @@ except ImportError:
 import graphene
 from .graphql_model import ReadHaystack
 
-log = logging.getLogger("haystackapi")
+log = logging.getLogger("shaystack")
 
 
 class Query(graphene.ObjectType):

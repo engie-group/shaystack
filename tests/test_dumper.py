@@ -11,8 +11,8 @@ from csv import reader
 
 import pytz
 
-import haystackapi
-from haystackapi import dump_scalar
+import shaystack
+from shaystack import dump_scalar
 from .test_parser import SIMPLE_EXAMPLE_ZINC, SIMPLE_EXAMPLE_JSON, \
     METADATA_EXAMPLE_JSON, SIMPLE_EXAMPLE_CSV, METADATA_EXAMPLE_CSV
 
@@ -25,12 +25,12 @@ siteName dis:"Sites",val dis:"Value" unit:"kW"
 '''
 
 
-def make_simple_grid(version=haystackapi.VER_2_0):
+def make_simple_grid(version=shaystack.VER_2_0):
     """
     Args:
         version:
     """
-    grid = haystackapi.Grid(version=version)
+    grid = shaystack.Grid(version=version)
     grid.column['firstName'] = {}
     grid.column['bday'] = {}
     grid.extend([
@@ -48,43 +48,43 @@ def make_simple_grid(version=haystackapi.VER_2_0):
 
 def test_simple_zinc():
     grid = make_simple_grid()
-    grid_str = haystackapi.dump(grid)
+    grid_str = shaystack.dump(grid)
     assert grid_str == SIMPLE_EXAMPLE_ZINC
 
 
 def test_simple_json():
     grid = make_simple_grid()
-    grid_json = json.loads(haystackapi.dump(grid, mode=haystackapi.MODE_JSON))
+    grid_json = json.loads(shaystack.dump(grid, mode=shaystack.MODE_JSON))
     assert grid_json == SIMPLE_EXAMPLE_JSON
 
 
 def test_simple_csv():
     grid = make_simple_grid()
-    grid_csv = haystackapi.dump(grid, mode=haystackapi.MODE_CSV)
+    grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
     assert grid_csv == SIMPLE_EXAMPLE_CSV
 
 
-def make_metadata_grid(version=haystackapi.VER_2_0):
+def make_metadata_grid(version=shaystack.VER_2_0):
     """
     Args:
         version:
     """
-    grid = haystackapi.Grid(version=version)
+    grid = shaystack.Grid(version=version)
     grid.metadata['database'] = 'test'
     grid.metadata['dis'] = 'Site Energy Summary'
     grid.column['siteName'] = {'dis': 'Sites'}
-    grid.column['val'] = haystackapi.MetadataObject()
+    grid.column['val'] = shaystack.MetadataObject()
     grid.column['val']['dis'] = 'Value'
     grid.column['val']['unit'] = 'kW'
     grid.extend([
         {
             'siteName': 'Site 1',
-            'val': haystackapi.Quantity(356.214, 'kW'),
+            'val': shaystack.Quantity(356.214, 'kW'),
         },
         {
             'siteName': 'Site 2',
-            'val': haystackapi.Quantity(463.028, 'kW'),
+            'val': shaystack.Quantity(463.028, 'kW'),
         },
     ])
     return grid
@@ -92,48 +92,48 @@ def make_metadata_grid(version=haystackapi.VER_2_0):
 
 def test_metadata_zinc():
     grid = make_metadata_grid()
-    grid_str = haystackapi.dump(grid)
+    grid_str = shaystack.dump(grid)
     assert grid_str == METADATA_EXAMPLE
 
 
 def test_metadata_json():
     grid = make_metadata_grid()
-    grid_json = json.loads(haystackapi.dump(grid, mode=haystackapi.MODE_JSON))
+    grid_json = json.loads(shaystack.dump(grid, mode=shaystack.MODE_JSON))
     assert grid_json == METADATA_EXAMPLE_JSON
 
 
 def test_metadata_csv():
     grid = make_metadata_grid()
-    grid_csv = haystackapi.dump(grid, mode=haystackapi.MODE_CSV)
+    grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
     assert grid_csv == METADATA_EXAMPLE_CSV
 
 
-def make_grid_meta(version=haystackapi.VER_2_0):
+def make_grid_meta(version=shaystack.VER_2_0):
     """
     Args:
         version:
     """
-    grid = haystackapi.Grid(version=version)
+    grid = shaystack.Grid(version=version)
     grid.metadata['aString'] = 'aValue'
     grid.metadata['aNumber'] = 3.14159
     grid.metadata['aNull'] = None
-    grid.metadata['aMarker'] = haystackapi.MARKER
-    grid.metadata['aQuantity'] = haystackapi.Quantity(123, 'Hz')
+    grid.metadata['aMarker'] = shaystack.MARKER
+    grid.metadata['aQuantity'] = shaystack.Quantity(123, 'Hz')
     grid.column['empty'] = {}
     return grid
 
 
 def test_grid_meta():
-    grid_str = haystackapi.dump(make_grid_meta())
+    grid_str = shaystack.dump(make_grid_meta())
     assert grid_str == '''ver:"2.0" aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123Hz
 empty
 '''
 
 
 def test_grid_meta_json():
-    grid_json = json.loads(haystackapi.dump(make_grid_meta(),
-                                            mode=haystackapi.MODE_JSON))
+    grid_json = json.loads(shaystack.dump(make_grid_meta(),
+                                          mode=shaystack.MODE_JSON))
     assert grid_json == {
         'meta': {
             'ver': '2.0',
@@ -151,37 +151,37 @@ def test_grid_meta_json():
 
 
 def test_grid_meta_csv():
-    grid_csv = haystackapi.dump(make_grid_meta(), mode=haystackapi.MODE_CSV)
+    grid_csv = shaystack.dump(make_grid_meta(), mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
     assert grid_csv == 'empty\n'
 
 
-def make_col_meta(version=haystackapi.VER_2_0):
+def make_col_meta(version=shaystack.VER_2_0):
     """
     Args:
         version:
     """
-    grid = haystackapi.Grid(version=version)
-    col_meta = haystackapi.MetadataObject()
+    grid = shaystack.Grid(version=version)
+    col_meta = shaystack.MetadataObject()
     col_meta['aString'] = 'aValue'
     col_meta['aNumber'] = 3.14159
     col_meta['aNull'] = None
-    col_meta['aMarker'] = haystackapi.MARKER
-    col_meta['aQuantity'] = haystackapi.Quantity(123, 'Hz')
+    col_meta['aMarker'] = shaystack.MARKER
+    col_meta['aQuantity'] = shaystack.Quantity(123, 'Hz')
     grid.column['empty'] = col_meta
     return grid
 
 
 def test_col_meta_zinc():
-    grid_str = haystackapi.dump(make_col_meta(), mode=haystackapi.MODE_ZINC)
+    grid_str = shaystack.dump(make_col_meta(), mode=shaystack.MODE_ZINC)
     assert grid_str == '''ver:"2.0"
 empty aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123Hz
 '''
 
 
 def test_col_meta_json():
-    grid_json = json.loads(haystackapi.dump(make_col_meta(),
-                                            mode=haystackapi.MODE_JSON))
+    grid_json = json.loads(shaystack.dump(make_col_meta(),
+                                          mode=shaystack.MODE_JSON))
     assert grid_json == {
         'meta': {
             'ver': '2.0',
@@ -200,13 +200,13 @@ def test_col_meta_json():
 
 
 def test_col_meta_csv():
-    grid_csv = haystackapi.dump(make_col_meta(), mode=haystackapi.MODE_CSV)
+    grid_csv = shaystack.dump(make_col_meta(), mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
     assert grid_csv == 'empty\n'
 
 
 def test_data_types_zinc_v2():
-    grid = haystackapi.Grid(version=haystackapi.VER_2_0)
+    grid = shaystack.Grid(version=shaystack.VER_2_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
     grid.extend([
@@ -216,11 +216,11 @@ def test_data_types_zinc_v2():
         },
         {
             'comment': 'A marker',
-            'value': haystackapi.MARKER,
+            'value': shaystack.MARKER,
         },
         {
             'comment': 'A "remove" object',
-            'value': haystackapi.REMOVE,
+            'value': shaystack.REMOVE,
         },
         {
             'comment': 'A boolean, indicating False',
@@ -232,31 +232,31 @@ def test_data_types_zinc_v2():
         },
         {
             'comment': 'A reference, without value',
-            'value': haystackapi.Ref('a-ref'),
+            'value': shaystack.Ref('a-ref'),
         },
         {
             'comment': 'A reference, with value',
-            'value': haystackapi.Ref('a-ref', 'a value'),
+            'value': shaystack.Ref('a-ref', 'a value'),
         },
         {
             'comment': 'A binary blob',
-            'value': haystackapi.Bin('text/plain'),
+            'value': shaystack.Bin('text/plain'),
         },
         {
             'comment': 'A quantity',
-            'value': haystackapi.Quantity(500, 'miles'),
+            'value': shaystack.Quantity(500, 'miles'),
         },
         {
             'comment': 'A quantity without unit',
-            'value': haystackapi.Quantity(500, None),
+            'value': shaystack.Quantity(500, None),
         },
         {
             'comment': 'A coordinate',
-            'value': haystackapi.Coordinate(-27.4725, 153.003),
+            'value': shaystack.Coordinate(-27.4725, 153.003),
         },
         {
             'comment': 'A URI',
-            'value': haystackapi.Uri('http://www.example.com#`unicode:\u1234\u5678`'),
+            'value': shaystack.Uri('http://www.example.com#`unicode:\u1234\u5678`'),
         },
         {
             'comment': 'A string',
@@ -284,7 +284,7 @@ def test_data_types_zinc_v2():
                 datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
         },
     ])
-    grid_str = haystackapi.dump(grid, mode=haystackapi.MODE_ZINC)
+    grid_str = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
     ref_str = '''ver:"2.0"
 comment,value
 "A null value",N
@@ -309,7 +309,7 @@ comment,value
 
 
 def test_data_types_json_v2():
-    grid = haystackapi.Grid(version=haystackapi.VER_2_0)
+    grid = shaystack.Grid(version=shaystack.VER_2_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
     grid.extend([
@@ -319,11 +319,11 @@ def test_data_types_json_v2():
         },
         {
             'comment': 'A marker',
-            'value': haystackapi.MARKER,
+            'value': shaystack.MARKER,
         },
         {
             'comment': 'A remove (2.0 version)',
-            'value': haystackapi.REMOVE,
+            'value': shaystack.REMOVE,
         },
         {
             'comment': 'A boolean, indicating False',
@@ -335,31 +335,31 @@ def test_data_types_json_v2():
         },
         {
             'comment': 'A reference, without value',
-            'value': haystackapi.Ref('a-ref'),
+            'value': shaystack.Ref('a-ref'),
         },
         {
             'comment': 'A reference, with value',
-            'value': haystackapi.Ref('a-ref', 'a value'),
+            'value': shaystack.Ref('a-ref', 'a value'),
         },
         {
             'comment': 'A binary blob',
-            'value': haystackapi.Bin('text/plain'),
+            'value': shaystack.Bin('text/plain'),
         },
         {
             'comment': 'A quantity',
-            'value': haystackapi.Quantity(500, 'miles'),
+            'value': shaystack.Quantity(500, 'miles'),
         },
         {
             'comment': 'A quantity without unit',
-            'value': haystackapi.Quantity(500, None),
+            'value': shaystack.Quantity(500, None),
         },
         {
             'comment': 'A coordinate',
-            'value': haystackapi.Coordinate(-27.4725, 153.003),
+            'value': shaystack.Coordinate(-27.4725, 153.003),
         },
         {
             'comment': 'A URI',
-            'value': haystackapi.Uri('http://www.example.com'),
+            'value': shaystack.Uri('http://www.example.com'),
         },
         {
             'comment': 'A string',
@@ -386,7 +386,7 @@ def test_data_types_json_v2():
                 datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
         },
     ])
-    grid_json = json.loads(haystackapi.dump(grid, mode=haystackapi.MODE_JSON))
+    grid_json = json.loads(shaystack.dump(grid, mode=shaystack.MODE_JSON))
     assert grid_json == {
         'meta': {'ver': '2.0'},
         'cols': [
@@ -436,7 +436,7 @@ def test_data_types_json_v2():
 
 
 def test_data_types_csv_v2():
-    grid = haystackapi.Grid(version=haystackapi.VER_2_0)
+    grid = shaystack.Grid(version=shaystack.VER_2_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
     grid.extend([
@@ -446,11 +446,11 @@ def test_data_types_csv_v2():
         },
         {
             'comment': 'A marker',
-            'value': haystackapi.MARKER,
+            'value': shaystack.MARKER,
         },
         {
             'comment': 'A remove (2.0 version)',
-            'value': haystackapi.REMOVE,
+            'value': shaystack.REMOVE,
         },
         {
             'comment': 'A boolean, indicating False',
@@ -462,31 +462,31 @@ def test_data_types_csv_v2():
         },
         {
             'comment': 'A reference, without value',
-            'value': haystackapi.Ref('a-ref'),
+            'value': shaystack.Ref('a-ref'),
         },
         {
             'comment': 'A reference, with value',
-            'value': haystackapi.Ref('a-ref', 'a value'),
+            'value': shaystack.Ref('a-ref', 'a value'),
         },
         {
             'comment': 'A binary blob',
-            'value': haystackapi.Bin('text/plain'),
+            'value': shaystack.Bin('text/plain'),
         },
         {
             'comment': 'A quantity',
-            'value': haystackapi.Quantity(500, 'miles'),
+            'value': shaystack.Quantity(500, 'miles'),
         },
         {
             'comment': 'A quantity without unit',
-            'value': haystackapi.Quantity(500, None),
+            'value': shaystack.Quantity(500, None),
         },
         {
             'comment': 'A coordinate',
-            'value': haystackapi.Coordinate(-27.4725, 153.003),
+            'value': shaystack.Coordinate(-27.4725, 153.003),
         },
         {
             'comment': 'A URI',
-            'value': haystackapi.Uri('http://www.example.com'),
+            'value': shaystack.Uri('http://www.example.com'),
         },
         {
             'comment': 'A string',
@@ -513,7 +513,7 @@ def test_data_types_csv_v2():
                 datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
         },
     ])
-    grid_csv = haystackapi.dump(grid, mode=haystackapi.MODE_CSV)
+    grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
     assert grid_csv == '''comment,value
 "A null value",
@@ -537,13 +537,13 @@ def test_data_types_csv_v2():
 
 
 def test_data_types_zinc_v3():
-    grid = haystackapi.Grid(version=haystackapi.VER_3_0)
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
     grid.extend([
         {
             'comment': 'A NA',
-            'value': haystackapi.NA,
+            'value': shaystack.NA,
         },
         {
             'comment': 'An empty list',
@@ -555,7 +555,7 @@ def test_data_types_zinc_v3():
         },
         {
             'comment': 'A marker in a list',
-            'value': [haystackapi.MARKER],
+            'value': [shaystack.MARKER],
         },
         {
             'comment': 'Booleans',
@@ -563,18 +563,18 @@ def test_data_types_zinc_v3():
         },
         {
             'comment': 'References',
-            'value': [haystackapi.Ref('a-ref'), haystackapi.Ref('a-ref', 'a value')],
+            'value': [shaystack.Ref('a-ref'), shaystack.Ref('a-ref', 'a value')],
         },
         {
             'comment': 'A quantity',
-            'value': [haystackapi.Quantity(500, 'miles')],
+            'value': [shaystack.Quantity(500, 'miles')],
         },
         {
             'comment': 'A XStr',
-            'value': [haystackapi.XStr("hex", 'deadbeef')],
+            'value': [shaystack.XStr("hex", 'deadbeef')],
         },
     ])
-    grid_str = haystackapi.dump(grid, mode=haystackapi.MODE_ZINC)
+    grid_str = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
     ref_str = '''ver:"3.0"
 comment,value
 "A NA",NA
@@ -590,17 +590,17 @@ comment,value
 
 
 def test_data_types_json_v3():
-    grid = haystackapi.Grid(version=haystackapi.VER_3_0)
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
     grid.extend([
         {
             'comment': 'A Remove (3.0 version)',
-            'value': haystackapi.REMOVE,
+            'value': shaystack.REMOVE,
         },
         {
             'comment': 'A NA',
-            'value': haystackapi.NA,
+            'value': shaystack.NA,
         },
         {
             'comment': 'An empty list',
@@ -612,7 +612,7 @@ def test_data_types_json_v3():
         },
         {
             'comment': 'A marker in a list',
-            'value': [haystackapi.MARKER],
+            'value': [shaystack.MARKER],
         },
         {
             'comment': 'Booleans',
@@ -620,18 +620,18 @@ def test_data_types_json_v3():
         },
         {
             'comment': 'References',
-            'value': [haystackapi.Ref('a-ref'), haystackapi.Ref('a-ref', 'a value')],
+            'value': [shaystack.Ref('a-ref'), shaystack.Ref('a-ref', 'a value')],
         },
         {
             'comment': 'A quantity',
-            'value': [haystackapi.Quantity(500, 'miles')],
+            'value': [shaystack.Quantity(500, 'miles')],
         },
         {
             'comment': 'A XStr',
-            'value': [haystackapi.XStr("hex", 'deadbeef')],
+            'value': [shaystack.XStr("hex", 'deadbeef')],
         },
     ])
-    grid_json = json.loads(haystackapi.dump(grid, mode=haystackapi.MODE_JSON))
+    grid_json = json.loads(shaystack.dump(grid, mode=shaystack.MODE_JSON))
     assert grid_json == {
         'meta': {
             'ver': '3.0'
@@ -683,17 +683,17 @@ def test_data_types_json_v3():
 
 
 def test_data_types_csv_v3():
-    grid = haystackapi.Grid(version=haystackapi.VER_3_0)
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
     grid.extend([
         {
             'comment': 'A Remove (3.0 version)',
-            'value': haystackapi.REMOVE,
+            'value': shaystack.REMOVE,
         },
         {
             'comment': 'A NA',
-            'value': haystackapi.NA,
+            'value': shaystack.NA,
         },
         {
             'comment': 'An empty list',
@@ -705,7 +705,7 @@ def test_data_types_csv_v3():
         },
         {
             'comment': 'A marker in a list',
-            'value': [haystackapi.MARKER],
+            'value': [shaystack.MARKER],
         },
         {
             'comment': 'Booleans',
@@ -713,18 +713,18 @@ def test_data_types_csv_v3():
         },
         {
             'comment': 'References',
-            'value': [haystackapi.Ref('a-ref'), haystackapi.Ref('a-ref', 'a value')],
+            'value': [shaystack.Ref('a-ref'), shaystack.Ref('a-ref', 'a value')],
         },
         {
             'comment': 'A quantity',
-            'value': [haystackapi.Quantity(500, 'miles')],
+            'value': [shaystack.Quantity(500, 'miles')],
         },
         {
             'comment': 'A XStr',
-            'value': [haystackapi.XStr("hex", 'deadbeef')],
+            'value': [shaystack.XStr("hex", 'deadbeef')],
         },
     ])
-    grid_csv = haystackapi.dump(grid, mode=haystackapi.MODE_CSV)
+    grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
     assert grid_csv == u'''comment,value
 "A Remove (3.0 version)",R
@@ -740,7 +740,7 @@ def test_data_types_csv_v3():
 
 
 def test_scalar_dict_zinc_v3():
-    grid = haystackapi.Grid(version=haystackapi.VER_3_0)
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
     grid.extend([
@@ -750,18 +750,18 @@ def test_scalar_dict_zinc_v3():
         },
         {
             'comment': 'A marker in a dict',
-            'value': {"marker": haystackapi.MARKER},
+            'value': {"marker": shaystack.MARKER},
         },
         {
             'comment': 'A references in a dict',
-            'value': {"ref": haystackapi.Ref('a-ref'), "ref2": haystackapi.Ref('a-ref', 'a value')},
+            'value': {"ref": shaystack.Ref('a-ref'), "ref2": shaystack.Ref('a-ref', 'a value')},
         },
         {
             'comment': 'A quantity in a dict',
-            'value': {"quantity": haystackapi.Quantity(500, 'miles')},
+            'value': {"quantity": shaystack.Quantity(500, 'miles')},
         },
     ])
-    grid_str = haystackapi.dump(grid, mode=haystackapi.MODE_ZINC)
+    grid_str = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
     assert grid_str == ("ver:\"3.0\"\n"
                         "comment,value\n"
                         "\"An empty dict\",{}\n"
@@ -775,7 +775,7 @@ def test_scalar_dict_zinc_v3():
 
 
 def test_scalar_dict_json_v3():
-    grid = haystackapi.Grid(version=haystackapi.VER_3_0)
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
     grid.extend([
@@ -785,18 +785,18 @@ def test_scalar_dict_json_v3():
         },
         {
             'comment': 'A marker in a dict',
-            'value': {"marker": haystackapi.MARKER},
+            'value': {"marker": shaystack.MARKER},
         },
         {
             'comment': 'A references in a dict',
-            'value': {"ref": haystackapi.Ref('a-ref'), "ref2": haystackapi.Ref('a-ref', 'a value')},
+            'value': {"ref": shaystack.Ref('a-ref'), "ref2": shaystack.Ref('a-ref', 'a value')},
         },
         {
             'comment': 'A quantity in a dict',
-            'value': {"quantity": haystackapi.Quantity(500, 'miles')},
+            'value': {"quantity": shaystack.Quantity(500, 'miles')},
         },
     ])
-    grid_json = json.loads(haystackapi.dump(grid, mode=haystackapi.MODE_JSON))
+    grid_json = json.loads(shaystack.dump(grid, mode=shaystack.MODE_JSON))
     assert grid_json == {
         'meta': {
             'ver': '3.0'
@@ -827,7 +827,7 @@ def test_scalar_dict_json_v3():
 
 
 def test_scalar_dict_csv_v3():
-    grid = haystackapi.Grid(version=haystackapi.VER_3_0)
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
     grid.extend([
@@ -837,18 +837,18 @@ def test_scalar_dict_csv_v3():
         },
         {
             'comment': 'A marker in a dict',
-            'value': {"marker": haystackapi.MARKER},
+            'value': {"marker": shaystack.MARKER},
         },
         {
             'comment': 'A references in a dict',
-            'value': {"ref": haystackapi.Ref('a-ref'), "ref2": haystackapi.Ref('a-ref', 'a value')},
+            'value': {"ref": shaystack.Ref('a-ref'), "ref2": shaystack.Ref('a-ref', 'a value')},
         },
         {
             'comment': 'A quantity in a dict',
-            'value': {"quantity": haystackapi.Quantity(500, 'miles')},
+            'value': {"quantity": shaystack.Quantity(500, 'miles')},
         },
     ])
-    grid_csv = haystackapi.dump(grid, mode=haystackapi.MODE_CSV)
+    grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
     assert grid_csv == u'''comment,value
 "An empty dict","{}"
@@ -864,8 +864,8 @@ def test_scalar_dict_csv_v3():
 def test_scalar_dict_zinc_ver():
     # Test that versions are respected.
     try:
-        haystackapi.dump_scalar({"a": "b"},
-                                mode=haystackapi.MODE_ZINC, version=haystackapi.VER_2_0)
+        shaystack.dump_scalar({"a": "b"},
+                              mode=shaystack.MODE_ZINC, version=shaystack.VER_2_0)
         assert False, 'Serialised a list in Haystack v2.0'
     except ValueError:
         pass
@@ -874,8 +874,8 @@ def test_scalar_dict_zinc_ver():
 def test_scalar_dict_json_ver():
     # Test that versions are respected.
     try:
-        haystackapi.dump_scalar({"a": "b"},
-                                mode=haystackapi.MODE_JSON, version=haystackapi.VER_2_0)
+        shaystack.dump_scalar({"a": "b"},
+                              mode=shaystack.MODE_JSON, version=shaystack.VER_2_0)
         assert False, 'Serialised a list in Haystack v2.0'
     except ValueError:
         pass
@@ -883,8 +883,8 @@ def test_scalar_dict_json_ver():
 
 def test_scalar_unknown_zinc():
     try:
-        haystackapi.dump_scalar(haystackapi.VER_2_0,
-                                mode=haystackapi.MODE_ZINC, version=haystackapi.VER_2_0)
+        shaystack.dump_scalar(shaystack.VER_2_0,
+                              mode=shaystack.MODE_ZINC, version=shaystack.VER_2_0)
         assert False, 'Serialised a list in Haystack v2.0'
     except NotImplementedError:
         pass
@@ -892,8 +892,8 @@ def test_scalar_unknown_zinc():
 
 def test_scalar_unknown_json():
     try:
-        haystackapi.dump_scalar(haystackapi.VER_2_0,
-                                mode=haystackapi.MODE_JSON, version=haystackapi.VER_2_0)
+        shaystack.dump_scalar(shaystack.VER_2_0,
+                              mode=shaystack.MODE_JSON, version=shaystack.VER_2_0)
         assert False, 'Serialised a list in Haystack v2.0'
     except NotImplementedError:
         pass
@@ -901,8 +901,8 @@ def test_scalar_unknown_json():
 
 def test_scalar_unknown_csv():
     try:
-        haystackapi.dump_scalar(haystackapi.VER_2_0,
-                                mode=haystackapi.MODE_CSV, version=haystackapi.VER_2_0)
+        shaystack.dump_scalar(shaystack.VER_2_0,
+                              mode=shaystack.MODE_CSV, version=shaystack.VER_2_0)
         assert False, 'Serialised a list in Haystack v2.0'
     except NotImplementedError:
         pass
@@ -910,7 +910,7 @@ def test_scalar_unknown_csv():
 
 def test_list_zinc_v2():
     try:
-        grid = haystackapi.Grid(version=haystackapi.VER_2_0)
+        grid = shaystack.Grid(version=shaystack.VER_2_0)
         grid.column['comment'] = {}
         grid.column['value'] = {}
         grid.extend([
@@ -919,7 +919,7 @@ def test_list_zinc_v2():
                 'value': [],
             }
         ])
-        haystackapi.dump(grid, mode=haystackapi.MODE_ZINC)
+        shaystack.dump(grid, mode=shaystack.MODE_ZINC)
         assert False, 'Project Haystack 2.0 doesn\'t support lists'
     except ValueError:
         pass
@@ -927,7 +927,7 @@ def test_list_zinc_v2():
 
 def test_list_json_v2():
     try:
-        grid = haystackapi.Grid(version=haystackapi.VER_2_0)
+        grid = shaystack.Grid(version=shaystack.VER_2_0)
         grid.column['comment'] = {}
         grid.column['value'] = {}
         grid.extend([
@@ -936,7 +936,7 @@ def test_list_json_v2():
                 'value': [],
             }
         ])
-        haystackapi.dump(grid, mode=haystackapi.MODE_JSON)
+        shaystack.dump(grid, mode=shaystack.MODE_JSON)
         assert False, 'Project Haystack 2.0 doesn\'t support lists'
     except ValueError:
         pass
@@ -944,7 +944,7 @@ def test_list_json_v2():
 
 def test_list_csv_v2():
     try:
-        grid = haystackapi.Grid(version=haystackapi.VER_2_0)
+        grid = shaystack.Grid(version=shaystack.VER_2_0)
         grid.column['comment'] = {}
         grid.column['value'] = {}
         grid.extend([
@@ -953,7 +953,7 @@ def test_list_csv_v2():
                 'value': [],
             }
         ])
-        haystackapi.dump(grid, mode=haystackapi.MODE_CSV)
+        shaystack.dump(grid, mode=shaystack.MODE_CSV)
         assert False, 'Project Haystack 2.0 doesn\'t support lists'
     except ValueError:
         pass
@@ -961,7 +961,7 @@ def test_list_csv_v2():
 
 def test_dict_zinc_v2():
     try:
-        grid = haystackapi.Grid(version=haystackapi.VER_2_0)
+        grid = shaystack.Grid(version=shaystack.VER_2_0)
         grid.column['comment'] = {}
         grid.column['value'] = {}
         grid.extend([
@@ -970,7 +970,7 @@ def test_dict_zinc_v2():
                 'value': {},
             }
         ])
-        haystackapi.dump(grid, mode=haystackapi.MODE_ZINC)
+        shaystack.dump(grid, mode=shaystack.MODE_ZINC)
         assert False, 'Project Haystack 2.0 doesn\'t support dict'
     except ValueError:
         pass
@@ -978,7 +978,7 @@ def test_dict_zinc_v2():
 
 def test_dict_json_v2():
     try:
-        grid = haystackapi.Grid(version=haystackapi.VER_2_0)
+        grid = shaystack.Grid(version=shaystack.VER_2_0)
         grid.column['comment'] = {}
         grid.column['value'] = {}
         grid.extend([
@@ -987,7 +987,7 @@ def test_dict_json_v2():
                 'value': {},
             }
         ])
-        haystackapi.dump(grid, mode=haystackapi.MODE_JSON)
+        shaystack.dump(grid, mode=shaystack.MODE_JSON)
         assert False, 'Project Haystack 2.0 doesn\'t support dict'
     except ValueError:
         pass
@@ -995,7 +995,7 @@ def test_dict_json_v2():
 
 def test_dict_csv_v2():
     try:
-        grid = haystackapi.Grid(version=haystackapi.VER_2_0)
+        grid = shaystack.Grid(version=shaystack.VER_2_0)
         grid.column['comment'] = {}
         grid.column['value'] = {}
         grid.extend([
@@ -1004,7 +1004,7 @@ def test_dict_csv_v2():
                 'value': {},
             }
         ])
-        haystackapi.dump(grid, mode=haystackapi.MODE_CSV)
+        shaystack.dump(grid, mode=shaystack.MODE_CSV)
         assert False, 'Project Haystack 2.0 doesn\'t support dict'
     except ValueError:
         pass
@@ -1013,29 +1013,29 @@ def test_dict_csv_v2():
 def test_scalar_zinc():
     # No need to be exhaustive, the underlying function is tested heavily by
     # the grid dump tests.
-    assert haystackapi.dump_scalar(haystackapi.Ref('areference', 'a display name'),
-                                   mode=haystackapi.MODE_ZINC) == '@areference "a display name"'
+    assert shaystack.dump_scalar(shaystack.Ref('areference', 'a display name'),
+                                 mode=shaystack.MODE_ZINC) == '@areference "a display name"'
 
 
 def test_scalar_json():
     # No need to be exhaustive, the underlying function is tested heavily by
     # the grid dump tests.
-    assert haystackapi.dump_scalar(haystackapi.Ref('areference', 'a display name'),
-                                   mode=haystackapi.MODE_JSON) == '"r:areference a display name"'
+    assert shaystack.dump_scalar(shaystack.Ref('areference', 'a display name'),
+                                 mode=shaystack.MODE_JSON) == '"r:areference a display name"'
 
 
 def test_scalar_csv():
     # No need to be exhaustive, the underlying function is tested heavily by
     # the grid dump tests.
-    assert haystackapi.dump_scalar(haystackapi.Ref('areference', 'a display name'),
-                                   mode=haystackapi.MODE_CSV) == '@areference a display name'
+    assert shaystack.dump_scalar(shaystack.Ref('areference', 'a display name'),
+                                 mode=shaystack.MODE_CSV) == '@areference a display name'
 
 
 def test_scalar_list_zinc_ver():
     # Test that versions are respected.
     try:
-        haystackapi.dump_scalar(["a list is not allowed in v2.0"],
-                                mode=haystackapi.MODE_ZINC, version=haystackapi.VER_2_0)
+        shaystack.dump_scalar(["a list is not allowed in v2.0"],
+                              mode=shaystack.MODE_ZINC, version=shaystack.VER_2_0)
         assert False, 'Serialised a list in Haystack v2.0'
     except ValueError:
         pass
@@ -1044,8 +1044,8 @@ def test_scalar_list_zinc_ver():
 def test_scalar_list_json_ver():
     # Test that versions are respected.
     try:
-        haystackapi.dump_scalar(["a list is not allowed in v2.0"],
-                                mode=haystackapi.MODE_JSON, version=haystackapi.VER_2_0)
+        shaystack.dump_scalar(["a list is not allowed in v2.0"],
+                              mode=shaystack.MODE_JSON, version=shaystack.VER_2_0)
         assert False, 'Serialised a list in Haystack v2.0'
     except ValueError:
         pass
@@ -1054,8 +1054,8 @@ def test_scalar_list_json_ver():
 def test_scalar_list_na_ver_zinc():
     # Test that versions are respected.
     try:
-        haystackapi.dump_scalar(haystackapi.NA,
-                                mode=haystackapi.MODE_ZINC, version=haystackapi.VER_2_0)
+        shaystack.dump_scalar(shaystack.NA,
+                              mode=shaystack.MODE_ZINC, version=shaystack.VER_2_0)
         assert False, 'Serialised a NA in Haystack v2.0'
     except ValueError:
         pass
@@ -1064,8 +1064,8 @@ def test_scalar_list_na_ver_zinc():
 def test_scalar_list_na_ver_json():
     # Test that versions are respected.
     try:
-        haystackapi.dump_scalar(haystackapi.NA,
-                                mode=haystackapi.MODE_JSON, version=haystackapi.VER_2_0)
+        shaystack.dump_scalar(shaystack.NA,
+                              mode=shaystack.MODE_JSON, version=shaystack.VER_2_0)
         assert False, 'Serialised a NA in Haystack v2.0'
     except ValueError:
         pass
@@ -1074,8 +1074,8 @@ def test_scalar_list_na_ver_json():
 def test_scalar_list_na_ver_csv():
     # Test that versions are respected.
     try:
-        haystackapi.dump_scalar(haystackapi.NA,
-                                mode=haystackapi.MODE_CSV, version=haystackapi.VER_2_0)
+        shaystack.dump_scalar(shaystack.NA,
+                              mode=shaystack.MODE_CSV, version=shaystack.VER_2_0)
         assert False, 'Serialised a NA in Haystack v2.0'
     except ValueError:
         pass
@@ -1084,8 +1084,8 @@ def test_scalar_list_na_ver_csv():
 def test_scalar_na_zinc_ver():
     # Test that versions are respected.
     try:
-        haystackapi.dump_scalar(haystackapi.NA,
-                                mode=haystackapi.MODE_ZINC, version=haystackapi.VER_2_0)
+        shaystack.dump_scalar(shaystack.NA,
+                              mode=shaystack.MODE_ZINC, version=shaystack.VER_2_0)
         assert False, 'Serialised a NA in Haystack v2.0'
     except ValueError:
         pass
@@ -1094,8 +1094,8 @@ def test_scalar_na_zinc_ver():
 def test_scalar_na_json_ver():
     # Test that versions are respected.
     try:
-        haystackapi.dump_scalar(haystackapi.NA,
-                                mode=haystackapi.MODE_JSON, version=haystackapi.VER_2_0)
+        shaystack.dump_scalar(shaystack.NA,
+                              mode=shaystack.MODE_JSON, version=shaystack.VER_2_0)
         assert False, 'Serialised a NA in Haystack v2.0'
     except ValueError:
         pass
@@ -1104,29 +1104,29 @@ def test_scalar_na_json_ver():
 def test_scalar_na_csv_ver():
     # Test that versions are respected.
     try:
-        haystackapi.dump_scalar(haystackapi.NA,
-                                mode=haystackapi.MODE_CSV, version=haystackapi.VER_2_0)
+        shaystack.dump_scalar(shaystack.NA,
+                              mode=shaystack.MODE_CSV, version=shaystack.VER_2_0)
         assert False, 'Serialised a NA in Haystack v2.0'
     except ValueError:
         pass
 
 
 def test_grid_types_zinc():
-    innergrid = haystackapi.Grid(version=haystackapi.VER_3_0)
+    innergrid = shaystack.Grid(version=shaystack.VER_3_0)
     innergrid.column['comment'] = {}
     innergrid.extend([
         {
             'comment': 'A innergrid',
         },
     ])
-    grid = haystackapi.Grid(version=haystackapi.VER_3_0)
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['inner'] = {}
     grid.extend([
         {
             'inner': innergrid,
         },
     ])
-    grid_str = haystackapi.dump(grid, mode=haystackapi.MODE_ZINC)
+    grid_str = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
     assert grid_str == ('ver:"3.0"\n'
                         'inner\n'
                         '<<ver:"3.0"\n'
@@ -1136,21 +1136,21 @@ def test_grid_types_zinc():
 
 
 def test_grid_types_json():
-    innergrid = haystackapi.Grid(version=haystackapi.VER_3_0)
+    innergrid = shaystack.Grid(version=shaystack.VER_3_0)
     innergrid.column['comment'] = {}
     innergrid.extend([
         {
             'comment': 'A innergrid',
         },
     ])
-    grid = haystackapi.Grid(version=haystackapi.VER_3_0)
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['inner'] = {}
     grid.extend([
         {
             'inner': innergrid,
         },
     ])
-    grid_str = haystackapi.dump(grid, mode=haystackapi.MODE_JSON)
+    grid_str = shaystack.dump(grid, mode=shaystack.MODE_JSON)
     grid_json = json.loads(grid_str)
     assert grid_json == {
         'meta': {'ver': '3.0'},
@@ -1172,21 +1172,21 @@ def test_grid_types_json():
 
 
 def test_grid_types_csv():
-    innergrid = haystackapi.Grid(version=haystackapi.VER_3_0)
+    innergrid = shaystack.Grid(version=shaystack.VER_3_0)
     innergrid.column['comment'] = {}
     innergrid.extend([
         {
             'comment': 'A innergrid',
         },
     ])
-    grid = haystackapi.Grid(version=haystackapi.VER_3_0)
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['inner'] = {}
     grid.extend([
         {
             'inner': innergrid,
         },
     ])
-    grid_csv = haystackapi.dump(grid, mode=haystackapi.MODE_CSV)
+    grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
     assert grid_csv == '''inner
 "<<ver:""3.0""

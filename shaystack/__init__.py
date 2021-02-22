@@ -81,4 +81,4 @@ __copyright__ = 'Copyright 2016-2020, Engie Digital & VRT System'
 __credits__ = ['See AUTHORS']
 __license__ = 'BSD'
 __maintainer__ = 'Philippe PRADOS'
-__email__ = 'haystackapi@prados.fr'
+__email__ = 'shaystack@prados.fr'

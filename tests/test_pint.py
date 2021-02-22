@@ -1,6 +1,6 @@
 import importlib.resources as pkg_resources
 
-import haystackapi
+import shaystack
 
 
 def _load_haystack_units():
@@ -26,7 +26,7 @@ def test_all_units():
     for _, alias in haystack_unit:
         for symbol in alias:
             try:
-                haystackapi.Quantity(1, symbol)  # Try to convert
+                shaystack.Quantity(1, symbol)  # Try to convert
             except Exception as error:  # pylint: disable=broad-except
                 not_defined.append(symbol)
                 print("***", error, symbol)

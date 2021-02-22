@@ -21,7 +21,6 @@ from typing import Optional as Typing_Optional
 
 import iso8601
 import pyparsing as pp
-import six
 
 from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, NA, REMOVE, Ref, XStr
 from .grid import Grid
@@ -679,12 +678,9 @@ def parse_scalar(scalar_data: str, version: Version = LATEST_VER) -> Any:
         return hs_scalar[version].parseString(scalar_data, parseAll=True)[0]
     except pp.ParseException as parse_exception:
         # Raise a new exception with the appropriate line number.
-        six.reraise(ZincParseException,
-                    ZincParseException(
-                        'Failed to parse scalar: %s' % _reformat_exception(parse_exception),
-                        scalar_data, 1, parse_exception.col),
-                    sys.exc_info()[2])
-
+        raise ZincParseException(
+            'Failed to parse scalar: %s' % _reformat_exception(parse_exception),
+            scalar_data, 1, parse_exception.col) from parse_exception
     except:
         LOG.debug('Failing scalar data: %r (version %r)',
                   scalar_data, version)

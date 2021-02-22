@@ -1,4 +1,4 @@
-from haystackapi.ops import _get_best_encoding_match
+from shaystack.ops import _get_best_encoding_match
 
 
 def test_accept_encoding_simple():

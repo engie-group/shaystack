@@ -3,9 +3,9 @@ from typing import Dict, Any, Optional
 
 from overrides import overrides
 
-from haystackapi import Grid
-from haystackapi import Ref
-from haystackapi.providers import HaystackInterface
+from shaystack import Grid
+from shaystack import Ref
+from shaystack.providers import HaystackInterface
 
 
 class Provider(HaystackInterface):

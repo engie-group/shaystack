@@ -8,7 +8,7 @@
 Add the persistance of time-series with TS database.
 
 Set the HAYSTACK_TS with Time-series database connection URL,
-(timestream://HaystackAPIDemo/?mem_ttl=1&mag_ttl=100#haystack)
+(timestream://HaystackDemo/?mem_ttl=1&mag_ttl=100#haystack)
 """
 import os
 from datetime import datetime, date, time

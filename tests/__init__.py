@@ -2,10 +2,10 @@ from datetime import datetime
 
 import pytz
 
-from haystackapi.datatypes import Ref
-from haystackapi.dumper import dump
-from haystackapi.grid import Grid, VER_3_0
-from haystackapi.parser import MODE_ZINC
+from shaystack.datatypes import Ref
+from shaystack.dumper import dump
+from shaystack.grid import Grid, VER_3_0
+from shaystack.parser import MODE_ZINC
 
 
 def _get_mock_s3():

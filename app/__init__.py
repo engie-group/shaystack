@@ -18,8 +18,8 @@ try:
     from flask_cors import CORS
     from app.blueprint_haystack import haystack_blueprint
 except ImportError as ex:
-    print('To start haystackapi, use \'pip install "haystackapi[flask]"\' or '
-          '\'pip install "haystackapi[flask,graphql]"\' and set \'HAYSTACK_PROVIDER\' variable',
+    print('To start shift-4-haystack, use \'pip install "shaystack[flask]"\' or '
+          '\'pip install "shaystack[flask,graphql]"\' and set \'HAYSTACK_PROVIDER\' variable',
           file=sys.stderr)
     sys.exit(-1)
 
@@ -31,7 +31,7 @@ try:
     USE_GRAPHQL = True
 except ImportError:
     print("To use GraphQL feature, use "
-          "'pip install \"haystackapi[graphql]\"'", file=sys.stderr)
+          "'pip install \"shaystack[graphql]\"'", file=sys.stderr)
     sys.exit(-1)
 
 app = Flask(__name__)
@@ -71,7 +71,7 @@ def main(host: str, port: int) -> int:
         port: Port to listen
     """
     if not "HAYSTACK_PROVIDER" in os.environ:
-        print("Set 'HAYSTACK_PROVIDER' to use 'haystackapi'", file=sys.stderr)
+        print("Set 'HAYSTACK_PROVIDER' to use Shift-4-haystack", file=sys.stderr)
         sys.exit(-1)
 
     debug = (os.environ.get("FLASK_DEBUG", "0") == "1")

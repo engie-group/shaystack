@@ -559,7 +559,7 @@ min-public-methods=2
 
 # List of modules that can be imported at any level, not just the top level
 # one.
-allow-any-import-level=haystackapi.grid_diff
+allow-any-import-level=shaystack.grid_diff
 
 # Allow wildcard imports from modules that define __all__.
 allow-wildcard-with-all=no

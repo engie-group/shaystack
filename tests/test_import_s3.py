@@ -3,8 +3,8 @@ from io import BytesIO
 
 import pytz
 
-from haystackapi import Grid, MODE_ZINC, parse, dump
-from haystackapi.providers.import_s3 import merge_timeseries
+from shaystack import Grid, MODE_ZINC, parse, dump
+from shaystack.providers.import_s3 import merge_timeseries
 
 
 def _get_mock_s3():

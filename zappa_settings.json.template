@@ -30,7 +30,7 @@
       "ChangeLog","AUTHORS",
       "*LICENSE",
       "requirements.txt",
-      "haystack-front-demo",
+      "shaystack-front-demo",
       "haystackapi-demo",
       "__pycache__",
       "*.postman*",

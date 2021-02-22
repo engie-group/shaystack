@@ -10,9 +10,9 @@ from typing import cast
 
 import pytz
 
-from haystackapi.providers import get_provider
-from haystackapi.providers.db_postgres import _sql_filter as sql_filter
-from haystackapi.providers.sql import Provider as SQLProvider
+from shaystack.providers import get_provider
+from shaystack.providers.db_postgres import _sql_filter as sql_filter
+from shaystack.providers.sql import Provider as SQLProvider
 
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "WARNING"))
 
@@ -22,7 +22,7 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 # If .env set the HAYSTACK_DB to postgres, check to execute the sql request
 def _check_pg(sql_request: str):
     if os.environ.get('HAYSTACK_DB', '').startswith("postgres"):
-        provider = cast(SQLProvider, get_provider("haystackapi.providers.sql"))
+        provider = cast(SQLProvider, get_provider("shaystack.providers.sql"))
         conn = provider.get_connect()
         try:
             conn.cursor().execute(sql_request)

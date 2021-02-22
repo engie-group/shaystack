@@ -1,4 +1,6 @@
-# Python Haystack API
+![Shift-Haystack](logo.png)
+
+# Shift-for-Haystack API
 
 | The API is not stable and can be changed without any notice. |
 | --------------------------------------------------------- |
@@ -13,7 +15,7 @@ export PIP_INDEX_URL=https://test.pypi.org/simple
 export PIP_EXTRA_INDEX_URL=https://pypi.org/simple
 ```
 
-Haystackapi is a set of API to implement [Haystack project specification](https://project-haystack.org/). It's
+Shift-for-Haystack is a set of API to implement [Haystack project specification](https://project-haystack.org/). It's
 compatible with moderne Python with typing, Flask server in data center, Edge (Raspberry?) or in AWS Lambda function.
 
 ## About Haystack, and who is it for
@@ -46,7 +48,7 @@ Haystack data you host.
     - Local or remote file system (including AWS S3)
     - Local or remote relational database, with optional AWS Time Stream use for Time Series
     - Other custom data location can be handled by extending
-      `haystackapi.providers.HaystackInterface`
+      `shaystack.providers.HaystackInterface`
 
 # History
 
@@ -57,7 +59,8 @@ To see the similarities and differences between the two project, click [here](hs
 
 # Client side: Haystack client python module
 
-To try the client side python module included in this project, the best way is to download a sample of haystack files. First, create a working directory.
+To try the client side python module included in this project, the best way is to download a sample of haystack files.
+First, create a working directory.
 
 ```console
 $ mkdir $TMP/haystack
@@ -65,7 +68,7 @@ $ cd $TMP/haystack
 ```
 
 Download and
-unzip [sample zip file](https://downgit.github.io/#/home?url=https://github.com/pprados/haystackapi/tree/develop/sample)
+unzip [sample zip file](https://downgit.github.io/#/home?url=https://github.com/pprados/shaystack/tree/develop/sample)
 in this directory.
 
 ```console
@@ -87,35 +90,35 @@ $ source venv/bin/activate
 Then, install the module with all options
 
 ```console
-$ pip install "haystackapi[flask,graphql,lambda]"
+$ pip install "shaystack[flask,graphql,lambda]"
 ```
 
 ## Inspect the datas with code
 
-[`haystack.ipynb`](https://github.com/pprados/haystackapi/blob/develop/haystack.ipynb) jupyter notebook contains code to
+[`haystack.ipynb`](https://github.com/pprados/shaystack/blob/develop/haystack.ipynb) jupyter notebook contains code to
 read, filter, manipulate and print `Grid` objects containing haystack data.
 
 # Python API
 
-The [documentation of the API is here](api/haystackapi/).
+The [documentation of the API is here](api/shaystack/).
 
 # Data science
 
 It's easy to convert a grid to a dataframe.
 
 ```python
-import haystackapi
+import shaystack
 import panda
 
 with open("file.zinc") as f:
-    grid = haystackapi.parse(f.read(), haystackapi.MODE_ZINC)
+    grid = shaystack.parse(f.read(), shaystack.MODE_ZINC)
 
 df = panda.DataFrame(grid.filter("point and co2e"))  # Convert grid to data frame
 ```
 
 # Features
 
-Haystackapi is agile and can be deployed in different scenarios. Choose an option for each feature.
+Shift-4-Haystack is agile and can be deployed in different scenarios. Choose an option for each feature.
 
 | Python version |
 |:------:|
@@ -167,7 +170,7 @@ This implementation can offer two API endpoints:
   - Available on `http://<host>:<port>/haystack`
 - GraphQL
     - Available on `http://<host>:<port>/graphql` and compliant
-      with [`schema.graphql`](https://github.com/pprados/haystackapi/blob/develop/schema.graphql)
+      with [`schema.graphql`](https://github.com/pprados/shaystack/blob/develop/schema.graphql)
 
 This API can negotiate:
 
@@ -196,38 +199,40 @@ datas:
 ### Installing
 
 Using `pip install`. You can add the support of some options:
-- `pip install "haystackapi[flask]"` allows you to use a local [Flask](https://flask.palletsprojects.com/en/1.1.x/) server
-- `pip install "haystackapi[aws]"` allows you to:
+
+- `pip install "shaystack[flask]"` allows you to use a local [Flask](https://flask.palletsprojects.com/en/1.1.x/)
+  server
+- `pip install "shaystack[aws]"` allows you to:
     - Serve the API in an AWS Lambda function
     - Expose haystack data located in an AWS S3 Bucket
-- `pip install "haystackapi[flask,graphql]"` allows you to:
+- `pip install "shaystack[flask,graphql]"` allows you to:
     - Expose the `/graphql` endpoint in addition to the classical `/haystack` endpoint
 
-You can mix two or more options, if you need them all, use `pip install "haystackapi[flask,graphql,aws]"`
+You can mix two or more options, if you need them all, use `pip install "shaystack[flask,graphql,aws]"`
 
 ### Choosing and configuring your provider
 
 Depending on where and how your haystack data is stored, you need to choose an existing Provider or implement your own
-by extending `haystackapi.providers.HaystackInterface`
+by extending `shaystack.providers.HaystackInterface`
 
 |Where is data stored|Configuration|Miscellaneous|
 |---|---|---|
-|No data, just testing|`HAYSTACK_PROVIDER=haystackapi.providers.ping haystackapi`||
-|Data on http server|`HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=http://... haystackapi`|[More...](url_provider.md)|
-|Data on ftp server|`HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=ftp://... haystackapi`|[More...](url_provider.md)|
-|Data on local filesystem|`HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=file://... haystackapi`|[More...](url_provider.md)|
-|Data on AWS S3 Bucket|`HAYSTACK_PROVIDER=haystackapi.providers.url HAYSTACK_URL=s3://... haystackapi`|Remember to install aws support and boto3 python module. [More...](url_provider.md)|
-|Data in a SuperSQLite database|`HAYSTACK_PROVIDER=haystackapi.providers.sql HAYSTACK_URL=sqlite3://... haystackapi`|Remember to install supersqlite python module. [More...](url_provider.md)|
-|Data in a Postgresql database|`HAYSTACK_PROVIDER=haystackapi.providers.sql HAYSTACK_URL=postgres://... haystackapi`|Remember to install psycopg2 python module. [More...](url_provider.md)|
-|Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=haystackapi.providers.sql_ts HAYSTACK_URL=postgres://... HAYSTACK_TS=timestream:://... haystackapi`|[More...](sql_ts_provider.md)|
-|Custom|`HAYSTACK_PROVIDER=haystackapi.providers.<your module name>`|Write your own subclass of `haystackapi.providers.HaystackInterface haystackapi`. Non implemented methods will be automatically excluded in [`ops`](https://project-haystack.org/doc/Ops#ops) operation output|
+|No data, just testing|`HAYSTACK_PROVIDER=shaystack.providers.ping shaystack`||
+|Data on http server|`HAYSTACK_PROVIDER=shaystack.providers.url HAYSTACK_URL=http://... shaystack`|[More...](url_provider.md)|
+|Data on ftp server|`HAYSTACK_PROVIDER=shaystack.providers.url HAYSTACK_URL=ftp://... shaystack`|[More...](url_provider.md)|
+|Data on local filesystem|`HAYSTACK_PROVIDER=shaystack.providers.url HAYSTACK_URL=file://... shaystack`|[More...](url_provider.md)|
+|Data on AWS S3 Bucket|`HAYSTACK_PROVIDER=shaystack.providers.url HAYSTACK_URL=s3://... shaystack`|Remember to install aws support and boto3 python module. [More...](url_provider.md)|
+|Data in a SuperSQLite database|`HAYSTACK_PROVIDER=shaystack.providers.sql HAYSTACK_URL=sqlite3://... shaystack`|Remember to install supersqlite python module. [More...](url_provider.md)|
+|Data in a Postgresql database|`HAYSTACK_PROVIDER=shaystack.providers.sql HAYSTACK_URL=postgres://... shaystack`|Remember to install psycopg2 python module. [More...](url_provider.md)|
+|Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.sql_ts HAYSTACK_URL=postgres://... HAYSTACK_TS=timestream:://... shaystack`|[More...](sql_ts_provider.md)|
+|Custom|`HAYSTACK_PROVIDER=shaystack.providers.<your module name>`|Write your own subclass of `shaystack.providers.HaystackInterface shaystack`. Non implemented methods will be automatically excluded in [`ops`](https://project-haystack.org/doc/Ops#ops) operation output|
 
 Note: Existing providers are not connected to IOT for simplicity.
 If you want to connect the haystack API with IOT, you must implement a custom provider. 
 
 ### Starting the server
 
-Set some environment variables, and use the command `haystackapi` (check `haystackapi --help` for parameters)
+Set some environment variables, and use the command `shaystack` (check `shaystack --help` for parameters)
 
 We propose different providers, with the objective in mind:
 
@@ -247,11 +252,11 @@ For the demonstration,
 ```console
 $ # Demo
 $ # - Install components
-$ pip install 'haystackapi[graphql]'
+$ pip install 'shaystack[graphql]'
 $ # - Expose haystack with GraphQL API
-$ HAYSTACK_PROVIDER=haystackapi.providers.url \
+$ HAYSTACK_PROVIDER=shaystack.providers.url \
   HAYSTACK_URL=sample/carytown.zinc \
-  haystackapi
+  shaystack
 ```
 
 In another shell
@@ -274,7 +279,7 @@ The same filter was apply for each API.
 ### Using GraphQL API
 
 All the providers can be invoked with a GraphQL API in place of the standard Haystack Rest API. After installing the
-component with the good option (`pip install 'haystackapi[graphql]'`), start the provider and use the url
+component with the good option (`pip install 'shaystack[graphql]'`), start the provider and use the url
 `http://localhost:3000/graphql`. You can see an interface to use the ontology.
 
 For the demonstration,
@@ -282,11 +287,11 @@ For the demonstration,
 ```console
 $ # Demo
 $ # - Install components
-$ pip install 'haystackapi[graphql]'
+$ pip install 'shaystack[graphql]'
 $ # - Expose haystack with GraphQL API
-$ HAYSTACK_PROVIDER=haystackapi.providers.url \
+$ HAYSTACK_PROVIDER=shaystack.providers.url \
   HAYSTACK_URL=sample/carytown.zinc \
-  haystackapi
+  shaystack
 ```
 
 In another shell
@@ -374,23 +379,23 @@ The `Dockerfile` can be used to generate an image with a set of parameter.
 
 ```console
 $ # Get docker file
-$ wget https://github.com/pprados/haystackapi/blob/develop/Dockerfile
+$ wget https://github.com/pprados/shaystack/blob/develop/Dockerfile
 $ # Build the image
-$ docker build -t haystackapi .
+$ docker build -t shaystack .
 $ # Run and customize the image
 $ docker run -p 3000:3000 \
-  -e HAYSTACK_PROVIDER=haystackapi.providers.url \
+  -e HAYSTACK_PROVIDER=shaystack.providers.url \
   -e HAYSTACK_URL=https://haystackapi.s3.eu-west-3.amazonaws.com/carytown.zinc \
   -e HAYSTACK_DB=sqlite:///test.db#haystack \
   -e HAYSTACK_DB_SECRET= \
   -e REFRESH=15 \
-  haystackapi 
+  shaystack 
 ```
 
 ## Using with Excel or PowerBI
 
 Because the default negotiated format is CSV, you can call the REST API with PowerQuery or Excel. Try the sample file
-['HaystackAPI.xlsm'](HaystackAPI.xlsm) and set a correct haystack API url
+['SHaystack.xlsm'](SHaystack.xlsm) and set a correct haystack API url
 (http://10.0.2.2:3000/haystack with a local virtual windows). You can load all the data inside Excel table.
 
 # Optional part
@@ -403,13 +408,13 @@ Haystack component propose different optional parts.
 | graphql | Expose Graphql API with Flask HTTP server       |
 | lambda  | Add compatibility with AWS Lambda and S3 bucket |
 
-Use `pip install "haystackapi[_<options>_]"`, like:
+Use `pip install "shaystack[_<options>_]"`, like:
 
-- `pip install "haystackapi[flask,graphql,lambda]"`
+- `pip install "shaystack[flask,graphql,lambda]"`
 
 # Data types
 
-`haystackapi` converts the common Python data types:
+Shift-4-haystack converts the common Python data types:
 
 ### `Null`, `Boolean`, `Date`, `Time`, `Date/Time` and `strings`.
 
@@ -419,13 +424,13 @@ possible.
 ### `Numbers`
 
 Numbers without a unit are represented as `float` objects. Numbers with a unit are represented by
-the `haystackapi.Quantity` custom type which has two attributes: `value` and `unit`. The unit use
+the `shaystack.Quantity` custom type which has two attributes: `value` and `unit`. The unit use
 the [Pint](https://pint.readthedocs.io/en/stable/) framework to manage and convert unit.
 
 ### `Marker` and `Remove`
 
-These are singletons, represented by `haystackapi.MARKER` and `haystackapi.REMOVE`. They behave and are intended to be
-used like the `None` object.
+These are singletons, represented by `shaystack.MARKER` and `shaystack.REMOVE`. They behave and are intended to be used
+like the `None` object.
 
 ### `Bin` and `XBin`
 
@@ -437,12 +442,12 @@ This is a classical `Uri` for Haystack
 
 ### `Ref`
 
-Represented by the custom type `haystackapi.Ref` which has `name` (`str`)
+Represented by the custom type `shaystack.Ref` which has `name` (`str`)
 and `value` attributes. The `name` must be conforme with the haystack specification.
 
 ### `Coordinate`
 
-Represented by the custom type `haystackapi.Coordinate`, which has `latitude` and
+Represented by the custom type `shaystack.Coordinate`, which has `latitude` and
 `longitude` types (both `float`)
 
 ### Collection `List`, `Dict` or `Grid`

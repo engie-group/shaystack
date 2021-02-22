@@ -1,4 +1,4 @@
-# Image to build Haystackapi
+# Image to build shift-4-haystack
 # See the accompanying LICENSE file.
 # (C) 2021 Engie Digital
 #
@@ -7,7 +7,7 @@
 # AWS_PROFILE: profile to use (`default` by default)
 # AWS_REGION: AWS region (`eu-west-3` by default)
 #
-# To use the project directory, map /haystackapi (-v $PWD:/haystackapi )
+# To use the project directory, map /shaystack (-v $PWD:/shaystack )
 # To use docker inside this container, use :
 # docker run \
 #   --group-add $(getent group docker | cut -d: -f3) \
@@ -17,8 +17,8 @@
 FROM continuumio/miniconda3
 MAINTAINER Philippe PRADOS
 
-ARG PRJ=haystackapi
-# Use host user id to be capable to use -v $(PWD):/haystackapi
+ARG PRJ=shaystack
+# Use host user id to be capable to use -v $(PWD):/shaystack
 ARG USERNAME=${PRJ}
 # May be mapped to the host user id ( --build-arg UID=$(id -u) )
 ARG UID=1000

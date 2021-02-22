@@ -18,12 +18,12 @@ import pytz
 from graphql import ResolveInfo
 from graphql.language.ast import StringValue, IntValue, FloatValue, BooleanValue, EnumValue
 
-import haystackapi
-from haystackapi import Ref, Uri, Coordinate, parse_hs_datetime_format, Grid
-from haystackapi.grid_filter import parse_hs_time_format, parse_hs_date_format
-from haystackapi.providers.haystack_interface import get_singleton_provider, parse_date_range
-from haystackapi.type import Entity
-from haystackapi.zincdumper import _dump_hs_date_time, _dump_hs_time, _dump_hs_date
+import shaystack
+from shaystack import Ref, Uri, Coordinate, parse_hs_datetime_format, Grid
+from shaystack.grid_filter import parse_hs_time_format, parse_hs_date_format
+from shaystack.providers.haystack_interface import get_singleton_provider, parse_date_range
+from shaystack.type import Entity
+from shaystack.zincdumper import _dump_hs_date_time, _dump_hs_time, _dump_hs_date
 
 BOTO3_AVAILABLE = False
 try:
@@ -34,7 +34,7 @@ try:
 except ImportError:
     pass
 
-log = logging.getLogger("haystackapi")
+log = logging.getLogger("shaystack")
 
 
 class HSScalar(graphene.Scalar):
@@ -51,9 +51,9 @@ class HSScalar(graphene.Scalar):
         Args:
             hs_scalar: Any value
         """
-        return json.loads(haystackapi.dump_scalar(hs_scalar,
-                                                  haystackapi.MODE_JSON,
-                                                  version=haystackapi.VER_3_0))
+        return json.loads(shaystack.dump_scalar(hs_scalar,
+                                                shaystack.MODE_JSON,
+                                                version=shaystack.VER_3_0))
 
     @staticmethod
     def parse_literal(node: Union[IntValue, FloatValue, StringValue, BooleanValue, EnumValue]) -> Any:
@@ -65,8 +65,8 @@ class HSScalar(graphene.Scalar):
         if isinstance(node, StringValue):
             str_value = node.value
             if len(str_value) >= 2 and str_value[1] == ':':
-                return haystackapi.parse_scalar(node.value,
-                                                haystackapi.MODE_JSON)
+                return shaystack.parse_scalar(node.value,
+                                              shaystack.MODE_JSON)
         return node.value
 
     @staticmethod
@@ -75,7 +75,7 @@ class HSScalar(graphene.Scalar):
         Args:
             value: The value to parse
         """
-        return haystackapi.parse_scalar(value, haystackapi.MODE_JSON)
+        return shaystack.parse_scalar(value, shaystack.MODE_JSON)
 
 
 class HSDateTime(graphene.String):
@@ -229,7 +229,7 @@ class HSUri(graphene.String):
             value: The string
         """
         if value.startswith("u:"):
-            return haystackapi.parse_scalar(value, haystackapi.MODE_JSON, version=haystackapi.VER_3_0)
+            return shaystack.parse_scalar(value, shaystack.MODE_JSON, version=shaystack.VER_3_0)
         return Uri(value)
 
 

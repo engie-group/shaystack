@@ -10,11 +10,9 @@
 A support of Haystack timezone
 """
 import datetime
-import sys
 from typing import Any
 
 import pytz
-import six
 
 # The official list of timezones as of 6th Jan 2016:
 # Yes, that's *without* the usual country prefix.
@@ -476,11 +474,9 @@ def timezone(haystack_tz: str) -> Any:
     try:
         tz_name = tz_map[haystack_tz]
         return pytz.timezone(tz_name)
-    except KeyError:
-        six.reraise(ValueError,
-                    ValueError('%s is not a recognised timezone on this host'
-                               % haystack_tz),
-                    sys.exc_info()[2])
+    except KeyError as ex:
+        raise ValueError('%s is not a recognised timezone on this host'
+                         % haystack_tz) from ex
 
 
 def timezone_name(date_time: datetime.datetime) -> str:

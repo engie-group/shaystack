@@ -1,4 +1,4 @@
-from haystackapi.providers import HaystackInterface
+from shaystack.providers import HaystackInterface
 
 
 class Provider(HaystackInterface):

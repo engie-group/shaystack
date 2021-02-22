@@ -9,8 +9,8 @@ The project includes the following files and folders:
 - `app` - Code for the application's Flask, GraphQL and Lambda function.
 - `aws appsync` - Special parameters and information for AWS AppSync
 - `docker` - Docker files
-- `haystackapi` - The generic wrapper between technology and implementation
-- `haystackapi/providers` - Sample of providers.
+- `shaystack` - The generic wrapper between technology and implementation
+- `shaystack/providers` - Sample of providers.
 - `sample` - Sample haystack file
 - `tests` - Unit tests for the application code.
 - `*.postman*.json` - script to invoke API with postman
@@ -29,9 +29,9 @@ to `test`, `start-api`, etc. See `make help` to print all major target.
 
 ```console
 $ git clone {{ site.github.clone_url }}  
-$ cd haystackapi
+$ cd shaystack
 $ make configure
-$ conda activate haystackapi
+$ conda activate shaystack
 $ make help
 ```
 
@@ -41,7 +41,7 @@ $ make help
 
 For MAC users or for others contexts (CI/CD), it's possible to use a Docker container to build the project.
 
-Use `make docker-build-dmake` to create the image `$USER/haystackapi-dmake`. Then, you can start this image to build the
+Use `make docker-build-dmake` to create the image `$USER/shaystack-dmake`. Then, you can start this image to build the
 project inside a docker container. Add the proposed `alias` in your `.bash_aliases` or
 equivalent (`make docker-alias-dmake`)
 Now, use `dmake` (Docker make) in place of `make`.
@@ -52,7 +52,7 @@ $ dmake test
 
 You can use `dmake shell` to start a shell **inside** the container.
 
-Note: the conda environement is `docker-haystackapi`.
+Note: the conda environment is `docker-shaystack`.
 
 ## Windows WSL
 
@@ -96,11 +96,11 @@ The tests with a connection with AWS are excluded. To run explicitly these tests
 Use the `make start-api` to run the API locally on port 3000 with Flask and the current parameters.
 
 ```console
-$ HAYSTACK_PROVIDER=haystackapi.providers.ping make start-api
+$ HAYSTACK_PROVIDER=shaystack.providers.ping make start-api
 ```
 
-You can use [Postman](https://www.postman.com/) and the files `HaystackAPI.postman_collection.json`
-and `HaystackAPI.postman_environment.json` to test and invoke the local API.
+You can use [Postman](https://www.postman.com/) and the files `SHaystack.postman_collection.json`
+and `SHaystack.postman_environment.json` to test and invoke the local API.
 
 You can also start API server in background with `make async-start-api` and close it with `make async-stop-api`.
 
@@ -218,7 +218,7 @@ $ make aws-api
 ### Use AWS Time stream
 
 You can create a database in *AWS Time Stream* and use the provider
-`haytackapi.providers.sql_ts`.
+`shaytack.providers.sql_ts`.
 
 ### Customize environment variable
 
@@ -275,9 +275,9 @@ $ mkdir $TMP/demo
 $ cd $TMP/demo
 $ virtualenv -p python3.8 venv
 $ source venv/bin/activate
-$ pip install 'haystackapi[graphql,lambda]'
+$ pip install 'shaystack[graphql,lambda]'
 $ python
-import haystackapi
+import shaystack
 ...
 ```
 
@@ -296,16 +296,12 @@ $ # Publish the release
 $ make release
 ```
 
-# Travis
-
-Travis is configured to track the project. See [here](https://travis-ci.com/github/pprados/haystackapi)
-
 # Tips
 
 ## Conversion between haystack filter to SQL
 
 The SQL provider must convert the Haystack request to SQL. Because the usage of JSON inside SQL is not normalized, each
-database use a different approach. A dedicated conversion is apply for SQLite and Postgres.
+database use a different approach. A dedicated conversion is applied for SQLite and Postgres.
 
 To test the different conversion, you can use a REPL tools.
 

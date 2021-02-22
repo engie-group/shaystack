@@ -1,4 +1,6 @@
-# Haystack API
+![Logo](https://github.com/pprados/shaystack/tree/develop/docs/logo.png)
+
+# Shift-4-Haystack
 
 ## About Haystack, and who is it for
 
@@ -21,5 +23,5 @@ This project implements client side haystack code. Useful to parse or dump Hayst
 On the server side, it also implements [Haystack Rest API](https://www.project-haystack.org/doc/Rest), useful to serve
 Haystack data you host.
 
-The [full documentation is here](https://pprados.github.io/haystackapi/)
-and the [documentation of API is here](https://pprados.github.io/haystackapi/api/index.html)
+The [full documentation is here](https://pprados.github.io/shaystack/)
+and the [documentation of API is here](https://pprados.github.io/shaystack/api/index.html)

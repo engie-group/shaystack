@@ -7,7 +7,7 @@ and it's possible to use the AWS Lambda to publish the API.
 To import the dependencies:
 
 ```console
-$ pip install haystackapi[lambda]
+$ pip install 'shaystack[lambda]'
 ```
 
 ## AWS Bucket
@@ -16,11 +16,11 @@ To export the haystacks files in a bucket, you must create one. If you add the _
 update the files, and use the API to read an older version. The extended parameter `Version` in each request may be used
 to ask some data, visible at a specific date.
 
-You can use `haystackapi_import_s3` to import a Haystack file in s3 bucket, only if the file is modified
+You can use `shaystack_import_s3` to import a Haystack file in s3 bucket, only if the file is modified
 (to respect the notion of _Version_ with this provider).
 
 ```bash
-haystackapi_import_s3 <haystack file url> <s3 url>
+shaystack_import_s3 <haystack file url> <s3 url>
 ```
 
 The corresponding `hisURI` time-series files are uploaded too. The current values before the first version of the new
@@ -43,7 +43,7 @@ $ export MY_BUCKET=<your bucket name>
 You can import the datas inside this bucket
 
 ```console
-$ haystackapi_import_s3 sample/carytown.zinc "s3://${MY_BUCKET}"
+$ shaystack_import_s3 sample/carytown.zinc "s3://${MY_BUCKET}"
 ```
 
 You can use the parameters:
@@ -58,14 +58,14 @@ Then, you can start a local Flash server:
 
 ```console
 $ # Demo
-$ HAYSTACK_PROVIDER=haystackapi.providers.url \
+$ HAYSTACK_PROVIDER=shaystack.providers.url \
   HAYSTACK_URL=s3://${MY_BUCKET}/carytown.zinc \
-  haystackapi
+  shaystack
 ```
 
 ## AWS Lambda
 
-The code is compatible with AWS Lambda. Install this option (`pip install "haystackapi[lambda]"`)
+The code is compatible with AWS Lambda. Install this option (`pip install "shaystack[lambda]"`)
 and create a file `zappa_settings.json` with something like this:
 
 ```json
@@ -74,13 +74,13 @@ and create a file `zappa_settings.json` with something like this:
     "profile_name": "default",
     "aws_region": "us-east-2",
     "app_function": "app.__init__.app",
-    "project_name": "my_haystackapi",
-    "s3_bucket": "my_haystackapi-zappa",
+    "project_name": "my_haystack",
+    "s3_bucket": "my_haystack-zappa",
     "runtime": "python3.8",
     "aws_environment_variables": {
       "LOG_LEVEL": "INFO",
       "TLS_VERIFY": "False",
-      "HAYSTACK_PROVIDER": "haystackapi.providers.url",
+      "HAYSTACK_PROVIDER": "shaystack.providers.url",
       "HAYSTACK_URL": "s3://haystackapi/carytown.zinc",
       "HAYSTACK_DB": "",
       "HAYSTACK_TS": ""
@@ -96,7 +96,7 @@ Then, use [zappa](https://github.com/Miserlou/Zappa) to deploy.
 ```console
 $ virtualenv -p python3.8 venv
 $ source venv/bin/activate
-$ pip install "haystackapi[graphql,lambda]"
+$ pip install "shaystack[graphql,lambda]"
 $ zappa deploy
 ```
 

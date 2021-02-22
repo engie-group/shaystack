@@ -4,7 +4,7 @@
         <option name="INTERPRETER_OPTIONS" value=""/>
         <option name="PARENT_ENVS" value="true"/>
         <envs>
-            <env name="AWS_PROFILE" value="haystackapi"/>
+            <env name="AWS_PROFILE" value="shaystack"/>
             <env name="LOG_LEVEL" value="INFO"/>
         </envs>
         <option name="SDK_HOME" value=""/>
@@ -23,7 +23,7 @@
                 <ENTRY IS_ENABLED="true" PARSER="runconfig"/>
             </ENTRIES>
         </EXTENSION>
-        <option name="SCRIPT_NAME" value="haystackapi.providers.import_s3"/>
+        <option name="SCRIPT_NAME" value="shaystack.providers.import_s3"/>
         <option name="PARAMETERS" value="--no-compare sample/carytown.zinc s3://alpha-dev-haystack-marriott/"/>
         <option name="SHOW_COMMAND_LINE" value="true"/>
         <option name="EMULATE_TERMINAL" value="false"/>

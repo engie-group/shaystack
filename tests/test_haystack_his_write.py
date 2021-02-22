@@ -3,13 +3,13 @@ from unittest.mock import patch
 
 import pytz
 
-import haystackapi
-from haystackapi import Ref, parse_hs_datetime_format, Grid, VER_3_0
-from haystackapi.ops import HaystackHttpRequest, DEFAULT_MIME_TYPE
-from haystackapi.providers import ping
+import shaystack
+from shaystack import Ref, parse_hs_datetime_format, Grid, VER_3_0
+from shaystack.ops import HaystackHttpRequest, DEFAULT_MIME_TYPE
+from shaystack.providers import ping
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'his_write')
 def test_his_write_with_zinc(mock):
     # GIVEN
@@ -18,25 +18,25 @@ def test_his_write_with_zinc(mock):
         mock:
     """
     mock.return_value = ping._PingGrid
-    mime_type = haystackapi.MODE_ZINC
+    mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
-    grid = haystackapi.Grid(columns={'id': {}})
+    grid = shaystack.Grid(columns={'id': {}})
     grid.append({"id": Ref("1234")})
     request.headers["Content-Type"] = mime_type
     request.headers["Accept"] = mime_type
-    request.body = haystackapi.dump(grid, mode=mime_type)
+    request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = haystackapi.his_write(request, "dev")
+    response = shaystack.his_write(request, "dev")
 
     # THEN
     mock.assert_called_once_with(None, grid, None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    assert haystackapi.parse(response.body, mime_type) is not None
+    assert shaystack.parse(response.body, mime_type) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'his_write')
 def test_his_write_with_args(mock):
     # GIVEN
@@ -54,7 +54,7 @@ def test_his_write_with_args(mock):
     request.args['ts'] = str(time_serie)
 
     # WHEN
-    response = haystackapi.his_write(request, "dev")
+    response = shaystack.his_write(request, "dev")
 
     # THEN
     result_ts = Grid(version=VER_3_0, columns=["date", "val"])
@@ -62,4 +62,4 @@ def test_his_write_with_args(mock):
     mock.assert_called_once_with(Ref("1234"), result_ts, None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    assert haystackapi.parse(response.body, mime_type) is not None
+    assert shaystack.parse(response.body, mime_type) is not None

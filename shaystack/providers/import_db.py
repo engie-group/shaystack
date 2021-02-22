@@ -104,10 +104,10 @@ def import_in_db(source: str,
         version: The associated version time.
     """
     os.environ["HAYSTACK_DB"] = database_url
-    provider_name = "haystackapi.providers.sql"
+    provider_name = "shaystack.providers.sql"
     if ts_url:
         os.environ["HAYSTACK_TS"] = ts_url
-        provider_name = "haystackapi.providers.sql_ts"
+        provider_name = "shaystack.providers.sql_ts"
 
     if not version:
         version = datetime.now(tz=pytz.UTC)

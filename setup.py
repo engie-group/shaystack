@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HaystackAPI module
+# shaystack module
 # See the accompanying LICENSE file.
 # (C) 2016 VRT Systems
 # (C) 2021 Engie Digital

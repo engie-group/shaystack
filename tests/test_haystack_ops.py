@@ -1,11 +1,11 @@
 from unittest.mock import patch
 
-import haystackapi
-from haystackapi.ops import HaystackHttpRequest
-from haystackapi.providers import ping
+import shaystack
+from shaystack.ops import HaystackHttpRequest
+from shaystack.providers import ping
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'ops')
 def test_ops_with_zinc(mock) -> None:
     # GIVEN
@@ -14,17 +14,17 @@ def test_ops_with_zinc(mock) -> None:
         mock:
     """
     mock.return_value = ping._PingGrid
-    mime_type = haystackapi.MODE_ZINC
+    mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
     request.headers["Content-Type"] = mime_type
     request.headers["Accept"] = mime_type
-    # apigw_event["body"] = haystackapi.dump(grid, mode=haystackapi.MODE_ZINC)
+    # apigw_event["body"] = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = haystackapi.ops(request, "dev")
+    response = shaystack.ops(request, "dev")
 
     # THEN
     mock.assert_called_once_with()
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    assert haystackapi.parse(response.body, haystackapi.MODE_ZINC) is not None
+    assert shaystack.parse(response.body, shaystack.MODE_ZINC) is not None

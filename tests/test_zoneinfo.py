@@ -12,7 +12,7 @@ import datetime
 import iso8601
 import pytz
 
-from haystackapi import zoneinfo
+from shaystack import zoneinfo
 
 
 def test_get_tz_map():
@@ -27,8 +27,8 @@ def test_get_tz_map():
     assert tz_map['Detroit'] == 'America/Detroit'
     assert tz_map['GMT'] == 'Etc/GMT'
     for etc_tz in (('GMT',) +
-                   tuple(['GMT-%d' % n for n in range(1, 13)]) +
-                   tuple(['GMT+%d' % n for n in range(1, 13)])):
+                   tuple(['GMT-%d' % n for n in range(1, 13)]) +  # pylint: disable=consider-using-generator
+                   tuple(['GMT+%d' % n for n in range(1, 13)])):  # pylint: disable=consider-using-generator
         assert tz_map[etc_tz] == 'Etc/%s' % etc_tz
 
 

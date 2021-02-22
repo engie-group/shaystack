@@ -1,7 +1,7 @@
 # Provider SQL + AWS Time stream
 
 This provider extends the [SQL Provider](sql_provider.md) to manage time-series with
-[AWS Time stream](https://docs.aws.amazon.com/timestream/). Use `HAYSTACK_PROVIDER=haytackapi.providers.sql_ts` to use
+[AWS Time stream](https://docs.aws.amazon.com/timestream/). Use `HAYSTACK_PROVIDER=shaytack.providers.sql_ts` to use
 this provider. Add the variable `HAYSTACK_DB` to describe the link to the root table in SQL DB and `HAYSTACK_TS` to
 describe the link to *AWS Time stream*. The format of `HAYSTACK_TS` is :
 
@@ -30,24 +30,24 @@ You can publish data in this table, via *[AWS IoT](https://aws.amazon.com/fr/iot
 -
 
 ```console
-$ HAYSTACK_PROVIDER=haystackapi.providers.sql_ts \
+$ HAYSTACK_PROVIDER=shaystack.providers.sql_ts \
   HAYSTACK_DB=sqlite3:///test.db#haystack \
-  HAYSTACK_TS=timestream://HaystackAPIDemo/?mem_ttl=1&mag_ttl=100#haystack \
-  haystackapi
+  HAYSTACK_TS=timestream://SHaystackDemo/?mem_ttl=1&mag_ttl=100#haystack \
+  shaystack
 ```
 
-With this provider, all the time-series are inserted in AWS Time Stream. You can use `haystackapi_import_db` with a
-third parameter to describe the link to the time-series database:
+With this provider, all the time-series are inserted in AWS Time Stream. You can use `shaystack_import_db` with a third
+parameter to describe the link to the time-series database:
 
 ```console
-$ haystackapi_import_db sample/carytown.zinc \
+$ shaystack_import_db sample/carytown.zinc \
     sqlite3:///test.db#haystack \
-    timestream://HaystackAPIDemo
+    timestream://HaystackDemo
 ```
 
 ##### Limitation
 
-- The entities with history must have a tag `kind` to describe the type of value and a tag `id`
+- The entities with history must have a tag `kind` to describe the type of values and a tag `id`
 - AWS Time stream refuse to import a data outside the memory windows delays.
   See [here](https://docs.aws.amazon.com/timestream/latest/developerguide/API_RejectedRecord.html)
 

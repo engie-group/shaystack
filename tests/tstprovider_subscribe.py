@@ -2,8 +2,8 @@ from typing import List, Optional
 
 from overrides import overrides
 
-from haystackapi import Grid, Ref
-from haystackapi.providers import HaystackInterface
+from shaystack import Grid, Ref
+from shaystack.providers import HaystackInterface
 
 
 class Provider(HaystackInterface):

@@ -1,12 +1,12 @@
 from unittest.mock import patch
 
-import haystackapi
-from haystackapi import Grid
-from haystackapi.ops import HaystackHttpRequest, Ref, VER_3_0
-from haystackapi.providers import ping
+import shaystack
+from shaystack import Grid
+from shaystack.ops import HaystackHttpRequest, Ref, VER_3_0
+from shaystack.providers import ping
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'watch_sub')
 def test_watch_sub_with_zinc(mock):
     # GIVEN
@@ -18,28 +18,28 @@ def test_watch_sub_with_zinc(mock):
                              metadata={"watchId": "0123456789ABCDEF", "lease": 1},
                              columns=["empty"])
     mock.return_value.append({})
-    mime_type = haystackapi.MODE_ZINC
+    mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
-    grid = haystackapi.Grid(
+    grid = shaystack.Grid(
         metadata={"watchDis": "myWatch", "watchId": "myid", "lease": 1},
         columns=['id'])
     grid.append({"id": Ref("id1")})
     grid.append({"id": Ref("id2")})
     request.headers["Content-Type"] = mime_type
     request.headers["Accept"] = mime_type
-    request.body = haystackapi.dump(grid, mode=haystackapi.MODE_ZINC)
+    request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = haystackapi.watch_sub(request, "dev")
+    response = shaystack.watch_sub(request, "dev")
 
     # THEN
     mock.assert_called_once_with("myWatch", "myid", [Ref("id1"), Ref("id2")], 1)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    assert haystackapi.parse(response.body, haystackapi.MODE_ZINC) is not None
+    assert shaystack.parse(response.body, shaystack.MODE_ZINC) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'watch_sub')
 def test_watch_sub_with_args(mock):
     # GIVEN
@@ -51,7 +51,7 @@ def test_watch_sub_with_args(mock):
                              metadata={"watchId": "0123456789ABCDEF", "lease": 1},
                              columns=["empty"])
     mock.return_value.append({})
-    mime_type = haystackapi.MODE_ZINC
+    mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
     request.headers["Accept"] = mime_type
     request.args["watchDis"] = "myWatch"
@@ -61,10 +61,10 @@ def test_watch_sub_with_args(mock):
     request.args["ids"] = str(ids)
 
     # WHEN
-    response = haystackapi.watch_sub(request, "dev")
+    response = shaystack.watch_sub(request, "dev")
 
     # THEN
     mock.assert_called_once_with("myWatch", "myid", [Ref("id1"), Ref("id2")], 1)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    assert haystackapi.parse(response.body, haystackapi.MODE_ZINC) is not None
+    assert shaystack.parse(response.body, shaystack.MODE_ZINC) is not None

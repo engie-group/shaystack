@@ -23,7 +23,7 @@ from ..datatypes import Ref, Quantity, Uri
 from ..grid import Grid, VER_3_0
 from ..grid_filter import parse_hs_datetime_format
 
-log = logging.getLogger("haystackapi")
+log = logging.getLogger("shaystack")
 
 
 def _to_camel(snake_str: str) -> str:

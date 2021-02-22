@@ -6,10 +6,10 @@ from datetime import time, date, datetime
 
 from iso8601 import iso8601
 
-from haystackapi import Grid, Uri, Ref, Coordinate, MARKER, XStr, grid_filter
-from haystackapi.filter_ast import FilterUnary, FilterBinary, FilterPath, FilterAST
-from haystackapi.grid_filter import hs_filter, _FnWrapper, filter_function
-from haystackapi.zoneinfo import timezone
+from shaystack import Grid, Uri, Ref, Coordinate, MARKER, XStr, grid_filter
+from shaystack.filter_ast import FilterUnary, FilterBinary, FilterPath, FilterAST
+from shaystack.grid_filter import hs_filter, _FnWrapper, filter_function
+from shaystack.zoneinfo import timezone
 
 
 def test_filter_ast():

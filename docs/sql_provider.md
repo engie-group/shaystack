@@ -1,11 +1,11 @@
 #### SQL Provider
 
 This provider use an ontology imported in SQL database. Each entity is saved in a row in the JSON format.
-Use `HAYSTACK_PROVIDER=haytackapi.providers.sql` to use this provider. Add the variable `HAYSTACK_DB` to describe the
-link to the root table. At this time, only SuperSQLite and Postgresql was supported.
+Use `HAYSTACK_PROVIDER=shaytack.providers.sql` to use this provider. Add the variable `HAYSTACK_DB` to describe the link
+to the root table. At this time, only SuperSQLite and Postgresql was supported.
 
 ```console
-$ pip install 'haystackapi[graphql,lambda]'
+$ pip install 'shaystack[graphql,lambda]'
 ```
 
 Install the corresponding database driver:
@@ -16,11 +16,11 @@ Install the corresponding database driver:
 | postgres | `pip install psycopg2`                              |
 |          | or `pip install psycopg2-binary`                    |
 
-You can use `haystackapi_import_db` to import a Haystack files into the database, only if the entities are modified
+You can use `shaystack_import_db` to import a Haystack files into the database, only if the entities are modified
 (to respect the notion of _Version_ with this provider). The corresponding `hisURI` time-series files are uploaded too.
 
 ```bash
-haystackapi_import_db <haystack file url> <db url>
+shaystack_import_db <haystack file url> <db url>
 ```
 
 You can use the parameters:
@@ -34,15 +34,15 @@ To demonstrate the usage with sqlite,
 ```console
 $ # Demo
 $ # - Install the components
-$ pip install 'haystackapi[flask]'
+$ pip install 'shaystack[flask]'
 $ # - Install the sqlite driver
 $ pip install supersqlite
 $ # - Import haystack file in DB
-$ haystackapi_import_db sample/carytown.zinc sqlite3:///test.db#haystack
+$ shaystack_import_db sample/carytown.zinc sqlite3:///test.db#haystack
 $ # - Expose haystack with API
-$ HAYSTACK_PROVIDER=haystackapi.providers.sql \
+$ HAYSTACK_PROVIDER=shaystack.providers.sql \
   HAYSTACK_DB=sqlite3:///test.db#haystack \
-  haystackapi
+  shaystack
 ```
 
 in another shell

@@ -7,14 +7,14 @@ from unittest.mock import patch
 import pytz
 from nose.plugins.attrib import attr
 
-from haystackapi import Ref, Grid, Quantity, MARKER, REMOVE, Coordinate, NA, parse_date_range, XStr
-from haystackapi.providers import get_provider
-from haystackapi.providers.sql_ts import Provider as SQLTSProvider
+from shaystack import Ref, Grid, Quantity, MARKER, REMOVE, Coordinate, NA, parse_date_range, XStr
+from shaystack.providers import get_provider
+from shaystack.providers.sql_ts import Provider as SQLTSProvider
 
 # Set HAYSTACK_DB variable, before running the tests to validate with another database
 # HAYSTACK_DB = 'postgresql://postgres:password@172.17.0.2:5432/postgres#haystack'
 HAYSTACK_DB = os.environ.get("HAYSTACK_DB", 'sqlite3:///:memory:#haystack')
-HAYSTACK_TS = os.environ.get("HAYSTACK_TS", 'timestream://HaystackAPIDemo/?mem_ttl=8766&mag_ttl=400#haystack')
+HAYSTACK_TS = os.environ.get("HAYSTACK_TS", 'timestream://HaystackDemo/?mem_ttl=8766&mag_ttl=400#haystack')
 
 FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
@@ -25,7 +25,7 @@ log = logging.getLogger("sql_ts.Provider")
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 @patch.dict('os.environ', {'HAYSTACK_TS': HAYSTACK_TS})
 def test_create_db():
-    with cast(SQLTSProvider, get_provider("haystackapi.providers.sql_ts")) as provider:
+    with cast(SQLTSProvider, get_provider("shaystack.providers.sql_ts")) as provider:
         provider.create_db()
 
 
@@ -35,7 +35,7 @@ def test_create_db():
 @patch.object(SQLTSProvider, 'get_customer_id')
 def test_import_ts_grid_in_db_and_his_read(mock):
     mock.return_value = "customer"
-    with cast(SQLTSProvider, get_provider("haystackapi.providers.sql_ts")) as provider:
+    with cast(SQLTSProvider, get_provider("shaystack.providers.sql_ts")) as provider:
         values = [
             (XStr("hex", "deadbeef"), "Str"),
             ("100", "Str"),
@@ -85,7 +85,7 @@ def test_import_ts_grid_in_db_and_his_read(mock):
 @patch.object(SQLTSProvider, 'get_customer_id')
 def test_import_ts_grid_in_db_with_a_lot_of_records(mock):
     mock.return_value = "customer"
-    with cast(SQLTSProvider, get_provider("haystackapi.providers.sql_ts")) as provider:
+    with cast(SQLTSProvider, get_provider("shaystack.providers.sql_ts")) as provider:
         # Check TS with all types
         entity_id = Ref("abc")
 
@@ -114,6 +114,6 @@ def test_import_ts_grid_in_db_with_a_lot_of_records(mock):
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 @patch.dict('os.environ', {'HAYSTACK_TS': HAYSTACK_TS})
 def test_about():
-    with get_provider("haystackapi.providers.sql_ts") as provider:
+    with get_provider("shaystack.providers.sql_ts") as provider:
         result = provider.about("http://localhost")
         assert result[0]['moduleName'] == 'SQLProvider'

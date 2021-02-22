@@ -1,7 +1,8 @@
 from datetime import datetime, date, timedelta
 
 import pytz
-from haystackapi import parse_date_range
+
+from shaystack import parse_date_range
 
 
 def test_date_range_empty():

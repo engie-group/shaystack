@@ -11,12 +11,12 @@ import random
 import string
 import sys
 
-from haystackapi.datatypes import Ref, Bin, Uri, Quantity, Coordinate, XStr, MARKER, REMOVE, NA
-from haystackapi.dumper import dump
-from haystackapi.grid import Grid, VER_3_0
-from haystackapi.metadata import MetadataObject
-from haystackapi.parser import MODE_ZINC, parse, MODE_JSON, MODE_CSV
-from haystackapi.zoneinfo import _get_tz_map, timezone
+from shaystack.datatypes import Ref, Bin, Uri, Quantity, Coordinate, XStr, MARKER, REMOVE, NA
+from shaystack.dumper import dump
+from shaystack.grid import Grid, VER_3_0
+from shaystack.metadata import MetadataObject
+from shaystack.parser import MODE_ZINC, parse, MODE_JSON, MODE_CSV
+from shaystack.zoneinfo import _get_tz_map, timezone
 
 STR_CHARSET = string.ascii_letters + string.digits + '\n\r\t\f\b'
 

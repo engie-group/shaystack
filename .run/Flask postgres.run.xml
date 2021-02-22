@@ -7,7 +7,7 @@
             <env name="PYTHONUNBUFFERED" value="1"/>
             <env name="FLASK_DEBUG" value="1"/>
             <env name="FLASK_ENV" value="dev"/>
-            <env name="HAYSTACK_PROVIDER" value="haystackapi.providers.sql"/>
+            <env name="HAYSTACK_PROVIDER" value="shaystack.providers.sql"/>
             <env name="LOG_LEVEL" value="DEBUG"/>
             <env name="HAYSTACK_DB" value="postgresql://postgres:password@172.17.0.2:5432/postgres#haystack"/>
             <env name="HAYSTACK_DB_SECRET" value="alpha-Haystack"/>

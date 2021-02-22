@@ -49,7 +49,7 @@ def suffix_to_mode(ext: str) -> Optional[MODE]:
 
 
 def mode_to_suffix(mode: MODE) -> Optional[str]:
-    """Convert haystackapi mode to file suffix
+    """Convert haystack mode to file suffix
 
     Args:
         mode: The haystack mode (`MODE_...`)

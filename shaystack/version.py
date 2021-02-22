@@ -55,7 +55,7 @@ class Version:
             (version_nums, version_extra) = match.groups()
             if not version_nums:
                 raise ValueError('Not a valid version string: %r' % ver_str)
-            self.version_nums = tuple([int(p or 0)
+            self.version_nums = tuple([int(p or 0)  # pylint: disable=consider-using-generator
                                        for p in version_nums.split('.')])
             self.version_extra = version_extra
 
@@ -81,8 +81,8 @@ class Version:
 
         # Pad both to be the same length
         ver_len = max(len(num1), len(num2))
-        num1 += tuple([0 for _ in range(len(num1), ver_len)])
-        num2 += tuple([0 for _ in range(len(num2), ver_len)])
+        num1 += tuple([0 for _ in range(len(num1), ver_len)])  # pylint: disable=consider-using-generator
+        num2 += tuple([0 for _ in range(len(num2), ver_len)])  # pylint: disable=consider-using-generator
 
         # Compare the versions
         for (pair_1, pair_2) in zip(num1, num2):
@@ -159,7 +159,7 @@ class Version:
             # If we have not seen a better candidate, and this is older
             # then we may have to settle for that.
             if (best is None) and (candidate < ver):
-                warnings.warn('This version of haystackapi does not yet '
+                warnings.warn('This version of shift-4-haystack does not yet '
                               'support version %s, please seek a newer version '
                               'or file a bug.  Closest (older) version supported is %s.'
                               % (ver, candidate))
@@ -171,7 +171,7 @@ class Version:
 
         # Unhappy path, no best option?  This should not happen.
         assert best is not None
-        warnings.warn('This version of haystackapi does not yet '
+        warnings.warn('This version of shift-4-haystack does not yet '
                       'support version %s, please seek a newer version '
                       'or file a bug.  Closest (newer) version supported is %s.'
                       % (ver, best))

@@ -11,7 +11,7 @@ import re
 import sys
 import warnings
 
-from haystackapi import Version
+from shaystack import Version
 
 
 def test_malformed():
@@ -66,7 +66,7 @@ def test_version_gt():
 
 
 _WARNING_RE = re.compile(
-    r'This version of haystackapi does not yet support version ([\d\\.]+), '
+    r'This version of shift-4-haystack does not yet support version ([\d\\.]+), '
     r'please seek a newer version or file a bug. {2}Closest '
     r'\((older|newer)\) version supported is ([\d\\.]+).')
 

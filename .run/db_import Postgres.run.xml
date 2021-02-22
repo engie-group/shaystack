@@ -19,7 +19,7 @@
                 <ENTRY IS_ENABLED="true" PARSER="runconfig"/>
             </ENTRIES>
         </EXTENSION>
-        <option name="SCRIPT_NAME" value="haystackapi.providers.import_db"/>
+        <option name="SCRIPT_NAME" value="shaystack.providers.import_db"/>
         <option name="PARAMETERS"
                 value="--clean sample/carytown.zinc postgresql://postgres:password@172.17.0.2:5432/postgres#haystack"/>
         <option name="SHOW_COMMAND_LINE" value="true"/>

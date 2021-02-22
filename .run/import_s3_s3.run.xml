@@ -5,7 +5,7 @@
         <option name="PARENT_ENVS" value="true"/>
         <envs>
             <env name="PYTHONUNBUFFERED" value="1"/>
-            <env name="AWS_PROFILE" value="haystackapi"/>
+            <env name="AWS_PROFILE" value="shaystack"/>
             <env name="LOG_LEVEL" value="INFO"/>
         </envs>
         <option name="SDK_HOME" value=""/>
@@ -24,7 +24,7 @@
                 <ENTRY IS_ENABLED="true" PARSER="runconfig"/>
             </ENTRIES>
         </EXTENSION>
-        <option name="SCRIPT_NAME" value="haystackapi.providers.import_s3"/>
+        <option name="SCRIPT_NAME" value="shaystack.providers.import_s3"/>
         <option name="PARAMETERS"
                 value="--compare --time-series --no-force s3://haystackapi2/carytown.zinc s3://haystacksapi/carytown.zinc"/>
         <option name="SHOW_COMMAND_LINE" value="true"/>

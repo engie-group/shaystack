@@ -7,7 +7,7 @@
 """ Wrapper between HTTP request and Haystack provider
 
     Create an `HaystackHttpRequest` and `HaystackHttpResponse`
-    to create a link between HTTP technology and HaystackAPI,
+    to create a link between HTTP technology and shift-4-haystack,
     and invoke the corresponding function.
 """
 import logging
@@ -39,7 +39,7 @@ _DEFAULT_VERSION = VER_3_0
 DEFAULT_MIME_TYPE: str = MODE_CSV
 _DEFAULT_MIME_TYPE_WITH_METADATA = MODE_ZINC
 
-log = logging.getLogger("haystackapi")
+log = logging.getLogger("shaystack")
 
 
 @dataclass

@@ -6,7 +6,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 """
-The typing for Haystackapi
+The typing for Haystack
 """
 from datetime import date, time, datetime
 from typing import Union, Dict

@@ -9,10 +9,11 @@ $(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
 endif
 
 # You can change the password in .env
-PRJ?=haystackapi
-HAYSTACK_PROVIDER?=haystackapi.providers.url
+PRJ?=shaystack
+HAYSTACK_PROVIDER?=shaystack.providers.url
 HAYSTACK_URL?=sample/carytown.zinc
 HAYSTACK_DB?=sqlite3:///:memory:#haystack
+REFRESH=15
 USE_OKTA?=N
 AWS_PROFILE?=default
 AWS_REGION?=eu-west-3
@@ -56,6 +57,7 @@ PORT?=3000
 INPUT_NETWORK?=localhost
 HOST_API?=localhost
 COOKIE_SECRET_KEY?=2d1a12a6-3232-4328-9365-b5b65e64a68f
+TWINE_USERNAME?=__token__
 SIGN_IDENTITY?=$(USER)
 
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
@@ -82,6 +84,7 @@ export FLASK_DEBUG
 export COOKIE_SECRET_KEY
 export PYTHON_VERSION
 export TLS_VERIFY
+export TWINE_USERNAME
 
 # Calculate the make extended parameter
 # Keep only the unknown target
@@ -289,6 +292,7 @@ ifeq ($(USE_OKTA),Y)
 endif
 	echo -e "$(cyan)Install binary dependencies ...$(normal)"
 	conda install -y -c conda-forge conda setuptools compilers make git jq libpq curl psycopg2
+	conda install -c judowill gitflow
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	pip install supersqlite
 	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"
@@ -358,7 +362,7 @@ compile-all:
 
 docs/api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
-	pdoc -f --html -o docs/api haystackapi app
+	pdoc -f --html -o docs/api shaystack app
 
 ## Generate the API HTML documentation
 docs: docs/api
@@ -366,7 +370,7 @@ docs: docs/api
 ## Start the pdoc server to update the docstrings
 start-docs:
 	@$(VALIDATE_VENV)
-	pdoc --http : -f --html -o docs/api haystackapi app
+	pdoc --http : -f --html -o docs/api shaystack app
 
 # -------------------------------------- Client API
 .PHONY: api
@@ -619,7 +623,7 @@ test-aws: .make-test-aws
 # Test local deployment with URL provider
 functional-url-local: $(REQUIREMENTS)
 	@$(MAKE) async-stop-api >/dev/null
-	export HAYSTACK_PROVIDER=haystackapi.providers.url
+	export HAYSTACK_PROVIDER=shaystack.providers.url
 	export HAYSTACK_URL=sample/carytown.zinc
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
@@ -629,7 +633,7 @@ functional-url-local: $(REQUIREMENTS)
 # Test local deployment with URL provider
 functional-url-s3: $(REQUIREMENTS) aws-update-token
 	@$(MAKE) async-stop-api >/dev/null
-	export HAYSTACK_PROVIDER=haystackapi.providers.url
+	export HAYSTACK_PROVIDER=shaystack.providers.url
 	export HAYSTACK_URL=s3://haystackapi/carytown.zinc
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
@@ -641,9 +645,9 @@ functional-db-sqlite: $(REQUIREMENTS)
 	@$(MAKE) async-stop-api>/dev/null
 	pip install supersqlite >/dev/null
 	rm -f test.db
-	export HAYSTACK_PROVIDER=haystackapi.providers.sql
+	export HAYSTACK_PROVIDER=shaystack.providers.sql
 	export HAYSTACK_DB=sqlite3://localhost/test.db
-	$(CONDA_PYTHON) -m haystackapi.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
+	$(CONDA_PYTHON) -m shaystack.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in SQLite$(normal)"
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
@@ -655,11 +659,11 @@ functional-db-sqlite-ts: $(REQUIREMENTS)
 	@$(MAKE) async-stop-api>/dev/null
 	pip install supersqlite boto3 >/dev/null
 	rm -f test.db
-	export HAYSTACK_PROVIDER=haystackapi.providers.sql_ts
+	export HAYSTACK_PROVIDER=shaystack.providers.sql_ts
 	export HAYSTACK_DB=sqlite3://localhost/test.db
-	export HAYSTACK_TS=timestream://HaystackAPIDemo?mem_ttl=8760&mag_ttl=400
+	export HAYSTACK_TS=timestream://HaystackDemo?mem_ttl=8760&mag_ttl=400
 	export LOG_LEVEL=INFO
-	$(CONDA_PYTHON) -m haystackapi.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB} $${HAYSTACK_TS}
+	$(CONDA_PYTHON) -m shaystack.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB} $${HAYSTACK_TS}
 	echo -e "$(green)Data imported in SQLite and Time stream$(normal)"
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
@@ -672,9 +676,9 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 	pip install psycopg2 >/dev/null
 	$(MAKE) start-pg
 	PG_IP=$(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres)
-	export HAYSTACK_PROVIDER=haystackapi.providers.sql
+	export HAYSTACK_PROVIDER=shaystack.providers.sql
 	export HAYSTACK_DB=postgres://postgres:password@$$PG_IP:5432/postgres
-	$(CONDA_PYTHON) -m haystackapi.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
+	$(CONDA_PYTHON) -m shaystack.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in Postgres$(normal)"
 	$(MAKE) start-pg async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
@@ -698,7 +702,7 @@ pytype.cfg: $(CONDA_PREFIX)/bin/pytype
 .make-typing: $(REQUIREMENTS) $(CONDA_PREFIX)/bin/pytype pytype.cfg $(PYTHON_SRC)
 	@$(VALIDATE_VENV)
 	echo -e "$(cyan)Check typing...$(normal)"
-	MYPYPATH=stubs pytype -V $(PYTHON_VERSION) haystackapi app tests
+	MYPYPATH=stubs pytype -V $(PYTHON_VERSION) shaystack app tests
 	touch .make-typing
 
 ## Check python typing
@@ -713,7 +717,7 @@ typing: .make-typing
 .make-lint: $(REQUIREMENTS) $(PYTHON_SRC) | .pylintrc .pylintrc-test
 	@$(VALIDATE_VENV)
 	echo -e "$(cyan)Check lint...$(normal)"
-	pylint -d duplicate-code app haystackapi
+	pylint -d duplicate-code app shaystack
 	echo -e "$(cyan)Check lint for tests...$(normal)"
 	pylint --rcfile=.pylintrc-test tests
 	touch .make-lint
@@ -813,6 +817,7 @@ docker-run: async-docker-stop docker-rm docker-inspect
 	docker run --rm \
 		-it \
 		--name '$(PRJ)' \
+		-p $(PORT):$(PORT) \
 		$(DOCKER_REPOSITORY)/$(PRJ)
 
 # Print environment variables inside the docker image
@@ -823,7 +828,7 @@ docker-inspect:
 ## Run the docker with a Flask server in background
 async-docker-start: docker-rm
 	@docker run -dp $(PORT):$(PORT) --name '$(PRJ)' $(DOCKER_REPOSITORY)/$(PRJ)
-	echo -e "$(green)Haystackapi in docker is started$(normal)"
+	echo -e "$(green)shift-4-haystack in docker is started$(normal)"
 
 ## Stop the background docker with a Flask server
 async-docker-stop:
@@ -837,11 +842,12 @@ docker-rm: async-docker-stop
 
 # Start the docker image with current shell
 docker-run-shell:
-	@docker run -p $(PORT):$(PORT) -it haystackapi $(SHELL)
-
-# Execute a shell inside the docker
-docker-shell:
-	@docker exec -it haystackapi $(SHELL)
+	docker run --rm \
+		-it \
+		--name '$(PRJ)' \
+		-p $(PORT):$(PORT) \
+		--entrypoint $(SHELL) \
+		$(DOCKER_REPOSITORY)/$(PRJ)
 
 # --------------------------- Docker Make
 .PHONY: docker-build-dmake docker-alias-dmake docker-inspect-dmake \
@@ -887,16 +893,14 @@ docker-alias-dmake:
 	@printf	"$(green)Declare\n$(cyan)alias dmake='$(DMAKE)'\n"
 	echo -e "$(green)and use $(cyan)dmake ...$(normal)  # Use make in a Docker container"
 
-# Hack to create the venv docker-haystackapi inside the docker
+# Hack to create the venv docker-shaystack inside the docker
 docker-configure-dmake: $(CONDA_BASE)/envs/docker-$(PRJ)
 
 $(CONDA_BASE)/envs/docker-$(PRJ): docker/DMake.Dockerfile
-	source $$($(CONDA_EXE) info --base)/etc/profile.d/conda.sh
-	$(CONDA_EXE) deactivate
 	$(DMAKE) \
 		CONDA_PREFIX=/opt/conda \
 		VALIDATE_VENV='exit' \
-		VENV=docker-haystackapi \
+		VENV=docker-shaystack \
 		PYTHON_VERSION=$(PYTHON_VERSION) \
 		_configure
 
@@ -922,9 +926,14 @@ docker-rm-dmake:
 dist/:
 	mkdir dist
 
+toto:
+	PBR_VERSION="$$(git describe --tags)"
+	echo "PBR_VERSION=$${PBR_VERSION}"
+
 .PHONY: bdist
 dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC) schema.graphql | dist/
 	@$(VALIDATE_VENV)
+	export PBR_VERSION=$$(git describe --tags)
 	$(CONDA_PYTHON) setup.py bdist_wheel
 
 ## Create a binary wheel distribution
@@ -945,7 +954,7 @@ clean-dist:
 
 # see https://packaging.python.org/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
 ## Create a full distribution
-dist: clean-dist bdist sdist docker-build
+dist: clean-dist bdist sdist
 	@echo -e "$(yellow)Package for distribution created$(normal)"
 
 .PHONY: check-twine test-keyring test-twine
@@ -957,18 +966,18 @@ check-twine: bdist
 
 ## Create keyring for Test-twine
 test-keyring:
-	[ -s "$TWINE_USERNAME"] && read -p "Test Twine username:" TWINE_USERNAME
-	keyring set https://test.pypi.org/legacy/ $TWINE_USERNAME
+	@[ -s "$$TWINE_USERNAME" ] && read -p "Test Twine username:" TWINE_USERNAME
+	keyring set https://test.pypi.org/legacy/ $$TWINE_USERNAME
 
 ## Publish distribution on test.pypi.org
 test-twine: dist check-twine
 	@$(VALIDATE_VENV)
-	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \
+	[[ $$( find dist/ -name "*.dev*.whl" | wc -l ) == 0 ]] || \
 		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \
 		; exit 1 )
 	rm -f dist/*.asc
 	echo -e "$(green)Enter the Pypi password$(normal)"
-	twine upload --sign - i $(SIGN_IDENTITY) --repository-url https://test.pypi.org/legacy/ \
+	twine upload --sign -i $(SIGN_IDENTITY) --repository-url https://test.pypi.org/legacy/ \
 		$(shell find dist/ -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
 	echo -e "To the test repositiry"
 	echo -e "$(green)export PIP_INDEX_URL=https://test.pypi.org/simple$(normal)"
@@ -978,8 +987,8 @@ test-twine: dist check-twine
 
 ## Create keyring for release
 keyring:
-	[ -s "$TWINE_USERNAME"] && read -p "Twine username:" TWINE_USERNAME
-	keyring set https://upload.pypi.org/legacy/ $TWINE_USERNAME
+	@[ -s "$$TWINE_USERNAME" ] && read -p "Twine username:" TWINE_USERNAME
+	keyring set https://upload.pypi.org/legacy/ $$TWINE_USERNAME
 
 
 ## Publish a distribution on pypi.org

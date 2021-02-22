@@ -1,7 +1,7 @@
 FROM python:3
 
 ARG PORT=3000
-ARG HAYSTACK_PROVIDER=haystackapi.providers.url
+ARG HAYSTACK_PROVIDER=shaystack.providers.url
 ARG HAYSTACK_URL=sample/carytown.zinc
 ARG HAYSTACK_DB=sqlite:///test.db#haystack
 ARG HAYSTACK_TS=
@@ -17,7 +17,7 @@ WORKDIR /usr/src/app
 ENV PIP_INDEX_URL=${PIP_INDEX_URL}
 ENV PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
 
-RUN pip install "haystackapi[flask,graphql,lambda]"
+RUN pip install "shaystack[flask,graphql,lambda]"
 
 COPY sample sample
 
@@ -29,4 +29,4 @@ ENV HAYSTACK_DB_SECRET=${HAYSTACK_DB_SECRET}
 ENV REFRESH=${REFRESH}
 ENV PORT=${PORT}
 EXPOSE ${PORT}
-ENTRYPOINT haystackapi --port ${PORT} --host 0.0.0.0
+ENTRYPOINT shaystack --port ${PORT} --host 0.0.0.0

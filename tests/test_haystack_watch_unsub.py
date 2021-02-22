@@ -1,12 +1,12 @@
 from unittest.mock import patch
 
-import haystackapi
-from haystackapi import Ref
-from haystackapi.ops import HaystackHttpRequest
-from haystackapi.providers import ping
+import shaystack
+from shaystack import Ref
+from shaystack.ops import HaystackHttpRequest
+from shaystack.providers import ping
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'watch_unsub')
 def test_watch_unsub_with_zinc(mock) -> None:
     # GIVEN
@@ -15,28 +15,28 @@ def test_watch_unsub_with_zinc(mock) -> None:
         mock:
     """
     mock.return_value = ping._PingGrid
-    mime_type = haystackapi.MODE_ZINC
+    mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
-    grid = haystackapi.Grid(metadata={"close": True,
-                                      "watchId": "0123456789ABCDEF"},
-                            columns=['id'])
+    grid = shaystack.Grid(metadata={"close": True,
+                                    "watchId": "0123456789ABCDEF"},
+                          columns=['id'])
     grid.append({"id": Ref("id1")})
     grid.append({"id": Ref("id2")})
     request.headers["Content-Type"] = mime_type
     request.headers["Accept"] = mime_type
-    request.body = haystackapi.dump(grid, mode=haystackapi.MODE_ZINC)
+    request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = haystackapi.watch_unsub(request, "dev")
+    response = shaystack.watch_unsub(request, "dev")
 
     # THEN
     mock.assert_called_once_with("0123456789ABCDEF", [Ref("id1"), Ref("id2")], True)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    assert haystackapi.parse(response.body, haystackapi.MODE_ZINC) is not None
+    assert shaystack.parse(response.body, shaystack.MODE_ZINC) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'haystackapi.providers.ping'})
+@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'watch_unsub')
 def test_watch_unsub_with_args(mock) -> None:
     # GIVEN
@@ -45,7 +45,7 @@ def test_watch_unsub_with_args(mock) -> None:
         mock:
     """
     mock.return_value = ping._PingGrid
-    mime_type = haystackapi.MODE_ZINC
+    mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
     request.headers["Accept"] = mime_type
     request.args["watchId"] = "0123456789ABCDEF"
@@ -54,10 +54,10 @@ def test_watch_unsub_with_args(mock) -> None:
     request.args["ids"] = str(ids)
 
     # WHEN
-    response = haystackapi.watch_unsub(request, "dev")
+    response = shaystack.watch_unsub(request, "dev")
 
     # THEN
     mock.assert_called_once_with("0123456789ABCDEF", {Ref("id1"), Ref("id2")}, True)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
-    assert haystackapi.parse(response.body, haystackapi.MODE_ZINC) is not None
+    assert shaystack.parse(response.body, shaystack.MODE_ZINC) is not None

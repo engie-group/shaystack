@@ -20,7 +20,8 @@ from typing import Dict, Any, Callable, List, Tuple
 from typing import Optional as Typing_Optional
 
 import iso8601
-import pyparsing as pp
+from pyparsing import Regex, Forward, Combine, Suppress, CaselessLiteral, Literal, Optional, ParseException, \
+    Word, Group, Empty, delimitedList, ParserElement
 
 from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, NA, REMOVE, Ref, XStr
 from .grid import Grid
@@ -43,16 +44,11 @@ _NEWLINE_RE = re.compile(r'\r?\n')
 _CHAR_NUM_RE = re.compile(r' *\(at char \d+\),')
 
 
-def _reformat_exception(ex_msg: pp.ParseException, line_num: Typing_Optional[int] = None) -> str:
+def _reformat_exception(ex_msg: ParseException, line_num: Typing_Optional[int] = None) -> str:
     msg = _CHAR_NUM_RE.sub('', str(ex_msg))
     if line_num is not None:
         return msg.replace('line:1', 'line:%d' % line_num)
     return msg
-
-
-# Convenience function, we want whitespace left alone.
-def _leave_ws(cls, *args, **kwargs):
-    return cls(*args, **kwargs).leaveWhitespace()
 
 
 def _parse_time(toks: List[str]) -> List[datetime.time]:
@@ -136,24 +132,6 @@ def _to_dict(toks: List[Any]) -> Dict[str, Any]:
                 result[tok] = MARKER
 
     return result
-
-
-# Versions of the pyparsing types that leave our whitespace alone!
-Empty = lambda *a, **kwa: _leave_ws(pp.Empty, *a, **kwa)
-Regex = lambda *a, **kwa: _leave_ws(pp.Regex, *a, **kwa)
-Literal = lambda *a, **kwa: _leave_ws(pp.Literal, *a, **kwa)
-CaselessLiteral = lambda *a, **kwa: _leave_ws(pp.CaselessLiteral, *a, **kwa)
-Word = lambda *a, **kwa: _leave_ws(pp.Word, *a, **kwa)
-Optional = lambda *a, **kwa: _leave_ws(pp.Optional, *a, **kwa)
-Suppress = lambda *a, **kwa: _leave_ws(pp.Suppress, *a, **kwa)
-Combine = lambda *a, **kwa: _leave_ws(pp.Combine, *a, **kwa)
-And = lambda *a, **kwa: _leave_ws(pp.And, *a, **kwa)
-Or = lambda *a, **kwa: _leave_ws(pp.Or, *a, **kwa)
-ZeroOrMore = lambda *a, **kwa: _leave_ws(pp.ZeroOrMore, *a, **kwa)
-OneOrMore = lambda *a, **kwa: _leave_ws(pp.OneOrMore, *a, **kwa)
-Group = lambda *a, **kwa: _leave_ws(pp.Group, *a, **kwa)
-DelimitedList = lambda *a, **kwa: _leave_ws(pp.delimitedList, *a, **kwa)
-Forward = lambda *a, **kwa: _leave_ws(pp.Forward, *a, **kwa)
 
 
 class ZincParseException(ValueError):
@@ -286,16 +264,14 @@ def _unescape(a_string: str, uri: bool = False) -> str:
 #   "2.0":  https://web.archive.org/web/20141012013653/http://project-haystack.org:80/doc/Zinc
 #   "3.0":  https://web.archive.org/web/20160805064015/http://project-haystack.org:80/doc/Zinc
 
+ParserElement.setDefaultWhitespaceChars(' \t')
 # Rudimentary elements
 hs_digit = Regex(r'\d')
 hs_digits = Regex(r'[0-9_]+').setParseAction(
     lambda toks: [''.join([t.replace('_', '') for t in toks[0]])])
-hs_alphaLo = Regex(r'[a-z]')
-hs_alphaHi = Regex(r'[A-Z]')
 hs_alpha = Regex(r'[a-zA-Z]')
-hs_valueSep = Regex(r' *, *').setName('valueSep')
-hs_rowSep = Regex(r' *\n *').setName('rowSep')
-hs_plusMinus = Or([Literal('+'), Literal('-')])
+# hs_rowSep = Regex(r' *\n *').setName('rowSep')
+hs_plusMinus = Literal('+') ^ '-'
 
 # Forward declaration of data types.
 hs_scalar_2_0 = Forward()
@@ -313,152 +289,142 @@ hs_grid = _NearestMatch({
 })
 
 # Co-ordinates
-hs_coordDeg = Combine(And([
-    Optional(Literal('-')),
-    Optional(hs_digits),
-    Optional(And([Literal('.'), hs_digits]))
-])).setParseAction(lambda toks: [float(toks[0] or '0')])
-hs_coord = And([Suppress(Literal('C(')),
-                hs_coordDeg,
-                Suppress(hs_valueSep),
-                hs_coordDeg,
-                Suppress(Literal(')'))]).setParseAction(
+hs_coordDeg = Combine(
+    Optional('-') +
+    Optional(hs_digits) +
+    Optional('.' + hs_digits)
+).setParseAction(lambda toks: [float(toks[0] or '0')])
+hs_coord = (Suppress('C(') +
+            hs_coordDeg +
+            Suppress(',') +
+            hs_coordDeg +
+            Suppress(')')).setParseAction(
     lambda toks: [Coordinate(toks[0], toks[1])])
 
 # Dates and times
-hs_tzHHMMOffset = Combine(Or([
-    CaselessLiteral('z'),
-    And([hs_plusMinus, Regex(r'\d\d:\d\d')])]
-))
+hs_tzHHMMOffset = Combine(
+    CaselessLiteral('z') ^
+    hs_plusMinus + Regex(r'\d\d:\d\d')
+)
 hs_tzName = Regex(r'[A-Z][a-zA-Z0-9_\-]*')
-hs_tz_UTC_GMT = Or([Literal('UTC'), Literal('GMT')])
-hs_tzUTCOffset = Combine(And([
-    hs_tz_UTC_GMT, Optional(
-        Or([Literal('0'),
-            And([hs_plusMinus, OneOrMore(hs_digit)]
-                )]
-           ))]))
-hs_timeZoneName = Or([hs_tzUTCOffset, hs_tzName])
+hs_tz_UTC_GMT = Literal('UTC') ^ 'GMT'
+hs_tzUTCOffset = Combine(
+    hs_tz_UTC_GMT + Optional(
+        hs_plusMinus + hs_digit[1, ...] ^
+        '0'
+    ))
+hs_timeZoneName = hs_tzUTCOffset ^ hs_tzName
 hs_dateSep = CaselessLiteral('T')
-hs_date_str = Combine(And([
-    hs_digit, hs_digit, hs_digit, hs_digit,
-    Literal('-'),
-    hs_digit, hs_digit,
-    Literal('-'),
-    hs_digit, hs_digit]))
+hs_date_str = Combine(
+    hs_digit + hs_digit + hs_digit + hs_digit +
+    '-' +
+    hs_digit + hs_digit +
+    '-' +
+    hs_digit + hs_digit)
 hs_date = hs_date_str.copy().setParseAction(
     lambda toks: [datetime.datetime.strptime(toks[0], '%Y-%m-%d').date()])
 
-hs_time_str = Combine(And([
-    hs_digit, hs_digit,
-    Literal(':'),
-    hs_digit, hs_digit,
-    Optional(And([
-        Literal(':'),
-        hs_digit, hs_digit,
-        Optional(And([
-            Literal('.'),
-            OneOrMore(hs_digit)]))
-    ]))
-]))
+hs_time_str = Combine(
+    hs_digit + hs_digit +
+    ':' +
+    hs_digit + hs_digit +
+    Optional(
+        ':' +
+        hs_digit + hs_digit +
+        Optional(
+            '.' +
+            hs_digit[1, ...])
+    )
+)
 
 hs_time = hs_time_str.copy().setParseAction(_parse_time)
-hs_isoDateTime = Combine(And([
-    hs_date_str,
-    hs_dateSep,
-    hs_time_str,
+hs_isoDateTime = Combine(
+    hs_date_str +
+    hs_dateSep +
+    hs_time_str +
     Optional(hs_tzHHMMOffset)
-])).setParseAction(lambda toks: [iso8601.parse_date(toks[0].upper())])
+).setParseAction(lambda toks: [iso8601.parse_date(toks[0].upper())])
 
-hs_dateTime = And([
-    hs_isoDateTime,
-    Optional(And([
-        Suppress(Literal(' ')),
-        hs_timeZoneName
-    ]))
-]).setParseAction(_parse_datetime)
+hs_dateTime = (
+        hs_isoDateTime +
+        Optional(hs_timeZoneName)
+).setParseAction(_parse_datetime)
+
+hs_all_date = hs_dateTime | hs_date | hs_time
 
 # Quantities and raw numeric values
-hs_unitChar = Or([
-    hs_alpha,
-    Word('%_/$' + ''.join([
-        chr(c)
-        for c in range(0x0080, 0xffff)
-    ]), exact=1)
-])
-hs_unit = Combine(OneOrMore(hs_unitChar))
-hs_exp = Combine(And([
-    CaselessLiteral('e'),
-    Optional(hs_plusMinus),
-    hs_digits
-]))
-hs_decimal = Combine(And([
-    Optional(Literal('-')),
-    hs_digits,
-    Optional(And([
-        Literal('.'),
-        hs_digits
-    ])),
-    Optional(hs_exp)
-])).setParseAction(lambda toks: [float(toks[0])])
+hs_unitChar = hs_alpha ^ Word('%_/$' + ''.join([
+    chr(c)
+    for c in range(0x0080, 0xffff)
+]), exact=1)
 
-hs_quantity = And([hs_decimal, hs_unit]).setParseAction(
+hs_unit = Combine(hs_unitChar[1, ...])
+hs_exp = Combine(
+    CaselessLiteral('e') +
+    Optional(hs_plusMinus) +
+    hs_digits
+)
+hs_decimal = Combine(
+    Optional('-') +
+    hs_digits +
+    Optional(
+        '.' +
+        hs_digits
+    ) +
+    Optional(hs_exp)
+).setParseAction(lambda toks: [float(toks[0])])
+
+hs_quantity = (hs_decimal + hs_unit).leaveWhitespace() \
+    .setParseAction(
     lambda toks: [Quantity(*toks)])
-hs_number = Or([
-    hs_quantity,
-    hs_decimal,
-    Or([
-        Literal('INF'),
-        Literal('-INF'),
-        Literal('NaN')
-    ]).setParseAction(lambda toks: [float(toks[0])])
-])
+hs_number = hs_quantity ^ hs_decimal ^ (
+        Literal('INF') ^
+        '-INF' ^
+        'NaN'
+).setParseAction(lambda toks: [float(toks[0])])
 
 # URIs
 hs_uriChar = Regex(r"([^\x00-\x1f\\`]|\\[bfnrt\\:/?"
                    + r"#\[\]@&=;`]|\\[uU][0-9a-fA-F]{4})")
-hs_uri = Combine(And([
-    Suppress(Literal('`')),
-    ZeroOrMore(hs_uriChar),
-    Suppress(Literal('`'))
-])).setParseAction(lambda toks: [Uri(_unescape(toks[0], uri=True))])
+hs_uri = Combine(
+    Suppress('`') +
+    hs_uriChar[...] +
+    Suppress('`')
+).setParseAction(lambda toks: [Uri(_unescape(toks[0], uri=True))])
 
 # Strings
 hs_strChar = Regex(r"([^\x00-\x1f\\\"]|\\[bfnrt\\\"$]|\\[uU][0-9a-fA-F]{4})")
-hs_str = Combine(And([
-    Suppress(Literal('"')),
-    ZeroOrMore(hs_strChar),
-    Suppress(Literal('"'))
-])).setParseAction(lambda toks: [_unescape(toks[0], uri=False)])
+hs_str = Combine(
+    Suppress('"') +
+    hs_strChar[...] +
+    Suppress('"')
+).setParseAction(lambda toks: [_unescape(toks[0], uri=False)])
 
 # References
-hs_refChar = Or([hs_alpha, hs_digit, Word('_:-.~', exact=1)])
-hs_ref = And([
-    Suppress(Literal('@')),
-    Combine(ZeroOrMore(hs_refChar)),
-    Optional(And([
-        Suppress(Literal(' ')),
-        hs_str
-    ]))
-]).setParseAction(lambda toks: [
+hs_refChar = hs_alpha ^ hs_digit ^ Word('_:-.~', exact=1)
+hs_ref = (
+        Suppress('@') +
+        Combine(hs_refChar[...]) +
+        Optional(hs_str)
+).setParseAction(lambda toks: [
     Ref(toks[0], toks[1] if len(toks) > 1 else None)
 ])
 
 # Bins
 hs_binChar = Regex(r"[\x20-\x27\x2a-\x7f]")
-hs_bin = Combine(And([
-    Suppress(Literal('Bin(')),
-    Combine(ZeroOrMore(hs_binChar)),
-    Suppress(Literal(')'))
-])).setParseAction(lambda toks: [Bin(toks[0])])
+hs_bin = Combine(
+    Suppress('Bin(') +
+    Combine(hs_binChar[...]) +
+    Suppress(')')
+).setParseAction(lambda toks: [Bin(toks[0])])
 
 # Haystack 3.0 XStr(...)
-hs_xstr = And([
-    Regex(r"[a-zA-Z0-9_]+"),
-    Suppress(Literal('(')),
-    hs_str,
-    Suppress(Literal(')'))
-]).setParseAction(lambda toks: [XStr(toks[0], toks[1])])
+hs_xstr = (
+        Regex(r"[a-zA-Z0-9_]+") +
+        Suppress('(') +
+        hs_str +
+        Suppress(')')
+).setParseAction(lambda toks: [XStr(toks[0], toks[1])])
 
 # Booleans
 hs_bool = Word('TF', min=1, max=1, exact=1).setParseAction(
@@ -483,24 +449,21 @@ hs_na = Literal('NA').setParseAction(
 # that a NULL within a list *MUST* be explicitly given using the 'N'
 # literal: we cannot support implicit NULLs as they are ambiguous.
 hs_list = _GenerateMatch(
-    lambda ver: Group(Or([
-        Suppress(Regex(r'[ *]')),
-        And([
-            Suppress(Regex(r'\[ *')),
-            Optional(DelimitedList(
-                hs_scalar[ver],
-                delim=hs_valueSep)),
-            Suppress(Optional(hs_valueSep)),
-            Suppress(Regex(r' *\]'))
-        ])
-    ])).setParseAction(lambda toks: toks.asList()))
+    lambda ver: Group(
+        Suppress('[') +
+        Optional(delimitedList(
+            hs_scalar[ver],
+            delim=',')) +
+        Suppress(Optional(',')) +
+        Suppress(']')
+    ).setParseAction(lambda toks: toks.asList()))
 # Tag IDs
 hs_id = Regex(r'[a-z][a-zA-Z0-9_]*').setName('id')
 
 # Grid building blocks
 hs_cell = _GenerateMatch(
-    lambda ver: Or([Empty().copy().setParseAction(lambda toks: [None]),
-                    hs_scalar[ver]]).setName('cell'))
+    lambda ver: (Empty().copy().setParseAction(lambda toks: [None]) ^
+                 hs_scalar[ver]).setName('cell'))
 
 # Dict
 # There are three cases:
@@ -511,125 +474,106 @@ hs_cell = _GenerateMatch(
 hs_tagmarker = hs_id
 
 hs_tagpair = _GenerateMatch(
-    lambda ver: And([hs_id,
-                     Suppress(Regex(r': *')),
-                     hs_scalar[ver]
-                     ]).setParseAction(lambda toks: tuple(toks[:2])).setName('tagPair'))
+    lambda ver: (hs_id +
+                 Suppress(':') +
+                 hs_scalar[ver]
+                 ).setParseAction(lambda toks: tuple(toks[:2])).setName('tagPair'))
 
 hs_tag = _GenerateMatch(
-    lambda ver: Or([hs_tagmarker, hs_tagpair[ver]]).setName('tag'))
+    lambda ver: (hs_tagmarker ^ hs_tagpair[ver]).setName('tag'))
 
 hs_tags = _GenerateMatch(
-    lambda ver: ZeroOrMore(Or([hs_tag[ver],
-                               Suppress(Regex(r'[ *]'))])).setName('tags'))
+    lambda ver: hs_tag[ver][...].setName('tags'))
 
 hs_dict = _GenerateMatch(
-    lambda ver: Or([
-        Suppress(Regex(r'[ *]')),  # PPR : must be [ ]* and in another place, but pyparsing loop
-        And([
-            Suppress(Regex(r'{ *')),
-            hs_tags[ver],
-            Suppress(Regex(r' *}'))
-        ])
-    ]).setName("dict").setParseAction(_to_dict)
+    lambda ver:
+    (Suppress('{') +
+     hs_tags[ver] +
+     Suppress('}')
+     ).setName("dict").setParseAction(_to_dict)
 )
 
 hs_inner_grid = _GenerateMatch(
-    lambda ver: And([
-        Suppress(Regex(r'<< *')),
-        hs_grid[ver],
-        Suppress(Regex(r' *>>')),
-    ]))
+    lambda ver:
+    Suppress('<<') +
+    hs_grid[ver] +
+    Suppress('>>')
+)
 
 # All possible scalar values, by Haystack version
-hs_scalar_2_0 <<= Or([hs_ref, hs_bin, hs_str, hs_uri, hs_dateTime,
-                      hs_date, hs_time, hs_coord, hs_number, hs_null, hs_marker,
-                      hs_remove, hs_bool]).setName('scalar')
-hs_scalar_3_0 <<= Or([hs_ref, hs_xstr, hs_str, hs_uri, hs_dateTime,
-                      hs_date, hs_time, hs_coord, hs_number, hs_na, hs_null, hs_marker,
-                      hs_remove, hs_bool, hs_list[VER_3_0], hs_dict[VER_3_0],
-                      hs_inner_grid[VER_3_0]]).setName('scalar')
+hs_scalar_2_0 <<= (hs_ref ^ hs_bin ^ hs_str ^ hs_uri ^ hs_all_date ^
+                   hs_coord ^ hs_number ^ hs_null ^ hs_marker ^
+                   hs_remove ^ hs_bool).setName('scalar')
+hs_scalar_3_0 <<= (hs_ref ^ hs_xstr ^ hs_str ^ hs_uri ^ hs_all_date ^
+                   hs_coord ^ hs_number ^ hs_na ^ hs_null ^ hs_marker ^
+                   hs_remove ^ hs_bool ^ hs_list[VER_3_0] ^ hs_dict[VER_3_0] ^
+                   hs_inner_grid[VER_3_0]).setName('scalar')
 
-hs_nl = Combine(And([Optional(Literal('\r')), Literal('\n')]))
+hs_nl = Combine(Optional('\r') + '\n')
 
 hs_row = _GenerateMatch(
-    lambda ver: Group(And([DelimitedList(hs_cell[ver], delim=hs_valueSep),
-                           Suppress(Regex(r' *')),
-                           Suppress(hs_nl)
-                           ])).setName('row'))
+    lambda ver: Group(delimitedList(hs_cell[ver], delim=',') +
+                      Suppress(hs_nl)
+                      ).setName('row'))
 
 hs_rows = _GenerateMatch(
-    lambda ver: Group(ZeroOrMore(hs_row[ver])).setName("rows"))
+    lambda ver: Group(hs_row[ver][...]).setName("rows"))
 
 hs_metaPair = _GenerateMatch(
-    lambda ver: And([
-        hs_id,
-        Suppress(And([
-            ZeroOrMore(Literal(' ')),
-            Literal(':'),
-            ZeroOrMore(Literal(' '))
-        ])),
-        hs_scalar[ver]
-    ]).setParseAction(lambda toks: [tuple(toks[:2])]).setName('metaPair'))
+    lambda ver: (
+            hs_id +
+            Suppress(':') +
+            hs_scalar[ver]
+    ).setParseAction(lambda toks: [tuple(toks[:2])]).setName('metaPair'))
 hs_metaMarker = hs_id.copy().setParseAction(
     lambda toks: [(toks[0], MARKER)]).setName('metaMarker')
 hs_metaItem = _GenerateMatch(
-    lambda ver: Or([
-        hs_metaMarker,
-        hs_metaPair[ver]
-    ]).setName('metaItem'))
+    lambda ver: (
+            hs_metaMarker ^
+            hs_metaPair[ver]
+    ).setName('metaItem'))
 hs_meta = _GenerateMatch(
-    lambda ver: DelimitedList(hs_metaItem[ver],
-                              delim=' ').setParseAction(
+    lambda ver: hs_metaItem[ver][1, ...].setParseAction(
         lambda toks: [SortableDict(toks.asList())]
     ).setName('meta'))
 
 hs_col = _GenerateMatch(
-    lambda ver: And([
-        hs_id,
-        Optional(And([
-            Suppress(Literal(' ')),
-            hs_meta[ver]
-        ])).setName('colMeta')
-    ]).setParseAction(lambda toks: [
+    lambda ver: (
+            hs_id +
+            Optional(hs_meta[ver]).setName('colMeta')
+    ).setParseAction(lambda toks: [
         (toks[0], toks[1] if len(toks) > 1 else {})]))
 
 hs_cols = _GenerateMatch(
-    lambda ver: And([
-        DelimitedList(
-            hs_col[ver], delim=hs_valueSep).setParseAction(  # + hs_nl
-            lambda toks: [SortableDict(toks.asList())]),
-        Suppress(Regex(r' *')),
-        Suppress(hs_nl)
-    ])
+    lambda ver:
+    delimitedList(
+        hs_col[ver], delim=',')
+        .setParseAction(lambda toks: [SortableDict(toks.asList())]) +
+    Suppress(hs_nl)
 )
 
-hs_gridVer = Combine(And([Suppress(Literal('ver:')) + hs_str]))
+hs_gridVer = Combine(Suppress('ver:') + hs_str)
 
 hs_gridMeta = _GenerateMatch(
-    lambda ver: And([
-        hs_gridVer,
-        Optional(And([
-            Suppress(Literal(' ')),
-            hs_meta[ver]
-        ])).setName('gridMeta'),
-        Suppress(Regex(r' *')),
-        Suppress(hs_nl)
-    ]).setParseAction(_assign_ver))  # + hs_nl
+    lambda ver: (
+            hs_gridVer +
+            Optional(hs_meta[ver]).setName('gridMeta') +
+            Suppress(hs_nl)
+    ).setParseAction(_assign_ver))
 
-hs_grid_2_0 <<= And([
-    hs_gridMeta[VER_2_0],
-    hs_cols[VER_2_0],
-    hs_rows[VER_2_0],
-]).setParseAction(_gen_grid)
+hs_grid_2_0 <<= (
+        hs_gridMeta[VER_2_0] +
+        hs_cols[VER_2_0] +
+        hs_rows[VER_2_0]
+).setParseAction(_gen_grid)
 
-hs_grid_3_0 <<= And([
-    hs_gridMeta[VER_3_0],
-    hs_cols[VER_3_0],
-    hs_rows[VER_3_0],
-]).setParseAction(_gen_grid)
+hs_grid_3_0 <<= (
+        hs_gridMeta[VER_3_0] +
+        hs_cols[VER_3_0] +
+        hs_rows[VER_3_0]
+).setParseAction(_gen_grid)
 
-_lock = Lock()
+lock = Lock()
 
 
 def parse_grid(grid_data: str, parse_all: bool = True) -> Grid:
@@ -642,7 +586,7 @@ def parse_grid(grid_data: str, parse_all: bool = True) -> Grid:
         The grid
     """
     try:
-        with _lock:
+        with lock:
             # First element is the grid metadata
             ver_match = _VERSION_RE.match(grid_data)
             if ver_match is None:
@@ -653,7 +597,7 @@ def parse_grid(grid_data: str, parse_all: bool = True) -> Grid:
 
             # Now parse the grid of the grid accordingly
             return hs_grid[version].parseString(grid_data, parseAll=parse_all)[0]
-    except pp.ParseException as parse_exception:
+    except ParseException as parse_exception:
         LOG.debug('Failing grid: %r', grid_data)
         raise ZincParseException(
             'Failed to parse: %s' % _reformat_exception(parse_exception, parse_exception.lineno),
@@ -676,7 +620,7 @@ def parse_scalar(scalar_data: str, version: Version = LATEST_VER) -> Any:
     """
     try:
         return hs_scalar[version].parseString(scalar_data, parseAll=True)[0]
-    except pp.ParseException as parse_exception:
+    except ParseException as parse_exception:
         # Raise a new exception with the appropriate line number.
         raise ZincParseException(
             'Failed to parse scalar: %s' % _reformat_exception(parse_exception),

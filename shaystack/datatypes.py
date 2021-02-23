@@ -18,10 +18,10 @@ from typing import Optional, NewType
 
 from .pintutil import unit_reg, _to_pint_unit
 
+MODE = NewType('Mode', str)
 """
 Compatible haystack file format
 """
-MODE = NewType('Mode', str)
 MODE_ZINC: MODE = MODE('text/zinc')
 MODE_JSON: MODE = MODE('application/json')
 MODE_CSV: MODE = MODE('text/csv')

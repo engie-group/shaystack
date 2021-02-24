@@ -292,7 +292,7 @@ ifeq ($(USE_OKTA),Y)
 endif
 	echo -e "$(cyan)Install binary dependencies ...$(normal)"
 	conda install -y -c conda-forge conda setuptools compilers make git jq libpq curl psycopg2
-	conda install -y -c judowill gitflow
+	pip install -y gitflow
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	pip install supersqlite
 	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"

@@ -1,7 +1,5 @@
 ![Shift-Haystack](logo.png)
 
-# Shift-for-Haystack API
-
 | The API is not stable and can be changed without any notice. |
 | --------------------------------------------------------- |
 
@@ -26,15 +24,16 @@ area.
 
 Haystack core data model is the Grid, it can be serialized in many formats,
 mainly [Zinc](https://www.project-haystack.org/doc/Zinc),
-[Json](https://www.project-haystack.org/doc/Json)
-and [Csv](https://www.project-haystack.org/doc/Csv)
+[Trio](https://www.project-haystack.org/doc/Trio)
+[Json](https://www.project-haystack.org/doc/Json), and [Csv](https://www.project-haystack.org/doc/Csv)
 
 ## About this project
 
 This project implements client side haystack code. Useful to parse or dump Haystack files
 ([Zinc](https://www.project-haystack.org/doc/Zinc),
 [Json](https://www.project-haystack.org/doc/Json),
-[Csv](https://www.project-haystack.org/doc/Csv)).
+[Trio](https://www.project-haystack.org/doc/Trio)
+and [Csv](https://www.project-haystack.org/doc/Csv)).
 
 On the server side, it also implements [Haystack Rest API](https://www.project-haystack.org/doc/Rest), useful to serve
 Haystack data you host.
@@ -77,7 +76,7 @@ $ unzip sample
 
 The directory `sample` now contains:
 
-- `carytown.[csv|jon|zinc]`: A public reference haystack ontology
+- `carytown.[csv|jon|zinc|trio]`: A public reference haystack ontology
 - `p:demo:*.zinc`: A sample of time series data (`ts`,`val` zinc format)
 
 Create a virtual environment
@@ -174,8 +173,8 @@ This implementation can offer two API endpoints:
 
 This API can negotiate:
 
-- Request format (`Content-Type: text/zinc`, `application/json` or `text/csv`)
-- Response format (`Accept: text/zinc, application/json, text/csv`)
+- Request format (`Content-Type: text/zinc`, `text/trio`, `application/json` or `text/csv`)
+- Response format (`Accept: text/zinc, text/trio, application/json, text/csv`)
 
 These [operations](https://project-haystack.org/doc/Rest) are implemented in both endpoints:
 - [about](https://project-haystack.org/doc/Ops#about)

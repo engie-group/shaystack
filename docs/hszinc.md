@@ -5,6 +5,7 @@ At this time (2021/1/1), here are the differences.
 | Feature                        | hszinc | shift-4-haystack |
 | ------------------------------ |:---:|:---:|
 | Parse zinc                     |  Y  |  Y  |
+| Parse trio                     |     |  Y  |
 | Parse json                     |  Y  |  Y  |
 | Parse csv                      |     |  Y  |
 | Parse multiple grid            |  Y  |  N  |

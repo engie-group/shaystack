@@ -1,0 +1,53 @@
+.content-container {
+  display: flex;
+  flex-direction: row;
+}
+.entity-row__table {
+  width: 30%;
+}
+.entity-row__title {
+  padding-bottom: 20px;
+}
+.entity-row__subtitle {
+  padding-bottom: 10px;
+}
+.entity-row__container {
+  display: flex;
+  flex-direction: column;
+  border-radius: 15px;
+  padding: 5px 0 10px 10px;
+  margin-bottom: 30px;
+}
+.entity-row__chart {
+  width: 50%;
+  margin: 0 auto;
+}
+.entity-row__click-button {
+  float: right;
+}
+.v-btn {
+  text-transform: none;
+  height: 21px !important;
+  padding: 0 !important;
+  font-weight: bold;
+  letter-spacing: normal;
+  background-color: white !important;
+}
+.apiSource_1 {
+  background: #d4bbbb;
+}
+.apiSource_2 {
+  background: #8080ff;
+}
+.apiSource_3 {
+  background: #80a86b;
+}
+.apiSource_4 {
+  background: #bb9857;
+}
+.apiSource_5 {
+  background: #ad77df;
+}
+.apiSource_6 {
+  background: #a39178;
+}

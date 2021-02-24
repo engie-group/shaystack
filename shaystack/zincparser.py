@@ -15,7 +15,7 @@ import datetime
 import logging
 import re
 import sys
-from threading import Lock
+from threading import RLock
 from typing import Dict, Any, Callable, List, Tuple
 from typing import Optional as Typing_Optional
 
@@ -30,8 +30,6 @@ from .sortabledict import SortableDict
 # Bring in version handling
 from .version import Version, VER_2_0, VER_3_0, LATEST_VER
 from .zoneinfo import timezone
-
-# flake8: noqa E731
 
 # Logging instance for reporting debug info
 LOG = logging.getLogger(__name__)
@@ -111,7 +109,7 @@ def _gen_grid(toks: List[Any]) -> Grid:
     return grid
 
 
-def _to_dict(toks: List[Any]) -> Dict[str, Any]:
+def toks_to_dict(toks: List[Any]) -> Dict[str, Any]:
     """
     Args:
         toks:
@@ -127,7 +125,8 @@ def _to_dict(toks: List[Any]) -> Dict[str, Any]:
             if isinstance(tok, str):
                 result[tok] = MARKER
             elif isinstance(tok, tuple):
-                result[tok[0]] = tok[1]
+                if len(tok) > 1 and tok[1] is not None:
+                    result[tok[0]] = tok[1]
             else:
                 result[tok] = MARKER
 
@@ -246,6 +245,10 @@ def _unescape(a_string: str, uri: bool = False) -> str:
                 out += '\r'
             elif esc_c == 't':
                 out += '\t'
+            elif esc_c == 'v':
+                out += '\v'
+            elif esc_c == '\\':
+                out += '\\'
             else:
                 if uri and (esc_c == '#'):
                     # \# is passed through with backslash.
@@ -490,7 +493,7 @@ hs_dict = _GenerateMatch(
     (Suppress('{') +
      hs_tags[ver] +
      Suppress('}')
-     ).setName("dict").setParseAction(_to_dict)
+     ).setName("dict").setParseAction(toks_to_dict)
 )
 
 hs_inner_grid = _GenerateMatch(
@@ -573,7 +576,7 @@ hs_grid_3_0 <<= (
         hs_rows[VER_3_0]
 ).setParseAction(_gen_grid)
 
-lock = Lock()
+pyparser_lock = RLock()
 
 
 def parse_grid(grid_data: str, parse_all: bool = True) -> Grid:
@@ -586,7 +589,7 @@ def parse_grid(grid_data: str, parse_all: bool = True) -> Grid:
         The grid
     """
     try:
-        with lock:
+        with pyparser_lock:
             # First element is the grid metadata
             ver_match = _VERSION_RE.match(grid_data)
             if ver_match is None:

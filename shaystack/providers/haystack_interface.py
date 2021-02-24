@@ -207,7 +207,7 @@ class HaystackInterface(ABC):
         Notes:
             Implement this method, only if you want to limit the format negotiation
         Returns:
-            The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.
+            The grid format or None. If None, the API accept all formats ZINC, TRIO, JSON and CSV.
         """
         return None  # type: ignore
 

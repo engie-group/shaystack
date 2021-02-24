@@ -12,17 +12,18 @@ from csv import reader
 import pytz
 
 import shaystack
-from shaystack import dump_scalar
+from shaystack import dump_scalar, MODE_TRIO, MODE_ZINC
 from .test_parser import SIMPLE_EXAMPLE_ZINC, SIMPLE_EXAMPLE_JSON, \
-    METADATA_EXAMPLE_JSON, SIMPLE_EXAMPLE_CSV, METADATA_EXAMPLE_CSV
+    METADATA_EXAMPLE_JSON, SIMPLE_EXAMPLE_CSV, METADATA_EXAMPLE_CSV, SIMPLE_EXAMPLE_TRIO
 
 # The metadata example is a little different, as we generate the grid without
 # spaces around the commas.
-METADATA_EXAMPLE = '''ver:"2.0" database:"test" dis:"Site Energy Summary"
+METADATA_EXAMPLE = '''
+ver:"2.0" database:"test" dis:"Site Energy Summary"
 siteName dis:"Sites",val dis:"Value" unit:"kW"
 "Site 1",356.214kW
 "Site 2",463.028kW
-'''
+'''[1:]
 
 
 def make_simple_grid(version=shaystack.VER_2_0):
@@ -48,8 +49,14 @@ def make_simple_grid(version=shaystack.VER_2_0):
 
 def test_simple_zinc():
     grid = make_simple_grid()
-    grid_str = shaystack.dump(grid)
+    grid_str = shaystack.dump(grid, MODE_ZINC)
     assert grid_str == SIMPLE_EXAMPLE_ZINC
+
+
+def test_simple_trio():
+    grid = make_simple_grid()
+    grid_str = shaystack.dump(grid, MODE_TRIO)
+    assert grid_str == SIMPLE_EXAMPLE_TRIO
 
 
 def test_simple_json():
@@ -126,9 +133,10 @@ def make_grid_meta(version=shaystack.VER_2_0):
 
 def test_grid_meta():
     grid_str = shaystack.dump(make_grid_meta())
-    assert grid_str == '''ver:"2.0" aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123Hz
+    assert grid_str == '''
+ver:"2.0" aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123Hz
 empty
-'''
+'''[1:]
 
 
 def test_grid_meta_json():
@@ -174,9 +182,10 @@ def make_col_meta(version=shaystack.VER_2_0):
 
 def test_col_meta_zinc():
     grid_str = shaystack.dump(make_col_meta(), mode=shaystack.MODE_ZINC)
-    assert grid_str == '''ver:"2.0"
+    assert grid_str == '''
+ver:"2.0"
 empty aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123Hz
-'''
+'''[1:]
 
 
 def test_col_meta_json():
@@ -285,7 +294,8 @@ def test_data_types_zinc_v2():
         },
     ])
     grid_str = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
-    ref_str = '''ver:"2.0"
+    ref_str = '''
+ver:"2.0"
 comment,value
 "A null value",N
 "A marker",M
@@ -304,7 +314,7 @@ comment,value
 "A time",07:51:43.012345
 "A timestamp (non-UTC)",2016-01-13T07:51:42.012345+01:00 Berlin
 "A timestamp (UTC)",2016-01-13T07:51:42.012345+00:00 UTC
-'''
+'''[1:]
     assert grid_str == ref_str
 
 
@@ -515,7 +525,8 @@ def test_data_types_csv_v2():
     ])
     grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
-    assert grid_csv == '''comment,value
+    assert grid_csv == '''
+comment,value
 "A null value",
 "A marker",\u2713
 "A remove (2.0 version)",R
@@ -533,7 +544,7 @@ def test_data_types_csv_v2():
 "A time",07:51:43.012345
 "A timestamp (non-UTC)",2016-01-13T07:51:42.012345+01:00
 "A timestamp (UTC)",2016-01-13T07:51:42.012345+00:00
-'''
+'''[1:]
 
 
 def test_data_types_zinc_v3():
@@ -575,7 +586,8 @@ def test_data_types_zinc_v3():
         },
     ])
     grid_str = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
-    ref_str = '''ver:"3.0"
+    ref_str = '''
+ver:"3.0"
 comment,value
 "A NA",NA
 "An empty list",[]
@@ -585,7 +597,97 @@ comment,value
 "References",[@a-ref,@a-ref "a value"]
 "A quantity",[500miles]
 "A XStr",[hex("deadbeef")]
-'''
+'''[1:]
+    assert grid_str == ref_str
+
+
+def test_data_types_trio_v3():
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
+    grid.column['comment'] = {}
+    grid.column['value'] = {}
+    grid.extend([
+        {
+            'comment': 'A NA',
+            'value': shaystack.NA,
+        },
+        {
+            'comment': 'An empty list',
+            'value': [],
+        },
+        {
+            'comment': 'A null value in a list',
+            'value': [None],
+        },
+        {
+            'comment': 'A marker in a list',
+            'value': [shaystack.MARKER],
+        },
+        {
+            'comment': 'Booleans',
+            'value': [True, False],
+        },
+        {
+            'comment': 'References',
+            'value': [shaystack.Ref('a-ref'), shaystack.Ref('a-ref', 'a value')],
+        },
+        {
+            'comment': 'A quantity',
+            'value': [shaystack.Quantity(500, 'miles')],
+        },
+        {
+            'comment': 'A XStr',
+            'value': [shaystack.XStr("hex", 'deadbeef')],
+        },
+        {
+            'comment': 'A simple string',
+            'value': "Hello\tworld",
+        },
+        {
+            'comment': 'A complex string',
+            'value': "\t\"Hello\"\tworld",
+        },
+        {
+            'comment': 'A multiline string',
+            'value': "Hello\nworld\there",
+        },
+    ])
+    grid_str = shaystack.dump(grid, mode=shaystack.MODE_TRIO)
+    ref_str = '''
+comment: A NA
+value: NA
+---
+comment: An empty list
+value: []
+---
+comment: A null value in a list
+value: [N]
+---
+comment: A marker in a list
+value: [M]
+---
+comment: Booleans
+value: [T,F]
+---
+comment: References
+value: [@a-ref,@a-ref "a value"]
+---
+comment: A quantity
+value: [500miles]
+---
+comment: A XStr
+value: [hex("deadbeef")]
+---
+comment: A simple string
+value: Hello\\tworld
+---
+comment: A complex string
+value: "\\t\\"Hello\\"\\tworld"
+---
+comment: A multiline string
+value: 
+  Hello
+  world\\there
+'''[1:]
     assert grid_str == ref_str
 
 
@@ -726,7 +828,8 @@ def test_data_types_csv_v3():
     ])
     grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
-    assert grid_csv == u'''comment,value
+    assert grid_csv == u'''
+comment,value
 "A Remove (3.0 version)",R
 "A NA",NA
 "An empty list","[]"
@@ -736,7 +839,7 @@ def test_data_types_csv_v3():
 "References","[@a-ref,@a-ref ""a value""]"
 "A quantity","[500miles]"
 "A XStr","[hex(""deadbeef"")]"
-'''
+'''[1:]
 
 
 def test_scalar_dict_zinc_v3():
@@ -772,6 +875,48 @@ def test_scalar_dict_zinc_v3():
                         .replace("ref2:@a-ref", "ref2:@a-ref \"a value\"") +
                         "}\n"
                         "\"A quantity in a dict\",{quantity:500miles}\n")
+
+
+def test_scalar_dict_trio_v3():
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
+    grid.column['comment'] = {}
+    grid.column['value'] = {}
+    grid.extend([
+        {
+            'comment': 'An empty dict',
+            'value': {},
+        },
+        {
+            'comment': 'A marker in a dict',
+            'value': {"marker": shaystack.MARKER},
+        },
+        {
+            'comment': 'A references in a dict',
+            'value': {"ref": shaystack.Ref('a-ref'), "ref2": shaystack.Ref('a-ref', 'a value')},
+        },
+        {
+            'comment': 'A quantity in a dict',
+            'value': {"quantity": shaystack.Quantity(500, 'miles')},
+        },
+    ])
+    grid_str = shaystack.dump(grid, mode=shaystack.MODE_TRIO)
+    assert grid_str == \
+           '''comment: An empty dict
+value: {}
+---
+comment: A marker in a dict
+value: {marker:M}
+---
+comment: A references in a dict
+value: {''' + \
+           " ".join([str(k) + ":" + str(v)
+                     for k, v in {"ref": "@a-ref", "ref2": "@a-ref"}.items()]) \
+               .replace("ref2:@a-ref", "ref2:@a-ref \"a value\"") + \
+           '''}
+           ---
+           comment: A quantity in a dict
+           value: {quantity:500miles}
+           '''
 
 
 def test_scalar_dict_json_v3():
@@ -885,6 +1030,15 @@ def test_scalar_unknown_zinc():
     try:
         shaystack.dump_scalar(shaystack.VER_2_0,
                               mode=shaystack.MODE_ZINC, version=shaystack.VER_2_0)
+        assert False, 'Serialised a list in Haystack v2.0'
+    except NotImplementedError:
+        pass
+
+
+def test_scalar_unknown_trio():
+    try:
+        shaystack.dump_scalar(shaystack.VER_3_0,
+                              mode=shaystack.MODE_TRIO, version=shaystack.VER_3_0)
         assert False, 'Serialised a list in Haystack v2.0'
     except NotImplementedError:
         pass
@@ -1010,21 +1164,28 @@ def test_dict_csv_v2():
         pass
 
 
-def test_scalar_zinc():
+def test_scalar_ref_zinc():
     # No need to be exhaustive, the underlying function is tested heavily by
     # the grid dump tests.
     assert shaystack.dump_scalar(shaystack.Ref('areference', 'a display name'),
                                  mode=shaystack.MODE_ZINC) == '@areference "a display name"'
 
 
-def test_scalar_json():
+def test_scalar_ref_trio():
+    # No need to be exhaustive, the underlying function is tested heavily by
+    # the grid dump tests.
+    assert shaystack.dump_scalar(shaystack.Ref('areference', 'a display name'),
+                                 mode=shaystack.MODE_TRIO) == '@areference "a display name"'
+
+
+def test_scalar_ref_json():
     # No need to be exhaustive, the underlying function is tested heavily by
     # the grid dump tests.
     assert shaystack.dump_scalar(shaystack.Ref('areference', 'a display name'),
                                  mode=shaystack.MODE_JSON) == '"r:areference a display name"'
 
 
-def test_scalar_csv():
+def test_scalar_ref_csv():
     # No need to be exhaustive, the underlying function is tested heavily by
     # the grid dump tests.
     assert shaystack.dump_scalar(shaystack.Ref('areference', 'a display name'),
@@ -1135,6 +1296,30 @@ def test_grid_types_zinc():
                         '>>\n')
 
 
+def test_grid_types_trio():
+    innergrid = shaystack.Grid(version=shaystack.VER_3_0)
+    innergrid.column['comment'] = {}
+    innergrid.extend([
+        {
+            'comment': 'A innergrid',
+        },
+    ])
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
+    grid.column['inner'] = {}
+    grid.extend([
+        {
+            'inner': innergrid,
+        },
+    ])
+    grid_str = shaystack.dump(grid, mode=shaystack.MODE_TRIO)
+    assert grid_str == '''inner: Zinc:
+  <<ver:"3.0"
+  comment
+  "A innergrid"
+  >>
+'''
+
+
 def test_grid_types_json():
     innergrid = shaystack.Grid(version=shaystack.VER_3_0)
     innergrid.column['comment'] = {}
@@ -1188,12 +1373,13 @@ def test_grid_types_csv():
     ])
     grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
-    assert grid_csv == '''inner
+    assert grid_csv == '''
+inner
 "<<ver:""3.0""
 comment
 ""A innergrid""
 >>"
-'''
+'''[1:]
 
 
 def test_dump_invalide_scalar():

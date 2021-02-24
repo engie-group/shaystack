@@ -11,12 +11,12 @@ Generic parser from file to `Grid`. The mode can be `MODE_ZINC`, `MODE_JSON` or 
 import logging
 from typing import Optional, Any, Union, AnyStr, cast
 
-from .csvparser import parse_grid as parse_csv_grid
-from .csvparser import parse_scalar as parse_csv_scalar
-from .datatypes import MODE_ZINC, MODE_JSON, MODE_CSV, MODE
+from .csvparser import parse_grid as parse_csv_grid, parse_scalar as parse_csv_scalar
+from .datatypes import MODE_ZINC, MODE_JSON, MODE_CSV, MODE, MODE_TRIO
 from .grid import Grid
 from .jsonparser import parse_grid as parse_json_grid, \
     parse_scalar as parse_json_scalar
+from .trioparser import parse_grid as parse_trio_grid, parse_scalar as parse_trio_scalar
 # Bring in version handling
 from .version import Version, LATEST_VER, VER_3_0
 from .zincparser import parse_grid as parse_zinc_grid, \
@@ -28,11 +28,13 @@ LOG = logging.getLogger(__name__)
 
 _suffix_to_mode = {".zinc": MODE_ZINC,
                    ".json": MODE_JSON,
+                   ".trio": MODE_TRIO,
                    ".csv": MODE_CSV
                    }
 
 _mode_to_suffix = {MODE_ZINC: ".zinc",
                    MODE_JSON: ".json",
+                   MODE_TRIO: ".trio",
                    MODE_CSV: ".csv"
                    }
 
@@ -41,7 +43,7 @@ def suffix_to_mode(ext: str) -> Optional[MODE]:
     """Convert a file suffix to Haystack mode
 
     Args:
-        ext: The file suffix (`.zinc`, `.json`, `.csv`)
+        ext: The file suffix (`.zinc`, `.json`, `.trio` or `.csv`)
     Returns:
         The corresponding haystack mode (`MODE_...`)
     """
@@ -54,7 +56,7 @@ def mode_to_suffix(mode: MODE) -> Optional[str]:
     Args:
         mode: The haystack mode (`MODE_...`)
     Returns:
-        The file suffix (`.zinc`, `.json`, `.csv`)
+        The file suffix (`.zinc`, `.json`, `.trio` or `.csv`)
     """
     return _mode_to_suffix.get(mode, None)
 
@@ -79,6 +81,8 @@ def parse(grid_str: AnyStr, mode: MODE = MODE_ZINC) -> Grid:
 
     if mode == MODE_ZINC:
         return parse_zinc_grid(grid_str)
+    if mode == MODE_TRIO:
+        return parse_trio_grid(grid_str)
     if mode == MODE_JSON:
         return parse_json_grid(grid_str)
     if mode == MODE_CSV:
@@ -108,6 +112,8 @@ def parse_scalar(scalar: Union[bytes, str], mode: MODE = MODE_ZINC,
 
     if mode == MODE_ZINC:
         return parse_zinc_scalar(scalar, version=version)
+    if mode == MODE_TRIO:
+        return parse_trio_scalar(scalar, version=version)
     if mode == MODE_JSON:
         return parse_json_scalar(scalar, version=version)
     if mode == MODE_CSV:

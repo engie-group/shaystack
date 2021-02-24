@@ -25,7 +25,7 @@ from typing import Tuple, Dict
 from accept_types import AcceptableType, get_best_match
 from pyparsing import ParseException
 
-from .datatypes import Ref, Quantity, MARKER
+from .datatypes import Ref, Quantity, MARKER, MODE_TRIO
 from .dumper import dump
 from .exception import HaystackException
 from .grid import Grid, VER_3_0
@@ -272,7 +272,7 @@ def _dump_response(
         A tuple with the mime type and the body
     """
     accept_type = get_best_match(
-        accept, ["*/*", MODE_CSV, MODE_ZINC, MODE_JSON]
+        accept, ["*/*", MODE_CSV, MODE_TRIO, MODE_ZINC, MODE_JSON]
     )
     if accept_type:
         if accept_type in (DEFAULT_MIME_TYPE, "*/*"):
@@ -284,6 +284,11 @@ def _dump_response(
             return (
                 MODE_ZINC + "; charset=utf-8",
                 dump(grid, mode=MODE_ZINC),
+            )
+        if accept_type == MODE_TRIO:
+            return (
+                MODE_ZINC + "; charset=utf-8",
+                dump(grid, mode=MODE_TRIO),
             )
         if accept_type == MODE_JSON:
             return (
@@ -429,6 +434,11 @@ def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
                         "send": MARKER,
                     },
                     {
+                        "mime": MODE_TRIO,
+                        "receive": MARKER,
+                        "send": MARKER,
+                    },
+                    {
                         "mime": MODE_JSON,
                         "receive": MARKER,
                         "send": MARKER,
@@ -460,7 +470,8 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     try:
         provider = get_singleton_provider()
         grid_request = _parse_body(request)
-        read_ids = select = read_filter = date_version = None
+        read_ids: Optional[List[Ref]] = None
+        select = read_filter = date_version = None
         limit = 0
         if grid_request:
             if "id" in grid_request.column:

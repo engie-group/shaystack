@@ -59,6 +59,28 @@ export default {
     }
   },
   methods: {
+    handleScroll() {
+      // eslint-disable-next-line
+      this.entitiesGroupedById.find(entity => {
+        const entityName = this.getEntityName(entity)
+        const el = this.$refs[entityName][0].$el
+        if (this.elementInViewport(el)) {
+          const { query } = this.$route
+          this.$router.replace({ hash: entityName, query })
+        }
+      })
+    },
+    elementInViewport(el) {
+      let top = el.offsetTop
+      const height = el.offsetHeight
+
+      while (el.offsetParent) {
+        // eslint-disable-next-line
+        el = el.offsetParent
+        top += el.offsetTop
+      }
+      return top >= window.pageYOffset && top + height <= window.pageYOffset + window.innerHeight
+    },
     isPointFromSource(pointName, colorEntities) {
       return colorEntities.find(
         entityColor =>
@@ -117,6 +139,14 @@ export default {
       }
     }
     await this.$store.dispatch('reloadAllData', { entity: this.filterApi })
+  },
+  updated() {
+    const entityNames = this.entitiesGroupedById.map(entity => this.getEntityName(entity))
+    if (entityNames.indexOf(decodeURI(this.$route.hash).substring(1)) >= 0) {
+      this.$refs[decodeURI(this.$route.hash).substring(1)][0].$el.scrollIntoView()
+      window.scrollBy(0, -90)
+    }
+    window.addEventListener('scroll', this.handleScroll, { passive: true })
   }
 }
 

@@ -63,7 +63,7 @@ export default {
       // eslint-disable-next-line
       this.entitiesGroupedById.find(entity => {
         const entityName = this.getEntityName(entity)
-        const el = this.$refs[entityName][0].$el
+        const el = this.$refs[entityName][0] ? this.$refs[entityName][0].$el : null
         if (this.elementInViewport(el)) {
           const { query } = this.$route
           this.$router.replace({ hash: entityName, query })
@@ -71,6 +71,7 @@ export default {
       })
     },
     elementInViewport(el) {
+      if (!el) return false
       let top = el.offsetTop
       const height = el.offsetHeight
 
@@ -99,7 +100,7 @@ export default {
         this.$store.commit('SET_FILTER_API', { filterApi: newApiFilter })
       } else {
         this.$refs[pointName][0].$el.scrollIntoView()
-        window.scrollBy(0, -90)
+        window.scrollBy(0, -200)
       }
     },
     getEntityName(entity) {
@@ -144,7 +145,7 @@ export default {
     const entityNames = this.entitiesGroupedById.map(entity => this.getEntityName(entity))
     if (entityNames.indexOf(decodeURI(this.$route.hash).substring(1)) >= 0) {
       this.$refs[decodeURI(this.$route.hash).substring(1)][0].$el.scrollIntoView()
-      window.scrollBy(0, -90)
+      window.scrollBy(0, -200)
     }
     window.addEventListener('scroll', this.handleScroll, { passive: true })
   }

@@ -37,6 +37,7 @@
 }
 .summary-content__text-field {
   margin-top: 23px !important;
+  padding-left: 10px !important;
   width: 1%;
   .v-input--is-focused {
     background: white;

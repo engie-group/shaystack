@@ -97,8 +97,8 @@ export default {
     async updateFilter(newFilter) {
       if (newFilter !== this.$store.getters.filterApi) {
         this.$store.commit('SET_FILTER_API', { filterApi: newFilter })
-        await this.$router.replace({ query: null }).catch(() => {})
-        this.$router.push({ query: { filterApi: newFilter, apiServers: `["${this.getApiServers.join('","')}"]` } })
+        const { apiServers } = this.$route.query
+        this.$router.push({ query: { filterApi: newFilter, apiServers } })
         await this.$store.dispatch('reloadAllData', { entity: newFilter })
       }
     },

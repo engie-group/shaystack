@@ -52,7 +52,7 @@ export default {
   name: 'CEntityRow',
   components: { CChart },
   props: {
-    id: {
+    idEntity: {
       type: String,
       default: ''
     },
@@ -95,13 +95,13 @@ export default {
       })
     },
     entityId() {
-      return this.id.split(' ')[0]
+      return this.idEntity.split(' ')[0]
     },
     displayChart() {
       return this.his.filter(his => (his ? his.length > 0 : his)).length > 0 && this.isDataLoaded
     },
     chartId() {
-      return this.isFromExternalSource ? `${this.id}-external` : this.id
+      return this.isFromExternalSource ? `${this.idEntity}-external` : this.idEntity
     },
     entityName() {
       return formatService.formatEntityName(this.dataEntity)

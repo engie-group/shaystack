@@ -138,13 +138,14 @@ const store = new Vuex.Store({
 })
 
 const router = new VueRouter({
+  mode: 'history',
   routes: [
     {
       path: '',
       component: VMainLayout,
       children: [
         {
-          path: '/',
+          path: '/haystack/',
           name: 'summary',
           component: VSummaryContent
         }

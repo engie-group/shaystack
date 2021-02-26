@@ -10,8 +10,11 @@ import datetime
 import random
 import string
 import sys
+from typing import Optional, Set, Dict, List, Union
 
-from shaystack.datatypes import Ref, Bin, Uri, Quantity, Coordinate, XStr, MARKER, REMOVE, NA
+from shaystack import HaystackType
+from shaystack.datatypes import Ref, Bin, Uri, Quantity, Coordinate, XStr, MARKER, REMOVE, NA, MODE_TRIO, MODE, \
+    _MarkerType, _RemoveType, _NAType
 from shaystack.dumper import dump
 from shaystack.grid import Grid, VER_3_0
 from shaystack.metadata import MetadataObject
@@ -20,15 +23,24 @@ from shaystack.zoneinfo import _get_tz_map, timezone
 
 STR_CHARSET = string.ascii_letters + string.digits + '\n\r\t\f\b'
 
+# Set GENERATION_NUMBER to 1 and _FIND_BUG_END to N to detect a first random grid with error
+# _GENERATION_NUMBER = 1
+# _FIND_BUG_START = 0  # 0 for normal use
+# _FIND_BUG_END = 10000  # 1 for normal use
+
+_GENERATION_NUMBER = 10
+_FIND_BUG_START = 0  # 0 for normal use
+_FIND_BUG_END = 1  # 1 for normal use
+
 GENERATION_NUMBER, GENERATION_COLUMN, GENERATION_ROW, PERCENT_GEN_ID, PERCENT_RECURSIVE = \
-    (10, 5, 10, 30, 5)
+    (_GENERATION_NUMBER, 5, 10, 30, 5)
 
 
-def gen_random_const():
+def gen_random_const() -> Union[bool, _MarkerType, _RemoveType, _NAType]:
     return random.choice([True, False, MARKER, REMOVE, NA])
 
 
-def gen_random_ref():
+def gen_random_ref() -> Ref:
     # Generate a randomised reference.
     name = gen_random_str(charset=string.ascii_letters + string.digits + '_:-.~')
     if random.choice([True, False]):
@@ -39,7 +51,7 @@ def gen_random_ref():
     return Ref(name, value)
 
 
-def gen_random_bin():
+def gen_random_bin() -> Bin:
     # Generate a randomized binary
     return Bin(random.choice([
         'text/plain',
@@ -52,7 +64,7 @@ def gen_random_bin():
     ]))
 
 
-def gen_random_xstr():
+def gen_random_xstr() -> XStr:
     # Generate a randomized binary
     b_array = bytearray(random.getrandbits(8) for _ in range(5))
     return XStr(*random.choice([
@@ -63,11 +75,11 @@ def gen_random_xstr():
     ]))
 
 
-def gen_random_uri():
+def gen_random_uri() -> Uri:
     return Uri(gen_random_str(charset=string.ascii_letters + string.digits))
 
 
-def gen_random_str(min_length=1, max_length=20, charset=STR_CHARSET):
+def gen_random_str(min_length=1, max_length=20, charset=STR_CHARSET) -> str:
     # Generate a random 20-character string
     """
     Args:
@@ -75,40 +87,46 @@ def gen_random_str(min_length=1, max_length=20, charset=STR_CHARSET):
         max_length:
         charset:
     """
-    return ''.join([random.choice(charset)
-                    for _ in range(0, random.randint(min_length, max_length))])
+    v = ''.join([random.choice(charset)
+                 for _ in range(0, random.randint(min_length, max_length))])
+    if v and v[0].isdigit():  # Refuse the confusion with quantity
+        v = 'D' + v
+    return v
 
 
-def gen_random_date():
+def gen_random_date() -> datetime.date:
     # This might generate an invalid date, we keep trying until we get one.
     while True:
         try:
             return datetime.date(random.randint(1, 3000),
-                                 random.randint(1, 12), random.randint(1, 31))
-        except ValueError:
+                                 random.randint(1, 12), random.randint(1, 28))
+        except OverflowError:
             pass
 
 
-def gen_random_time():
+def gen_random_time() -> datetime.time:
     return datetime.time(random.randint(0, 23), random.randint(0, 59),
                          random.randint(0, 59), random.randint(0, 999999))
 
 
-def gen_random_date_time():
+def gen_random_date_time() -> datetime.datetime:
     # Pick a random timezone
     tz_name = random.choice(list(_get_tz_map().keys()))
     time_zone = timezone(tz_name)
-    return time_zone.localize(datetime.datetime.combine(
-        gen_random_date(), gen_random_time()))
+    while True:
+        try:
+            return time_zone.localize(datetime.datetime.combine(
+                gen_random_date(), gen_random_time()))
+        except OverflowError:
+            pass
 
-
-def gen_random_coordinate():
+def gen_random_coordinate() -> Coordinate:
     return Coordinate(
         round(gen_random_num(360) - 180.0, 2),
         round(gen_random_num(360) - 180.0, 2))
 
 
-def gen_random_num(scale=1000, digits=2):
+def gen_random_num(scale=1000, digits=2) -> float:
     """
     Args:
         scale:
@@ -117,15 +135,15 @@ def gen_random_num(scale=1000, digits=2):
     return round(random.random() * scale, digits)
 
 
-def gen_random_quantity():
+def gen_random_quantity() -> Quantity:
     return Quantity(gen_random_num(), 'degree')
 
 
-def gen_random_list():
+def gen_random_list() -> List[HaystackType]:
     return [gen_random_scalar() for _ in range(0, random.randint(0, 2))]
 
 
-def gen_random_map():
+def gen_random_map() -> Dict[str, HaystackType]:
     return {gen_random_name(): gen_random_scalar() for _ in range(0, random.randint(0, 2))}
 
 
@@ -133,18 +151,19 @@ RANDOM_TYPES = [
     # Only for v2.0 gen_random_bin,
     gen_random_xstr,
     gen_random_const, gen_random_ref, gen_random_uri, gen_random_xstr,
-    gen_random_str, gen_random_date, gen_random_time, gen_random_date_time,
+    gen_random_str,
+    gen_random_date, gen_random_time, gen_random_date_time,
     gen_random_coordinate, gen_random_num, gen_random_quantity
 ]
 
 
-def gen_random_scalar():
+def gen_random_scalar() -> HaystackType:
     if random.randint(0, 100) < PERCENT_RECURSIVE:
         return random.choice(RANDOM_RECURSIVE_TYPES)()
     return random.choice(RANDOM_TYPES)()
 
 
-def gen_random_name(existing=None):
+def gen_random_name(existing: Optional[Set] = None) -> str:
     """
     Args:
         existing:
@@ -157,7 +176,7 @@ def gen_random_name(existing=None):
             return meta
 
 
-def gen_random_meta():
+def gen_random_meta() -> MetadataObject:
     meta = MetadataObject()
     names = set()
     for _ in range(0, random.randint(1, 5)):
@@ -168,7 +187,7 @@ def gen_random_meta():
     return meta
 
 
-def gen_random_grid(metadata=True):
+def gen_random_grid(metadata: bool = True, minrow: int = 0, empty_col: bool = True) -> Grid:
     # Generate a randomised grid of values and try parsing it back.
     """
     Args:
@@ -190,18 +209,21 @@ def gen_random_grid(metadata=True):
             grid.column[col_name] = MetadataObject()
 
     # Randomised rows
-    for _ in range(0, random.randint(0, GENERATION_ROW)):
+    for _ in range(0, random.randint(minrow, GENERATION_ROW)):  # pylint: disable=too-many-nested-blocks
         row = {}
-        for col in grid.column.keys():
-            if col == "id":
-                while True:
-                    id_val = gen_random_ref()
-                    if id_val not in grid:
-                        row["id"] = id_val
-                        break
-            else:
-                if random.choice([True, False]):
-                    row[col] = gen_random_scalar()
+        while True:
+            for col in grid.column.keys():
+                if col == "id":
+                    while True:
+                        id_val = gen_random_ref()
+                        if id_val not in grid:
+                            row["id"] = id_val
+                            break
+                else:
+                    if not empty_col or random.choice([True, False]):
+                        row[col] = gen_random_scalar()
+            if not minrow or len(row):
+                break
         grid.append(row)
 
     return grid
@@ -210,7 +232,7 @@ def gen_random_grid(metadata=True):
 RANDOM_RECURSIVE_TYPES = [gen_random_list, gen_random_map, gen_random_grid]
 
 
-def dump_grid(grid):
+def dump_grid(grid: Grid):
     """
     Args:
         grid:
@@ -231,7 +253,7 @@ def dump_grid(grid):
             print('  %s = %r' % (key, val))
 
 
-def _try_dump_parse(ref_grid, mode):
+def _try_dump_parse(ref_grid: Grid, mode: MODE):
     """
     Args:
         ref_grid:
@@ -263,6 +285,11 @@ def try_dump_parse_zinc():
     _try_dump_parse(ref_grid, MODE_ZINC)
 
 
+def try_dump_parse_trio():
+    ref_grid = gen_random_grid(metadata=False, minrow=1, empty_col=False)
+    _try_dump_parse(ref_grid, MODE_TRIO)
+
+
 def try_dump_parse_json():
     ref_grid = gen_random_grid()
     _try_dump_parse(ref_grid, MODE_JSON)
@@ -273,12 +300,9 @@ def try_dump_parse_csv():
     _try_dump_parse(ref_grid, MODE_CSV)
 
 
-_FIND_BUG = 1
-
-
 def test_loopback_zinc():
-    for i in range(0, _FIND_BUG):
-        if _FIND_BUG != 1:
+    for i in range(_FIND_BUG_START, _FIND_BUG_END):
+        if _FIND_BUG_END != 1:
             random.seed(i)
         try:
             for _ in range(0, GENERATION_NUMBER):
@@ -288,9 +312,21 @@ def test_loopback_zinc():
             raise
 
 
+def test_loopback_trio():
+    for i in range(_FIND_BUG_START, _FIND_BUG_END):
+        if _FIND_BUG_END != 1:
+            random.seed(i)
+        try:
+            for _ in range(0, GENERATION_NUMBER):
+                try_dump_parse_trio()
+        except:  # noqa: E722
+            print(i)
+            raise
+
+
 def test_loopback_json():
-    for i in range(0, _FIND_BUG):
-        if _FIND_BUG != 1:
+    for i in range(_FIND_BUG_START, _FIND_BUG_END):
+        if _FIND_BUG_END != 1:
             random.seed(i)
         try:
             for _ in range(0, GENERATION_NUMBER):
@@ -301,8 +337,8 @@ def test_loopback_json():
 
 
 def test_loopback_csv():
-    for i in range(275, _FIND_BUG):
-        if _FIND_BUG != 1:
+    for i in range(_FIND_BUG_START, _FIND_BUG_END):
+        if _FIND_BUG_END != 1:
             random.seed(i)
         try:
             for _ in range(0, GENERATION_NUMBER):

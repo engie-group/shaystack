@@ -14,43 +14,19 @@ from __future__ import unicode_literals
 
 import datetime
 import functools
-import re
-from typing import Match, Tuple, Any, List
+from typing import Tuple, Any, List
 
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
-    MARKER, NA, REMOVE, _STR_SUB, XStr
+    MARKER, NA, REMOVE, XStr
 from .grid import Grid
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
+from .tools import escape_str
 from .type import Entity
 from .version import LATEST_VER, VER_3_0, Version
 from .zoneinfo import timezone_name
 
-_URI_META = re.compile(r'([\\`\u0080-\uffff])')
-_STR_META = re.compile(r'([\\"$\u0080-\uffff])')
 _EMPTY = "<empty>"
-
-
-def _str_sub(match: Match) -> str:
-    char = match.group(0)
-    order = ord(char)
-    if order >= 0x0080:
-        # Unicode
-        return '\\u%04x' % order
-    if char in '\\"$':
-        return '\\%s' % char
-    return str(char)
-
-
-def _uri_sub(match: Match) -> str:
-    char = match.group(0)
-    order = ord(char)
-    if order >= 0x80:
-        # Unicode
-        return '\\u%04x' % order
-    if char in '\\`':
-        return '\\%s' % char
-    return str(char)
 
 
 def _dump_meta(meta: MetadataObject, version: Version = LATEST_VER) -> str:
@@ -99,20 +75,12 @@ def _dump_id(id_str: str) -> str:
 
 def _dump_str(str_value: str) -> str:
     # Replace special characters.
-    str_value = _STR_META.sub(_str_sub, str_value)
-    # Replace other escapes.
-    for orig, esc in _STR_SUB:
-        str_value = str_value.replace(orig, esc)
-    return '"%s"' % str_value
+    return f'"{escape_str(str_value)}"'
 
 
 def _dump_uri(uri: Uri) -> str:
     # Replace special characters.
-    uri_value = str(uri)
-    uri_value = _URI_META.sub(_uri_sub, uri_value)
-    # Replace other escapes.
-    for orig, esc in _STR_SUB:
-        uri_value = uri_value.replace(orig, esc)
+    uri_value = escape_str(str(uri))
     return '`%s`' % uri_value
 
 

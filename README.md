@@ -10,6 +10,7 @@ area.
 
 Haystack core data model is the Grid, it can be serialized in many formats,
 mainly [Zinc](https://www.project-haystack.org/doc/Zinc),
+[Trio](https://www.project-haystack.org/doc/Trio),
 [Json](https://www.project-haystack.org/doc/Json)
 and [Csv](https://www.project-haystack.org/doc/Csv)
 
@@ -17,6 +18,7 @@ and [Csv](https://www.project-haystack.org/doc/Csv)
 
 This project implements client side haystack code. Useful to parse or dump Haystack files
 ([Zinc](https://www.project-haystack.org/doc/Zinc),
+[Trio](https://www.project-haystack.org/doc/Trio),
 [Json](https://www.project-haystack.org/doc/Json),
 [Csv](https://www.project-haystack.org/doc/Csv)).
 

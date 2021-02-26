@@ -19,7 +19,7 @@ import pytz
 from nose.tools import assert_is
 
 import shaystack
-from shaystack import MARKER, Grid, MODE_JSON, XStr, MODE_CSV
+from shaystack import MARKER, Grid, MODE_JSON, XStr, MODE_CSV, MODE_TRIO, Quantity, Coordinate
 from shaystack.zincparser import _unescape, ZincParseException
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
@@ -43,6 +43,44 @@ SIMPLE_EXAMPLE_JSON = {
         {'firstName': 's:Jill', 'bday': 'd:1975-11-15'},
     ],
 }
+
+SIMPLE_EXAMPLE_TRIO = '''firstName: Jack
+bday: 1973-07-23
+---
+firstName: Jill
+bday: 1975-11-15
+'''
+
+CANONICAL_SIMPLE_EXAMPLE_TRIO = '''// Comment
+dis: "Site 1"
+site
+area: 3702ft²
+geoAddr: "100 Main St, Richmond, VA"
+geoCoord: C(37.5458,-77.4491)
+strTag: OK if unquoted if only safe chars
+summary:
+  This is a string value which spans multiple
+  lines with two or more space characters
+---
+name: "Site 2"
+site
+summary:
+  Entities are separated by one more dashes
+'''
+
+NESTED_EXAMPLE_TRIO = '''// Comment
+type:list
+val:[1,2,3]
+---
+type:dict
+val:{ dis:"Dict!" foo}
+---
+type:grid
+val:Zinc:
+  ver:"3.0"
+  b,a
+  20,10
+'''
 
 SIMPLE_EXAMPLE_CSV = '''firstName,bday
 "Jack",1973-07-23
@@ -75,7 +113,15 @@ METADATA_EXAMPLE_CSV = '''siteName,val
 NULL_EXAMPLE_ZINC = '''ver:"2.0"
 str,null
 "Implicit",
-"Explict",N
+"Explicit",N
+'''
+
+NULL_EXAMPLE_TRIO = '''
+str:"Implicit"
+null:
+--
+str:"Explicit"
+null:N
 '''
 
 NULL_EXAMPLE_JSON = {
@@ -98,6 +144,11 @@ NULL_EXAMPLE_CSV = '''str,null
 NA_EXAMPLE_ZINC = '''ver:"3.0"
 str,na
 "NA value",NA
+'''
+
+NA_EXAMPLE_TRIO = '''
+str:"NA value"
+na:NA
 '''
 
 NA_EXAMPLE_JSON = json.dumps({
@@ -314,6 +365,33 @@ def test_simple_zinc():
     _check_simple(grid)
 
 
+def test_simple_trio():
+    grid = shaystack.parse(SIMPLE_EXAMPLE_TRIO, MODE_TRIO)
+    _check_simple(grid)
+
+
+def test_canonical_trio():
+    grid = shaystack.parse(CANONICAL_SIMPLE_EXAMPLE_TRIO, MODE_TRIO)
+    assert grid[0]["dis"] == "Site 1"
+    assert grid[0]["site"] == MARKER
+    assert grid[0]["area"] == Quantity(3702, 'ft²')
+    assert grid[0]["geoAddr"] == "100 Main St, Richmond, VA"
+    assert grid[0]["geoCoord"] == Coordinate(37.5458, -77.4491)
+    assert grid[0]["strTag"] == "OK if unquoted if only safe chars"
+    assert grid[0]["summary"] == "This is a string value which spans multiple\n" + \
+           "lines with two or more space characters\n"
+    assert grid[1]["name"] == "Site 2"
+    assert grid[1]["site"] == MARKER
+    assert grid[1]["summary"] == "Entities are separated by one more dashes\n"
+
+
+def test_nested_trio():
+    grid = shaystack.parse(NESTED_EXAMPLE_TRIO, MODE_TRIO)
+    assert grid[0]["val"] == [1, 2, 3]
+    assert grid[1]["val"] == {"dis": "Dict!", "foo": MARKER}
+    assert isinstance(grid[2]["val"], Grid)
+
+
 def test_simple_json():
     grid = shaystack.parse(json.dumps(SIMPLE_EXAMPLE_JSON),
                            mode=shaystack.MODE_JSON)
@@ -323,11 +401,6 @@ def test_simple_json():
 def test_simple_csv():
     grid = shaystack.parse(SIMPLE_EXAMPLE_CSV,
                            mode=shaystack.MODE_CSV)
-    _check_simple(grid)
-
-
-def test_simple_encoded_zinc():
-    grid = shaystack.parse(SIMPLE_EXAMPLE_ZINC)
     _check_simple(grid)
 
 
@@ -349,11 +422,11 @@ def test_unsupported_old_zinc():
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
         grid = shaystack.parse(textwrap.dedent('''
-            ver:"1.0"
-            comment
-            "Testing that we can handle an \\"old\\" version."
-            "We pretend it is compatible with v2.0"
-            ''')[1:], mode=shaystack.MODE_ZINC)
+        ver:"1.0"
+        comment
+        "Testing that we can handle an \\"old\\" version."
+        "We pretend it is compatible with v2.0"
+        ''')[1:], mode=shaystack.MODE_ZINC)
         assert grid._version == shaystack.Version('1.0')
 
 
@@ -361,11 +434,11 @@ def test_unsupported_newer_zinc():
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
         grid = shaystack.parse(textwrap.dedent('''
-            ver:"2.5"
-            comment
-            "Testing that we can handle a version between official versions."
-            ["We pretend it is compatible with v3.0"]
-            ''')[1:], mode=shaystack.MODE_ZINC)
+        ver:"2.5"
+        comment
+        "Testing that we can handle a version between official versions."
+        ["We pretend it is compatible with v3.0"]
+        ''')[1:], mode=shaystack.MODE_ZINC)
         assert grid._version == shaystack.Version('2.5')
 
 
@@ -373,11 +446,11 @@ def test_oddball_version_zinc():
     with warnings.catch_warnings(record=True) as warning:
         warnings.simplefilter("always")
         grid = shaystack.parse(textwrap.dedent('''
-            ver:"3"
-            comment
-            "Testing that we can handle a version expressed slightly differently to normal."
-            ["We pretend it is compatible with v3.0"]
-            ''')[1:], mode=shaystack.MODE_ZINC)
+        ver:"3"
+        comment
+        "Testing that we can handle a version expressed slightly differently to normal."
+        ["We pretend it is compatible with v3.0"]
+        ''')[1:], mode=shaystack.MODE_ZINC)
         assert grid._version == shaystack.Version('3')
 
         # This should not have raised a warning
@@ -388,19 +461,29 @@ def test_unsupported_bleedingedge_zinc():
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("ignore", category=DeprecationWarning)
         grid = shaystack.parse(textwrap.dedent('''
-            ver:"9999.9999"
-            comment
-            "Testing that we can handle a version that's newer than we support."
-            ["We pretend it is compatible with v3.0"]
-            ''')[1:], mode=shaystack.MODE_ZINC)
+        ver:"9999.9999"
+        comment
+        "Testing that we can handle a version that's newer than we support."
+        ["We pretend it is compatible with v3.0"]
+        ''')[1:], mode=shaystack.MODE_ZINC)
         assert grid._version == shaystack.Version('9999.9999')
 
 
 def test_malformed_grid_zinc():
     try:
         shaystack.parse(textwrap.dedent('''
-            ver:2.0 comment:"This grid has no columns!"
-            ''')[1:])
+        ver:2.0 comment:"This grid has no columns!"
+        ''')[1:])
+        assert False, 'Parsed a malformed grid.'
+    except ValueError:
+        pass
+
+
+def test_malformed_grid_trio():
+    try:
+        shaystack.parse(textwrap.dedent('''
+        a:
+        ''')[1:])
         assert False, 'Parsed a malformed grid.'
     except ValueError:
         pass
@@ -409,9 +492,9 @@ def test_malformed_grid_zinc():
 def test_malformed_version_zinc():
     try:
         shaystack.parse(textwrap.dedent('''
-            ver:TwoPointOh comment:"This grid has an invalid version!"
-            empty
-            ''')[1:])
+        ver:TwoPointOh comment:"This grid has an invalid version!"
+        empty
+        ''')[1:])
         assert False, 'Parsed a malformed version string.'
     except ValueError:
         pass
@@ -432,6 +515,11 @@ def test_null_zinc():
     _check_null(grid)
 
 
+def test_null_trio():
+    grid = shaystack.parse(NULL_EXAMPLE_TRIO, MODE_TRIO)
+    _check_null(grid)
+
+
 def test_null_json():
     grid = shaystack.parse(json.dumps(NULL_EXAMPLE_JSON), mode=shaystack.MODE_JSON)
     _check_null(grid)
@@ -449,6 +537,11 @@ def test_na_zinc():
     _check_na(grid)
 
 
+def test_na_trio():
+    grid = shaystack.parse(NA_EXAMPLE_TRIO, MODE_TRIO)
+    _check_na(grid)
+
+
 def test_na_json():
     grid = shaystack.parse(NA_EXAMPLE_JSON, mode=shaystack.MODE_JSON)
     _check_na(grid)
@@ -461,11 +554,22 @@ def test_na_csv():
 
 def test_remove_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"3.0"
-        str,remove
-        "v2 REMOVE value",R
-        "v3 REMOVE value",R
-        ''')[1:])
+    ver:"3.0"
+    str,remove
+    "v2 REMOVE value",R
+    "v3 REMOVE value",R
+    ''')[1:])
+    _check_remove(grid)
+
+
+def test_remove_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    str:"v2 REMOVE value"
+    remove:R
+    --
+    str:"v3 REMOVE value"
+    remove:R
+    ''')[1:], MODE_TRIO)
     _check_remove(grid)
 
 
@@ -481,20 +585,32 @@ def test_remove_v3_json():
 
 def test_remove_csv():
     grid = shaystack.parse(textwrap.dedent('''
-        str,remove
-        "v2 REMOVE value",R
-        "v3 REMOVE value",R
-        ''')[1:], mode=shaystack.MODE_CSV)
+    str,remove
+    "v2 REMOVE value",R
+    "v3 REMOVE value",R
+    ''')[1:], mode=shaystack.MODE_CSV)
     _check_remove(grid)
 
 
 def test_marker_in_row_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        str,marker
-        "No Marker",
-        "Marker",M
-        ''')[1:])
+    ver:"2.0"
+    str,marker
+    "No Marker",
+    "Marker",M
+    ''')[1:])
+    assert len(grid) == 2
+    assert 'marker' not in grid[0]
+    assert_is(grid[1]['marker'], shaystack.MARKER)
+
+
+def test_marker_in_row_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    str:"No Marker"
+    --
+    str:"Marker"
+    marker:M
+    ''')[1:], MODE_TRIO)
     assert len(grid) == 2
     assert 'marker' not in grid[0]
     assert_is(grid[1]['marker'], shaystack.MARKER)
@@ -518,21 +634,34 @@ def test_marker_in_row_json():
 
 def test_marker_in_row_csv():
     grid = shaystack.parse(textwrap.dedent('''
-        str,marker
-        "No Marker",
-        "Marker",\u2713
-        ''')[1:], mode=shaystack.MODE_CSV)
+    str,marker
+    "No Marker",
+    "Marker",\u2713
+    ''')[1:], mode=shaystack.MODE_CSV)
     assert 'marker' not in grid[0]
     assert grid[1]['marker'] is shaystack.MARKER
 
 
 def test_bool_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        str,bool
-        "True",T
-        "False",F
-        ''')[1:])
+    ver:"2.0"
+    str,bool
+    "True",T
+    "False",F
+    ''')[1:])
+    assert len(grid) == 2
+    assert grid[0]['bool']
+    assert not grid[1]['bool']
+
+
+def test_bool_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    str:"True"
+    bool:T
+    --
+    str:"False"
+    bool:F
+    ''')[1:], MODE_TRIO)
     assert len(grid) == 2
     assert grid[0]['bool']
     assert not grid[1]['bool']
@@ -556,28 +685,63 @@ def test_bool_json():
 
 def test_bool_csv():
     grid = shaystack.parse(textwrap.dedent('''
-        str,bool
-        "True",true
-        "False",false''')[1:], mode=shaystack.MODE_CSV)
+    str,bool
+    "True",true
+    "False",false''')[1:], mode=shaystack.MODE_CSV)
     assert grid[0]['bool']
     assert not grid[1]['bool']
 
 
 def test_number_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        str,number
-        "Integer",1
-        "Negative Integer",-34
-        "With Separators",10_000
-        "Scientific",5.4e-45
-        "Units mass",9.23kg
-        "Units time",4min
-        "Units temperature",74.2°F
-        "Positive Infinity",INF
-        "Negative Infinity",-INF
-        "Not a Number",NaN
-        ''')[1:])
+    ver:"2.0"
+    str,number
+    "Integer",1
+    "Negative Integer",-34
+    "With Separators",10_000
+    "Scientific",5.4e-45
+    "Units mass",9.23kg
+    "Units time",4min
+    "Units temperature",74.2°F
+    "Positive Infinity",INF
+    "Negative Infinity",-INF
+    "Not a Number",NaN
+    ''')[1:])
+    _check_number(grid)
+
+
+def test_number_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    str:"Integer"
+    number:1
+    --
+    str:"Negative Integer"
+    number:-34
+    --
+    str:"With Separators"
+    number:10_000
+    --
+    str:"Scientific"
+    number:5.4e-45
+    --
+    str:"Units mass"
+    number:9.23kg
+    --
+    str:"Units time"
+    number:4min
+    --
+    str:"Units temperature"
+    number:74.2°F
+    --
+    str:"Positive Infinity"
+    number:INF
+    --
+    str:"Negative Infinity"
+    number:-INF
+    --
+    str:"Not a Number"
+    number:NaN
+    ''')[1:], MODE_TRIO)
     _check_number(grid)
 
 
@@ -606,32 +770,59 @@ def test_number_json():
 
 def test_number_csv():
     grid = shaystack.parse(textwrap.dedent('''
-        str,number
-        "Integer",1
-        "Negative Integer",-34
-        "With Separators",10_000
-        "Scientific",5.4e-45
-        "Units mass",9.23kg
-        "Units time",4min
-        "Units temperature",74.2°F
-        "Positive Infinity",INF
-        "Negative Infinity",-INF
-        "Not a Number",NaN''')[1:], mode=shaystack.MODE_CSV)
+    str,number
+    "Integer",1
+    "Negative Integer",-34
+    "With Separators",10_000
+    "Scientific",5.4e-45
+    "Units mass",9.23kg
+    "Units time",4min
+    "Units temperature",74.2°F
+    "Positive Infinity",INF
+    "Negative Infinity",-INF
+    "Not a Number",NaN''')[1:], mode=shaystack.MODE_CSV)
     _check_number(grid)
 
 
 def test_string_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        str,strExample
-        "Empty",""
-        "Basic","Simple string"
-        "Escaped","This\\tIs\\nA\\r\\"Test\\"\\\\\\$"
-        ''')[1:])
+    ver:"2.0"
+    str,strExample
+    "Empty",""
+    "Basic","Simple string"
+    "Escaped","This\\tIs\\nA\\r\\"Test\\"\\\\\\$"
+    ''')[1:])
     assert len(grid) == 3
     assert grid[0]['strExample'] == ''
     assert grid[1]['strExample'] == 'Simple string'
     assert grid[2]['strExample'] == 'This\tIs\nA\r"Test"\\$'
+
+
+def test_string_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    str:"Empty"
+    strExample:""
+    --
+    str:"Basic"
+    strExample:"Simple string"
+    --
+    str:"Escaped"
+    strExample:"This\\tIs\\nA\\r\\"Test\\"\\\\\\$"
+    --
+    str:"Multiline"
+    strExample:
+      a
+      b
+    --
+    str:"SafeString"
+    strExample: Hello world
+    ''')[1:], MODE_TRIO)
+    assert len(grid) == 5
+    assert grid[0]['strExample'] == ''
+    assert grid[1]['strExample'] == 'Simple string'
+    assert grid[2]['strExample'] == 'This\tIs\nA\r"Test"\\$'
+    assert grid[3]['strExample'] == 'a\nb\n'
+    assert grid[4]['strExample'] == 'Hello world'
 
 
 def test_string_json():
@@ -678,10 +869,18 @@ def test_string_csv():
 
 def test_uri_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        uri
-        `http://www.vrt.com.au`
-        ''')[1:])
+    ver:"2.0"
+    uri
+    `http://www.vrt.com.au`
+    ''')[1:])
+    assert len(grid) == 1
+    assert grid[0]['uri'] == shaystack.Uri('http://www.vrt.com.au')
+
+
+def test_uri_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    uri:`http://www.vrt.com.au`
+    ''')[1:], MODE_TRIO)
     assert len(grid) == 1
     assert grid[0]['uri'] == shaystack.Uri('http://www.vrt.com.au')
 
@@ -702,19 +901,32 @@ def test_uri_json():
 
 def test_uri_csv():
     grid = shaystack.parse(textwrap.dedent('''
-        uri
-        `http://www.vrt.com.au`''')[1:], mode=shaystack.MODE_CSV)
+    uri
+    `http://www.vrt.com.au`''')[1:], mode=shaystack.MODE_CSV)
     assert len(grid) == 1
     assert grid[0]['uri'] == shaystack.Uri('http://www.vrt.com.au')
 
 
 def test_ref_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        str,ref
-        "Basic",@a-basic-ref
-        "With value",@reference "With value"
-        ''')[1:])
+    ver:"2.0"
+    str,ref
+    "Basic",@a-basic-ref
+    "With value",@reference "With value"
+    ''')[1:])
+    assert len(grid) == 2
+    assert grid[0]['ref'] == shaystack.Ref('a-basic-ref')
+    assert grid[1]['ref'] == shaystack.Ref('reference', 'With value')
+
+
+def test_ref_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    str:"Basic"
+    ref:@a-basic-ref
+    --
+    str:"With value"
+    ref:@reference "With value"
+    ''')[1:], MODE_TRIO)
     assert len(grid) == 2
     assert grid[0]['ref'] == shaystack.Ref('a-basic-ref')
     assert grid[1]['ref'] == shaystack.Ref('reference', 'With value')
@@ -739,9 +951,9 @@ def test_ref_json():
 
 def test_ref_csv():
     grid = shaystack.parse(textwrap.dedent('''
-        str,ref
-        "Basic",@a-basic-ref
-        "With value",@reference With value''')[1:],
+    str,ref
+    "Basic",@a-basic-ref
+    "With value",@reference With value''')[1:],
                            mode=shaystack.MODE_CSV)
     assert len(grid) == 2
     assert grid[0]['ref'] == shaystack.Ref('a-basic-ref')
@@ -750,10 +962,19 @@ def test_ref_csv():
 
 def test_date_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        date
-        2010-03-13
-        ''')[1:])
+    ver:"2.0"
+    date
+    2010-03-13
+    ''')[1:])
+    assert len(grid) == 1
+    assert isinstance(grid[0]['date'], datetime.date)
+    assert grid[0]['date'] == datetime.date(2010, 3, 13)
+
+
+def test_date_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    date:2010-03-13
+    ''')[1:], MODE_TRIO)
     assert len(grid) == 1
     assert isinstance(grid[0]['date'], datetime.date)
     assert grid[0]['date'] == datetime.date(2010, 3, 13)
@@ -776,8 +997,8 @@ def test_date_json():
 
 def test_date_csv():
     grid = shaystack.parse(textwrap.dedent('''
-        date
-        2010-03-13''')[1:],
+    date
+    2010-03-13''')[1:],
                            mode=shaystack.MODE_CSV)
     assert len(grid) == 1
     assert isinstance(grid[0]['date'], datetime.date)
@@ -786,11 +1007,24 @@ def test_date_csv():
 
 def test_time_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        time
-        08:12:05
-        08:12:05.5
-        ''')[1:])
+    ver:"2.0"
+    time
+    08:12:05
+    08:12:05.5
+    ''')[1:])
+    assert len(grid) == 2
+    assert isinstance(grid[0]['time'], datetime.time)
+    assert grid[0]['time'] == datetime.time(8, 12, 5)
+    assert isinstance(grid[1]['time'], datetime.time)
+    assert grid[1]['time'] == datetime.time(8, 12, 5, 500000)
+
+
+def test_time_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    time:08:12:05
+    --
+    time:08:12:05.5
+    ''')[1:], MODE_TRIO)
     assert len(grid) == 2
     assert isinstance(grid[0]['time'], datetime.time)
     assert grid[0]['time'] == datetime.time(8, 12, 5)
@@ -824,10 +1058,10 @@ def test_time_json():
 
 def test_time_csv():
     grid = shaystack.parse(textwrap.dedent('''
-        time
-        08:12
-        08:12:05
-        08:12:05.5''')[1:], mode=shaystack.MODE_CSV)
+    time
+    08:12
+    08:12:05
+    08:12:05.5''')[1:], mode=shaystack.MODE_CSV)
     assert len(grid) == 3
     row = grid.pop(0)
     assert isinstance(row['time'], datetime.time)
@@ -842,15 +1076,32 @@ def test_time_csv():
 
 def test_datetime_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        datetime
-        2010-11-28T07:23:02.500-08:00 Los_Angeles
-        2010-11-28T23:19:29.500+08:00 Taipei
-        2010-11-28T18:21:58+03:00 GMT-3
-        2010-11-28T12:22:27-03:00 GMT+3
-        2010-01-08T05:00:00Z UTC
-        2010-01-08T05:00:00Z
-        ''')[1:])
+    ver:"2.0"
+    datetime
+    2010-11-28T07:23:02.500-08:00 Los_Angeles
+    2010-11-28T23:19:29.500+08:00 Taipei
+    2010-11-28T18:21:58+03:00 GMT-3
+    2010-11-28T12:22:27-03:00 GMT+3
+    2010-01-08T05:00:00Z UTC
+    2010-01-08T05:00:00Z
+    ''')[1:])
+    _check_datetime(grid)
+
+
+def test_datetime_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    datetime:2010-11-28T07:23:02.500-08:00 Los_Angeles
+    --
+    datetime:2010-11-28T23:19:29.500+08:00 Taipei
+    --
+    datetime:2010-11-28T18:21:58+03:00 GMT-3
+    --
+    datetime:2010-11-28T12:22:27-03:00 GMT+3
+    --
+    datetime:2010-01-08T05:00:00Z UTC
+    --
+    datetime:2010-01-08T05:00:00Z
+    ''')[1:], MODE_TRIO)
     _check_datetime(grid)
 
 
@@ -874,24 +1125,40 @@ def test_datetime_json():
 
 def test_datetime_csv():
     grid = shaystack.parse(textwrap.dedent('''
-        datetime
-        2010-11-28T07:23:02.500-08:00 Los_Angeles
-        2010-11-28T23:19:29.500+08:00 Taipei
-        2010-11-28T18:21:58+03:00 GMT-3
-        2010-11-28T12:22:27-03:00 GMT+3
-        2010-01-08T05:00:00Z UTC
-        2010-01-08T05:00:00Z''')[1:], mode=shaystack.MODE_CSV)
+    datetime
+    2010-11-28T07:23:02.500-08:00 Los_Angeles
+    2010-11-28T23:19:29.500+08:00 Taipei
+    2010-11-28T18:21:58+03:00 GMT-3
+    2010-11-28T12:22:27-03:00 GMT+3
+    2010-01-08T05:00:00Z UTC
+    2010-01-08T05:00:00Z''')[1:], mode=shaystack.MODE_CSV)
     _check_datetime(grid)
 
 
 def test_list_v2_zinc():
     try:
         shaystack.parse(textwrap.dedent('''
-            ver:"2.0"
-            ix,list, dis
-            00,[], "An empty list"
-            01,[N], "A list with a NULL"
-            ''')[1:])
+        ver:"2.0"
+        ix,list, dis
+        00,[], "An empty list"
+        01,[N], "A list with a NULL"
+        ''')[1:])
+        assert False, 'Project Haystack 2.0 does not support lists'
+    except shaystack.zincparser.ZincParseException:
+        pass
+
+
+def test_list_v2_trio():
+    try:
+        shaystack.parse(textwrap.dedent('''
+        ix:00
+        list:[]
+        dis:"An empty list"
+        --
+        ix:01
+        list:[N]
+        dis:"A list with a NULL"
+        ''')[1:])
         assert False, 'Project Haystack 2.0 does not support lists'
     except shaystack.zincparser.ZincParseException:
         pass
@@ -916,24 +1183,117 @@ def test_list_v2_json():
 
 def test_list_v3_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"3.0"
-        ix,list,                                                       dis
-        00,[],                                                         "An empty list"
-        01,[N],                                                        "A list with a NULL"
-        02,[T,F],                                                      "Booleans in a list"
-        03,[1,2,3],                                                    "Integers"
-        04,[1.1,2.2,3.3],                                              "Floats"
-        05,[1.1e3,2.2e6,3.3e9],                                        "Exponential floats"
-        06,[3.14rad,180°],                                             "Quantities"
-        07,["a","b","c"],                                              "Strings"
-        08,[1970-01-01,2000-01-01,2030-01-01],                         "Dates"
-        09,[06:00:00,12:00:00,18:00:00],                               "Times"
-        10,[1970-01-01T00:00:00Z,1970-01-01T10:00:00+10:00 Brisbane],  "Date/Times"
-        11,[N,T,1,1.1,1.1e3,3.14rad,"a"],                              "Mixed data"
-        12,[  1,  2  ,  3 ,4  ],                                       "Whitespace"
-        13,[1,2,3,4,],                                                 "Trailing comma"
-        14,[[1,2,3],["a","b","c"]],                                    "Nested lists"
-        ''')[1:])
+    ver:"3.0"
+    ix,list,                                                       dis
+    00,[],                                                         "An empty list"
+    01,[N],                                                        "A list with a NULL"
+    02,[T,F],                                                      "Booleans in a list"
+    03,[1,2,3],                                                    "Integers"
+    04,[1.1,2.2,3.3],                                              "Floats"
+    05,[1.1e3,2.2e6,3.3e9],                                        "Exponential floats"
+    06,[3.14rad,180°],                                             "Quantities"
+    07,["a","b","c"],                                              "Strings"
+    08,[1970-01-01,2000-01-01,2030-01-01],                         "Dates"
+    09,[06:00:00,12:00:00,18:00:00],                               "Times"
+    10,[1970-01-01T00:00:00Z,1970-01-01T10:00:00+10:00 Brisbane],  "Date/Times"
+    11,[N,T,1,1.1,1.1e3,3.14rad,"a"],                              "Mixed data"
+    12,[  1,  2  ,  3 ,4  ],                                       "Whitespace"
+    13,[1,2,3,4,],                                                 "Trailing comma"
+    14,[[1,2,3],["a","b","c"]],                                    "Nested lists"
+    ''')[1:])
+    # There should be 15 rows
+    assert len(grid) == 15
+    for row in grid:
+        assert isinstance(row['list'], list)
+    assert grid[0]['list'] == []
+    assert grid[1]['list'] == [None]
+    assert grid[2]['list'] == [True, False]
+    assert grid[3]['list'] == [1.0, 2.0, 3.0]
+    assert grid[4]['list'] == [1.1, 2.2, 3.3]
+    assert grid[5]['list'] == [1.1e3, 2.2e6, 3.3e9]
+    assert grid[6]['list'] == [shaystack.Quantity(3.14, units='rad'),
+                               shaystack.Quantity(180, units='°')]
+    assert grid[7]['list'] == ["a", "b", "c"]
+    assert grid[8]['list'] == [datetime.date(1970, 1, 1),
+                               datetime.date(2000, 1, 1),
+                               datetime.date(2030, 1, 1)]
+    assert grid[9]['list'] == [datetime.time(6, 0, 0),
+                               datetime.time(12, 0, 0),
+                               datetime.time(18, 0, 0)]
+    assert grid[10]['list'] == [pytz.utc.localize(
+        datetime.datetime(1970, 1, 1, 0, 0)),
+        pytz.timezone('Australia/Brisbane').localize(
+            datetime.datetime(1970, 1, 1, 10, 0))]
+    assert grid[11]['list'] == [None, True, 1.0, 1.1, 1.1e3,
+                                shaystack.Quantity(3.14, units='rad'),
+                                "a"]
+    assert grid[12]['list'] == [1.0, 2.0, 3.0, 4.0]
+    assert grid[13]['list'] == [1.0, 2.0, 3.0, 4.0]
+    assert grid[14]['list'] == [[1.0, 2.0, 3.0], ["a", "b", "c"]]
+
+
+def test_list_v3_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    ix:00
+    list:[]
+    dis:"An empty list"
+    --
+    ix:01
+    list:[N]
+    dis:"A list with a NULL"
+    --
+    ix:02
+    list:[T,F]
+    dis:"Booleans in a list"
+    --
+    ix:03
+    list:[1,2,3]
+    dis:"Integers"
+    --
+    ix:04
+    list:[1.1,2.2,3.3]
+    dis:"Floats"
+    --
+    ix:05
+    list:[1.1e3,2.2e6,3.3e9]
+    dis:"Exponential floats"
+    --
+    ix:06
+    list:[3.14rad,180°]
+    dis:"Quantities"
+    --
+    ix:07
+    list:["a","b","c"]
+    dis:"Strings"
+    --
+    ix:08
+    list:[1970-01-01,2000-01-01,2030-01-01]
+    dis:"Dates"
+    --
+    ix:09
+    list:[06:00:00,12:00:00,18:00:00]
+    dis:"Times"
+    --
+    ix:10
+    list:[1970-01-01T00:00:00Z,1970-01-01T10:00:00+10:00 Brisbane]
+    dis:"Date/Times"
+    --
+    ix:11
+    list:[N,T,1,1.1,1.1e3,3.14rad,"a"]
+    dis:"Mixed data"
+    --
+    ix:12
+    list:[  1,  2  ,  3 ,4  ]
+    dis:"Whitespace"
+    --
+    ix:13
+    list:[1,2,3,4,]
+    dis:"Trailing comma"
+    --
+    ix:14
+    list:[[1,2,3],["a","b","c"]]
+    dis:"Nested lists"
+    ''')[1:], MODE_TRIO)
     # There should be 15 rows
     assert len(grid) == 15
     for row in grid:
@@ -991,23 +1351,23 @@ def test_list_v3_csv():
     # Simpler test case than the ZINC one, since the Python JSON parser
     # will take care of the elements for us.
     grid = shaystack.parse(textwrap.dedent('''
-        ix,list,
-        00,"[]","An empty list"
-        01,"[N]","A list with a NULL"
-        02,"[T,F]","Booleans in a list"
-        03,"[1,2,3]","Integers"
-        04,"[1.1,2.2,3.3]","Floats"
-        05,"[1.1e3,2.2e6,3.3e9]","Exponential floats"
-        06,"[3.14rad,180°]","Quantities"
-        07,"[""a"",""b"",""c""]","Strings"
-        08,"[1970-01-01,2000-01-01,2030-01-01]","Dates"
-        09,"[06:00:00,12:00:00,18:00:00]","Times"
-        10,"[1970-01-01T00:00:00Z,1970-01-01T10:00:00+10:00 Brisbane]","Date/Times"
-        11,"[N,T,1,1.1,1.1e3,3.14rad,""a""]","Mixed data"
-        12,"[  1,  2  ,  3 ,4  ]","Whitespace"
-        13,"[1,2,3,4,]","Trailing comma"
-        14,"[[1,2,3],[""a"",""b"",""c""]]","Nested lists"
-        ''')[1:], mode=shaystack.MODE_CSV)
+    ix,list,
+    00,"[]","An empty list"
+    01,"[N]","A list with a NULL"
+    02,"[T,F]","Booleans in a list"
+    03,"[1,2,3]","Integers"
+    04,"[1.1,2.2,3.3]","Floats"
+    05,"[1.1e3,2.2e6,3.3e9]","Exponential floats"
+    06,"[3.14rad,180°]","Quantities"
+    07,"[""a"",""b"",""c""]","Strings"
+    08,"[1970-01-01,2000-01-01,2030-01-01]","Dates"
+    09,"[06:00:00,12:00:00,18:00:00]","Times"
+    10,"[1970-01-01T00:00:00Z,1970-01-01T10:00:00+10:00 Brisbane]","Date/Times"
+    11,"[N,T,1,1.1,1.1e3,3.14rad,""a""]","Mixed data"
+    12,"[  1,  2  ,  3 ,4  ]","Whitespace"
+    13,"[1,2,3,4,]","Trailing comma"
+    14,"[[1,2,3],[""a"",""b"",""c""]]","Nested lists"
+    ''')[1:], mode=shaystack.MODE_CSV)
     # There should be 15 rows
     assert len(grid) == 15
     for row in grid:
@@ -1041,15 +1401,53 @@ def test_list_v3_csv():
 
 def test_dict_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"3.0"
-        ix,dict,                                                       dis
-        00,{},                                                         "An empty dict"
-        01,{marker},                                                   "A marker in a dict"
-        02,{tag: 1},                                                   "A tag with number in a dict"
-        03,{tag: [1,2]},                                               "A tag with list in a dict"
-        04,{marker tag: [1,2]},                                        "A marker and tag with list in a dict"
-        05,{tag: {marker}},                                            "A tag  with dict in a dict"
-        ''')[1:])
+    ver:"3.0"
+    ix,dict,                                                       dis
+    00,{},                                                         "An empty dict"
+    01,{marker},                                                   "A marker in a dict"
+    02,{tag: 1},                                                   "A tag with number in a dict"
+    03,{tag: [1,2]},                                               "A tag with list in a dict"
+    04,{marker tag: [1,2]},                                        "A marker and tag with list in a dict"
+    05,{tag: {marker}},                                            "A tag  with dict in a dict"
+    ''')[1:])
+    # There should be 4 rows
+    assert len(grid) == 6
+    for row in grid:
+        assert isinstance(row['dict'], dict)
+    assert grid[0]['dict'] == {}
+    assert grid[1]['dict'] == {'marker': MARKER}
+    assert grid[2]['dict'] == {'tag': 1.0}
+    assert grid[3]['dict'] == {'tag': [1.0, 2.0]}
+    assert grid[4]['dict'] == {'marker': MARKER, 'tag': [1.0, 2.0]}
+    assert grid[5]['dict'] == {'tag': {'marker': MARKER}}
+
+
+def test_dict_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    ix:00
+    dict:{}
+    dis:"An empty dict"
+    --
+    ix:01
+    dict:{marker}
+    dis:"A marker in a dict"
+    --
+    ix:02
+    dict:{tag: 1}
+    dis:"A tag with number in a dict"
+    --
+    ix:03
+    dict:{tag: [1,2]}
+    dis:"A tag with list in a dict"
+    --
+    ix:04
+    dict:{marker tag: [1,2]}
+    dis:"A marker and tag with list in a dict"
+    --
+    ix:05
+    dict:{tag: {marker}}
+    dis:"A tag  with dict in a dict"
+    ''')[1:], MODE_TRIO)
     # There should be 4 rows
     assert len(grid) == 6
     for row in grid:
@@ -1119,10 +1517,10 @@ def test_dict_csv():
 
 def test_bin_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        bin
-        Bin(text/plain)
-        ''')[1:])
+    ver:"2.0"
+    bin
+    Bin(text/plain)
+    ''')[1:])
 
     assert len(grid) == 1
     assert grid[0]['bin'] == shaystack.Bin('text/plain')
@@ -1145,9 +1543,9 @@ def test_bin_json():
 def test_dict_invalide_version_zinc():
     try:
         shaystack.parse('''ver:"2.0"
-        ix,dict,                                                       dis
-        00,{},                                                         "An empty dict"
-        ''')
+    ix,dict,                                                       dis
+    00,{},                                                         "An empty dict"
+    ''')
         assert False
     except ZincParseException:
         pass
@@ -1155,10 +1553,18 @@ def test_dict_invalide_version_zinc():
 
 def test_xstr_hex_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"3.0"
-        bin
-        hex("deadbeef")
-        ''')[1:])
+    ver:"3.0"
+    bin
+    hex("deadbeef")
+    ''')[1:])
+    assert len(grid) == 1
+    assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
+
+
+def test_xstr_hex_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    bin:hex("deadbeef")
+    ''')[1:], MODE_TRIO)
     assert len(grid) == 1
     assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
 
@@ -1179,18 +1585,26 @@ def test_xstr_hex_json():
 
 def test_xstr_hex_csv():
     grid = shaystack.parse(textwrap.dedent('''
-        bin
-        hex("deadbeef")''')[1:], mode=MODE_CSV)
+    bin
+    hex("deadbeef")''')[1:], mode=MODE_CSV)
     assert len(grid) == 1
     assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
 
 
 def test_xstr_b64_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"3.0"
-        bin
-        b64("3q2+7w==")
-        ''')[1:])
+    ver:"3.0"
+    bin
+    b64("3q2+7w==")
+    ''')[1:])
+    assert len(grid) == 1
+    assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
+
+
+def test_xstr_b64_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    bin:b64("3q2+7w==")
+    ''')[1:], MODE_TRIO)
     assert len(grid) == 1
     assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
 
@@ -1211,18 +1625,27 @@ def test_xstr_b64_json():
 
 def test_xstr_b64_csv():
     grid = shaystack.parse(textwrap.dedent('''
-        bin
-        b64("3q2+7w==")''')[1:], mode=MODE_CSV)
+    bin
+    b64("3q2+7w==")''')[1:], mode=MODE_CSV)
     assert len(grid) == 1
     assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
 
 
 def test_coord_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        coord
-        C(37.55,-77.45)
-        ''')[1:])
+    ver:"2.0"
+    coord
+    C(37.55,-77.45)
+    ''')[1:])
+
+    assert len(grid) == 1
+    assert grid[0]['coord'] == shaystack.Coordinate(37.55, -77.45)
+
+
+def test_coord_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    coord:C(37.55,-77.45)
+    ''')[1:], MODE_TRIO)
 
     assert len(grid) == 1
     assert grid[0]['coord'] == shaystack.Coordinate(37.55, -77.45)
@@ -1244,9 +1667,9 @@ def test_coord_json():
 
 def test_coord_csv():
     grid = shaystack.parse(textwrap.dedent('''
-        coord
-        "C(37.55,-77.45)"
-        ''')[1:], mode=shaystack.MODE_CSV)
+    coord
+    "C(37.55,-77.45)"
+    ''')[1:], mode=shaystack.MODE_CSV)
     assert len(grid) == 1
     assert grid[0]['coord'] == shaystack.Coordinate(37.55, -77.45)
 
@@ -1332,10 +1755,10 @@ def test_col_meta_zinc():
 
 def test_too_many_cells_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        col1, col2, col3
-        "Val1", "Val2", "Val3", "Val4", "Val5"
-        ''')[1:])
+    ver:"2.0"
+    col1, col2, col3
+    "Val1", "Val2", "Val3", "Val4", "Val5"
+    ''')[1:])
     assert len(grid) == 1
     assert len(grid.metadata) == 0
     assert list(grid.column.keys()) == ['col1', 'col2', 'col3']
@@ -1349,9 +1772,9 @@ def test_too_many_cells_zinc():
 
 def test_nodehaystack_01_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"3.0"
-        fooBar33
-        ''')[1:])
+    ver:"3.0"
+    fooBar33
+    ''')[1:])
     assert len(grid) == 0
     assert len(grid.metadata) == 0
     assert list(grid.column.keys()) == ['fooBar33']
@@ -1359,10 +1782,10 @@ def test_nodehaystack_01_zinc():
 
 def test_nodehaystack_02_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0" tag foo:"bar"
-        xyz
-        "val"
-        ''')[1:])
+    ver:"2.0" tag foo:"bar"
+    xyz
+    "val"
+    ''')[1:])
     assert len(grid) == 1
     assert list(grid.metadata.keys()) == ['tag', 'foo']
     assert_is(grid.metadata['tag'], shaystack.MARKER)
@@ -1373,10 +1796,10 @@ def test_nodehaystack_02_zinc():
 
 def test_nodehaystack_03_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        val
-        N
-        ''')[1:])
+    ver:"2.0"
+    val
+    N
+    ''')[1:])
     assert len(grid) == 1
     assert len(grid.metadata) == 0
     assert list(grid.column.keys()) == ['val']
@@ -1385,11 +1808,11 @@ def test_nodehaystack_03_zinc():
 
 def test_nodehaystack_04_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        a,b
-        1,2
-        3,4
-        ''')[1:])
+    ver:"2.0"
+    a,b
+    1,2
+    3,4
+    ''')[1:])
     assert len(grid) == 2
     assert len(grid.metadata) == 0
     assert list(grid.column.keys()) == ['a', 'b']
@@ -1401,17 +1824,17 @@ def test_nodehaystack_04_zinc():
 
 def test_nodehaystack_05_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"3.0"
-        a,    b,      c,      d
-        T,    F,      N,   -99
-        2.3,  -5e-10, 2.4e20, 123e-10
-        "",   "a",   "\\" \\\\ \\t \\n \\r", "\\uabcd"
-        `path`, @12cbb082-0c02ae73, 4s, -2.5min
-        M,R,hex("010203"),hex("010203")
-        2009-12-31, 23:59:01, 01:02:03.123, 2009-02-03T04:05:06Z
-        INF, -INF, "", NaN
-        C(12,-34),C(0.123,-.789),C(84.5,-77.45),C(-90,180)
-        ''')[1:])
+    ver:"3.0"
+    a,    b,      c,      d
+    T,    F,      N,   -99
+    2.3,  -5e-10, 2.4e20, 123e-10
+    "",   "a",   "\\" \\\\ \\t \\n \\r", "\\uabcd"
+    `path`, @12cbb082-0c02ae73, 4s, -2.5min
+    M,R,hex("010203"),hex("010203")
+    2009-12-31, 23:59:01, 01:02:03.123, 2009-02-03T04:05:06Z
+    INF, -INF, "", NaN
+    C(12,-34),C(0.123,-.789),C(84.5,-77.45),C(-90,180)
+    ''')[1:])
     assert len(grid) == 8
     assert len(grid.metadata) == 0
     assert list(grid.column.keys()) == ['a', 'b', 'c', 'd']
@@ -1460,13 +1883,13 @@ def test_nodehaystack_05_zinc():
 
 def test_nodehaystack_06_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        foo
-        `foo$20bar`
-        `foo\\`bar`
-        `file \\#2`
-        "$15"
-        ''')[1:])
+    ver:"2.0"
+    foo
+    `foo$20bar`
+    `foo\\`bar`
+    `file \\#2`
+    "$15"
+    ''')[1:])
     assert len(grid) == 4
     assert len(grid.metadata) == 0
     assert list(grid.column.keys()) == ['foo']
@@ -1482,13 +1905,13 @@ def test_nodehaystack_06_zinc():
 
 def test_nodehaystack_07_zinc():
     grid = shaystack.parse(textwrap.dedent(u'''
-        ver:"2.0"
-        a, b
-        -3.1kg,4kg
-        5%,3.2%
-        5kWh/ft\u00b2,-15kWh/m\u00b2
-        123e+12kJ/kg_dry,74\u0394\u00b0F
-        ''')[1:])
+    ver:"2.0"
+    a, b
+    -3.1kg,4kg
+    5%,3.2%
+    5kWh/ft\u00b2,-15kWh/m\u00b2
+    123e+12kJ/kg_dry,74\u0394\u00b0F
+    ''')[1:])
     assert len(grid) == 4
     assert len(grid.metadata) == 0
     assert list(grid.column.keys()) == ['a', 'b']
@@ -1508,10 +1931,10 @@ def test_nodehaystack_07_zinc():
 
 def test_nodehaystack_08_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        a,b
-        2010-03-01T23:55:00.013-05:00 GMT+5,2010-03-01T23:55:00.013+10:00 GMT-10
-        ''')[1:])
+    ver:"2.0"
+    a,b
+    2010-03-01T23:55:00.013-05:00 GMT+5,2010-03-01T23:55:00.013+10:00 GMT-10
+    ''')[1:])
     assert len(grid) == 1
     assert len(grid.metadata) == 0
     assert list(grid.column.keys()) == ['a', 'b']
@@ -1524,17 +1947,17 @@ def test_nodehaystack_08_zinc():
 
 def test_nodehaystack_09_zinc():
     grid = shaystack.parse(textwrap.dedent(u'''
-        ver:"2.0" a: 2009-02-03T04:05:06Z foo b: 2010-02-03T04:05:06Z UTC bar c: 2009-12-03T04:05:06Z London baz
-        a
-        3.814697265625E-6
-        2010-12-18T14:11:30.924Z
-        2010-12-18T14:11:30.925Z UTC
-        2010-12-18T14:11:30.925Z London
-        45$
-        33\u00a3
-        @12cbb08e-0c02ae73
-        7.15625E-4kWh/ft\u00b2
-        ''')[1:])
+    ver:"2.0" a: 2009-02-03T04:05:06Z foo b: 2010-02-03T04:05:06Z UTC bar c: 2009-12-03T04:05:06Z London baz
+    a
+    3.814697265625E-6
+    2010-12-18T14:11:30.924Z
+    2010-12-18T14:11:30.925Z UTC
+    2010-12-18T14:11:30.925Z London
+    45$
+    33\u00a3
+    @12cbb08e-0c02ae73
+    7.15625E-4kWh/ft\u00b2
+    ''')[1:])
     assert len(grid) == 8
     assert list(grid.metadata.keys()) == ['a', 'foo', 'b', 'bar', 'c', 'baz']
     assert grid.metadata['a'] == pytz.utc.localize(
@@ -1562,12 +1985,12 @@ def test_nodehaystack_09_zinc():
 
 def test_nodehaystack_10_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0" bg: Bin(image/jpeg) mark
-        file1 dis:"F1" icon: Bin(image/gif),file2 icon: Bin(image/jpg)
-        Bin(text/plain),N
-        4,Bin(image/png)
-        Bin(text/html; a=foo; bar="sep"),Bin(text/html; charset=utf8)
-        ''')[1:])
+    ver:"2.0" bg: Bin(image/jpeg) mark
+    file1 dis:"F1" icon: Bin(image/gif),file2 icon: Bin(image/jpg)
+    Bin(text/plain),N
+    4,Bin(image/png)
+    Bin(text/html; a=foo; bar="sep"),Bin(text/html; charset=utf8)
+    ''')[1:])
     assert len(grid) == 3
     assert list(grid.metadata.keys()) == ['bg', 'mark']
     assert grid.metadata['bg'] == shaystack.Bin('image/jpeg')
@@ -1591,15 +2014,15 @@ def test_nodehaystack_10_zinc():
 
 def test_nodehaystack_11_zinc():
     grid = shaystack.parse(textwrap.dedent('''
-        ver:"2.0"
-        a, b, c
-        , 1, 2
-        3, , 5
-        6, 7_000,
-        ,,10
-        ,,
-        14,,
-        ''')[1:])
+    ver:"2.0"
+    a, b, c
+    , 1, 2
+    3, , 5
+    6, 7_000,
+    ,,10
+    ,,
+    14,,
+    ''')[1:])
     assert len(grid) == 6
     assert len(grid.metadata) == 0
     assert list(grid.column.keys()) == ['a', 'b', 'c']
@@ -1629,76 +2052,6 @@ def test_nodehaystack_11_zinc():
     assert 'c' not in row
 
 
-def test_scalar_bytestring_zinc():
-    assert shaystack.parse_scalar(b'"Testing"',
-                                  mode=shaystack.MODE_ZINC) \
-           == "Testing"
-    assert shaystack.parse_scalar(b'50Hz',
-                                  mode=shaystack.MODE_ZINC) \
-           == shaystack.Quantity(50, units='Hz')
-
-
-def test_scalar_version_zinc():
-    # This should forbid us trying to parse a list.
-    try:
-        shaystack.parse_scalar('[1,2,3]', mode=shaystack.MODE_ZINC,
-                               version=shaystack.VER_2_0)
-        assert False, 'Version was ignored'
-    except shaystack.zincparser.ZincParseException:
-        pass
-
-
-def test_scalar_version_json():
-    # This should forbid us trying to parse a list.
-    try:
-        res = shaystack.parse_scalar('[ "n:1","n:2","n:3" ]',
-                                     mode=shaystack.MODE_JSON, version=shaystack.VER_2_0)
-        assert False, 'Version was ignored; got %r' % res
-    except ValueError:
-        pass
-
-
-# Scalar parsing tests… no need to be exhaustive here because the grid tests
-# cover the underlying cases.  This is basically checking that bytestring decoding
-# works and versions are passed through.
-
-def test_scalar_simple_zinc():
-    assert shaystack.parse_scalar('"Testing"', mode=shaystack.MODE_ZINC) \
-           == "Testing"
-    assert shaystack.parse_scalar('50Hz', mode=shaystack.MODE_ZINC) \
-           == shaystack.Quantity(50, units='Hz')
-
-
-def test_scalar_simple_json():
-    assert shaystack.parse_scalar('"s:Testing"', mode=shaystack.MODE_JSON) \
-           == "Testing"
-    assert shaystack.parse_scalar('"n:50 Hz"', mode=shaystack.MODE_JSON) \
-           == shaystack.Quantity(50, units='Hz')
-
-
-def test_scalar_simple_csv():
-    assert shaystack.parse_scalar('Testing', mode=shaystack.MODE_CSV) \
-           == "Testing"
-    assert shaystack.parse_scalar('50Hz', mode=shaystack.MODE_CSV) \
-           == shaystack.Quantity(50, units='Hz')
-
-
-def test_scalar_preparsed_json():
-    assert shaystack.parse_scalar('s:Testing', mode=shaystack.MODE_JSON) \
-           == "Testing"
-    assert shaystack.parse_scalar('n:50 Hz', mode=shaystack.MODE_JSON) \
-           == shaystack.Quantity(50, units='Hz')
-
-
-def test_scalar_bytestring_json():
-    assert shaystack.parse_scalar(b'"s:Testing"',
-                                  mode=shaystack.MODE_JSON) \
-           == "Testing"
-    assert shaystack.parse_scalar(b'"n:50 Hz"',
-                                  mode=shaystack.MODE_JSON) \
-           == shaystack.Quantity(50, units='Hz')
-
-
 def test_str_version():
     # This should assume v3.0, and parse successfully.
     val = shaystack.parse_scalar('[1,2,3]', mode=shaystack.MODE_ZINC,
@@ -1709,10 +2062,10 @@ def test_str_version():
 def test_malformed_grid_meta_zinc():
     try:
         shaystack.parse(textwrap.dedent('''
-            ver:"2.0" ThisIsNotATag
-            empty
-            
-            ''')[1:])
+        ver:"2.0" ThisIsNotATag
+        empty
+        
+        ''')[1:])
         assert False, 'Parsed a clearly invalid grid'
     except shaystack.zincparser.ZincParseException as zpe:
         assert zpe.line == 1
@@ -1722,10 +2075,10 @@ def test_malformed_grid_meta_zinc():
 def test_malformed_col_meta_zinc():
     try:
         shaystack.parse(textwrap.dedent('''
-            ver:"2.0"
-            c1 goodSoFar, c2 WHOOPSIE
-            ,
-            ''')[1:])
+        ver:"2.0"
+        c1 goodSoFar, c2 WHOOPSIE
+        ,
+        ''')[1:])
         assert False, 'Parsed a clearly invalid grid'
     except shaystack.zincparser.ZincParseException as zpe:
         assert zpe.line == 2
@@ -1735,13 +2088,13 @@ def test_malformed_col_meta_zinc():
 def test_malformed_row_zinc():
     try:
         shaystack.parse(textwrap.dedent('''
-            ver:"2.0"
-            c1, c2
-            1, "No problems here"
-            2, We should fail here
-            3, "No issue, but we won't get this far"
-            4, We won't see this error
-            ''')[1:])
+        ver:"2.0"
+        c1, c2
+        1, "No problems here"
+        2, We should fail here
+        3, "No issue, but we won't get this far"
+        4, We won't see this error
+        ''')[1:])
         assert False, 'Parsed a clearly invalid grid'
     except shaystack.zincparser.ZincParseException as zpe:
         assert zpe.line == 4
@@ -1771,6 +2124,20 @@ def test_grid_in_grid_zinc():
     assert inner[0]['comment'] == 'A innergrid'
 
 
+def test_grid_in_grid_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    inner:Zinc:
+      ver:"3.0"
+      comment
+      "A innergrid"
+    '''), mode=shaystack.MODE_TRIO)
+    assert len(grid) == 1
+    inner = grid[0]['inner']
+    assert isinstance(inner, Grid)
+    assert len(inner) == 1
+    assert inner[0]['comment'] == 'A innergrid'
+
+
 def test_grid_in_grid_json():
     xstr = \
         '{"meta": {"ver": "3.0"},' \
@@ -1792,12 +2159,12 @@ def test_grid_in_grid_json():
 
 def test_grid_in_grid_csv():
     xstr = textwrap.dedent('''
-        inner
-        "<<ver:""3.0""
-        comment
-        ""A innergrid""
-        >>"
-        '''[1:])
+    inner
+    "<<ver:""3.0""
+    comment
+    ""A innergrid""
+    >>"
+    '''[1:])
     grid = shaystack.parse(xstr, mode=shaystack.MODE_CSV)
     assert len(grid) == 1
     inner = grid[0]['inner']
@@ -1816,6 +2183,24 @@ def test_grid_in_grid_in_grid_zinc():
                            '"A innerinnergrid"\n'
                            '>>\n'
                            '>>\n', mode=shaystack.MODE_ZINC)
+    assert len(grid) == 1
+    inner = grid[0]['inner']
+    assert isinstance(inner, Grid)
+    assert len(inner) == 1
+    assert isinstance(inner[0]['innerinner'], Grid)
+    assert inner[0]['innerinner'][0]['comment'] == "A innerinnergrid"
+
+
+def test_grid_in_grid_in_grid_trio():
+    grid = shaystack.parse(textwrap.dedent('''
+    inner:Zinc:
+      ver:"3.0"
+      innerinner
+      <<ver:"3.0"
+      comment
+      "A innerinnergrid"
+      >>
+    '''), mode=shaystack.MODE_TRIO)
     assert len(grid) == 1
     inner = grid[0]['inner']
     assert isinstance(inner, Grid)
@@ -1852,14 +2237,14 @@ def test_grid_in_grid_in_grid_json():
 
 def test_grid_in_grid_in_grid_csv():
     str_grid = textwrap.dedent('''
-        inner
-        "<<ver:""3.0""
-        innerinner
-        <<ver:""3.0""
-        comment
-        ""A innerinnergrid""
-        >>
-        >>"'''[1:])
+    inner
+    "<<ver:""3.0""
+    innerinner
+    <<ver:""3.0""
+    comment
+    ""A innerinnergrid""
+    >>
+    >>"'''[1:])
     grid = shaystack.parse(str_grid, mode=shaystack.MODE_CSV)
     assert len(grid) == 1
     inner = grid[0]['inner']
@@ -1867,6 +2252,92 @@ def test_grid_in_grid_in_grid_csv():
     assert len(inner) == 1
     assert isinstance(inner[0]['innerinner'], Grid)
     assert inner[0]['innerinner'][0]['comment'] == "A innerinnergrid"
+
+
+def test_scalar_bytestring_zinc():
+    assert shaystack.parse_scalar(b'"Testing"',
+                                  mode=shaystack.MODE_ZINC) \
+           == "Testing"
+    assert shaystack.parse_scalar(b'50Hz',
+                                  mode=shaystack.MODE_ZINC) \
+           == shaystack.Quantity(50, units='Hz')
+
+
+def test_scalar_bytestring_trio():
+    assert shaystack.parse_scalar(b'"Testing"',
+                                  mode=shaystack.MODE_TRIO) \
+           == "Testing"
+    assert shaystack.parse_scalar(b'50Hz',
+                                  mode=shaystack.MODE_TRIO) \
+           == shaystack.Quantity(50, units='Hz')
+
+
+def test_scalar_version_zinc():
+    # This should forbid us trying to parse a list.
+    try:
+        shaystack.parse_scalar('[1,2,3]', mode=shaystack.MODE_ZINC,
+                               version=shaystack.VER_2_0)
+        assert False, 'Version was ignored'
+    except shaystack.zincparser.ZincParseException:
+        pass
+
+
+def test_scalar_version_json():
+    # This should forbid us trying to parse a list.
+    try:
+        res = shaystack.parse_scalar('[ "n:1","n:2","n:3" ]',
+                                     mode=shaystack.MODE_JSON, version=shaystack.VER_2_0)
+        assert False, 'Version was ignored; got %r' % res
+    except ValueError:
+        pass
+
+
+# Scalar parsing tests… no need to be exhaustive here because the grid tests
+# cover the underlying cases.  This is basically checking that bytestring decoding
+# works and versions are passed through.
+
+def test_scalar_simple_zinc():
+    assert shaystack.parse_scalar('"Testing"', mode=shaystack.MODE_ZINC) \
+           == "Testing"
+    assert shaystack.parse_scalar('50Hz', mode=shaystack.MODE_ZINC) \
+           == shaystack.Quantity(50, units='Hz')
+
+
+def test_scalar_simple_trio():
+    assert shaystack.parse_scalar('"Testing"', mode=shaystack.MODE_TRIO) \
+           == "Testing"
+    assert shaystack.parse_scalar('50Hz', mode=shaystack.MODE_TRIO) \
+           == shaystack.Quantity(50, units='Hz')
+
+
+def test_scalar_simple_json():
+    assert shaystack.parse_scalar('"s:Testing"', mode=shaystack.MODE_JSON) \
+           == "Testing"
+    assert shaystack.parse_scalar('"n:50 Hz"', mode=shaystack.MODE_JSON) \
+           == shaystack.Quantity(50, units='Hz')
+
+
+def test_scalar_simple_csv():
+    assert shaystack.parse_scalar('Testing', mode=shaystack.MODE_CSV) \
+           == "Testing"
+    assert shaystack.parse_scalar('50Hz', mode=shaystack.MODE_CSV) \
+           == shaystack.Quantity(50, units='Hz')
+
+
+def test_scalar_preparsed_json():
+    assert shaystack.parse_scalar('s:Testing', mode=shaystack.MODE_JSON) \
+           == "Testing"
+    assert shaystack.parse_scalar('n:50 Hz', mode=shaystack.MODE_JSON) \
+           == shaystack.Quantity(50, units='Hz')
+
+
+def test_scalar_bytestring_json():
+    assert shaystack.parse_scalar(b'"s:Testing"',
+                                  mode=shaystack.MODE_JSON) \
+           == "Testing"
+    assert shaystack.parse_scalar(b'"n:50 Hz"',
+                                  mode=shaystack.MODE_JSON) \
+           == shaystack.Quantity(50, units='Hz')
 
 
 def test_unescape():

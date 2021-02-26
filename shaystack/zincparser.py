@@ -15,11 +15,12 @@ import datetime
 import logging
 import re
 import sys
-from threading import Lock
+from threading import RLock
 from typing import Dict, Any, Callable, List, Tuple
 from typing import Optional as Typing_Optional
 
 import iso8601
+from pint import UndefinedUnitError
 from pyparsing import Regex, Forward, Combine, Suppress, CaselessLiteral, Literal, Optional, ParseException, \
     Word, Group, Empty, delimitedList, ParserElement
 
@@ -30,8 +31,6 @@ from .sortabledict import SortableDict
 # Bring in version handling
 from .version import Version, VER_2_0, VER_3_0, LATEST_VER
 from .zoneinfo import timezone
-
-# flake8: noqa E731
 
 # Logging instance for reporting debug info
 LOG = logging.getLogger(__name__)
@@ -74,8 +73,10 @@ def _parse_datetime(toks: Tuple[datetime.datetime, Typing_Optional[str]]) -> Lis
         tzname = None
 
     assert not ((isodt.tzinfo is None) and bool(tzname))  # pragma: no cover
-    if bool(tzname):
+    if tzname:
         return [isodt.astimezone(timezone(tzname))]
+    if isodt.tzname():
+        return [isodt]
     return [isodt.astimezone(timezone("UTC"))]
 
 
@@ -111,7 +112,7 @@ def _gen_grid(toks: List[Any]) -> Grid:
     return grid
 
 
-def _to_dict(toks: List[Any]) -> Dict[str, Any]:
+def toks_to_dict(toks: List[Any]) -> Dict[str, Any]:
     """
     Args:
         toks:
@@ -127,7 +128,8 @@ def _to_dict(toks: List[Any]) -> Dict[str, Any]:
             if isinstance(tok, str):
                 result[tok] = MARKER
             elif isinstance(tok, tuple):
-                result[tok[0]] = tok[1]
+                if len(tok) > 1 and tok[1] is not None:
+                    result[tok[0]] = tok[1]
             else:
                 result[tok] = MARKER
 
@@ -139,42 +141,44 @@ class ZincParseException(ValueError):
     line and column for the grid are given.
     """
 
-    def __init__(self, message: str, grid_str: str, line: int, col: int):
-        self.grid_str = grid_str
-        self.line = line
-        self.col = col
+    def __init__(self, message: str, grid_str: Typing_Optional[str],
+                 line: Typing_Optional[int], col: Typing_Optional[int]):
+        if grid_str:
+            self.grid_str = grid_str
+            self.line = line
+            self.col = col
 
-        try:
-            # If we know the line and column, point it out in the message.
-            grid_str_lines = grid_str.split('\n')
-            width = max([len(line) for line in grid_str_lines])
-            line_fmt = '%%-%ds' % width
-            row_fmt = '%4d%s' + line_fmt + '%s'
+            try:
+                # If we know the line and column, point it out in the message.
+                grid_str_lines = grid_str.split('\n')
+                width = max([len(line) for line in grid_str_lines])
+                line_fmt = '%%-%ds' % width
+                row_fmt = '%4d%s' + line_fmt + '%s'
 
-            formatted_lines = [
-                row_fmt % (
-                    num,
-                    ' >' if (line == num) else '| ',
-                    line_str,
-                    '< ' if (line == num) else ' |'
-                )
-                for (num, line_str)
-                in enumerate(grid_str.split('\n'), 1)
-            ]
-            formatted_lines.insert(line,
-                                   ('    | ' + line_fmt + ' |')
-                                   % (((col - 2) * ' ') + '.^.')
-                                   )
+                formatted_lines = [
+                    row_fmt % (
+                        num,
+                        ' >' if (line == num) else '| ',
+                        line_str,
+                        '< ' if (line == num) else ' |'
+                    )
+                    for (num, line_str)
+                    in enumerate(grid_str.split('\n'), 1)
+                ]
+                formatted_lines.insert(line,
+                                       ('    | ' + line_fmt + ' |')
+                                       % (((col - 2) * ' ') + '.^.')
+                                       )
 
-            # Border it for readability
-            formatted_lines.insert(0, '    .' + ('-' * (2 + width)) + '.')
-            formatted_lines.append('    \'' + ('-' * (2 + width)) + '\'')
+                # Border it for readability
+                formatted_lines.insert(0, '    .' + ('-' * (2 + width)) + '.')
+                formatted_lines.append('    \'' + ('-' * (2 + width)) + '\'')
 
-            # Append to message
-            message += '\n%s' % '\n'.join(formatted_lines)
-        except ValueError:  # pragma: no cover
-            # We should not get here.
-            LOG.exception('Exception encountered formatting log message')
+                # Append to message
+                message += '\n%s' % '\n'.join(formatted_lines)
+            except ValueError:  # pragma: no cover
+                # We should not get here.
+                LOG.exception('Exception encountered formatting log message')
 
         super().__init__(message)
 
@@ -246,6 +250,10 @@ def _unescape(a_string: str, uri: bool = False) -> str:
                 out += '\r'
             elif esc_c == 't':
                 out += '\t'
+            elif esc_c == 'v':
+                out += '\v'
+            elif esc_c == '\\':
+                out += '\\'
             else:
                 if uri and (esc_c == '#'):
                     # \# is passed through with backslash.
@@ -374,9 +382,16 @@ hs_decimal = Combine(
     Optional(hs_exp)
 ).setParseAction(lambda toks: [float(toks[0])])
 
+
+def _quantity(toks):
+    try:
+        return [Quantity(*toks)]
+    except UndefinedUnitError as ex:
+        raise ZincParseException("Invalide unit", None, 0, 0) from ex
+
+
 hs_quantity = (hs_decimal + hs_unit).leaveWhitespace() \
-    .setParseAction(
-    lambda toks: [Quantity(*toks)])
+    .setParseAction(_quantity)
 hs_number = hs_quantity ^ hs_decimal ^ (
         Literal('INF') ^
         '-INF' ^
@@ -490,7 +505,7 @@ hs_dict = _GenerateMatch(
     (Suppress('{') +
      hs_tags[ver] +
      Suppress('}')
-     ).setName("dict").setParseAction(_to_dict)
+     ).setName("dict").setParseAction(toks_to_dict)
 )
 
 hs_inner_grid = _GenerateMatch(
@@ -573,7 +588,7 @@ hs_grid_3_0 <<= (
         hs_rows[VER_3_0]
 ).setParseAction(_gen_grid)
 
-lock = Lock()
+pyparser_lock = RLock()
 
 
 def parse_grid(grid_data: str, parse_all: bool = True) -> Grid:
@@ -586,7 +601,7 @@ def parse_grid(grid_data: str, parse_all: bool = True) -> Grid:
         The grid
     """
     try:
-        with lock:
+        with pyparser_lock:
             # First element is the grid metadata
             ver_match = _VERSION_RE.match(grid_data)
             if ver_match is None:

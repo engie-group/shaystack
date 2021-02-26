@@ -23,17 +23,9 @@ MODE = NewType('Mode', str)
 Compatible haystack file format
 """
 MODE_ZINC: MODE = MODE('text/zinc')
+MODE_TRIO: MODE = MODE('text/trio')
 MODE_JSON: MODE = MODE('application/json')
 MODE_CSV: MODE = MODE('text/csv')
-
-_STR_SUB = [
-    ('\b', '\\b'),
-    ('\f', '\\f'),
-    ('\n', '\\n'),
-    ('\r', '\\r'),
-    ('\t', '\\t'),
-]
-
 
 # Update the unit when create a pint.Quantity
 class Quantity(unit_reg.Quantity):

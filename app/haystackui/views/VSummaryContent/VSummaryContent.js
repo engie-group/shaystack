@@ -11,10 +11,11 @@ const template = `
     </div>
     <div v-if="isDataLoaded">
       <c-entity-row
-        :id="getEntityName(row)"
         v-for="row in entitiesGroupedById"
-        :ref="getEntityName(row)"
+        :ref="getEntityId(row)"
+        :id="getEntityName"
         :key="row.id.val"
+        @onRefClick="onRefClick"
         :idEntity="row.id.val"
         :dataEntity="row"
         :his="getHistories(row.id.val)"
@@ -62,12 +63,12 @@ export default {
   methods: {
     async reloadPageFromQueryParameters() {
       if (Object.keys(this.$route.query).length > 0) {
-        if (this.$route.query.apiServers) {
-          const defaultApiServers = JSON.parse(this.$route.query.apiServers)
+        if (this.$route.query.a) {
+          const defaultApiServers = JSON.parse(this.$route.query.a)
           await this.$store.commit('SET_API_SERVERS', { apiServers: defaultApiServers })
         }
-        if (this.$route.query.filterApi) {
-          await this.$store.commit('SET_FILTER_API', { filterApi: this.$route.query.filterApi })
+        if (this.$route.query.q) {
+          await this.$store.commit('SET_FILTER_API', { filterApi: this.$route.query.q })
         } else this.$store.commit('SET_FILTER_API', { filterApi: '' })
       }
       await this.$store.dispatch('reloadAllData', { entity: this.filterApi })
@@ -75,13 +76,17 @@ export default {
     handleScroll() {
       // eslint-disable-next-line
       this.entitiesGroupedById.find(entity => {
-        const entityName = this.getEntityName(entity)
-        const el = this.$refs[entityName][0] ? this.$refs[entityName][0].$el : null
+        const entityId = this.getEntityId(entity)
+        const el = this.$refs[entityId][0] ? this.$refs[entityId][0].$el : null
         if (this.elementInViewport(el)) {
           const { query } = this.$route
-          this.$router.replace({ hash: entityName, query })
+          this.$router.replace({ hash: entityId, query }).catch(() => {})
         }
       })
+    },
+    async onRefClick(refId) {
+      this.$refs[refId][0].$el.scrollIntoView(true)
+      window.scrollBy(0, -200)
     },
     elementInViewport(el) {
       if (!el) return false
@@ -112,9 +117,13 @@ export default {
         })
         this.$store.commit('SET_FILTER_API', { filterApi: newApiFilter })
       } else {
-        this.$refs[pointName][0].$el.scrollIntoView()
+        const entityId = Object.keys(entityNameToEntityId).find(key => entityNameToEntityId[key] === pointName)
+        this.$refs[entityId][0].$el.scrollIntoView(true)
         window.scrollBy(0, -200)
       }
+    },
+    getEntityId(entity) {
+      return entity.id.val.substring(2).split(' ')[0]
     },
     getEntityName(entity) {
       return formatService.formatEntityName(entity)
@@ -152,7 +161,7 @@ export default {
     await this.reloadPageFromQueryParameters()
   },
   updated() {
-    const entityNames = this.entitiesGroupedById.map(entity => this.getEntityName(entity))
+    const entityNames = this.entitiesGroupedById.map(entity => this.getEntityId(entity))
     if (entityNames.indexOf(decodeURI(this.$route.hash).substring(1)) >= 0) {
       const elementRef = this.$refs[decodeURI(this.$route.hash).substring(1)][0]
       if (elementRef) {

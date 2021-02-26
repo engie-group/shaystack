@@ -42,10 +42,16 @@ export const mutations = {
   },
   SET_API_SERVERS(state, { apiServers }) {
     const newApiServers = []
+    const newEntities = []
+    const newHistories = []
     // eslint-disable-next-line
     apiServers.map(apiServer => {
+      newEntities.push([])
+      newHistories.push({})
       newApiServers.push(new HaystackApiService({ haystackApiHost: apiServer }))
     })
+    state.entities = newEntities
+    state.histories = newHistories
     state.apiServers = newApiServers
   },
   SET_HAYSTACK_API(state, { haystackApiHost }) {

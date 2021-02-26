@@ -7,22 +7,106 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 import datetime
 import json
+import textwrap
 from csv import reader
 
 import pytz
 
 import shaystack
-from shaystack import dump_scalar
+from shaystack import dump_scalar, MODE_TRIO, MODE_ZINC
 from .test_parser import SIMPLE_EXAMPLE_ZINC, SIMPLE_EXAMPLE_JSON, \
-    METADATA_EXAMPLE_JSON, SIMPLE_EXAMPLE_CSV, METADATA_EXAMPLE_CSV
+    METADATA_EXAMPLE_JSON, SIMPLE_EXAMPLE_CSV, METADATA_EXAMPLE_CSV, SIMPLE_EXAMPLE_TRIO
 
 # The metadata example is a little different, as we generate the grid without
 # spaces around the commas.
-METADATA_EXAMPLE = '''ver:"2.0" database:"test" dis:"Site Energy Summary"
+METADATA_EXAMPLE = '''
+ver:"2.0" database:"test" dis:"Site Energy Summary"
 siteName dis:"Sites",val dis:"Value" unit:"kW"
 "Site 1",356.214kW
 "Site 2",463.028kW
-'''
+'''[1:]
+
+grid_full_types = shaystack.Grid(version=shaystack.VER_2_0)
+grid_full_types.column['comment'] = {}
+grid_full_types.column['value'] = {}
+grid_full_types.extend([
+    {
+        'comment': 'A null value',
+        'value': None,
+    },
+    {
+        'comment': 'A marker',
+        'value': shaystack.MARKER,
+    },
+    {
+        'comment': 'A "remove" object',
+        'value': shaystack.REMOVE,
+    },
+    {
+        'comment': 'A boolean, indicating False',
+        'value': False,
+    },
+    {
+        'comment': 'A boolean, indicating True',
+        'value': True,
+    },
+    {
+        'comment': 'A reference, without value',
+        'value': shaystack.Ref('a-ref'),
+    },
+    {
+        'comment': 'A reference, with value',
+        'value': shaystack.Ref('a-ref', 'a value'),
+    },
+    {
+        'comment': 'A binary blob',
+        'value': shaystack.Bin('text/plain'),
+    },
+    {
+        'comment': 'A quantity',
+        'value': shaystack.Quantity(500, 'miles'),
+    },
+    {
+        'comment': 'A quantity without unit',
+        'value': shaystack.Quantity(500, None),
+    },
+    {
+        'comment': 'A coordinate',
+        'value': shaystack.Coordinate(-27.4725, 153.003),
+    },
+    {
+        'comment': 'A URI',
+        'value': shaystack.Uri('http://www.example.com#unicode:\u1234\u5678'),
+    },
+    {
+        'comment': 'A string',
+        'value': 'This is a test\n'
+                 'Line two of test\n'
+                 '\tIndented with "quotes", \\backslashes\\\n',
+    },
+    {
+        'comment': 'A unicode string',
+        'value': 'This is a Unicode characters: \u1234\u5678',
+    },
+    {
+        'comment': 'A date',
+        'value': datetime.date(2016, 1, 13),
+    },
+    {
+        'comment': 'A time',
+        'value': datetime.time(7, 51, 43, microsecond=12345),
+    },
+    {
+        'comment': 'A timestamp (non-UTC)',
+        'value': pytz.timezone('Europe/Berlin').localize(
+            datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
+    },
+    {
+        'comment': 'A timestamp (UTC)',
+        'value': pytz.timezone('UTC').localize(
+            datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
+    },
+])
 
 
 def make_simple_grid(version=shaystack.VER_2_0):
@@ -48,8 +132,14 @@ def make_simple_grid(version=shaystack.VER_2_0):
 
 def test_simple_zinc():
     grid = make_simple_grid()
-    grid_str = shaystack.dump(grid)
+    grid_str = shaystack.dump(grid, MODE_ZINC)
     assert grid_str == SIMPLE_EXAMPLE_ZINC
+
+
+def test_simple_trio():
+    grid = make_simple_grid()
+    grid_str = shaystack.dump(grid, MODE_TRIO)
+    assert grid_str == SIMPLE_EXAMPLE_TRIO
 
 
 def test_simple_json():
@@ -126,9 +216,10 @@ def make_grid_meta(version=shaystack.VER_2_0):
 
 def test_grid_meta():
     grid_str = shaystack.dump(make_grid_meta())
-    assert grid_str == '''ver:"2.0" aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123Hz
+    assert grid_str == '''
+ver:"2.0" aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123Hz
 empty
-'''
+'''[1:]
 
 
 def test_grid_meta_json():
@@ -174,9 +265,10 @@ def make_col_meta(version=shaystack.VER_2_0):
 
 def test_col_meta_zinc():
     grid_str = shaystack.dump(make_col_meta(), mode=shaystack.MODE_ZINC)
-    assert grid_str == '''ver:"2.0"
+    assert grid_str == '''
+ver:"2.0"
 empty aString:"aValue" aNumber:3.14159 aNull:N aMarker aQuantity:123Hz
-'''
+'''[1:]
 
 
 def test_col_meta_json():
@@ -206,86 +298,9 @@ def test_col_meta_csv():
 
 
 def test_data_types_zinc_v2():
-    grid = shaystack.Grid(version=shaystack.VER_2_0)
-    grid.column['comment'] = {}
-    grid.column['value'] = {}
-    grid.extend([
-        {
-            'comment': 'A null value',
-            'value': None,
-        },
-        {
-            'comment': 'A marker',
-            'value': shaystack.MARKER,
-        },
-        {
-            'comment': 'A "remove" object',
-            'value': shaystack.REMOVE,
-        },
-        {
-            'comment': 'A boolean, indicating False',
-            'value': False,
-        },
-        {
-            'comment': 'A boolean, indicating True',
-            'value': True,
-        },
-        {
-            'comment': 'A reference, without value',
-            'value': shaystack.Ref('a-ref'),
-        },
-        {
-            'comment': 'A reference, with value',
-            'value': shaystack.Ref('a-ref', 'a value'),
-        },
-        {
-            'comment': 'A binary blob',
-            'value': shaystack.Bin('text/plain'),
-        },
-        {
-            'comment': 'A quantity',
-            'value': shaystack.Quantity(500, 'miles'),
-        },
-        {
-            'comment': 'A quantity without unit',
-            'value': shaystack.Quantity(500, None),
-        },
-        {
-            'comment': 'A coordinate',
-            'value': shaystack.Coordinate(-27.4725, 153.003),
-        },
-        {
-            'comment': 'A URI',
-            'value': shaystack.Uri('http://www.example.com#`unicode:\u1234\u5678`'),
-        },
-        {
-            'comment': 'A string',
-            'value': 'This is a test\n'
-                     'Line two of test\n'
-                     '\tIndented with "quotes", \\backslashes\\ and '
-                     'Unicode characters: \u1234\u5678 and a $ dollar sign',
-        },
-        {
-            'comment': 'A date',
-            'value': datetime.date(2016, 1, 13),
-        },
-        {
-            'comment': 'A time',
-            'value': datetime.time(7, 51, 43, microsecond=12345),
-        },
-        {
-            'comment': 'A timestamp (non-UTC)',
-            'value': pytz.timezone('Europe/Berlin').localize(
-                datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
-        },
-        {
-            'comment': 'A timestamp (UTC)',
-            'value': pytz.timezone('UTC').localize(
-                datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
-        },
-    ])
-    grid_str = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
-    ref_str = '''ver:"2.0"
+    grid_str = shaystack.dump(grid_full_types, mode=shaystack.MODE_ZINC)
+    ref_str = '''
+ver:"2.0"
 comment,value
 "A null value",N
 "A marker",M
@@ -298,227 +313,51 @@ comment,value
 "A quantity",500miles
 "A quantity without unit",500
 "A coordinate",C(-27.472500,153.003000)
-"A URI",`http://www.example.com#\\`unicode:\\u1234\\u5678\\``
-"A string","This is a test\\nLine two of test\\n\\tIndented with \\"quotes\\", \\\\backslashes\\\\ and Unicode characters: \\u1234\\u5678 and a \\$ dollar sign"
+"A URI",`http://www.example.com#unicode:\\u1234\\u5678`
+"A string","This is a test\\nLine two of test\\n\\tIndented with \\"quotes\\", \\\\backslashes\\\\\\n"
+"A unicode string","This is a Unicode characters: \\u1234\\u5678"
 "A date",2016-01-13
 "A time",07:51:43.012345
 "A timestamp (non-UTC)",2016-01-13T07:51:42.012345+01:00 Berlin
 "A timestamp (UTC)",2016-01-13T07:51:42.012345+00:00 UTC
-'''
+'''[1:]
     assert grid_str == ref_str
 
 
 def test_data_types_json_v2():
-    grid = shaystack.Grid(version=shaystack.VER_2_0)
-    grid.column['comment'] = {}
-    grid.column['value'] = {}
-    grid.extend([
-        {
-            'comment': 'A null value',
-            'value': None,
-        },
-        {
-            'comment': 'A marker',
-            'value': shaystack.MARKER,
-        },
-        {
-            'comment': 'A remove (2.0 version)',
-            'value': shaystack.REMOVE,
-        },
-        {
-            'comment': 'A boolean, indicating False',
-            'value': False,
-        },
-        {
-            'comment': 'A boolean, indicating True',
-            'value': True,
-        },
-        {
-            'comment': 'A reference, without value',
-            'value': shaystack.Ref('a-ref'),
-        },
-        {
-            'comment': 'A reference, with value',
-            'value': shaystack.Ref('a-ref', 'a value'),
-        },
-        {
-            'comment': 'A binary blob',
-            'value': shaystack.Bin('text/plain'),
-        },
-        {
-            'comment': 'A quantity',
-            'value': shaystack.Quantity(500, 'miles'),
-        },
-        {
-            'comment': 'A quantity without unit',
-            'value': shaystack.Quantity(500, None),
-        },
-        {
-            'comment': 'A coordinate',
-            'value': shaystack.Coordinate(-27.4725, 153.003),
-        },
-        {
-            'comment': 'A URI',
-            'value': shaystack.Uri('http://www.example.com'),
-        },
-        {
-            'comment': 'A string',
-            'value': 'This is a test\n'
-                     'Line two of test\n'
-                     '\tIndented with "quotes" and \\backslashes\\',
-        },
-        {
-            'comment': 'A date',
-            'value': datetime.date(2016, 1, 13),
-        },
-        {
-            'comment': 'A time',
-            'value': datetime.time(7, 51, 43, microsecond=12345),
-        },
-        {
-            'comment': 'A timestamp (non-UTC)',
-            'value': pytz.timezone('Europe/Berlin').localize(
-                datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
-        },
-        {
-            'comment': 'A timestamp (UTC)',
-            'value': pytz.timezone('UTC').localize(
-                datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
-        },
-    ])
-    grid_json = json.loads(shaystack.dump(grid, mode=shaystack.MODE_JSON))
-    assert grid_json == {
-        'meta': {'ver': '2.0'},
-        'cols': [
-            {'name': 'comment'},
-            {'name': 'value'},
-        ],
-        'rows': [
-            {'comment': 's:A null value',
-             'value': None},
-            {'comment': 's:A marker',
-             'value': 'm:'},
-            {'comment': 's:A remove (2.0 version)',
-             'value': 'x:'},
-            {'comment': 's:A boolean, indicating False',
-             'value': False},
-            {'comment': 's:A boolean, indicating True',
-             'value': True},
-            {'comment': 's:A reference, without value',
-             'value': 'r:a-ref'},
-            {'comment': 's:A reference, with value',
-             'value': 'r:a-ref a value'},
-            {'comment': 's:A binary blob',
-             'value': 'b:text/plain'},
-            {'comment': 's:A quantity',
-             'value': 'n:500.000000 miles'},
-            {'comment': 's:A quantity without unit',
-             'value': 'n:500.000000'},
-            {'comment': 's:A coordinate',
-             'value': 'c:-27.472500,153.003000'},
-            {'comment': 's:A URI',
-             'value': 'u:http://www.example.com'},
-            {'comment': 's:A string',
-             'value': 's:This is a test\n'
-                      'Line two of test\n'
-                      '\tIndented with \"quotes\" '
-                      'and \\backslashes\\'},
-            {'comment': 's:A date',
-             'value': 'd:2016-01-13'},
-            {'comment': 's:A time',
-             'value': 'h:07:51:43.012345'},
-            {'comment': 's:A timestamp (non-UTC)',
-             'value': 't:2016-01-13T07:51:42.012345+01:00 Berlin'},
-            {'comment': 's:A timestamp (UTC)',
-             'value': 't:2016-01-13T07:51:42.012345+00:00 UTC'},
-        ],
-    }
+    grid_json = json.loads(shaystack.dump(grid_full_types, mode=shaystack.MODE_JSON))
+    assert grid_json == \
+           {'meta': {'ver': '2.0'},
+            'cols': [{'name': 'comment'}, {'name': 'value'}],
+            'rows': [
+                {'comment': 's:A null value', 'value': None}, {'comment': 's:A marker', 'value': 'm:'},
+                {'comment': 's:A "remove" object', 'value': 'x:'},
+                {'comment': 's:A boolean, indicating False', 'value': False},
+                {'comment': 's:A boolean, indicating True', 'value': True},
+                {'comment': 's:A reference, without value', 'value': 'r:a-ref'},
+                {'comment': 's:A reference, with value', 'value': 'r:a-ref a value'},
+                {'comment': 's:A binary blob', 'value': 'b:text/plain'},
+                {'comment': 's:A quantity', 'value': 'n:500.000000 miles'},
+                {'comment': 's:A quantity without unit', 'value': 'n:500.000000'},
+                {'comment': 's:A coordinate', 'value': 'c:-27.472500,153.003000'},
+                {'comment': 's:A URI', 'value': 'u:http://www.example.com#unicode:ሴ噸'},
+                {'comment': 's:A string',
+                 'value': 's:This is a test\nLine two of test\n\tIndented with "quotes", \\backslashes\\\n'},
+                {'comment': 's:A unicode string', 'value': 's:This is a Unicode characters: ሴ噸'},
+                {'comment': 's:A date', 'value': 'd:2016-01-13'},
+                {'comment': 's:A time', 'value': 'h:07:51:43.012345'},
+                {'comment': 's:A timestamp (non-UTC)', 'value': 't:2016-01-13T07:51:42.012345+01:00 Berlin'},
+                {'comment': 's:A timestamp (UTC)', 'value': 't:2016-01-13T07:51:42.012345+00:00 UTC'}]}
 
 
 def test_data_types_csv_v2():
-    grid = shaystack.Grid(version=shaystack.VER_2_0)
-    grid.column['comment'] = {}
-    grid.column['value'] = {}
-    grid.extend([
-        {
-            'comment': 'A null value',
-            'value': None,
-        },
-        {
-            'comment': 'A marker',
-            'value': shaystack.MARKER,
-        },
-        {
-            'comment': 'A remove (2.0 version)',
-            'value': shaystack.REMOVE,
-        },
-        {
-            'comment': 'A boolean, indicating False',
-            'value': False,
-        },
-        {
-            'comment': 'A boolean, indicating True',
-            'value': True,
-        },
-        {
-            'comment': 'A reference, without value',
-            'value': shaystack.Ref('a-ref'),
-        },
-        {
-            'comment': 'A reference, with value',
-            'value': shaystack.Ref('a-ref', 'a value'),
-        },
-        {
-            'comment': 'A binary blob',
-            'value': shaystack.Bin('text/plain'),
-        },
-        {
-            'comment': 'A quantity',
-            'value': shaystack.Quantity(500, 'miles'),
-        },
-        {
-            'comment': 'A quantity without unit',
-            'value': shaystack.Quantity(500, None),
-        },
-        {
-            'comment': 'A coordinate',
-            'value': shaystack.Coordinate(-27.4725, 153.003),
-        },
-        {
-            'comment': 'A URI',
-            'value': shaystack.Uri('http://www.example.com'),
-        },
-        {
-            'comment': 'A string',
-            'value': 'This is a test\n'
-                     'Line two of test\n'
-                     '\tIndented with "quotes" and \\backslashes\\',
-        },
-        {
-            'comment': 'A date',
-            'value': datetime.date(2016, 1, 13),
-        },
-        {
-            'comment': 'A time',
-            'value': datetime.time(7, 51, 43, microsecond=12345),
-        },
-        {
-            'comment': 'A timestamp (non-UTC)',
-            'value': pytz.timezone('Europe/Berlin').localize(
-                datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
-        },
-        {
-            'comment': 'A timestamp (UTC)',
-            'value': pytz.timezone('UTC').localize(
-                datetime.datetime(2016, 1, 13, 7, 51, 42, 12345)),
-        },
-    ])
-    grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
+    grid_csv = shaystack.dump(grid_full_types, mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
-    assert grid_csv == '''comment,value
+    ref_str = '''
+comment,value
 "A null value",
-"A marker",\u2713
-"A remove (2.0 version)",R
+"A marker",✓
+"A ""remove"" object",R
 "A boolean, indicating False",false
 "A boolean, indicating True",true
 "A reference, without value",@a-ref
@@ -527,216 +366,162 @@ def test_data_types_csv_v2():
 "A quantity",500miles
 "A quantity without unit",500
 "A coordinate","C(-27.472500,153.003000)"
-"A URI",`http://www.example.com`
-"A string","This is a test\nLine two of test\n\tIndented with ""quotes"" and \\backslashes\\"
+"A URI","`http://www.example.com#unicode:\u1234\u5678`"
+"A string","This is a test\nLine two of test\n\tIndented with ""quotes"", \\backslashes\\\n"
+"A unicode string","This is a Unicode characters: \u1234\u5678"
 "A date",2016-01-13
 "A time",07:51:43.012345
 "A timestamp (non-UTC)",2016-01-13T07:51:42.012345+01:00
 "A timestamp (UTC)",2016-01-13T07:51:42.012345+00:00
-'''
+'''[1:]
+    assert grid_csv == ref_str
 
 
 def test_data_types_zinc_v3():
-    grid = shaystack.Grid(version=shaystack.VER_3_0)
-    grid.column['comment'] = {}
-    grid.column['value'] = {}
-    grid.extend([
-        {
-            'comment': 'A NA',
-            'value': shaystack.NA,
-        },
-        {
-            'comment': 'An empty list',
-            'value': [],
-        },
-        {
-            'comment': 'A null value in a list',
-            'value': [None],
-        },
-        {
-            'comment': 'A marker in a list',
-            'value': [shaystack.MARKER],
-        },
-        {
-            'comment': 'Booleans',
-            'value': [True, False],
-        },
-        {
-            'comment': 'References',
-            'value': [shaystack.Ref('a-ref'), shaystack.Ref('a-ref', 'a value')],
-        },
-        {
-            'comment': 'A quantity',
-            'value': [shaystack.Quantity(500, 'miles')],
-        },
-        {
-            'comment': 'A XStr',
-            'value': [shaystack.XStr("hex", 'deadbeef')],
-        },
-    ])
-    grid_str = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
-    ref_str = '''ver:"3.0"
+    grid_str = shaystack.dump(grid_full_types, mode=shaystack.MODE_ZINC)
+    ref_str = '''
+ver:"2.0"
 comment,value
-"A NA",NA
-"An empty list",[]
-"A null value in a list",[N]
-"A marker in a list",[M]
-"Booleans",[T,F]
-"References",[@a-ref,@a-ref "a value"]
-"A quantity",[500miles]
-"A XStr",[hex("deadbeef")]
-'''
+"A null value",N
+"A marker",M
+"A \\"remove\\" object",R
+"A boolean, indicating False",F
+"A boolean, indicating True",T
+"A reference, without value",@a-ref
+"A reference, with value",@a-ref "a value"
+"A binary blob",Bin(text/plain)
+"A quantity",500miles
+"A quantity without unit",500
+"A coordinate",C(-27.472500,153.003000)
+"A URI",`http://www.example.com#unicode:\\u1234\\u5678`
+"A string","This is a test\\nLine two of test\\n\\tIndented with \\"quotes\\", \\\\backslashes\\\\\\n"
+"A unicode string","This is a Unicode characters: \\u1234\\u5678"
+"A date",2016-01-13
+"A time",07:51:43.012345
+"A timestamp (non-UTC)",2016-01-13T07:51:42.012345+01:00 Berlin
+"A timestamp (UTC)",2016-01-13T07:51:42.012345+00:00 UTC
+'''[1:]
+    assert grid_str == ref_str
+
+
+def test_data_types_trio_v3():
+    grid_str = shaystack.dump(grid_full_types, mode=shaystack.MODE_TRIO)
+    ref_str = '''
+comment: A null value
+value: N
+---
+comment: A marker
+value: M
+---
+comment: A \\"remove\\" object
+value: R
+---
+comment: A boolean, indicating False
+value: F
+---
+comment: A boolean, indicating True
+value: T
+---
+comment: A reference, without value
+value: @a-ref
+---
+comment: A reference, with value
+value: @a-ref "a value"
+---
+comment: A binary blob
+value: text/plain
+---
+comment: A quantity
+value: 500miles
+---
+comment: A quantity without unit
+value: 500
+---
+comment: A coordinate
+value: C(-27.472500,153.003000)
+---
+comment: A URI
+value: `http://www.example.com#unicode:\\u1234\\u5678`
+---
+comment: A string
+value: 
+  This is a test
+  Line two of test
+  \\tIndented with \\"quotes\\", \\\\backslashes\\\\
+---
+comment: A unicode string
+value: This is a Unicode characters: \\u1234\\u5678
+---
+comment: A date
+value: 2016-01-13
+---
+comment: A time
+value: 07:51:43.012345
+---
+comment: A timestamp (non-UTC)
+value: 2016-01-13T07:51:42.012345+01:00 Berlin
+---
+comment: A timestamp (UTC)
+value: 2016-01-13T07:51:42.012345+00:00 UTC
+'''[1:]
     assert grid_str == ref_str
 
 
 def test_data_types_json_v3():
-    grid = shaystack.Grid(version=shaystack.VER_3_0)
-    grid.column['comment'] = {}
-    grid.column['value'] = {}
-    grid.extend([
-        {
-            'comment': 'A Remove (3.0 version)',
-            'value': shaystack.REMOVE,
-        },
-        {
-            'comment': 'A NA',
-            'value': shaystack.NA,
-        },
-        {
-            'comment': 'An empty list',
-            'value': [],
-        },
-        {
-            'comment': 'A null value in a list',
-            'value': [None],
-        },
-        {
-            'comment': 'A marker in a list',
-            'value': [shaystack.MARKER],
-        },
-        {
-            'comment': 'Booleans',
-            'value': [True, False],
-        },
-        {
-            'comment': 'References',
-            'value': [shaystack.Ref('a-ref'), shaystack.Ref('a-ref', 'a value')],
-        },
-        {
-            'comment': 'A quantity',
-            'value': [shaystack.Quantity(500, 'miles')],
-        },
-        {
-            'comment': 'A XStr',
-            'value': [shaystack.XStr("hex", 'deadbeef')],
-        },
-    ])
-    grid_json = json.loads(shaystack.dump(grid, mode=shaystack.MODE_JSON))
-    assert grid_json == {
-        'meta': {
-            'ver': '3.0'
-        },
-        'cols': [
-            {'name': 'comment'},
-            {'name': 'value'},
-        ],
-        'rows': [
-            {
-                'comment': 's:A Remove (3.0 version)',
-                'value': '-:'
-            },
-            {
-                'comment': 's:A NA',
-                'value': 'z:'
-            },
-            {
-                'comment': "s:An empty list",
-                'value': []
-            },
-            {
-                'comment': "s:A null value in a list",
-                'value': [None]
-            },
-            {
-                'comment': "s:A marker in a list",
-                'value': ['m:']
-            },
-            {
-                'comment': "s:Booleans",
-                'value': [True, False]
-            },
-            {
-                'comment': "s:References",
-                'value': ['r:a-ref', 'r:a-ref a value']
-            },
-            {
-                'comment': "s:A quantity",
-                'value': ['n:500.000000 miles']  # Python is more precise
-                # than The Proclaimers
-            },
-            {
-                'comment': "s:A XStr",
-                'value': ['x:hex:deadbeef']
-            }
-        ]
-    }
+    grid_json = json.loads(shaystack.dump(grid_full_types, mode=shaystack.MODE_JSON))
+    assert grid_json == \
+           {'meta': {'ver': '2.0'},
+            'cols': [{'name': 'comment'}, {'name': 'value'}],
+            'rows':
+                [{'comment': 's:A null value', 'value': None},
+                 {'comment': 's:A marker', 'value': 'm:'},
+                 {'comment': 's:A "remove" object', 'value': 'x:'},
+                 {'comment': 's:A boolean, indicating False', 'value': False},
+                 {'comment': 's:A boolean, indicating True', 'value': True},
+                 {'comment': 's:A reference, without value', 'value': 'r:a-ref'},
+                 {'comment': 's:A reference, with value', 'value': 'r:a-ref a value'},
+                 {'comment': 's:A binary blob', 'value': 'b:text/plain'},
+                 {'comment': 's:A quantity', 'value': 'n:500.000000 miles'},
+                 {'comment': 's:A quantity without unit', 'value': 'n:500.000000'},
+                 {'comment': 's:A coordinate', 'value': 'c:-27.472500,153.003000'},
+                 {'comment': 's:A URI', 'value': 'u:http://www.example.com#unicode:ሴ噸'},
+                 {'comment': 's:A string',
+                  'value': 's:This is a test\nLine two of test\n'
+                           '\tIndented with "quotes", \\backslashes\\\n'},
+                 {'comment': 's:A unicode string', 'value': 's:This is a Unicode characters: ሴ噸'},
+                 {'comment': 's:A date', 'value': 'd:2016-01-13'},
+                 {'comment': 's:A time', 'value': 'h:07:51:43.012345'},
+                 {'comment': 's:A timestamp (non-UTC)',
+                  'value': 't:2016-01-13T07:51:42.012345+01:00 Berlin'},
+                 {'comment': 's:A timestamp (UTC)',
+                  'value': 't:2016-01-13T07:51:42.012345+00:00 UTC'}]}
 
 
 def test_data_types_csv_v3():
-    grid = shaystack.Grid(version=shaystack.VER_3_0)
-    grid.column['comment'] = {}
-    grid.column['value'] = {}
-    grid.extend([
-        {
-            'comment': 'A Remove (3.0 version)',
-            'value': shaystack.REMOVE,
-        },
-        {
-            'comment': 'A NA',
-            'value': shaystack.NA,
-        },
-        {
-            'comment': 'An empty list',
-            'value': [],
-        },
-        {
-            'comment': 'A null value in a list',
-            'value': [None],
-        },
-        {
-            'comment': 'A marker in a list',
-            'value': [shaystack.MARKER],
-        },
-        {
-            'comment': 'Booleans',
-            'value': [True, False],
-        },
-        {
-            'comment': 'References',
-            'value': [shaystack.Ref('a-ref'), shaystack.Ref('a-ref', 'a value')],
-        },
-        {
-            'comment': 'A quantity',
-            'value': [shaystack.Quantity(500, 'miles')],
-        },
-        {
-            'comment': 'A XStr',
-            'value': [shaystack.XStr("hex", 'deadbeef')],
-        },
-    ])
-    grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
+    grid_csv = shaystack.dump(grid_full_types, mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
-    assert grid_csv == u'''comment,value
-"A Remove (3.0 version)",R
-"A NA",NA
-"An empty list","[]"
-"A null value in a list","[N]"
-"A marker in a list","[M]"
-"Booleans","[T,F]"
-"References","[@a-ref,@a-ref ""a value""]"
-"A quantity","[500miles]"
-"A XStr","[hex(""deadbeef"")]"
-'''
+    ref_str = '''
+comment,value
+"A null value",
+"A marker",✓
+"A ""remove"" object",R
+"A boolean, indicating False",false
+"A boolean, indicating True",true
+"A reference, without value",@a-ref
+"A reference, with value",@a-ref a value
+"A binary blob",Bin(text/plain)
+"A quantity",500miles
+"A quantity without unit",500
+"A coordinate","C(-27.472500,153.003000)"
+"A URI","`http://www.example.com#unicode:\u1234\u5678`"
+"A string","This is a test\nLine two of test\n\tIndented with ""quotes"", \\backslashes\\\n"
+"A unicode string","This is a Unicode characters: \u1234\u5678"
+"A date",2016-01-13
+"A time",07:51:43.012345
+"A timestamp (non-UTC)",2016-01-13T07:51:42.012345+01:00
+"A timestamp (UTC)",2016-01-13T07:51:42.012345+00:00
+'''[1:]
+    assert grid_csv == ref_str
 
 
 def test_scalar_dict_zinc_v3():
@@ -772,6 +557,50 @@ def test_scalar_dict_zinc_v3():
                         .replace("ref2:@a-ref", "ref2:@a-ref \"a value\"") +
                         "}\n"
                         "\"A quantity in a dict\",{quantity:500miles}\n")
+
+
+def test_scalar_dict_trio_v3():
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
+    grid.column['comment'] = {}
+    grid.column['value'] = {}
+    grid.extend([
+        {
+            'comment': 'An empty dict',
+            'value': {},
+        },
+        {
+            'comment': 'A marker in a dict',
+            'value': {"marker": shaystack.MARKER},
+        },
+        {
+            'comment': 'A references in a dict',
+            'value': {"ref": shaystack.Ref('a-ref'), "ref2": shaystack.Ref('a-ref', 'a value')},
+        },
+        {
+            'comment': 'A quantity in a dict',
+            'value': {"quantity": shaystack.Quantity(500, 'miles')},
+        },
+    ])
+    grid_str = shaystack.dump(grid, mode=shaystack.MODE_TRIO)
+    ref_str = textwrap.dedent('''
+        comment: An empty dict
+        value: {}
+        ---
+        comment: A marker in a dict
+        value: {marker:M}
+        ---
+        comment: A references in a dict
+        value: {'''[1:]) + \
+              (" ".join([str(k) + ":" + str(v)
+                         for k, v in {"ref": "@a-ref", "ref2": "@a-ref"}.items()]) \
+               .replace("ref2:@a-ref", "ref2:@a-ref \"a value\"")) + \
+              textwrap.dedent('''
+        }
+        ---
+        comment: A quantity in a dict
+        value: {quantity:500miles}
+        '''[1:])
+    assert grid_str == ref_str
 
 
 def test_scalar_dict_json_v3():
@@ -885,6 +714,15 @@ def test_scalar_unknown_zinc():
     try:
         shaystack.dump_scalar(shaystack.VER_2_0,
                               mode=shaystack.MODE_ZINC, version=shaystack.VER_2_0)
+        assert False, 'Serialised a list in Haystack v2.0'
+    except NotImplementedError:
+        pass
+
+
+def test_scalar_unknown_trio():
+    try:
+        shaystack.dump_scalar(shaystack.VER_3_0,
+                              mode=shaystack.MODE_TRIO, version=shaystack.VER_3_0)
         assert False, 'Serialised a list in Haystack v2.0'
     except NotImplementedError:
         pass
@@ -1010,21 +848,28 @@ def test_dict_csv_v2():
         pass
 
 
-def test_scalar_zinc():
+def test_scalar_ref_zinc():
     # No need to be exhaustive, the underlying function is tested heavily by
     # the grid dump tests.
     assert shaystack.dump_scalar(shaystack.Ref('areference', 'a display name'),
                                  mode=shaystack.MODE_ZINC) == '@areference "a display name"'
 
 
-def test_scalar_json():
+def test_scalar_ref_trio():
+    # No need to be exhaustive, the underlying function is tested heavily by
+    # the grid dump tests.
+    assert shaystack.dump_scalar(shaystack.Ref('areference', 'a display name'),
+                                 mode=shaystack.MODE_TRIO) == '@areference "a display name"'
+
+
+def test_scalar_ref_json():
     # No need to be exhaustive, the underlying function is tested heavily by
     # the grid dump tests.
     assert shaystack.dump_scalar(shaystack.Ref('areference', 'a display name'),
                                  mode=shaystack.MODE_JSON) == '"r:areference a display name"'
 
 
-def test_scalar_csv():
+def test_scalar_ref_csv():
     # No need to be exhaustive, the underlying function is tested heavily by
     # the grid dump tests.
     assert shaystack.dump_scalar(shaystack.Ref('areference', 'a display name'),
@@ -1135,6 +980,31 @@ def test_grid_types_zinc():
                         '>>\n')
 
 
+def test_grid_types_trio():
+    innergrid = shaystack.Grid(version=shaystack.VER_3_0)
+    innergrid.column['comment'] = {}
+    innergrid.extend([
+        {
+            'comment': 'A innergrid',
+        },
+    ])
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
+    grid.column['inner'] = {}
+    grid.extend([
+        {
+            'inner': innergrid,
+        },
+    ])
+    grid_str = shaystack.dump(grid, mode=shaystack.MODE_TRIO)
+    ref_str = textwrap.dedent('''
+        inner: Zinc:
+          ver:"3.0"
+          comment
+          "A innergrid"
+        '''[1:])
+    assert grid_str == ref_str
+
+
 def test_grid_types_json():
     innergrid = shaystack.Grid(version=shaystack.VER_3_0)
     innergrid.column['comment'] = {}
@@ -1188,12 +1058,13 @@ def test_grid_types_csv():
     ])
     grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
-    assert grid_csv == '''inner
+    assert grid_csv == '''
+inner
 "<<ver:""3.0""
 comment
 ""A innergrid""
 >>"
-'''
+'''[1:]
 
 
 def test_dump_invalide_scalar():

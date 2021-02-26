@@ -254,7 +254,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
 
         if bool(self):
             parts.extend([
-                '\tRow %4d:\n\t%s' % (row, '\n\t'.join([
+                '\t---- Row %4d:\n\t%s' % (row, '\n\t'.join([
                     (('%s=%r' % (col_name, data[col_name]))
                      if col_name in data else
                      ('%s absent' % col_name)) for col_name in self.column.keys()]))

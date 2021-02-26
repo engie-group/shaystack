@@ -13,10 +13,13 @@ from typing import Any, Optional
 
 from .csvdumper import dump_grid as dump_csv_grid, \
     dump_scalar as dump_csv_scalar
+from .datatypes import MODE_TRIO
 from .grid import Grid
 from .jsondumper import dump_grid as dump_json_grid, \
     dump_scalar as dump_json_scalar
 from .parser import MODE_ZINC, MODE_JSON, MODE_CSV, MODE
+from .triodumper import dump_grid as dump_trio_grid, \
+    dump_scalar as dump_trio_scalar
 from .version import LATEST_VER, Version
 from .zincdumper import dump_grid as dump_zinc_grid, \
     dump_scalar as dump_zinc_scalar
@@ -31,6 +34,8 @@ def dump(grid: Grid, mode: MODE = MODE_ZINC) -> str:
     """
     if mode == MODE_ZINC:
         return dump_zinc_grid(grid)
+    if mode == MODE_TRIO:
+        return dump_trio_grid(grid)
     if mode == MODE_JSON:
         return dump_json_grid(grid)
     if mode == MODE_CSV:
@@ -48,6 +53,8 @@ def dump_scalar(scalar: Any, mode: MODE = MODE_ZINC, version: Version = LATEST_V
     """
     if mode == MODE_ZINC:
         return dump_zinc_scalar(scalar, version=version)
+    if mode == MODE_TRIO:
+        return dump_trio_scalar(scalar, version=version)
     if mode == MODE_JSON:
         return dump_json_scalar(scalar, version=version)
     if mode == MODE_CSV:

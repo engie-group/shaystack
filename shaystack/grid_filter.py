@@ -20,7 +20,7 @@ from .datatypes import Ref, XStr
 from .filter_ast import FilterPath, FilterBinary, FilterUnary, FilterAST, FilterNode
 from .type import Entity
 from .zincparser import hs_scalar_3_0, hs_id, hs_all_date, hs_date, \
-    hs_time, lock
+    hs_time, pyparser_lock
 
 _ = XStr  # Necessary for generated code
 
@@ -73,7 +73,7 @@ def parse_filter(grid_filter: str) -> FilterAST:
     Returns:
         A `FilterAST`
     """
-    with lock:
+    with pyparser_lock:
         return FilterAST(hs_filter.parseString(grid_filter, parseAll=True)[0])
 
 

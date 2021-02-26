@@ -23,15 +23,17 @@ def client_graphql():
     json_resp = json.loads(resp.text)
     assert json_resp == \
            {'data': {
-               'haystack': {'with_hist': [{'id': 'r:p:demo:r:23a44701-bbc36976 Tariff His', 'dis': 's:Tariff His'}],
-                            'with_ids': [{'id': 'r:p:demo:r:23a44701-3a62fd7a Carytown RTU-1 Heat-2'}],
-                            'entities': [{'id': 'r:p:demo:r:23a44701-3a62fd7a Carytown RTU-1 Heat-2'}], 'histories': [
-                       [{'ts': '2020-07-01T00:00:00+00:00 UTC', 'float': -2.0},
-                        {'ts': '2020-08-01T00:00:00+00:00 UTC', 'float': -5.0},
-                        {'ts': '2020-09-01T00:00:00+00:00 UTC', 'float': 0.0},
-                        {'ts': '2020-10-01T00:00:00+00:00 UTC', 'float': -3.0},
-                        {'ts': '2020-11-01T00:00:00+00:00 UTC', 'float': -2.0},
-                        {'ts': '2020-12-01T00:00:00+00:00 UTC', 'float': -2.0}]]}}}
+               'haystack':
+                   {'with_hist': [{'dis': 's:Tariff His', 'id': 'r:p:demo:r:23a44701-bbc36976 Tariff His'}],
+                    'with_ids': [{'id': 'r:p:demo:r:23a44701-3a62fd7a Carytown RTU-1 Heat-2'}],
+                    'entities': [{'id': 'r:p:demo:r:23a44701-3a62fd7a Carytown RTU-1 Heat-2'}],
+                    'histories': [
+                        [{'ts': '2020-07-01T00:00:00+00:00 UTC', 'float': 22.0},
+                         {'ts': '2020-08-01T00:00:00+00:00 UTC', 'float': 27.0},
+                         {'ts': '2020-09-01T00:00:00+00:00 UTC', 'float': 27.0},
+                         {'ts': '2020-10-01T00:00:00+00:00 UTC', 'float': 29.0},
+                         {'ts': '2020-11-01T00:00:00+00:00 UTC', 'float': 24.0},
+                         {'ts': '2020-12-01T00:00:00+00:00 UTC', 'float': 23.0}]]}}}
 
 
 if __name__ == '__main__':

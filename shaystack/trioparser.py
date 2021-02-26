@@ -81,7 +81,7 @@ trio_multiline_string = Suppress(hs_nl) + Regex(
 
 trio_zinc_nested = Suppress(Literal("Zinc:") + hs_nl) + Regex(
     r'([ \t]+.*[\n\r]+)*[ \t]+.*(?=[\n\r]+)').leaveWhitespace().setParseAction(
-    lambda toks: parse_zinc_grid(_unescape(textwrap.dedent(toks[0])) + '\n')
+    lambda toks: parse_zinc_grid(textwrap.dedent(toks[0]) + '\n')
 )
 
 trio_safe_string = Regex('[^\x00-\x7F]|[A-Za-z_-].*(?=[\n\r]+)').setParseAction(
@@ -102,7 +102,8 @@ hs_trio_tag = ((Optional(hs_id) + Suppress(hs_nl)) ^ hs_trio_tagpair).setName('t
 
 hs_row = hs_trio_tag | Suppress(Regex("//.*[\n\r]+").leaveWhitespace())
 
-hs_record = (hs_row[...] + Suppress((LineStart() + Literal('-')[1, ...] + hs_nl) | StringEnd())).setParseAction(
+hs_record = (hs_row[...] + Suppress((LineStart() + Literal('-')[1, ...] + hs_nl) | \
+                                    StringEnd())).setParseAction(
     toks_to_dict)
 
 

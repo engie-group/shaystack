@@ -2342,4 +2342,3 @@ def test_scalar_bytestring_json():
 
 def test_unescape():
     assert _unescape("a\\nb") == "a\nb"
-

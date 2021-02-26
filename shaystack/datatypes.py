@@ -27,17 +27,6 @@ MODE_TRIO: MODE = MODE('text/trio')
 MODE_JSON: MODE = MODE('application/json')
 MODE_CSV: MODE = MODE('text/csv')
 
-_STR_SUB = [
-    ('\\', '\\\\'),
-    ('\a', '\\a'),
-    ('\b', '\\b'),
-    ('\f', '\\f'),
-    ('\n', '\\n'),
-    ('\r', '\\r'),
-    ('\t', '\\t'),
-    ('\v', '\\v'),
-]
-
 # Update the unit when create a pint.Quantity
 class Quantity(unit_reg.Quantity):
     """

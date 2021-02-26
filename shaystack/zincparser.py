@@ -20,6 +20,7 @@ from typing import Dict, Any, Callable, List, Tuple
 from typing import Optional as Typing_Optional
 
 import iso8601
+from pint import UndefinedUnitError
 from pyparsing import Regex, Forward, Combine, Suppress, CaselessLiteral, Literal, Optional, ParseException, \
     Word, Group, Empty, delimitedList, ParserElement
 
@@ -72,8 +73,10 @@ def _parse_datetime(toks: Tuple[datetime.datetime, Typing_Optional[str]]) -> Lis
         tzname = None
 
     assert not ((isodt.tzinfo is None) and bool(tzname))  # pragma: no cover
-    if bool(tzname):
+    if tzname:
         return [isodt.astimezone(timezone(tzname))]
+    if isodt.tzname():
+        return [isodt]
     return [isodt.astimezone(timezone("UTC"))]
 
 
@@ -138,42 +141,44 @@ class ZincParseException(ValueError):
     line and column for the grid are given.
     """
 
-    def __init__(self, message: str, grid_str: str, line: int, col: int):
-        self.grid_str = grid_str
-        self.line = line
-        self.col = col
+    def __init__(self, message: str, grid_str: Typing_Optional[str],
+                 line: Typing_Optional[int], col: Typing_Optional[int]):
+        if grid_str:
+            self.grid_str = grid_str
+            self.line = line
+            self.col = col
 
-        try:
-            # If we know the line and column, point it out in the message.
-            grid_str_lines = grid_str.split('\n')
-            width = max([len(line) for line in grid_str_lines])
-            line_fmt = '%%-%ds' % width
-            row_fmt = '%4d%s' + line_fmt + '%s'
+            try:
+                # If we know the line and column, point it out in the message.
+                grid_str_lines = grid_str.split('\n')
+                width = max([len(line) for line in grid_str_lines])
+                line_fmt = '%%-%ds' % width
+                row_fmt = '%4d%s' + line_fmt + '%s'
 
-            formatted_lines = [
-                row_fmt % (
-                    num,
-                    ' >' if (line == num) else '| ',
-                    line_str,
-                    '< ' if (line == num) else ' |'
-                )
-                for (num, line_str)
-                in enumerate(grid_str.split('\n'), 1)
-            ]
-            formatted_lines.insert(line,
-                                   ('    | ' + line_fmt + ' |')
-                                   % (((col - 2) * ' ') + '.^.')
-                                   )
+                formatted_lines = [
+                    row_fmt % (
+                        num,
+                        ' >' if (line == num) else '| ',
+                        line_str,
+                        '< ' if (line == num) else ' |'
+                    )
+                    for (num, line_str)
+                    in enumerate(grid_str.split('\n'), 1)
+                ]
+                formatted_lines.insert(line,
+                                       ('    | ' + line_fmt + ' |')
+                                       % (((col - 2) * ' ') + '.^.')
+                                       )
 
-            # Border it for readability
-            formatted_lines.insert(0, '    .' + ('-' * (2 + width)) + '.')
-            formatted_lines.append('    \'' + ('-' * (2 + width)) + '\'')
+                # Border it for readability
+                formatted_lines.insert(0, '    .' + ('-' * (2 + width)) + '.')
+                formatted_lines.append('    \'' + ('-' * (2 + width)) + '\'')
 
-            # Append to message
-            message += '\n%s' % '\n'.join(formatted_lines)
-        except ValueError:  # pragma: no cover
-            # We should not get here.
-            LOG.exception('Exception encountered formatting log message')
+                # Append to message
+                message += '\n%s' % '\n'.join(formatted_lines)
+            except ValueError:  # pragma: no cover
+                # We should not get here.
+                LOG.exception('Exception encountered formatting log message')
 
         super().__init__(message)
 
@@ -377,9 +382,16 @@ hs_decimal = Combine(
     Optional(hs_exp)
 ).setParseAction(lambda toks: [float(toks[0])])
 
+
+def _quantity(toks):
+    try:
+        return [Quantity(*toks)]
+    except UndefinedUnitError as ex:
+        raise ZincParseException("Invalide unit", None, 0, 0) from ex
+
+
 hs_quantity = (hs_decimal + hs_unit).leaveWhitespace() \
-    .setParseAction(
-    lambda toks: [Quantity(*toks)])
+    .setParseAction(_quantity)
 hs_number = hs_quantity ^ hs_decimal ^ (
         Literal('INF') ^
         '-INF' ^

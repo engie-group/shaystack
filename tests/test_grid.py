@@ -277,11 +277,11 @@ def test_grid_str():
            '\tVersion: 3.0\n' + \
            '\tColumns:\n' + \
            '\t\ttest\n' + \
-           '\tRow    0:\n' + \
+           '\t---- Row    0:\n' + \
            '\ttest=1\n' + \
-           '\tRow    1:\n' + \
+           '\t---- Row    1:\n' + \
            '\ttest=2\n' + \
-           '\tRow    2:\n' + \
+           '\t---- Row    2:\n' + \
            '\ttest=3\n'
 
 

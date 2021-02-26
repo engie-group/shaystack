@@ -33,6 +33,10 @@
   letter-spacing: normal;
   background-color: white !important;
 }
+.entity-row__ref-row {
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
 .apiSource_1 {
   background: #d4bbbb;
 }

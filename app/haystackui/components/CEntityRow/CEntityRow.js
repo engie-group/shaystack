@@ -18,7 +18,10 @@ const template = `
               <v-icon v-if="isDuplicateKey(item.tag)" class="material-icons entity-row__click-button">warning</v-icon>
             </div>
             <div v-else-if="isRef(item.value)">
-              <span>{{ getRefName(item) }}</span>
+              <span v-if="isRefClickable(item)" class="entity-row__ref-row" @click="refClicked(getRefId(item))">{{
+                getRefName(item)
+              }}</span>
+              <span v-else>{{ getRefName(item) }}</span>
               <v-icon class="material-icons entity-row__click-button" @click="copyText(item)">content_copy</v-icon>
             </div>
             <div v-else-if="isDuplicateKey(item.tag)">
@@ -94,9 +97,6 @@ export default {
         return { tag: key.split('_')[0], value: result.val, row_class: [result.val === '✓' ? `${key} haystack-marker` : key, `apiSource_${result.apiSource}` ] }
       })
     },
-    entityId() {
-      return this.idEntity.split(' ')[0]
-    },
     displayChart() {
       return this.his.filter(his => (his ? his.length > 0 : his)).length > 0 && this.isDataLoaded
     },
@@ -114,9 +114,35 @@ export default {
     },
     unit() {
       return this.dataEntity.unit ? this.dataEntity.unit.val.substring(2) : ''
+    },
+    allEntities() {
+      return this.$store.getters.entities
     }
   },
   methods: {
+    isRefClickable(item) {
+      let isClickable = false
+      if (item.tag === 'id') return false
+      // eslint-disable-next-line
+      this.allEntities.map(entities => {
+        // eslint-disable-next-line
+        entities.map(entity => {
+          if (this.getEntityId(entity) === this.getRefId(item)) {
+            isClickable = true
+          }
+        })
+      })
+      return isClickable
+    },
+    refClicked(refId) {
+      this.$emit('onRefClick', refId)
+    },
+    getEntityId(entity) {
+      return entity.id.val.split(' ')[0].substring(2)
+    },
+    getRefId(item) {
+      return item.value.split(' ')[0].substring(2)
+    },
     sortDataChart(dataChart) {
       return dataUtils.sortChartDataByDate(dataChart)
     },

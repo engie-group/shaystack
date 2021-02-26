@@ -12,11 +12,10 @@ from __future__ import unicode_literals
 
 import datetime
 import functools
-import re
 from typing import AnyStr, List, Any, Match
 
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
-    MARKER, NA, REMOVE, _STR_SUB, XStr
+    MARKER, NA, REMOVE, XStr
 from .grid import Grid
 from .sortabledict import SortableDict
 from .type import Entity
@@ -24,32 +23,9 @@ from .version import LATEST_VER, VER_3_0, Version
 from .zincdumper import dump_grid as zinc_dump_grid
 from .zincdumper import dump_scalar as zinc_dump_scalar
 
-_URI_META = re.compile(r'([\\`\u0080-\uffff])')
-_STR_META = re.compile(r'([\\"$\u0080-\uffff])')
-
-_CSV_SUB = [
-    ('\\"', '""'),
-    ('\\\\', '\\'),
-    ('\\u2713', '\u2713'),
-]
-
-
-def _str_sub(match: Match) -> AnyStr:
-    char = match.group(0)
-    order = ord(char)
-    if order >= 0x0080:
-        # Unicode
-        return '\\u%04x' % order
-    if char in '\\"$':
-        return '\\%s' % char
-    return char
-
 
 def _str_csv_escape(str_value: str) -> AnyStr:
-    str_value = _STR_META.sub(_str_sub, str_value)
-    for orig, esc in _CSV_SUB:
-        str_value = str_value.replace(orig, esc)
-    return str_value
+    return str_value.replace('"', '""')
 
 
 def _uri_sub(match: Match) -> AnyStr:
@@ -97,12 +73,7 @@ def _dump_str(str_value: str) -> str:
 
 
 def _dump_uri(uri_value: Uri) -> str:
-    # Replace special characters.
-    uri_value = _URI_META.sub(_uri_sub, str(uri_value))
-    # Replace other escapes.
-    for orig, esc in _STR_SUB:
-        uri_value = uri_value.replace(orig, esc)
-    return '`%s`' % uri_value
+    return '"`%s`"' % _str_csv_escape(str(uri_value))
 
 
 def _dump_bin(bin_value: Bin) -> str:
@@ -110,7 +81,7 @@ def _dump_bin(bin_value: Bin) -> str:
 
 
 def _dump_xstr(xstr_value: XStr) -> str:
-    return '"' + _str_csv_escape(str(xstr_value)) + '"'
+    return '"' + _str_csv_escape('%s("%s")' % (xstr_value.encoding, xstr_value.data_to_string())) + '"'
 
 
 def _dump_quantity(quantity: Quantity) -> str:

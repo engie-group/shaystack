@@ -23,8 +23,17 @@ from shaystack.zoneinfo import _get_tz_map, timezone
 
 STR_CHARSET = string.ascii_letters + string.digits + '\n\r\t\f\b'
 
+# Set GENERATION_NUMBER to 1 and _FIND_BUG_END to N to detect a first random grid with error
+# _GENERATION_NUMBER = 1
+# _FIND_BUG_START = 0  # 0 for normal use
+# _FIND_BUG_END = 10000  # 1 for normal use
+
+_GENERATION_NUMBER = 10
+_FIND_BUG_START = 0  # 0 for normal use
+_FIND_BUG_END = 1  # 1 for normal use
+
 GENERATION_NUMBER, GENERATION_COLUMN, GENERATION_ROW, PERCENT_GEN_ID, PERCENT_RECURSIVE = \
-    (10, 5, 10, 30, 5)
+    (_GENERATION_NUMBER, 5, 10, 30, 5)
 
 
 def gen_random_const() -> Union[bool, _MarkerType, _RemoveType, _NAType]:
@@ -78,8 +87,11 @@ def gen_random_str(min_length=1, max_length=20, charset=STR_CHARSET) -> str:
         max_length:
         charset:
     """
-    return ''.join([random.choice(charset)
-                    for _ in range(0, random.randint(min_length, max_length))])
+    v = ''.join([random.choice(charset)
+                 for _ in range(0, random.randint(min_length, max_length))])
+    if v and v[0].isdigit():  # Refuse the confusion with quantity
+        v = 'D' + v
+    return v
 
 
 def gen_random_date() -> datetime.date:
@@ -87,8 +99,8 @@ def gen_random_date() -> datetime.date:
     while True:
         try:
             return datetime.date(random.randint(1, 3000),
-                                 random.randint(1, 12), random.randint(1, 31))
-        except ValueError:
+                                 random.randint(1, 12), random.randint(1, 28))
+        except OverflowError:
             pass
 
 
@@ -101,9 +113,12 @@ def gen_random_date_time() -> datetime.datetime:
     # Pick a random timezone
     tz_name = random.choice(list(_get_tz_map().keys()))
     time_zone = timezone(tz_name)
-    return time_zone.localize(datetime.datetime.combine(
-        gen_random_date(), gen_random_time()))
-
+    while True:
+        try:
+            return time_zone.localize(datetime.datetime.combine(
+                gen_random_date(), gen_random_time()))
+        except OverflowError:
+            pass
 
 def gen_random_coordinate() -> Coordinate:
     return Coordinate(
@@ -136,7 +151,8 @@ RANDOM_TYPES = [
     # Only for v2.0 gen_random_bin,
     gen_random_xstr,
     gen_random_const, gen_random_ref, gen_random_uri, gen_random_xstr,
-    gen_random_str, gen_random_date, gen_random_time, gen_random_date_time,
+    gen_random_str,
+    gen_random_date, gen_random_time, gen_random_date_time,
     gen_random_coordinate, gen_random_num, gen_random_quantity
 ]
 
@@ -193,7 +209,7 @@ def gen_random_grid(metadata: bool = True, minrow: int = 0, empty_col: bool = Tr
             grid.column[col_name] = MetadataObject()
 
     # Randomised rows
-    for _ in range(0, random.randint(minrow, GENERATION_ROW)):
+    for _ in range(0, random.randint(minrow, GENERATION_ROW)):  # pylint: disable=too-many-nested-blocks
         row = {}
         while True:
             for col in grid.column.keys():
@@ -284,12 +300,9 @@ def try_dump_parse_csv():
     _try_dump_parse(ref_grid, MODE_CSV)
 
 
-_FIND_BUG = 1  # 1 for normal use
-
-
 def test_loopback_zinc():
-    for i in range(0, _FIND_BUG):
-        if _FIND_BUG != 1:
+    for i in range(_FIND_BUG_START, _FIND_BUG_END):
+        if _FIND_BUG_END != 1:
             random.seed(i)
         try:
             for _ in range(0, GENERATION_NUMBER):
@@ -300,8 +313,8 @@ def test_loopback_zinc():
 
 
 def test_loopback_trio():
-    for i in range(0, _FIND_BUG):
-        if _FIND_BUG != 1:
+    for i in range(_FIND_BUG_START, _FIND_BUG_END):
+        if _FIND_BUG_END != 1:
             random.seed(i)
         try:
             for _ in range(0, GENERATION_NUMBER):
@@ -312,8 +325,8 @@ def test_loopback_trio():
 
 
 def test_loopback_json():
-    for i in range(0, _FIND_BUG):
-        if _FIND_BUG != 1:
+    for i in range(_FIND_BUG_START, _FIND_BUG_END):
+        if _FIND_BUG_END != 1:
             random.seed(i)
         try:
             for _ in range(0, GENERATION_NUMBER):
@@ -324,8 +337,8 @@ def test_loopback_json():
 
 
 def test_loopback_csv():
-    for i in range(0, _FIND_BUG):
-        if _FIND_BUG != 1:
+    for i in range(_FIND_BUG_START, _FIND_BUG_END):
+        if _FIND_BUG_END != 1:
             random.seed(i)
         try:
             for _ in range(0, GENERATION_NUMBER):

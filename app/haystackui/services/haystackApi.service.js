@@ -16,10 +16,21 @@ class HaystackApiService {
     })
   }
 
-  async about() {
+  async isHaystackApi() {
     try {
-      const response = await this.api.get(`/about`)
-      return response.data
+      const response = await this.api.get(`/ops`)
+      if (response.data.rows.find(row => row.name === 's:read')) return true
+      return false
+    } catch {
+      return false
+    }
+  }
+
+  async isHisReadAvailable() {
+    try {
+      const response = await this.api.get(`/ops`)
+      if (response.data.rows.find(row => row.name === 's:hisRead')) return true
+      return false
     } catch {
       return false
     }

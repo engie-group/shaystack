@@ -10,7 +10,7 @@ import datetime
 import random
 import string
 import sys
-from typing import Optional, Set, Dict, List, Union
+from typing import Optional, Dict, List, Union
 
 from shaystack import HaystackType
 from shaystack.datatypes import Ref, Bin, Uri, Quantity, Coordinate, XStr, MARKER, REMOVE, NA, MODE_TRIO, MODE, \
@@ -25,15 +25,15 @@ STR_CHARSET = string.ascii_letters + string.digits + '\n\r\t\f\b'
 
 # Set GENERATION_NUMBER to 1 and _FIND_BUG_END to N to detect a first random grid with error
 # _GENERATION_NUMBER = 1
-# _FIND_BUG_START = 0  # 0 for normal use
-# _FIND_BUG_END = 10000  # 1 for normal use
+# _FIND_BUG_START = 1  # 0 for normal use
+# _FIND_BUG_END = 30000  # 1 for normal use
 
 _GENERATION_NUMBER = 10
 _FIND_BUG_START = 0  # 0 for normal use
 _FIND_BUG_END = 1  # 1 for normal use
 
-GENERATION_NUMBER, GENERATION_COLUMN, GENERATION_ROW, PERCENT_GEN_ID, PERCENT_RECURSIVE = \
-    (_GENERATION_NUMBER, 5, 10, 30, 5)
+GENERATION_NUMBER, GENERATION_COLUMN, GENERATION_ROW, PERCENT_GEN_ID, PERCENT_RECURSIVE, PERCENT_AMBIGUOUS = \
+    (_GENERATION_NUMBER, 5, 10, 30, 5, 5)
 
 
 def gen_random_const() -> Union[bool, _MarkerType, _RemoveType, _NAType]:
@@ -79,6 +79,9 @@ def gen_random_uri() -> Uri:
     return Uri(gen_random_str(charset=string.ascii_letters + string.digits))
 
 
+_ambiguous_str = ["T", "F", "NA", "N", "M", "R"]
+
+
 def gen_random_str(min_length=1, max_length=20, charset=STR_CHARSET) -> str:
     # Generate a random 20-character string
     """
@@ -87,10 +90,14 @@ def gen_random_str(min_length=1, max_length=20, charset=STR_CHARSET) -> str:
         max_length:
         charset:
     """
-    v = ''.join([random.choice(charset)
-                 for _ in range(0, random.randint(min_length, max_length))])
-    if v and v[0].isdigit():  # Refuse the confusion with quantity
-        v = 'D' + v
+    if random.randint(0, 100) < PERCENT_AMBIGUOUS:
+        return _ambiguous_str[random.randint(0, len(_ambiguous_str) - 1)]
+    while True:
+        v = ''.join([random.choice(charset)
+                     for _ in range(0, random.randint(min_length, max_length))])
+        if v and v[0].isdigit():  # Refuse the confusion with quantity
+            v = 'D' + v
+        break
     return v
 
 
@@ -119,6 +126,7 @@ def gen_random_date_time() -> datetime.datetime:
                 gen_random_date(), gen_random_time()))
         except OverflowError:
             pass
+
 
 def gen_random_coordinate() -> Coordinate:
     return Coordinate(
@@ -163,10 +171,10 @@ def gen_random_scalar() -> HaystackType:
     return random.choice(RANDOM_TYPES)()
 
 
-def gen_random_name(existing: Optional[Set] = None) -> str:
+def gen_random_name(existing: Optional[Dict] = None) -> str:
     """
     Args:
-        existing:
+        existing: Previously names
     """
     while True:
         meta = random.choice(string.ascii_lowercase) + \
@@ -178,9 +186,8 @@ def gen_random_name(existing: Optional[Set] = None) -> str:
 
 def gen_random_meta() -> MetadataObject:
     meta = MetadataObject()
-    names = set()
     for _ in range(0, random.randint(1, 5)):
-        name = gen_random_name(existing=names)
+        name = gen_random_name()
         value = gen_random_scalar()
         if name != "ver":
             meta[name] = value

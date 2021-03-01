@@ -93,8 +93,17 @@ export default {
     tableValues() {
       return Object.keys(this.dataEntity).map(key => {
         const result = this.getEntityValue(key)
-        // eslint-disable-next-line
-        return { tag: key.split('_')[0], value: result.val, row_class: [result.val === '✓' ? `${key} haystack-marker` : key, `apiSource_${result.apiSource}` ] }
+        let apiSource = null
+        if (key !== 'his') {
+          apiSource = result.apiSource
+        } else {
+          apiSource = typeof result.apiSource === 'object' ? result.apiSource[0] : result.apiSource
+        }
+        return {
+          tag: key.split('_')[0],
+          value: result.val,
+          row_class: [result.val === '✓' ? `${key} haystack-marker` : key, `apiSource_${apiSource}`]
+        }
       })
     },
     displayChart() {

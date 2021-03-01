@@ -149,7 +149,23 @@ const formatService = {
             entityFromSecondSource
           )
           keysWithSameValues.map(key => {
-            entityFromSecondSource[key] = entityFromFirstSource[key]
+            if(key === 'his') {
+              if (typeof entityFromFirstSource[key].apiSource !== 'object') {
+                const newApiSourceValue = []
+                newApiSourceValue.push(entityFromFirstSource[key].apiSource)
+                newApiSourceValue.push(entityFromSecondSource[key].apiSource)
+                delete entityFromSecondSource[key]
+                entityFromFirstSource[key].apiSource = newApiSourceValue
+              }
+              else {
+                if (!entityFromFirstSource[key].apiSource.find(apiSource => apiSource === entityFromSecondSource[key].apiSource)) {
+                  entityFromFirstSource[key].apiSource.push(entityFromSecondSource[key].apiSource)
+                  delete entityFromSecondSource[key]
+                }
+                else delete entityFromSecondSource[key]
+              }
+            }
+            else entityFromSecondSource[key] = entityFromFirstSource[key]
           })
           entityFromSecondSource['id'] = entityFromFirstSource['id']
           entityFromSecondSource = formatService.getKeyAlreadyDuplicated(entityFromFirstSource, entityFromSecondSource)

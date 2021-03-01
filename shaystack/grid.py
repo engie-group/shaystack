@@ -17,7 +17,7 @@ import logging
 import numbers
 import re
 from collections import MutableSequence, Sequence  # pylint: disable=no-name-in-module
-from typing import Union, Iterable, Any, Optional, KeysView, Tuple, List, cast
+from typing import Union, Iterable, Any, Optional, KeysView, Tuple, List, cast, Dict
 
 import pytz
 
@@ -74,7 +74,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         self.metadata = MetadataObject(validate_fn=self._detect_or_validate)
 
         # The columns
-        self.column = SortableDict()
+        self.column: Dict[str, Any] = SortableDict()
 
         # Rows
         self._row: List[Entity] = []

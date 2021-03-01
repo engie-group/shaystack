@@ -13,7 +13,7 @@ from csv import reader
 import pytz
 
 import shaystack
-from shaystack import dump_scalar, MODE_TRIO, MODE_ZINC
+from shaystack import dump_scalar, MODE_TRIO, MODE_ZINC, MODE_CSV
 from .test_parser import SIMPLE_EXAMPLE_ZINC, SIMPLE_EXAMPLE_JSON, \
     METADATA_EXAMPLE_JSON, SIMPLE_EXAMPLE_CSV, METADATA_EXAMPLE_CSV, SIMPLE_EXAMPLE_TRIO
 
@@ -76,7 +76,7 @@ grid_full_types.extend([
     },
     {
         'comment': 'A URI',
-        'value': shaystack.Uri('http://www.example.com#unicode:\u1234\u5678'),
+        'value': shaystack.Uri('http://www.example.com#unicode:\u0109\u1000'),
     },
     {
         'comment': 'A string',
@@ -86,7 +86,7 @@ grid_full_types.extend([
     },
     {
         'comment': 'A unicode string',
-        'value': 'This is a Unicode characters: \u1234\u5678',
+        'value': 'This is a Unicode characters: \u0109\u1000',
     },
     {
         'comment': 'A date',
@@ -313,9 +313,9 @@ comment,value
 "A quantity",500miles
 "A quantity without unit",500
 "A coordinate",C(-27.472500,153.003000)
-"A URI",`http://www.example.com#unicode:\\u1234\\u5678`
+"A URI",`http://www.example.com#unicode:\u0109\u1000`
 "A string","This is a test\\nLine two of test\\n\\tIndented with \\"quotes\\", \\\\backslashes\\\\\\n"
-"A unicode string","This is a Unicode characters: \\u1234\\u5678"
+"A unicode string","This is a Unicode characters: \u0109\u1000"
 "A date",2016-01-13
 "A time",07:51:43.012345
 "A timestamp (non-UTC)",2016-01-13T07:51:42.012345+01:00 Berlin
@@ -340,10 +340,10 @@ def test_data_types_json_v2():
                 {'comment': 's:A quantity', 'value': 'n:500.000000 miles'},
                 {'comment': 's:A quantity without unit', 'value': 'n:500.000000'},
                 {'comment': 's:A coordinate', 'value': 'c:-27.472500,153.003000'},
-                {'comment': 's:A URI', 'value': 'u:http://www.example.com#unicode:ሴ噸'},
+                {'comment': 's:A URI', 'value': 'u:http://www.example.com#unicode:\u0109\u1000'},
                 {'comment': 's:A string',
                  'value': 's:This is a test\nLine two of test\n\tIndented with "quotes", \\backslashes\\\n'},
-                {'comment': 's:A unicode string', 'value': 's:This is a Unicode characters: ሴ噸'},
+                {'comment': 's:A unicode string', 'value': 's:This is a Unicode characters: \u0109\u1000'},
                 {'comment': 's:A date', 'value': 'd:2016-01-13'},
                 {'comment': 's:A time', 'value': 'h:07:51:43.012345'},
                 {'comment': 's:A timestamp (non-UTC)', 'value': 't:2016-01-13T07:51:42.012345+01:00 Berlin'},
@@ -366,9 +366,9 @@ comment,value
 "A quantity",500miles
 "A quantity without unit",500
 "A coordinate","C(-27.472500,153.003000)"
-"A URI","`http://www.example.com#unicode:\u1234\u5678`"
+"A URI","`http://www.example.com#unicode:\u0109\u1000`"
 "A string","This is a test\nLine two of test\n\tIndented with ""quotes"", \\backslashes\\\n"
-"A unicode string","This is a Unicode characters: \u1234\u5678"
+"A unicode string","This is a Unicode characters: \u0109\u1000"
 "A date",2016-01-13
 "A time",07:51:43.012345
 "A timestamp (non-UTC)",2016-01-13T07:51:42.012345+01:00
@@ -393,9 +393,9 @@ comment,value
 "A quantity",500miles
 "A quantity without unit",500
 "A coordinate",C(-27.472500,153.003000)
-"A URI",`http://www.example.com#unicode:\\u1234\\u5678`
+"A URI",`http://www.example.com#unicode:\u0109\u1000`
 "A string","This is a test\\nLine two of test\\n\\tIndented with \\"quotes\\", \\\\backslashes\\\\\\n"
-"A unicode string","This is a Unicode characters: \\u1234\\u5678"
+"A unicode string","This is a Unicode characters: \u0109\u1000"
 "A date",2016-01-13
 "A time",07:51:43.012345
 "A timestamp (non-UTC)",2016-01-13T07:51:42.012345+01:00 Berlin
@@ -441,7 +441,7 @@ comment: A coordinate
 value: C(-27.472500,153.003000)
 ---
 comment: A URI
-value: `http://www.example.com#unicode:\\u1234\\u5678`
+value: `http://www.example.com#unicode:\u0109\u1000`
 ---
 comment: A string
 value: 
@@ -450,7 +450,7 @@ value:
   \\tIndented with \\"quotes\\", \\\\backslashes\\\\
 ---
 comment: A unicode string
-value: This is a Unicode characters: \\u1234\\u5678
+value: This is a Unicode characters: \u0109\u1000
 ---
 comment: A date
 value: 2016-01-13
@@ -484,11 +484,11 @@ def test_data_types_json_v3():
                  {'comment': 's:A quantity', 'value': 'n:500.000000 miles'},
                  {'comment': 's:A quantity without unit', 'value': 'n:500.000000'},
                  {'comment': 's:A coordinate', 'value': 'c:-27.472500,153.003000'},
-                 {'comment': 's:A URI', 'value': 'u:http://www.example.com#unicode:ሴ噸'},
+                 {'comment': 's:A URI', 'value': 'u:http://www.example.com#unicode:\u0109\u1000'},
                  {'comment': 's:A string',
                   'value': 's:This is a test\nLine two of test\n'
                            '\tIndented with "quotes", \\backslashes\\\n'},
-                 {'comment': 's:A unicode string', 'value': 's:This is a Unicode characters: ሴ噸'},
+                 {'comment': 's:A unicode string', 'value': 's:This is a Unicode characters: \u0109\u1000'},
                  {'comment': 's:A date', 'value': 'd:2016-01-13'},
                  {'comment': 's:A time', 'value': 'h:07:51:43.012345'},
                  {'comment': 's:A timestamp (non-UTC)',
@@ -513,9 +513,9 @@ comment,value
 "A quantity",500miles
 "A quantity without unit",500
 "A coordinate","C(-27.472500,153.003000)"
-"A URI","`http://www.example.com#unicode:\u1234\u5678`"
+"A URI","`http://www.example.com#unicode:\u0109\u1000`"
 "A string","This is a test\nLine two of test\n\tIndented with ""quotes"", \\backslashes\\\n"
-"A unicode string","This is a Unicode characters: \u1234\u5678"
+"A unicode string","This is a Unicode characters: \u0109\u1000"
 "A date",2016-01-13
 "A time",07:51:43.012345
 "A timestamp (non-UTC)",2016-01-13T07:51:42.012345+01:00
@@ -1069,3 +1069,7 @@ comment
 
 def test_dump_invalide_scalar():
     assert dump_scalar(None)
+
+
+def test_dump_ambiguous_scalar():
+    assert dump_scalar("F", MODE_CSV) == '"""F"""'

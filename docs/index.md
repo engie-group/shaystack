@@ -469,8 +469,10 @@ See [LICENCE](LICENSE) file
 # TODO
 
 - [ ] MySQL
+- [ ] MongoDB
+- [ ] Cassandra
 - [ ] Implements watch in GraphQL
 - [ ] Implements *write* in GraphQL
-- [ ] FastAPI
+- [ ] A version with FastAPI
 - [ ] Pypy (when pip install typed-ast running)
 - [ ] Docker images with ARM

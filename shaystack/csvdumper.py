@@ -22,6 +22,7 @@ from .type import Entity
 from .version import LATEST_VER, VER_3_0, Version
 from .zincdumper import dump_grid as zinc_dump_grid
 from .zincdumper import dump_scalar as zinc_dump_scalar
+from .zincparser import parse_scalar as zinc_parse_scalar, ZincParseException
 
 
 def _str_csv_escape(str_value: str) -> AnyStr:
@@ -69,7 +70,13 @@ def _dump_id(id_str: str) -> str:
 
 
 def _dump_str(str_value: str) -> str:
-    return '"' + _str_csv_escape(str_value) + '"'
+    try:
+        zinc_parse_scalar(str_value)  # Is it ambiguous ?
+        # Yes
+        return '"""' + _str_csv_escape(str_value) + '"""'
+    except ZincParseException:
+        # No
+        return '"' + _str_csv_escape(str_value) + '"'
 
 
 def _dump_uri(uri_value: Uri) -> str:

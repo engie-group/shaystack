@@ -28,9 +28,6 @@ _MAP_CHAR = \
 
 def _str_sub(match: re.Match) -> str:
     char = cast(str, match.group(0))
-    order = ord(char)
-    if order > 0x80:
-        return '\\u%04x' % order
     if char in _MAP_CHAR:
         return _MAP_CHAR.get(char, char)
     return char

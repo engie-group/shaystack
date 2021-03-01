@@ -1,5 +1,5 @@
 const template = `
-  <div class="summary-content">
+  <div v-if="isAnyData" class="summary-content">
     <div class="summary-content__graph">
       <c-graph
         v-if="isDataLoaded"
@@ -13,7 +13,7 @@ const template = `
       <c-entity-row
         v-for="row in entitiesGroupedById"
         :ref="getEntityId(row)"
-        :id="getEntityName"
+        :id="getEntityId(row)"
         :key="row.id.val"
         @onRefClick="onRefClick"
         :idEntity="row.id.val"
@@ -23,6 +23,9 @@ const template = `
         class="summary-content__entity-row"
       />
     </div>
+  <div v-else class="summary-content">
+    NO DATA
+  </div>
   </div>
 `
 import formatService from '../../services/format.service.js'
@@ -33,6 +36,9 @@ export default {
   template,
   components: { CEntityRow, CGraph },
   computed: {
+    isAnyData() {
+      return !(this.entities.length === 0 || (this.entities.length === 1 && this.entities[0].length === 0))
+    },
     filterApi() {
       return this.$store.getters.filterApi
     },
@@ -50,6 +56,9 @@ export default {
     histories() {
       return this.$store.getters.histories
     },
+    apiServers() {
+      return this.$store.getters.apiServers
+    },
     getDefaultApiHost() {
       return this.$store.getters.apiServers[0].haystackApiHost
     },
@@ -65,7 +74,7 @@ export default {
       if (Object.keys(this.$route.query).length > 0) {
         if (this.$route.query.a) {
           const defaultApiServers = JSON.parse(this.$route.query.a)
-          await this.$store.commit('SET_API_SERVERS', { apiServers: defaultApiServers })
+          await this.$store.dispatch('setHaystackApi', { apiServers: defaultApiServers })
         }
         if (this.$route.query.q) {
           await this.$store.commit('SET_FILTER_API', { filterApi: this.$route.query.q })
@@ -158,18 +167,28 @@ export default {
     }
   },
   async beforeMount() {
+    if (this.apiServers.length === 0)
+      await this.$store.dispatch('createApiServer', {
+        haystackApiHost: `${window.location.origin}${window.location.pathname}`
+      })
     await this.reloadPageFromQueryParameters()
   },
   updated() {
-    const entityNames = this.entitiesGroupedById.map(entity => this.getEntityId(entity))
-    if (entityNames.indexOf(decodeURI(this.$route.hash).substring(1)) >= 0) {
-      const elementRef = this.$refs[decodeURI(this.$route.hash).substring(1)][0]
-      if (elementRef) {
-        elementRef.$el.scrollIntoView()
-        window.scrollBy(0, -200)
+    if (this.isAnyData) {
+      if (this.entitiesGroupedById) {
+        const entityNames = this.entitiesGroupedById.map(entity => this.getEntityId(entity))
+        if (entityNames.indexOf(decodeURI(this.$route.hash).substring(1)) >= 0) {
+          if (this.$refs[decodeURI(this.$route.hash).substring(1)]) {
+            const elementRef = this.$refs[decodeURI(this.$route.hash).substring(1)][0]
+            if (elementRef) {
+              elementRef.$el.scrollIntoView()
+              window.scrollBy(0, -200)
+            }
+          }
+        }
       }
+      window.addEventListener('scroll', this.handleScroll, { passive: true })
     }
-    window.addEventListener('scroll', this.handleScroll, { passive: true })
   }
 }
 

@@ -9,7 +9,7 @@ window.env = window.env || {}
 const state = {
   entities: [[]],
   histories: [{}],
-  apiServers: [new HaystackApiService({ haystackApiHost: `${window.location.origin}${window.location.pathname}` })],
+  apiServers: [],
   isDataLoaded: false,
   filterApi: ''
 }
@@ -84,14 +84,28 @@ export const getters = {
   }
 }
 export const actions = {
+  async setHaystackApi(context, { apiServers }) {
+    const availableApiServers = await Promise.all(
+      apiServers.filter(async apiServer => {
+        const newApiServer = new HaystackApiService({ haystackApiHost: apiServer })
+        const isAvailable = await newApiServer.about()
+        return isAvailable
+      })
+    )
+    context.commit('SET_API_SERVERS', { apiServers: availableApiServers })
+  },
   async createApiServer(context, { haystackApiHost }) {
-    await context.commit('SET_HAYSTACK_API', { haystackApiHost })
+    const newApiServer = new HaystackApiService({ haystackApiHost })
+    const isNewServerAvailable = await newApiServer.about()
+    if (isNewServerAvailable) {
+      await context.commit('SET_HAYSTACK_API', { haystackApiHost })
+    }
   },
   async commitNewEntities(context, { entities, apiNumber }) {
     await context.commit('SET_ENTITIES', { entities, apiNumber })
   },
   async fetchEntity(context, { entity, apiNumber }) {
-    const entities = await state.apiServers[apiNumber].getEntity(entity)
+    const entities = await context.getters.apiServers[apiNumber].getEntity(entity)
     await context.dispatch('commitNewEntities', {
       entities: formatService.addApiSourceInformationToEntity(entities.rows, apiNumber + 1),
       apiNumber
@@ -99,7 +113,9 @@ export const actions = {
     // await context.commit('SET_ENTITIES', { entities: entities.rows, apiNumber })
   },
   async fetchHistories(context, { idsEntityWithHis, apiNumber }) {
-    const histories = await Promise.all(idsEntityWithHis.map(async id => state.apiServers[apiNumber].getHistory(id)))
+    const histories = await Promise.all(
+      idsEntityWithHis.map(async id => context.getters.apiServers[apiNumber].getHistory(id))
+    )
     const idHistories = {}
     // eslint-disable-next-line no-return-assign
     idsEntityWithHis.forEach((key, index) => (idHistories[key] = histories[index]))
@@ -130,9 +146,12 @@ export const actions = {
   },
   async reloadAllData(context, { entity }) {
     context.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
-    await Promise.all([await context.dispatch('fetchAllEntity', { entity })]).finally(async () => {
-      await context.dispatch('fetchAllHistories')
-    })
+    const { apiServers } = context.getters
+    if (apiServers.length > 0) {
+      await Promise.all([await context.dispatch('fetchAllEntity', { entity })]).finally(async () => {
+        await context.dispatch('fetchAllHistories')
+      })
+    }
     context.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
   }
 }

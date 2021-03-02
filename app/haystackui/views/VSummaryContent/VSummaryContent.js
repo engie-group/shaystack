@@ -16,6 +16,7 @@ const template = `
         :id="getEntityId(row)"
         :key="row.id.val"
         @onRefClick="onRefClick"
+        @onExternalRefClick="onExternalRefClick"
         :idEntity="row.id.val"
         :dataEntity="row"
         :his="getHistories(row.id.val)"
@@ -95,7 +96,18 @@ export default {
     },
     async onRefClick(refId) {
       this.$refs[refId][0].$el.scrollIntoView(true)
-      window.scrollBy(0, -200)
+      window.scrollBy(0, -70)
+      const { query } = this.$route
+      this.$router.push({ hash: refId, query }).catch(() => {})
+    },
+    async onExternalRefClick(refId) {
+      const newApiFilter = `id==@${refId}`
+      await this.$store.dispatch('reloadAllData', {
+        entity: newApiFilter
+      })
+      this.$store.commit('SET_FILTER_API', { filterApi: newApiFilter })
+      const { query } = this.$route
+      this.$router.replace({ hash: refId, query }).catch(() => {})
     },
     elementInViewport(el) {
       if (!el) return false
@@ -128,7 +140,9 @@ export default {
       } else {
         const entityId = Object.keys(entityNameToEntityId).find(key => entityNameToEntityId[key] === pointName)
         this.$refs[entityId][0].$el.scrollIntoView(true)
-        window.scrollBy(0, -200)
+        window.scrollBy(0, -70)
+        const { query } = this.$route
+        this.$router.push({ hash: entityId, query }).catch(() => {})
       }
     },
     getEntityId(entity) {
@@ -182,7 +196,7 @@ export default {
             const elementRef = this.$refs[decodeURI(this.$route.hash).substring(1)][0]
             if (elementRef) {
               elementRef.$el.scrollIntoView()
-              window.scrollBy(0, -200)
+              window.scrollBy(0, -70)
             }
           }
         }

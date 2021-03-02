@@ -55,3 +55,8 @@
 .apiSource_6 {
   background: #a39178;
 }
+.entity-row__external-ref-row {
+  text-decoration: underline dotted;
+  cursor: pointer;
+  color: grey;
+}

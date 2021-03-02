@@ -20,8 +20,10 @@ class HaystackApiService {
     try {
       const response = await this.api.get(`/ops`)
       if (response.data.rows.find(row => row.name === 's:read')) return true
+      alert('Wrong API')
       return false
     } catch {
+      alert('Wrong API')
       return false
     }
   }

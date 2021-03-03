@@ -62,25 +62,39 @@ def purge_grid(grid: Grid) -&gt; Grid:
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="shaystack.providers.db_postgres" href="db_postgres.html">shaystack.providers.db_postgres</a></code></dt>
-<dd>
-<div class="desc"><p>Save Haystack ontology in Postgres database (use JSon type).
-Convert the haystack filter to postgres SQL equivalent syntax.</p></div>
-</dd>
-<dt><code class="name"><a title="shaystack.providers.db_sqlite" href="db_sqlite.html">shaystack.providers.db_sqlite</a></code></dt>
-<dd>
-<div class="desc"><p>Save Haystack ontology in SQLite database with JSon extension.
-Convert the haystack filter to sqlite SQL equivalent syntax.</p></div>
-</dd>
-<dt><code class="name"><a title="shaystack.providers.haystack_interface" href="haystack_interface.html">shaystack.providers.haystack_interface</a></code></dt>
-<dd>
-<div class="desc"><p>Base of haystack implementation.</p></div>
-</dd>
-<dt><code class="name"><a title="shaystack.providers.import_db" href="import_db.html">shaystack.providers.import_db</a></code></dt>
-<dd>
-<div class="desc"><p>Import haystack file in SQL database.</p></div>
-</dd>
-<dt><code class="name"><a title="shaystack.providers.import_s3" href="import_s3.html">shaystack.providers.import_s3</a></code></dt>
+    <dt><code class="name"><a href="db.html" title="shaystack.providers.db">shaystack.providers.db</a></code></dt>
+    <dd>
+        <div class="desc"><p>Manipulate Haystack ontology on SQL database …</p></div>
+    </dd>
+    <dt><code class="name"><a title="shaystack.providers.db_postgres" href="db_postgres.html">shaystack.providers.db_postgres</a></code>
+    </dt>
+    <dd>
+        <div class="desc"><p>Save Haystack ontology in Postgres database (use JSon type).
+            Convert the haystack filter to postgres SQL equivalent syntax.</p></div>
+    </dd>
+    <dt><code class="name"><a title="shaystack.providers.db_sqlite"
+                              href="db_sqlite.html">shaystack.providers.db_sqlite</a></code></dt>
+    <dd>
+        <div class="desc"><p>Save Haystack ontology in SQLite database with JSon extension.
+            Convert the haystack filter to sqlite SQL equivalent syntax.</p></div>
+    </dd>
+    <dt><code class="name"><a href="db_timestream.html" title="shaystack.providers.db_timestream">shaystack.providers.db_timestream</a></code>
+    </dt>
+    <dd>
+        <div class="desc"><p>Add the persistance of time-series with TS database …</p></div>
+    </dd>
+    <dt><code class="name"><a title="shaystack.providers.haystack_interface" href="haystack_interface.html">shaystack.providers.haystack_interface</a></code>
+    </dt>
+    <dd>
+        <div class="desc"><p>Base of haystack implementation.</p></div>
+    </dd>
+    <dt><code class="name"><a title="shaystack.providers.import_db"
+                              href="import_db.html">shaystack.providers.import_db</a></code></dt>
+    <dd>
+        <div class="desc"><p>Import haystack file in SQL database.</p></div>
+    </dd>
+    <dt><code class="name"><a title="shaystack.providers.import_s3"
+                              href="import_s3.html">shaystack.providers.import_s3</a></code></dt>
 <dd>
 <div class="desc"><p>Import haystack file in S3 bucket. Manage the versions of files.</p></div>
 </dd>
@@ -88,14 +102,6 @@ Convert the haystack filter to sqlite SQL equivalent syntax.</p></div>
 <dd>
 <div class="desc"><p>An Haystack API provider with a very simple implementation.
 It's must be used for test.</p></div>
-</dd>
-<dt><code class="name"><a title="shaystack.providers.sql" href="sql.html">shaystack.providers.sql</a></code></dt>
-<dd>
-<div class="desc"><p>Manipulate Haystack ontology on SQL database …</p></div>
-</dd>
-<dt><code class="name"><a title="shaystack.providers.sql_ts" href="sql_ts.html">shaystack.providers.sql_ts</a></code></dt>
-<dd>
-<div class="desc"><p>Add the persistance of time-series with TS database …</p></div>
 </dd>
 <dt><code class="name"><a title="shaystack.providers.url" href="url.html">shaystack.providers.url</a></code></dt>
 <dd>
@@ -424,7 +430,7 @@ the 'ops' code detect that, and can calculate the set of implemented operations.
         Notes:
             Implement this method, only if you want to limit the format negotiation
         Returns:
-            The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.
+            The grid format or None. If None, the API accept all formats ZINC, TRIO, JSON and CSV.
         &#34;&#34;&#34;
         return None  # type: ignore
 
@@ -632,8 +638,8 @@ the 'ops' code detect that, and can calculate the set of implemented operations.
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+    <li><a href="db.html#shaystack.providers.db.Provider" title="shaystack.providers.db.Provider">Provider</a></li>
 <li><a title="shaystack.providers.ping.Provider" href="ping.html#shaystack.providers.ping.Provider">Provider</a></li>
-<li><a title="shaystack.providers.sql.Provider" href="sql.html#shaystack.providers.sql.Provider">Provider</a></li>
 <li><a title="shaystack.providers.url.Provider" href="url.html#shaystack.providers.url.Provider">Provider</a></li>
 </ul>
 <h3>Instance variables</h3>
@@ -726,11 +732,11 @@ def about(self, home: str) -&gt; Grid:
 <span>def <span class="ident">formats</span></span>(<span>self) ‑> Union[shaystack.grid.Grid, NoneType]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'formats' ops.</p>
-<h2 id="notes">Notes</h2>
-<p>Implement this method, only if you want to limit the format negotiation</p>
-<h2 id="returns">Returns</h2>
-<p>The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.</p></div>
+    <div class="desc"><p>Implement the Haystack 'formats' ops.</p>
+        <h2 id="notes">Notes</h2>
+        <p>Implement this method, only if you want to limit the format negotiation</p>
+        <h2 id="returns">Returns</h2>
+        <p>The grid format or None. If None, the API accept all formats ZINC, TRIO, JSON and CSV.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -741,7 +747,7 @@ def about(self, home: str) -&gt; Grid:
     Notes:
         Implement this method, only if you want to limit the format negotiation
     Returns:
-        The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.
+        The grid format or None. If None, the API accept all formats ZINC, TRIO, JSON and CSV.
     &#34;&#34;&#34;
     return None  # type: ignore</code></pre>
 </details>
@@ -1328,14 +1334,15 @@ def watch_unsub(
 </li>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
+    <li><code><a href="db.html" title="shaystack.providers.db">shaystack.providers.db</a></code></li>
 <li><code><a title="shaystack.providers.db_postgres" href="db_postgres.html">shaystack.providers.db_postgres</a></code></li>
 <li><code><a title="shaystack.providers.db_sqlite" href="db_sqlite.html">shaystack.providers.db_sqlite</a></code></li>
+    <li><code><a href="db_timestream.html"
+                 title="shaystack.providers.db_timestream">shaystack.providers.db_timestream</a></code></li>
 <li><code><a title="shaystack.providers.haystack_interface" href="haystack_interface.html">shaystack.providers.haystack_interface</a></code></li>
 <li><code><a title="shaystack.providers.import_db" href="import_db.html">shaystack.providers.import_db</a></code></li>
 <li><code><a title="shaystack.providers.import_s3" href="import_s3.html">shaystack.providers.import_s3</a></code></li>
 <li><code><a title="shaystack.providers.ping" href="ping.html">shaystack.providers.ping</a></code></li>
-<li><code><a title="shaystack.providers.sql" href="sql.html">shaystack.providers.sql</a></code></li>
-<li><code><a title="shaystack.providers.sql_ts" href="sql_ts.html">shaystack.providers.sql_ts</a></code></li>
 <li><code><a title="shaystack.providers.url" href="url.html">shaystack.providers.url</a></code></li>
 </ul>
 </li>

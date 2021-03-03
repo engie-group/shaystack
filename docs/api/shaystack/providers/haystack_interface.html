@@ -236,7 +236,7 @@ class HaystackInterface(ABC):
         Notes:
             Implement this method, only if you want to limit the format negotiation
         Returns:
-            The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.
+            The grid format or None. If None, the API accept all formats ZINC, TRIO, JSON and CSV.
         &#34;&#34;&#34;
         return None  # type: ignore
 
@@ -1060,7 +1060,7 @@ the 'ops' code detect that, and can calculate the set of implemented operations.
         Notes:
             Implement this method, only if you want to limit the format negotiation
         Returns:
-            The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.
+            The grid format or None. If None, the API accept all formats ZINC, TRIO, JSON and CSV.
         &#34;&#34;&#34;
         return None  # type: ignore
 
@@ -1268,8 +1268,8 @@ the 'ops' code detect that, and can calculate the set of implemented operations.
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+    <li><a href="db.html#shaystack.providers.db.Provider" title="shaystack.providers.db.Provider">Provider</a></li>
 <li><a title="shaystack.providers.ping.Provider" href="ping.html#shaystack.providers.ping.Provider">Provider</a></li>
-<li><a title="shaystack.providers.sql.Provider" href="sql.html#shaystack.providers.sql.Provider">Provider</a></li>
 <li><a title="shaystack.providers.url.Provider" href="url.html#shaystack.providers.url.Provider">Provider</a></li>
 </ul>
 <h3>Instance variables</h3>
@@ -1362,11 +1362,11 @@ def about(self, home: str) -&gt; Grid:
 <span>def <span class="ident">formats</span></span>(<span>self) ‑> Union[shaystack.grid.Grid, NoneType]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'formats' ops.</p>
-<h2 id="notes">Notes</h2>
-<p>Implement this method, only if you want to limit the format negotiation</p>
-<h2 id="returns">Returns</h2>
-<p>The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.</p></div>
+    <div class="desc"><p>Implement the Haystack 'formats' ops.</p>
+        <h2 id="notes">Notes</h2>
+        <p>Implement this method, only if you want to limit the format negotiation</p>
+        <h2 id="returns">Returns</h2>
+        <p>The grid format or None. If None, the API accept all formats ZINC, TRIO, JSON and CSV.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1377,7 +1377,7 @@ def about(self, home: str) -&gt; Grid:
     Notes:
         Implement this method, only if you want to limit the format negotiation
     Returns:
-        The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.
+        The grid format or None. If None, the API accept all formats ZINC, TRIO, JSON and CSV.
     &#34;&#34;&#34;
     return None  # type: ignore</code></pre>
 </details>

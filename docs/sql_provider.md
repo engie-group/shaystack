@@ -40,7 +40,7 @@ $ pip install supersqlite
 $ # - Import haystack file in DB
 $ shaystack_import_db sample/carytown.zinc sqlite3:///test.db#haystack
 $ # - Expose haystack with API
-$ HAYSTACK_PROVIDER=shaystack.providers.sql \
+$ HAYSTACK_PROVIDER=shaystack.providers.db \
   HAYSTACK_DB=sqlite3:///test.db#haystack \
   shaystack
 ```

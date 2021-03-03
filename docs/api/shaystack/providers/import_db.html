@@ -51,7 +51,7 @@ from urllib.parse import urlparse, ParseResult
 import click
 import pytz
 
-from . import sql
+from . import db
 from .haystack_interface import get_provider
 from .. import suffix_to_mode, parse, Grid
 
@@ -133,16 +133,16 @@ def import_in_db(source: str,
         version: The associated version time.
     &#34;&#34;&#34;
     os.environ[&#34;HAYSTACK_DB&#34;] = database_url
-    provider_name = &#34;shaystack.providers.sql&#34;
+    provider_name = &#34;shaystack.providers.db&#34;
     if ts_url:
         os.environ[&#34;HAYSTACK_TS&#34;] = ts_url
-        provider_name = &#34;shaystack.providers.sql_ts&#34;
+        provider_name = &#34;shaystack.providers.db_timestream&#34;
 
     if not version:
         version = datetime.now(tz=pytz.UTC)
     try:
         with get_provider(provider_name) as provider:
-            provider = cast(sql.Provider, provider)
+            provider = cast(db.Provider, provider)
             if reset:
                 provider.purge_db()
             provider.create_db()
@@ -312,16 +312,16 @@ Set the environment variable HAYSTACK_URL and HAYSTACK_DB</p></div>
         version: The associated version time.
     &#34;&#34;&#34;
     os.environ[&#34;HAYSTACK_DB&#34;] = database_url
-    provider_name = &#34;shaystack.providers.sql&#34;
+    provider_name = &#34;shaystack.providers.db&#34;
     if ts_url:
         os.environ[&#34;HAYSTACK_TS&#34;] = ts_url
-        provider_name = &#34;shaystack.providers.sql_ts&#34;
+        provider_name = &#34;shaystack.providers.db_timestream&#34;
 
     if not version:
         version = datetime.now(tz=pytz.UTC)
     try:
         with get_provider(provider_name) as provider:
-            provider = cast(sql.Provider, provider)
+            provider = cast(db.Provider, provider)
             if reset:
                 provider.purge_db()
             provider.create_db()

@@ -787,6 +787,29 @@ stop-pgadmin:
 	@docker stop pgadmin 2>/dev/null >/dev/null || true
 	echo -e "$(green)PGAdmin stopped$(normal)"
 
+# ------------- Mongo database
+## Start Mongo database in background
+start-mongodb:
+	@docker start mongodb || docker run \
+		--name mongodb \
+		--hostname mongodb \
+		-p 27017-27019:27017-27019 \
+		-d mongodb
+	echo -e "$(yellow)MongoDB started$(normal)"
+
+## Stop mongo database
+stop-mongodb:
+	@docker stop mongodb 2>/dev/null >/dev/null || true
+	echo -e "$(green)MongoDB stopped$(normal)"
+
+## Start Mongo CI
+mongo: start-mongodb
+	docker exec -it mongodb mongo
+
+# Start shell in mongodo docker container
+mongodb-shell:
+	docker exec -it mongodb bash
+
 # --------------------------- Docker
 ## Build a Docker image with the project and current Haystack parameter (see `make dump-params`)
 docker-build:

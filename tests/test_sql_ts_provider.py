@@ -9,7 +9,7 @@ from nose.plugins.attrib import attr
 
 from shaystack import Ref, Grid, Quantity, MARKER, REMOVE, Coordinate, NA, parse_date_range, XStr
 from shaystack.providers import get_provider
-from shaystack.providers.sql_ts import Provider as SQLTSProvider
+from shaystack.providers.db_timestream import Provider as DBTSProvider
 
 # Set HAYSTACK_DB variable, before running the tests to validate with another database
 # HAYSTACK_DB = 'postgresql://postgres:password@172.17.0.2:5432/postgres#haystack'
@@ -25,17 +25,17 @@ log = logging.getLogger("sql_ts.Provider")
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 @patch.dict('os.environ', {'HAYSTACK_TS': HAYSTACK_TS})
 def test_create_db():
-    with cast(SQLTSProvider, get_provider("shaystack.providers.sql_ts")) as provider:
+    with cast(DBTSProvider, get_provider("shaystack.providers.db_timestream")) as provider:
         provider.create_db()
 
 
 @attr('aws')
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 @patch.dict('os.environ', {'HAYSTACK_TS': HAYSTACK_TS})
-@patch.object(SQLTSProvider, 'get_customer_id')
+@patch.object(DBTSProvider, 'get_customer_id')
 def test_import_ts_grid_in_db_and_his_read(mock):
     mock.return_value = "customer"
-    with cast(SQLTSProvider, get_provider("shaystack.providers.sql_ts")) as provider:
+    with cast(DBTSProvider, get_provider("shaystack.providers.db_timestream")) as provider:
         values = [
             (XStr("hex", "deadbeef"), "Str"),
             ("100", "Str"),
@@ -82,10 +82,10 @@ def test_import_ts_grid_in_db_and_his_read(mock):
 @attr('aws')
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 @patch.dict('os.environ', {'HAYSTACK_TS': HAYSTACK_TS})
-@patch.object(SQLTSProvider, 'get_customer_id')
+@patch.object(DBTSProvider, 'get_customer_id')
 def test_import_ts_grid_in_db_with_a_lot_of_records(mock):
     mock.return_value = "customer"
-    with cast(SQLTSProvider, get_provider("shaystack.providers.sql_ts")) as provider:
+    with cast(DBTSProvider, get_provider("shaystack.providers.db_timestream")) as provider:
         # Check TS with all types
         entity_id = Ref("abc")
 
@@ -114,6 +114,6 @@ def test_import_ts_grid_in_db_with_a_lot_of_records(mock):
 @patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
 @patch.dict('os.environ', {'HAYSTACK_TS': HAYSTACK_TS})
 def test_about():
-    with get_provider("shaystack.providers.sql_ts") as provider:
+    with get_provider("shaystack.providers.db_timestream") as provider:
         result = provider.about("http://localhost")
         assert result[0]['moduleName'] == 'SQLProvider'

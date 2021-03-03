@@ -22,7 +22,7 @@ from urllib.parse import urlparse, ParseResult
 import click
 import pytz
 
-from . import sql
+from . import db
 from .haystack_interface import get_provider
 from .. import suffix_to_mode, parse, Grid
 
@@ -104,16 +104,16 @@ def import_in_db(source: str,
         version: The associated version time.
     """
     os.environ["HAYSTACK_DB"] = database_url
-    provider_name = "shaystack.providers.sql"
+    provider_name = "shaystack.providers.db"
     if ts_url:
         os.environ["HAYSTACK_TS"] = ts_url
-        provider_name = "shaystack.providers.sql_ts"
+        provider_name = "shaystack.providers.db_timestream"
 
     if not version:
         version = datetime.now(tz=pytz.UTC)
     try:
         with get_provider(provider_name) as provider:
-            provider = cast(sql.Provider, provider)
+            provider = cast(db.Provider, provider)
             if reset:
                 provider.purge_db()
             provider.create_db()

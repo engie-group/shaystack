@@ -23,8 +23,8 @@ from botocore.client import BaseClient
 from botocore.config import Config
 from overrides import overrides
 
-from .sql import Provider as SQLProvider
-from .sql import log
+from .db import Provider as DBProvider
+from .db import log
 from ..datatypes import Ref, MARKER, REMOVE, Coordinate, Quantity, NA, XStr
 from ..grid import Grid
 
@@ -85,10 +85,11 @@ def _delete_table(client: BaseClient,
         pass  # Ignore
 
 
-class Provider(SQLProvider):
+class Provider(DBProvider):
     """
     Expose an Haystack data via the Haystack Rest API and SQL+TS databases
     """
+
     @property
     def name(self) -> str:
         return "SQL+timeseries"

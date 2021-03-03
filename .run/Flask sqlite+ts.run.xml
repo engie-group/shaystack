@@ -7,7 +7,7 @@
             <env name="PYTHONUNBUFFERED" value="1"/>
             <env name="FLASK_DEBUG" value="1"/>
             <env name="FLASK_ENV" value="dev"/>
-            <env name="HAYSTACK_PROVIDER" value="shaystack.providers.sql_ts"/>
+            <env name="HAYSTACK_PROVIDER" value="shaystack.providers.db_timestream"/>
             <env name="LOG_LEVEL" value="DEBUG"/>
             <env name="HAYSTACK_DB" value="sqlite:///test.db#haystack"/>
             <env name="HAYSTACK_DB_SECRET" value="alpha-Haystack"/>

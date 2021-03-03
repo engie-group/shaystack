@@ -645,7 +645,7 @@ functional-db-sqlite: $(REQUIREMENTS)
 	@$(MAKE) async-stop-api>/dev/null
 	pip install supersqlite >/dev/null
 	rm -f test.db
-	export HAYSTACK_PROVIDER=shaystack.providers.sql
+	export HAYSTACK_PROVIDER=shaystack.providers.db
 	export HAYSTACK_DB=sqlite3://localhost/test.db
 	$(CONDA_PYTHON) -m shaystack.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in SQLite$(normal)"
@@ -659,7 +659,7 @@ functional-db-sqlite-ts: $(REQUIREMENTS)
 	@$(MAKE) async-stop-api>/dev/null
 	pip install supersqlite boto3 >/dev/null
 	rm -f test.db
-	export HAYSTACK_PROVIDER=shaystack.providers.sql_ts
+	export HAYSTACK_PROVIDER=shaystack.providers.db_timestream
 	export HAYSTACK_DB=sqlite3://localhost/test.db
 	export HAYSTACK_TS=timestream://HaystackDemo?mem_ttl=8760&mag_ttl=400
 	export LOG_LEVEL=INFO
@@ -676,7 +676,7 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 	pip install psycopg2 >/dev/null
 	$(MAKE) start-pg
 	PG_IP=$(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres)
-	export HAYSTACK_PROVIDER=shaystack.providers.sql
+	export HAYSTACK_PROVIDER=shaystack.providers.db
 	export HAYSTACK_DB=postgres://postgres:password@$$PG_IP:5432/postgres
 	$(CONDA_PYTHON) -m shaystack.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in Postgres$(normal)"

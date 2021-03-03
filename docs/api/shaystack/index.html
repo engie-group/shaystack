@@ -70,7 +70,7 @@ from .grid import Grid
 from .grid_filter import parse_filter, parse_hs_datetime_format
 from .metadata import MetadataObject
 from .ops import *
-from .parser import parse, parse_scalar, MODE, MODE_JSON, MODE_ZINC, MODE_CSV, \
+from .parser import parse, parse_scalar, MODE, MODE_JSON, MODE_TRIO, MODE_ZINC, MODE_CSV, \
     suffix_to_mode, mode_to_suffix
 from .pintutil import unit_reg
 from .providers import HaystackInterface
@@ -81,7 +81,7 @@ __all__ = [&#39;Grid&#39;, &#39;dump&#39;, &#39;parse&#39;, &#39;dump_scalar&#39
            &#39;MetadataObject&#39;, &#39;unit_reg&#39;, &#39;zoneinfo&#39;,
            &#39;HaystackType&#39;, &#39;Entity&#39;,
            &#39;Coordinate&#39;, &#39;Uri&#39;, &#39;Bin&#39;, &#39;XStr&#39;, &#39;Quantity&#39;, &#39;MARKER&#39;, &#39;NA&#39;, &#39;REMOVE&#39;, &#39;Ref&#39;,
-           &#39;MODE&#39;, &#39;MODE_JSON&#39;, &#39;MODE_ZINC&#39;, &#39;MODE_CSV&#39;, &#39;suffix_to_mode&#39;, &#39;mode_to_suffix&#39;,
+           &#39;MODE&#39;, &#39;MODE_JSON&#39;, &#39;MODE_ZINC&#39;, &#39;MODE_TRIO&#39;, &#39;MODE_CSV&#39;, &#39;suffix_to_mode&#39;, &#39;mode_to_suffix&#39;,
            &#39;parse_hs_datetime_format&#39;,
            &#39;VER_2_0&#39;, &#39;VER_3_0&#39;, &#39;LATEST_VER&#39;, &#39;Version&#39;,
 
@@ -131,20 +131,40 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
-<dl>
-<dt><code class="name"><a title="shaystack.exception" href="exception.html">shaystack.exception</a></code></dt>
-<dd>
-<div class="desc"><p>Specific exceptions for Haystack API</p></div>
-</dd>
-<dt><code class="name"><a title="shaystack.providers" href="providers/index.html">shaystack.providers</a></code></dt>
-<dd>
-<div class="desc"><p>Implementation of Haystack API</p></div>
-</dd>
-<dt><code class="name"><a title="shaystack.type" href="type.html">shaystack.type</a></code></dt>
-<dd>
-<div class="desc"><p>The typing for Haystack</p></div>
-</dd>
-</dl>
+    <dl>
+        <dt><code class="name"><a title="shaystack.exception" href="exception.html">shaystack.exception</a></code></dt>
+        <dd>
+            <div class="desc"><p>Specific exceptions for Haystack API</p></div>
+        </dd>
+        <dt><code class="name"><a title="shaystack.providers" href="providers/index.html">shaystack.providers</a></code>
+        </dt>
+        <dd>
+            <div class="desc"><p>Implementation of Haystack API</p></div>
+        </dd>
+        <dt><code class="name"><a href="tools.html" title="shaystack.tools">shaystack.tools</a></code></dt>
+        <dd>
+            <div class="desc"><p>Tools for all parser and dumper</p></div>
+        </dd>
+        <dt><code class="name"><a href="triodumper.html" title="shaystack.triodumper">shaystack.triodumper</a></code>
+        </dt>
+        <dd>
+            <div class="desc"><p>Save a <code><a href="#shaystack.Grid" title="shaystack.Grid">Grid</a></code> in Zinc
+                file, conform with the specification describe
+                here (<a href="https://www.project-haystack.org/doc/Zinc">https://www.project-haystack.org/doc/Zinc</a>)
+            </p></div>
+        </dd>
+        <dt><code class="name"><a href="trioparser.html" title="shaystack.trioparser">shaystack.trioparser</a></code>
+        </dt>
+        <dd>
+            <div class="desc"><p>Parse Zinc file conform with the specification describe here (<a
+                    href="https://www.project-haystack.org/doc/Zinc">https://www.project-haystack.org/doc/Zinc</a>)
+                and produce a <code><a href="#shaystack.Grid" title="shaystack.Grid">Grid</a></code> instance.</p></div>
+        </dd>
+        <dt><code class="name"><a title="shaystack.type" href="type.html">shaystack.type</a></code></dt>
+        <dd>
+            <div class="desc"><p>The typing for Haystack</p></div>
+        </dd>
+    </dl>
 </section>
 <section>
 </section>
@@ -234,6 +254,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
     &#34;&#34;&#34;
     if mode == MODE_ZINC:
         return dump_zinc_grid(grid)
+    if mode == MODE_TRIO:
+        return dump_trio_grid(grid)
     if mode == MODE_JSON:
         return dump_json_grid(grid)
     if mode == MODE_CSV:
@@ -269,6 +291,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
     &#34;&#34;&#34;
     if mode == MODE_ZINC:
         return dump_zinc_scalar(scalar, version=version)
+    if mode == MODE_TRIO:
+        return dump_trio_scalar(scalar, version=version)
     if mode == MODE_JSON:
         return dump_json_scalar(scalar, version=version)
     if mode == MODE_CSV:
@@ -321,6 +345,11 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                 [
                     {
                         &#34;mime&#34;: MODE_ZINC,
+                        &#34;receive&#34;: MARKER,
+                        &#34;send&#34;: MARKER,
+                    },
+                    {
+                        &#34;mime&#34;: MODE_TRIO,
                         &#34;receive&#34;: MARKER,
                         &#34;send&#34;: MARKER,
                     },
@@ -523,14 +552,14 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
 <span>def <span class="ident">mode_to_suffix</span></span>(<span>mode: Mode) ‑> Union[str, NoneType]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Convert haystack mode to file suffix</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>mode</code></strong></dt>
-<dd>The haystack mode (<code>MODE_&hellip;</code>)</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>The file suffix (<code>.zinc</code>, <code>.json</code>, <code>.csv</code>)</p></div>
+    <div class="desc"><p>Convert haystack mode to file suffix</p>
+        <h2 id="args">Args</h2>
+        <dl>
+            <dt><strong><code>mode</code></strong></dt>
+            <dd>The haystack mode (<code>MODE_&hellip;</code>)</dd>
+        </dl>
+        <h2 id="returns">Returns</h2>
+        <p>The file suffix (<code>.zinc</code>, <code>.json</code>, <code>.trio</code> or <code>.csv</code>)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -541,7 +570,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
     Args:
         mode: The haystack mode (`MODE_...`)
     Returns:
-        The file suffix (`.zinc`, `.json`, `.csv`)
+        The file suffix (`.zinc`, `.json`, `.trio` or `.csv`)
     &#34;&#34;&#34;
     return _mode_to_suffix.get(mode, None)</code></pre>
 </details>
@@ -631,6 +660,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
 
     if mode == MODE_ZINC:
         return parse_zinc_grid(grid_str)
+    if mode == MODE_TRIO:
+        return parse_trio_grid(grid_str)
     if mode == MODE_JSON:
         return parse_json_grid(grid_str)
     if mode == MODE_CSV:
@@ -664,7 +695,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
     Returns:
         A `FilterAST`
     &#34;&#34;&#34;
-    with _lock:
+    with pyparser_lock:
         return FilterAST(hs_filter.parseString(grid_filter, parseAll=True)[0])</code></pre>
 </details>
 </dd>
@@ -741,6 +772,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
 
     if mode == MODE_ZINC:
         return parse_zinc_scalar(scalar, version=version)
+    if mode == MODE_TRIO:
+        return parse_trio_scalar(scalar, version=version)
     if mode == MODE_JSON:
         return parse_json_scalar(scalar, version=version)
     if mode == MODE_CSV:
@@ -861,7 +894,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
     try:
         provider = get_singleton_provider()
         grid_request = _parse_body(request)
-        read_ids = select = read_filter = date_version = None
+        read_ids: Optional[List[Ref]] = None
+        select = read_filter = date_version = None
         limit = 0
         if grid_request:
             if &#34;id&#34; in grid_request.column:
@@ -923,7 +957,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>ext</code></strong></dt>
-<dd>The file suffix (<code>.zinc</code>, <code>.json</code>, <code>.csv</code>)</dd>
+    <dd>The file suffix (<code>.zinc</code>, <code>.json</code>, <code>.trio</code> or <code>.csv</code>)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>The corresponding haystack mode (<code>MODE_&hellip;</code>)</p></div>
@@ -935,7 +969,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
     &#34;&#34;&#34;Convert a file suffix to Haystack mode
 
     Args:
-        ext: The file suffix (`.zinc`, `.json`, `.csv`)
+        ext: The file suffix (`.zinc`, `.json`, `.trio` or `.csv`)
     Returns:
         The corresponding haystack mode (`MODE_...`)
     &#34;&#34;&#34;
@@ -1290,7 +1324,7 @@ followed by zero or more rows.</p>
         self.metadata = MetadataObject(validate_fn=self._detect_or_validate)
 
         # The columns
-        self.column = SortableDict()
+        self.column: Dict[str, Any] = SortableDict()
 
         # Rows
         self._row: List[Entity] = []
@@ -1470,7 +1504,7 @@ followed by zero or more rows.</p>
 
         if bool(self):
             parts.extend([
-                &#39;\tRow %4d:\n\t%s&#39; % (row, &#39;\n\t&#39;.join([
+                &#39;\t---- Row %4d:\n\t%s&#39; % (row, &#39;\n\t&#39;.join([
                     ((&#39;%s=%r&#39; % (col_name, data[col_name]))
                      if col_name in data else
                      (&#39;%s absent&#39; % col_name)) for col_name in self.column.keys()]))
@@ -2496,7 +2530,7 @@ the 'ops' code detect that, and can calculate the set of implemented operations.
         Notes:
             Implement this method, only if you want to limit the format negotiation
         Returns:
-            The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.
+            The grid format or None. If None, the API accept all formats ZINC, TRIO, JSON and CSV.
         &#34;&#34;&#34;
         return None  # type: ignore
 
@@ -2704,8 +2738,9 @@ the 'ops' code detect that, and can calculate the set of implemented operations.
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+    <li><a href="providers/db.html#shaystack.providers.db.Provider" title="shaystack.providers.db.Provider">Provider</a>
+    </li>
 <li><a title="shaystack.providers.ping.Provider" href="providers/ping.html#shaystack.providers.ping.Provider">Provider</a></li>
-<li><a title="shaystack.providers.sql.Provider" href="providers/sql.html#shaystack.providers.sql.Provider">Provider</a></li>
 <li><a title="shaystack.providers.url.Provider" href="providers/url.html#shaystack.providers.url.Provider">Provider</a></li>
 </ul>
 <h3>Instance variables</h3>
@@ -2798,11 +2833,11 @@ def about(self, home: str) -&gt; Grid:
 <span>def <span class="ident">formats</span></span>(<span>self) ‑> Union[shaystack.grid.Grid, NoneType]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Implement the Haystack 'formats' ops.</p>
-<h2 id="notes">Notes</h2>
-<p>Implement this method, only if you want to limit the format negotiation</p>
-<h2 id="returns">Returns</h2>
-<p>The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.</p></div>
+    <div class="desc"><p>Implement the Haystack 'formats' ops.</p>
+        <h2 id="notes">Notes</h2>
+        <p>Implement this method, only if you want to limit the format negotiation</p>
+        <h2 id="returns">Returns</h2>
+        <p>The grid format or None. If None, the API accept all formats ZINC, TRIO, JSON and CSV.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2813,7 +2848,7 @@ def about(self, home: str) -&gt; Grid:
     Notes:
         Implement this method, only if you want to limit the format negotiation
     Returns:
-        The grid format or None. If None, the API accept all formats ZINC, JSON and CSV.
+        The grid format or None. If None, the API accept all formats ZINC, TRIO, JSON and CSV.
     &#34;&#34;&#34;
     return None  # type: ignore</code></pre>
 </details>
@@ -4039,11 +4074,14 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
 </div>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
-<ul>
-<li><code><a title="shaystack.exception" href="exception.html">shaystack.exception</a></code></li>
-<li><code><a title="shaystack.providers" href="providers/index.html">shaystack.providers</a></code></li>
-<li><code><a title="shaystack.type" href="type.html">shaystack.type</a></code></li>
-</ul>
+    <ul>
+        <li><code><a title="shaystack.exception" href="exception.html">shaystack.exception</a></code></li>
+        <li><code><a title="shaystack.providers" href="providers/index.html">shaystack.providers</a></code></li>
+        <li><code><a href="tools.html" title="shaystack.tools">shaystack.tools</a></code></li>
+        <li><code><a href="triodumper.html" title="shaystack.triodumper">shaystack.triodumper</a></code></li>
+        <li><code><a href="trioparser.html" title="shaystack.trioparser">shaystack.trioparser</a></code></li>
+        <li><code><a title="shaystack.type" href="type.html">shaystack.type</a></code></li>
+    </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">

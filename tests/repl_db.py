@@ -10,9 +10,9 @@ from urllib.parse import urlparse
 import pytz
 
 from shaystack.providers import get_provider
+from shaystack.providers.db import Provider as DBProvider
 from shaystack.providers.db_postgres import _sql_filter as pg_sql_filter
 from shaystack.providers.db_sqlite import _sql_filter as sqlite_sql_filter
-from shaystack.providers.sql import Provider as SQLProvider
 
 FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
@@ -21,8 +21,8 @@ def main():
     """Loop to test the postgres generation with REPL"""
     if "HAYSTACK_DB" not in os.environ:
         os.environ["HAYSTACK_DB"] = "sqlite3:///:memory:"
-    provider = get_provider("shaystack.providers.sql")
-    conn = cast(SQLProvider, provider).get_connect()
+    provider = get_provider("shaystack.providers.db")
+    conn = cast(DBProvider, provider).get_connect()
     scheme = urlparse(os.environ["HAYSTACK_DB"]).scheme
 
     class TstRequest(cmd.Cmd):

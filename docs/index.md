@@ -470,7 +470,6 @@ See [LICENCE](LICENSE) file
 
 - [ ] MySQL
 - [ ] MongoDB
-- [ ] Cassandra
 - [ ] Implements watch in GraphQL
 - [ ] Implements *write* in GraphQL
 - [ ] A version with FastAPI

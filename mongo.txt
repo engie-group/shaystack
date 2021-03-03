@@ -1,0 +1,7 @@
+# Mongo
+
+- Injection d'un _id pour chaque objet
+
+- Il est possible d'avoir une validation du schéma. Sympa d'ajouter cela pour
+les tags standards par exemple, avec un flag pour le comportement en cas de violation.
+- Voir les shardkey (https://docs.mongodb.com/manual/sharding/)

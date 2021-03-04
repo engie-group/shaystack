@@ -21,7 +21,7 @@ from .sqldb_protocol import DBCursor
 from .. import parse_filter, jsondumper, Quantity, Ref
 from ..filter_ast import FilterPath, FilterBinary, FilterUnary, FilterNode
 
-log = logging.getLogger("sql.Provider")
+log = logging.getLogger("db.Provider")
 
 
 class _Root(ABC):  # pylint: disable=missing-module-docstring

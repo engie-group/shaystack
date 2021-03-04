@@ -6,7 +6,6 @@ from shaystack.ops import HaystackHttpRequest
 from shaystack.providers import ping
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch('shaystack.providers.haystack_interface.no_cache')
 @patch.object(ping.Provider, 'about')
 def test_about_with_zinc(mock, no_cache) -> None:
@@ -16,6 +15,7 @@ def test_about_with_zinc(mock, no_cache) -> None:
         mock:
         no_cache:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     no_cache.return_value = True
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
@@ -24,7 +24,7 @@ def test_about_with_zinc(mock, no_cache) -> None:
     request.headers["Accept"] = mime_type
 
     # WHEN
-    response = shaystack.about(request, "dev")
+    response = shaystack.about(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with("https://localhost/dev")
@@ -33,7 +33,6 @@ def test_about_with_zinc(mock, no_cache) -> None:
     assert shaystack.parse(response.body, mime_type) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch('shaystack.providers.haystack_interface.no_cache')
 @patch.object(ping.Provider, 'about')
 def test_about_without_headers(mock, no_cache) -> None:
@@ -43,6 +42,7 @@ def test_about_without_headers(mock, no_cache) -> None:
         mock:
         no_cache:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     no_cache.return_value = True
     mock.return_value = Grid(columns=["a"])
     mock.return_value.append({"a": 1})
@@ -50,7 +50,7 @@ def test_about_without_headers(mock, no_cache) -> None:
     request = HaystackHttpRequest()
 
     # WHEN
-    response = shaystack.about(request, "dev")
+    response = shaystack.about(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with("https://localhost/dev")
@@ -59,7 +59,6 @@ def test_about_without_headers(mock, no_cache) -> None:
     assert shaystack.parse(response.body, mime_type) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch('shaystack.providers.haystack_interface.no_cache')
 @patch.object(ping.Provider, 'about')
 def test_about_with_multivalues_headers(mock, no_cache) -> None:
@@ -69,6 +68,7 @@ def test_about_with_multivalues_headers(mock, no_cache) -> None:
         mock:
         no_cache:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     no_cache.return_value = True
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
@@ -76,7 +76,7 @@ def test_about_with_multivalues_headers(mock, no_cache) -> None:
     request.headers["Accept"] = "text/zinc, application/json"
 
     # WHEN
-    response = shaystack.about(request, "dev")
+    response = shaystack.about(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with("https://localhost/dev")

@@ -359,6 +359,10 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """
         return self.pop(key)
 
+    def clear(self):
+        self._row = []
+        self._index = None
+
     @property
     def version(self) -> Version:  # pragma: no cover
         """ The haystack version of grid """

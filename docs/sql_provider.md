@@ -1,8 +1,9 @@
 #### SQL Provider
 
 This provider use an ontology imported in SQL database. Each entity is saved in a row in the JSON format.
-Use `HAYSTACK_PROVIDER=shaytack.providers.sql` to use this provider. Add the variable `HAYSTACK_DB` to describe the link
-to the root table. At this time, only SuperSQLite and Postgresql was supported.
+Use `HAYSTACK_PROVIDER=shaytack.providers.db` or `HAYSTACK_PROVIDER=shaytack.providers.sql`
+to use this provider. Add the variable `HAYSTACK_DB` to describe the link to the root table. At this time, only
+SuperSQLite and Postgresql was supported.
 
 ```console
 $ pip install 'shaystack[graphql,lambda]'

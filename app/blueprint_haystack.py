@@ -48,7 +48,8 @@ def flask_about() -> Response:
     Returns:
         Flask HTTP response
     """
-    return _as_response(about(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
+    envs = os.environ
+    return _as_response(about(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
 @haystack_blueprint.route('/ops', methods=['POST', 'GET'])
@@ -57,7 +58,8 @@ def flask_ops() -> Response:
     Returns:
         Flask HTTP response
     """
-    return _as_response(ops(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
+    envs = os.environ
+    return _as_response(ops(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
 @haystack_blueprint.route('/formats', methods=['POST', 'GET'])
@@ -66,7 +68,8 @@ def flask_formats() -> Response:
     Returns:
         Flask HTTP response
     """
-    return _as_response(formats(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
+    envs = os.environ
+    return _as_response(formats(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
 @haystack_blueprint.route('/read', methods=['POST', 'GET'])
@@ -75,7 +78,8 @@ def flask_read() -> Response:
     Returns:
         Flask HTTP response
     """
-    return _as_response(read(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
+    envs = os.environ
+    return _as_response(read(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
 @haystack_blueprint.route('/nav', methods=['POST', 'GET'])
@@ -84,7 +88,8 @@ def flask_nav() -> Response:
     Returns:
         Flask HTTP response
     """
-    return _as_response(nav(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
+    envs = os.environ
+    return _as_response(nav(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
 @haystack_blueprint.route('/watchSub', methods=['POST', 'GET'])
@@ -93,7 +98,8 @@ def flask_watch_sub() -> Response:
     Returns:
         Flask HTTP response
     """
-    return _as_response(watch_sub(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
+    envs = os.environ
+    return _as_response(watch_sub(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
 @haystack_blueprint.route('/watchUnsub', methods=['POST', 'GET'])
@@ -102,8 +108,9 @@ def flask_watch_unsub() -> Response:
     Returns:
         Flask HTTP response
     """
-    return _as_response(watch_unsub(_as_request(flash_request),
-                                    os.environ.get("FLASK_ENV", "prod")))
+    envs = os.environ
+    return _as_response(watch_unsub(envs, _as_request(flash_request),
+                                    envs.get("FLASK_ENV", "prod")))
 
 
 @haystack_blueprint.route('/watchPoll', methods=['POST', 'GET'])
@@ -112,7 +119,8 @@ def flask_watch_poll() -> Response:
     Returns:
         Flask HTTP response
     """
-    return _as_response(watch_poll(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
+    envs = os.environ
+    return _as_response(watch_poll(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
 @haystack_blueprint.route('/pointWrite', methods=['POST', 'GET'])
@@ -121,8 +129,9 @@ def flask_point_write() -> Response:
     Returns:
         Flask HTTP response
     """
-    return _as_response(point_write(_as_request(flash_request),
-                                    os.environ.get("FLASK_ENV", "prod")))
+    envs = os.environ
+    return _as_response(point_write(envs, _as_request(flash_request),
+                                    envs.get("FLASK_ENV", "prod")))
 
 
 @haystack_blueprint.route('/hisRead', methods=['POST', 'GET'])
@@ -131,7 +140,8 @@ def flask_his_read() -> Response:
     Returns:
         Flask HTTP response
     """
-    return _as_response(his_read(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
+    envs = os.environ
+    return _as_response(his_read(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
 @haystack_blueprint.route('/hisWrite', methods=['POST', 'GET'])
@@ -140,7 +150,8 @@ def flask_his_write() -> Response:
     Returns:
         Flask HTTP response
     """
-    return _as_response(his_write(_as_request(flash_request), os.environ.get("FLASK_ENV", "prod")))
+    envs = os.environ
+    return _as_response(his_write(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
 @haystack_blueprint.route('/invokeAction', methods=['POST', 'GET'])
@@ -149,8 +160,9 @@ def flask_invoke_action() -> Response:
     Returns:
         Flask HTTP response
     """
-    return _as_response(invoke_action(_as_request(flash_request),
-                                      os.environ.get("FLASK_ENV", "prod")))
+    envs = os.environ
+    return _as_response(invoke_action(envs, _as_request(flash_request),
+                                      envs.get("FLASK_ENV", "prod")))
 
 
 @haystack_blueprint.route('/', methods=['GET'], defaults={'filename': 'index.html'})

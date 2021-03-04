@@ -12,7 +12,7 @@ def client_graphql():
             with_ids:entities(ids:["@p:demo:r:23a44701-3a62fd7a"] select:"id,dis" )
             entities(filter:"id==@p:demo:r:23a44701-3a62fd7a" select:"id,dis" )
             histories(ids:["@p:demo:r:23a44701-3a62fd7a"],
-              datesRange:"2020-02-01,2020-04-01"
+              datesRange:"2020-07-01,2021-12-01"
               version:"2021-01-01T00:00:00 UTC") { ts  float }
           }
         }

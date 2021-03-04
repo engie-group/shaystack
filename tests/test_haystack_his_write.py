@@ -9,7 +9,6 @@ from shaystack.ops import HaystackHttpRequest, DEFAULT_MIME_TYPE
 from shaystack.providers import ping
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'his_write')
 def test_his_write_with_zinc(mock):
     # GIVEN
@@ -17,6 +16,7 @@ def test_his_write_with_zinc(mock):
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
@@ -27,7 +27,7 @@ def test_his_write_with_zinc(mock):
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.his_write(request, "dev")
+    response = shaystack.his_write(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with(None, grid, None)
@@ -36,7 +36,6 @@ def test_his_write_with_zinc(mock):
     assert shaystack.parse(response.body, mime_type) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'his_write')
 def test_his_write_with_args(mock):
     # GIVEN
@@ -44,6 +43,7 @@ def test_his_write_with_args(mock):
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     time_serie = [
         (datetime(2020, 1, 1, tzinfo=pytz.utc).isoformat() + " UTC", 100),
         (datetime(2020, 1, 2, tzinfo=pytz.utc).isoformat() + " UTC", 200)]
@@ -54,7 +54,7 @@ def test_his_write_with_args(mock):
     request.args['ts'] = str(time_serie)
 
     # WHEN
-    response = shaystack.his_write(request, "dev")
+    response = shaystack.his_write(envs, request, "dev")
 
     # THEN
     result_ts = Grid(version=VER_3_0, columns=["date", "val"])

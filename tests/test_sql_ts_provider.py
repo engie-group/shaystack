@@ -13,8 +13,8 @@ from shaystack.providers.db_timestream import Provider as DBTSProvider
 
 # Set HAYSTACK_DB variable, before running the tests to validate with another database
 # HAYSTACK_DB = 'postgresql://postgres:password@172.17.0.2:5432/postgres#haystack'
-HAYSTACK_DB = os.environ.get("HAYSTACK_DB", 'sqlite3:///:memory:#haystack')
-HAYSTACK_TS = os.environ.get("HAYSTACK_TS", 'timestream://HaystackDemo/?mem_ttl=8766&mag_ttl=400#haystack')
+HAYSTACK_DB = os.environ.get("_HAYSTACK_DB", 'sqlite3:///:memory:#haystack')
+HAYSTACK_TS = os.environ.get("_HAYSTACK_TS", 'timestream://HaystackDemo/?mem_ttl=8766&mag_ttl=400#haystack')
 
 FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
@@ -22,20 +22,26 @@ log = logging.getLogger("sql_ts.Provider")
 
 
 @attr('aws')
-@patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
-@patch.dict('os.environ', {'HAYSTACK_TS': HAYSTACK_TS})
 def test_create_db():
-    with cast(DBTSProvider, get_provider("shaystack.providers.db_timestream")) as provider:
+    envs = {'HAYSTACK_DB': HAYSTACK_DB,
+            'HAYSTACK_TS': HAYSTACK_TS,
+            'AWS_PROFILE': os.environ['AWS_PROFILE'],
+            'AWS_REGION': os.environ['AWS_REGION']
+            }
+    with cast(DBTSProvider, get_provider("shaystack.providers.db_timestream", envs)) as provider:
         provider.create_db()
 
 
 @attr('aws')
-@patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
-@patch.dict('os.environ', {'HAYSTACK_TS': HAYSTACK_TS})
 @patch.object(DBTSProvider, 'get_customer_id')
 def test_import_ts_grid_in_db_and_his_read(mock):
     mock.return_value = "customer"
-    with cast(DBTSProvider, get_provider("shaystack.providers.db_timestream")) as provider:
+    envs = {'HAYSTACK_DB': HAYSTACK_DB,
+            'HAYSTACK_TS': HAYSTACK_TS,
+            'AWS_PROFILE': os.environ['AWS_PROFILE'],
+            'AWS_REGION': os.environ['AWS_REGION']
+            }
+    with cast(DBTSProvider, get_provider("shaystack.providers.db_timestream", envs)) as provider:
         values = [
             (XStr("hex", "deadbeef"), "Str"),
             ("100", "Str"),
@@ -64,7 +70,7 @@ def test_import_ts_grid_in_db_and_his_read(mock):
             grid = Grid(columns=["id", "kind"])
             grid.append({"id": entity_id, "kind": kind})  # Without "kind", the default is "Number" or "float"
             version = datetime.datetime.now(tz=pytz.UTC)
-            provider.update_grid_in_db(diff_grid=grid, version=version, customer_id="customer")
+            provider.update_grid(diff_grid=grid, version=version, customer_id="customer")
 
             # WARNING: timestream accept only datetime in the memory retention period.
             # Not before and not after.
@@ -74,18 +80,22 @@ def test_import_ts_grid_in_db_and_his_read(mock):
 
             # You must use utcnow() and a retention
             grid.append({"ts": datetime.datetime.utcnow(), "val": val})
-            provider.import_ts_in_db(grid, entity_id, "customer", FAKE_NOW)
+
+            provider._import_ts_in_db(grid, entity_id, "customer", FAKE_NOW)
             grid_ts = provider.his_read(entity_id, parse_date_range("today", provider.get_tz()), None)
             assert grid_ts[0]['val'] == val, f"with kind={kind} and val={val}"
 
 
 @attr('aws')
-@patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
-@patch.dict('os.environ', {'HAYSTACK_TS': HAYSTACK_TS})
 @patch.object(DBTSProvider, 'get_customer_id')
 def test_import_ts_grid_in_db_with_a_lot_of_records(mock):
     mock.return_value = "customer"
-    with cast(DBTSProvider, get_provider("shaystack.providers.db_timestream")) as provider:
+    envs = {'HAYSTACK_DB': HAYSTACK_DB,
+            'HAYSTACK_TS': HAYSTACK_TS,
+            'AWS_PROFILE': os.environ['AWS_PROFILE'],
+            'AWS_REGION': os.environ['AWS_REGION']
+            }
+    with cast(DBTSProvider, get_provider("shaystack.providers.db_timestream", envs)) as provider:
         # Check TS with all types
         entity_id = Ref("abc")
 
@@ -94,7 +104,7 @@ def test_import_ts_grid_in_db_with_a_lot_of_records(mock):
         grid = Grid(columns=["id", "kind"])
         grid.append({"id": entity_id, "kind": "Number"})  # Without "kind", the default is "Number" or "float"
         version = datetime.datetime.now(tz=pytz.UTC)
-        provider.update_grid_in_db(diff_grid=grid, version=version, customer_id="customer")
+        provider.update_grid(diff_grid=grid, version=version, customer_id="customer")
 
         # WARNING: timestream accept only datetime in the memory retention period.
         # Not before and not after.
@@ -107,13 +117,16 @@ def test_import_ts_grid_in_db_with_a_lot_of_records(mock):
         # You must use utcnow() and a retention
         for i in range(0, 200):
             grid.append({"ts": datetime.datetime.utcnow().replace(microsecond=i * 1000), "val": i})
-        provider.import_ts_in_db(grid, entity_id, "customer", FAKE_NOW)
+        provider._import_ts_in_db(grid, entity_id, "customer", FAKE_NOW)
 
 
 @attr('aws')
-@patch.dict('os.environ', {'HAYSTACK_DB': HAYSTACK_DB})
-@patch.dict('os.environ', {'HAYSTACK_TS': HAYSTACK_TS})
 def test_about():
-    with get_provider("shaystack.providers.db_timestream") as provider:
+    envs = {'HAYSTACK_DB': HAYSTACK_DB,
+            'HAYSTACK_TS': HAYSTACK_TS,
+            'AWS_PROFILE': os.environ['AWS_PROFILE'],
+            'AWS_REGION': os.environ['AWS_REGION']
+            }
+    with get_provider("shaystack.providers.db_timestream", envs) as provider:
         result = provider.about("http://localhost")
         assert result[0]['moduleName'] == 'SQLProvider'

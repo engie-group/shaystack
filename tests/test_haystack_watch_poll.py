@@ -6,7 +6,6 @@ from shaystack.ops import HaystackHttpRequest
 from shaystack.providers import ping
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'watch_poll')
 def test_watch_poll_with_zinc(mock) -> None:
     # GIVEN
@@ -14,6 +13,7 @@ def test_watch_poll_with_zinc(mock) -> None:
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
@@ -28,7 +28,7 @@ def test_watch_poll_with_zinc(mock) -> None:
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.watch_poll(request, "dev")
+    response = shaystack.watch_poll(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with("0123456789ABCDEF", True)
@@ -37,7 +37,6 @@ def test_watch_poll_with_zinc(mock) -> None:
     assert shaystack.parse(response.body, shaystack.MODE_ZINC) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'watch_poll')
 def test_watch_poll_with_args(mock) -> None:
     # GIVEN
@@ -45,6 +44,7 @@ def test_watch_poll_with_args(mock) -> None:
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
@@ -53,7 +53,7 @@ def test_watch_poll_with_args(mock) -> None:
     request.args["refresh"] = True
 
     # WHEN
-    response = shaystack.watch_poll(request, "dev")
+    response = shaystack.watch_poll(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with("0123456789ABCDEF", True)

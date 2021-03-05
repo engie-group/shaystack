@@ -6,7 +6,6 @@ from shaystack.ops import HaystackHttpRequest, Ref, VER_3_0
 from shaystack.providers import ping
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'watch_sub')
 def test_watch_sub_with_zinc(mock):
     # GIVEN
@@ -14,6 +13,7 @@ def test_watch_sub_with_zinc(mock):
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = Grid(version=VER_3_0,
                              metadata={"watchId": "0123456789ABCDEF", "lease": 1},
                              columns=["empty"])
@@ -30,7 +30,7 @@ def test_watch_sub_with_zinc(mock):
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.watch_sub(request, "dev")
+    response = shaystack.watch_sub(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with("myWatch", "myid", [Ref("id1"), Ref("id2")], 1)
@@ -39,7 +39,6 @@ def test_watch_sub_with_zinc(mock):
     assert shaystack.parse(response.body, shaystack.MODE_ZINC) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'watch_sub')
 def test_watch_sub_with_args(mock):
     # GIVEN
@@ -47,6 +46,7 @@ def test_watch_sub_with_args(mock):
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = Grid(version=VER_3_0,
                              metadata={"watchId": "0123456789ABCDEF", "lease": 1},
                              columns=["empty"])
@@ -61,7 +61,7 @@ def test_watch_sub_with_args(mock):
     request.args["ids"] = str(ids)
 
     # WHEN
-    response = shaystack.watch_sub(request, "dev")
+    response = shaystack.watch_sub(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with("myWatch", "myid", [Ref("id1"), Ref("id2")], 1)

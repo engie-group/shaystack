@@ -3,8 +3,8 @@ from io import BytesIO
 
 import pytz
 
-from shaystack import Grid, MODE_ZINC, parse, dump
-from shaystack.providers.import_s3 import merge_timeseries
+from shaystack import Grid, MODE_ZINC, dump
+from shaystack.providers.url import merge_timeseries
 
 
 def _get_mock_s3():
@@ -37,8 +37,7 @@ def test_merge_timeseries_with_same_ts():
     ts = Grid(columns=["ts", "value"])
     ts.append({"ts": datetime(2020, 1, 1, 0, 0, 2, 0, tzinfo=pytz.UTC),
                "value": 100})
-    data, _ = merge_timeseries(ts, ts, MODE_ZINC, compress=False)
-    result_grid = parse(data.decode("UTF8"), MODE_ZINC)
+    result_grid = merge_timeseries(ts, ts)
     assert ts == result_grid
 
 
@@ -47,39 +46,36 @@ def test_merge_timeseries_with_diff_ts_same_values():
     destination.append({"ts": datetime(2020, 1, 1, 0, 0, 2, 0, tzinfo=pytz.UTC),
                         "value": 100})
     source = destination.copy()
-    data, _ = merge_timeseries(source, destination, MODE_ZINC, compress=False)
-    result_grid = parse(data.decode("UTF8"), MODE_ZINC)
+    result_grid = merge_timeseries(source, destination)
     assert source == result_grid
 
 
 def test_merge_timeseries_source_overflow():
-    destination = Grid(columns=["ts", "value"])
-    destination.append({"ts": datetime(2020, 2, 1, 0, 0, 2, 0, tzinfo=pytz.UTC),
-                        "value": 100})
     source = Grid(columns=["ts", "value"])
-    source.extend(
+    source.append({"ts": datetime(2020, 2, 1, 0, 0, 2, 0, tzinfo=pytz.UTC),
+                   "value": 100})
+    destination = Grid(columns=["ts", "value"])
+    destination.extend(
         [
             {"ts": datetime(2020, 1, 1, 0, 0, 2, 0, tzinfo=pytz.UTC), "value": 100},
             {"ts": datetime(2020, 3, 1, 0, 0, 2, 0, tzinfo=pytz.UTC), "value": 100},
         ])
-    data, _ = merge_timeseries(source, destination, MODE_ZINC, compress=False)
-    result_grid = parse(data.decode("UTF8"), MODE_ZINC)
-    assert source == result_grid
+    result_grid = merge_timeseries(source, destination)
+    assert destination == result_grid
 
 
 def test_merge_timeseries_olds_values():
     """The destination has old data. Reinject the history"""
-    destination = Grid(columns=["ts", "value"])
-    destination.append(
+    source = Grid(columns=["ts", "value"])
+    source.append(
         {"ts": datetime(2020, 1, 1, 0, 0, 2, 0, tzinfo=pytz.UTC), "value": 100}
     )
-    source = Grid(columns=["ts", "value"])
-    source.extend(
+    destination = Grid(columns=["ts", "value"])
+    destination.extend(
         [
             {"ts": datetime(2020, 2, 1, 0, 0, 2, 0, tzinfo=pytz.UTC), "value": 100},
             {"ts": datetime(2020, 3, 1, 0, 0, 2, 0, tzinfo=pytz.UTC), "value": 100},
         ])
-    data, _ = merge_timeseries(source, destination, MODE_ZINC, compress=False)
     expected_grid = Grid(columns=["ts", "value"])
     expected_grid.extend(
         [
@@ -88,5 +84,5 @@ def test_merge_timeseries_olds_values():
             {"ts": datetime(2020, 3, 1, 0, 0, 2, 0, tzinfo=pytz.UTC), "value": 100},
         ]
     )
-    result_grid = parse(data.decode("UTF8"), MODE_ZINC)
+    result_grid = merge_timeseries(source, destination)
     assert result_grid == expected_grid

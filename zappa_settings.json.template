@@ -13,7 +13,6 @@
       "LOG_LEVEL": "${LOGLEVEL}",
       "TLS_VERIFY": "${TLS_VERIFY}",
       "HAYSTACK_PROVIDER": "${HAYSTACK_PROVIDER}",
-      "HAYSTACK_URL": "${HAYSTACK_URL}"
       "HAYSTACK_DB": "${HAYSTACK_DB}"
       "HAYSTACK_TS": "${HAYSTACK_TS}"
     },

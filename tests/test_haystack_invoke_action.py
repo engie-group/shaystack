@@ -6,7 +6,6 @@ from shaystack.ops import HaystackHttpRequest
 from shaystack.providers import ping
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'invoke_action')
 def test_invoke_action_with_zinc(mock) -> None:
     # GIVEN
@@ -14,6 +13,7 @@ def test_invoke_action_with_zinc(mock) -> None:
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
@@ -25,7 +25,7 @@ def test_invoke_action_with_zinc(mock) -> None:
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.invoke_action(request, "dev")
+    response = shaystack.invoke_action(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with(Ref("123"), "doIt", {})
@@ -34,7 +34,6 @@ def test_invoke_action_with_zinc(mock) -> None:
     assert shaystack.parse(response.body, shaystack.MODE_ZINC) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'invoke_action')
 def test_invoke_action_without_params_with_zinc(mock):
     # GIVEN
@@ -42,6 +41,7 @@ def test_invoke_action_without_params_with_zinc(mock):
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
@@ -52,7 +52,7 @@ def test_invoke_action_without_params_with_zinc(mock):
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.invoke_action(request, "dev")
+    response = shaystack.invoke_action(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with(Ref("123"), "doIt", {})

@@ -10,9 +10,9 @@ Add the persistance of time-series with TS database.
 Set the HAYSTACK_TS with Time-series database connection URL,
 (timestream://HaystackDemo/?mem_ttl=1&mag_ttl=100#haystack)
 """
-import os
 from datetime import datetime, date, time
-from typing import Optional, Tuple, Callable, Any
+from os.path import dirname
+from typing import Optional, Tuple, Callable, Any, Dict
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
 
@@ -23,8 +23,9 @@ from botocore.client import BaseClient
 from botocore.config import Config
 from overrides import overrides
 
-from .db import Provider as DBProvider
 from .db import log
+from .sql import Provider as SQLProvider
+from .url import read_grid_from_uri
 from ..datatypes import Ref, MARKER, REMOVE, Coordinate, Quantity, NA, XStr
 from ..grid import Grid
 
@@ -85,7 +86,7 @@ def _delete_table(client: BaseClient,
         pass  # Ignore
 
 
-class Provider(DBProvider):
+class Provider(SQLProvider):
     """
     Expose an Haystack data via the Haystack Rest API and SQL+TS databases
     """
@@ -94,8 +95,8 @@ class Provider(DBProvider):
     def name(self) -> str:
         return "SQL+timeseries"
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, envs: Dict[str, str]):
+        super().__init__(envs)
         log.info("Use %s", self._get_ts())
         self._parsed_ts = urlparse(self._get_ts())
         self._ts_table_name = self._parsed_ts.fragment
@@ -113,35 +114,36 @@ class Provider(DBProvider):
 
     def _get_ts(self) -> str:  # pylint: disable=no-self-use
         """ Return the url to the file to expose. """
-        return os.environ["HAYSTACK_TS"]
+        return self._envs["HAYSTACK_TS"]
 
     def _get_write_client(self):
         if not self._write_client:
-            region = os.environ.get("AWS_REGION",
-                                    os.environ.get("AWS_DEFAULT_REGION"))
+            region = self._envs.get("AWS_REGION",
+                                    self._envs.get("AWS_DEFAULT_REGION"))
             self._write_client = self._get_boto().client('timestream-write',
                                                          region_name=region,
                                                          config=Config(read_timeout=10,
                                                                        max_pool_connections=5000,
-                                                                       retries={'max_attempts': 3}
+                                                                       retries={'max_attempts': 3},
+                                                                       region_name=self._envs["AWS_REGION"],
                                                                        )
                                                          )
         return self._write_client
 
     def _get_read_client(self):
         if not self._read_client:
-            region = os.environ.get("AWS_REGION",
-                                    os.environ.get("AWS_DEFAULT_REGION"))
+            region = self._envs.get("AWS_REGION",
+                                    self._envs.get("AWS_DEFAULT_REGION"))
             self._read_client = self._get_boto().client('timestream-query',
                                                         region_name=region)
         return self._read_client
 
-    @overrides
-    def import_ts_in_db(self, time_series: Grid,
-                        entity_id: Ref,
-                        customer_id: Optional[str],
-                        now: Optional[datetime] = None
-                        ) -> None:
+    # @overrides
+    def _import_ts_in_db(self, time_series: Grid,
+                         entity_id: Ref,
+                         customer_id: Optional[str],
+                         now: Optional[datetime] = None
+                         ) -> None:
         client = self._get_write_client()
         try:
             if not time_series:
@@ -300,11 +302,6 @@ class Provider(DBProvider):
         return Provider._kind_type[kind.lower()]
 
     @overrides
-    def create_db(self) -> None:
-        super().create_db()
-        self.create_ts()
-
-    @overrides
     def his_read(
             self,
             entity_id: Ref,
@@ -366,6 +363,30 @@ class Provider(DBProvider):
         _delete_table(self._get_write_client(), self._ts_database_name, self._ts_table_name)
 
     @overrides
+    def create_db(self) -> None:
+        super().create_db()
+        self.create_ts()
+
+    @overrides
     def purge_db(self) -> None:
         super().purge_db()
         self.purge_ts()
+
+    @overrides
+    def import_ts(self,
+                  source_uri: str,
+                  customer_id: str = '',
+                  version: Optional[datetime] = None
+                  ):
+        target_grid = read_grid_from_uri(source_uri, envs=self._envs)
+        dir_name = dirname(source_uri)
+        if not version:
+            version = datetime.now(tz=pytz.UTC)
+
+        for row in target_grid:
+            if "hisURI" in row:
+                assert "id" in row, "TS must have an id"
+                uri = dir_name + '/' + row['hisURI']
+                ts_grid = read_grid_from_uri(uri, envs=self._envs)
+                self._import_ts_in_db(ts_grid, row["id"], customer_id, version)
+                log.debug("%s imported", uri)

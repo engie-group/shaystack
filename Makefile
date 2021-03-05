@@ -10,9 +10,8 @@ endif
 
 # You can change the password in .env
 PRJ?=shaystack
-HAYSTACK_PROVIDER?=shaystack.providers.url
-HAYSTACK_URL?=sample/carytown.zinc
-HAYSTACK_DB?=sqlite3:///:memory:#haystack
+HAYSTACK_PROVIDER?=shaystack.providers.db
+HAYSTACK_DB?=sample/carytown.zinc
 REFRESH=15
 USE_OKTA?=N
 AWS_PROFILE?=default
@@ -72,7 +71,6 @@ AWS_SECRET_KEY=$(shell aws configure --profile $(AWS_PROFILE) get aws_secret_acc
 # Export all project variables
 export PRJ
 export HAYSTACK_PROVIDER
-export HAYSTACK_URL
 export HAYSTACK_DB
 export LOGLEVEL
 export AWS_PROFILE
@@ -193,7 +191,6 @@ dump-%:
 ## Print project variables
 dump-params:
 	@echo -e "$(green)HAYSTACK_PROVIDER=$(HAYSTACK_PROVIDER)$(normal)"
-	echo -e "$(green)HAYSTACK_URL=$(HAYSTACK_URL)$(normal)"
 	echo -e "$(green)HAYSTACK_DB=$(HAYSTACK_DB)$(normal)"
 	echo -e "$(green)AWS_PROFILE=$(AWS_PROFILE)$(normal)"
 	echo -e "$(green)STAGE=$(STAGE)$(normal)"
@@ -292,7 +289,6 @@ ifeq ($(USE_OKTA),Y)
 endif
 	echo -e "$(cyan)Install binary dependencies ...$(normal)"
 	conda install -y -c conda-forge conda setuptools compilers make git jq libpq curl psycopg2
-	pip install gitflow
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	pip install supersqlite
 	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"
@@ -404,7 +400,6 @@ start-api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	[ -e .start/start-api.pid ] && $(MAKE) async-stop-api || true
 	echo -e "$(green)PROVIDER=$${HAYSTACK_PROVIDER}"
-	echo -e "$(green)URL=$${HAYSTACK_URL}"
 	echo -e "$(green)DB=$${HAYSTACK_DB}"
 	echo -e "$(green)TS=$${HAYSTACK_TS}"
 	echo -e "$(green)Use http://$(HOST_API):$(PORT)/graphql or http://$(HOST_API):$(PORT)/haystack$(normal)"
@@ -616,15 +611,15 @@ test: .make-test
 	echo -e "$(green)AWS tests done$(normal)"
 	date >.make-test-aws
 
-## Run only test with connection with AWS
+## Run only tests with connection with AWS
 test-aws: .make-test-aws
 
 
 # Test local deployment with URL provider
 functional-url-local: $(REQUIREMENTS)
 	@$(MAKE) async-stop-api >/dev/null
-	export HAYSTACK_PROVIDER=shaystack.providers.url
-	export HAYSTACK_URL=sample/carytown.zinc
+	export HAYSTACK_PROVIDER=shaystack.providers.db
+	export HAYSTACK_DB=sample/carytown.zinc
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with url serveur and local file OK$(normal)"
@@ -633,8 +628,8 @@ functional-url-local: $(REQUIREMENTS)
 # Test local deployment with URL provider
 functional-url-s3: $(REQUIREMENTS) aws-update-token
 	@$(MAKE) async-stop-api >/dev/null
-	export HAYSTACK_PROVIDER=shaystack.providers.url
-	export HAYSTACK_URL=s3://haystackapi/carytown.zinc
+	export HAYSTACK_PROVIDER=shaystack.providers.db
+	export HAYSTACK_DB=s3://haystackapi/carytown.zinc
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with url serveur and s3 file OK$(normal)"
@@ -647,7 +642,7 @@ functional-db-sqlite: $(REQUIREMENTS)
 	rm -f test.db
 	export HAYSTACK_PROVIDER=shaystack.providers.db
 	export HAYSTACK_DB=sqlite3://localhost/test.db
-	$(CONDA_PYTHON) -m shaystack.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
+	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in SQLite$(normal)"
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
@@ -663,7 +658,7 @@ functional-db-sqlite-ts: $(REQUIREMENTS)
 	export HAYSTACK_DB=sqlite3://localhost/test.db
 	export HAYSTACK_TS=timestream://HaystackDemo?mem_ttl=8760&mag_ttl=400
 	export LOG_LEVEL=INFO
-	$(CONDA_PYTHON) -m shaystack.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB} $${HAYSTACK_TS}
+	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB} $${HAYSTACK_TS}
 	echo -e "$(green)Data imported in SQLite and Time stream$(normal)"
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
@@ -678,7 +673,7 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 	PG_IP=$(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres)
 	export HAYSTACK_PROVIDER=shaystack.providers.db
 	export HAYSTACK_DB=postgres://postgres:password@$$PG_IP:5432/postgres
-	$(CONDA_PYTHON) -m shaystack.providers.import_db --clean sample/carytown.zinc $${HAYSTACK_DB}
+	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in Postgres$(normal)"
 	$(MAKE) start-pg async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
@@ -787,19 +782,40 @@ stop-pgadmin:
 	@docker stop pgadmin 2>/dev/null >/dev/null || true
 	echo -e "$(green)PGAdmin stopped$(normal)"
 
+# ------------- Mongo database
+## Start Mongo database in background
+start-mongodb:
+	@docker start mongodb || docker run \
+		--name mongodb \
+		--hostname mongodb \
+		-p 27017-27019:27017-27019 \
+		-d mongodb
+	echo -e "$(yellow)MongoDB started$(normal)"
+
+## Stop mongo database
+stop-mongodb:
+	@docker stop mongodb 2>/dev/null >/dev/null || true
+	echo -e "$(green)MongoDB stopped$(normal)"
+
+## Start Mongo CI
+mongo: start-mongodb
+	docker exec -it mongodb mongo mongodb://localhost/haystack
+
+# Start shell in mongodo docker container
+mongodb-shell:
+	docker exec -it mongodb bash
+
 # --------------------------- Docker
 ## Build a Docker image with the project and current Haystack parameter (see `make dump-params`)
 docker-build:
 	@echo "Build image with"
 	echo -e "$(green)PROVIDER=$${HAYSTACK_PROVIDER}"
-	echo -e "$(green)URL=$${HAYSTACK_URL}"
 	echo -e "$(green)DB=$${HAYSTACK_DB}"
 	echo -e "$(green)TS=$${HAYSTACK_TS}"
 	echo -e "$(green)Use http://$(HOST_API):$(PORT)/graphql or http://$(HOST_API):$(PORT)/haystack$(normal)"
 	@docker build \
 		--build-arg PORT='$(PORT)' \
 		--build-arg HAYSTACK_PROVIDER='$(HAYSTACK_PROVIDER)' \
-		--build-arg HAYSTACK_URL='$(HAYSTACK_URL)' \
 		--build-arg HAYSTACK_DB='$(HAYSTACK_DB)' \
 		--build-arg HAYSTACK_TS='$(HAYSTACK_TS)' \
 		--build-arg HAYSTACK_DB_SECRET='$(HAYSTACK_DB_SECRET)' \

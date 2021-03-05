@@ -5,7 +5,6 @@ from shaystack.ops import HaystackHttpRequest
 from shaystack.providers import ping
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'formats')
 def test_formats_with_zinc(mock):
     # GIVEN
@@ -13,6 +12,7 @@ def test_formats_with_zinc(mock):
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
@@ -21,7 +21,7 @@ def test_formats_with_zinc(mock):
     # apigw_event["body"] = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.formats(request, "dev")
+    response = shaystack.formats(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with()

@@ -6,7 +6,6 @@ from shaystack.ops import HaystackHttpRequest
 from shaystack.providers import ping
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'nav')
 def test_nav_with_zinc(mock):
     # GIVEN
@@ -14,6 +13,7 @@ def test_nav_with_zinc(mock):
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
@@ -24,7 +24,7 @@ def test_nav_with_zinc(mock):
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.nav(request, "dev")
+    response = shaystack.nav(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with("01235456789ABCDEF")

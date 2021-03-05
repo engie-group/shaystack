@@ -3,6 +3,10 @@
         <module name="haystack-api"/>
         <option name="INTERPRETER_OPTIONS" value=""/>
         <option name="PARENT_ENVS" value="true"/>
+        <envs>
+            <env name="AWS_PROFILE" value="shaystack"/>
+            <env name="AWS_REGION" value="eu-east-3"/>
+        </envs>
         <option name="SDK_HOME" value=""/>
         <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$"/>
         <option name="IS_MODULE_SDK" value="true"/>

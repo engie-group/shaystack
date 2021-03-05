@@ -58,8 +58,8 @@ Then, you can start a local Flash server:
 
 ```console
 $ # Demo
-$ HAYSTACK_PROVIDER=shaystack.providers.url \
-  HAYSTACK_URL=s3://${MY_BUCKET}/carytown.zinc \
+$ HAYSTACK_PROVIDER=shaystack.providers.db \
+  HAYSTACK_DB=s3://${MY_BUCKET}/carytown.zinc \
   shaystack
 ```
 
@@ -80,16 +80,15 @@ and create a file `zappa_settings.json` with something like this:
     "aws_environment_variables": {
       "LOG_LEVEL": "INFO",
       "TLS_VERIFY": "False",
-      "HAYSTACK_PROVIDER": "shaystack.providers.url",
-      "HAYSTACK_URL": "s3://haystackapi/carytown.zinc",
-      "HAYSTACK_DB": "",
+      "HAYSTACK_PROVIDER": "shaystack.providers.db",
+      "HAYSTACK_DB": "s3://haystackapi/carytown.zinc",
       "HAYSTACK_TS": ""
     }
   }
 }
 ```        
 
-Update the parameter values like `project_name`, `s3_bucket` or `HAYSTACK_URL`.
+Update the parameter values like `project_name`, `s3_bucket` or `HAYSTACK_DB`.
 
 Then, use [zappa](https://github.com/Miserlou/Zappa) to deploy.
 

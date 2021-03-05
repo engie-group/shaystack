@@ -10,7 +10,6 @@ from shaystack.ops import HaystackHttpRequest, DEFAULT_MIME_TYPE
 from shaystack.providers import ping
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch('shaystack.providers.haystack_interface.no_cache')
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_zinc(mock, no_cache) -> None:
@@ -20,6 +19,7 @@ def test_his_read_with_zinc(mock, no_cache) -> None:
         mock:
         no_cache:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     no_cache.return_value = True
     mime_type = shaystack.MODE_ZINC
@@ -31,7 +31,7 @@ def test_his_read_with_zinc(mock, no_cache) -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.his_read(request, "dev")
+    response = shaystack.his_read(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with(Ref("1234"),
@@ -42,7 +42,6 @@ def test_his_read_with_zinc(mock, no_cache) -> None:
     assert shaystack.parse(response.body, mime_type) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_args(mock) -> None:
     # GIVEN
@@ -50,13 +49,14 @@ def test_his_read_with_args(mock) -> None:
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     mime_type = DEFAULT_MIME_TYPE
     request = HaystackHttpRequest()
     request.args['id'] = str(Ref("1234"))
 
     # WHEN
-    response = shaystack.his_read(request, "dev")
+    response = shaystack.his_read(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with(Ref("1234"),
@@ -68,7 +68,6 @@ def test_his_read_with_args(mock) -> None:
     assert shaystack.parse(response.body, mime_type) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_range_today(mock) -> None:
     # GIVEN
@@ -76,6 +75,7 @@ def test_his_read_with_range_today(mock) -> None:
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
@@ -86,7 +86,7 @@ def test_his_read_with_range_today(mock) -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.his_read(request, "dev")
+    response = shaystack.his_read(envs, request, "dev")
 
     # THEN
     today = datetime.combine(date.today(), datetime.min.time()).replace(tzinfo=get_localzone())
@@ -99,7 +99,6 @@ def test_his_read_with_range_today(mock) -> None:
     assert shaystack.parse(response.body, mime_type) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_range_yesterday(mock) -> None:
     # GIVEN
@@ -107,6 +106,7 @@ def test_his_read_with_range_yesterday(mock) -> None:
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
@@ -117,7 +117,7 @@ def test_his_read_with_range_yesterday(mock) -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.his_read(request, "dev")
+    response = shaystack.his_read(envs, request, "dev")
 
     # THEN
     yesterday = datetime.combine(date.today() - timedelta(days=1), datetime.min.time()) \
@@ -129,7 +129,6 @@ def test_his_read_with_range_yesterday(mock) -> None:
     assert shaystack.parse(response.body, mime_type) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_range_two_datetime(mock) -> None:
     # GIVEN
@@ -137,6 +136,7 @@ def test_his_read_with_range_two_datetime(mock) -> None:
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
@@ -149,7 +149,7 @@ def test_his_read_with_range_two_datetime(mock) -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.his_read(request, "dev")
+    response = shaystack.his_read(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with(Ref("1234"), (datetime_1, datetime_2), None)
@@ -158,7 +158,6 @@ def test_his_read_with_range_two_datetime(mock) -> None:
     assert shaystack.parse(response.body, mime_type) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_range_one_datetime(mock) -> None:
     # GIVEN
@@ -166,6 +165,7 @@ def test_his_read_with_range_one_datetime(mock) -> None:
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
@@ -177,7 +177,7 @@ def test_his_read_with_range_one_datetime(mock) -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.his_read(request, "dev")
+    response = shaystack.his_read(envs, request, "dev")
 
     # THEN
     cur_datetime = datetime.combine(datetime_1, datetime.min.time()).replace(tzinfo=pytz.UTC)
@@ -190,7 +190,6 @@ def test_his_read_with_range_one_datetime(mock) -> None:
     assert shaystack.parse(response.body, mime_type) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_range_two_date(mock) -> None:
     # GIVEN
@@ -198,6 +197,7 @@ def test_his_read_with_range_two_date(mock) -> None:
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
@@ -210,7 +210,7 @@ def test_his_read_with_range_two_date(mock) -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.his_read(request, "dev")
+    response = shaystack.his_read(envs, request, "dev")
 
     # THEN
     mock.assert_called_once_with(Ref("1234"),
@@ -224,7 +224,6 @@ def test_his_read_with_range_two_date(mock) -> None:
     assert shaystack.parse(response.body, mime_type) is not None
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch.object(ping.Provider, 'his_read')
 def test_his_read_with_range_one_date(mock) -> None:
     # GIVEN
@@ -232,6 +231,7 @@ def test_his_read_with_range_one_date(mock) -> None:
     Args:
         mock:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mock.return_value = ping._PingGrid
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
@@ -243,7 +243,7 @@ def test_his_read_with_range_one_date(mock) -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.his_read(request, "dev")
+    response = shaystack.his_read(envs, request, "dev")
 
     # THEN
     cur_datetime = datetime.combine(date_1, datetime.min.time()).replace(tzinfo=get_localzone())

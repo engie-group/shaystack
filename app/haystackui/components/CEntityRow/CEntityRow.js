@@ -135,7 +135,7 @@ export default {
       return dataHisTable
     },
     displayHisTableData() {
-      return this.dataHisTable.length > 0
+      return this.hisTableValues.length > 0
     },
     dataEntityKeys() {
       return Object.keys(this.dataEntity)

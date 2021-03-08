@@ -219,14 +219,14 @@ by extending `shaystack.providers.HaystackInterface`
 
 |Where is data stored|Shell command|Miscellaneous|
 |---|---|---|
-|No data, just testing|`HAYSTACK_PROVIDER=shaystack.providers.ping shaystack`||
-|Data on http server|`HAYSTACK_PROVIDER=shaystack.providers.db HAYSTACK_DB=http://... shaystack`|[More...](url_provider.md)|
-|Data on ftp server|`HAYSTACK_PROVIDER=shaystack.providers.db HAYSTACK_DB=ftp://... shaystack`|[More...](url_provider.md)|
-|Data on local filesystem|`HAYSTACK_PROVIDER=shaystack.providers.db HAYSTACK_DB=file://... shaystack`|[More...](url_provider.md)|
-|Data on AWS S3 Bucket|`HAYSTACK_PROVIDER=shaystack.providers.db HAYSTACK_DB=s3://... shaystack`|Remember to install aws support and boto3 python module. [More...](url_provider.md)|
-|Data in a SuperSQLite database|`HAYSTACK_PROVIDER=shaystack.providers.db HAYSTACK_DB=sqlite3://... shaystack`|Remember to install supersqlite python module. [More...](url_provider.md)|
-|Data in a Postgresql database|`HAYSTACK_PROVIDER=shaystack.providers.db HAYSTACK_DB=postgres://... shaystack`|Remember to install psycopg2 python module. [More...](url_provider.md)|
-|Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.db_timestream HAYSTACK_DB=postgres://... HAYSTACK_TS=timestream:://... shaystack`|[More...](sql_ts_provider.md)|
+|No data, just testing|`HAYSTACK_PROVIDER=shaystack.providers.ping\<br /> shaystack`||
+|Data on http server|`HAYSTACK_PROVIDER=shaystack.providers.db\<br />HAYSTACK_DB=http://...\<br /> shaystack`|[More...](url_provider.md)|
+|Data on ftp server|`HAYSTACK_PROVIDER=shaystack.providers.db\<br />HAYSTACK_DB=ftp://...\<br /> shaystack`|[More...](url_provider.md)|
+|Data on local filesystem|`HAYSTACK_PROVIDER=shaystack.providers.db\<br />HAYSTACK_DB=file://...\<br /> shaystack`|[More...](url_provider.md)|
+|Data on AWS S3 Bucket|`HAYSTACK_PROVIDER=shaystack.providers.db\<br />HAYSTACK_DB=s3://...\<br /> shaystack`|Remember to install aws support and boto3 python module. [More...](url_provider.md)|
+|Data in a SuperSQLite database|`HAYSTACK_PROVIDER=shaystack.providers.db\<br />HAYSTACK_DB=sqlite3://...\<br /> shaystack`|Remember to install supersqlite python module. [More...](sql_provider.md)|
+|Data in a Postgresql database|`HAYSTACK_PROVIDER=shaystack.providers.db\<br />HAYSTACK_DB=postgres://...\<br /> shaystack`|Remember to install psycopg2 python module. [More...](sql_provider.md)|
+|Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.db_timestream\<br />HAYSTACK_DB=postgres://...\<br />HAYSTACK_TS=timestream:://...\<br /> shaystack`|[More...](sql_ts_provider.md)|
 |Custom|`HAYSTACK_PROVIDER=shaystack.providers.<your module name>`|Write your own subclass of `shaystack.providers.HaystackInterface shaystack`.|
 
 Note: Existing providers are not connected to IOT for simplicity. If you want to connect the haystack API with IOT, you

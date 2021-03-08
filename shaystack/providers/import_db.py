@@ -48,7 +48,7 @@ def import_in_db(source_uri: str,  # pylint: disable=too-many-arguments
             envs: Environement (like os.environ)
     """
     envs["HAYSTACK_DB"] = destination_uri
-    provider_name = "shaystack.providers.sql"
+    provider_name = "shaystack.providers.db"
     if ts_uri:
         envs["HAYSTACK_TS"] = ts_uri
         provider_name = "shaystack.providers.db_timestream"
@@ -88,6 +88,9 @@ def aws_handler(event, context):
                  version=None,
                  envs=envs)
 
+
+# TODO: vérifier TS dans la doc et ajouter <br />
+# TODO: mutualiser import
 
 @click.command(short_help='Import haystack file in database')
 @click.argument('source_uri',

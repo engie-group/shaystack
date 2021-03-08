@@ -27,7 +27,7 @@ shaystack_import_db <haystack file url> <db url>
 You can use the parameters:
 
 * `--customer` to set the customer id for all imported records
-* `--clean` to clean the oldest versions before import a new one
+* `--reset` to clean the oldest versions before import a new one
 * `--no-time-series` if you don't want to import the time-series referenced in `hisURI` tags'
 
 To demonstrate the usage with sqlite,

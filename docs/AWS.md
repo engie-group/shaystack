@@ -16,17 +16,17 @@ To export the haystacks files in a bucket, you must create one. If you add the _
 update the files, and use the API to read an older version. The extended parameter `Version` in each request may be used
 to ask some data, visible at a specific date.
 
-You can use `shaystack_import_s3` to import a Haystack file in s3 bucket, only if the file is modified
+You can use `shaystack_import_db` to import a Haystack file in s3 bucket, only if the file is modified
 (to respect the notion of _Version_ with this provider).
 
 ```bash
-shaystack_import_s3 <haystack file url> <s3 url>
+shaystack_import_db <haystack file url> <db url>
 ```
 
 The corresponding `hisURI` time-series files are uploaded too. The current values before the first version of the new
 file are added to maintain the history.
 
-Set AWS profile before to use this tool.
+To import in s3 bucket, set the AWS profile before to use this tool.
 
 ```console
 $ export AWS_PROFILE=default
@@ -43,14 +43,14 @@ $ export MY_BUCKET=<your bucket name>
 You can import the datas inside this bucket
 
 ```console
-$ shaystack_import_s3 sample/carytown.zinc "s3://${MY_BUCKET}"
+$ shaystack_import_db sample/carytown.zinc "s3://${MY_BUCKET}"
 ```
 
 You can use the parameters:
 
-* `--no-compare` if you don't want to download the remote version and compare with the new version to detect an update
+* `--customer` to set the customer id for all imported records
 * `--no-time-series` if you don't want to upload the time-series referenced in `hisURI` tags'
-* `--force` to force the upload, and create a new version for all files in the bucket.
+* `--reset` to force the upload, and create a new version for all files in the bucket.
 
 If the source and target are in different buckets in the same region, the copy was done from bucket to bucket.
 

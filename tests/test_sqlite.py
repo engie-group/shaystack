@@ -20,7 +20,8 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 # If .env set the HAYSTACK_DB to postgres, check to execute the sql request
 def _check_sqlite(sql_request: str) -> None:
     if os.environ.get('HAYSTACK_DB', '').startswith("sqlite"):
-        provider = cast(SQLProvider, get_provider("shaystack.providers.sql"))
+        envs = {'HAYSTACK_DB': os.environ['HAYSTACK_DB']}
+        provider = cast(SQLProvider, get_provider("shaystack.providers.db", envs))
         conn = provider.get_connect()
         try:
             conn.execute(sql_request)

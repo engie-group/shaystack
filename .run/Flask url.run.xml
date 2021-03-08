@@ -6,8 +6,8 @@
         <envs>
             <env name="FLASK_DEBUG" value="1"/>
             <env name="FLASK_ENV" value="dev"/>
-            <env name="HAYSTACK_PROVIDER" value="shaystack.providers.url"/>
-            <env name="HAYSTACK_URL" value="sample/carytown.zinc"/>
+            <env name="HAYSTACK_PROVIDER" value="shaystack.providers.db"/>
+            <env name="HAYSTACK_DB" value="sample/carytown.zinc"/>
             <env name="LOG_LEVEL" value="DEBUG"/>
         </envs>
         <option name="SDK_HOME" value=""/>

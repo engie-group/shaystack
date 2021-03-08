@@ -47,6 +47,10 @@ class HaystackInterface(ABC):
     the 'ops' code detect that, and can calculate the set of implemented operations.
     """
 
+    def __init__(self, envs: Dict[str, str]):
+        assert envs is not None
+        self._envs = envs
+
     @property
     @abstractmethod
     def name(self) -> str:
@@ -130,7 +134,7 @@ class HaystackInterface(ABC):
             {
                 "haystackVersion": str(VER_3_0),
                 "tz": str(self.get_tz()),
-                "serverName": "haystack_" + os.environ.get("AWS_REGION", "local"),
+                "serverName": "haystack_" + self._envs.get("AWS_REGION", "local"),
                 "serverTime": datetime.now(tz=self.get_tz()).replace(microsecond=0),
                 "serverBootTime": datetime.now(tz=self.get_tz()).replace(
                     microsecond=0
@@ -410,6 +414,88 @@ class HaystackInterface(ABC):
         raise NotImplementedError()
 
 
+class DBHaystackInterface(HaystackInterface):
+    """
+    Extension of HaystackInterface to add methods to manages database.
+    """
+
+    @abstractmethod
+    def create_db(self) -> None:
+        """
+        Create the database and schema.
+        """
+
+    @abstractmethod
+    def purge_db(self) -> None:
+        """ Purge the current database. """
+
+    @abstractmethod
+    def import_data(self,
+                    source_uri: str,
+                    customer_id: str = '',
+                    reset: bool = False,
+                    version: Optional[datetime] = None
+                    ) -> None:
+        """
+        Import source URI to destination URI.
+        Args:
+            source_uri: The source URI.
+            customer_id: The current customer id to inject in each records.
+            import_time_series: True to import the time-series references via `hisURI` tag
+            reset: Remove all the current data before import the grid.
+            compare: Compare current version and new version to update the delta
+            version: The associated version time.
+        """
+
+    @abstractmethod
+    def import_ts(self,
+                  source_uri: str,
+                  customer_id: str = '',
+                  version: Optional[datetime] = None
+                  ):
+        """
+        Import only TS.
+        Args:
+            source_uri: The source URI.
+            customer_id: The current customer id to inject in each records.
+            version: version to save
+
+        """
+
+    # @abstractmethod
+    # def update_grid(self,
+    #                 diff_grid: Grid,
+    #                 version: Optional[datetime],
+    #                 customer_id: Optional[str],
+    #                 now: Optional[datetime] = None) -> None:
+    #     """Import the diff_grid inside the database.
+    #     Args:
+    #         diff_grid: The difference to apply in database.
+    #         version: The version to save.
+    #         customer_id: The customer id to insert in each row.
+    #         now: The pseudo 'now' datetime.
+    #     """
+    #     pass
+
+    # @abstractmethod
+    # def import_ts_in_db(self,
+    #                     time_series: Grid,
+    #                     entity_id: Ref,
+    #                     customer_id: Optional[str],
+    #                     now: Optional[datetime] = None
+    #                     ) -> None:
+    #     """
+    #     Import the Time series inside the database.
+    #
+    #     Args:
+    #         time_series: The time-serie grid.
+    #         entity_id: The corresponding entity.
+    #         customer_id: The current customer id.
+    #         now: The pseudo 'now' datetime.
+    #     """
+    #     pass
+
+
 _providers = {}
 
 
@@ -418,7 +504,8 @@ def no_cache():
     return False
 
 
-def get_provider(class_str: str) -> HaystackInterface:
+def get_provider(class_str: str, envs: Union[Dict[str, str], os._Environ]  # pylint: disable=protected-access
+                 ) -> HaystackInterface:
     """Return an instance of the provider.
     If the provider is an abstract class, create a sub class with all the implementation
     and return an instance of this subclass. Then, the 'ops' method can analyse the current instance
@@ -426,6 +513,7 @@ def get_provider(class_str: str) -> HaystackInterface:
 
     Args:
         class_str: The name of the module that contains the provider.
+        envs: Environement variable (os.env ?)
 
     Returns:
         A instance of this subclass if it exists
@@ -443,8 +531,8 @@ def get_provider(class_str: str) -> HaystackInterface:
     # Then, it's possible to generate the Ops operator dynamically
     # pylint: disable=missing-function-docstring,useless-super-delegation
     class FullInterface(provider_class):  # pylint: disable=missing-class-docstring
-        def __init__(self):
-            super().__init__()
+        def __init__(self, envs: Dict[str, str]):
+            provider_class.__init__(self, envs)
 
         def name(self) -> str:
             return super().name()
@@ -527,14 +615,15 @@ def get_provider(class_str: str) -> HaystackInterface:
         ) -> Grid:
             return super().invoke_action(entity_id, action, params)
 
-    _providers[class_str] = FullInterface()
+    _providers[class_str] = FullInterface(envs)
     return _providers[class_str]
 
 
 SINGLETON_PROVIDER = None
 
 
-def get_singleton_provider() -> HaystackInterface:
+def get_singleton_provider(envs: Union[Dict[str, str], os._Environ]  # pylint: disable=protected-access
+                           ) -> HaystackInterface:
     """
     Return the current provider, deduce from the `HAYSTACK_PROVIDER` variable.
     Returns:
@@ -542,11 +631,11 @@ def get_singleton_provider() -> HaystackInterface:
     """
     global SINGLETON_PROVIDER  # pylint: disable=global-statement
     assert (
-            "HAYSTACK_PROVIDER" in os.environ
+            "HAYSTACK_PROVIDER" in envs
     ), "Set 'HAYSTACK_PROVIDER' environment variable"
     if not SINGLETON_PROVIDER or no_cache():
-        log.debug("Provider=%s", os.environ["HAYSTACK_PROVIDER"])
-        SINGLETON_PROVIDER = get_provider(os.environ["HAYSTACK_PROVIDER"])
+        log.debug("Provider=%s", envs["HAYSTACK_PROVIDER"])
+        SINGLETON_PROVIDER = get_provider(envs["HAYSTACK_PROVIDER"], envs)
     return SINGLETON_PROVIDER
 
 

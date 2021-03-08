@@ -5,9 +5,6 @@
         <option name="PARENT_ENVS" value="true"/>
         <envs>
             <env name="PYTHONUNBUFFERED" value="1"/>
-            <env name="FLASK_DEBUG" value="1"/>
-            <env name="FLASK_ENV" value="dev"/>
-            <env name="HAYSTACK_PROVIDER" value="shaystack.providers.sql_ts"/>
             <env name="LOG_LEVEL" value="DEBUG"/>
             <env name="HAYSTACK_DB" value="sqlite:///test.db#haystack"/>
             <env name="HAYSTACK_DB_SECRET" value="alpha-Haystack"/>
@@ -20,7 +17,7 @@
         <option name="ADD_SOURCE_ROOTS" value="true"/>
         <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py"/>
         <EXTENSION ID="net.ashald.envfile">
-            <option name="IS_ENABLED" value="false"/>
+            <option name="IS_ENABLED" value="true"/>
             <option name="IS_SUBST" value="false"/>
             <option name="IS_PATH_MACRO_SUPPORTED" value="false"/>
             <option name="IS_IGNORE_MISSING_FILES" value="false"/>

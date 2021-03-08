@@ -25,7 +25,8 @@ area.
 Haystack core data model is the Grid, it can be serialized in many formats,
 mainly [Zinc](https://www.project-haystack.org/doc/Zinc),
 [Trio](https://www.project-haystack.org/doc/Trio)
-[Json](https://www.project-haystack.org/doc/Json), and [Csv](https://www.project-haystack.org/doc/Csv)
+[Json](https://www.project-haystack.org/doc/Json)
+and [Csv](https://www.project-haystack.org/doc/Csv)
 
 ## About this project
 
@@ -166,7 +167,7 @@ and you can extend these proposed scenario. You can see below, how to install th
 This implementation can offer two API endpoints:
 
 - Classical [REST Haystack](https://www.project-haystack.org/doc/Rest)
-  - Available on `http://<host>:<port>/haystack`
+    - Available on `http://<host>:<port>/haystack`
 - GraphQL
     - Available on `http://<host>:<port>/graphql` and compliant
       with [`schema.graphql`](https://github.com/pprados/shaystack/blob/develop/schema.graphql)
@@ -177,6 +178,7 @@ This API can negotiate:
 - Response format (`Accept: text/zinc, text/trio, application/json, text/csv`)
 
 These [operations](https://project-haystack.org/doc/Rest) are implemented in both endpoints:
+
 - [about](https://project-haystack.org/doc/Ops#about)
 - [ops](https://project-haystack.org/doc/Ops#ops)
 - [formats](https://project-haystack.org/doc/Ops#formats)
@@ -187,6 +189,7 @@ These [operations](https://project-haystack.org/doc/Rest) are implemented in bot
 
 These [operations](https://project-haystack.org/doc/Rest) are implemented only in classical endpoint, with real-time
 datas:
+
 - [watchSub](https://project-haystack.org/doc/Ops#watchSub)
 - [watchUnsub](https://project-haystack.org/doc/Ops#watchUnsub)
 - [watchPoll](https://project-haystack.org/doc/Ops#watchPoll)
@@ -214,20 +217,20 @@ You can mix two or more options, if you need them all, use `pip install "shaysta
 Depending on where and how your haystack data is stored, you need to choose an existing Provider or implement your own
 by extending `shaystack.providers.HaystackInterface`
 
-|Where is data stored|Configuration|Miscellaneous|
+|Where is data stored|Shell command|Miscellaneous|
 |---|---|---|
 |No data, just testing|`HAYSTACK_PROVIDER=shaystack.providers.ping shaystack`||
-|Data on http server|`HAYSTACK_PROVIDER=shaystack.providers.url HAYSTACK_URL=http://... shaystack`|[More...](url_provider.md)|
-|Data on ftp server|`HAYSTACK_PROVIDER=shaystack.providers.url HAYSTACK_URL=ftp://... shaystack`|[More...](url_provider.md)|
-|Data on local filesystem|`HAYSTACK_PROVIDER=shaystack.providers.url HAYSTACK_URL=file://... shaystack`|[More...](url_provider.md)|
-|Data on AWS S3 Bucket|`HAYSTACK_PROVIDER=shaystack.providers.url HAYSTACK_URL=s3://... shaystack`|Remember to install aws support and boto3 python module. [More...](url_provider.md)|
-|Data in a SuperSQLite database|`HAYSTACK_PROVIDER=shaystack.providers.sql HAYSTACK_URL=sqlite3://... shaystack`|Remember to install supersqlite python module. [More...](url_provider.md)|
-|Data in a Postgresql database|`HAYSTACK_PROVIDER=shaystack.providers.sql HAYSTACK_URL=postgres://... shaystack`|Remember to install psycopg2 python module. [More...](url_provider.md)|
-|Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.sql_ts HAYSTACK_URL=postgres://... HAYSTACK_TS=timestream:://... shaystack`|[More...](sql_ts_provider.md)|
-|Custom|`HAYSTACK_PROVIDER=shaystack.providers.<your module name>`|Write your own subclass of `shaystack.providers.HaystackInterface shaystack`. Non implemented methods will be automatically excluded in [`ops`](https://project-haystack.org/doc/Ops#ops) operation output|
+|Data on http server|`HAYSTACK_PROVIDER=shaystack.providers.db HAYSTACK_DB=http://... shaystack`|[More...](url_provider.md)|
+|Data on ftp server|`HAYSTACK_PROVIDER=shaystack.providers.db HAYSTACK_DB=ftp://... shaystack`|[More...](url_provider.md)|
+|Data on local filesystem|`HAYSTACK_PROVIDER=shaystack.providers.db HAYSTACK_DB=file://... shaystack`|[More...](url_provider.md)|
+|Data on AWS S3 Bucket|`HAYSTACK_PROVIDER=shaystack.providers.db HAYSTACK_DB=s3://... shaystack`|Remember to install aws support and boto3 python module. [More...](url_provider.md)|
+|Data in a SuperSQLite database|`HAYSTACK_PROVIDER=shaystack.providers.db HAYSTACK_DB=sqlite3://... shaystack`|Remember to install supersqlite python module. [More...](url_provider.md)|
+|Data in a Postgresql database|`HAYSTACK_PROVIDER=shaystack.providers.db HAYSTACK_DB=postgres://... shaystack`|Remember to install psycopg2 python module. [More...](url_provider.md)|
+|Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.db_timestream HAYSTACK_DB=postgres://... HAYSTACK_TS=timestream:://... shaystack`|[More...](sql_ts_provider.md)|
+|Custom|`HAYSTACK_PROVIDER=shaystack.providers.<your module name>`|Write your own subclass of `shaystack.providers.HaystackInterface shaystack`.|
 
-Note: Existing providers are not connected to IOT for simplicity.
-If you want to connect the haystack API with IOT, you must implement a custom provider. 
+Note: Existing providers are not connected to IOT for simplicity. If you want to connect the haystack API with IOT, you
+must implement a custom provider.
 
 ### Starting the server
 
@@ -253,8 +256,8 @@ $ # Demo
 $ # - Install components
 $ pip install 'shaystack[graphql]'
 $ # - Expose haystack with GraphQL API
-$ HAYSTACK_PROVIDER=shaystack.providers.url \
-  HAYSTACK_URL=sample/carytown.zinc \
+$ HAYSTACK_PROVIDER=shaystack.providers.db \
+  HAYSTACK_DB=sample/carytown.zinc \
   shaystack
 ```
 
@@ -288,8 +291,8 @@ $ # Demo
 $ # - Install components
 $ pip install 'shaystack[graphql]'
 $ # - Expose haystack with GraphQL API
-$ HAYSTACK_PROVIDER=shaystack.providers.url \
-  HAYSTACK_URL=sample/carytown.zinc \
+$ HAYSTACK_PROVIDER=shaystack.providers.db \
+  HAYSTACK_DB=sample/carytown.zinc \
   shaystack
 ```
 
@@ -360,6 +363,7 @@ This parameter must have the datetime when you want to ask the ontology. The res
 of these data at this time.
 
 To return only some tag, it's possible to add a parameter `select` in `read` request.
+
 ```python
 grid.select("id,dis")
 grid.select("!hisURL")
@@ -383,9 +387,8 @@ $ # Build the image
 $ docker build -t shaystack .
 $ # Run and customize the image
 $ docker run -p 3000:3000 \
-  -e HAYSTACK_PROVIDER=shaystack.providers.url \
-  -e HAYSTACK_URL=https://haystackapi.s3.eu-west-3.amazonaws.com/carytown.zinc \
-  -e HAYSTACK_DB=sqlite:///test.db#haystack \
+  -e HAYSTACK_PROVIDER=shaystack.providers.db \
+  -e HAYSTACK_DB=https://haystackapi.s3.eu-west-3.amazonaws.com/carytown.zinc \
   -e HAYSTACK_DB_SECRET= \
   -e REFRESH=15 \
   shaystack 
@@ -470,7 +473,6 @@ See [LICENCE](LICENSE) file
 
 - [ ] MySQL
 - [ ] MongoDB
-- [ ] Cassandra
 - [ ] Implements watch in GraphQL
 - [ ] Implements *write* in GraphQL
 - [ ] A version with FastAPI

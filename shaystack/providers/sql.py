@@ -20,10 +20,10 @@ import base64
 import importlib
 import json
 import logging
-import os
 import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from os.path import dirname
 from types import ModuleType
 from typing import Optional, Tuple, Dict, Any, List, Callable, Set, cast
 from urllib.parse import urlparse, ParseResult
@@ -31,8 +31,9 @@ from urllib.parse import urlparse, ParseResult
 import pytz
 from overrides import overrides
 
-from .haystack_interface import HaystackInterface
+from .haystack_interface import DBHaystackInterface
 from .sqldb_protocol import DBConnection
+from .url import read_grid_from_uri
 from .. import HaystackException
 from ..datatypes import Ref
 from ..grid import Grid
@@ -110,7 +111,7 @@ def _fix_dialect_alias(dialect: str) -> str:
     return dialect
 
 
-class Provider(HaystackInterface):
+class Provider(DBHaystackInterface):
     """
     Expose an Haystack data via the Haystack Rest API and SQL databases
     """
@@ -119,7 +120,8 @@ class Provider(HaystackInterface):
     def name(self) -> str:
         return "SQL"
 
-    def __init__(self):
+    def __init__(self, envs: Dict[str, str]):
+        DBHaystackInterface.__init__(self, envs)
         self._connect = None
         log.info("Use %s", self._get_db())
         self._parsed_db = urlparse(self._get_db())
@@ -134,30 +136,7 @@ class Provider(HaystackInterface):
 
     def _get_db(self) -> str:  # pylint: disable=no-self-use
         """ Return the url to the file to expose. """
-        return os.environ["HAYSTACK_DB"]
-
-    def create_db(self) -> None:
-        """
-        Create the database and schema.
-        """
-        conn = self.get_connect()
-        # with conn.cursor() as cursor:
-        cursor = conn.cursor()
-        try:
-            # Create table
-            cursor.execute(self._sql["CREATE_HAYSTACK_TABLE"])
-            # Create index
-            cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_1"])  # On id
-            cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_2"])  # On Json, for @> operator
-            # Create table
-            cursor.execute(self._sql["CREATE_METADATA_TABLE"])
-            # Create ts table
-            cursor.execute(self._sql["CREATE_TS_TABLE"])
-            cursor.execute(self._sql["CREATE_TS_INDEX"])  # On id
-            # Save (commit) the changes
-            conn.commit()
-        finally:
-            cursor.close()
+        return self._envs["HAYSTACK_DB"]
 
     @overrides
     def values_for_tag(self, tag: str,
@@ -358,11 +337,11 @@ class Provider(HaystackInterface):
         if not _BOTO3_AVAILABLE:
             return "secretManager"
 
-        secret_name = os.environ['HAYSTACK_DB_SECRET']
+        secret_name = self._envs['HAYSTACK_DB_SECRET']
         session = boto3.session.Session()
         client = session.client(
             service_name='secretsmanager',
-            region_name=os.environ["AWS_REGION"]
+            region_name=self._envs["AWS_REGION"]
         )
 
         try:
@@ -437,10 +416,42 @@ class Provider(HaystackInterface):
             return get_postgres_parameters(table_name)
         raise ValueError("Dialog not implemented")
 
-    def read_grid_from_db(self,
-                          customer: Optional[str],
-                          version: Optional[datetime]) -> Grid:
-        """ Read haystack data from database and return a Grid"""
+    # -----------------------------------------
+    @overrides
+    def create_db(self) -> None:
+        """
+        Create the database and schema.
+        """
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            # Create table
+            cursor.execute(self._sql["CREATE_HAYSTACK_TABLE"])
+            # Create index
+            cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_1"])  # On id
+            cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_2"])  # On Json, for @> operator
+            # Create table
+            cursor.execute(self._sql["CREATE_METADATA_TABLE"])
+            # Create ts table
+            cursor.execute(self._sql["CREATE_TS_TABLE"])
+            cursor.execute(self._sql["CREATE_TS_INDEX"])  # On id
+            # Save (commit) the changes
+            conn.commit()
+        finally:
+            cursor.close()
+
+    def read_grid(self,
+                  customer_id: str = '',
+                  version: Optional[datetime] = None) -> Grid:
+        """
+        Read all haystack data for a specific custimer, from the database and return a Grid.
+        Args:
+            customer_id: The customer_id date to read
+            version: version to load
+        Returns:
+            A grid with all data for a customer
+        """
         if version is None:
             version = datetime.max.replace(tzinfo=pytz.UTC, microsecond=0)
         conn = self.get_connect()
@@ -450,7 +461,7 @@ class Provider(HaystackInterface):
             sql_type_to_json = self._sql_type_to_json
 
             cursor.execute(self._sql["SELECT_META_DATA"],
-                           (version, customer))
+                           (version, customer_id))
             grid = Grid(version=VER_3_0)
             row = cursor.fetchone()
             if row:
@@ -459,7 +470,7 @@ class Provider(HaystackInterface):
                 _parse_cols(grid, sql_type_to_json(cols), VER_3_0)
 
             cursor.execute(self._sql["SELECT_ENTITY"],
-                           (version, customer))
+                           (version, customer_id))
 
             for row in cursor:
                 grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
@@ -469,8 +480,11 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
+    @overrides
     def purge_db(self) -> None:
-        """ Purge the current database. """
+        """ Purge the current database.
+        All the datas was removed.
+        """
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -482,11 +496,11 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
-    def update_grid_in_db(self,
-                          diff_grid: Grid,
-                          version: Optional[datetime],
-                          customer_id: Optional[str],
-                          now: Optional[datetime] = None) -> None:
+    def update_grid(self,
+                    diff_grid: Grid,
+                    version: Optional[datetime],
+                    customer_id: Optional[str],
+                    now: Optional[datetime] = None) -> None:
         """Import the diff_grid inside the database.
         Args:
             diff_grid: The difference to apply in database.
@@ -531,7 +545,7 @@ class Provider(HaystackInterface):
                                )
                 log.debug("Update metadatas")
 
-            for row in diff_grid:
+            for row in diff_grid:  # PPR: use a batch
                 assert "id" in row, "Can import only entity with id"
                 sql_id = row["id"].name
                 cursor.execute(self._sql["CLOSE_ENTITY"],
@@ -559,12 +573,59 @@ class Provider(HaystackInterface):
         finally:
             cursor.close()
 
-    def import_ts_in_db(self,
-                        time_series: Grid,
-                        entity_id: Ref,
-                        customer_id: Optional[str],
-                        now: Optional[datetime] = None
-                        ) -> None:
+    def import_data(self,  # pylint: disable=too-many-arguments
+                    source_uri: str,
+                    customer_id: str = '',
+                    reset: bool = False,
+                    version: Optional[datetime] = None
+                    ) -> None:
+        """
+        Import source URI to database.
+        Args:
+                source_uri: The source URI.
+                import_time_series: True to import the time-series references via `hisURI` tag
+                reset: Remove all the current data before import the grid.
+                version: The associated version time.
+        """
+        if not version:
+            version = datetime.now(tz=pytz.UTC)
+        try:
+            if not customer_id:
+                customer_id = self.get_customer_id()
+            if reset:
+                self.purge_db()
+            self.create_db()
+            original_grid = self.read_grid(customer_id, version)
+            target_grid = read_grid_from_uri(source_uri, envs=self._envs)
+            self.update_grid(target_grid - original_grid, version, customer_id)
+            log.debug("%s imported", source_uri)
+
+        except ModuleNotFoundError as ex:
+            log.error("Call `pip install` "
+                      "with the database driver - %s", ex.msg)  # type: ignore[attribute-error]
+
+    @overrides
+    def import_ts(self,
+                  source_uri: str,
+                  customer_id: str = '',
+                  version: Optional[datetime] = None
+                  ):
+        target_grid = read_grid_from_uri(source_uri, envs=self._envs)
+        dir_name = dirname(source_uri)
+        for row in target_grid:
+            if "hisURI" in row:
+                assert "id" in row, "TS must have an id"
+                uri = dir_name + '/' + row['hisURI']
+                ts_grid = read_grid_from_uri(uri, envs=self._envs)
+                self._import_ts_in_db(ts_grid, row["id"], customer_id)
+                log.debug("%s imported", uri)
+
+    def _import_ts_in_db(self,
+                         time_series: Grid,
+                         entity_id: Ref,
+                         customer_id: Optional[str],
+                         now: Optional[datetime] = None
+                         ) -> None:
         """
         Import the Time series inside the database.
 

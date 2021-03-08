@@ -9,7 +9,7 @@
 """
 A sortable dictionary
 """
-import collections as col
+import collections.abc as col
 import copy
 import sys
 from typing import Callable, Any, Optional, Dict, Iterator, Union, List, Tuple

@@ -1,8 +1,7 @@
 FROM python:3
 
 ARG PORT=3000
-ARG HAYSTACK_PROVIDER=shaystack.providers.url
-ARG HAYSTACK_URL=sample/carytown.zinc
+ARG HAYSTACK_PROVIDER=shaystack.providers.db
 ARG HAYSTACK_DB=sqlite:///test.db#haystack
 ARG HAYSTACK_TS=
 ARG HAYSTACK_DB_SECRET=
@@ -22,7 +21,6 @@ RUN pip install "shaystack[flask,graphql,lambda]"
 COPY sample sample
 
 ENV HAYSTACK_PROVIDER=${HAYSTACK_PROVIDER}
-ENV HAYSTACK_URL=${HAYSTACK_URL}
 ENV HAYSTACK_DB=${HAYSTACK_DB}
 ENV HAYSTACK_TS=${HASYTACK_TS}
 ENV HAYSTACK_DB_SECRET=${HAYSTACK_DB_SECRET}

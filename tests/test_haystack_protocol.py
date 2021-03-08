@@ -6,7 +6,6 @@ from shaystack.ops import HaystackHttpRequest
 from shaystack.providers.haystack_interface import HttpError
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch('shaystack.providers.haystack_interface.no_cache')
 def test_negociation_with_zinc(no_cache) -> None:
     # GIVEN
@@ -14,6 +13,7 @@ def test_negociation_with_zinc(no_cache) -> None:
     Args:
         no_cache:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     no_cache.return_value = True
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
@@ -24,7 +24,7 @@ def test_negociation_with_zinc(no_cache) -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(request, "dev")
+    response = shaystack.read(envs, request, "dev")
 
     # THEN
     assert response.status_code == 200
@@ -32,7 +32,6 @@ def test_negociation_with_zinc(no_cache) -> None:
     shaystack.parse(response.body, shaystack.MODE_ZINC)
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 @patch('shaystack.providers.haystack_interface.no_cache')
 def test_negociation_with_json(no_cache) -> None:
     # GIVEN
@@ -40,6 +39,7 @@ def test_negociation_with_json(no_cache) -> None:
     Args:
         no_cache:
     """
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     no_cache.return_value = True
     mime_type = shaystack.MODE_JSON
     request = HaystackHttpRequest()
@@ -50,7 +50,7 @@ def test_negociation_with_json(no_cache) -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(request, "dev")
+    response = shaystack.read(envs, request, "dev")
 
     # THEN
     assert response.status_code == 200
@@ -58,9 +58,9 @@ def test_negociation_with_json(no_cache) -> None:
     shaystack.parse(response.body, mime_type)
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 def test_negociation_zinc_without_content_type() -> None:
     # GIVEN
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mime_type = shaystack.MODE_CSV
     request = HaystackHttpRequest()
     grid = Grid(columns={'id': {}})
@@ -70,7 +70,7 @@ def test_negociation_zinc_without_content_type() -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(request, "dev")
+    response = shaystack.read(envs, request, "dev")
 
     # THEN
     assert response.status_code == 200
@@ -78,9 +78,9 @@ def test_negociation_zinc_without_content_type() -> None:
     shaystack.parse(response.body, mime_type)
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 def test_negociation_json_without_content_type() -> None:
     # GIVEN
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mime_type = shaystack.MODE_JSON
     request = HaystackHttpRequest()
     grid: Grid = Grid(columns={'id': {}})
@@ -89,7 +89,7 @@ def test_negociation_json_without_content_type() -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(request, "dev")
+    response = shaystack.read(envs, request, "dev")
 
     # THEN
     assert response.status_code == 200
@@ -97,9 +97,9 @@ def test_negociation_json_without_content_type() -> None:
     shaystack.parse(response.body, mime_type)
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 def test_negociation_json_with_unknown_content_type() -> None:
     # GIVEN
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
     grid: Grid = Grid(columns={'id': {}})
@@ -108,7 +108,7 @@ def test_negociation_json_with_unknown_content_type() -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(request, "dev")
+    response = shaystack.read(envs, request, "dev")
 
     # THEN
     assert response.status_code == 406
@@ -117,9 +117,9 @@ def test_negociation_json_with_unknown_content_type() -> None:
     assert "err" in error_grid.metadata
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 def test_negociation_without_accept() -> None:
     # GIVEN
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mime_type = shaystack.MODE_CSV
     request = HaystackHttpRequest()
     grid = Grid(columns={'filter': {}, 'limit': {}})
@@ -130,15 +130,15 @@ def test_negociation_without_accept() -> None:
 
     # WHEN
     try:
-        shaystack.read(request, "dev")
+        shaystack.read(envs, request, "dev")
         assert False, "Must generate exception"
     except HttpError as ex:
         assert ex.error == 406
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 def test_negociation_with_invalide_accept() -> None:
     # GIVEN
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
     grid: Grid = Grid(columns={'id': {}})
@@ -147,7 +147,7 @@ def test_negociation_with_invalide_accept() -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(request, "dev")
+    response = shaystack.read(envs, request, "dev")
 
     # THEN
     assert response.status_code == 406
@@ -156,9 +156,9 @@ def test_negociation_with_invalide_accept() -> None:
     assert "err" in error_grid.metadata
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 def test_negociation_with_navigator_accept() -> None:
     # GIVEN
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mime_type = shaystack.MODE_CSV
     request = HaystackHttpRequest()
     grid = Grid(columns={'filter': {}, 'limit': {}})
@@ -173,7 +173,7 @@ def test_negociation_with_navigator_accept() -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(request, "dev")
+    response = shaystack.read(envs, request, "dev")
 
     # THEN
     assert response.status_code == 200
@@ -181,9 +181,9 @@ def test_negociation_with_navigator_accept() -> None:
     shaystack.parse(response.body, mime_type)
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 def test_negociation_with_complex_accept() -> None:
     # GIVEN
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mime_type = shaystack.MODE_ZINC
     request = HaystackHttpRequest()
     grid = Grid(columns={'filter': {}, 'limit': {}})
@@ -193,16 +193,16 @@ def test_negociation_with_complex_accept() -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(request, "dev")
+    response = shaystack.read(envs, request, "dev")
 
     # THEN
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
 
 
-@patch.dict('os.environ', {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'})
 def test_negociation_with_zinc_to_json() -> None:
     # GIVEN
+    envs = {'HAYSTACK_PROVIDER': 'shaystack.providers.ping'}
     mime_type = shaystack.MODE_JSON
     request = HaystackHttpRequest()
     grid = Grid(columns={'filter': {}, 'limit': {}})
@@ -212,7 +212,7 @@ def test_negociation_with_zinc_to_json() -> None:
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.read(request, "dev")
+    response = shaystack.read(envs, request, "dev")
 
     # THEN
     assert response.status_code == 200

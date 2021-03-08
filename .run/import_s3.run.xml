@@ -4,7 +4,6 @@
         <option name="INTERPRETER_OPTIONS" value=""/>
         <option name="PARENT_ENVS" value="true"/>
         <envs>
-            <env name="PYTHONUNBUFFERED" value="1"/>
             <env name="AWS_PROFILE" value="shaystack"/>
             <env name="LOG_LEVEL" value="INFO"/>
         </envs>
@@ -24,7 +23,7 @@
                 <ENTRY IS_ENABLED="true" PARSER="runconfig"/>
             </ENTRIES>
         </EXTENSION>
-        <option name="SCRIPT_NAME" value="shaystack.providers.import_s3"/>
+        <option name="SCRIPT_NAME" value="shaystack.providers.import_db"/>
         <option name="PARAMETERS" value="sample/carytown.zinc s3://shaystack/"/>
         <option name="SHOW_COMMAND_LINE" value="true"/>
         <option name="EMULATE_TERMINAL" value="false"/>

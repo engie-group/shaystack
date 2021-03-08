@@ -4,12 +4,12 @@
         <option name="INTERPRETER_OPTIONS" value=""/>
         <option name="PARENT_ENVS" value="true"/>
         <envs>
+            <env name="PYTHONUNBUFFERED" value="1"/>
             <env name="FLASK_DEBUG" value="1"/>
             <env name="FLASK_ENV" value="dev"/>
             <env name="HAYSTACK_PROVIDER" value="shaystack.providers.db"/>
             <env name="LOG_LEVEL" value="DEBUG"/>
-            <env name="HAYSTACK_DB" value="sqlite:///test.db#haystack"/>
-            <env name="HAYSTACK_DB_SECRET" value="alpha-Haystack"/>
+            <env name="HAYSTACK_DB" value="sqlite://toto:&lt;Shaystack:shaystack_password&gt;@/test.db#haystack"/>
         </envs>
         <option name="SDK_HOME" value=""/>
         <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$"/>

@@ -10,6 +10,7 @@ from nose.plugins.attrib import attr
 from shaystack import Ref, Grid, Quantity, MARKER, REMOVE, Coordinate, NA, parse_date_range, XStr
 from shaystack.providers import get_provider
 from shaystack.providers.db_timestream import Provider as DBTSProvider
+from shaystack.providers.sql import Provider as SQLProvider
 
 # Set HAYSTACK_DB variable, before running the tests to validate with another database
 # HAYSTACK_DB = 'postgresql://postgres:password@172.17.0.2:5432/postgres#haystack'
@@ -33,9 +34,11 @@ def test_create_db():
 
 
 @attr('aws')
+@patch.object(SQLProvider, 'get_customer_id')
 @patch.object(DBTSProvider, 'get_customer_id')
-def test_import_ts_grid_in_db_and_his_read(mock):
-    mock.return_value = "customer"
+def test_import_ts_grid_in_db_and_his_read(mock1, mock2):
+    mock1.return_value = "customer"
+    mock2.return_value = "customer"
     envs = {'HAYSTACK_DB': HAYSTACK_DB,
             'HAYSTACK_TS': HAYSTACK_TS,
             'AWS_PROFILE': os.environ['AWS_PROFILE'],
@@ -87,9 +90,11 @@ def test_import_ts_grid_in_db_and_his_read(mock):
 
 
 @attr('aws')
+@patch.object(SQLProvider, 'get_customer_id')
 @patch.object(DBTSProvider, 'get_customer_id')
-def test_import_ts_grid_in_db_with_a_lot_of_records(mock):
-    mock.return_value = "customer"
+def test_import_ts_grid_in_db_with_a_lot_of_records(mock1, mock2):
+    mock1.return_value = "customer"
+    mock2.return_value = "customer"
     envs = {'HAYSTACK_DB': HAYSTACK_DB,
             'HAYSTACK_TS': HAYSTACK_TS,
             'AWS_PROFILE': os.environ['AWS_PROFILE'],

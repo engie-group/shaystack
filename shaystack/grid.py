@@ -559,7 +559,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                 break
         return result
 
-    def select(self, select: str) -> 'Grid':
+    def select(self, select: Optional[str]) -> 'Grid':
         """
         Select only some tags in the grid.
         Args:

@@ -27,7 +27,7 @@ shaystack_import_db <haystack file url> <db url>
 You can use the parameters:
 
 * `--customer` to set the customer id for all imported records
-* `--clean` to clean the oldest versions before import a new one
+* `--reset` to clean the oldest versions before import a new one
 * `--no-time-series` if you don't want to import the time-series referenced in `hisURI` tags'
 
 To demonstrate the usage with sqlite,
@@ -71,10 +71,9 @@ Samples:
 - `sqlite3+supersqlite.sqlite3:///test.db#haystack`
 - `postgres://postgres:password@172.17.0.2:5432/postgres`
 
-Inside the SQL url, if the password is empty, and you use AWS lambda,  
-the password is retrieved from the service [`secretManagers`](https://aws.amazon.com/secrets-manager/), with the key,
-whose name is in the environment variable `HAYSTACK_DB_SECRET`. Use the key `password` in secret managers to protect the
-database password.
+Inside the SQL url, if the password is in form `'<...>'`, and you use AWS lambda,  
+the password is retrieved from the service [`secretManagers`](https://aws.amazon.com/secrets-manager/). The pasword must
+be in form `'<secret_id:key>'`. In the secret container `secret_id` at the key `key`, the database password must be set.
 
 After the deployment, you can use this provider like any others providers. The haystack filter was automatically
 converted to SQL. Three table was created:

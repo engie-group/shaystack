@@ -9,7 +9,7 @@
     "aws_environment_variables": {
       "LOG_LEVEL": "INFO",
       "HAYSTACK_PROVIDER": "shaystack.providers.db",
-      "HAYSTACK_DB": "s3://haystackapi/carytown.zinc"
+      "HAYSTACK_DB": "s3://shaystack/carytown.zinc"
     },
     "exclude": [
       ".*",

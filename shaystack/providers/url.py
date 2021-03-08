@@ -46,7 +46,7 @@ import pytz
 from botocore.exceptions import ClientError
 from overrides import overrides
 
-from .haystack_interface import DBHaystackInterface
+from .db_haystack_interface import DBHaystackInterface
 from .. import dump
 from ..datatypes import Ref
 from ..exception import HaystackException
@@ -216,18 +216,16 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
                 suffix = Path(parsed_source.path).suffixes[-2]
 
             try:
-                with lock:
-                    source_grid = parse(unzipped_source_data.decode("utf-8-sig"),
-                                        suffix_to_mode(suffix))
+                source_grid = parse(unzipped_source_data.decode("utf-8-sig"),
+                                    suffix_to_mode(suffix))
                 path = parsed_destination.path[1:]
                 destination_data = s3_client.get_object(Bucket=parsed_destination.hostname,
                                                         Key=path,
                                                         IfNoneMatch=source_etag)['Body'].read()
                 if parsed_source.path.endswith(".gz"):
                     destination_data = gzip.decompress(destination_data)
-                with lock:
-                    destination_grid = parse(destination_data.decode("utf-8-sig"),
-                                             suffix_to_mode(suffix))
+                destination_grid = parse(destination_data.decode("utf-8-sig"),
+                                         suffix_to_mode(suffix))
 
             except ClientError as ex:
                 if ex.response['Error']['Code'] == 'NoSuchKey':
@@ -255,10 +253,9 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
                 md5_digest = md5(source_data)
                 b64_digest = base64.b64encode(md5_digest.digest()).decode("UTF8")
 
-            path = parsed_destination.path[1:]
             s3_client.put_object(Body=source_data,
                                  Bucket=parsed_destination.hostname,
-                                 Key=path,
+                                 Key=parsed_destination.path[1:],
                                  ContentMD5=b64_digest
                                  )
             log.info("%s updated (put in s3 bucket)", parsed_source.geturl())
@@ -422,9 +419,9 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                         break
 
                 # Remove data not in the range
-                h = [row for row in history if dates_range[0] <= row['ts'] < dates_range[1]]
+                filter_history = [row for row in history if dates_range[0] <= row['ts'] < dates_range[1]]
                 history.clear()
-                history.extend(h)
+                history.extend(filter_history)
 
                 min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
                 max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
@@ -481,6 +478,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         if not self._s3_client:  # Lazy init
             self._s3_client = boto3.client(
                 "s3",
+                region_name=self._envs.get('AWS_REGION', ''),
                 endpoint_url=self._envs.get("AWS_S3_ENDPOINT", None),
                 verify=self._tls_verify,  # See https://tinyurl.com/y5tap6ys
             )
@@ -634,7 +632,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
     @overrides
     def purge_db(self) -> None:
         """ Purge the current database. """
-        return  # PPR
+        return  # PPR: purge s3 files ?
 
     @overrides
     def import_data(self,  # pylint: disable=too-many-arguments
@@ -701,33 +699,35 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             destination_uri += Path(parsed_source.path).name
         parsed_destination = urlparse(destination_uri)
         return parsed_destination, parsed_source
-    # @overrides
-    # def update_grid(self,
-    #                 diff_grid: Grid,
-    #                 version: Optional[datetime],
-    #                 customer_id: Optional[str],
-    #                 now: Optional[datetime] = None) -> None:
-    #     """Import the diff_grid inside the database.
-    #     Args:
-    #         diff_grid: The difference to apply in database.
-    #         version: The version to save.
-    #         customer_id: The customer id to insert in each row.
-    #         now: The pseudo 'now' datetime.
-    #     """
 
-    # @overrides
-    # def import_ts_in_db(self,
-    #                     time_series: Grid,
-    #                     entity_id: Ref,
-    #                     customer_id: Optional[str],
-    #                     now: Optional[datetime] = None
-    #                     ) -> None:
-    #     """
-    #     Import the Time series inside the database.
-    #
-    #     Args:
-    #         time_series: The time-serie grid.
-    #         entity_id: The corresponding entity.
-    #         customer_id: The current customer id.
-    #         now: The pseudo 'now' datetime.
-    #     """
+    @overrides
+    def update_grid(self,
+                    diff_grid: Grid,
+                    version: Optional[datetime],
+                    customer_id: Optional[str],
+                    now: Optional[datetime] = None) -> None:
+        if not diff_grid:
+            return
+        s3_client = self._s3()
+        # Calculate the updated version of current Grid
+        new_grid = self._download_grid(self._get_url(), None) + diff_grid
+
+        parsed_target = urlparse(self._get_url())
+        suffix = Path(parsed_target.path).suffix
+        use_gzip = False
+        if suffix == ".gz":
+            use_gzip = True
+            suffix = Path(parsed_target.path).suffixes[-2]
+
+        target_data = dump(new_grid, suffix_to_mode(suffix)).encode('UTF8')
+        if use_gzip:
+            target_data = gzip.compress(target_data)
+        md5_digest = md5(target_data)
+        b64_digest = base64.b64encode(md5_digest.digest()).decode("UTF8")
+        # WARNING: the local version may not be update.
+        # Waiting the next `REFRESH` period
+        s3_client.put_object(Body=target_data,
+                             Bucket=parsed_target.hostname,
+                             Key=parsed_target.path[1:],
+                             ContentMD5=b64_digest
+                             )

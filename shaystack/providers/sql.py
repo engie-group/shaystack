@@ -16,12 +16,10 @@ May be:
 
 Each entity was save in one SQL row. A column save the JSON version of entity.
 """
-import base64
 import importlib
 import json
 import logging
 import re
-from dataclasses import dataclass
 from datetime import datetime, timedelta
 from os.path import dirname
 from types import ModuleType
@@ -31,8 +29,9 @@ from urllib.parse import urlparse, ParseResult
 import pytz
 from overrides import overrides
 
-from .haystack_interface import DBHaystackInterface
+from .db_haystack_interface import DBHaystackInterface
 from .sqldb_protocol import DBConnection
+from .tools import get_secret_manager_secret, _BOTO3_AVAILABLE
 from .url import read_grid_from_uri
 from .. import HaystackException
 from ..datatypes import Ref
@@ -42,22 +41,7 @@ from ..jsonparser import parse_scalar, _parse_row, _parse_metadata, _parse_cols
 from ..type import Entity
 from ..version import VER_3_0
 
-try:
-    from botocore.exceptions import ClientError
-except ImportError:
-    @dataclass  # pylint: disable=missing-class-docstring
-    class ClientError(Exception):
-        response: List[Any]
-
 log = logging.getLogger("sql.Provider")
-
-_BOTO3_AVAILABLE = False
-try:
-    import boto3
-
-    _BOTO3_AVAILABLE = True
-except ImportError:
-    pass
 
 _default_driver = {
     "sqlite3": ("supersqlite.sqlite3", {"database"}),
@@ -312,8 +296,9 @@ class Provider(DBHaystackInterface):
             except ValueError:
                 port = 0
             password = self._parsed_db.password
-            if self._parsed_db.username and password is None or password == "":
-                password = self._get_secret_manager_secret()
+            if _BOTO3_AVAILABLE and self._parsed_db.username and \
+                    password.startswith("<") and password.endswith(">"):
+                password = get_secret_manager_secret(password[1:-1], self._envs)
             params = {
                 "host": self._parsed_db.hostname,
                 "port": port,
@@ -332,52 +317,6 @@ class Provider(DBHaystackInterface):
         if not self._connect:
             raise ValueError("Impossible to use the database url")
         return self._connect
-
-    def _get_secret_manager_secret(self) -> str:  # pylint: disable=no-self-use
-        if not _BOTO3_AVAILABLE:
-            return "secretManager"
-
-        secret_name = self._envs['HAYSTACK_DB_SECRET']
-        session = boto3.session.Session()
-        client = session.client(
-            service_name='secretsmanager',
-            region_name=self._envs["AWS_REGION"]
-        )
-
-        try:
-            get_secret_value_response = client.get_secret_value(SecretId=secret_name)
-            # Decrypts secret using the associated KMS CMK.
-            # Depending on whether the secret is a string or binary,
-            # one of these fields will be populated.
-            if 'SecretString' in get_secret_value_response:
-                secret = get_secret_value_response['SecretString']
-                j = json.loads(secret)
-                return j['password']
-            decoded_binary_secret = base64.b64decode(
-                get_secret_value_response['SecretBinary']).decode("UTF8")
-            return decoded_binary_secret
-        except ClientError as ex:
-            if ex.response['Error']['Code'] == 'DecryptionFailureException':
-                # Secrets Manager can't decrypt the protected secret text using the provided KMS key.
-                # Deal with the exception here, and/or rethrow at your discretion.
-                raise ex
-            if ex.response['Error']['Code'] == 'InternalServiceErrorException':
-                # An error occurred on the server side.
-                # Deal with the exception here, and/or rethrow at your discretion.
-                raise ex
-            if ex.response['Error']['Code'] == 'InvalidParameterException':
-                # You provided an invalid value for a parameter.
-                # Deal with the exception here, and/or rethrow at your discretion.
-                raise ex
-            if ex.response['Error']['Code'] == 'InvalidRequestException':
-                # You provided a parameter value that is not valid for the current state of the resource.
-                # Deal with the exception here, and/or rethrow at your discretion.
-                raise ex
-            if ex.response['Error']['Code'] == 'ResourceNotFoundException':
-                # We can't find the resource that you asked for.
-                # Deal with the exception here, and/or rethrow at your discretion.
-                raise ex
-            raise ex
 
     def _init_grid_from_db(self, version: Optional[datetime]) -> Grid:
         customer = self.get_customer_id()
@@ -496,6 +435,7 @@ class Provider(DBHaystackInterface):
         finally:
             cursor.close()
 
+    @overrides
     def update_grid(self,
                     diff_grid: Grid,
                     version: Optional[datetime],
@@ -545,7 +485,7 @@ class Provider(DBHaystackInterface):
                                )
                 log.debug("Update metadatas")
 
-            for row in diff_grid:  # PPR: use a batch
+            for row in diff_grid:  # PPR: use a batch ?
                 assert "id" in row, "Can import only entity with id"
                 sql_id = row["id"].name
                 cursor.execute(self._sql["CLOSE_ENTITY"],

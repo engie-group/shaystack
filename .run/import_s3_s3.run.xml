@@ -26,7 +26,7 @@
         </EXTENSION>
         <option name="SCRIPT_NAME" value="shaystack.providers.import_s3"/>
         <option name="PARAMETERS"
-                value="--compare --time-series --no-force s3://haystackapi2/carytown.zinc s3://haystacksapi/carytown.zinc"/>
+                value="--compare --time-series --no-force s3://shaystack/carytown.zinc s3://haystacksapi/carytown.zinc"/>
         <option name="SHOW_COMMAND_LINE" value="true"/>
         <option name="EMULATE_TERMINAL" value="false"/>
         <option name="MODULE_MODE" value="true"/>

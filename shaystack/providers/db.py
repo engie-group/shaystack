@@ -4,10 +4,12 @@
 # (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+# pylint: disable=line-too-long
 """
 An generic Haystack Read-Only API provider to expose an Haystack data via the Haystack API.
 
 The data must be referenced with the environment variable HAYSTACK_DB and may be the form:
+
     - sample/carytown.zinc
     - file:///var/ontology/ontology.json
     - http://localhost:3000/ontology.json
@@ -20,7 +22,8 @@ The data must be referenced with the environment variable HAYSTACK_DB and may be
     - sqlite3://test.db#haystack
 
 The URL is in form:
-<dialect[+driver]>://[<user>[:<password>]@][<host>][<path>][#database][?<param>=<value>]*
+
+`&lt;dialect[+driver]&gt;://[&lt;user&gt;[:&lt;password&gt;]@][&lt;host&gt;][&lt;path&gt;][#database][?&lt;param&gt;=&lt;value&gt;]*`
 """
 import logging
 import sys
@@ -30,7 +33,8 @@ from urllib.parse import urlparse
 
 from overrides import overrides
 
-from .haystack_interface import DBHaystackInterface, get_provider
+from .db_haystack_interface import DBHaystackInterface
+from .haystack_interface import get_provider
 from ..datatypes import Ref
 from ..grid import Grid
 
@@ -156,33 +160,10 @@ class Provider(DBHaystackInterface):
                   ):
         return self._delegate.import_ts(source_uri, customer_id, version)
 
-    # def update_grid_in_db(self,
-    #                       diff_grid: Grid,
-    #                       version: Optional[datetime],
-    #                       customer_id: Optional[str],
-    #                       now: Optional[datetime] = None) -> None:
-    #     """Import the diff_grid inside the database.
-    #     Args:
-    #         diff_grid: The difference to apply in database.
-    #         version: The version to save.
-    #         customer_id: The customer id to insert in each row.
-    #         now: The pseudo 'now' datetime.
-    #     """
-    #     return self._delegate.update_grid_in_db(diff_grid, version, customer_id, now)
-
-    # def import_ts_in_db(self,
-    #                     time_series: Grid,
-    #                     entity_id: Ref,
-    #                     customer_id: Optional[str],
-    #                     now: Optional[datetime] = None
-    #                     ) -> None:
-    #     """
-    #     Import the Time series inside the database.
-    #
-    #     Args:
-    #         time_series: The time-serie grid.
-    #         entity_id: The corresponding entity.
-    #         customer_id: The current customer id.
-    #         now: The pseudo 'now' datetime.
-    #     """
-    #     return self._delegate.import_ts_in_db(time_series, entity_id, customer_id, now)
+    @overrides
+    def update_grid(self,
+                    diff_grid: Grid,
+                    version: Optional[datetime],
+                    customer_id: Optional[str],
+                    now: Optional[datetime] = None) -> None:
+        return self._delegate.update_grid(diff_grid, version, customer_id, now)

@@ -73,6 +73,8 @@ __pdoc__ = {
     "parser": False,
     "pintutil": False,
     "sortabledict": False,
+    "triodumper": False,
+    "trioparser": False,
     "version": False,
     "zincdumper": False,
     "zincparser": False,

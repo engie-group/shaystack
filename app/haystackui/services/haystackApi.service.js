@@ -6,6 +6,7 @@ class HaystackApiService {
   // Invoquer format pour savoir si l'api est compatible avec le format JSON
 
   get api() {
+    console.log('TEST', this.haystackApiHost)
     return axios.create({
       baseURL: `${this.haystackApiHost}`,
       timeout: 20000,
@@ -18,12 +19,16 @@ class HaystackApiService {
 
   async isHaystackApi() {
     try {
-      const response = await this.api.get(`/ops`)
-      if (response.data.rows.find(row => row.name === 's:read')) return true
-      alert('Wrong API')
+      const opsResponse = await this.api.get(`/ops`)
+      const formatResponse = await this.api.get(`/formats`)
+      const isHaystackApiAvailable =
+        opsResponse.data.rows.find(row => row.name === 's:read') &&
+        formatResponse.data.rows.find(row => row.mime === 's:application/json' && row.receive === 'm:')
+      if (isHaystackApiAvailable) return true
+      alert('API not available for')
       return false
     } catch {
-      alert('Wrong API')
+      alert('Not an Haystack API')
       return false
     }
   }

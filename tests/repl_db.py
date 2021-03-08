@@ -19,11 +19,12 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 def main():
     """Loop to test the postgres generation with REPL"""
-    if "HAYSTACK_DB" not in os.environ:
-        os.environ["HAYSTACK_DB"] = "sqlite3:///:memory:"
-    provider = get_provider("shaystack.providers.sql")
+    envs = os.environ
+    if "HAYSTACK_DB" not in envs:
+        envs["HAYSTACK_DB"] = "sqlite3:///:memory:"
+    provider = get_provider("shaystack.providers.sql", envs)
     conn = cast(SQLProvider, provider).get_connect()
-    scheme = urlparse(os.environ["HAYSTACK_DB"]).scheme
+    scheme = urlparse(envs["HAYSTACK_DB"]).scheme
 
     class TstRequest(cmd.Cmd):
         def __init__(self, conn):
@@ -56,7 +57,7 @@ def main():
             finally:
                 conn.rollback()
 
-        def do_bye(self, arg: str) -> bool:  # pylint: disable=unused-argument,no-self-use
+        def do_bye(self, _: str) -> bool:  # pylint: disable=unused-argument,no-self-use
             return True
 
     TstRequest(conn).cmdloop()

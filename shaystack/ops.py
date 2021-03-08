@@ -11,7 +11,6 @@
     and invoke the corresponding function.
 """
 import logging
-import os
 import re
 import traceback
 from ast import literal_eval
@@ -355,7 +354,7 @@ def _manage_exception(
     )
 
 
-def about(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def about(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack about.
     Args:
@@ -366,10 +365,10 @@ def about(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
         The HTTP Response
     """
     headers = request.headers
-    log.debug("HAYSTACK_PROVIDER=%s", os.environ.get("HAYSTACK_PROVIDER", None))
-    log.debug("HAYSTACK_URL=%s", os.environ.get("HAYSTACK_URL", None))
+    log.debug("HAYSTACK_PROVIDER=%s", envs.get("HAYSTACK_PROVIDER", None))
+    log.debug("HAYSTACK_DB=%s", envs.get("HAYSTACK_DB", None))
     try:
-        provider = get_singleton_provider()
+        provider = get_singleton_provider(envs)
         if headers["Host"].startswith("localhost:"):
             home = "http://" + headers["Host"] + "/"
         else:
@@ -382,7 +381,7 @@ def about(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     return response
 
 
-def ops(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def ops(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack `ops`.
     Args:
@@ -394,7 +393,7 @@ def ops(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     headers = request.headers
     try:
-        provider = get_singleton_provider()
+        provider = get_singleton_provider(envs)
         grid_response = provider.ops()
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, "OK")
@@ -403,7 +402,7 @@ def ops(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     return response
 
 
-def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def formats(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'formats'.
     Args:
@@ -415,7 +414,7 @@ def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     headers = request.headers
     try:
-        provider = get_singleton_provider()
+        provider = get_singleton_provider(envs)
         grid_response = provider.formats()
         if grid_response is None:
             grid_response = Grid(
@@ -456,7 +455,7 @@ def formats(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     return response
 
 
-def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack `read`
     Args:
@@ -468,7 +467,7 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     headers, args = (request.headers, request.args)
     try:
-        provider = get_singleton_provider()
+        provider = get_singleton_provider(envs)
         grid_request = _parse_body(request)
         read_ids: Optional[List[Ref]] = None
         select = read_filter = date_version = None
@@ -525,7 +524,7 @@ def read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     return response
 
 
-def nav(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def nav(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'nav'.
     Args:
@@ -537,7 +536,7 @@ def nav(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     headers, args = (request.headers, request.args)
     try:
-        provider = get_singleton_provider()
+        provider = get_singleton_provider(envs)
         grid_request = _parse_body(request)
         nav_id = None
         if grid_request:
@@ -554,7 +553,7 @@ def nav(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     return response
 
 
-def watch_sub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def watch_sub(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'watchSub'.
     Args:
@@ -566,7 +565,7 @@ def watch_sub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     headers, args = (request.headers, request.args)
     try:
-        provider = get_singleton_provider()
+        provider = get_singleton_provider(envs)
         grid_request = _parse_body(request)
         watch_dis = watch_id = lease = None
         ids = []
@@ -598,7 +597,7 @@ def watch_sub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     return response
 
 
-def watch_unsub(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def watch_unsub(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'watchUnsub'.
     Args:
@@ -610,7 +609,7 @@ def watch_unsub(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
     """
     headers, args = (request.headers, request.args)
     try:
-        provider = get_singleton_provider()
+        provider = get_singleton_provider(envs)
         grid_request = _parse_body(request)
         close = False
         watch_id = False
@@ -640,7 +639,7 @@ def watch_unsub(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
     return response
 
 
-def watch_poll(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def watch_poll(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'watchPoll'.
     Args:
@@ -652,7 +651,7 @@ def watch_poll(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse
     """
     headers, args = (request.headers, request.args)
     try:
-        provider = get_singleton_provider()
+        provider = get_singleton_provider(envs)
         grid_request = _parse_body(request)
         watch_id = None
         refresh = False
@@ -675,7 +674,7 @@ def watch_poll(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse
     return response
 
 
-def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def point_write(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'pointWrite'.
     Args:
@@ -687,7 +686,7 @@ def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
     """
     headers, args = (request.headers, request.args)
     try:
-        provider = get_singleton_provider()
+        provider = get_singleton_provider(envs)
         grid_request = _parse_body(request)
         date_version = None
         level = 17
@@ -738,7 +737,7 @@ def point_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespons
     return response
 
 
-def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def his_read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'hisRead'.
     Args:
@@ -750,7 +749,7 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     headers, args = (request.headers, request.args)
     try:
-        provider = get_singleton_provider()
+        provider = get_singleton_provider(envs)
         grid_request = _parse_body(request)
         entity_id = date_version = None
         date_range = None
@@ -790,7 +789,7 @@ def his_read(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     return response
 
 
-def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def his_write(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'hisWrite'.
     Args:
@@ -802,7 +801,7 @@ def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     headers, args = (request.headers, request.args)
     try:
-        provider = get_singleton_provider()
+        provider = get_singleton_provider(envs)
         grid_request = _parse_body(request)
         entity_id = grid_request.metadata.get("id")
         date_version = grid_request.metadata.get("version")
@@ -830,7 +829,7 @@ def his_write(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     return response
 
 
-def invoke_action(request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def invoke_action(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'invokeAction'.
     Args:
@@ -842,7 +841,7 @@ def invoke_action(request: HaystackHttpRequest, stage: str) -> HaystackHttpRespo
     """
     headers, args = (request.headers, request.args)
     try:
-        provider = get_singleton_provider()
+        provider = get_singleton_provider(envs)
         grid_request = _parse_body(request)
         entity_id = grid_request.metadata.get("id")
         action = grid_request.metadata.get("action")

@@ -22,7 +22,7 @@ from .sqldb_protocol import DBCursor
 from .. import parse_filter, jsondumper, Quantity, Ref
 from ..filter_ast import FilterNode, FilterUnary, FilterBinary, FilterPath
 
-log = logging.getLogger("sql.Provider")
+log = logging.getLogger("db.Provider")
 
 
 def _use_inner_join(node: FilterNode) -> bool:

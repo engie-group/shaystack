@@ -17,8 +17,9 @@ from typing import Optional, cast, List, Dict, Union
 import click
 import pytz
 
-from shaystack.providers.url import BOTO3_AVAILABLE
-from .haystack_interface import get_provider, DBHaystackInterface
+from .db_haystack_interface import DBHaystackInterface
+from .haystack_interface import get_provider
+from .url import BOTO3_AVAILABLE
 
 log = logging.getLogger(__name__)
 
@@ -68,29 +69,6 @@ def import_in_db(source_uri: str,  # pylint: disable=too-many-arguments
     except ModuleNotFoundError as ex:
         log.error("Call `pip install` with the database driver - %s", ex.msg)  # type: ignore[attribute-error]
 
-
-def aws_handler(event, context):
-    """
-    AWS Lambda Handler.
-    Set the environment variable HAYSTACK_DB
-    """
-    envs = os.environ
-    hs_url = envs.get("HAYSTACK_SOURCE_DB")
-    database_url = envs.get("HAYSTACK_DB")
-    database_ts = envs.get("HAYSTACK_TS")
-    customer = event.get("CUSTOMER")
-    assert hs_url, "Set `HAYSTACK_INPUT_DB`"
-    assert database_url, "Set `HAYSTACK_DB`"
-    import_in_db(hs_url, database_url, database_ts,
-                 customer,
-                 import_time_series=True,
-                 reset=False,
-                 version=None,
-                 envs=envs)
-
-
-# TODO: vérifier TS dans la doc et ajouter <br />
-# TODO: mutualiser import
 
 @click.command(short_help='Import haystack file in database')
 @click.argument('source_uri',

@@ -39,14 +39,15 @@ and [Csv](https://www.project-haystack.org/doc/Csv)).
 On the server side, it also implements [Haystack Rest API](https://www.project-haystack.org/doc/Rest), useful to serve
 Haystack data you host.
 
-- We implemented two serving options See [API Server](.:#server-side-haystack-api-server)
+- We implemented different serving options See [API Server](.:#server-side-haystack-api-server)
     - Each offering two API endpoints:
         - Classical REST Haystack API
         - GraphQL API
 - We introduced and implemented the *Provider* concept, which handles various options in terms on haystack data
   location:
     - Local or remote file system (including AWS S3)
-    - Local or remote relational database, with optional AWS Time Stream use for Time Series
+    - Local or remote relational database
+    - Can be extends with optional AWS Time Stream use for Time Series
     - Other custom data location can be handled by extending
       `shaystack.providers.HaystackInterface`
 
@@ -389,7 +390,6 @@ $ # Run and customize the image
 $ docker run -p 3000:3000 \
   -e HAYSTACK_PROVIDER=shaystack.providers.db \
   -e HAYSTACK_DB=https://haystackapi.s3.eu-west-3.amazonaws.com/carytown.zinc \
-  -e HAYSTACK_DB_SECRET= \
   -e REFRESH=15 \
   shaystack 
 ```

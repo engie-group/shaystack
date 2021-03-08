@@ -81,7 +81,7 @@ and create a file `zappa_settings.json` with something like this:
       "LOG_LEVEL": "INFO",
       "TLS_VERIFY": "False",
       "HAYSTACK_PROVIDER": "shaystack.providers.db",
-      "HAYSTACK_DB": "s3://haystackapi/carytown.zinc",
+      "HAYSTACK_DB": "s3://shaystack/carytown.zinc",
       "HAYSTACK_TS": ""
     }
   }

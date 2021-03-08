@@ -15,7 +15,11 @@ __all__ = ["HaystackInterface", "get_provider"]
 
 __pdoc__ = \
     {
-        "sqldb_protocol": False
+        "sqldb_protocol": False,
+        "db_postgres": False,
+        "db_sqlite": False,
+        "db_timestream": False,
+        "tools": False,
     }
 
 

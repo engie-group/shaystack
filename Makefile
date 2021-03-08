@@ -617,6 +617,7 @@ test-aws: .make-test-aws
 
 # Test local deployment with URL provider
 functional-url-local: $(REQUIREMENTS)
+	@echo -e "$(green)Test URL local...$(normal)"
 	@$(MAKE) async-stop-api >/dev/null
 	export HAYSTACK_PROVIDER=shaystack.providers.db
 	export HAYSTACK_DB=sample/carytown.zinc
@@ -627,9 +628,10 @@ functional-url-local: $(REQUIREMENTS)
 
 # Test local deployment with URL provider
 functional-url-s3: $(REQUIREMENTS) aws-update-token
+	@echo -e "$(green)Test URL on S3...$(normal)"
 	@$(MAKE) async-stop-api >/dev/null
 	export HAYSTACK_PROVIDER=shaystack.providers.db
-	export HAYSTACK_DB=s3://haystackapi/carytown.zinc
+	export HAYSTACK_DB=s3://shaystack/carytown.zinc
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with url serveur and s3 file OK$(normal)"
@@ -637,6 +639,7 @@ functional-url-s3: $(REQUIREMENTS) aws-update-token
 
 # Clean DB, Start API, and try with SQLite
 functional-db-sqlite: $(REQUIREMENTS)
+	@echo -e "$(green)Test local SQLite...$(normal)"
 	@$(MAKE) async-stop-api>/dev/null
 	pip install supersqlite >/dev/null
 	rm -f test.db
@@ -651,6 +654,7 @@ functional-db-sqlite: $(REQUIREMENTS)
 
 # Clean DB, Start API, and try with SQLite + Time stream
 functional-db-sqlite-ts: $(REQUIREMENTS)
+	@echo -e "$(green)Test local SQLite + Timestream...$(normal)"
 	@$(MAKE) async-stop-api>/dev/null
 	pip install supersqlite boto3 >/dev/null
 	rm -f test.db
@@ -667,6 +671,7 @@ functional-db-sqlite-ts: $(REQUIREMENTS)
 
 # Start Postgres, Clean DB, Start API and try
 functional-db-postgres: $(REQUIREMENTS) clean-pg
+	@echo -e "$(green)Test local Postgres...$(normal)"
 	@$(MAKE) async-stop-api >/dev/null
 	pip install psycopg2 >/dev/null
 	$(MAKE) start-pg
@@ -818,7 +823,6 @@ docker-build:
 		--build-arg HAYSTACK_PROVIDER='$(HAYSTACK_PROVIDER)' \
 		--build-arg HAYSTACK_DB='$(HAYSTACK_DB)' \
 		--build-arg HAYSTACK_TS='$(HAYSTACK_TS)' \
-		--build-arg HAYSTACK_DB_SECRET='$(HAYSTACK_DB_SECRET)' \
 		--build-arg REFRESH='$(REFRESH)' \
 		--build-arg STAGE='$(STAGE)' \
 		--build-arg PIP_INDEX_URL='$(PIP_INDEX_URL)' \

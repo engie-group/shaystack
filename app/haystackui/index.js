@@ -130,7 +130,13 @@ export const actions = {
       )
       const idHistories = {}
       // eslint-disable-next-line no-return-assign
-      idsEntityWithHis.forEach((key, index) => (idHistories[key.id] = histories[index]))
+      idsEntityWithHis.forEach(
+        // eslint-disable-next-line no-return-assign
+        (key, index) =>
+          (idHistories[key.id] = histories[index].map(history => {
+            return { ...history, apiSource: apiNumber }
+          }))
+      )
       await context.commit('SET_HISTORIES', { idHistories, apiNumber })
     }
   },

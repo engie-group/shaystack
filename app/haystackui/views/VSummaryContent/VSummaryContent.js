@@ -47,7 +47,7 @@ export default {
       return this.$store.getters.isDataLoaded
     },
     entities() {
-      return this.$store.getters.entities
+      return this.$store.getters.entities.map(entities => entities.filter(entity => entity.id))
     },
     idsWithHis() {
       return this.entitiesGroupedById
@@ -94,21 +94,6 @@ export default {
         }
       })
     },
-    async onRefClick(refId) {
-      this.$refs[refId][0].$el.scrollIntoView(true)
-      window.scrollBy(0, -70)
-      const { query } = this.$route
-      this.$router.push({ hash: refId, query }).catch(() => {})
-    },
-    async onExternalRefClick(refId) {
-      const newApiFilter = `id==@${refId}`
-      await this.$store.dispatch('reloadAllData', {
-        entity: newApiFilter
-      })
-      this.$store.commit('SET_FILTER_API', { filterApi: newApiFilter })
-      const { query } = this.$route
-      this.$router.replace({ hash: refId, query }).catch(() => {})
-    },
     elementInViewport(el) {
       if (!el) return false
       let top = el.offsetTop
@@ -126,6 +111,21 @@ export default {
         entityColor =>
           entityColor.id === pointName && ['#dc143c', '#0000ff', '#00a86b', '#cc5500'].includes(entityColor.color)
       )
+    },
+    async onRefClick(refId) {
+      this.$refs[refId][0].$el.scrollIntoView(true)
+      window.scrollBy(0, -70)
+      const { query } = this.$route
+      this.$router.push({ hash: refId, query }).catch(() => {})
+    },
+    async onExternalRefClick(refId) {
+      const newApiFilter = `id==@${refId}`
+      await this.$store.dispatch('reloadAllData', {
+        entity: newApiFilter
+      })
+      this.$store.commit('SET_FILTER_API', { filterApi: newApiFilter })
+      const { query } = this.$route
+      this.$router.replace({ hash: refId, query }).catch(() => {})
     },
     async onGraphClick(pointName) {
       const linkBetweenEntities = this.getRelationGraphEntity(this.entities)
@@ -145,11 +145,12 @@ export default {
         this.$router.push({ hash: entityId, query }).catch(() => {})
       }
     },
-    getEntityId(entity) {
-      return entity.id.val.substring(2).split(' ')[0]
-    },
     getEntityName(entity) {
       return formatService.formatEntityName(entity)
+    },
+    getEntityId(entity) {
+      if (!entity.id) return 'NaN'
+      return entity.id.val.substring(2).split(' ')[0]
     },
     groupByIdEntities(entities) {
       return formatService.groupAllEntitiesById(entities)
@@ -160,9 +161,15 @@ export default {
       return this.histories[sourceNumber][formattedId]
     },
     getHistories(idEntity) {
-      if (this.histories.length === 1) return [this.getHistory(idEntity, 0)]
+      if (this.histories.length === 1) {
+        const entityHis = this.getHistory(idEntity, 0)
+        return entityHis ? [this.getHistory(idEntity, 0)] : []
+      }
       // eslint-disable-next-line
-      return this.histories.map((history, index) => this.getHistory(idEntity, index))
+      return this.histories.map((history, index) => {
+          return this.getHistory(idEntity, index)
+        })
+        .filter(history => history)
     },
     async updateFilter(newFilter) {
       if (newFilter !== this.$store.getters.filterApi) {
@@ -181,11 +188,17 @@ export default {
     }
   },
   async beforeMount() {
-    if (this.apiServers.length === 0)
+    await this.reloadPageFromQueryParameters()
+    if (this.apiServers.length === 0) {
       await this.$store.dispatch('createApiServer', {
         haystackApiHost: `${window.location.origin}${window.location.pathname}`
       })
-    await this.reloadPageFromQueryParameters()
+      if (this.apiServers.length !== 0) {
+        console.log('TEST2', this.apiServers.map(api => api.haystackApiHost).join('","'))
+        this.$router.push({ query: { a: `["${this.apiServers.map(api => api.haystackApiHost).join('","')}"]` } }).catch(() => {})
+        console.log(this.apiServers.join('","'))
+      }
+    }
   },
   updated() {
     if (this.isAnyData) {

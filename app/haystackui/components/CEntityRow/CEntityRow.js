@@ -3,50 +3,34 @@ const template = `
     <h2 data-test-entity-title class="entity-row__title">{{ entityName }}</h2>
     <div class="content-container">
       <div class="entity-row__table">
-        <v-data-table
-          :headers="headers"
-          :items="tableValues"
-          :hide-default-footer="true"
-          :disable-pagination="true"
-          :custom-sort="customSort"
-          :dense="true"
-          item-class="row_class"
-        >
-          <template v-slot:[\`item.value\`]="{ item }">
-            <div v-if="isCoordinate(item.value)">
-              <a :href="getUrlCoordinate(item.value)" target="_blank">{{ item.value.substring(2) }}</a>
-              <v-icon v-if="isDuplicateKey(item.tag)" class="material-icons entity-row__click-button">warning</v-icon>
-            </div>
-            <div v-else-if="isRef(item.value)">
-              <span v-if="isRefClickable(item)" class="entity-row__ref-row" @click="refClicked(getRefId(item))">{{
-                getRefName(item)
-              }}</span>
-              <span
-                v-else-if="isExternalRef(item)"
-                class="entity-row__external-ref-row"
-                @click="externalRefClicked(getRefId(item))"
-                >{{ getRefName(item) }}</span
-              >
-              <span v-else>{{ getRefName(item) }}</span>
-              <v-icon class="material-icons entity-row__click-button" @click="copyText(item)">content_copy</v-icon>
-            </div>
-            <div v-else-if="isDuplicateKey(item.tag)">
-              <span>{{ item.value }}</span>
-              <v-icon v-if="hisUri(item.tag)" class="material-icons entity-row__click-button">warning</v-icon>
-            </div>
-            <span v-else>{{ item.value }}</span>
-          </template>
-        </v-data-table>
+        <p-his-data-table
+          :isEntityData="true"
+          @onRefClick="onRefClick"
+          @onExternalRefClick="onExternalRefClick"
+          :dataHisTable="entityTableValues"
+          :dataEntity="dataEntity"
+          :allEntities="allEntities"
+        />
       </div>
       <div class="entity-row__chart">
         <c-chart
           data-test-history-chart
           v-if="displayChart"
           :id="chartId"
-          :data="sortDataChart(data)"
+          :data="sortDataChart(dataChart)"
           :unit="unit"
           title="Historical values"
         />
+        <p-his-data-table
+          :isEntityData="false"
+          v-if="displayHisTableData"
+          @onRefClick="onRefClick"
+          @onExternalRefClick="onExternalRefClick"
+          :dataHisTable="hisTableValues"
+          :dataEntity="dataEntity"
+          :allEntities="allEntities"
+        >
+        </p-his-data-table>
       </div>
     </div>
   </div>
@@ -55,11 +39,12 @@ const template = `
 import formatService from '../../services/format.service.js'
 import dataUtils from '../../services/data.utils.js'
 import CChart from '../CChart/CChart.js'
+import PHisDataTable from '../../presenters/PHisDataTable/PHisDataTable.js'
 
 export default {
   template,
   name: 'CEntityRow',
-  components: { CChart },
+  components: { CChart, PHisDataTable },
   props: {
     idEntity: {
       type: String,
@@ -96,7 +81,7 @@ export default {
     }
   },
   computed: {
-    tableValues() {
+    entityTableValues() {
       return Object.keys(this.dataEntity).map(key => {
         const result = this.getEntityValue(key)
         let apiSource = null
@@ -112,8 +97,26 @@ export default {
         }
       })
     },
+    hisTableValues() {
+      if (!this.his) return []
+      return this.dataHisTable
+        .map(history => {
+          return history.map(row => {
+            return {
+              ts: row.ts.substring(2),
+              value: this.getHisTableValue(row),
+              row_class: [`apiSource_${row.apiSource + 1}`]
+            }
+          })
+        })
+        .flatMap(history => history)
+    },
     displayChart() {
-      return this.his.filter(his => (his ? his.length > 0 : his)).length > 0 && this.isDataLoaded
+      return (
+        this.his.filter(his => (his ? his.length > 0 : his)).length > 0 &&
+        this.isDataLoaded &&
+        this.dataChart.length > 0
+      )
     },
     chartId() {
       return this.isFromExternalSource ? `${this.idEntity}-external` : this.idEntity
@@ -121,8 +124,18 @@ export default {
     entityName() {
       return formatService.formatEntityName(this.dataEntity)
     },
-    data() {
-      return this.his.map(historic => (historic ? formatService.formatCharts(historic) : null))
+    dataChart() {
+      return this.his
+        .filter(hisData => dataUtils.isNumberTypeChart(hisData))
+        .map(historic => (historic ? formatService.formatCharts(historic) : null))
+    },
+    dataHisTable() {
+      const dataHisTable = this.his.filter(hisData => !dataUtils.isNumberTypeChart(hisData))
+      if (dataHisTable.length === 1 && dataHisTable[0].length === 0) return []
+      return dataHisTable
+    },
+    displayHisTableData() {
+      return this.dataHisTable.length > 0
     },
     dataEntityKeys() {
       return Object.keys(this.dataEntity)
@@ -135,91 +148,14 @@ export default {
     }
   },
   methods: {
-    isExternalRef(item) {
-      return item.tag !== 'id'
-    },
-    isRefClickable(item) {
-      let isClickable = false
-      if (item.tag === 'id') return false
-      // eslint-disable-next-line
-      this.allEntities.map(entities => {
-        // eslint-disable-next-line
-        entities.map(entity => {
-          if (this.getEntityId(entity) === this.getRefId(item)) {
-            isClickable = true
-          }
-        })
-      })
-      return isClickable
-    },
-    refClicked(refId) {
+    onRefClick(refId) {
       this.$emit('onRefClick', refId)
     },
-    externalRefClicked(refId) {
+    onExternalRefClick(refId) {
       this.$emit('onExternalRefClick', refId)
-    },
-    getEntityId(entity) {
-      return entity.id.val.split(' ')[0].substring(2)
-    },
-    getRefId(item) {
-      return item.value.split(' ')[0].substring(2)
     },
     sortDataChart(dataChart) {
       return dataUtils.sortChartDataByDate(dataChart)
-    },
-    getRefName(item) {
-      if (item.tag === 'id') {
-        const entityName = item.value.substring(2).split(' ')
-        if (entityName.length === 1) {
-          if (this.dataEntity.dis) return this.dataEntity.dis.val.substring(2)
-          return `@${entityName[0]}`
-        }
-        entityName.shift()
-        return entityName.join(' ')
-      }
-      const entityName = item.value.substring(2).split(' ')
-      if (entityName.length === 1) return `@${entityName[0]}`
-      entityName.shift()
-      return entityName.join(' ')
-    },
-    hisUri(tag) {
-      if (tag === 'hisURI') return false
-      return true
-    },
-    isRef(item) {
-      if (typeof item !== 'string') return false
-      return item.substring(0, 2) === 'r:'
-    },
-    isDuplicateKey(item) {
-      const keysDuplicated = Object.keys(this.dataEntity).filter(key => key.split('_')[0] === item)
-      // const itemSplitted = item.split('_')
-      return keysDuplicated.length > 1
-      // return itemSplitted.length > 1 && Number(itemSplitted[1])
-    },
-    isCoordinate(item) {
-      if (typeof item !== 'string') return false
-      // if (item.value.length < 4) return false
-      return item.substring(0, 2) === 'c:'
-    },
-    customSort(items) {
-      const copyItems = items.slice()
-      const sortedItems = copyItems
-        .sort((item1, item2) => item1.tag.localeCompare(item2.tag))
-        .sort((item1, item2) => {
-          if (item1.tag === 'id') return -1
-          if (item2.tag === 'id') return 1
-          return 0
-        })
-      return sortedItems
-    },
-    copyText(item) {
-      const id = `@${item.value.split(' ')[0].substring(2)}`
-      const virtualElement = document.createElement('textarea')
-      document.body.appendChild(virtualElement)
-      virtualElement.value = id
-      virtualElement.select()
-      document.execCommand('copy')
-      document.body.removeChild(virtualElement)
     },
     getNumberValue(dataEntityKey) {
       const numberStringValue = this.dataEntity[dataEntityKey].val.substring(2).split(' ')
@@ -234,13 +170,28 @@ export default {
     },
     getEntityValue(dataEntityKey) {
       const value = this.dataEntity[dataEntityKey].val
-      if (value === 'm:') return { val: '✓', apiSource: this.dataEntity[dataEntityKey].apiSource }
-      if (value.substring(0, 2) === 'c:') return { val: value, apiSource: this.dataEntity[dataEntityKey].apiSource }
-      if (value.substring(0, 2) === 'r:') return { val: value, apiSource: this.dataEntity[dataEntityKey].apiSource }
+      const { apiSource } = this.dataEntity[dataEntityKey]
+      if (!value) return 'NaN'
+      if (value === 'b:') return { val: value.substring(2), apiSource }
+      if (value === 'm:') return { val: '✓', apiSource }
+      if (value.substring(0, 2) === 'c:') return { val: value, apiSource }
+      if (value.substring(0, 2) === 'r:') return { val: value, apiSource }
       if (value.substring(0, 2) === 'n:') return this.getNumberValue(dataEntityKey)
-      if (value.substring(0, 2) === 'r:') return { val: value, apiSource: this.dataEntity[dataEntityKey].apiSource }
-      if (value === '') return { val: '', apiSource: this.dataEntity[dataEntityKey].apiSource }
-      return { val: value.substring(2), apiSource: this.dataEntity[dataEntityKey].apiSource }
+      if (value.substring(0, 2) === 'r:') return { val: value, apiSource }
+      if (value === '') return { val: '', apiSource }
+      return { val: value.substring(2), apiSource }
+    },
+    getHisTableValue(row) {
+      const value = row.val
+      if (typeof value === 'boolean') return value
+      if (!value) return value
+      if (value === 'm:') return '✓'
+      if (value.substring(0, 2) === 'c:') return value
+      if (value.substring(0, 2) === 'r:') return value
+      if (value.substring(0, 2) === 'n:') return this.getNumberValue(value)
+      if (value.substring(0, 2) === 'r:') return value
+      if (value === '') return value
+      return value.substring(2)
     }
   }
 }

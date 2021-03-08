@@ -76,6 +76,10 @@ const formatService = {
           const newEntityKey = { val: entity[key], apiSource: apiNumber}
           entity[key] = newEntityKey
         }
+        else if (typeof entity[key] === 'boolean') {
+          const newEntityKey = { val: `b:${entity[key]}`, apiSource: apiNumber}
+          entity[key] = newEntityKey
+        }
       })
     })
     return entities
@@ -202,7 +206,8 @@ const formatService = {
       entities.map( entity => {
         const formatedEntityId = entitiesNameToEntitiesId[formatService.formatIdEntity(entity.id.val)]
         Object.keys(entity).map(key => {
-          if(formatService.isRef(entity[key].val) && key !== 'id') {
+          if(typeof entity[key] === 'boolean') {}
+          else if(formatService.isRef(entity[key].val) && key !== 'id') {
             const formatedEntityIdLinked = entitiesNameToEntitiesId[formatService.formatIdEntity(entity[key].val)] ? entitiesNameToEntitiesId[formatService.formatIdEntity(entity[key].val)] : formatService.formatIdEntity(entity[key].val)
             const formatedLink = [formatedEntityId, formatedEntityIdLinked]
             if(!formatService.isEntityFromSource(entitiesFromAllSource, entity[key].val)) {

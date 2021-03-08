@@ -74,7 +74,8 @@ export default {
           text: 'Tag',
           align: 'start',
           sortable: false,
-          value: 'tag'
+          value: 'tag',
+          width: '40%'
         },
         { text: 'Value', value: 'value', sortable: false }
       ]

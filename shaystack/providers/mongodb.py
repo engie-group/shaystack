@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, List, Any, Tuple, Dict
 from urllib.parse import urlparse
 
@@ -115,7 +115,7 @@ class Provider(DBHaystackInterface):
         """
         connect = self.get_connect()
         if self._table_name not in connect.list_collection_names():
-            connect[self._table_name]  # Create collection
+            connect.create_collection(self._table_name)
 
     def read_grid(self,
                   customer_id: str = '',
@@ -131,8 +131,10 @@ class Provider(DBHaystackInterface):
         try:
             # FIXME: gérer les meta-datas et les metadatas des colonnes
             grid = Grid()
-            for row in self.get_collection():
-                grid.append(_conv_row_to_entity(row))
+            for row in self.get_collection().find():
+                grid.append(_conv_row_to_entity(row["data"]))
+            grid.extends_columns()  # FIXME: a supprimer lors de l'injection des colonnes
+            return grid
         except Exception as ex:  # FIXME
             traceback.print_exc()
             raise ex
@@ -159,7 +161,35 @@ class Provider(DBHaystackInterface):
             customer_id: The customer id to insert in each row.
             now: The pseudo 'now' datetime.
         """
-        # FIXME
+        init_grid = self.read_grid(customer_id, version)  # FIXME self._init_grid_from_db(version)
+        new_grid = init_grid + diff_grid
+        if not customer_id:
+            customer_id = ""
+
+        if now is None:
+            now = datetime.now(tz=pytz.UTC)
+        end_date = now - timedelta(milliseconds=1)
+        if version is None:
+            version = datetime.max.replace(tzinfo=pytz.UTC)
+
+        # Close all entities
+        haystack_db = self.get_collection()
+        haystack_db.update_many(
+            {"data.id": {"$in": [json_dump_scalar(row["id"])[1:-1] for row in diff_grid]}},  # FIXME: use index
+            {"$set": {"end_datetime": end_date}}
+        )
+        end_of_world = datetime.max.replace(tzinfo=pytz.UTC)
+        # Insert and update entities
+        records = [
+            {
+                "customer_id": customer_id,
+                "start_datetime": now,
+                "end_datetime": end_of_world,
+                "data": _conv_entity_to_row(new_grid[updated_entity["id"]])
+            }
+            for updated_entity in diff_grid
+        ]
+        haystack_db.insert_many(records)
 
     def import_data(self,  # pylint: disable=too-many-arguments
                     source_uri: str,
@@ -183,18 +213,10 @@ class Provider(DBHaystackInterface):
             if reset:
                 self.purge_db()
             self.create_db()
-            haystack_db = self.get_collection()
 
+            original_grid = self.read_grid(customer_id, version)
             target_grid = read_grid_from_uri(source_uri, envs=self._envs)
-
-            # FIXME: calculer le delta
-            # FIXME: gérer les meta-datas et les metadatas des colonnes
-            # FIXME: injection du customer_id
-            # FIXME: gestion des versions
-            # FIXME: gérer les meta-datas de la grille et les metadata des colonnes
-            if target_grid:
-                records = [_conv_entity_to_row(row) for row in target_grid]
-                haystack_db.insert_many(records)
+            self.update_grid(target_grid - original_grid, version, customer_id)
         except Exception as ex:  # FIXME
             traceback.print_exc()
             raise ex  # FIXME

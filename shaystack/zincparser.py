@@ -29,6 +29,7 @@ from .grid import Grid
 # Bring in our sortable dict class to preserve order
 from .sortabledict import SortableDict
 # Bring in version handling
+from .tools import unescape_str
 from .version import Version, VER_2_0, VER_3_0, LATEST_VER
 from .zoneinfo import timezone
 
@@ -225,46 +226,6 @@ class _GenerateMatch:
             return a_generator
 
 
-def _unescape(a_string: str, uri: bool = False) -> str:
-    """Iterative parser for string escapes.
-    """
-    out = ''
-    while len(a_string) > 0:
-        char = a_string[0]
-        if char == '\\':
-            # Backslash escape
-            esc_c = a_string[1]
-
-            if esc_c in ('u', 'U'):
-                # Unicode escape
-                out += chr(int(a_string[2:6], base=16))
-                a_string = a_string[6:]
-                continue
-            if esc_c == 'b':
-                out += '\b'
-            elif esc_c == 'f':
-                out += '\f'
-            elif esc_c == 'n':
-                out += '\n'
-            elif esc_c == 'r':
-                out += '\r'
-            elif esc_c == 't':
-                out += '\t'
-            elif esc_c == 'v':
-                out += '\v'
-            elif esc_c == '\\':
-                out += '\\'
-            else:
-                if uri and (esc_c == '#'):
-                    # \# is passed through with backslash.
-                    out += '\\'
-                # Pass through
-                out += esc_c
-            a_string = a_string[2:]
-            continue
-        out += char
-        a_string = a_string[1:]
-    return out
 
 
 # Grammar according to
@@ -405,7 +366,7 @@ hs_uri = Combine(
     Suppress('`') +
     hs_uriChar[...] +
     Suppress('`')
-).setParseAction(lambda toks: [Uri(_unescape(toks[0], uri=True))])
+).setParseAction(lambda toks: [Uri(unescape_str(toks[0], uri=True))])
 
 # Strings
 hs_strChar = Regex(r"([^\x00-\x1f\\\"]|\\[bfnrt\\\"$]|\\[uU][0-9a-fA-F]{4})")
@@ -413,7 +374,7 @@ hs_str = Combine(
     Suppress('"') +
     hs_strChar[...] +
     Suppress('"')
-).setParseAction(lambda toks: [_unescape(toks[0], uri=False)])
+).setParseAction(lambda toks: [unescape_str(toks[0], uri=False)])
 
 # References
 hs_refChar = hs_alpha ^ hs_digit ^ Word('_:-.~', exact=1)

@@ -75,7 +75,7 @@ class HaystackInterface(ABC):
 
     def get_customer_id(self) -> str:  # pylint: disable=no-self-use
         """ Override this for multi-tenant.
-        May be, extract the curstomer id from the current `Principal`.
+        May be, extract the customer id from the current `Principal`.
         """
         return ''
 

@@ -450,9 +450,9 @@ class Provider(DBHaystackInterface):
         """
 
         init_grid = self._init_grid_from_db(version)
-        new_grid = init_grid + diff_grid
         if not customer_id:
             customer_id = ""
+        new_grid = init_grid + diff_grid
 
         if now is None:
             now = datetime.now(tz=pytz.UTC)

@@ -24,7 +24,7 @@ from .type import Entity
 from .version import Version, LATEST_VER
 from .zincparser import hs_nl, pyparser_lock, _reformat_exception, \
     parse_grid as parse_zinc_grid, \
-    hs_id, toks_to_dict, hs_scalar, _unescape
+    hs_id, toks_to_dict, hs_scalar
 
 # Logging instance for reporting debug info
 LOG = logging.getLogger(__name__)

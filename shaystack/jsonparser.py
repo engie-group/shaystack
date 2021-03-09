@@ -26,6 +26,7 @@ from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
     MARKER, NA, REMOVE, XStr
 from .grid import Grid
 from .metadata import MetadataObject
+from .tools import unescape_str
 from .type import Entity
 from .version import LATEST_VER, Version, VER_3_0
 from .zoneinfo import timezone
@@ -222,6 +223,7 @@ def parse_scalar(scalar: str, version: Version = LATEST_VER) -> Any:
     Returns:
         The scalar value.
     """
+    scalar = unescape_str(scalar)
     if isinstance(scalar, str) and \
             (len(scalar) >= 2) and \
             (scalar[0] in ('"', '[', '{')) and \

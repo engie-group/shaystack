@@ -20,6 +20,7 @@ The data must be referenced with the environment variable HAYSTACK_DB and may be
     - postgresql://scott:tiger@localhost/mydatabase#mytable
     - postgresql+psycopg2://scott:tiger@localhost/mydatabase
     - sqlite3://test.db#haystack
+    - mongodb+srv://localhost/?w=majority&wtimeoutMS=2500#haystack
 
 The URL is in form:
 
@@ -54,6 +55,7 @@ _scheme_to_providers = {
     "supersqlite": "sql",
     "postgresql": "sql",
     "postgres": "sql",
+    "mongodb": "mongodb",
 }
 
 

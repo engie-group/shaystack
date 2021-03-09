@@ -3,6 +3,9 @@
         <module name="haystack-api"/>
         <option name="INTERPRETER_OPTIONS" value=""/>
         <option name="PARENT_ENVS" value="true"/>
+        <envs>
+            <env name="PYTHONUNBUFFERED" value="1"/>
+        </envs>
         <option name="SDK_HOME" value=""/>
         <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$"/>
         <option name="IS_MODULE_SDK" value="true"/>
@@ -21,7 +24,7 @@
         </EXTENSION>
         <option name="SCRIPT_NAME" value="shaystack.providers.import_db"/>
         <option name="PARAMETERS"
-                value="--clean sample/carytown.zinc postgresql://postgres:password@172.17.0.2:5432/postgres#haystack"/>
+                value="--reset sample/carytown.json postgresql://postgres:password@172.17.0.2:5432/postgres#haystack"/>
         <option name="SHOW_COMMAND_LINE" value="true"/>
         <option name="EMULATE_TERMINAL" value="false"/>
         <option name="MODULE_MODE" value="true"/>

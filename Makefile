@@ -685,8 +685,25 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 	echo -e "$(green)Test with local Postgres serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 
+
+# Start Postgres, Clean DB, Start API and try
+functional-mongodb: $(REQUIREMENTS) clean-mongodb
+	@echo -e "$(green)Test local MongoDB...$(normal)"
+	@$(MAKE) async-stop-api >/dev/null
+	pip install pymongo >/dev/null
+	$(MAKE) start-mongodb
+	PG_IP=$(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mongodb)
+	export HAYSTACK_PROVIDER=shaystack.providers.mongo
+	export HAYSTACK_DB=mongodb://$$PG_IP/haystackdb#haystack
+	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB}
+	echo -e "$(green)Data imported in MongoDB$(normal)"
+	$(MAKE) start-pg async-start-api >/dev/null
+	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
+	echo -e "$(green)Test with local MongoDB serveur OK$(normal)"
+	$(MAKE) async-stop-api >/dev/null
+
 .make-functional-test: functional-url-local functional-db-sqlite functional-db-postgres \
-		functional-url-s3 functional-db-sqlite-ts
+		functional-url-s3 functional-db-sqlite-ts functional-mongodb
 	@touch .make-functional-test
 
 ## Test graphql client with different providers
@@ -804,11 +821,15 @@ stop-mongodb:
 
 ## Start Mongo CI
 mongo: start-mongodb
-	docker exec -it mongodb mongo mongodb://localhost/haystack
+	docker exec -it mongodb mongo mongodb://localhost/haystackdb
 
 # Start shell in mongodo docker container
 mongodb-shell:
 	docker exec -it mongodb bash
+
+clean-mongodb: start-mongodb
+	@docker exec -it mongodb mongo mongodb://localhost/haystackdb \
+	--quiet --eval 'db.haystack.drop()' >/dev/null
 
 # --------------------------- Docker
 ## Build a Docker image with the project and current Haystack parameter (see `make dump-params`)

@@ -11,11 +11,11 @@ from pymongo.database import Database
 
 from .db_haystack_interface import DBHaystackInterface
 from .url import read_grid_from_uri
-from .. import Entity, traceback
+from .. import Entity, traceback, LATEST_VER
 from ..datatypes import Ref
 from ..grid import Grid
-from ..jsondumper import dump_scalar as json_dump_scalar
-from ..jsonparser import parse_scalar as json_parse_scalar
+from ..jsondumper import dump_scalar as json_dump_scalar, _dump_meta, _dump_columns
+from ..jsonparser import parse_scalar as json_parse_scalar, _parse_metadata, _parse_cols
 
 log = logging.getLogger("sql.Provider")
 
@@ -116,6 +116,9 @@ class Provider(DBHaystackInterface):
         connect = self.get_db()
         if self._table_name not in connect.list_collection_names():
             connect.create_collection(self._table_name)
+        metadata_name = self._table_name + "_meta_datas"
+        if metadata_name not in connect.list_collection_names():
+            connect.create_collection(metadata_name)
 
     def read_grid(self,
                   customer_id: str = '',
@@ -129,11 +132,9 @@ class Provider(DBHaystackInterface):
             A grid with all data for a customer
         """
         try:
-            # FIXME: gérer les meta-datas et les metadatas des colonnes
-            grid = Grid()
-            for row in self.get_collection().find():
+            grid = self._init_grid_from_db(version)
+            for row in self.get_collection().find({}, {"entity": True}):
                 grid.append(_conv_row_to_entity(row["entity"]))
-            grid.extends_columns()  # FIXME: a supprimer lors de l'injection des colonnes
             return grid
         except Exception as ex:  # FIXME
             traceback.print_exc()
@@ -147,6 +148,31 @@ class Provider(DBHaystackInterface):
         connect = self.get_db()
         if self._table_name in connect.list_collection_names():
             connect[self._table_name].drop()
+        metadata_name = self._table_name + "_meta_datas"
+        if metadata_name in connect.list_collection_names():
+            connect[metadata_name].drop()
+
+    def _init_grid_from_db(self, version: Optional[datetime]) -> Grid:
+        customer_id = self.get_customer_id()
+        if version is None:
+            version = datetime.max.replace(tzinfo=pytz.UTC, microsecond=0)
+        meta_collection = self.get_meta_collection()
+
+        grid = Grid(version=LATEST_VER)
+        meta_record = list(meta_collection.aggregate(
+            [
+                {'$match':
+                     {'customer_id': customer_id,
+                      'start_datetime': {'$lte': version},
+                      'end_datetime': {'$gt': version},
+                      }
+                 },
+                {"$project": {"metadata": True, "cols": True}}
+            ]))
+        if meta_record:
+            grid.metadata = _parse_metadata(_conv_row_to_entity(meta_record[0]['metadata']), LATEST_VER)
+            _parse_cols(grid, meta_record[0]['cols'], LATEST_VER)
+        return grid
 
     @overrides
     def update_grid(self,
@@ -161,6 +187,7 @@ class Provider(DBHaystackInterface):
             customer_id: The customer id to insert in each row.
             now: The pseudo 'now' datetime.
         """
+        end_of_world = datetime.max.replace(tzinfo=pytz.UTC)
         init_grid = self.read_grid(customer_id, version)  # FIXME self._init_grid_from_db(version)
         new_grid = init_grid + diff_grid
         if not customer_id:
@@ -172,27 +199,46 @@ class Provider(DBHaystackInterface):
         if version is None:
             version = datetime.max.replace(tzinfo=pytz.UTC)
 
+        # Update metadata ?
+        if new_grid.metadata != init_grid.metadata or new_grid.column != init_grid.column:
+            haystack_meta_db = self.get_meta_collection()
+            haystack_meta_db.update_one(
+                {
+                    "customer_id": customer_id,
+                    "end_datetime": end_of_world
+                },
+                {"$set": {"end_datetime": end_date}}
+            )
+            haystack_meta_db.insert_one(
+                {
+                    'customer_id': customer_id,
+                    "start_datetime": version,
+                    "end_datetime": end_of_world,
+                    "metadata": _dump_meta(new_grid.metadata),
+                    "cols": _dump_columns(new_grid.column)
+                })
+            log.debug("Update metadatas")
         # Close all entities
         haystack_db = self.get_collection()
         closed_id = [json_dump_scalar(row["id"])[1:-1] for row in diff_grid]
-        haystack_db.update_many(
-            {"entity.id": {"$in": closed_id}},  # FIXME: use index
-            {"$set": {"end_datetime": end_date}}
-        )
-        log.debug("Close %s record(s)", len(closed_id))
-        end_of_world = datetime.max.replace(tzinfo=pytz.UTC)
-        # Insert and update entities
-        records = [
-            {
-                "customer_id": customer_id,
-                "start_datetime": now,
-                "end_datetime": end_of_world,
-                "entity": _conv_entity_to_row(new_grid[updated_entity["id"]])
-            }
-            for updated_entity in diff_grid
-        ]
-        log.debug("Import %s", records)
-        haystack_db.insert_many(records)
+        if closed_id:
+            haystack_db.update_many(
+                {"entity.id": {"$in": closed_id}},  # FIXME: use index
+                {"$set": {"end_datetime": end_date}}
+            )
+            log.debug("Close %s record(s)", len(closed_id))
+            # Insert and update entities
+            records = [
+                {
+                    "customer_id": customer_id,
+                    "start_datetime": now,
+                    "end_datetime": end_of_world,
+                    "entity": _conv_entity_to_row(new_grid[updated_entity["id"]])
+                }
+                for updated_entity in diff_grid
+            ]
+            haystack_db.insert_many(records)
+            log.debug("Import %s record(s)", len(records))
 
     def import_data(self,  # pylint: disable=too-many-arguments
                     source_uri: str,
@@ -258,3 +304,7 @@ class Provider(DBHaystackInterface):
     def get_collection(self) -> Collection:
         db = self.get_db()
         return db[self._table_name]
+
+    def get_meta_collection(self) -> Collection:
+        db = self.get_db()
+        return db[self._table_name + "_meta_datas"]

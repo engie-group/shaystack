@@ -39,7 +39,7 @@ from ..grid import Grid
 from ..jsondumper import dump_scalar, _dump_meta, _dump_columns, _dump_row
 from ..jsonparser import parse_scalar, _parse_row, _parse_metadata, _parse_cols
 from ..type import Entity
-from ..version import VER_3_0
+from ..version import LATEST_VER
 
 log = logging.getLogger("sql.Provider")
 
@@ -210,7 +210,7 @@ class Provider(DBHaystackInterface):
                                          )
                 grid = self._init_grid_from_db(date_version)
                 for row in cursor:
-                    grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
+                    grid.append(_parse_row(sql_type_to_json(row[0]), LATEST_VER))
                 conn.commit()
                 return grid.select(select)
             customer_id = self.get_customer_id()
@@ -221,7 +221,7 @@ class Provider(DBHaystackInterface):
 
             grid = self._init_grid_from_db(date_version)
             for row in cursor:
-                grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
+                grid.append(_parse_row(sql_type_to_json(row[0]), LATEST_VER))
             conn.commit()
             return grid.select(select)
         finally:
@@ -329,12 +329,12 @@ class Provider(DBHaystackInterface):
             sql_type_to_json = self._sql_type_to_json
             cursor.execute(self._sql["SELECT_META_DATA"],
                            (version, customer))
-            grid = Grid(version=VER_3_0)
+            grid = Grid(version=LATEST_VER)
             row = cursor.fetchone()
             if row:
                 meta, cols = row
-                grid.metadata = _parse_metadata(sql_type_to_json(meta), VER_3_0)
-                _parse_cols(grid, sql_type_to_json(cols), VER_3_0)
+                grid.metadata = _parse_metadata(sql_type_to_json(meta), LATEST_VER)
+                _parse_cols(grid, sql_type_to_json(cols), LATEST_VER)
             conn.commit()
             return grid
         finally:
@@ -401,18 +401,18 @@ class Provider(DBHaystackInterface):
 
             cursor.execute(self._sql["SELECT_META_DATA"],
                            (version, customer_id))
-            grid = Grid(version=VER_3_0)
+            grid = Grid(version=LATEST_VER)
             row = cursor.fetchone()
             if row:
                 meta, cols = row
-                grid.metadata = _parse_metadata(sql_type_to_json(meta), VER_3_0)
-                _parse_cols(grid, sql_type_to_json(cols), VER_3_0)
+                grid.metadata = _parse_metadata(sql_type_to_json(meta), LATEST_VER)
+                _parse_cols(grid, sql_type_to_json(cols), LATEST_VER)
 
             cursor.execute(self._sql["SELECT_ENTITY"],
                            (version, customer_id))
 
             for row in cursor:
-                grid.append(_parse_row(sql_type_to_json(row[0]), VER_3_0))
+                grid.append(_parse_row(sql_type_to_json(row[0]), LATEST_VER))
             conn.commit()
             assert _validate_grid(grid), "Error in grid"
             return grid
@@ -449,7 +449,7 @@ class Provider(DBHaystackInterface):
             now: The pseudo 'now' datetime.
         """
 
-        init_grid = self._init_grid_from_db(version)
+        init_grid = self.read_grid(customer_id, version)
         if not customer_id:
             customer_id = ""
         new_grid = init_grid + diff_grid
@@ -463,8 +463,8 @@ class Provider(DBHaystackInterface):
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
         try:
-            cursor.execute(self._sql["SELECT_META_DATA"],
-                           (version, customer_id))
+            # cursor.execute(self._sql["SELECT_META_DATA"],
+            #                (version, customer_id))
 
             # Update metadata ?
             if new_grid.metadata != init_grid.metadata or new_grid.column != init_grid.column:

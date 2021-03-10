@@ -32,7 +32,17 @@ def test_tag():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$cond': {'if': '$site', 'then': 1, 'else': 0}}}}]
+           [
+               {'$match':
+                    {'customer_id': 'customer',
+                     'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                     'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                     '$expr':
+                         {'$cond': {'if': '$entity.site', 'then': 1, 'else': 0}}
+                     }
+                },
+               {'$limit': 1}
+           ]
 
 
 def test_not_tag():
@@ -40,7 +50,16 @@ def test_not_tag():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$not': '$site'}}}]
+           [
+               {'$match':
+                    {'customer_id': 'customer',
+                     'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                     'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                     '$expr': {'$not': '$entity.site'}
+                     }
+                },
+               {'$limit': 1}
+           ]
 
 
 def test_equal_ref():
@@ -48,7 +67,10 @@ def test_equal_ref():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$a', '"r:id"']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.a', '"r:id"']}}}, {'$limit': 1}]
 
 
 def test_equal_str():
@@ -56,7 +78,10 @@ def test_equal_str():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$a', '"s:abc"']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.a', '"s:abc"']}}}, {'$limit': 1}]
 
 
 def test_equal_int():
@@ -64,7 +89,10 @@ def test_equal_int():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$a', '"n:1.000000"']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.a', '"n:1.000000"']}}}, {'$limit': 1}]
 
 
 def test_equal_float():
@@ -72,7 +100,10 @@ def test_equal_float():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$a', '"n:1.000000"']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.a', '"n:1.000000"']}}}, {'$limit': 1}]
 
 
 def test_equal_bool():
@@ -80,7 +111,10 @@ def test_equal_bool():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$a', 'true']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.a', 'true']}}}, {'$limit': 1}]
 
 
 def test_equal_datetime():
@@ -88,7 +122,10 @@ def test_equal_datetime():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$a', '"t:1977-04-22T01:00:00+00:00 UTC"']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.a', '"t:1977-04-22T01:00:00+00:00 UTC"']}}}, {'$limit': 1}]
 
 
 def test_equal_time():
@@ -96,7 +133,10 @@ def test_equal_time():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$a', '"h:01:00:00"']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.a', '"h:01:00:00"']}}}, {'$limit': 1}]
 
 
 def test_equal_date():
@@ -104,7 +144,10 @@ def test_equal_date():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$a', '"d:1977-04-22"']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.a', '"d:1977-04-22"']}}}, {'$limit': 1}]
 
 
 def test_equal_coord():
@@ -112,7 +155,10 @@ def test_equal_coord():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$a', '"c:100.000000,100.000000"']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.a', '"c:100.000000,100.000000"']}}}, {'$limit': 1}]
 
 
 def test_equal_NA():
@@ -120,7 +166,10 @@ def test_equal_NA():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$a', '"z:"']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.a', '"z:"']}}}, {'$limit': 1}]
 
 
 def test_equal_Null():
@@ -128,7 +177,10 @@ def test_equal_Null():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$a', 'null']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.a', 'null']}}}, {'$limit': 1}]
 
 
 def test_not_equal_Null():
@@ -136,7 +188,10 @@ def test_not_equal_Null():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$ne': ['$a', 'null']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$ne': ['$entity.a', 'null']}}}, {'$limit': 1}]
 
 
 def test_equal_Marker():
@@ -144,7 +199,10 @@ def test_equal_Marker():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$a', '"m:"']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.a', '"m:"']}}}, {'$limit': 1}]
 
 
 def test_equal_uri():
@@ -152,7 +210,10 @@ def test_equal_uri():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$a', '"u:http://l"']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.a', '"u:http://l"']}}}, {'$limit': 1}]
 
 
 def test_equal_xstr():
@@ -160,7 +221,10 @@ def test_equal_xstr():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$a', '"x:hex:deadbeef"']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.a', '"x:hex:deadbeef"']}}}, {'$limit': 1}]
 
 
 def test_and_ltag_rtag():
@@ -168,8 +232,11 @@ def test_and_ltag_rtag():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$and': [{'$cond': {'if': '$site', 'then': 1, 'else': 0}},
-                                           {'$cond': {'if': '$ref', 'then': 1, 'else': 0}}]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$and': [{'$cond': {'if': '$entity.site', 'then': 1, 'else': 0}},
+                            {'$cond': {'if': '$entity.ref', 'then': 1, 'else': 0}}]}}}, {'$limit': 1}]
 
 
 def test_and_andtag_rtag():
@@ -177,11 +244,12 @@ def test_and_andtag_rtag():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match':
-                 {'$expr': {'$and':
-                                [{'$and': [{'$cond': {'if': '$site', 'then': 1, 'else': 0}},
-                                           {'$cond': {'if': '$ref', 'then': 1, 'else': 0}}]},
-                                 {'$cond': {'if': '$his', 'then': 1, 'else': 0}}]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$and': [{'$and': [{'$cond': {'if': '$entity.site', 'then': 1, 'else': 0}},
+                                      {'$cond': {'if': '$entity.ref', 'then': 1, 'else': 0}}]},
+                            {'$cond': {'if': '$entity.his', 'then': 1, 'else': 0}}]}}}, {'$limit': 1}]
 
 
 def test_and_ltag_andtag():
@@ -189,10 +257,12 @@ def test_and_ltag_andtag():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match':
-                 {'$expr': {'$and': [{'$cond': {'if': '$his', 'then': 1, 'else': 0}}, {
-                     '$and': [{'$cond': {'if': '$site', 'then': 1, 'else': 0}},
-                              {'$cond': {'if': '$ref', 'then': 1, 'else': 0}}]}]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$and': [{'$cond': {'if': '$entity.his', 'then': 1, 'else': 0}}, {
+                       '$and': [{'$cond': {'if': '$entity.site', 'then': 1, 'else': 0}},
+                                {'$cond': {'if': '$entity.ref', 'then': 1, 'else': 0}}]}]}}}, {'$limit': 1}]
 
 
 def test_and_andtag_andtag():
@@ -200,13 +270,13 @@ def test_and_andtag_andtag():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match':
-                 {'$expr':
-                      {'$and':
-                           [{'$and': [{'$cond': {'if': '$his', 'then': 1, 'else': 0}},
-                                      {'$cond': {'if': '$point', 'then': 1, 'else': 0}}]}, {
-                                '$and': [{'$cond': {'if': '$site', 'then': 1, 'else': 0}},
-                                         {'$cond': {'if': '$ref', 'then': 1, 'else': 0}}]}]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$and': [{'$and': [{'$cond': {'if': '$entity.his', 'then': 1, 'else': 0}},
+                                      {'$cond': {'if': '$entity.point', 'then': 1, 'else': 0}}]}, {
+                                '$and': [{'$cond': {'if': '$entity.site', 'then': 1, 'else': 0}},
+                                         {'$cond': {'if': '$entity.ref', 'then': 1, 'else': 0}}]}]}}}, {'$limit': 1}]
 
 
 def test_and_not_ltag_rtag():
@@ -214,7 +284,10 @@ def test_and_not_ltag_rtag():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$and': [{'$not': '$site'}, {'$not': '$ref'}]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$and': [{'$not': '$entity.site'}, {'$not': '$entity.ref'}]}}}, {'$limit': 1}]
 
 
 def test_and_not_andtag_rtag():
@@ -222,7 +295,11 @@ def test_and_not_andtag_rtag():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$and': [{'$and': [{'$not': '$site'}, {'$not': '$ref'}]}, {'$not': '$his'}]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$and': [{'$and': [{'$not': '$entity.site'}, {'$not': '$entity.ref'}]}, {'$not': '$entity.his'}]}}},
+            {'$limit': 1}]
 
 
 def test_and_not_ltag_andtag():
@@ -230,7 +307,11 @@ def test_and_not_ltag_andtag():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$and': [{'$not': '$his'}, {'$and': [{'$not': '$site'}, {'$not': '$ref'}]}]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$and': [{'$not': '$entity.his'}, {'$and': [{'$not': '$entity.site'}, {'$not': '$entity.ref'}]}]}}},
+            {'$limit': 1}]
 
 
 def test_and_not_andtag_andtag():
@@ -238,8 +319,11 @@ def test_and_not_andtag_andtag():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$and': [{'$and': [{'$not': '$his'}, {'$not': '$point'}]},
-                                           {'$and': [{'$not': '$site'}, {'$not': '$ref'}]}]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$and': [{'$and': [{'$not': '$entity.his'}, {'$not': '$entity.point'}]},
+                            {'$and': [{'$not': '$entity.site'}, {'$not': '$entity.ref'}]}]}}}, {'$limit': 1}]
 
 
 def test_equal():
@@ -247,7 +331,10 @@ def test_equal():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$geoPostal', '"n:78000.000000"']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.geoPostal', '"n:78000.000000"']}}}, {'$limit': 1}]
 
 
 def test_has_and_equal():
@@ -255,8 +342,11 @@ def test_has_and_equal():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$and': [{'$cond': {'if': '$site', 'then': 1, 'else': 0}},
-                                           {'$eq': ['$geoPostal', '"n:78000.000000"']}]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$and': [{'$cond': {'if': '$entity.site', 'then': 1, 'else': 0}},
+                            {'$eq': ['$entity.geoPostal', '"n:78000.000000"']}]}}}, {'$limit': 1}]
 
 
 def test_and_with_not():
@@ -264,9 +354,12 @@ def test_and_with_not():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$and': [{'$and': [{'$cond': {'if': '$site', 'then': 1, 'else': 0}},
-                                                     {'$cond': {'if': '$his', 'then': 1, 'else': 0}}]},
-                                           {'$not': '$geoPostal'}]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$and': [{'$and': [{'$cond': {'if': '$entity.site', 'then': 1, 'else': 0}},
+                                      {'$cond': {'if': '$entity.his', 'then': 1, 'else': 0}}]},
+                            {'$not': '$entity.geoPostal'}]}}}, {'$limit': 1}]
 
 
 def test_equal_number():
@@ -274,7 +367,10 @@ def test_equal_number():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$geoPostalCode', '"n:1111.000000"']}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.geoPostalCode', '"n:1111.000000"']}}}, {'$limit': 1}]
 
 
 def test_greater_number():
@@ -282,14 +378,13 @@ def test_greater_number():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match':
-               {'$expr':
-                   {'$gt': [{'$let': {'vars': {
-                       'curVal_': {
-                           '$regexFind':
-                               {'input': '$curVal', 'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
-                       'in': {'$toDouble': {'$arrayElemAt': ['$$curVal_.captures', 0]}}}},
-                       1.0]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$gt': [{'$let': {'vars': {'curVal_': {'$regexFind': {'input': '$entity.curVal',
+                                                                         'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
+                                     'in': {'$toDouble': {'$arrayElemAt': ['$curVal_.captures', 0]}}}}, 1.0]}}},
+            {'$limit': 1}]
 
 
 def test_greater_or_equal_number():
@@ -297,14 +392,13 @@ def test_greater_or_equal_number():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match':
-               {'$expr':
-                   {'$gte': [{'$let': {'vars': {'geoPostalCode_': {
-                       '$regexFind': {'input': '$geoPostalCode',
-                                      'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
-                       'in': {'$toDouble': {
-                           '$arrayElemAt': ['$$geoPostalCode_.captures', 0]}}}},
-                       55400.0]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$gte': [{'$let': {'vars': {'geoPostalCode_': {'$regexFind': {'input': '$entity.geoPostalCode',
+                                                                                 'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
+                                      'in': {'$toDouble': {'$arrayElemAt': ['$geoPostalCode_.captures', 0]}}}},
+                            55400.0]}}}, {'$limit': 1}]
 
 
 def test_lower_number():
@@ -312,14 +406,13 @@ def test_lower_number():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match':
-               {'$expr':
-                   {'$lt': [{'$let': {'vars': {'geoPostalCode_': {
-                       '$regexFind': {'input': '$geoPostalCode',
-                                      'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
-                       'in': {'$toDouble': {
-                           '$arrayElemAt': ['$$geoPostalCode_.captures', 0]}}}},
-                       55400.0]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$lt': [{'$let': {'vars': {'geoPostalCode_': {'$regexFind': {'input': '$entity.geoPostalCode',
+                                                                                'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
+                                     'in': {'$toDouble': {'$arrayElemAt': ['$geoPostalCode_.captures', 0]}}}},
+                           55400.0]}}}, {'$limit': 1}]
 
 
 def test_lower_or_equal_number():
@@ -327,14 +420,13 @@ def test_lower_or_equal_number():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match':
-               {'$expr':
-                   {'$lte': [{'$let': {'vars': {'geoPostalCode_': {
-                       '$regexFind': {'input': '$geoPostalCode',
-                                      'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
-                       'in': {'$toDouble': {
-                           '$arrayElemAt': ['$$geoPostalCode_.captures', 0]}}}},
-                       55400.0]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$lte': [{'$let': {'vars': {'geoPostalCode_': {'$regexFind': {'input': '$entity.geoPostalCode',
+                                                                                 'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
+                                      'in': {'$toDouble': {'$arrayElemAt': ['$geoPostalCode_.captures', 0]}}}},
+                            55400.0]}}}, {'$limit': 1}]
 
 
 def test_greater_quantity():
@@ -342,13 +434,13 @@ def test_greater_quantity():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match':
-               {'$expr':
-                   {'$gt': [{'$let': {'vars': {
-                       'temp_': {
-                           '$regexFind': {'input': '$temp', 'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
-                       'in': {'$toDouble': {'$arrayElemAt': ['$$temp_.captures', 0]}}}},
-                       55400.0]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$gt': [{'$let': {'vars': {'temp_': {'$regexFind': {'input': '$entity.temp',
+                                                                       'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
+                                     'in': {'$toDouble': {'$arrayElemAt': ['$temp_.captures', 0]}}}}, 55400.0]}}},
+            {'$limit': 1}]
 
 
 def test_greater_or_equal_quantity():
@@ -356,13 +448,78 @@ def test_greater_or_equal_quantity():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match':
-               {'$expr':
-                   {'$gte': [{'$let': {'vars': {
-                       'temp_': {
-                           '$regexFind': {'input': '$temp', 'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
-                       'in': {'$toDouble': {'$arrayElemAt': ['$$temp_.captures', 0]}}}},
-                       55400.0]}}}]
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$gte': [{'$let': {'vars': {'temp_': {'$regexFind': {'input': '$entity.temp',
+                                                                        'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
+                                      'in': {'$toDouble': {'$arrayElemAt': ['$temp_.captures', 0]}}}}, 55400.0]}}},
+            {'$limit': 1}]
+
+
+def test_and_or():
+    hs_filter = '(a or b) and (c or d)'
+    mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
+    _check_mongodb(mongo_request)
+    assert mongo_request == \
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$and': [{'$or': [{'$cond': {'if': '$entity.a', 'then': 1, 'else': 0}},
+                                     {'$cond': {'if': '$entity.b', 'then': 1, 'else': 0}}]}, {
+                                '$or': [{'$cond': {'if': '$entity.c', 'then': 1, 'else': 0}},
+                                        {'$cond': {'if': '$entity.d', 'then': 1, 'else': 0}}]}]}}}, {'$limit': 1}]
+
+
+def test_or_and():
+    hs_filter = 'site or (elect and point)'
+    mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
+    _check_mongodb(mongo_request)
+    assert mongo_request == \
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$or': [{'$cond': {'if': '$entity.site', 'then': 1, 'else': 0}}, {
+                       '$and': [{'$cond': {'if': '$entity.elect', 'then': 1, 'else': 0}},
+                                {'$cond': {'if': '$entity.point', 'then': 1, 'else': 0}}]}]}}}, {'$limit': 1}]
+
+
+def test_and_or_and():
+    hs_filter = 'site and (elect or point) and toto'
+    mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
+    _check_mongodb(mongo_request)
+    assert mongo_request == \
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$and': [{'$and': [{'$cond': {'if': '$entity.site', 'then': 1, 'else': 0}}, {
+                       '$or': [{'$cond': {'if': '$entity.elect', 'then': 1, 'else': 0}},
+                               {'$cond': {'if': '$entity.point', 'then': 1, 'else': 0}}]}]},
+                            {'$cond': {'if': '$entity.toto', 'then': 1, 'else': 0}}]}}}, {'$limit': 1}]
+
+
+def test_combine_and():
+    hs_filter = '(a==1 and b==1) or (c==2 and d==3)'
+    mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
+    _check_mongodb(mongo_request)
+    assert mongo_request == \
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {
+                   '$or': [{'$and': [{'$eq': ['$entity.a', '"n:1.000000"']}, {'$eq': ['$entity.b', '"n:1.000000"']}]}, {
+                       '$and': [{'$eq': ['$entity.c', '"n:2.000000"']}, {'$eq': ['$entity.d', '"n:3.000000"']}]}]}}},
+            {'$limit': 1}]
+
+
+def test_select_with_id():
+    hs_filter = 'id==@p:demo:r:23a44701-3a62fd7a'
+    mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
+    _check_mongodb(mongo_request)
+    assert mongo_request == \
+           [{'$match': {'customer_id': 'customer',
+                        'start_datetime': {'$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        'end_datetime': {'$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)},
+                        '$expr': {'$eq': ['$entity.id', '"r:p:demo:r:23a44701-3a62fd7a"']}}}, {'$limit': 1}]
 
 
 def test_path_equal_quantity():
@@ -414,38 +571,6 @@ def test_path_or():
     assert False
 
 
-def test_and_or():
-    hs_filter = '(a or b) and (c or d)'
-    mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
-    _check_mongodb(mongo_request)
-    assert mongo_request == \
-           [{'$match': {'$expr': {'$and': [
-               {'$or': [{'$cond': {'if': '$a', 'then': 1, 'else': 0}}, {'$cond': {'if': '$b', 'then': 1, 'else': 0}}]},
-               {'$or': [{'$cond': {'if': '$c', 'then': 1, 'else': 0}},
-                        {'$cond': {'if': '$d', 'then': 1, 'else': 0}}]}]}}}]
-
-
-def test_or_and():
-    hs_filter = 'site or (elect and point)'
-    mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
-    _check_mongodb(mongo_request)
-    assert mongo_request == \
-           [{'$match': {'$expr': {'$or': [{'$cond': {'if': '$site', 'then': 1, 'else': 0}}, {
-               '$and': [{'$cond': {'if': '$elect', 'then': 1, 'else': 0}},
-                        {'$cond': {'if': '$point', 'then': 1, 'else': 0}}]}]}}}]
-
-
-def test_and_or_and():
-    hs_filter = 'site and (elect or point) and toto'
-    mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
-    _check_mongodb(mongo_request)
-    assert mongo_request == \
-           [{'$match': {'$expr': {'$and': [{'$and': [{'$cond': {'if': '$site', 'then': 1, 'else': 0}}, {
-               '$or': [{'$cond': {'if': '$elect', 'then': 1, 'else': 0}},
-                       {'$cond': {'if': '$point', 'then': 1, 'else': 0}}]}]},
-                                           {'$cond': {'if': '$toto', 'then': 1, 'else': 0}}]}}}]
-
-
 def test_and_or_path():
     hs_filter = '(a->b or c->d) and (e->f or g->h)'
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
@@ -457,25 +582,21 @@ def test_complex():
     hs_filter = '(a->b or c->d) and e or (f and g->h)'
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(mongo_request)
-    assert False
-
-
-def test_combine_and():
-    hs_filter = '(a==1 and b==1) or (c==2 and d==3)'
-    mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
-    _check_mongodb(mongo_request)
     assert mongo_request == \
-           [{'$match': {'$expr':
-                            {'$or':
-                                 [{'$and': [{'$eq': ['$a', '"n:1.000000"']},
-                                            {'$eq': ['$b', '"n:1.000000"']}]},
-                                  {'$and': [{'$eq': ['$c', '"n:2.000000"']},
-                                            {'$eq': ['$d', '"n:3.000000"']}]}]}}}]
-
-
-def test_select_with_id():
-    hs_filter = 'id==@p:demo:r:23a44701-3a62fd7a'
-    mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
-    _check_mongodb(mongo_request)
-    assert mongo_request == \
-           [{'$match': {'$expr': {'$eq': ['$id', '"r:p:demo:r:23a44701-3a62fd7a"']}}}]
+           [{'$match': {'customer_id': 'customer', 'start_datetime': {
+               '$lte': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, 'end_datetime': {
+               '$gt': datetime.datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC)}, '$expr': {'$or': [{'$and': [{'$or': [
+               {'$cond': {'if': '$entity.a', 'then': 1, 'else': 0}},
+               {'$cond': {'if': '$entity.c', 'then': 1, 'else': 0}}]}, {
+               '$cond': {
+                   'if': '$entity.e',
+                   'then': 1,
+                   'else': 0}}]},
+               {'$and': [{'$cond': {
+                   'if': '$entity.f',
+                   'then': 1, 'else': 0}}, {
+                   '$cond': {
+                       'if': '$entity.g',
+                       'then': 1,
+                       'else': 0}}]}]}}}, {
+                '$limit': 1}]

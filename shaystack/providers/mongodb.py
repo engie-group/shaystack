@@ -102,7 +102,7 @@ class Provider(DBHaystackInterface):
         pass  # FIXME
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        conn = self.get_connect()
+        conn = self.get_db()
         conn.close()
         self._connect = False
         # FIXME
@@ -113,7 +113,7 @@ class Provider(DBHaystackInterface):
         """
         Create the database and schema.
         """
-        connect = self.get_connect()
+        connect = self.get_db()
         if self._table_name not in connect.list_collection_names():
             connect.create_collection(self._table_name)
 
@@ -132,7 +132,7 @@ class Provider(DBHaystackInterface):
             # FIXME: gérer les meta-datas et les metadatas des colonnes
             grid = Grid()
             for row in self.get_collection().find():
-                grid.append(_conv_row_to_entity(row["data"]))
+                grid.append(_conv_row_to_entity(row["entity"]))
             grid.extends_columns()  # FIXME: a supprimer lors de l'injection des colonnes
             return grid
         except Exception as ex:  # FIXME
@@ -144,7 +144,7 @@ class Provider(DBHaystackInterface):
         """ Purge the current database.
         All the datas was removed.
         """
-        connect = self.get_connect()
+        connect = self.get_db()
         if self._table_name in connect.list_collection_names():
             connect[self._table_name].drop()
 
@@ -174,10 +174,12 @@ class Provider(DBHaystackInterface):
 
         # Close all entities
         haystack_db = self.get_collection()
+        closed_id = [json_dump_scalar(row["id"])[1:-1] for row in diff_grid]
         haystack_db.update_many(
-            {"data.id": {"$in": [json_dump_scalar(row["id"])[1:-1] for row in diff_grid]}},  # FIXME: use index
+            {"entity.id": {"$in": closed_id}},  # FIXME: use index
             {"$set": {"end_datetime": end_date}}
         )
+        log.debug("Close %s record(s)", len(closed_id))
         end_of_world = datetime.max.replace(tzinfo=pytz.UTC)
         # Insert and update entities
         records = [
@@ -185,10 +187,11 @@ class Provider(DBHaystackInterface):
                 "customer_id": customer_id,
                 "start_datetime": now,
                 "end_datetime": end_of_world,
-                "data": _conv_entity_to_row(new_grid[updated_entity["id"]])
+                "entity": _conv_entity_to_row(new_grid[updated_entity["id"]])
             }
             for updated_entity in diff_grid
         ]
+        log.debug("Import %s", records)
         haystack_db.insert_many(records)
 
     def import_data(self,  # pylint: disable=too-many-arguments
@@ -229,7 +232,7 @@ class Provider(DBHaystackInterface):
                   ):
         pass  # FIXME: import des TS
 
-    def get_connect(self) -> Database:
+    def get_db(self) -> Database:
         if not self._connect:  # Lazy connection
             # FIXME: manage password in secret manager for MongoDB
             # password = self._parsed_db.password
@@ -253,5 +256,5 @@ class Provider(DBHaystackInterface):
         return self._connect
 
     def get_collection(self) -> Collection:
-        conn = self.get_connect()
-        return conn[self._table_name]
+        db = self.get_db()
+        return db[self._table_name]

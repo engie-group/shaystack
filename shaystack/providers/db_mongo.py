@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List, Union, cast
 
 from shaystack import parse_filter, HaystackType, Quantity
 from shaystack.filter_ast import FilterNode, FilterUnary, FilterPath, FilterBinary
@@ -38,7 +38,7 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
             else:
                 return {"$cond": {"if": _conv_filter(node.right), "then": 0, "else": 1}}
     if isinstance(node, FilterPath):
-        return '$' + node.paths[0]
+        return '$entity.' + node.paths[0]
     if isinstance(node, FilterBinary):
         if node.operator in _simple_ops:
             return {_simple_ops[node.operator]: [
@@ -47,10 +47,11 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
             ]}
         if node.operator in _relative_ops:
             path = _conv_filter(node.left)
+            var = cast(FilterPath, node.left).paths[0]
             to_double = {
                 "$let": {
                     "vars": {
-                        f"{path[1:]}_": {
+                        f"{var}_": {
                             "$regexFind": {
                                 "input": f"{path}",
                                 "regex": "n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)"
@@ -58,7 +59,7 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
                         }
                     },
                     "in": {"$toDouble": {
-                        "$arrayElemAt": [f"${path}_.captures", 0]
+                        "$arrayElemAt": [f"${var}_.captures", 0]
                     }}
                 }
             }
@@ -76,12 +77,20 @@ def _mongo_filter(grid_filter: Optional[str],
                   version: datetime,
                   limit: int = 0,
                   customer_id: str = '') -> List[Dict[str, Any]]:
-    return [
+    stages = [
         {
             "$match":
                 {
-                    "$expr": _conv_filter(parse_filter(grid_filter).head)
+                    "customer_id": customer_id,
+                    "start_datetime": {"$lte": version},
+                    "end_datetime": {"$gt": version},
+                    "$expr":
+                        _conv_filter(parse_filter(grid_filter).head)
                 }
         }
     ]
-    return
+    if limit:
+        stages.append(
+            {"$limit": limit}
+        )
+    return stages

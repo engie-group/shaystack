@@ -1,4 +1,4 @@
-#### URL Provider
+# URL Provider
 
 Use `HAYSTACK_PROVIDER=shaystack.providers.db` or `HAYSTACK_PROVIDER=shaystack.providers.url`
 to use this provider. Add the variable `HAYSTACK_DB=<url>` to expose an Haystack file via the Haystack protocol. The

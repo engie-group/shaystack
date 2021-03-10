@@ -1,4 +1,4 @@
-![Shift-Haystack](logo.png)
+db.![Shift-Haystack](logo.png)
 
 | The API is not stable and can be changed without any notice. |
 | --------------------------------------------------------- |
@@ -134,15 +134,16 @@ Shift-4-Haystack is agile and can be deployed in different scenarios. Choose an 
 | Docker Flask server     |
 | Internet AWS Lambda API |
 
-| Haystack data location        |
-| ----------------------------- |
-| local file                    |
-| url                           |
-| S3 bucket without version     |
-| S3 bucket with version        |
-| Sqlite database               |
-| Postgres database             |
-| SQL database + AWS Timestream |
+| Haystack backend                  |
+| --------------------------------- |
+| local file                        |
+| url                               |
+| S3 bucket without version         |
+| S3 bucket with version            |
+| Sqlite database                   |
+| Postgres database                 |
+| Mongo database                    |
+| haystack backend + AWS Timestream |
 
 | Multi tenancy                 |
 | ----------------------------- |
@@ -227,7 +228,8 @@ by extending `shaystack.providers.HaystackInterface`
 |Data on AWS S3 Bucket|`HAYSTACK_PROVIDER=shaystack.providers.db\<br />HAYSTACK_DB=s3://...\<br /> shaystack`|Remember to install aws support and boto3 python module. [More...](url_provider.md)|
 |Data in a SuperSQLite database|`HAYSTACK_PROVIDER=shaystack.providers.db\<br />HAYSTACK_DB=sqlite3://...\<br /> shaystack`|Remember to install supersqlite python module. [More...](sql_provider.md)|
 |Data in a Postgresql database|`HAYSTACK_PROVIDER=shaystack.providers.db\<br />HAYSTACK_DB=postgres://...\<br /> shaystack`|Remember to install psycopg2 python module. [More...](sql_provider.md)|
-|Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.db_timestream\<br />HAYSTACK_DB=postgres://...\<br />HAYSTACK_TS=timestream:://...\<br /> shaystack`|[More...](sql_ts_provider.md)|
+|Data in a MongoDB|`HAYSTACK_PROVIDER=shaystack.providers.db\<br />HAYSTACK_DB=mongodb+srv:://...\<br /> shaystack`|Remember to install pymongo python module. [More...](mongo_provider.md)|
+|Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.db_timestream\<br />HAYSTACK_DB=postgres://...\<br />HAYSTACK_TS=timestream:://...\<br /> shaystack`|[More...](timestream_provider.md)|
 |Custom|`HAYSTACK_PROVIDER=shaystack.providers.<your module name>`|Write your own subclass of `shaystack.providers.HaystackInterface shaystack`.|
 
 Note: Existing providers are not connected to IOT for simplicity. If you want to connect the haystack API with IOT, you

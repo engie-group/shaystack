@@ -1,9 +1,8 @@
-# SQL Provider
+# MongoDB Provider
 
-This provider uses an ontology imported in SQL database. Each entity is saved in a row in the JSON format.
-Use `HAYSTACK_PROVIDER=shaytack.providers.db` or `HAYSTACK_PROVIDER=shaytack.providers.sql`
-to use this provider. Add the variable `HAYSTACK_DB` to describe the link to the root table. At this time, only
-SuperSQLite and Postgresql was supported.
+This provider uses an ontology imported in Mongo database. Each entity is saved in a row in the JSON format.
+Use `HAYSTACK_PROVIDER=shaytack.providers.db` or `HAYSTACK_PROVIDER=shaytack.providers.mongo`
+to use this provider. Add the variable `HAYSTACK_DB` to describe the link to the root table.
 
 ```console
 $ pip install 'shaystack[graphql,lambda]'
@@ -11,11 +10,9 @@ $ pip install 'shaystack[graphql,lambda]'
 
 Install the corresponding database driver:
 
-| Database | Driver                                              |
-| -------- | --------------------------------------------------- |
-| sqlite   | `pip install supersqlite` (`apt install build-essential` before, and may take several minutes)|
-| postgres | `pip install psycopg2`                              |
-|          | or `pip install psycopg2-binary`                    |
+```console
+$ pip install pymongo
+```
 
 You can use `shaystack_import_db` to import a Haystack files into the database, only if the entities are modified
 (to respect the notion of _Version_ with this provider). The corresponding `hisURI` time-series files are uploaded too.
@@ -36,13 +33,13 @@ To demonstrate the usage with sqlite,
 $ # Demo
 $ # - Install the components
 $ pip install 'shaystack[flask]'
-$ # - Install the sqlite driver
-$ pip install supersqlite
+$ # - Install the mongodb driver
+$ pip install mongodb
 $ # - Import haystack file in DB
-$ shaystack_import_db sample/carytown.zinc sqlite3:///test.db#haystack
+$ shaystack_import_db sample/carytown.zinc mongodb://localhost/haystackdb#haystack
 $ # - Expose haystack with API
 $ HAYSTACK_PROVIDER=shaystack.providers.db \
-  HAYSTACK_DB=sqlite3:///test.db#haystack \
+  HAYSTACK_DB=mongodb://localhost/haystackdb#haystack \
   shaystack
 ```
 
@@ -61,23 +58,23 @@ pressure,heat,return,storeNum,his,metro,stage,hisURI
 "VA","23221",,,,,,1.0,,"Richmond",,
 ```
 
-The SQL url is in form: <dialect\[+\<driver\>]>://\[\<user\>\[:\<password\>]@>\<host\>\[:\<port\>]/\<database
-name\>\[#\<table name\>]
+The Mongo url is in form: mongodb\[+srv]://\[\<user\>\[:\<password\>]@>\<host\>\[:\<port\>]/\<database
+name\>\[?\<parameters...>]\[#\<table name\>]
+See [here](https://docs.mongodb.com/manual/reference/connection-string/)
 
 Samples:
 
-- `sqlite3:///test.db#haystack`
-- `sqlite3://localhost/test.db`
-- `sqlite3+supersqlite.sqlite3:///test.db#haystack`
-- `postgres://postgres:password@172.17.0.2:5432/postgres`
+- `mongodb://localhost/haystackdb`
+- `mongodb://localhost/haystackdb#haystack`
+- `mongodb+srv://localhost/haystackdb?w=majority&wtimeoutMS=2500#haystack`
 
-Inside the SQL url, if the password is in form `'<...>'`, and you use AWS lambda,  
+Inside the Mongo url, if the password is in form `'<...>'`, and you use AWS lambda,  
 the password is retrieved from the service [`secretManagers`](https://aws.amazon.com/secrets-manager/). The password
 must be in form `'<secret_id:key>'`. In the secret container `secret_id` at the key `key`, the database password must be
 set.
 
 After the deployment, you can use this provider like any others providers. The haystack filter was automatically
-converted to SQL. Three tables were created:
+converted to MongoDB request. Three collections were created:
 
 - <table_name> (`haystack` by default)
 - <table_name>_meta_datas
@@ -98,6 +95,4 @@ To manage the multi-tenancy, it's possible to use different approach:
 ##### Limitations
 
 - All entities used with this provider must have an `id` tag
-- SQLite can not manage parentheses with SQL Request with `UNION` or `INTERSECT`. Some complexe haystack request can not
-  generate a perfect translation to SQL.
 

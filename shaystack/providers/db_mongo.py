@@ -8,6 +8,8 @@ from ..jsondumper import dump_scalar as json_dump_scalar
 _simple_ops = {
     "==": "$eq",
     "!=": "$ne",
+}
+_logical_ops = {
     "and": "$and",
     "or": "$or",
 }
@@ -44,6 +46,11 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
             return {_simple_ops[node.operator]: [
                 _conv_filter(node.left),
                 _conv_filter(node.right)[1:-1],
+            ]}
+        if node.operator in _logical_ops:
+            return {_logical_ops[node.operator]: [
+                _conv_filter(node.left),
+                _conv_filter(node.right),
             ]}
         if node.operator in _relative_ops:
             path = _conv_filter(node.left)

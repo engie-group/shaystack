@@ -20,7 +20,8 @@ from nose.tools import assert_is
 
 import shaystack
 from shaystack import MARKER, Grid, MODE_JSON, XStr, MODE_CSV, MODE_TRIO, Quantity, Coordinate
-from shaystack.zincparser import _unescape, ZincParseException
+from shaystack.tools import unescape_str
+from shaystack.zincparser import ZincParseException
 
 # These are examples taken from http://project-haystack.org/doc/Zinc
 
@@ -2341,4 +2342,4 @@ def test_scalar_bytestring_json():
 
 
 def test_unescape():
-    assert _unescape("a\\nb") == "a\nb"
+    assert unescape_str("a\\nb") == "a\nb"

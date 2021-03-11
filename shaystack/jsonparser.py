@@ -214,7 +214,7 @@ def _parse_embedded_scalar(scalar: Union[None, List, Dict, str],
     return scalar
 
 
-def parse_scalar(scalar: str, version: Version = LATEST_VER) -> Any:
+def parse_scalar(scalar: Union[str, bool, float, int, list, dict], version: Version = LATEST_VER) -> Any:
     """
     Parse a scalar.
     Args:
@@ -223,7 +223,12 @@ def parse_scalar(scalar: str, version: Version = LATEST_VER) -> Any:
     Returns:
         The scalar value.
     """
-    scalar = unescape_str(scalar)
+    if scalar is None:
+        return None
+    if isinstance(scalar, (bool, float, int)):
+        return scalar
+    if isinstance(scalar, str):
+        scalar = unescape_str(scalar)
     if isinstance(scalar, str) and \
             (len(scalar) >= 2) and \
             (scalar[0] in ('"', '[', '{')) and \

@@ -20,6 +20,7 @@ from pyparsing import Suppress, ParseException, Literal, StringEnd, \
     LineStart, ZeroOrMore, Regex, LineEnd, Optional
 
 from .grid import Grid
+from .tools import unescape_str
 from .type import Entity
 from .version import Version, LATEST_VER
 from .zincparser import hs_nl, pyparser_lock, _reformat_exception, \
@@ -76,7 +77,7 @@ class TrioParseException(ValueError):
 
 trio_multiline_string = Suppress(hs_nl) + Regex(
     r'([ \t]+.*[\n\r]+)*[ \t]+.*(?=[\n\r]+)').leaveWhitespace().setParseAction(
-    lambda toks: _unescape(textwrap.dedent(toks[0])) + "\n"
+    lambda toks: unescape_str(textwrap.dedent(toks[0])) + "\n"
 )
 
 trio_zinc_nested = Suppress(Literal("Zinc:") + hs_nl) + Regex(
@@ -85,7 +86,7 @@ trio_zinc_nested = Suppress(Literal("Zinc:") + hs_nl) + Regex(
 )
 
 trio_safe_string = Regex('[^\x00-\x7F]|[A-Za-z_-].*(?=[\n\r]+)').setParseAction(
-    lambda toks: _unescape(toks[0])
+    lambda toks: unescape_str(toks[0])
 )
 
 hs_trio_scalar = (trio_multiline_string ^ trio_zinc_nested ^

@@ -1,393 +1,393 @@
-primaryFunction: Retail Store
-phone: "804.552.2222"
 geoCoord: C(37.555385,-77.486903)
-yearBuilt: 1996.0
-tz: New_York
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-occupiedStart: 10:00:00
-geoAddr: "3504 W Cary St, Richmond, VA"
-metro: Richmond
-geoCountry: US
-dis: Carytown
-geoPostalCode: "23221"
-area: 3149.0ft²
-id: @p:demo:r:23a44701-a89a6c66 "Carytown"
-store: M
-weatherRef: @p:demo:r:23a44701-1af1bca9 "Richmond, VA"
 site: M
-storeNum: 1.0
-geoCity: Richmond
-geoStreet: "3504 W Cary St"
-geoState: VA
-occupiedEnd: 20:00:00
----
-point: M
-tariffHis: M
-kind: Str
+primaryFunction: Retail Store
+geoCountry: US
+yearBuilt: 1996.0
+metro: Richmond
 tz: New_York
-dis: Tariff His
-id: @p:demo:r:23a44701-bbc36976 "Tariff His"
-equipRef: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
-his: M
+area: 3149.0ft²
+weatherRef: @p:demo:r:23a44701-1af1bca9 "Richmond, VA"
+geoState: VA
+storeNum: 1.0
+geoAddr: "3504 W Cary St, Richmond, VA"
+geoPostalCode: 23221
+geoCity: Richmond
+occupiedStart: 10:00:00
+occupiedEnd: 20:00:00
+id: @p:demo:r:23a44701-a89a6c66 "Carytown"
+phone: "804.552.2222"
+store: M
+geoStreet: "3504 W Cary St"
+dis: Carytown
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
+---
 sp: M
+tz: New_York
+tariffHis: M
+equipRef: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
+point: M
 siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+kind: Str
+his: M
+id: @p:demo:r:23a44701-bbc36976 "Tariff His"
+dis: Tariff His
 hisURI: p:demo:r:23a44701-bbc36976.zinc
 ---
-cur: M
-point: M
-hisMode: cov
-effective: M
-kind: Number
-tz: New_York
-curVal: 34
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-air: M
-id: @p:demo:r:23a44701-4ea35663 "Carytown RTU-1 ZoneTempSp"
-equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
-his: M
 sp: M
-temp: M
+cur: M
+tz: New_York
+equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
+point: M
+unit: °F
+air: M
 zone: M
-unit: "\u00b0F"
+effective: M
+temp: M
+curVal: 13
+hisMode: cov
 siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+kind: Number
 navName: ZoneTempSp
+his: M
+id: @p:demo:r:23a44701-4ea35663 "Carytown RTU-1 ZoneTempSp"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-4ea35663.zinc
 ---
 cur: M
-point: M
-hisMode: sampled
-kind: Number
-sensor: M
 tz: New_York
-curVal: 3
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-siteMeter: M
-id: @p:demo:r:23a44701-3940e690 "Carytown ElecMeter-Main kW"
 equipRef: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
+point: M
+unit: kW
+siteMeter: M
+sensor: M
+curVal: 12
+hisMode: sampled
+siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+kind: Number
+navName: kW
+power: M
 his: M
 kwSite: M
-unit: kW
-power: M
-siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
-navName: kW
+id: @p:demo:r:23a44701-3940e690 "Carytown ElecMeter-Main kW"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-3940e690.zinc
 ---
 cur: M
-point: M
-hisMode: sampled
-kind: Number
-sensor: M
 tz: New_York
-summary: M
-curVal: 24
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-air: M
-id: @p:demo:r:23a44701-27a8a001 "Carytown RTU-1 ZoneTemp"
 equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
-his: M
-temp: M
+point: M
+unit: °F
+air: M
 zone: M
-unit: "\u00b0F"
+sensor: M
+summary: M
+temp: M
+curVal: 2
+hisMode: sampled
 siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+kind: Number
 navName: ZoneTemp
+his: M
+id: @p:demo:r:23a44701-27a8a001 "Carytown RTU-1 ZoneTemp"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-27a8a001.zinc
 ---
-sitePoint: M
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-id: @p:demo:r:23a44701-3624929f "Carytown Misc"
 siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
-equip: M
 navName: Misc
+sitePoint: M
+id: @p:demo:r:23a44701-3624929f "Carytown Misc"
+equip: M
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 ---
 cur: M
-point: M
-hisMode: sampled
-kind: Number
-sensor: M
 tz: New_York
-curVal: -6
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-air: M
-id: @p:demo:r:23a44701-423ebf02 "Carytown RTU-1 DischargeTemp"
 equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
-his: M
-temp: M
-unit: "\u00b0F"
-siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+point: M
+unit: °F
 discharge: M
+air: M
+sensor: M
+temp: M
+curVal: 23
+hisMode: sampled
+siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+kind: Number
 navName: DischargeTemp
+his: M
+id: @p:demo:r:23a44701-423ebf02 "Carytown RTU-1 DischargeTemp"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-423ebf02.zinc
 ---
 cur: M
-point: M
-hisMode: cov
-kind: Bool
-tz: New_York
-summary: M
-enum: off,on
-curVal: 23
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-id: @p:demo:r:23a44701-3a62fd7a "Carytown RTU-1 Heat-2"
-equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
-his: M
 stage: 2.0
+tz: New_York
+equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
 elecMeterLoad: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
+point: M
 heat: M
+summary: M
+curVal: 10
+hisMode: cov
 siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
-cmd: M
+kind: Bool
 navName: Heat-2
+enum: off,on
+his: M
+cmd: M
+id: @p:demo:r:23a44701-3a62fd7a "Carytown RTU-1 Heat-2"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-3a62fd7a.zinc
 ---
 cur: M
-point: M
-hisMode: cov
-kind: Bool
-tz: New_York
-summary: M
-enum: off,on
-curVal: 13
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-id: @p:demo:r:23a44701-18bbbd7e "Carytown RTU-1 Heat-1"
-equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
-his: M
 stage: 1.0
+tz: New_York
+equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
 elecMeterLoad: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
+point: M
 heat: M
+summary: M
+curVal: 14
+hisMode: cov
 siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
-cmd: M
+kind: Bool
 navName: Heat-1
+enum: off,on
+his: M
+cmd: M
+id: @p:demo:r:23a44701-18bbbd7e "Carytown RTU-1 Heat-1"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-18bbbd7e.zinc
 ---
 cur: M
-point: M
-hisMode: sampled
-kind: Number
-sensor: M
 tz: New_York
-curVal: 16
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-siteMeter: M
-id: @p:demo:r:23a44701-f299239f "Carytown ElecMeter-Main Cost"
 equipRef: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
-his: M
-elecCost: M
+point: M
 unit: "$"
+siteMeter: M
+sensor: M
+curVal: 13
+hisMode: sampled
+elecCost: M
 siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+kind: Number
 navName: Cost
+his: M
+id: @p:demo:r:23a44701-f299239f "Carytown ElecMeter-Main Cost"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-f299239f.zinc
 ---
 cur: M
-point: M
-hisMode: sampled
-kind: Number
-sensor: M
 tz: New_York
-pressure: M
-curVal: 12
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-air: M
-id: @p:demo:r:23a44701-0144bdd8 "Carytown RTU-1 DischargePressure"
 equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
-his: M
-unit: inH\u2082O
-siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+point: M
+pressure: M
+unit: inH₂O
 discharge: M
+air: M
+sensor: M
+curVal: 12
+hisMode: sampled
+siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+kind: Number
 navName: DischargePressure
+his: M
+id: @p:demo:r:23a44701-0144bdd8 "Carytown RTU-1 DischargePressure"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-0144bdd8.zinc
 ---
-elec: M
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-meter: M
 siteMeter: M
-id: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
-his: M
+meter: M
 siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
-equip: M
 navName: ElecMeter-Main
+his: M
+elec: M
+id: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
+equip: M
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-092f16fa.zinc
 ---
 cur: M
-point: M
-hisMode: cov
-kind: Bool
-tz: New_York
-summary: M
-enum: off,on
-curVal: 17
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-cool: M
-id: @p:demo:r:23a44701-e0edb850 "Carytown RTU-1 Cool-2"
-equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
-his: M
 stage: 2.0
+tz: New_York
+equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
 elecMeterLoad: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
+point: M
+summary: M
+curVal: 13
+hisMode: cov
 siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
-cmd: M
+kind: Bool
 navName: Cool-2
+cool: M
+enum: off,on
+his: M
+cmd: M
+id: @p:demo:r:23a44701-e0edb850 "Carytown RTU-1 Cool-2"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-e0edb850.zinc
 ---
-cur: M
-point: M
-sitePoint: M
-hisMode: cov
-kind: Bool
-tz: New_York
-enum: unocc,occ
-occupied: M
-curVal: 2
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-id: @p:demo:r:23a44701-5c6fd964 "Carytown Misc Occupancy"
-equipRef: @p:demo:r:23a44701-3624929f "Carytown Misc"
-his: M
 sp: M
+cur: M
+tz: New_York
+equipRef: @p:demo:r:23a44701-3624929f "Carytown Misc"
+point: M
+occupied: M
+curVal: 23
+hisMode: cov
 siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+kind: Bool
 navName: Occupancy
+enum: unocc,occ
+sitePoint: M
+his: M
+id: @p:demo:r:23a44701-5c6fd964 "Carytown Misc Occupancy"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-5c6fd964.zinc
 ---
 cur: M
-point: M
-hisMode: sampled
-kind: Number
-sensor: M
 tz: New_York
-curVal: 11
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-siteMeter: M
-id: @p:demo:r:23a44701-51b0b0ff "Carytown ElecMeter-Main kWh"
 equipRef: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
-his: M
-energy: M
+point: M
 unit: kWh
+siteMeter: M
+energy: M
+sensor: M
+curVal: 3
+hisMode: sampled
 siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+kind: Number
 navName: kWh
+his: M
+id: @p:demo:r:23a44701-51b0b0ff "Carytown ElecMeter-Main kWh"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-51b0b0ff.zinc
 ---
 cur: M
-point: M
-hisMode: cov
-kind: Bool
-tz: New_York
-summary: M
-enum: off,on
-curVal: 32
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-cool: M
-id: @p:demo:r:23a44701-81534688 "Carytown RTU-1 Cool-1"
-equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
-his: M
 stage: 1.0
+tz: New_York
+equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
 elecMeterLoad: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
+point: M
+summary: M
+curVal: 3
+hisMode: cov
 siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
-cmd: M
+kind: Bool
 navName: Cool-1
+cool: M
+enum: off,on
+his: M
+cmd: M
+id: @p:demo:r:23a44701-81534688 "Carytown RTU-1 Cool-1"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-81534688.zinc
 ---
 cur: M
-point: M
-hisMode: cov
-kind: Bool
 tz: New_York
-enum: off,on
-curVal: 19
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
+equipRef: @p:demo:r:23a44701-cef6cd79 "Carytown Main Lights"
+elecMeterLoad: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
+point: M
 lights: M
+curVal: 1
+hisMode: cov
+siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+kind: Bool
+navName: Status
+enum: off,on
+his: M
+cmd: M
 costPerHour: 2.4$
 id: @p:demo:r:23a44701-cb53b843 "Carytown Main Lights Status"
-equipRef: @p:demo:r:23a44701-cef6cd79 "Carytown Main Lights"
-his: M
-elecMeterLoad: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
-siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
-cmd: M
-navName: Status
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-cb53b843.zinc
 ---
 cur: M
-point: M
-hisMode: cov
-kind: Bool
 tz: New_York
-enum: off,on
-curVal: 14
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-air: M
-id: @p:demo:r:23a44701-f8856742 "Carytown RTU-1 Fan"
 equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
-his: M
 elecMeterLoad: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
 fan: M
-siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+point: M
 discharge: M
-cmd: M
+air: M
+curVal: 23
+hisMode: cov
+siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+kind: Bool
 navName: Fan
+enum: off,on
+his: M
+cmd: M
+id: @p:demo:r:23a44701-f8856742 "Carytown RTU-1 Fan"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-f8856742.zinc
 ---
-hvac: M
-rooftop: M
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-id: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
-elecMeterLoad: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
 ahu: M
+rooftop: M
+elecMeterLoad: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
+hvac: M
 siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
-equip: M
 navName: RTU-1
+id: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
+equip: M
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 ---
 cur: M
-point: M
-hisMode: cov
-kind: Number
-tz: New_York
-curVal: 14
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-air: M
 outside: M
-id: @p:demo:r:23a44701-d83664ec "Carytown RTU-1 OutsideDamper"
+tz: New_York
 equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
-his: M
+point: M
 unit: "%"
 damper: M
+air: M
+curVal: 30
+hisMode: cov
 siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
-cmd: M
+kind: Number
 navName: OutsideDamper
+his: M
+cmd: M
+id: @p:demo:r:23a44701-d83664ec "Carytown RTU-1 OutsideDamper"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-d83664ec.zinc
 ---
 cur: M
-point: M
-hisMode: sampled
-kind: Number
-sensor: M
-tz: New_York
-curVal: -11
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-air: M
-id: @p:demo:r:23a44701-3f2eb151 "Carytown RTU-1 ReturnTemp"
-equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
-his: M
-temp: M
-unit: "\u00b0F"
-siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
 return: M
+tz: New_York
+equipRef: @p:demo:r:23a44701-7265b064 "Carytown RTU-1"
+point: M
+unit: °F
+air: M
+sensor: M
+temp: M
+curVal: 13
+hisMode: sampled
+siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
+kind: Number
 navName: ReturnTemp
+his: M
+id: @p:demo:r:23a44701-3f2eb151 "Carytown RTU-1 ReturnTemp"
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 hisURI: p:demo:r:23a44701-3f2eb151.zinc
 ---
-regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
-id: @p:demo:r:23a44701-cef6cd79 "Carytown Main Lights"
 elecMeterLoad: @p:demo:r:23a44701-092f16fa "Carytown ElecMeter-Main"
-siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
-equip: M
 lightsGroup: M
+siteRef: @p:demo:r:23a44701-a89a6c66 "Carytown"
 navName: Main Lights
+id: @p:demo:r:23a44701-cef6cd79 "Carytown Main Lights"
+equip: M
+regionRef: @p:demo:r:23a44701-67faf4db "Richmond"
 ---
-point: M
-kind: "\u00b0"
-sensor: M
 tz: EST
-dis: Weather in Richmond
-id: @p:demo:r:23a44701-1af1bca9 "Richmond weather"
+point: M
+sensor: M
+kind: °
 his: M
+id: @p:demo:r:23a44701-1af1bca9 "Richmond weather"
+dis: Weather in Richmond
 hisURI: p:demo:r:23a44701-1af1bca9.zinc
 weather: M
 ---
 tz: EST
-dis: Richmond
 id: @p:demo:r:23a44701-67faf4db "Richmond, VA"
+dis: Richmond
 region: M

@@ -43,7 +43,7 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
         if node.operator in _simple_ops:
             return {_simple_ops[node.operator]: [
                 _conv_filter(node.left),
-                _conv_filter(node.right),
+                _conv_filter(node.right)[1:-1],
             ]}
         if node.operator in _relative_ops:
             path = _conv_filter(node.left)
@@ -77,6 +77,18 @@ def _mongo_filter(grid_filter: Optional[str],
                   version: datetime,
                   limit: int = 0,
                   customer_id: str = '') -> List[Dict[str, Any]]:
+    if not grid_filter:
+        return [
+            {
+                "$match":
+                    {
+                        "customer_id": customer_id,
+                        "start_datetime": {"$lte": version},
+                        "end_datetime": {"$gt": version},
+                    }
+            },
+            {"$replaceRoot": {"newRoot": "$entity"}}
+        ]
     stages = [
         {
             "$match":
@@ -87,7 +99,8 @@ def _mongo_filter(grid_filter: Optional[str],
                     "$expr":
                         _conv_filter(parse_filter(grid_filter).head)
                 }
-        }
+        },
+        {"$replaceRoot": {"newRoot": "$entity"}}
     ]
     if limit:
         stages.append(

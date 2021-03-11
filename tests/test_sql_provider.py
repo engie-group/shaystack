@@ -1,11 +1,10 @@
-import copy
 import datetime
 from typing import cast
 
 import pytz
 from nose import SkipTest
 
-from shaystack import Ref, Grid, VER_3_0
+from shaystack import Ref, Grid
 from shaystack.providers import get_provider
 from shaystack.providers.sql import Provider as SQLProvider
 
@@ -20,36 +19,6 @@ def skip(msg: str) -> None:
     raise SkipTest(msg)
 
 
-def _get_grids():
-    sample_grid = Grid(version=VER_3_0, columns=["id", "col", "dis"])
-    sample_grid.append({"id": Ref("id1"), "col": 1, "dis": "Dis 1"})
-    sample_grid.append({"id": Ref("id2"), "col": 2, "dis": "Dis 2"})
-    version_1 = datetime.datetime(2020, 10, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)
-    version_2 = datetime.datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
-    version_3 = datetime.datetime(2020, 10, 1, 0, 0, 3, 0, tzinfo=pytz.UTC)
-    g1 = copy.deepcopy(sample_grid)
-    g1.metadata = {"v": "1"}
-    g2 = copy.deepcopy(sample_grid)
-    g2.metadata = {"v": "2"}
-    g2[0]["col"] += 2
-    g2[1]["col"] += 2
-    g3 = copy.deepcopy(sample_grid)
-    g3.metadata = {"v": "last"}
-    g3[0]["col"] += 4
-    g3[1]["col"] += 4
-
-    return [
-        (g1, version_1),
-        (g2, version_2),
-        (g3, version_3),
-    ]
-
-
-def _populate_db(provider: SQLProvider) -> None:
-    provider.purge_db()
-    for grid, version in _get_grids():
-        provider.update_grid(grid, None, "", version)
-
 
 def test_create_db():
     envs = {'HAYSTACK_DB': HAYSTACK_DB}
@@ -60,6 +29,7 @@ def test_create_db():
 def test_update_grid():
     envs = {'HAYSTACK_DB': HAYSTACK_DB}
     with cast(SQLProvider, get_provider("shaystack.providers.sql", envs)) as provider:
+        provider.purge_db()
         provider.create_db()
         grid = Grid(metadata={"dis": "hello"},
                     columns=[("id", {}), ("a", {"dis": "a"}), ("b", {"dis": "b"})])
@@ -110,6 +80,9 @@ def test_read_last_without_filter():
         _populate_db(provider)
         result = provider.read(0, None, None, None, None)
         assert result.metadata["v"] == "last"
+        assert len(result) == 2
+        assert result[0] == {"id": Ref('id1'), 'col': 5, 'dis': 'Dis 1'}
+        assert result[1] == {"id": Ref('id2'), 'col': 6, 'dis': 'Dis 2'}
 
 
 def test_read_version_without_filter():
@@ -119,6 +92,9 @@ def test_read_version_without_filter():
         version_2 = datetime.datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, None, None, date_version=version_2)
         assert result.metadata["v"] == "2"
+        assert len(result) == 2
+        assert result[0] == {"id": Ref('id1'), 'col': 3, 'dis': 'Dis 1'}
+        assert result[1] == {"id": Ref('id2'), 'col': 4, 'dis': 'Dis 2'}
 
 
 def test_read_version_with_filter():
@@ -129,10 +105,10 @@ def test_read_version_with_filter():
         result = provider.read(0, None, None, "id==@id1", version_2)
         assert result.metadata["v"] == "2"
         assert len(result) == 1
-        assert result[0]['id'] == Ref("id1")
+        assert result[0] == {"id": Ref('id1'), 'col': 3, 'dis': 'Dis 1'}
 
 
-def test_read_version_with_filter2():
+def test_read_version_with_filter_and_select():
     try:
         # caplog.set_level(logging.DEBUG)
         with cast(SQLProvider, get_provider("shaystack.providers.sql",
@@ -140,6 +116,8 @@ def test_read_version_with_filter2():
             _populate_db(provider)
             version_2 = datetime.datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
             result = provider.read(0, "id,other", None, "id==@id1", version_2)
+            assert len(result) == 1
+            assert len(result.column) == 2
             assert "id" in result.column
             assert "other" in result.column
     except NotImplementedError:
@@ -154,7 +132,7 @@ def test_read_version_with_ids():
         result = provider.read(0, None, [Ref("id1")], None, version_2)
         assert result.metadata["v"] == "2"
         assert len(result) == 1
-        assert result[0]['id'] == Ref("id1")
+        assert result[0] == {"id": Ref('id1'), 'col': 3, 'dis': 'Dis 1'}
 
 
 def test_version():

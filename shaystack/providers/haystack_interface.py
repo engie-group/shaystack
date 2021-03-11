@@ -46,6 +46,7 @@ class HaystackInterface(ABC):
     The subclasses may be abstract (implemented only a part of methods),
     the 'ops' code detect that, and can calculate the set of implemented operations.
     """
+    __slots__ = '_envs'
 
     def __init__(self, envs: Dict[str, str]):
         assert envs is not None

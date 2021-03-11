@@ -425,7 +425,8 @@ def no_cache():
     return False
 
 
-def get_provider(class_str: str, envs: Union[Dict[str, str], os._Environ]  # pylint: disable=protected-access
+def get_provider(class_str: str, envs: Union[Dict[str, str], os._Environ],
+                 use_cache=True  # pylint: disable=protected-access
                  ) -> HaystackInterface:
     """Return an instance of the provider.
     If the provider is an abstract class, create a sub class with all the implementation
@@ -441,7 +442,7 @@ def get_provider(class_str: str, envs: Union[Dict[str, str], os._Environ]  # pyl
     """
     if not class_str.endswith(".Provider"):
         class_str += ".Provider"
-    if class_str in _providers:
+    if use_cache and class_str in _providers:
         return _providers[class_str]
     module_path, class_name = class_str.rsplit(".", 1)
     module = import_module(module_path)

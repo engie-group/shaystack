@@ -500,7 +500,7 @@ class Provider(DBHaystackInterface):
             )
             connect = self._client[database_name]
             # self._connect = LocalProxy(connect)  # Thread variable FIXME
-            self._connect = connect  # FIXME: use LocalProxy
+            self._connect = connect
             self.create_db()
         return self._connect
 

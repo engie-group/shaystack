@@ -200,6 +200,8 @@ datas:
 
 ## API Server deployment
 
+This layer implement the standard HaystackAPI with different providers (URL, S3, Postgres, MongoDB, etc.)
+
 ### Installing
 
 Using `pip install`. You can add the support of some options:

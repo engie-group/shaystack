@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Optional, List, Any, Tuple, Dict
+from os.path import dirname
+from typing import Optional, List, Any, Tuple, Dict, cast
 from urllib.parse import urlparse
 
 import pytz
@@ -10,14 +11,17 @@ from pymongo.collection import Collection
 from pymongo.database import Database
 
 from .db_haystack_interface import DBHaystackInterface
+from .db_mongo import _mongo_filter as mongo_filter
 from .url import read_grid_from_uri
-from .. import Entity, traceback, LATEST_VER
+from .. import Entity, traceback, LATEST_VER, HaystackException
 from ..datatypes import Ref
 from ..grid import Grid
 from ..jsondumper import dump_scalar as json_dump_scalar, _dump_meta, _dump_columns
 from ..jsonparser import parse_scalar as json_parse_scalar, _parse_metadata, _parse_cols
 
 log = logging.getLogger("sql.Provider")
+
+_END_OF_WORLD = datetime.max.replace(tzinfo=pytz.UTC)
 
 
 def _conv_entity_to_row(entity: Entity) -> Dict[str, Any]:
@@ -32,10 +36,12 @@ class Provider(DBHaystackInterface):
     """
     Expose an Haystack data via the Haystack Rest API and SQL databases
     """
+    __slots__ = '_connect', '_client', '_parsed_db', '_table_name', '_envs'
 
     def __init__(self, envs: Dict[str, str]):
         DBHaystackInterface.__init__(self, envs)
         self._connect = None
+        self._client = None
         log.info("Use %s", self._get_db())
         self._parsed_db = urlparse(self._get_db())
 
@@ -50,20 +56,40 @@ class Provider(DBHaystackInterface):
     @overrides
     def values_for_tag(self, tag: str,
                        date_version: Optional[datetime] = None) -> List[Any]:
-        pass  # FIXME
+        return sorted([
+            json_parse_scalar(val)
+            for val in self.get_collection().distinct(
+                f"entity.{tag}",
+                {
+                    "customer_id": self.get_customer_id()
+                }
+            )])
 
     @overrides
     def versions(self) -> List[datetime]:
         """
         Return datetime for each versions or empty array if is unknown
         """
-        pass  # FIXME
+        return sorted(self.get_collection().distinct(
+            "start_datetime",
+            {
+                "customer_id": self.get_customer_id()
+            }
+        ))
 
     @overrides
     def about(self, home: str) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'about' operation """
         grid = super().about(home)
-        # FIXME
+        about_data = cast(Entity, grid[0])
+        about_data.update(
+            {  # pylint: disable=no-member
+                "productVersion": "1.0",
+                "moduleName": "MongoProvider",
+                "moduleVersion": "1.0",
+            }
+        )
+        return grid
 
     @overrides
     def read(
@@ -83,7 +109,32 @@ class Provider(DBHaystackInterface):
             repr(grid_filter),
             repr(date_version),
         )
-        pass  # FIXME
+        if date_version is None:
+            date_version = datetime.now().replace(tzinfo=pytz.UTC)
+
+        if entity_ids is None:
+            cursor = self.get_collection().aggregate(
+                mongo_filter(grid_filter, date_version, limit, self.get_customer_id())
+            )
+
+            grid = self._init_grid_from_db(date_version)
+            for row in cursor:
+                grid.append(_conv_row_to_entity(row))
+            return grid.select(select)
+
+        cursor = self.get_collection().find(
+            {
+                "customer_id": self.get_customer_id(),
+                "start_datetime": {"$lte": date_version},
+                "end_datetime": {"$gt": date_version},
+                "entity.id": {"$in": [json_dump_scalar(entity_id)[1:-1]
+                                      for entity_id in entity_ids]}
+            })
+
+        grid = self._init_grid_from_db(date_version)
+        for row in cursor:
+            grid.append(_conv_row_to_entity(row['entity']))
+        return grid.select(select)
 
     @overrides
     def his_read(
@@ -99,13 +150,53 @@ class Provider(DBHaystackInterface):
             repr(dates_range),
             repr(date_version),
         )
-        pass  # FIXME
+        customer_id = self.get_customer_id()
+        history = Grid(columns=["ts", "val"])
+        if not date_version:
+            date_version = datetime.max.replace(tzinfo=pytz.UTC)
+        if dates_range[1] > date_version:
+            dates_range = list(dates_range)
+            dates_range[1] = date_version
+
+        ts_collection = self._get_ts_collection()
+
+        cursor = ts_collection.find(
+            {
+                "custoler_id": customer_id,
+                "id": entity_id.name,
+                "date":
+                    {
+                        "$gte": dates_range[0],
+                        "$lt": dates_range[1]
+                    }
+            })
+        for row in cursor:
+            history.append(
+                {
+                    "ts": row['ts'],
+                    "val": json_parse_scalar(row['val'])
+                }
+            )
+        if not history:
+            raise HaystackException(f"id '{entity_id}' not found")
+        min_date = datetime.max.replace(tzinfo=pytz.UTC)
+        max_date = datetime.min.replace(tzinfo=pytz.UTC)
+
+        for time_serie in history:
+            min_date = min(min_date, time_serie["ts"])
+            max_date = max(max_date, time_serie["ts"])
+
+        history.metadata = {
+            "id": entity_id,
+            "hisStart": min_date,
+            "hisEnd": max_date,
+        }
+        return history
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        conn = self.get_db()
-        conn.close()
-        self._connect = False
-        # FIXME
+        if self._client:
+            self._client.close()
+            self._connect = False
 
     # -----------------------------------------
     @overrides
@@ -119,6 +210,24 @@ class Provider(DBHaystackInterface):
         metadata_name = self._table_name + "_meta_datas"
         if metadata_name not in connect.list_collection_names():
             connect.create_collection(metadata_name)
+        ts_name = self._table_name + "_ts"
+        if ts_name not in connect.list_collection_names():
+            connect.create_collection(ts_name)
+
+    @overrides
+    def purge_db(self) -> None:
+        """ Purge the current database.
+        All the datas was removed.
+        """
+        connect = self.get_db()
+        if self._table_name in connect.list_collection_names():
+            connect[self._table_name].drop()
+        metadata_name = self._table_name + "_meta_datas"
+        if metadata_name in connect.list_collection_names():
+            connect[metadata_name].drop()
+        ts_name = self._table_name + "_ts"
+        if ts_name in connect.list_collection_names():
+            connect[ts_name].drop()
 
     def read_grid(self,
                   customer_id: str = '',
@@ -132,41 +241,68 @@ class Provider(DBHaystackInterface):
             A grid with all data for a customer
         """
         try:
+            if version is None:
+                version = datetime.now().replace(tzinfo=pytz.UTC)
             grid = self._init_grid_from_db(version)
-            for row in self.get_collection().find({}, {"entity": True}):
+            for row in self.get_collection().find(
+                    {
+                        'customer_id': customer_id,
+                        'start_datetime': {'$lte': version},
+                        'end_datetime': {'$gt': version},
+                    },
+                    {"entity": True}):
                 grid.append(_conv_row_to_entity(row["entity"]))
             return grid
         except Exception as ex:  # FIXME
             traceback.print_exc()
             raise ex
 
-    @overrides
-    def purge_db(self) -> None:
-        """ Purge the current database.
-        All the datas was removed.
+    def _read_partial_grid(self,
+                           ids: List[Ref],
+                           customer_id: str,
+                           version: datetime) -> Grid:
         """
-        connect = self.get_db()
-        if self._table_name in connect.list_collection_names():
-            connect[self._table_name].drop()
-        metadata_name = self._table_name + "_meta_datas"
-        if metadata_name in connect.list_collection_names():
-            connect[metadata_name].drop()
+        Read all haystack data for a specific customer, from the database and return a Grid.
+        Args:
+            customer_id: The customer_id date to read
+            version: version to load
+        Returns:
+            A grid with all data for a customer
+        """
+        try:
+            grid = self._init_grid_from_db(version)
+            for row in self.get_collection().find(
+                    {
+                        'customer_id': customer_id,
+                        'start_datetime': {'$lte': version},
+                        'end_datetime': {'$gt': version},
+                        'entity.id': {
+                            "$in": [json_dump_scalar(id_entity)[1:-1] for id_entity in ids]
+                        }
+                    },
+                    {"entity": True}):
+                grid.append(_conv_row_to_entity(row["entity"]))
+            return grid
+        except Exception as ex:  # FIXME
+            traceback.print_exc()
+            raise ex
 
     def _init_grid_from_db(self, version: Optional[datetime]) -> Grid:
         customer_id = self.get_customer_id()
         if version is None:
-            version = datetime.max.replace(tzinfo=pytz.UTC, microsecond=0)
-        meta_collection = self.get_meta_collection()
+            version = datetime.now().replace(tzinfo=pytz.UTC)
+        meta_collection = self._get_meta_collection()
 
         grid = Grid(version=LATEST_VER)
         meta_record = list(meta_collection.aggregate(
             [
                 {'$match':
-                     {'customer_id': customer_id,
-                      'start_datetime': {'$lte': version},
-                      'end_datetime': {'$gt': version},
-                      }
-                 },
+                    {
+                        'customer_id': customer_id,
+                        'start_datetime': {'$lte': version},
+                        'end_datetime': {'$gt': version},
+                    }
+                },
                 {"$project": {"metadata": True, "cols": True}}
             ]))
         if meta_record:
@@ -187,25 +323,29 @@ class Provider(DBHaystackInterface):
             customer_id: The customer id to insert in each row.
             now: The pseudo 'now' datetime.
         """
-        end_of_world = datetime.max.replace(tzinfo=pytz.UTC)
-        init_grid = self.read_grid(customer_id, version)  # FIXME self._init_grid_from_db(version)
-        new_grid = init_grid + diff_grid
         if not customer_id:
             customer_id = ""
-
         if now is None:
             now = datetime.now(tz=pytz.UTC)
-        end_date = now - timedelta(milliseconds=1)
         if version is None:
-            version = datetime.max.replace(tzinfo=pytz.UTC)
+            version = datetime.now().replace(tzinfo=pytz.UTC)
+        end_date = now - timedelta(milliseconds=1)
+
+        # Read only modified rows
+        init_grid = self._read_partial_grid(
+            [row['id'] for row in diff_grid],
+            customer_id, version
+        )
+        # Updated rows
+        new_grid = init_grid + diff_grid
 
         # Update metadata ?
         if new_grid.metadata != init_grid.metadata or new_grid.column != init_grid.column:
-            haystack_meta_db = self.get_meta_collection()
+            haystack_meta_db = self._get_meta_collection()
             haystack_meta_db.update_one(
                 {
                     "customer_id": customer_id,
-                    "end_datetime": end_of_world
+                    "end_datetime": _END_OF_WORLD
                 },
                 {"$set": {"end_datetime": end_date}}
             )
@@ -213,7 +353,7 @@ class Provider(DBHaystackInterface):
                 {
                     'customer_id': customer_id,
                     "start_datetime": version,
-                    "end_datetime": end_of_world,
+                    "end_datetime": _END_OF_WORLD,
                     "metadata": _dump_meta(new_grid.metadata),
                     "cols": _dump_columns(new_grid.column)
                 })
@@ -222,22 +362,26 @@ class Provider(DBHaystackInterface):
         haystack_db = self.get_collection()
         closed_id = [json_dump_scalar(row["id"])[1:-1] for row in diff_grid]
         if closed_id:
-            haystack_db.update_many(
-                {"entity.id": {"$in": closed_id}},  # FIXME: use index
+            result = haystack_db.update_many(
+                {
+                    "entity.id": {"$in": closed_id},
+                    "end_datetime": _END_OF_WORLD
+                },  # FIXME: use index
                 {"$set": {"end_datetime": end_date}}
             )
-            log.debug("Close %s record(s)", len(closed_id))
+            log.debug("Close %s record(s)", result.modified_count)
             # Insert and update entities
             records = [
                 {
                     "customer_id": customer_id,
                     "start_datetime": now,
-                    "end_datetime": end_of_world,
+                    "end_datetime": _END_OF_WORLD,
                     "entity": _conv_entity_to_row(new_grid[updated_entity["id"]])
                 }
                 for updated_entity in diff_grid
+                if updated_entity["id"] in new_grid
             ]
-            haystack_db.insert_many(records)
+            haystack_db.insert_many(records)  # FIXME : vérifier résult ?
             log.debug("Import %s record(s)", len(records))
 
     def import_data(self,  # pylint: disable=too-many-arguments
@@ -270,13 +414,72 @@ class Provider(DBHaystackInterface):
             traceback.print_exc()
             raise ex  # FIXME
 
+    # TODO: add transaction ?
     @overrides
     def import_ts(self,
                   source_uri: str,
                   customer_id: str = '',
                   version: Optional[datetime] = None
                   ):
-        pass  # FIXME: import des TS
+        target_grid = read_grid_from_uri(source_uri, envs=self._envs)
+        dir_name = dirname(source_uri)
+        for row in target_grid:
+            if "hisURI" in row:
+                assert "id" in row, "TS must have an id"
+                uri = dir_name + '/' + row['hisURI']
+                ts_grid = read_grid_from_uri(uri, envs=self._envs)
+                self._import_ts_in_db(ts_grid, row["id"], customer_id)
+                log.debug("%s imported", uri)
+
+    def _import_ts_in_db(self,
+                         time_series: Grid,
+                         entity_id: Ref,
+                         customer_id: Optional[str],
+                         now: Optional[datetime] = None
+                         ) -> None:
+        assert 'ts' in time_series.column, "TS must have a column 'ts'"
+        if not customer_id:
+            customer_id = ""
+        ts_collection = self._get_ts_collection()
+        begin_datetime = time_series.metadata.get("hisStart")
+        end_datetime = time_series.metadata.get("hisStart")
+        if time_series and not begin_datetime:
+            begin_datetime = time_series[0]['ts']
+        if time_series and not end_datetime:
+            end_datetime = time_series[-1]['ts']
+        if not begin_datetime:
+            begin_datetime = datetime.min
+        if not end_datetime:
+            end_datetime = datetime.max
+
+        #                 id TEXT NOT NULL,
+        #                 customer_id TEXT NOT NULL,
+        #                 date_time TIMESTAMP WITH TIME ZONE NOT NULL,
+        #                 val JSONB NOT NULL
+        # Clean only the period
+        ts_collection.delete_many(
+            {
+                "customer_id": customer_id,
+                "id": entity_id.name,
+                "date_time":
+                    {
+                        "$gte": begin_datetime,
+                        "$lt": end_datetime
+                    }
+            })
+
+        # Add add new values
+        ts_collection.insert_many(
+            [
+                {
+                    "customer_id": customer_id,
+                    "id": entity_id.name,
+                    "date_time": row['ts'],
+                    "val": json_dump_scalar(row['val'])
+                }
+                for row in time_series
+            ]
+        )
 
     def get_db(self) -> Database:
         if not self._connect:  # Lazy connection
@@ -292,10 +495,10 @@ class Provider(DBHaystackInterface):
             if not table_name:
                 table_name = "haystack"
             self._table_name = table_name
-            client = self._connect = MongoClient(
+            self._client = self._connect = MongoClient(
                 self._get_db(),
             )
-            connect = client[database_name]
+            connect = self._client[database_name]
             # self._connect = LocalProxy(connect)  # Thread variable FIXME
             self._connect = connect  # FIXME: use LocalProxy
             self.create_db()
@@ -305,6 +508,10 @@ class Provider(DBHaystackInterface):
         db = self.get_db()
         return db[self._table_name]
 
-    def get_meta_collection(self) -> Collection:
+    def _get_meta_collection(self) -> Collection:
         db = self.get_db()
         return db[self._table_name + "_meta_datas"]
+
+    def _get_ts_collection(self) -> Collection:
+        db = self.get_db()
+        return db[self._table_name + "_ts"]

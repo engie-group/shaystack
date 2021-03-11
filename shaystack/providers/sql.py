@@ -392,7 +392,7 @@ class Provider(DBHaystackInterface):
             A grid with all data for a customer
         """
         if version is None:
-            version = datetime.max.replace(tzinfo=pytz.UTC, microsecond=0)
+            version = datetime.now().replace(tzinfo=pytz.UTC)
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -449,16 +449,17 @@ class Provider(DBHaystackInterface):
             now: The pseudo 'now' datetime.
         """
 
-        init_grid = self.read_grid(customer_id, version)
         if not customer_id:
             customer_id = ""
-        new_grid = init_grid + diff_grid
-
         if now is None:
             now = datetime.now(tz=pytz.UTC)
+
+        init_grid = self.read_grid(customer_id, version)  # FIXME : read partial
+        new_grid = init_grid + diff_grid
+
         end_date = now - timedelta(milliseconds=1)
         if version is None:
-            version = datetime.max.replace(tzinfo=pytz.UTC)
+            version = datetime.now().replace(tzinfo=pytz.UTC)
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -592,25 +593,22 @@ class Provider(DBHaystackInterface):
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
         datetime_tz_to_field = self._sql["datetime_tz_to_field"]
-        try:
-            # Clean only the period
-            cursor.execute(self._sql["CLEAN_TS"],
-                           (
-                               customer_id,
-                               entity_id.name,
-                               datetime_tz_to_field(begin_datetime),
-                               datetime_tz_to_field(end_datetime)
-                           )
-                           )
+        # Clean only the period
+        cursor.execute(self._sql["CLEAN_TS"],
+                       (
+                           customer_id,
+                           entity_id.name,
+                           datetime_tz_to_field(begin_datetime),
+                           datetime_tz_to_field(end_datetime)
+                       )
+                       )
 
-            # Add add new values
-            cursor.executemany(self._sql["INSERT_TS"],
-                               [(entity_id.name,
-                                 customer_id,
-                                 datetime_tz_to_field(row['ts']),
-                                 dump_scalar(row['val'])) for row in time_series]
-                               )
-            cursor.close()
-            conn.commit()
-        finally:
-            pass
+        # Add add new values
+        cursor.executemany(self._sql["INSERT_TS"],
+                           [(entity_id.name,
+                             customer_id,
+                             datetime_tz_to_field(row['ts']),
+                             dump_scalar(row['val'])) for row in time_series]
+                           )
+        cursor.close()
+        conn.commit()

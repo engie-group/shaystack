@@ -1,6 +1,7 @@
 import datetime
 from typing import cast
 
+import psycopg2
 import pytz
 from nose import SkipTest
 
@@ -19,27 +20,35 @@ def skip(msg: str) -> None:
     raise SkipTest(msg)
 
 
-
 def test_create_db():
-    envs = {'HAYSTACK_DB': HAYSTACK_DB}
-    with cast(SQLProvider, get_provider("shaystack.providers.sql", envs)) as provider:
-        provider.create_db()
+    try:
+        envs = {'HAYSTACK_DB': HAYSTACK_DB}
+        with cast(SQLProvider, get_provider("shaystack.providers.sql", envs)) as provider:
+            provider.create_db()
+    except psycopg2.OperationalError as ex:
+        raise SkipTest("Postgres db not started")
 
 
 def test_update_grid():
-    envs = {'HAYSTACK_DB': HAYSTACK_DB}
-    with cast(SQLProvider, get_provider("shaystack.providers.sql", envs)) as provider:
-        provider.purge_db()
-        provider.create_db()
-        grid = Grid(metadata={"dis": "hello"},
-                    columns=[("id", {}), ("a", {"dis": "a"}), ("b", {"dis": "b"})])
-        grid.append({"id": Ref("1"), "a": "a", "b": "b"})
-        grid.append({"id": Ref("2"), "a": "c", "b": "d"})
-        provider.update_grid(grid, None, "customer", FAKE_NOW)
+    try:
+        envs = {'HAYSTACK_DB': HAYSTACK_DB}
+        with cast(SQLProvider, get_provider("shaystack.providers.sql", envs)) as provider:
+            provider.purge_db()
+            provider.create_db()
+            grid = Grid(metadata={"dis": "hello"},
+                        columns=[("id", {}), ("a", {"dis": "a"}), ("b", {"dis": "b"})])
+            grid.append({"id": Ref("1"), "a": "a", "b": "b"})
+            grid.append({"id": Ref("2"), "a": "c", "b": "d"})
+            provider.update_grid(grid, None, "customer", FAKE_NOW)
+    except psycopg2.OperationalError as ex:
+        raise SkipTest("Postgres db not started")
+
 
 def test_about():
-    with get_provider("shaystack.providers.sql",
-                      {'HAYSTACK_DB': HAYSTACK_DB}) as provider:
-        result = provider.about("http://localhost")
-        assert result[0]['moduleName'] == 'SQLProvider'
-
+    try:
+        with get_provider("shaystack.providers.sql",
+                          {'HAYSTACK_DB': HAYSTACK_DB}) as provider:
+            result = provider.about("http://localhost")
+            assert result[0]['moduleName'] == 'SQLProvider'
+    except psycopg2.OperationalError as ex:
+        raise SkipTest("Postgres db not started")

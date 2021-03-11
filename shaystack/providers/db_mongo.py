@@ -1,3 +1,13 @@
+# -*- coding: utf-8 -*-
+# SQL Provider
+# See the accompanying LICENSE file.
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
+# pylint: disable=line-too-long
+"""
+Tools to convert haystack filter to mongo request
+"""
 from datetime import datetime
 from typing import Optional, Dict, Any, List, Union, cast
 
@@ -26,7 +36,7 @@ def _to_float(scalar: HaystackType) -> float:
         return scalar.magnitude
     if isinstance(scalar, (int, float)):
         return scalar
-    raise ValueError("Impossible to compare with not a numnber")  # FIXME
+    raise ValueError("Impossible to compare with not a numnber")  # FIXME: _to_float exception
 
 
 def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any], str]:
@@ -34,11 +44,9 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
         if node.operator == "has":
             return {"$cond": {"if": _conv_filter(node.right), "then": 1, "else": 0}}
         if node.operator == "not":
-            right_expr = _conv_filter(node.right)
             if isinstance(node, FilterNode):
                 return {"$not": _conv_filter(node.right)}
-            else:
-                return {"$cond": {"if": _conv_filter(node.right), "then": 0, "else": 1}}
+            return {"$cond": {"if": _conv_filter(node.right), "then": 0, "else": 1}}
     if isinstance(node, FilterPath):
         return '$entity.' + node.paths[0]
     if isinstance(node, FilterBinary):
@@ -75,9 +83,9 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
                 to_double,
                 _to_float(node.right),
             ]}
-        assert 0, "Invalid operator"  # FIXME
-    else:
-        return json_dump_scalar(node)
+        assert 0, "Invalid operator"  # FIXME: invalide operator
+        return None
+    return json_dump_scalar(node)
 
 
 def _mongo_filter(grid_filter: Optional[str],

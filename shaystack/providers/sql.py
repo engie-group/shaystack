@@ -380,6 +380,7 @@ class Provider(DBHaystackInterface):
         finally:
             cursor.close()
 
+    @overrides
     def read_grid(self,
                   customer_id: str = '',
                   version: Optional[datetime] = None) -> Grid:

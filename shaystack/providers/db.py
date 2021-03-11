@@ -125,12 +125,6 @@ class Provider(DBHaystackInterface):
         """ Implement Haystack 'hisRead' """
         return self._delegate.his_read(entity_id, dates_range, date_version)
 
-    # def read_grid(self,
-    #                       customer: Optional[str],
-    #                       version: Optional[datetime]) -> Grid:
-    #     """ Read haystack data from database and return a Grid"""
-    #     return self._delegate.read_grid(customer, version)
-
     @overrides
     def create_db(self) -> None:
         """
@@ -169,3 +163,9 @@ class Provider(DBHaystackInterface):
                     customer_id: Optional[str],
                     now: Optional[datetime] = None) -> None:
         return self._delegate.update_grid(diff_grid, version, customer_id, now)
+
+    @overrides
+    def read_grid(self,
+                  customer_id: str = '',
+                  version: Optional[datetime] = None) -> Grid:
+        return self._delegate.read_grid(customer_id, version)

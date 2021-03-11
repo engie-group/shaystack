@@ -76,3 +76,16 @@ class DBHaystackInterface(HaystackInterface):
             customer_id: The customer id to insert in each row.
             now: The pseudo 'now' datetime.
         """
+
+    @abstractmethod
+    def read_grid(self,
+                  customer_id: str = '',
+                  version: Optional[datetime] = None) -> Grid:
+        """
+        Read all haystack data for a specific customer, from the database and return a Grid.
+        Args:
+            customer_id: The customer_id date to read
+            version: version to load
+        Returns:
+            A grid with all data for a customer
+        """

@@ -5,7 +5,7 @@
 import datetime
 import logging
 import os
-from typing import cast, Dict, Any
+from typing import cast, Dict, Any, List
 
 import pytz
 
@@ -19,7 +19,7 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 
 # If .env set the HAYSTACK_DB to postgres, check to execute the sql request
-def _check_mongodb(mongo_request: Dict[str, Any]):
+def _check_mongodb(mongo_request: List[Dict[str, Any]]):
     if os.environ.get('HAYSTACK_DB', '').startswith("mongodb"):
         envs = {'HAYSTACK_DB': os.environ['HAYSTACK_DB']}
         provider = cast(MongoProvider, get_provider("shaystack.providers.mongodb", envs))

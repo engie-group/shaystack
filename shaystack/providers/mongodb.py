@@ -162,9 +162,9 @@ class Provider(DBHaystackInterface):
 
         cursor = ts_collection.find(
             {
-                "custoler_id": customer_id,
+                "customer_id": customer_id,
                 "id": entity_id.name,
-                "date":
+                "ts":
                     {
                         "$gte": dates_range[0],
                         "$lt": dates_range[1]
@@ -173,7 +173,7 @@ class Provider(DBHaystackInterface):
         for row in cursor:
             history.append(
                 {
-                    "ts": row['ts'],
+                    "ts": row['ts'].replace(tzinfo=pytz.UTC),
                     "val": json_parse_scalar(row['val'])
                 }
             )
@@ -461,7 +461,7 @@ class Provider(DBHaystackInterface):
             {
                 "customer_id": customer_id,
                 "id": entity_id.name,
-                "date_time":
+                "ts":
                     {
                         "$gte": begin_datetime,
                         "$lt": end_datetime
@@ -474,7 +474,7 @@ class Provider(DBHaystackInterface):
                 {
                     "customer_id": customer_id,
                     "id": entity_id.name,
-                    "date_time": row['ts'],
+                    "ts": row['ts'],
                     "val": json_dump_scalar(row['val'])
                 }
                 for row in time_series

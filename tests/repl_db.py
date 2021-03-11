@@ -2,6 +2,7 @@ import cmd
 import datetime
 import logging
 import os
+import pprint
 import sys
 import traceback
 from typing import cast
@@ -10,6 +11,7 @@ from urllib.parse import urlparse
 import pytz
 
 from shaystack.providers import get_provider
+from shaystack.providers.db_mongo import _mongo_filter
 from shaystack.providers.db_postgres import _sql_filter as pg_sql_filter
 from shaystack.providers.db_sqlite import _sql_filter as sqlite_sql_filter
 from shaystack.providers.sql import Provider as SQLProvider
@@ -52,6 +54,15 @@ def main():
                     cursor = self.conn.cursor()
                     cursor.execute(sql_request)
                     cursor.close()
+            except Exception:  # pylint: disable=broad-except
+                traceback.print_exc()
+            finally:
+                conn.rollback()
+
+        def do_mongo(self, arg: str) -> None:
+            try:
+                mongo_request = _mongo_filter(arg, FAKE_NOW, 1, "customer")
+                pprint.PrettyPrinter(indent=4).pprint(mongo_request)
             except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
             finally:

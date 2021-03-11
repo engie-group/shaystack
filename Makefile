@@ -482,7 +482,7 @@ async-start-minio: .minio $(REQUIREMENTS)
 
 
 ## Stop all background server
-async-stop: async-stop-api async-stop-minio stop-pg stop-pgadmin async-docker-stop
+async-stop: async-stop-api async-stop-minio stop-pg stop-pgadmin stop-mongodb async-docker-stop
 
 
 # -------------------------------------- AWS
@@ -646,7 +646,7 @@ functional-db-sqlite: $(REQUIREMENTS)
 	export HAYSTACK_PROVIDER=shaystack.providers.db
 	export HAYSTACK_DB=sqlite3://localhost/test.db
 	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB}
-	echo -e "$(green)Data imported in SQLite$(normal)"
+	echo -e "$(green)Data imported in SQLite ($${HAYSTACK_DB})$(normal)"
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local SQLite serveur OK$(normal)"
@@ -663,7 +663,7 @@ functional-db-sqlite-ts: $(REQUIREMENTS)
 	export HAYSTACK_TS=timestream://HaystackDemo?mem_ttl=8760&mag_ttl=400
 	export LOG_LEVEL=INFO
 	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB} $${HAYSTACK_TS}
-	echo -e "$(green)Data imported in SQLite and Time stream$(normal)"
+	echo -e "$(green)Data imported in SQLite and Time stream ($${HAYSTACK_DB})$(normal)"
 	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local SQLite serveur and Time Stream OK$(normal)"
@@ -679,8 +679,8 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 	export HAYSTACK_PROVIDER=shaystack.providers.db
 	export HAYSTACK_DB=postgres://postgres:password@$$PG_IP:5432/postgres
 	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB}
-	echo -e "$(green)Data imported in Postgres$(normal)"
-	$(MAKE) start-pg async-start-api >/dev/null
+	echo -e "$(green)Data imported in Postgres ($${HAYSTACK_DB})$(normal)"
+	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local Postgres serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
@@ -689,15 +689,15 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 # Start Postgres, Clean DB, Start API and try
 functional-mongodb: $(REQUIREMENTS) clean-mongodb
 	@echo -e "$(green)Test local MongoDB...$(normal)"
-	@$(MAKE) async-stop-api >/dev/null
+	$(MAKE) async-stop-api >/dev/null
 	pip install pymongo >/dev/null
 	$(MAKE) start-mongodb
 	PG_IP=$(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mongodb)
 	export HAYSTACK_PROVIDER=shaystack.providers.mongo
 	export HAYSTACK_DB=mongodb://$$PG_IP/haystackdb#haystack
 	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB}
-	echo -e "$(green)Data imported in MongoDB$(normal)"
-	$(MAKE) start-pg async-start-api >/dev/null
+	echo -e "$(green)Data imported in MongoDB ($${HAYSTACK_DB})$(normal)"
+	$(MAKE) async-start-api >/dev/null
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local MongoDB serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
@@ -829,7 +829,7 @@ mongodb-shell:
 
 clean-mongodb: start-mongodb
 	@docker exec -it mongodb mongo mongodb://localhost/haystackdb \
-	--quiet --eval 'db.haystack.drop()' >/dev/null
+	--quiet --eval 'db.haystack.drop();db.haystack_ts.drop();db.haystack_meta_datas.drop()' >/dev/null
 
 # --------------------------- Docker
 ## Build a Docker image with the project and current Haystack parameter (see `make dump-params`)

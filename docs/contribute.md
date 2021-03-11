@@ -218,7 +218,7 @@ $ make aws-api
 ### Use AWS Time stream
 
 You can create a database in *AWS Time Stream* and use the provider
-`shaytack.providers.sql_ts`.
+`shaytack.providers.db_timestream`.
 
 ### Customize environment variable
 
@@ -318,7 +318,7 @@ help
 
 Undocumented commands:
 ======================
-bye  pg  sqlite
+bye  pg  sqlite mongo
 
 (Cmd) pg site or point
 -- site or point

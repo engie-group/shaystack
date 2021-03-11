@@ -46,7 +46,7 @@ class HaystackInterface(ABC):
     The subclasses may be abstract (implemented only a part of methods),
     the 'ops' code detect that, and can calculate the set of implemented operations.
     """
-    __slots__ = '_envs'
+    __slots__ = ['_envs']
 
     def __init__(self, envs: Dict[str, str]):
         assert envs is not None
@@ -425,7 +425,7 @@ def no_cache():
     return False
 
 
-def get_provider(class_str: str, envs: Union[Dict[str, str], os._Environ],
+def get_provider(class_str: str, envs: Union[Dict[str, str], os._Environ],  # pylint: disable=protected-access
                  use_cache=True  # pylint: disable=protected-access
                  ) -> HaystackInterface:
     """Return an instance of the provider.

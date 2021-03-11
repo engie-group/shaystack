@@ -616,12 +616,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         """ Force to clear the local cache. """
         self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member
 
-    # def read_grid(self,
-    #                       customer: Optional[str],
-    #                       version: Optional[datetime]) -> Grid:
-    #     """ Read haystack data from database and return a Grid"""
-    #     return self._delegate.read_grid(customer, version)
-
     @overrides
     def create_db(self) -> None:
         """
@@ -731,3 +725,9 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                              Key=parsed_target.path[1:],
                              ContentMD5=b64_digest
                              )
+
+    @overrides
+    def read_grid(self,
+                  customer_id: str = '',
+                  version: Optional[datetime] = None) -> Grid:
+        return self._download_grid(self._get_url(), version)

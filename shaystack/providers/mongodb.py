@@ -1,3 +1,19 @@
+# -*- coding: utf-8 -*-
+# SQL Provider
+# See the accompanying LICENSE file.
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
+# pylint: disable=line-too-long
+"""
+Manipulate Haystack ontology on MongoDB database.
+
+Set the HAYSTACK_DB with mongo database connection URL
+May be:
+- mongodb+srv://localhost/?w=majority&wtimeoutMS=2500#haystack
+
+Each entity was save in one Mongo document. A column save the JSON version of entity.
+"""
 import logging
 from datetime import datetime, timedelta
 from os.path import dirname
@@ -42,6 +58,7 @@ class Provider(DBHaystackInterface):
         DBHaystackInterface.__init__(self, envs)
         self._connect = None
         self._client = None
+        self._table_name = None
         log.info("Use %s", self._get_db())
         self._parsed_db = urlparse(self._get_db())
 
@@ -229,6 +246,7 @@ class Provider(DBHaystackInterface):
         if ts_name in connect.list_collection_names():
             connect[ts_name].drop()
 
+    @overrides
     def read_grid(self,
                   customer_id: str = '',
                   version: Optional[datetime] = None) -> Grid:
@@ -253,7 +271,7 @@ class Provider(DBHaystackInterface):
                     {"entity": True}):
                 grid.append(_conv_row_to_entity(row["entity"]))
             return grid
-        except Exception as ex:  # FIXME
+        except Exception as ex:  # FIXME: manage exception
             traceback.print_exc()
             raise ex
 
@@ -283,7 +301,7 @@ class Provider(DBHaystackInterface):
                     {"entity": True}):
                 grid.append(_conv_row_to_entity(row["entity"]))
             return grid
-        except Exception as ex:  # FIXME
+        except Exception as ex:  # FIXME: manage exception
             traceback.print_exc()
             raise ex
 
@@ -381,8 +399,8 @@ class Provider(DBHaystackInterface):
                 for updated_entity in diff_grid
                 if updated_entity["id"] in new_grid
             ]
-            haystack_db.insert_many(records)  # FIXME : vérifier résult ?
-            log.debug("Import %s record(s)", len(records))
+            result = haystack_db.insert_many(records)  # FIXME : vérifier résult ?
+            log.debug("Import %s record(s)", len(result.inserted_ids))
 
     def import_data(self,  # pylint: disable=too-many-arguments
                     source_uri: str,
@@ -410,9 +428,9 @@ class Provider(DBHaystackInterface):
             original_grid = self.read_grid(customer_id, version)
             target_grid = read_grid_from_uri(source_uri, envs=self._envs)
             self.update_grid(target_grid - original_grid, version, customer_id)
-        except Exception as ex:  # FIXME
+        except Exception as ex:  # FIXME: exception
             traceback.print_exc()
-            raise ex  # FIXME
+            raise ex  # FIXME: exception
 
     # TODO: add transaction ?
     @overrides
@@ -505,13 +523,13 @@ class Provider(DBHaystackInterface):
         return self._connect
 
     def get_collection(self) -> Collection:
-        db = self.get_db()
-        return db[self._table_name]
+        mongodb = self.get_db()
+        return mongodb[self._table_name]
 
     def _get_meta_collection(self) -> Collection:
-        db = self.get_db()
-        return db[self._table_name + "_meta_datas"]
+        mongodb = self.get_db()
+        return mongodb[self._table_name + "_meta_datas"]
 
     def _get_ts_collection(self) -> Collection:
-        db = self.get_db()
-        return db[self._table_name + "_ts"]
+        mongodb = self.get_db()
+        return mongodb[self._table_name + "_ts"]

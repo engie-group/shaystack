@@ -21,7 +21,6 @@ from pymongo.errors import ServerSelectionTimeoutError
 from shaystack import Ref, Grid, VER_3_0
 from shaystack.providers import get_provider
 from shaystack.providers.db_haystack_interface import DBHaystackInterface
-from shaystack.providers.mongodb import Provider as MongoProvider
 
 FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
@@ -29,7 +28,7 @@ _db_providers = [
     ["shaystack.providers.sql", "sqlite3:///:memory:#haystack", True],
     ["shaystack.providers.sql", "postgresql://postgres:password@localhost:5432/postgres?connect_timeout=100#haystack",
      True],
-    ["shaystack.providers.mongodb", "mongodb://localhost/haystackdb#haystack?serverSelectionTimeoutMS=100", True],
+    ["shaystack.providers.mongodb", "mongodb://localhost/haystackdb?serverSelectionTimeoutMS=100#haystack", True],
 ]
 
 
@@ -75,7 +74,7 @@ def _get_grids():
     ]
 
 
-def _populate_db(provider: MongoProvider) -> None:
+def _populate_db(provider: DBHaystackInterface) -> None:
     provider.purge_db()
     for grid, version in _get_grids():
         provider.update_grid(grid, version, "", version)

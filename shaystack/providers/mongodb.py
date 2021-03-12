@@ -22,14 +22,14 @@ from urllib.parse import urlparse
 
 import pytz
 from overrides import overrides
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING
 from pymongo.collection import Collection
 from pymongo.database import Database
 
 from .db_haystack_interface import DBHaystackInterface
 from .db_mongo import _mongo_filter as mongo_filter
 from .url import read_grid_from_uri
-from .. import Entity, traceback, LATEST_VER, HaystackException
+from .. import Entity, LATEST_VER, HaystackException
 from ..datatypes import Ref
 from ..grid import Grid
 from ..jsondumper import dump_scalar as json_dump_scalar, _dump_meta, _dump_columns
@@ -223,13 +223,30 @@ class Provider(DBHaystackInterface):
         """
         connect = self.get_db()
         if self._table_name not in connect.list_collection_names():
-            connect.create_collection(self._table_name)
+            collection = connect.create_collection(self._table_name)
+            collection.create_index(
+                [("customer_id", ASCENDING),
+                 ("start_datetime", ASCENDING),
+                 ("end_datetime", ASCENDING),
+                 ])
         metadata_name = self._table_name + "_meta_datas"
         if metadata_name not in connect.list_collection_names():
-            connect.create_collection(metadata_name)
+            collection = connect.create_collection(metadata_name)
+            collection.create_index(
+                [
+                    ("customer_id", ASCENDING),
+                    ("start_datetime", ASCENDING),
+                    ("end_datetime", ASCENDING),
+                ])
         ts_name = self._table_name + "_ts"
         if ts_name not in connect.list_collection_names():
-            connect.create_collection(ts_name)
+            collection = connect.create_collection(ts_name)
+            collection.create_index(
+                [
+                    ("customer_id", ASCENDING),
+                    ("id", ASCENDING),
+                    ("ts", ASCENDING),
+                ])
 
     @overrides
     def purge_db(self) -> None:
@@ -258,22 +275,18 @@ class Provider(DBHaystackInterface):
         Returns:
             A grid with all data for a customer
         """
-        try:
-            if version is None:
-                version = datetime.now().replace(tzinfo=pytz.UTC)
-            grid = self._init_grid_from_db(version)
-            for row in self.get_collection().find(
-                    {
-                        'customer_id': customer_id,
-                        'start_datetime': {'$lte': version},
-                        'end_datetime': {'$gt': version},
-                    },
-                    {"entity": True}):
-                grid.append(_conv_row_to_entity(row["entity"]))
-            return grid
-        except Exception as ex:  # FIXME: manage exception
-            traceback.print_exc()
-            raise ex
+        if version is None:
+            version = datetime.now().replace(tzinfo=pytz.UTC)
+        grid = self._init_grid_from_db(version)
+        for row in self.get_collection().find(
+                {
+                    'customer_id': customer_id,
+                    'start_datetime': {'$lte': version},
+                    'end_datetime': {'$gt': version},
+                },
+                {"entity": True}):
+            grid.append(_conv_row_to_entity(row["entity"]))
+        return grid
 
     def _read_partial_grid(self,
                            ids: List[Ref],
@@ -287,23 +300,19 @@ class Provider(DBHaystackInterface):
         Returns:
             A grid with all data for a customer
         """
-        try:
-            grid = self._init_grid_from_db(version)
-            for row in self.get_collection().find(
-                    {
-                        'customer_id': customer_id,
-                        'start_datetime': {'$lte': version},
-                        'end_datetime': {'$gt': version},
-                        'entity.id': {
-                            "$in": [json_dump_scalar(id_entity)[1:-1] for id_entity in ids]
-                        }
-                    },
-                    {"entity": True}):
-                grid.append(_conv_row_to_entity(row["entity"]))
-            return grid
-        except Exception as ex:  # FIXME: manage exception
-            traceback.print_exc()
-            raise ex
+        grid = self._init_grid_from_db(version)
+        for row in self.get_collection().find(
+                {
+                    'customer_id': customer_id,
+                    'start_datetime': {'$lte': version},
+                    'end_datetime': {'$gt': version},
+                    'entity.id': {
+                        "$in": [json_dump_scalar(id_entity)[1:-1] for id_entity in ids]
+                    }
+                },
+                {"entity": True}):
+            grid.append(_conv_row_to_entity(row["entity"]))
+        return grid
 
     def _init_grid_from_db(self, version: Optional[datetime]) -> Grid:
         customer_id = self.get_customer_id()
@@ -384,7 +393,7 @@ class Provider(DBHaystackInterface):
                 {
                     "entity.id": {"$in": closed_id},
                     "end_datetime": _END_OF_WORLD
-                },  # FIXME: use index
+                },
                 {"$set": {"end_datetime": end_date}}
             )
             log.debug("Close %s record(s)", result.modified_count)
@@ -418,19 +427,15 @@ class Provider(DBHaystackInterface):
         """
         if not version:
             version = datetime.now(tz=pytz.UTC)
-        try:
-            if not customer_id:
-                customer_id = self.get_customer_id()
-            if reset:
-                self.purge_db()
-            self.create_db()
+        if not customer_id:
+            customer_id = self.get_customer_id()
+        if reset:
+            self.purge_db()
+        self.create_db()
 
-            original_grid = self.read_grid(customer_id, version)
-            target_grid = read_grid_from_uri(source_uri, envs=self._envs)
-            self.update_grid(target_grid - original_grid, version, customer_id)
-        except Exception as ex:  # FIXME: exception
-            traceback.print_exc()
-            raise ex  # FIXME: exception
+        original_grid = self.read_grid(customer_id, version)
+        target_grid = read_grid_from_uri(source_uri, envs=self._envs)
+        self.update_grid(target_grid - original_grid, version, customer_id)
 
     # TODO: add transaction ?
     @overrides

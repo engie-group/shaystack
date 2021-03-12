@@ -36,7 +36,7 @@ def _to_float(scalar: HaystackType) -> float:
         return scalar.magnitude
     if isinstance(scalar, (int, float)):
         return scalar
-    raise ValueError("Impossible to compare with not a numnber")  # FIXME: _to_float exception
+    raise ValueError("impossible to compare with anything other than a number")
 
 
 def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any], str]:
@@ -83,7 +83,7 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
                 to_double,
                 _to_float(node.right),
             ]}
-        assert 0, "Invalid operator"  # FIXME: invalide operator
+        assert 0, "Invalid operator"
         return None
     return json_dump_scalar(node)
 

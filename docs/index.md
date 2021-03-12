@@ -377,6 +377,51 @@ grid.select("!hisURL")
 The syntax to analyse the daterange in `hisRead` is extended to accept a comma without value before or after (`date,`
 , `,datetime`, etc.)
 
+### Haystack filter
+
+A big part of the code is to convert the haystack *filter* to database request. We implemented a conversion to different
+languages:
+
+- python
+- sqlite
+- postegresl
+- mongodb
+
+For the developer point of view, it may be interesting to analyse the translation. We propose a tool for that.
+
+```console
+$ shaystack_repl
+(Cmd) ?
+
+Documented commands (type help <topic>):
+========================================
+help
+
+Undocumented commands:
+======================
+bye  mongo  pg  python  sqlite
+
+(Cmd) 
+```
+
+Enter the language followed by the haystack filter.
+
+```console
+(Cmd) python site or point
+def _gen_hsfilter_0(_grid, _entity):
+  return ((id(_get_path(_grid, _entity, ['site'])) !=  id(NOT_FOUND)) or (id(_get_path(_grid, _entity, ['point'])) !=  id(NOT_FOUND)))
+
+(Cmd) pg site or point
+-- site or point
+SELECT t1.entity
+FROM haystack as t1
+WHERE
+'2020-10-01T00:00:00+00:00' BETWEEN t1.start_datetime AND t1.end_datetime
+AND t1.customer_id='customer'
+AND t1.entity ?| array['site', 'point']
+LIMIT 1
+```
+
 ### Using AWS
 
 Read [more...](AWS.md)

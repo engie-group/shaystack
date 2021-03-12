@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 import pytz
 
+from shaystack.grid_filter import _filter_to_python
 from shaystack.providers import get_provider
 from shaystack.providers.db_mongo import _mongo_filter
 from shaystack.providers.db_postgres import _sql_filter as pg_sql_filter
@@ -32,6 +33,13 @@ def main():
         def __init__(self, conn):
             super().__init__()
             self.conn = conn
+
+        def do_python(self, arg: str) -> None:
+            try:
+                _, python_code = _filter_to_python(arg)
+                print(python_code)
+            except Exception:  # pylint: disable=broad-except
+                traceback.print_exc()
 
         def do_pg(self, arg: str) -> None:
             try:

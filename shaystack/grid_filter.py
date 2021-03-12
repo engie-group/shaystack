@@ -198,6 +198,16 @@ class _FnWrapper:
         return globals()[self.fun_name]
 
 
+def _filter_to_python(grid_filter: str) -> str:
+    global _ID_FUNCTION  # pylint: disable=global-statement
+    def_filter = _generate_filter_in_python(
+        parse_filter(grid_filter).head, [])  # pylint: disable=protected-access
+    func_name = "_gen_hsfilter_" + str(_ID_FUNCTION)
+    function_template = "def %s(_grid, _entity):\n  return " % func_name + "".join(def_filter)
+    _ID_FUNCTION += 1
+    return func_name, function_template
+
+
 @lru_cache(maxsize=_FILTER_CACHE_LRU_SIZE)
 def _filter_function(grid_filter: str) -> _FnWrapper:
     """
@@ -207,14 +217,8 @@ def _filter_function(grid_filter: str) -> _FnWrapper:
     Returns:
         A wrapper to manage the life cycle of generated function
     """
-    global _ID_FUNCTION  # pylint: disable=global-statement
-    def_filter = _generate_filter_in_python(
-        parse_filter(grid_filter).head, [])  # pylint: disable=protected-access
-    fun_name = "_gen_hsfilter_" + str(_ID_FUNCTION)
-    function_template = "def %s(_grid, _entity):\n  return " % fun_name + "".join(def_filter)
-    # print("\nGenerate:\n# " + grid_filter + "\n" + function_template)  # For debug
-    _ID_FUNCTION += 1
-    return _FnWrapper(fun_name, function_template)
+    func_name, function_template = _filter_to_python(grid_filter)
+    return _FnWrapper(func_name, function_template)
 
 
 def filter_set_lru_size(lru_size: int) -> None:

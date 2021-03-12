@@ -6,8 +6,8 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
-# Functional test with differents complexs scenario
-# and with differents providers
+# Functional test with different complexes scenario
+# and with different providers with real database.
 
 import copy
 import datetime

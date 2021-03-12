@@ -617,6 +617,7 @@ test-aws: .make-test-aws
 
 # Test local deployment with URL provider
 functional-url-local: $(REQUIREMENTS)
+	@$(VALIDATE_VENV)
 	@echo -e "$(green)Test URL local...$(normal)"
 	@$(MAKE) async-stop-api >/dev/null
 	export HAYSTACK_PROVIDER=shaystack.providers.db
@@ -628,6 +629,7 @@ functional-url-local: $(REQUIREMENTS)
 
 # Test local deployment with URL provider
 functional-url-s3: $(REQUIREMENTS) aws-update-token
+	@$(VALIDATE_VENV)
 	@echo -e "$(green)Test URL on S3...$(normal)"
 	@$(MAKE) async-stop-api >/dev/null
 	export HAYSTACK_PROVIDER=shaystack.providers.db
@@ -639,6 +641,7 @@ functional-url-s3: $(REQUIREMENTS) aws-update-token
 
 # Clean DB, Start API, and try with SQLite
 functional-db-sqlite: $(REQUIREMENTS)
+	@$(VALIDATE_VENV)
 	@echo -e "$(green)Test local SQLite...$(normal)"
 	@$(MAKE) async-stop-api>/dev/null
 	pip install supersqlite >/dev/null
@@ -654,6 +657,7 @@ functional-db-sqlite: $(REQUIREMENTS)
 
 # Clean DB, Start API, and try with SQLite + Time stream
 functional-db-sqlite-ts: $(REQUIREMENTS)
+	@$(VALIDATE_VENV)
 	@echo -e "$(green)Test local SQLite + Timestream...$(normal)"
 	@$(MAKE) async-stop-api>/dev/null
 	pip install supersqlite boto3 >/dev/null
@@ -671,6 +675,7 @@ functional-db-sqlite-ts: $(REQUIREMENTS)
 
 # Start Postgres, Clean DB, Start API and try
 functional-db-postgres: $(REQUIREMENTS) clean-pg
+	@$(VALIDATE_VENV)
 	@echo -e "$(green)Test local Postgres...$(normal)"
 	@$(MAKE) async-stop-api >/dev/null
 	pip install psycopg2 >/dev/null
@@ -688,6 +693,7 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 
 # Start Postgres, Clean DB, Start API and try
 functional-mongodb: $(REQUIREMENTS) clean-mongodb
+	@$(VALIDATE_VENV)
 	@echo -e "$(green)Test local MongoDB...$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 	pip install pymongo >/dev/null
@@ -702,8 +708,15 @@ functional-mongodb: $(REQUIREMENTS) clean-mongodb
 	echo -e "$(green)Test with local MongoDB serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 
+.PHONY: functional-database
+functional-database: $(REQUIREMENTS) start-pg start-mongodb
+	@$(VALIDATE_VENV)
+	@$(CONDA_PYTHON) -m nose tests/test_db_provider.py $(NOSETESTS_ARGS)
+	echo -e "$(green)Test same request with all databases OK$(normal)"
+
+
 .make-functional-test: functional-url-local functional-db-sqlite functional-db-postgres \
-		functional-url-s3 functional-db-sqlite-ts functional-mongodb
+		functional-url-s3 functional-db-sqlite-ts functional-mongodb functional-database
 	@touch .make-functional-test
 
 ## Test graphql client with different providers

@@ -73,7 +73,7 @@ Samples:
 
 Inside the SQL url, if the password is in form `'<...>'`, and you use AWS lambda,  
 the password is retrieved from the service [`secretManagers`](https://aws.amazon.com/secrets-manager/). The password
-must be in form `'<secret_id:key>'`. In the secret container `secret_id` at the key `key`, the database password must be
+must be in form `'<secret_id|key>'`. In the secret container `secret_id` at the key `key`, the database password must be
 set.
 
 After the deployment, you can use this provider like any others providers. The haystack filter was automatically

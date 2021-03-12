@@ -25,7 +25,7 @@ def get_secret_manager_secret(pattern, envs) -> str:
     """
     Return the password present in the AWS Secret manager.
     Args:
-        pattern: <container>:<key>
+        pattern: <container>|<key>
         envs: Environment variables (with `AWS_REGION`)
 
     Returns:
@@ -35,7 +35,7 @@ def get_secret_manager_secret(pattern, envs) -> str:
     if not _BOTO3_AVAILABLE:
         return "secretManager"
 
-    secret_id, secret_key = pattern.split(':')
+    secret_id, secret_key = pattern.split('|')
     session = boto3.session.Session()
     client = session.client(
         service_name='secretsmanager',

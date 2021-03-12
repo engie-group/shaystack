@@ -11,7 +11,7 @@ See https://www.project-haystack.org/doc/Filters
 """
 from datetime import datetime, time, date
 from functools import lru_cache
-from typing import Any, List, Callable
+from typing import Any, List, Callable, Tuple
 
 from pyparsing import ZeroOrMore, Literal, Forward, Suppress
 
@@ -198,7 +198,7 @@ class _FnWrapper:
         return globals()[self.fun_name]
 
 
-def _filter_to_python(grid_filter: str) -> str:
+def _filter_to_python(grid_filter: str) -> Tuple[str, str]:
     global _ID_FUNCTION  # pylint: disable=global-statement
     def_filter = _generate_filter_in_python(
         parse_filter(grid_filter).head, [])  # pylint: disable=protected-access

@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+# User interface to print the translation between filter syntax to others syntaxes.
+# See the accompanying LICENSE file.
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
+"""
+User interface to print the translation between filter syntax to others syntaxes.
+"""
 import cmd
 import datetime
 import logging
@@ -19,7 +28,6 @@ from shaystack.providers.sql import Provider as SQLProvider
 
 FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
-# FIXME: ajouter mongodb
 def main():
     """Loop to test the postgres generation with REPL"""
     envs = os.environ
@@ -29,12 +37,14 @@ def main():
     conn = cast(SQLProvider, provider).get_connect()
     scheme = urlparse(envs["HAYSTACK_DB"]).scheme
 
-    class TstRequest(cmd.Cmd):
+    class HaystackRequest(cmd.Cmd):
+        """ Haystack REPL interface """
+
         def __init__(self, conn):
             super().__init__()
             self.conn = conn
 
-        def do_python(self, arg: str) -> None:
+        def do_python(self, arg: str) -> None:  # pylint: disable=no-self-use
             try:
                 _, python_code = _filter_to_python(arg)
                 print(python_code)
@@ -67,7 +77,7 @@ def main():
             finally:
                 conn.rollback()
 
-        def do_mongo(self, arg: str) -> None:
+        def do_mongo(self, arg: str) -> None:  # pylint: disable=no-self-use
             try:
                 mongo_request = _mongo_filter(arg, FAKE_NOW, 1, "customer")
                 pprint.PrettyPrinter(indent=4).pprint(mongo_request)
@@ -79,7 +89,7 @@ def main():
         def do_bye(self, _: str) -> bool:  # pylint: disable=unused-argument,no-self-use
             return True
 
-    TstRequest(conn).cmdloop()
+    HaystackRequest(conn).cmdloop()
     return 0
 
 

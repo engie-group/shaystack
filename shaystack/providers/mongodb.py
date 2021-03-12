@@ -18,7 +18,7 @@ import logging
 from datetime import datetime, timedelta
 from os.path import dirname
 from typing import Optional, List, Any, Tuple, Dict, cast
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 import pytz
 from overrides import overrides
@@ -28,8 +28,9 @@ from pymongo.database import Database
 
 from .db_haystack_interface import DBHaystackInterface
 from .db_mongo import _mongo_filter as mongo_filter
+from .tools import _BOTO3_AVAILABLE, get_secret_manager_secret
 from .url import read_grid_from_uri
-from .. import Entity, LATEST_VER, HaystackException
+from .. import Entity, LATEST_VER, HaystackException, re
 from ..datatypes import Ref
 from ..grid import Grid
 from ..jsondumper import dump_scalar as json_dump_scalar, _dump_meta, _dump_columns
@@ -52,19 +53,29 @@ class Provider(DBHaystackInterface):
     """
     Expose an Haystack data via the Haystack Rest API and SQL databases
     """
-    __slots__ = '_connect', '_client', '_parsed_db', '_table_name', '_envs'
+    __slots__ = '_connect', '_client', '_parsed_db', '_table_name', '_envs', '_db_url'
 
     def __init__(self, envs: Dict[str, str]):
         DBHaystackInterface.__init__(self, envs)
         self._connect = None
         self._client = None
         self._table_name = None
+        self._db_url = self._envs["HAYSTACK_DB"]
         log.info("Use %s", self._get_db())
         self._parsed_db = urlparse(self._get_db())
+        password = self._parsed_db.password
+        if _BOTO3_AVAILABLE and self._parsed_db.username and \
+                password.startswith("<") and password.endswith(">"):
+            password = get_secret_manager_secret(password[1:-1], self._envs)
+            parts = list(self._parsed_db)
+            user, _, host = re.split(':|@', parts[1])
+            parts[1] = f"{user}:{password}@{host}"
+            self._db_url = urlunparse(parts)
+            self._parsed_db = urlparse(urlunparse(parts))
 
     def _get_db(self) -> str:  # pylint: disable=no-self-use
         """ Return the url to the file to expose. """
-        return self._envs["HAYSTACK_DB"]
+        return self._db_url
 
     @property
     def name(self) -> str:
@@ -186,7 +197,7 @@ class Provider(DBHaystackInterface):
                         "$gte": dates_range[0],
                         "$lt": dates_range[1]
                     }
-            })
+            }).sort("ts")
         for row in cursor:
             history.append(
                 {
@@ -408,7 +419,7 @@ class Provider(DBHaystackInterface):
                 for updated_entity in diff_grid
                 if updated_entity["id"] in new_grid
             ]
-            result = haystack_db.insert_many(records)  # FIXME : vérifier résult ?
+            result = haystack_db.insert_many(records)
             log.debug("Import %s record(s)", len(result.inserted_ids))
 
     def import_data(self,  # pylint: disable=too-many-arguments
@@ -506,11 +517,6 @@ class Provider(DBHaystackInterface):
 
     def get_db(self) -> Database:
         if not self._connect:  # Lazy connection
-            # FIXME: manage password in secret manager for MongoDB
-            # password = self._parsed_db.password
-            # if _BOTO3_AVAILABLE and self._parsed_db.username and \
-            #         password.startswith("<") and password.endswith(">"):
-            #     password = get_secret_manager_secret(password[1:-1], self._envs)
             database_name = self._parsed_db.path
             if database_name:
                 database_name = database_name[1:]
@@ -518,6 +524,7 @@ class Provider(DBHaystackInterface):
             if not table_name:
                 table_name = "haystack"
             self._table_name = table_name
+            self._parsed_db.geturl()
             self._client = self._connect = MongoClient(
                 self._get_db(),
             )

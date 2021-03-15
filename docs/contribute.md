@@ -218,7 +218,7 @@ $ make aws-api
 ### Use AWS Time stream
 
 You can create a database in *AWS Time Stream* and use the provider
-`shaytack.providers.db_timestream`.
+`shaytack.providers.timestream`.
 
 ### Customize environment variable
 

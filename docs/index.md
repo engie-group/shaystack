@@ -231,7 +231,7 @@ by extending `shaystack.providers.HaystackInterface`
 |Data in a SuperSQLite database|`HAYSTACK_PROVIDER=shaystack.providers.db\<br />HAYSTACK_DB=sqlite3://...\<br /> shaystack`|Remember to install supersqlite python module. [More...](sql_provider.md)|
 |Data in a Postgresql database|`HAYSTACK_PROVIDER=shaystack.providers.db\<br />HAYSTACK_DB=postgres://...\<br /> shaystack`|Remember to install psycopg2 python module. [More...](sql_provider.md)|
 |Data in a MongoDB|`HAYSTACK_PROVIDER=shaystack.providers.db\<br />HAYSTACK_DB=mongodb+srv:://...\<br /> shaystack`|Remember to install pymongo python module. [More...](mongo_provider.md)|
-|Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.db_timestream\<br />HAYSTACK_DB=postgres://...\<br />HAYSTACK_TS=timestream:://...\<br /> shaystack`|[More...](timestream_provider.md)|
+|Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.timestream\<br />HAYSTACK_DB=postgres://...\<br />HAYSTACK_TS=timestream:://...\<br /> shaystack`|[More...](timestream_provider.md)|
 |Custom|`HAYSTACK_PROVIDER=shaystack.providers.<your module name>`|Write your own subclass of `shaystack.providers.HaystackInterface shaystack`.|
 
 Note: Existing providers are not connected to IOT for simplicity. If you want to connect the haystack API with IOT, you

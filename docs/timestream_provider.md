@@ -1,9 +1,9 @@
 # Provider SQL + AWS Time stream
 
 This provider extends the DBProvider to manage time-series with
-[AWS Time stream](https://docs.aws.amazon.com/timestream/). Use `HAYSTACK_PROVIDER=shaytack.providers.db_timestream` to
-use this provider. Add the variable `HAYSTACK_DB` to describe the link to the backend to read the ontology
-and `HAYSTACK_TS` to describe the link to *AWS Time stream*. The format of `HAYSTACK_TS` is :
+[AWS Time stream](https://docs.aws.amazon.com/timestream/). Use `HAYSTACK_PROVIDER=shaytack.providers.timestream` to use
+this provider. Add the variable `HAYSTACK_DB` to describe the link to the backend to read the ontology and `HAYSTACK_TS`
+to describe the link to *AWS Time stream*. The format of `HAYSTACK_TS` is :
 
 `timestream://<database>[?mem_ttl=<memory retention in hour>&mag_ttl=<magnetic retention in day>][#<tablename>]`
 
@@ -30,7 +30,7 @@ You can publish data in this table, via *[AWS IoT](https://aws.amazon.com/fr/iot
 -
 
 ```console
-$ HAYSTACK_PROVIDER=shaystack.providers.db_timestream \
+$ HAYSTACK_PROVIDER=shaystack.providers.timestream \
   HAYSTACK_DB=sqlite3:///test.db#haystack \
   HAYSTACK_TS=timestream://SHaystackDemo/?mem_ttl=1&mag_ttl=100#haystack \
   shaystack

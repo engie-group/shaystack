@@ -151,7 +151,7 @@ class Provider(DBProvider):
             value = time_series[0]["val"]  # Suppose all values share the same type
             cast_fn, target_type = Provider._hs_to_timestream_type(value)
             if not customer_id:  # Empty string ?
-                customer_id = None
+                customer_id = ' '
             common_attributs = {
                 'Dimensions': list(filter(lambda x: x['Value'] is not None, [
                     {'Name': 'id', 'Value': entity_id.name},
@@ -322,12 +322,15 @@ class Provider(DBProvider):
 
         kind = entity.get("kind", "Number")
         timestream_type = Provider._kind_to_timestream_type(kind)
+        customer_id = self.get_customer_id()
+        if not customer_id:
+            customer_id = ' '
         try:
             grid = Grid(columns=["ts", "val"])
 
             select_all = f"SELECT time,hs_type,unit,measure_value::{timestream_type} " \
                          f"FROM {self._ts_database_name}.{self._ts_table_name} " \
-                         f"WHERE id='{entity_id.name}' AND customer_id='{self.get_customer_id()}' "
+                         f"WHERE id='{entity_id.name}' AND customer_id='{customer_id}' "
             if dates_range:
                 select_all += f"AND time BETWEEN from_iso8601_timestamp('{dates_range[0].isoformat()}') " \
                               f"AND from_iso8601_timestamp('{dates_range[1].isoformat()}')"
@@ -337,6 +340,8 @@ class Provider(DBProvider):
                 for row in page['Rows']:
                     datas = row['Data']
                     scalar_value = dateutil.parser.isoparse(datas[0]['ScalarValue'])
+                    if not scalar_value.tzname():
+                        scalar_value = scalar_value.replace(tzinfo=pytz.UTC)
                     hs_type = datas[1]['ScalarValue']
                     unit = datas[2]['ScalarValue'].strip()
                     str_val = datas[3]['ScalarValue']
@@ -389,4 +394,4 @@ class Provider(DBProvider):
                 uri = dir_name + '/' + row['hisURI']
                 ts_grid = read_grid_from_uri(uri, envs=self._envs)
                 self._import_ts_in_db(ts_grid, row["id"], customer_id, version)
-                log.debug("%s imported", uri)
+                log.info("%s imported", uri)

@@ -4,208 +4,208 @@
   },
   "cols": [
     {
-      "name": "sp"
-    },
-    {
-      "name": "ahu"
-    },
-    {
-      "name": "geoCoord"
-    },
-    {
-      "name": "site"
-    },
-    {
-      "name": "cur"
-    },
-    {
-      "name": "rooftop"
-    },
-    {
-      "name": "primaryFunction"
-    },
-    {
-      "name": "geoCountry"
-    },
-    {
-      "name": "return"
-    },
-    {
-      "name": "yearBuilt"
-    },
-    {
-      "name": "outside"
-    },
-    {
-      "name": "stage"
-    },
-    {
-      "name": "metro"
-    },
-    {
-      "name": "tz"
-    },
-    {
-      "name": "tariffHis"
-    },
-    {
-      "name": "equipRef"
-    },
-    {
-      "name": "elecMeterLoad"
-    },
-    {
-      "name": "fan"
-    },
-    {
-      "name": "point"
-    },
-    {
-      "name": "pressure"
-    },
-    {
       "name": "unit"
-    },
-    {
-      "name": "lights"
-    },
-    {
-      "name": "damper"
-    },
-    {
-      "name": "heat"
-    },
-    {
-      "name": "discharge"
     },
     {
       "name": "siteMeter"
     },
     {
-      "name": "air"
-    },
-    {
-      "name": "zone"
-    },
-    {
-      "name": "occupied"
-    },
-    {
-      "name": "effective"
-    },
-    {
-      "name": "area"
-    },
-    {
       "name": "energy"
-    },
-    {
-      "name": "sensor"
-    },
-    {
-      "name": "weatherRef"
-    },
-    {
-      "name": "lightsGroup"
-    },
-    {
-      "name": "hvac"
-    },
-    {
-      "name": "geoState"
-    },
-    {
-      "name": "summary"
-    },
-    {
-      "name": "temp"
     },
     {
       "name": "storeNum"
     },
     {
-      "name": "curVal"
+      "name": "elec"
     },
     {
-      "name": "hisMode"
-    },
-    {
-      "name": "geoAddr"
-    },
-    {
-      "name": "geoPostalCode"
-    },
-    {
-      "name": "geoCity"
-    },
-    {
-      "name": "elecCost"
-    },
-    {
-      "name": "occupiedStart"
-    },
-    {
-      "name": "meter"
-    },
-    {
-      "name": "siteRef"
-    },
-    {
-      "name": "kind"
-    },
-    {
-      "name": "navName"
-    },
-    {
-      "name": "cool"
-    },
-    {
-      "name": "enum"
-    },
-    {
-      "name": "power"
+      "name": "heat"
     },
     {
       "name": "sitePoint"
     },
     {
-      "name": "his"
+      "name": "navName"
     },
     {
-      "name": "cmd"
+      "name": "geoState"
     },
     {
-      "name": "elec"
+      "name": "rooftop"
+    },
+    {
+      "name": "elecCost"
+    },
+    {
+      "name": "geoCountry"
     },
     {
       "name": "occupiedEnd"
     },
     {
-      "name": "costPerHour"
+      "name": "temp"
     },
     {
-      "name": "kwSite"
+      "name": "sensor"
+    },
+    {
+      "name": "ahu"
+    },
+    {
+      "name": "elecMeterLoad"
+    },
+    {
+      "name": "hisMode"
+    },
+    {
+      "name": "point"
+    },
+    {
+      "name": "occupied"
+    },
+    {
+      "name": "outside"
+    },
+    {
+      "name": "cur"
+    },
+    {
+      "name": "effective"
+    },
+    {
+      "name": "zone"
+    },
+    {
+      "name": "curVal"
     },
     {
       "name": "id"
     },
     {
-      "name": "phone"
+      "name": "enum"
     },
     {
-      "name": "store"
+      "name": "metro"
+    },
+    {
+      "name": "meter"
+    },
+    {
+      "name": "air"
     },
     {
       "name": "geoStreet"
     },
     {
-      "name": "equip"
+      "name": "pressure"
     },
     {
       "name": "dis"
     },
     {
+      "name": "tz"
+    },
+    {
+      "name": "siteRef"
+    },
+    {
+      "name": "occupiedStart"
+    },
+    {
+      "name": "his"
+    },
+    {
+      "name": "sp"
+    },
+    {
+      "name": "lights"
+    },
+    {
+      "name": "discharge"
+    },
+    {
+      "name": "fan"
+    },
+    {
+      "name": "damper"
+    },
+    {
+      "name": "return"
+    },
+    {
+      "name": "tariffHis"
+    },
+    {
+      "name": "hvac"
+    },
+    {
+      "name": "store"
+    },
+    {
+      "name": "site"
+    },
+    {
+      "name": "cool"
+    },
+    {
+      "name": "phone"
+    },
+    {
+      "name": "kind"
+    },
+    {
+      "name": "equip"
+    },
+    {
+      "name": "geoAddr"
+    },
+    {
+      "name": "geoCoord"
+    },
+    {
+      "name": "geoCity"
+    },
+    {
+      "name": "cmd"
+    },
+    {
+      "name": "lightsGroup"
+    },
+    {
+      "name": "weatherRef"
+    },
+    {
+      "name": "yearBuilt"
+    },
+    {
+      "name": "stage"
+    },
+    {
       "name": "regionRef"
+    },
+    {
+      "name": "power"
+    },
+    {
+      "name": "summary"
+    },
+    {
+      "name": "primaryFunction"
+    },
+    {
+      "name": "equipRef"
+    },
+    {
+      "name": "area"
+    },
+    {
+      "name": "costPerHour"
+    },
+    {
+      "name": "geoPostalCode"
+    },
+    {
+      "name": "kwSite"
     },
     {
       "name": "hisURI"
@@ -219,421 +219,421 @@
   ],
   "rows": [
     {
-      "geoCoord": "c:37.555385,-77.486903",
-      "site": "m:",
-      "primaryFunction": "s:Retail Store",
-      "geoCountry": "s:US",
-      "yearBuilt": "n:1996.000000",
-      "metro": "s:Richmond",
-      "tz": "s:New_York",
-      "area": "n:3149.000000 ft\u00b2",
-      "weatherRef": "r:p:demo:r:23a44701-1af1bca9 Richmond, VA",
-      "geoState": "s:VA",
       "storeNum": "n:1.000000",
-      "geoAddr": "s:3504 W Cary St, Richmond, VA",
-      "geoPostalCode": "n:23221.000000",
-      "geoCity": "s:Richmond",
-      "occupiedStart": "h:10:00:00",
+      "geoState": "s:VA",
+      "geoCountry": "s:US",
       "occupiedEnd": "h:20:00:00",
       "id": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "phone": "s:804.552.2222",
-      "store": "m:",
+      "metro": "s:Richmond",
       "geoStreet": "s:3504 W Cary St",
       "dis": "s:Carytown",
-      "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond"
+      "tz": "s:New_York",
+      "occupiedStart": "h:10:00:00",
+      "store": "m:",
+      "site": "m:",
+      "phone": "s:804.552.2222",
+      "geoAddr": "s:3504 W Cary St, Richmond, VA",
+      "geoCoord": "c:37.555385,-77.486903",
+      "geoCity": "s:Richmond",
+      "weatherRef": "r:p:demo:r:23a44701-1af1bca9 Richmond, VA",
+      "yearBuilt": "n:1996.000000",
+      "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "primaryFunction": "s:Retail Store",
+      "area": "n:3149.000000 ft\u00b2",
+      "geoPostalCode": "n:23221.000000"
     },
     {
-      "sp": "m:",
-      "tz": "s:New_York",
-      "tariffHis": "m:",
-      "equipRef": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
       "point": "m:",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Str",
-      "his": "m:",
       "id": "r:p:demo:r:23a44701-bbc36976 Tariff His",
       "dis": "s:Tariff His",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "sp": "m:",
+      "tariffHis": "m:",
+      "kind": "s:Str",
+      "equipRef": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
       "hisURI": "s:p:demo:r:23a44701-bbc36976.zinc"
     },
     {
-      "sp": "m:",
-      "cur": "m:",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
-      "point": "m:",
       "unit": "s:\u00b0F",
-      "air": "m:",
-      "zone": "m:",
-      "effective": "m:",
-      "temp": "m:",
-      "curVal": "n:13.000000",
-      "hisMode": "s:cov",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Number",
       "navName": "s:ZoneTempSp",
-      "his": "m:",
+      "temp": "m:",
+      "hisMode": "s:cov",
+      "point": "m:",
+      "cur": "m:",
+      "effective": "m:",
+      "zone": "m:",
+      "curVal": "n:13.000000",
       "id": "r:p:demo:r:23a44701-4ea35663 Carytown RTU-1 ZoneTempSp",
+      "air": "m:",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "sp": "m:",
+      "kind": "s:Number",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
       "hisURI": "s:p:demo:r:23a44701-4ea35663.zinc"
     },
     {
-      "cur": "m:",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
-      "point": "m:",
       "unit": "s:kW",
       "siteMeter": "m:",
-      "sensor": "m:",
-      "curVal": "n:12.000000",
-      "hisMode": "s:sampled",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Number",
       "navName": "s:kW",
-      "power": "m:",
-      "his": "m:",
-      "kwSite": "m:",
+      "sensor": "m:",
+      "hisMode": "s:sampled",
+      "point": "m:",
+      "cur": "m:",
+      "curVal": "n:12.000000",
       "id": "r:p:demo:r:23a44701-3940e690 Carytown ElecMeter-Main kW",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "kind": "s:Number",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "power": "m:",
+      "equipRef": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
+      "kwSite": "m:",
       "hisURI": "s:p:demo:r:23a44701-3940e690.zinc"
     },
     {
-      "cur": "m:",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
-      "point": "m:",
       "unit": "s:\u00b0F",
-      "air": "m:",
-      "zone": "m:",
-      "sensor": "m:",
-      "summary": "m:",
-      "temp": "m:",
-      "curVal": "n:2.000000",
-      "hisMode": "s:sampled",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Number",
       "navName": "s:ZoneTemp",
-      "his": "m:",
+      "temp": "m:",
+      "sensor": "m:",
+      "hisMode": "s:sampled",
+      "point": "m:",
+      "cur": "m:",
+      "zone": "m:",
+      "curVal": "n:2.000000",
       "id": "r:p:demo:r:23a44701-27a8a001 Carytown RTU-1 ZoneTemp",
+      "air": "m:",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "kind": "s:Number",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "summary": "m:",
+      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
       "hisURI": "s:p:demo:r:23a44701-27a8a001.zinc"
     },
     {
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "navName": "s:Misc",
       "sitePoint": "m:",
+      "navName": "s:Misc",
       "id": "r:p:demo:r:23a44701-3624929f Carytown Misc",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
       "equip": "m:",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond"
     },
     {
-      "cur": "m:",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
-      "point": "m:",
       "unit": "s:\u00b0F",
-      "discharge": "m:",
-      "air": "m:",
-      "sensor": "m:",
-      "temp": "m:",
-      "curVal": "n:23.000000",
-      "hisMode": "s:sampled",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Number",
       "navName": "s:DischargeTemp",
-      "his": "m:",
+      "temp": "m:",
+      "sensor": "m:",
+      "hisMode": "s:sampled",
+      "point": "m:",
+      "cur": "m:",
+      "curVal": "n:23.000000",
       "id": "r:p:demo:r:23a44701-423ebf02 Carytown RTU-1 DischargeTemp",
+      "air": "m:",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "discharge": "m:",
+      "kind": "s:Number",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
       "hisURI": "s:p:demo:r:23a44701-423ebf02.zinc"
     },
     {
-      "cur": "m:",
-      "stage": "n:2.000000",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
-      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
-      "point": "m:",
       "heat": "m:",
-      "summary": "m:",
-      "curVal": "n:10.000000",
-      "hisMode": "s:cov",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Bool",
       "navName": "s:Heat-2",
-      "enum": "s:off,on",
-      "his": "m:",
-      "cmd": "m:",
+      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
+      "hisMode": "s:cov",
+      "point": "m:",
+      "cur": "m:",
+      "curVal": "n:10.000000",
       "id": "r:p:demo:r:23a44701-3a62fd7a Carytown RTU-1 Heat-2",
+      "enum": "s:off,on",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "kind": "s:Bool",
+      "cmd": "m:",
+      "stage": "n:2.000000",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "summary": "m:",
+      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
       "hisURI": "s:p:demo:r:23a44701-3a62fd7a.zinc"
     },
     {
-      "cur": "m:",
-      "stage": "n:1.000000",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
-      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
-      "point": "m:",
       "heat": "m:",
-      "summary": "m:",
-      "curVal": "n:14.000000",
-      "hisMode": "s:cov",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Bool",
       "navName": "s:Heat-1",
-      "enum": "s:off,on",
-      "his": "m:",
-      "cmd": "m:",
+      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
+      "hisMode": "s:cov",
+      "point": "m:",
+      "cur": "m:",
+      "curVal": "n:14.000000",
       "id": "r:p:demo:r:23a44701-18bbbd7e Carytown RTU-1 Heat-1",
+      "enum": "s:off,on",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "kind": "s:Bool",
+      "cmd": "m:",
+      "stage": "n:1.000000",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "summary": "m:",
+      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
       "hisURI": "s:p:demo:r:23a44701-18bbbd7e.zinc"
     },
     {
-      "cur": "m:",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
-      "point": "m:",
       "unit": "s:$",
       "siteMeter": "m:",
-      "sensor": "m:",
-      "curVal": "n:13.000000",
-      "hisMode": "s:sampled",
-      "elecCost": "m:",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Number",
       "navName": "s:Cost",
-      "his": "m:",
+      "elecCost": "m:",
+      "sensor": "m:",
+      "hisMode": "s:sampled",
+      "point": "m:",
+      "cur": "m:",
+      "curVal": "n:13.000000",
       "id": "r:p:demo:r:23a44701-f299239f Carytown ElecMeter-Main Cost",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "kind": "s:Number",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "equipRef": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
       "hisURI": "s:p:demo:r:23a44701-f299239f.zinc"
     },
     {
-      "cur": "m:",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
-      "point": "m:",
-      "pressure": "m:",
       "unit": "s:inH\u2082O",
-      "discharge": "m:",
-      "air": "m:",
-      "sensor": "m:",
-      "curVal": "n:12.000000",
-      "hisMode": "s:sampled",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Number",
       "navName": "s:DischargePressure",
-      "his": "m:",
+      "sensor": "m:",
+      "hisMode": "s:sampled",
+      "point": "m:",
+      "cur": "m:",
+      "curVal": "n:12.000000",
       "id": "r:p:demo:r:23a44701-0144bdd8 Carytown RTU-1 DischargePressure",
+      "air": "m:",
+      "pressure": "m:",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "discharge": "m:",
+      "kind": "s:Number",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
       "hisURI": "s:p:demo:r:23a44701-0144bdd8.zinc"
     },
     {
       "siteMeter": "m:",
+      "elec": "m:",
+      "navName": "s:ElecMeter-Main",
+      "id": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
       "meter": "m:",
       "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "navName": "s:ElecMeter-Main",
       "his": "m:",
-      "elec": "m:",
-      "id": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
       "equip": "m:",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
       "hisURI": "s:p:demo:r:23a44701-092f16fa.zinc"
     },
     {
-      "cur": "m:",
-      "stage": "n:2.000000",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
-      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
-      "point": "m:",
-      "summary": "m:",
-      "curVal": "n:13.000000",
-      "hisMode": "s:cov",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Bool",
       "navName": "s:Cool-2",
-      "cool": "m:",
-      "enum": "s:off,on",
-      "his": "m:",
-      "cmd": "m:",
+      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
+      "hisMode": "s:cov",
+      "point": "m:",
+      "cur": "m:",
+      "curVal": "n:13.000000",
       "id": "r:p:demo:r:23a44701-e0edb850 Carytown RTU-1 Cool-2",
+      "enum": "s:off,on",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "cool": "m:",
+      "kind": "s:Bool",
+      "cmd": "m:",
+      "stage": "n:2.000000",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "summary": "m:",
+      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
       "hisURI": "s:p:demo:r:23a44701-e0edb850.zinc"
     },
     {
-      "sp": "m:",
-      "cur": "m:",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-3624929f Carytown Misc",
+      "sitePoint": "m:",
+      "navName": "s:Occupancy",
+      "hisMode": "s:cov",
       "point": "m:",
       "occupied": "m:",
+      "cur": "m:",
       "curVal": "n:23.000000",
-      "hisMode": "s:cov",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Bool",
-      "navName": "s:Occupancy",
-      "enum": "s:unocc,occ",
-      "sitePoint": "m:",
-      "his": "m:",
       "id": "r:p:demo:r:23a44701-5c6fd964 Carytown Misc Occupancy",
+      "enum": "s:unocc,occ",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "sp": "m:",
+      "kind": "s:Bool",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "equipRef": "r:p:demo:r:23a44701-3624929f Carytown Misc",
       "hisURI": "s:p:demo:r:23a44701-5c6fd964.zinc"
     },
     {
-      "cur": "m:",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
-      "point": "m:",
       "unit": "s:kWh",
       "siteMeter": "m:",
       "energy": "m:",
-      "sensor": "m:",
-      "curVal": "n:3.000000",
-      "hisMode": "s:sampled",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Number",
       "navName": "s:kWh",
-      "his": "m:",
+      "sensor": "m:",
+      "hisMode": "s:sampled",
+      "point": "m:",
+      "cur": "m:",
+      "curVal": "n:3.000000",
       "id": "r:p:demo:r:23a44701-51b0b0ff Carytown ElecMeter-Main kWh",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "kind": "s:Number",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "equipRef": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
       "hisURI": "s:p:demo:r:23a44701-51b0b0ff.zinc"
     },
     {
-      "cur": "m:",
-      "stage": "n:1.000000",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
-      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
-      "point": "m:",
-      "summary": "m:",
-      "curVal": "n:3.000000",
-      "hisMode": "s:cov",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Bool",
       "navName": "s:Cool-1",
-      "cool": "m:",
-      "enum": "s:off,on",
-      "his": "m:",
-      "cmd": "m:",
+      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
+      "hisMode": "s:cov",
+      "point": "m:",
+      "cur": "m:",
+      "curVal": "n:3.000000",
       "id": "r:p:demo:r:23a44701-81534688 Carytown RTU-1 Cool-1",
+      "enum": "s:off,on",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "cool": "m:",
+      "kind": "s:Bool",
+      "cmd": "m:",
+      "stage": "n:1.000000",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "summary": "m:",
+      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
       "hisURI": "s:p:demo:r:23a44701-81534688.zinc"
     },
     {
-      "cur": "m:",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-cef6cd79 Carytown Main Lights",
-      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
-      "point": "m:",
-      "lights": "m:",
-      "curVal": "n:1.000000",
-      "hisMode": "s:cov",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Bool",
       "navName": "s:Status",
-      "enum": "s:off,on",
-      "his": "m:",
-      "cmd": "m:",
-      "costPerHour": "n:2.400000 $",
+      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
+      "hisMode": "s:cov",
+      "point": "m:",
+      "cur": "m:",
+      "curVal": "n:1.000000",
       "id": "r:p:demo:r:23a44701-cb53b843 Carytown Main Lights Status",
+      "enum": "s:off,on",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "lights": "m:",
+      "kind": "s:Bool",
+      "cmd": "m:",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "equipRef": "r:p:demo:r:23a44701-cef6cd79 Carytown Main Lights",
+      "costPerHour": "n:2.400000 $",
       "hisURI": "s:p:demo:r:23a44701-cb53b843.zinc"
     },
     {
-      "cur": "m:",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
-      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
-      "fan": "m:",
-      "point": "m:",
-      "discharge": "m:",
-      "air": "m:",
-      "curVal": "n:23.000000",
-      "hisMode": "s:cov",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Bool",
       "navName": "s:Fan",
-      "enum": "s:off,on",
-      "his": "m:",
-      "cmd": "m:",
+      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
+      "hisMode": "s:cov",
+      "point": "m:",
+      "cur": "m:",
+      "curVal": "n:23.000000",
       "id": "r:p:demo:r:23a44701-f8856742 Carytown RTU-1 Fan",
+      "enum": "s:off,on",
+      "air": "m:",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "discharge": "m:",
+      "fan": "m:",
+      "kind": "s:Bool",
+      "cmd": "m:",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
       "hisURI": "s:p:demo:r:23a44701-f8856742.zinc"
     },
     {
-      "ahu": "m:",
-      "rooftop": "m:",
-      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
-      "hvac": "m:",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
       "navName": "s:RTU-1",
+      "rooftop": "m:",
+      "ahu": "m:",
+      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
       "id": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "hvac": "m:",
       "equip": "m:",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond"
     },
     {
-      "cur": "m:",
-      "outside": "m:",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
-      "point": "m:",
       "unit": "s:%",
-      "damper": "m:",
-      "air": "m:",
-      "curVal": "n:30.000000",
-      "hisMode": "s:cov",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Number",
       "navName": "s:OutsideDamper",
-      "his": "m:",
-      "cmd": "m:",
+      "hisMode": "s:cov",
+      "point": "m:",
+      "outside": "m:",
+      "cur": "m:",
+      "curVal": "n:30.000000",
       "id": "r:p:demo:r:23a44701-d83664ec Carytown RTU-1 OutsideDamper",
+      "air": "m:",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "damper": "m:",
+      "kind": "s:Number",
+      "cmd": "m:",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
       "hisURI": "s:p:demo:r:23a44701-d83664ec.zinc"
     },
     {
-      "cur": "m:",
-      "return": "m:",
-      "tz": "s:New_York",
-      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
-      "point": "m:",
       "unit": "s:\u00b0F",
-      "air": "m:",
-      "sensor": "m:",
-      "temp": "m:",
-      "curVal": "n:13.000000",
-      "hisMode": "s:sampled",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
-      "kind": "s:Number",
       "navName": "s:ReturnTemp",
-      "his": "m:",
+      "temp": "m:",
+      "sensor": "m:",
+      "hisMode": "s:sampled",
+      "point": "m:",
+      "cur": "m:",
+      "curVal": "n:13.000000",
       "id": "r:p:demo:r:23a44701-3f2eb151 Carytown RTU-1 ReturnTemp",
+      "air": "m:",
+      "tz": "s:New_York",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
+      "his": "m:",
+      "return": "m:",
+      "kind": "s:Number",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond",
+      "equipRef": "r:p:demo:r:23a44701-7265b064 Carytown RTU-1",
       "hisURI": "s:p:demo:r:23a44701-3f2eb151.zinc"
     },
     {
-      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
-      "lightsGroup": "m:",
-      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
       "navName": "s:Main Lights",
+      "elecMeterLoad": "r:p:demo:r:23a44701-092f16fa Carytown ElecMeter-Main",
       "id": "r:p:demo:r:23a44701-cef6cd79 Carytown Main Lights",
+      "siteRef": "r:p:demo:r:23a44701-a89a6c66 Carytown",
       "equip": "m:",
+      "lightsGroup": "m:",
       "regionRef": "r:p:demo:r:23a44701-67faf4db Richmond"
     },
     {
-      "tz": "s:EST",
-      "point": "m:",
       "sensor": "m:",
-      "kind": "s:\u00b0",
-      "his": "m:",
+      "point": "m:",
       "id": "r:p:demo:r:23a44701-1af1bca9 Richmond weather",
       "dis": "s:Weather in Richmond",
+      "tz": "s:EST",
+      "his": "m:",
+      "kind": "s:Number",
       "hisURI": "s:p:demo:r:23a44701-1af1bca9.zinc",
       "weather": "m:"
     },
     {
-      "tz": "s:EST",
       "id": "r:p:demo:r:23a44701-67faf4db Richmond, VA",
       "dis": "s:Richmond",
+      "tz": "s:EST",
       "region": "m:"
     }
   ]

@@ -53,12 +53,13 @@ def import_in_db(source_uri: str,  # pylint: disable=too-many-arguments
     provider_name = "shaystack.providers.db"
     if ts_uri:
         envs["HAYSTACK_TS"] = ts_uri
-        provider_name = "shaystack.providers.db_timestream"
+        provider_name = "shaystack.providers.timestream"
 
     if not version:
         version = datetime.now(tz=pytz.UTC)
     try:
         with cast(DBHaystackInterface, get_provider(provider_name, envs)) as provider:
+            provider.create_db()
             provider.import_data(source_uri,
                                  customer_id,
                                  reset,

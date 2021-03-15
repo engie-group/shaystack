@@ -6,7 +6,7 @@
         <envs>
             <env name="AWS_PROFILE" value="shaystack"/>
             <env name="AWS_REGION" value="us-east-2"/>
-            <env name="LOG_LEVEL" value="DEBUG"/>
+            <env name="LOG_LEVEL" value="INFO"/>
         </envs>
         <option name="SDK_HOME" value=""/>
         <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$"/>
@@ -25,7 +25,8 @@
             </ENTRIES>
         </EXTENSION>
         <option name="SCRIPT_NAME" value="shaystack.providers.import_db"/>
-        <option name="PARAMETERS" value="sample/carytown.json sqlite3:///test.db#haystack timestream://HaystackDemo"/>
+        <option name="PARAMETERS"
+                value="sample/carytown.json sqlite3:///test.db#haystack timestream://shaystack#haystack"/>
         <option name="SHOW_COMMAND_LINE" value="true"/>
         <option name="EMULATE_TERMINAL" value="false"/>
         <option name="MODULE_MODE" value="true"/>

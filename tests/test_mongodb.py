@@ -486,33 +486,25 @@ def test_path():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 10, "customer")
     _check_mongodb(hs_filter, mongo_request)
     assert mongo_request == \
-           [{'$match': {'customer_id': 'customer', 'start_datetime': {
-               '$lte': FAKE_NOW}, 'end_datetime': {
-               '$gt': FAKE_NOW}}}, {'$replaceRoot': {'newRoot': '$entity'}}, {
-                '$addFields': {'_original_entity': '$$ROOT'}},
-            {'$lookup': {'from': 'haystack', 'as': 'equipRef',
-                         'let': {'equipRef_id_': '$equipRef'},
-                         'pipeline': [{
-                             '$match': {
-                                 '$expr': {
-                                     '$and': [
-                                         {
-                                             '$eq': [
-                                                 '$customer_id',
-                                                 'customer']},
-                                         {
-                                             '$lte': [
-                                                 '$start_datetime',
-                                                 FAKE_NOW]}, {
-                                             '$gt': ['$end_datetime',
-                                                     FAKE_NOW]}, {
-                                             '$eq': ['$entity.id',
-                                                     '$$equipRef_id_']}]}}}]}},
-            {'$set': {
-                'equipRef': {'$arrayElemAt': ['$equipRef.entity', 0]}}}, {'$match': {
-               '$expr': {'$ne': [{'$type': '$equipRef.siteRef'}, 'missing']}}}, {
-                '$replaceRoot': {'newRoot': '$_original_entity'}}, {
-                '$limit': 10}]
+           [
+               {'$match': {
+                   'customer_id': 'customer',
+                   'start_datetime': {'$lte': FAKE_NOW},
+                   'end_datetime': {'$gt': FAKE_NOW}}},
+               {'$replaceRoot': {'newRoot': '$entity'}},
+               {'$lookup': {
+                   'from': 'haystack',
+                   'as': 'equipRef_entity_',
+                   'let': {'equipRef_id_': '$equipRef'},
+                   'pipeline': [{'$match': {'$expr': {'$and': [
+                       {'$eq': ['$customer_id', 'customer']},
+                       {'$lte': ['$start_datetime', FAKE_NOW]},
+                       {'$gt': ['$end_datetime', FAKE_NOW]},
+                       {'$eq': ['$entity.id', '$$equipRef_id_']}]}}}]}},
+               {'$set': {'equipRef_entity_': {'$arrayElemAt': ['$equipRef_entity_.entity', 0]}}},
+               {'$match': {'$expr': {'$ne': [{'$type': '$equipRef_entity_.siteRef'}, 'missing']}}},
+               {'$replaceRoot': {'newRoot': '$$ROOT'}},
+               {'$limit': 10}]
 
 
 def test_not_path():
@@ -520,29 +512,25 @@ def test_not_path():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 10, "customer")
     _check_mongodb(hs_filter, mongo_request)
     assert mongo_request == \
-           [{'$match':
-                 {'customer_id': 'customer',
-                  'start_datetime': {'$lte': FAKE_NOW},
-                  'end_datetime': {'$gt': FAKE_NOW}
-                  }
-             },
-            {'$replaceRoot': {'newRoot': '$entity'}},
-            {'$addFields': {'_original_entity': '$$ROOT'}},
-
-            {'$lookup': {'from': 'haystack', 'as': 'equipRef', 'let': {'equipRef_id_': '$equipRef'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$equipRef_id_']}]}}}]}},
-            {'$set': {'equipRef': {'$arrayElemAt': ['$equipRef.entity', 0]}}},
-
-            {'$match': {'$expr':
-                            {'$eq': [{'$type': '$equipRef.siteRef'}, 'missing']}}
-             },
-
-            {'$replaceRoot': {'newRoot': '$_original_entity'}},
-            {'$limit': 10}]
+           [
+               {'$match': {
+                   'customer_id': 'customer',
+                   'start_datetime': {'$lte': FAKE_NOW},
+                   'end_datetime': {'$gt': FAKE_NOW}}},
+               {'$replaceRoot': {'newRoot': '$entity'}},
+               {'$lookup': {
+                   'from': 'haystack',
+                   'as': 'equipRef_entity_',
+                   'let': {'equipRef_id_': '$equipRef'},
+                   'pipeline': [{'$match': {'$expr': {'$and': [
+                       {'$eq': ['$customer_id', 'customer']},
+                       {'$lte': ['$start_datetime', FAKE_NOW]},
+                       {'$gt': ['$end_datetime', FAKE_NOW]},
+                       {'$eq': ['$entity.id', '$$equipRef_id_']}]}}}]}},
+               {'$set': {'equipRef_entity_': {'$arrayElemAt': ['$equipRef_entity_.entity', 0]}}},
+               {'$match': {'$expr': {'$eq': [{'$type': '$equipRef_entity_.siteRef'}, 'missing']}}},
+               {'$replaceRoot': {'newRoot': '$$ROOT'}},
+               {'$limit': 10}]
 
 
 def test_path_and():
@@ -550,28 +538,27 @@ def test_path_and():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 10, "customer")
     _check_mongodb(hs_filter, mongo_request)
     assert mongo_request == \
-           [{'$match':
-                 {'customer_id': 'customer',
-                  'start_datetime': {'$lte': FAKE_NOW},
-                  'end_datetime': {'$gt': FAKE_NOW}}
-             },
-            {'$replaceRoot': {'newRoot': '$entity'}},
-            {'$addFields': {'_original_entity': '$$ROOT'}},
-            {'$lookup': {'from': 'haystack', 'as': 'equipRef', 'let': {'equipRef_id_': '$equipRef'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$equipRef_id_']}]}}}]}},
-            {'$set': {'equipRef': {'$arrayElemAt': ['$equipRef.entity', 0]}}},
-
-            {'$match': {'$expr': {'$and': [
-                {'$ne': [{'$type': '$equipRef.siteRef'}, 'missing']},
-                {'$ne': [{'$type': '$equipRef.siteRef'}, 'missing']}
-            ]}}},
-
-            {'$replaceRoot': {'newRoot': '$_original_entity'}},
-            {'$limit': 10}]
+           [
+               {'$match': {
+                   'customer_id': 'customer',
+                   'start_datetime': {'$lte': FAKE_NOW},
+                   'end_datetime': {'$gt': FAKE_NOW}}},
+               {'$replaceRoot': {'newRoot': '$entity'}},
+               {'$lookup': {
+                   'from': 'haystack',
+                   'as': 'equipRef_entity_',
+                   'let': {'equipRef_id_': '$equipRef'},
+                   'pipeline': [{'$match': {'$expr': {'$and': [
+                       {'$eq': ['$customer_id', 'customer']},
+                       {'$lte': ['$start_datetime', FAKE_NOW]},
+                       {'$gt': ['$end_datetime', FAKE_NOW]},
+                       {'$eq': ['$entity.id', '$$equipRef_id_']}]}}}]}},
+               {'$set': {'equipRef_entity_': {'$arrayElemAt': ['$equipRef_entity_.entity', 0]}}},
+               {'$match': {'$expr': {'$and': [
+                   {'$ne': [{'$type': '$equipRef_entity_.siteRef'}, 'missing']},
+                   {'$ne': [{'$type': '$equipRef_entity_.siteRef'}, 'missing']}]}}},
+               {'$replaceRoot': {'newRoot': '$$ROOT'}},
+               {'$limit': 10}]
 
 
 def test_path_or():
@@ -579,38 +566,45 @@ def test_path_or():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 10, "customer")
     _check_mongodb(hs_filter, mongo_request)
     assert mongo_request == \
-           [{'$match':
-                 {'customer_id': 'customer',
-                  'start_datetime': {'$lte': FAKE_NOW},
-                  'end_datetime': {'$gt': FAKE_NOW}}},
-            {'$replaceRoot': {'newRoot': '$entity'}},
-            {'$addFields': {'_original_entity': '$$ROOT'}},
-
-            {'$lookup': {'from': 'haystack', 'as': 'siteRef', 'let': {'siteRef_id_': '$siteRef'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$siteRef_id_']}
-                         ]}}}]}},
-            {'$set': {'siteRef': {'$arrayElemAt': ['$siteRef.entity', 0]}}},
-
-            {'$lookup': {'from': 'haystack', 'as': 'siteRef', 'let': {'siteRef_id_': '$siteRef'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$siteRef_id_']}
-                         ]}}}]}},
-            {'$set': {'siteRef': {'$arrayElemAt': ['$siteRef.entity', 0]}}},
-
-            {'$match': {'$expr':
-                {'$or': [
-                    {'$ne': [{'$type': '$siteRef.geoPostalCode'}, 'missing']},
-                    {'$ne': [{'$type': '$siteRef.geoCountry'}, 'missing']}
-                ]}}},
-
-            {'$replaceRoot': {'newRoot': '$_original_entity'}},
+           [{'$match': {'customer_id': 'customer', 'start_datetime': {
+               '$lte': FAKE_NOW}, 'end_datetime': {
+               '$gt': FAKE_NOW}}}, {'$replaceRoot': {'newRoot': '$entity'}}, {
+                '$lookup': {
+                    'from': 'haystack',
+                    'as': 'siteRef_entity_',
+                    'let': {'siteRef_id_': '$siteRef'},
+                    'pipeline': [{
+                        '$match': {
+                            '$expr': {
+                                '$and': [
+                                    {
+                                        '$eq': [
+                                            '$customer_id',
+                                            'customer']},
+                                    {
+                                        '$lte': [
+                                            '$start_datetime',
+                                            FAKE_NOW]}, {
+                                        '$gt': ['$end_datetime', FAKE_NOW]}, {
+                                        '$eq': ['$entity.id', '$$siteRef_id_']}]}}}]}}, {'$set': {
+               'siteRef_entity_': {'$arrayElemAt': ['$siteRef_entity_.entity', 0]}}},
+            {
+                '$lookup': {
+                    'from': 'haystack', 'as': 'siteRef_entity_',
+                    'let': {'siteRef_id_': '$siteRef'},
+                    'pipeline': [{'$match': {'$expr': {'$and': [
+                        {'$eq': ['$customer_id', 'customer']}, {
+                            '$lte': ['$start_datetime',
+                                     FAKE_NOW]}, {
+                            '$gt': ['$end_datetime', FAKE_NOW]}, {
+                            '$eq': ['$entity.id', '$$siteRef_id_']}]}}}]}},
+            {'$set': {
+                'siteRef_entity_': {'$arrayElemAt': ['$siteRef_entity_.entity', 0]}}},
+            {'$match': {'$expr': {
+                '$or': [{'$ne': [{'$type': '$siteRef_entity_.geoPostalCode'}, 'missing']},
+                        {'$ne': [{'$type': '$siteRef_entity_.geoCountry'}, 'missing']}]}}},
+            {
+                '$replaceRoot': {'newRoot': '$$ROOT'}},
             {'$limit': 10}]
 
 
@@ -619,61 +613,63 @@ def test_and_or_path():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 10, "customer")
     _check_mongodb(hs_filter, mongo_request)
     assert mongo_request == \
-           [{'$match':
-                 {'customer_id': 'customer',
-                  'start_datetime': {'$lte': FAKE_NOW},
-                  'end_datetime': {'$gt': FAKE_NOW}}},
-            {'$replaceRoot': {'newRoot': '$entity'}},
-            {'$addFields': {'_original_entity': '$$ROOT'}},
-
-            {'$lookup': {'from': 'haystack', 'as': 'a', 'let': {'a_id_': '$a'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$a_id_']}]}}}]}},
-            {'$set': {'a': {'$arrayElemAt': ['$a.entity', 0]}}},
-
-            {'$lookup': {'from': 'haystack', 'as': 'c', 'let': {'c_id_': '$c'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$c_id_']}
-                         ]}}}]}},
-            {'$set': {'c': {'$arrayElemAt': ['$c.entity', 0]}}},
-
-            {'$lookup': {'from': 'haystack', 'as': 'e', 'let': {'e_id_': '$e'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$e_id_']}
-                         ]}}}]}},
-            {'$set': {'e': {'$arrayElemAt': ['$e.entity', 0]}}},
-
-            {'$lookup': {'from': 'haystack', 'as': 'g', 'let': {'g_id_': '$g'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$g_id_']}
-                         ]}}}]}},
-            {'$set': {'g': {'$arrayElemAt': ['$g.entity', 0]}}},
-
-            {'$match': {'$expr':
-                {'$and': [
-                    {'$or': [
-                        {'$ne': [{'$type': '$a.b'}, 'missing']},
-                        {'$ne': [{'$type': '$c.d'}, 'missing']}
-                    ]},
-                    {'$or': [
-                        {'$ne': [{'$type': '$e.f'}, 'missing']},
-                        {'$ne': [{'$type': '$g.h'}, 'missing']}
-                    ]}]}}},
-
-            {'$replaceRoot': {'newRoot': '$_original_entity'}},
-            {'$limit': 10}]
+           [
+               {'$match': {
+                   'customer_id': 'customer',
+                   'start_datetime': {
+                       '$lte': FAKE_NOW},
+                   'end_datetime': {
+                       '$gt': FAKE_NOW}}},
+               {'$replaceRoot': {'newRoot': '$entity'}},
+               {
+                   '$lookup': {'from': 'haystack', 'as': 'a_entity_', 'let': {'a_id_': '$a'},
+                               'pipeline': [{'$match': {'$expr': {
+                                   '$and': [{'$eq': ['$customer_id', 'customer']},
+                                            {'$lte': ['$start_datetime', FAKE_NOW]},
+                                            {
+                                                '$gt': ['$end_datetime', FAKE_NOW]},
+                                            {
+                                                '$eq': ['$entity.id', '$$a_id_']}]}}}]}},
+               {'$set': {'a_entity_': {'$arrayElemAt': ['$a_entity_.entity', 0]}}},
+               {
+                   '$lookup': {'from': 'haystack', 'as': 'c_entity_', 'let': {'c_id_': '$c'},
+                               'pipeline': [{'$match': {'$expr': {
+                                   '$and': [{'$eq': ['$customer_id', 'customer']},
+                                            {'$lte': ['$start_datetime', FAKE_NOW]}, {
+                                                '$gt': ['$end_datetime', FAKE_NOW]},
+                                            {
+                                                '$eq': ['$entity.id', '$$c_id_']}]}}}]}},
+               {'$set': {'c_entity_': {'$arrayElemAt': ['$c_entity_.entity', 0]}}},
+               {
+                   '$lookup': {'from': 'haystack', 'as': 'e_entity_', 'let': {'e_id_': '$e'}, 'pipeline': [
+                       {'$match': {'$expr': {
+                           '$and': [
+                               {'$eq': ['$customer_id', 'customer']},
+                               {'$lte': ['$start_datetime', FAKE_NOW]},
+                               {
+                                   '$gt': ['$end_datetime', FAKE_NOW]},
+                               {
+                                   '$eq': ['$entity.id', '$$e_id_']}]}}}]}},
+               {'$set': {'e_entity_': {'$arrayElemAt': ['$e_entity_.entity', 0]}}}, {
+               '$lookup': {
+                   'from': 'haystack',
+                   'as': 'g_entity_',
+                   'let': {'g_id_': '$g'},
+                   'pipeline': [{'$match': {'$expr': {
+                       '$and': [{'$eq': ['$customer_id', 'customer']},
+                                {'$lte': ['$start_datetime', FAKE_NOW]},
+                                {
+                                    '$gt': ['$end_datetime', FAKE_NOW]}, {
+                                    '$eq': ['$entity.id', '$$g_id_']}]}}}]}},
+               {'$set': {'g_entity_': {'$arrayElemAt': ['$g_entity_.entity', 0]}}}, {
+               '$match': {'$expr': {'$and': [
+                   {'$or': [{'$ne': [{'$type': '$a_entity_.b'}, 'missing']},
+                            {'$ne': [{'$type': '$c_entity_.d'}, 'missing']}]},
+                   {'$or': [{'$ne': [{'$type': '$e_entity_.f'}, 'missing']},
+                            {'$ne': [{'$type': '$g_entity_.h'}, 'missing']}]}]}}},
+               {'$replaceRoot': {'newRoot': '$$ROOT'}},
+               {
+                   '$limit': 10}]
 
 
 def test_complex():
@@ -681,50 +677,51 @@ def test_complex():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 10, "customer")
     _check_mongodb(hs_filter, mongo_request)
     assert mongo_request == \
-           [{'$match':
-                 {'customer_id': 'customer',
-                  'start_datetime': {'$lte': FAKE_NOW},
-                  'end_datetime': {'$gt': FAKE_NOW}}
-             },
-            {'$replaceRoot': {'newRoot': '$entity'}},
-            {'$addFields': {'_original_entity': '$$ROOT'}},
-
-            {'$lookup': {'from': 'haystack', 'as': 'a', 'let': {'a_id_': '$a'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$a_id_']}]}}}]}},
-            {'$set': {'a': {'$arrayElemAt': ['$a.entity', 0]}}},
-
-            {'$lookup': {'from': 'haystack', 'as': 'c', 'let': {'c_id_': '$c'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$c_id_']}]}}}]}},
-            {'$set': {'c': {'$arrayElemAt': ['$c.entity', 0]}}},
-
-            {'$lookup': {'from': 'haystack', 'as': 'g', 'let': {'g_id_': '$g'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$g_id_']}]}}}]}},
-            {'$set': {'g': {'$arrayElemAt': ['$g.entity', 0]}}},
-
-            {'$match': {'$expr':
-                {'$or': [
-                    {'$and': [
-                        {'$or': [{'$ne': [{'$type': '$a.b'}, 'missing']},
-                                 {'$ne': [{'$type': '$c.d'}, 'missing']}]},
-                        {'$ne': [{'$type': '$e'}, 'missing']}]},
-                    {'$and': [
-                        {'$ne': [{'$type': '$f'}, 'missing']},
-                        {'$ne': [{'$type': '$g.h'}, 'missing']}]}]}}},
-
-            {'$replaceRoot': {'newRoot': '$_original_entity'}},
-            {'$limit': 10}]
+           [{'$match': {
+               'customer_id': 'customer',
+               'start_datetime': {'$lte': FAKE_NOW},
+               'end_datetime': {'$gt': FAKE_NOW}}},
+               {'$replaceRoot': {'newRoot': '$entity'}},
+               {'$lookup': {
+                   'from': 'haystack',
+                   'as': 'a_entity_',
+                   'let': {'a_id_': '$a'},
+                   'pipeline': [{'$match': {'$expr': {'$and': [
+                       {'$eq': ['$customer_id', 'customer']},
+                       {'$lte': ['$start_datetime', FAKE_NOW]},
+                       {'$gt': ['$end_datetime', FAKE_NOW]},
+                       {'$eq': ['$entity.id', '$$a_id_']}]}}}]}},
+               {'$set': {'a_entity_': {'$arrayElemAt': ['$a_entity_.entity', 0]}}},
+               {'$lookup': {
+                   'from': 'haystack',
+                   'as': 'c_entity_',
+                   'let': {'c_id_': '$c'},
+                   'pipeline': [{'$match': {'$expr': {'$and': [
+                       {'$eq': ['$customer_id', 'customer']},
+                       {'$lte': ['$start_datetime', FAKE_NOW]},
+                       {'$gt': ['$end_datetime', FAKE_NOW]},
+                       {'$eq': ['$entity.id', '$$c_id_']}]}}}]}},
+               {'$set': {'c_entity_': {'$arrayElemAt': ['$c_entity_.entity', 0]}}},
+               {'$lookup': {
+                   'from': 'haystack',
+                   'as': 'g_entity_',
+                   'let': {'g_id_': '$g'},
+                   'pipeline': [{'$match': {'$expr': {'$and': [
+                       {'$eq': ['$customer_id', 'customer']},
+                       {'$lte': ['$start_datetime', FAKE_NOW]},
+                       {'$gt': ['$end_datetime', FAKE_NOW]},
+                       {'$eq': ['$entity.id', '$$g_id_']}]}}}]}},
+               {'$set': {'g_entity_': {'$arrayElemAt': ['$g_entity_.entity', 0]}}},
+               {'$match': {'$expr': {'$or': [
+                   {'$and': [{'$or': [
+                       {'$ne': [{'$type': '$a_entity_.b'}, 'missing']},
+                       {'$ne': [{'$type': '$c_entity_.d'}, 'missing']}]},
+                       {'$ne': [{'$type': '$e'}, 'missing']}]},
+                   {'$and': [
+                       {'$ne': [{'$type': '$f'}, 'missing']},
+                       {'$ne': [{'$type': '$g_entity_.h'}, 'missing']}]}]}}},
+               {'$replaceRoot': {'newRoot': '$$ROOT'}},
+               {'$limit': 10}]
 
 
 def test_path_equal_quantity():
@@ -732,24 +729,23 @@ def test_path_equal_quantity():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 10, "customer")
     _check_mongodb(hs_filter, mongo_request)
     assert mongo_request == \
-           [
-               {'$match':
-                    {'customer_id': 'customer',
-                     'start_datetime': {'$lte': FAKE_NOW},
-                     'end_datetime': {'$gt': FAKE_NOW}}},
+           [{'$match': {
+               'customer_id': 'customer',
+               'start_datetime': {'$lte': FAKE_NOW},
+               'end_datetime': {'$gt': FAKE_NOW}}},
                {'$replaceRoot': {'newRoot': '$entity'}},
-               {'$addFields': {'_original_entity': '$$ROOT'}},
-               {'$lookup': {'from': 'haystack', 'as': 'siteRef', 'let': {'siteRef_id_': '$siteRef'},
-                            'pipeline': [{'$match': {'$expr': {'$and': [
-                                {'$eq': ['$customer_id', 'customer']},
-                                {'$lte': ['$start_datetime', FAKE_NOW]},
-                                {'$gt': ['$end_datetime', FAKE_NOW]},
-                                {'$eq': ['$entity.id', '$$siteRef_id_']}]}}}]}},
-               {'$set': {'siteRef': {'$arrayElemAt': ['$siteRef.entity', 0]}}},
-
-               {'$match': {'$expr': {'$eq': ['$siteRef.curVal', 'n:55400.000000 \\u00b0']}}},
-
-               {'$replaceRoot': {'newRoot': '$_original_entity'}},
+               {'$lookup': {
+                   'from': 'haystack',
+                   'as': 'siteRef_entity_',
+                   'let': {'siteRef_id_': '$siteRef'},
+                   'pipeline': [{'$match': {'$expr': {'$and': [
+                       {'$eq': ['$customer_id', 'customer']},
+                       {'$lte': ['$start_datetime', FAKE_NOW]},
+                       {'$gt': ['$end_datetime', FAKE_NOW]},
+                       {'$eq': ['$entity.id', '$$siteRef_id_']}]}}}]}},
+               {'$set': {'siteRef_entity_': {'$arrayElemAt': ['$siteRef_entity_.entity', 0]}}},
+               {'$match': {'$expr': {'$eq': ['$siteRef_entity_.curVal', 'n:55400.000000 \\u00b0']}}},
+               {'$replaceRoot': {'newRoot': '$$ROOT'}},
                {'$limit': 10}]
 
 
@@ -758,32 +754,28 @@ def test_2path_greater_quantity():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 10, "customer")
     _check_mongodb(hs_filter, mongo_request)
     assert mongo_request == \
-           [{'$match':
-                 {'customer_id': 'customer',
-                  'start_datetime': {'$lte': FAKE_NOW},
-                  'end_datetime': {'$gt': FAKE_NOW}}},
-            {'$replaceRoot': {'newRoot': '$entity'}},
-            {'$addFields': {'_original_entity': '$$ROOT'}},
-
-            {'$lookup': {'from': 'haystack', 'as': 'siteRef', 'let': {'siteRef_id_': '$siteRef'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$siteRef_id_']}]}}}]}},
-            {'$set': {'siteRef': {'$arrayElemAt': ['$siteRef.entity', 0]}}},
-
-            {'$match': {'$expr':
-                {'$gte': [
-                    {'$let': {'vars':
-                                  {'siteRef_regex_':
-                                       {'$regexFind': {'input': '$siteRef.temp',
-                                                       'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
-                              'in': {'$toDouble': {'$arrayElemAt': ['$$siteRef_regex_.captures', 0]}}}},
-                    55400.0]}}},
-
-            {'$replaceRoot': {'newRoot': '$_original_entity'}},
-            {'$limit': 10}]
+           [{'$match': {
+               'customer_id': 'customer',
+               'start_datetime': {'$lte': FAKE_NOW},
+               'end_datetime': {'$gt': FAKE_NOW}}},
+               {'$replaceRoot': {'newRoot': '$entity'}},
+               {'$lookup': {
+                   'from': 'haystack',
+                   'as': 'siteRef_entity_',
+                   'let': {'siteRef_id_': '$siteRef'},
+                   'pipeline': [{'$match': {'$expr': {'$and': [
+                       {'$eq': ['$customer_id', 'customer']},
+                       {'$lte': ['$start_datetime', FAKE_NOW]},
+                       {'$gt': ['$end_datetime', FAKE_NOW]},
+                       {'$eq': ['$entity.id', '$$siteRef_id_']}]}}}]}},
+               {'$set': {'siteRef_entity_': {'$arrayElemAt': ['$siteRef_entity_.entity', 0]}}},
+               {'$match': {'$expr': {'$gte': [
+                   {'$let': {'vars': {'siteRef_regex_': {
+                       '$regexFind': {'input': '$siteRef_entity_.temp',
+                                      'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
+                       'in': {'$toDouble': {'$arrayElemAt': ['$$siteRef_regex_.captures', 0]}}}}, 55400.0]}}},
+               {'$replaceRoot': {'newRoot': '$$ROOT'}},
+               {'$limit': 10}]
 
 
 def test_3path_greater_quantity():
@@ -791,43 +783,39 @@ def test_3path_greater_quantity():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 10, "customer")
     _check_mongodb(hs_filter, mongo_request)
     assert mongo_request == \
-           [
-               {'$match':
-                    {'customer_id': 'customer',
-                     'start_datetime': {'$lte': FAKE_NOW},
-                     'end_datetime': {'$gt': FAKE_NOW}}
-                },
+           [{'$match': {
+               'customer_id': 'customer',
+               'start_datetime': {'$lte': FAKE_NOW},
+               'end_datetime': {'$gt': FAKE_NOW}}},
                {'$replaceRoot': {'newRoot': '$entity'}},
-               {'$addFields': {'_original_entity': '$$ROOT'}},
-               {'$lookup': {'from': 'haystack', 'as': 'siteRef', 'let': {'siteRef_id_': '$siteRef'},
-                            'pipeline': [{'$match': {'$expr': {'$and': [
-                                {'$eq': ['$customer_id', 'customer']},
-                                {'$lte': ['$start_datetime', FAKE_NOW]},
-                                {'$gt': ['$end_datetime', FAKE_NOW]},
-                                {'$eq': ['$entity.id', '$$siteRef_id_']}]}}}]}},
-               {'$set': {'siteRef': {'$arrayElemAt': ['$siteRef.entity', 0]}}},
-
-               {'$lookup': {'from': 'haystack', 'as': 'siteRef.ownerRef', 'let': {'ownerRef_id_': '$siteRef.ownerRef'},
-                            'pipeline': [{'$match': {'$expr': {'$and': [
-                                {'$eq': ['$customer_id', 'customer']},
-                                {'$lte': ['$start_datetime', FAKE_NOW]},
-                                {'$gt': ['$end_datetime', FAKE_NOW]},
-                                {'$eq': ['$entity.id', '$$ownerRef_id_']}]}}}]}},
-               {'$set': {'siteRef.ownerRef': {'$arrayElemAt': ['$siteRef.ownerRef.entity', 0]}}},
-
-               {'$match': {'$expr':
-                   {'$gte': [
-                       {'$let': {'vars': {'siteRef_regex_':
-                                              {'$regexFind':
-                                                   {'input': '$siteRef.ownerRef.temp',
-                                                    'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}
-                                               }
-                                          },
-                                 'in': {'$toDouble': {'$arrayElemAt': ['$$siteRef_regex_.captures', 0]}}}},
-                       55400.0]}}
-               },
-
-               {'$replaceRoot': {'newRoot': '$_original_entity'}},
+               {'$lookup': {
+                   'from': 'haystack',
+                   'as': 'siteRef_entity_',
+                   'let': {'siteRef_id_': '$siteRef'},
+                   'pipeline': [{'$match': {'$expr': {'$and': [
+                       {'$eq': ['$customer_id', 'customer']},
+                       {'$lte': ['$start_datetime', FAKE_NOW]},
+                       {'$gt': ['$end_datetime', FAKE_NOW]},
+                       {'$eq': ['$entity.id', '$$siteRef_id_']}]}}}]}},
+               {'$set': {'siteRef_entity_': {'$arrayElemAt': ['$siteRef_entity_.entity', 0]}}},
+               {'$lookup': {
+                   'from': 'haystack',
+                   'as': 'siteRef_entity_.ownerRef_entity_',
+                   'let': {'ownerRef_id_': '$siteRef_entity_.ownerRef'},
+                   'pipeline': [{'$match': {'$expr': {'$and': [
+                       {'$eq': ['$customer_id', 'customer']},
+                       {'$lte': ['$start_datetime', FAKE_NOW]},
+                       {'$gt': ['$end_datetime', FAKE_NOW]},
+                       {'$eq': ['$entity.id', '$$ownerRef_id_']}]}}}]}},
+               {'$set': {'siteRef_entity_.ownerRef_entity_': {
+                   '$arrayElemAt': ['$siteRef_entity_.ownerRef_entity_.entity', 0]}}},
+               {'$match': {'$expr': {'$gte': [
+                   {'$let': {'vars': {'siteRef_regex_': {
+                       '$regexFind': {
+                           'input': '$siteRef_entity_.ownerRef_entity_.temp',
+                           'regex': 'n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)'}}},
+                       'in': {'$toDouble': {'$arrayElemAt': ['$$siteRef_regex_.captures', 0]}}}}, 55400.0]}}},
+               {'$replaceRoot': {'newRoot': '$$ROOT'}},
                {'$limit': 10}]
 
 
@@ -836,42 +824,43 @@ def test_4path():
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 10, "customer")
     _check_mongodb(hs_filter, mongo_request)
     assert mongo_request == \
-           [{'$match':
-                 {'customer_id': 'customer',
-                  'start_datetime': {'$lte': FAKE_NOW},
-                  'end_datetime': {'$gt': FAKE_NOW}}
-             },
-            {'$replaceRoot': {'newRoot': '$entity'}},
-            {'$addFields': {'_original_entity': '$$ROOT'}},
-
-            {'$lookup': {'from': 'haystack', 'as': 'equipRef', 'let': {'equipRef_id_': '$equipRef'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$equipRef_id_']}]}}}]}},
-            {'$set': {'equipRef': {'$arrayElemAt': ['$equipRef.entity', 0]}}},
-            {'$lookup': {'from': 'haystack', 'as': 'equipRef.siteRef', 'let': {'siteRef_id_': '$equipRef.siteRef'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$siteRef_id_']}]}}}]}},
-            {'$set': {'equipRef.siteRef': {'$arrayElemAt': ['$equipRef.siteRef.entity', 0]}}},
-
-            {'$lookup': {'from': 'haystack', 'as': 'equipRef.siteRef.a', 'let': {'a_id_': '$equipRef.siteRef.a'},
-                         'pipeline': [{'$match': {'$expr': {'$and': [
-                             {'$eq': ['$customer_id', 'customer']},
-                             {'$lte': ['$start_datetime', FAKE_NOW]},
-                             {'$gt': ['$end_datetime', FAKE_NOW]},
-                             {'$eq': ['$entity.id', '$$a_id_']}]}}}]}},
-            {'$set': {'equipRef.siteRef.a': {'$arrayElemAt': ['$equipRef.siteRef.a.entity', 0]}}},
-
-            {'$match': {'$expr':
-                {
-                    '$ne': [{'$type': '$equipRef.siteRef.a.b'}, 'missing']
-                }}
-            },
-
-            {'$replaceRoot': {'newRoot': '$_original_entity'}},
-            {'$limit': 10}]
+           [{'$match': {
+               'customer_id': 'customer',
+               'start_datetime': {'$lte': FAKE_NOW},
+               'end_datetime': {'$gt': FAKE_NOW}}},
+               {'$replaceRoot': {'newRoot': '$entity'}},
+               {'$lookup': {
+                   'from': 'haystack',
+                   'as': 'equipRef_entity_',
+                   'let': {'equipRef_id_': '$equipRef'},
+                   'pipeline': [{'$match': {'$expr': {'$and': [
+                       {'$eq': ['$customer_id', 'customer']},
+                       {'$lte': ['$start_datetime', FAKE_NOW]},
+                       {'$gt': ['$end_datetime', FAKE_NOW]},
+                       {'$eq': ['$entity.id', '$$equipRef_id_']}]}}}]}},
+               {'$set': {'equipRef_entity_': {'$arrayElemAt': ['$equipRef_entity_.entity', 0]}}},
+               {'$lookup': {
+                   'from': 'haystack',
+                   'as': 'equipRef_entity_.siteRef_entity_',
+                   'let': {'siteRef_id_': '$equipRef_entity_.siteRef'},
+                   'pipeline': [{'$match': {'$expr': {'$and': [
+                       {'$eq': ['$customer_id', 'customer']},
+                       {'$lte': ['$start_datetime', FAKE_NOW]},
+                       {'$gt': ['$end_datetime', FAKE_NOW]},
+                       {'$eq': ['$entity.id', '$$siteRef_id_']}]}}}]}},
+               {'$set': {'equipRef_entity_.siteRef_entity_': {
+                   '$arrayElemAt': ['$equipRef_entity_.siteRef_entity_.entity', 0]}}},
+               {'$lookup': {
+                   'from': 'haystack',
+                   'as': 'equipRef_entity_.siteRef_entity_.a_entity_',
+                   'let': {'a_id_': '$equipRef_entity_.siteRef_entity_.a'},
+                   'pipeline': [{'$match': {'$expr': {'$and': [
+                       {'$eq': ['$customer_id', 'customer']},
+                       {'$lte': ['$start_datetime', FAKE_NOW]},
+                       {'$gt': ['$end_datetime', FAKE_NOW]},
+                       {'$eq': ['$entity.id', '$$a_id_']}]}}}]}},
+               {'$set': {'equipRef_entity_.siteRef_entity_.a_entity_':
+                             {'$arrayElemAt': ['$equipRef_entity_.siteRef_entity_.a_entity_.entity', 0]}}},
+               {'$match': {'$expr': {'$ne': [{'$type': '$equipRef_entity_.siteRef_entity_.a_entity_.b'}, 'missing']}}},
+               {'$replaceRoot': {'newRoot': '$$ROOT'}},
+               {'$limit': 10}]

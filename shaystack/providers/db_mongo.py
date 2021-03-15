@@ -69,14 +69,14 @@ def _join_stages(node: Union[FilterNode, HaystackType],
     # 1.
     for paths in uniq_paths:
         for i in range(1, len(paths)):
-            full_path = '.'.join(paths[0:i])
+            full_path = "_entity_.".join(paths[0:i])
             aggrations_stages.extend( \
                 [
                     {
                         "$lookup":
                             {
                                 "from": "haystack",
-                                "as": full_path,
+                                "as": f"{full_path}_entity_",
                                 "let": {f"{paths[i - 1]}_id_": f"${full_path}"},
                                 "pipeline": [
                                     {
@@ -94,7 +94,7 @@ def _join_stages(node: Union[FilterNode, HaystackType],
                                 ],
                             }
                     },
-                    {"$set": {full_path: {"$arrayElemAt": [f"${full_path}.entity", 0]}}},
+                    {"$set": {f"{full_path}_entity_": {"$arrayElemAt": [f"${full_path}_entity_.entity", 0]}}},
                 ])
     return aggrations_stages
 
@@ -111,7 +111,7 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
                 return {"$eq": [{"$type": f"${_conv_filter(node.right)}"}, "missing"]}
             return {"$cond": {"if": _conv_filter(node.right), "then": 0, "else": 1}}
     if isinstance(node, FilterPath):
-        return ".".join(node.paths)
+        return "_entity_.".join(node.paths)
     if isinstance(node, FilterBinary):
         if node.operator in _simple_ops:
             return {_simple_ops[node.operator]: [
@@ -188,8 +188,6 @@ def _mongo_filter(grid_filter: Optional[str],
     # 2. Add stage for join entities
     join_stages = _join_stages(haystack_filter.head, customer_id, version)
     if join_stages:
-        # Keep the original entity in _original_entity (for the last stage)
-        stages.append({"$addFields": {"_original_entity": "$$ROOT"}})
         stages.extend(_join_stages(haystack_filter.head, customer_id, version))
 
     # 3. Add expr
@@ -204,10 +202,10 @@ def _mongo_filter(grid_filter: Optional[str],
     # 4. keep only the original entity
     if join_stages:
         stages.append(
-            {"$replaceRoot": {'newRoot': '$_original_entity'}},
+            {"$replaceRoot": {'newRoot': '$$ROOT'}},
         )
 
-    # 5. Add limit
+    # 5. Add limit_original_entity
     if limit:
         stages.append(
             {"$limit": limit}

@@ -9,8 +9,8 @@ from nose.plugins.attrib import attr
 
 from shaystack import Ref, Grid, Quantity, MARKER, REMOVE, Coordinate, NA, parse_date_range, XStr
 from shaystack.providers import get_provider
-from shaystack.providers.db_timestream import Provider as DBTSProvider
 from shaystack.providers.sql import Provider as SQLProvider
+from shaystack.providers.timestream import Provider as DBTSProvider
 
 # Set HAYSTACK_DB variable, before running the tests to validate with another database
 # HAYSTACK_DB = 'postgresql://postgres:password@172.17.0.2:5432/postgres#haystack'

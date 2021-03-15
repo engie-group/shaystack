@@ -7,8 +7,8 @@
             <env name="PYTHONUNBUFFERED" value="1"/>
             <env name="LOG_LEVEL" value="DEBUG"/>
             <env name="HAYSTACK_DB" value="sqlite:///test.db#haystack"/>
-            <env name="HAYSTACK_DB_SECRET" value="alpha-Haystack"/>
-            <env name="HAYSTACK_TS" value="timeseries://HaystackDemo?ht_ttl=3&amp;ct_ttl=2#haystack"/>
+            <env name="HAYSTACK_TS" value="timeseries://shaystack?ht_ttl=3&amp;ct_ttl=2#haystack"/>
+            <env name="HAYSTACK_PROVIDER" value="shaystack.providers.timestream"/>
         </envs>
         <option name="SDK_HOME" value=""/>
         <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$"/>

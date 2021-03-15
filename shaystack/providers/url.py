@@ -47,12 +47,13 @@ from botocore.exceptions import ClientError
 from overrides import overrides
 
 from .db_haystack_interface import DBHaystackInterface
-from .. import dump
+from .. import dump, EmptyGrid
 from ..datatypes import Ref
 from ..exception import HaystackException
 from ..grid import Grid
-from ..parser import parse, EmptyGrid
+from ..parser import parse
 from ..parser import suffix_to_mode
+from ..sortabledict import SortableDict
 from ..type import Entity
 from ..zincparser import ZincParseException
 
@@ -129,9 +130,12 @@ def merge_timeseries(source_grid: Grid,
     if id(destination_grid) != id(source_grid):
         destination_grid.sort('ts')
         source_grid.sort('ts')
-        start_destination = destination_grid[0]['ts']
         result_grid = destination_grid.copy()
-        result_grid.extend(filter(lambda row: row['ts'] < start_destination, source_grid))
+        if destination_grid:
+            start_destination = destination_grid[0]['ts']
+            result_grid.extend(filter(lambda row: row['ts'] < start_destination, source_grid))
+        else:
+            result_grid.extend(source_grid)
         result_grid.sort('ts')
         return result_grid
 
@@ -230,7 +234,8 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
             except ClientError as ex:
                 if ex.response['Error']['Code'] == 'NoSuchKey':
                     # Target key not found
-                    destination_grid = EmptyGrid
+                    destination_grid = EmptyGrid.copy()
+                    destination_grid.column = SortableDict({'ts': {}, 'val': {}})
                 elif ex.response['Error']['Code'] == '304':
                     # Target not modified
                     if source_grid:
@@ -290,7 +295,7 @@ def _import_ts(parsed_source: ParseResult,  # pylint: disable=too-many-locals,to
                     urlparse(source_time_serie),
                     urlparse(destination_time_serie),
                     customer_id,
-                    False,
+                    True,
                     False,
                     force,
                     True,
@@ -300,7 +305,7 @@ def _import_ts(parsed_source: ParseResult,  # pylint: disable=too-many-locals,to
                     urlparse(source_time_serie),
                     urlparse(destination_time_serie),
                     customer_id=customer_id,
-                    compare_grid=False,
+                    compare_grid=True,
                     update_time_series=False,
                     force=force,
                     merge_ts=True,
@@ -413,6 +418,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 history = self._download_grid(his_uri, date_version)
                 # assert history is sorted by date time
                 # Remove data after the date_version
+                history = history.copy()
                 for row in history:
                     if row['ts'] >= date_version:
                         history = history[0:history.index(row)]
@@ -536,12 +542,17 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             start_of_current_period = \
                 (next_time - timedelta(minutes=self._periodic_refresh)).replace(tzinfo=pytz.UTC)
             s3_client = self._s3()
-            obj_versions = [
-                (v["LastModified"], v["VersionId"])
-                for v in s3_client.list_object_versions(
-                    Bucket=parsed_uri.netloc, Prefix=parsed_uri.path[1:]
-                )["Versions"]
-            ]
+            s3_obj_version = s3_client.list_object_versions(
+                Bucket=parsed_uri.netloc, Prefix=parsed_uri.path[1:]
+            )
+            if "Versions" in s3_obj_version:
+                obj_versions = [
+                    (v["LastModified"], v["VersionId"])
+                    for v in s3_obj_version["Versions"]
+                ]
+            else:
+                meta = s3_client.get_object(Bucket=parsed_uri.netloc, Key=parsed_uri.path[1:])
+                obj_versions = [meta["LastModified"], meta["VersionId"]]
             obj_versions = sorted(obj_versions, key=lambda x: x[0], reverse=True)
             self._lock.acquire()
             all_versions = self._versions.get(parsed_uri.geturl(), OrderedDict())
@@ -602,7 +613,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         for version, _ in self._versions[uri].items():
             if not date_version or version <= date_version:
                 return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
-        raise ValueError("Empty body not supported")
+        return Grid()
 
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -> None:

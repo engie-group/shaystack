@@ -50,7 +50,12 @@ if USE_GRAPHQL:
 @app.route('/')
 def index():
     """Empty page to check the deployment"""
-    return "Flask is up and running"
+    return """
+    <body>
+    <a href="haystack/">Haystack API</a><br />
+    <a href="graphql/">Haystack GraphQL API</a><br />
+    </body>
+    """
 
 
 @app.route('/favicon.ico')

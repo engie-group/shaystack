@@ -31,7 +31,7 @@ def test_create_db():
             assert "haystack_ts" in provider.get_db().list_collection_names()
             assert "haystack_meta_datas" in provider.get_db().list_collection_names()
     except ServerSelectionTimeoutError as ex:
-        raise SkipTest("Mongo db not started")
+        raise SkipTest("Mongo db not started") from ex
 
 
 def test_update_grid():
@@ -51,7 +51,7 @@ def test_update_grid():
             assert in_table[0] == grid[0]
             assert in_table[1] == grid[1]
     except ServerSelectionTimeoutError as ex:
-        raise SkipTest("Mongo db not started")
+        raise SkipTest("Mongo db not started") from ex
 
 
 def test_about():

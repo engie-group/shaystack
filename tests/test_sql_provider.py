@@ -26,7 +26,7 @@ def test_create_db():
         with cast(SQLProvider, get_provider("shaystack.providers.sql", envs)) as provider:
             provider.create_db()
     except psycopg2.OperationalError as ex:
-        raise SkipTest("Postgres db not started")
+        raise SkipTest("Postgres db not started") from ex
 
 
 def test_update_grid():
@@ -41,7 +41,7 @@ def test_update_grid():
             grid.append({"id": Ref("2"), "a": "c", "b": "d"})
             provider.update_grid(grid, None, "customer", FAKE_NOW)
     except psycopg2.OperationalError as ex:
-        raise SkipTest("Postgres db not started")
+        raise SkipTest("Postgres db not started") from ex
 
 
 def test_about():
@@ -51,4 +51,4 @@ def test_about():
             result = provider.about("http://localhost")
             assert result[0]['moduleName'] == 'SQLProvider'
     except psycopg2.OperationalError as ex:
-        raise SkipTest("Postgres db not started")
+        raise SkipTest("Postgres db not started") from ex

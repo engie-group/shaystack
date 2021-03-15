@@ -63,6 +63,15 @@ class Provider(DBHaystackInterface):
         self._db_url = self._envs["HAYSTACK_DB"]
         log.info("Use %s", self._get_db())
         self._parsed_db = urlparse(self._get_db())
+
+        table_name = self._parsed_db.fragment
+        if not table_name:
+            table_name = "haystack"
+        else:
+            parts = list(self._parsed_db)
+            self._parsed_db = urlparse(urlunparse(parts[:-1] + ['']))  # Remove fragment
+        self._table_name = table_name
+
         password = self._parsed_db.password
         if _BOTO3_AVAILABLE and self._parsed_db.username and \
                 password.startswith("<") and password.endswith(">"):
@@ -150,18 +159,41 @@ class Provider(DBHaystackInterface):
                 grid.append(_conv_row_to_entity(row))
             return grid.select(select)
 
-        cursor = self.get_collection().find(
-            {
-                "customer_id": self.get_customer_id(),
-                "start_datetime": {"$lte": date_version},
-                "end_datetime": {"$gt": date_version},
-                "entity.id": {"$in": [json_dump_scalar(entity_id)[1:-1]
-                                      for entity_id in entity_ids]}
-            })
+        customer_id = self.get_customer_id()
+        cursor = self.get_collection().aggregate(
+            [
+                {'$match': {'customer_id': customer_id,
+                            'start_datetime': {'$lte': date_version},
+                            'end_datetime': {'$gt': date_version}}},
+                {'$replaceRoot': {'newRoot': '$entity'}},
+                {
+                    '$match': {
+                        '$expr': {
+                            '$in': [
+                                {
+                                    '$let': {
+                                        'vars': {'id_regex_':
+                                            {
+                                                '$regexFind': {
+                                                    'input': '$id',
+                                                    'regex': 'r:([:.~a-zA-Z0-9_-]+)'
+                                                }
+                                            }
+                                        },
+                                        'in': {'$arrayElemAt': ['$$id_regex_.captures', 0]}
+                                    }
+                                },
+                                [ref.name for ref in entity_ids]
+                            ]
+                        }
+                    }
+                },
+            ]
+        )
 
         grid = self._init_grid_from_db(date_version)
         for row in cursor:
-            grid.append(_conv_row_to_entity(row['entity']))
+            grid.append(_conv_row_to_entity(row))
         return grid.select(select)
 
     @overrides
@@ -448,7 +480,7 @@ class Provider(DBHaystackInterface):
         target_grid = read_grid_from_uri(source_uri, envs=self._envs)
         self.update_grid(target_grid - original_grid, version, customer_id)
 
-    # TODO: add transaction ?
+    # PPR: add transaction ?
     @overrides
     def import_ts(self,
                   source_uri: str,
@@ -520,16 +552,11 @@ class Provider(DBHaystackInterface):
             database_name = self._parsed_db.path
             if database_name:
                 database_name = database_name[1:]
-            table_name = self._parsed_db.fragment
-            if not table_name:
-                table_name = "haystack"
-            self._table_name = table_name
             self._parsed_db.geturl()
             self._client = self._connect = MongoClient(
                 self._get_db(),
             )
             connect = self._client[database_name]
-            # self._connect = LocalProxy(connect)  # Thread variable FIXME
             self._connect = connect
             self.create_db()
         return self._connect

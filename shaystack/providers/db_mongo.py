@@ -11,7 +11,7 @@ Tools to convert haystack filter to mongo request
 from datetime import datetime
 from typing import Optional, Dict, Any, List, Union, cast
 
-from shaystack import parse_filter, HaystackType, Quantity
+from shaystack import parse_filter, HaystackType, Quantity, Ref
 from shaystack.filter_ast import FilterNode, FilterUnary, FilterPath, FilterBinary
 from ..jsondumper import dump_scalar as json_dump_scalar
 
@@ -114,6 +114,15 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
         return "_entity_.".join(node.paths)
     if isinstance(node, FilterBinary):
         if node.operator in _simple_ops:
+            if isinstance(node.right, Ref):
+                path = _conv_filter(node.left)
+                var = cast(FilterPath, node.left).paths[0]
+                to_ref = _to_ref(path, var)
+
+                return {_simple_ops[node.operator]: [
+                    to_ref,
+                    node.right.name,
+                ]}
             return {_simple_ops[node.operator]: [
                 f"${_conv_filter(node.left)}",
                 _conv_filter(node.right)[1:-1],
@@ -149,6 +158,25 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
         assert 0, "Invalid operator"
         return None
     return json_dump_scalar(node)
+
+
+def _to_ref(path, var):
+    to_ref = {
+        "$let": {
+            "vars": {
+                f"{var}_regex_": {
+                    "$regexFind": {
+                        "input": f"${path}",
+                        "regex": "r:([:.~a-zA-Z0-9_-]+)"
+                    }
+                }
+            },
+            "in": {
+                "$arrayElemAt": [f"$${var}_regex_.captures", 0]
+            }
+        }
+    }
+    return to_ref
 
 
 def _mongo_filter(grid_filter: Optional[str],

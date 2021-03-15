@@ -5,7 +5,6 @@
 import datetime
 import logging
 import os
-import pprint
 from typing import cast, Dict, Any, List
 
 import pytz
@@ -20,14 +19,15 @@ FAKE_NOW = datetime.datetime(2022, 1, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 
 # If .env set the HAYSTACK_DB to postgres, check to execute the sql request
-def _check_mongodb(hs_filter: str, mongo_request: List[Dict[str, Any]]):
+def _check_mongodb(hs_filter: str,  # pylint: disable=unused-argument,unused-variable
+                   mongo_request: List[Dict[str, Any]]):
     if os.environ.get('HAYSTACK_DB', '').startswith("mongodb"):
         envs = {'HAYSTACK_DB': os.environ['HAYSTACK_DB']}
         provider = cast(MongoProvider, get_provider("shaystack.providers.mongodb", envs))
         collection = provider.get_collection()
-        result = list(collection.aggregate(mongo_request))
-        print(f"# {hs_filter}")
-        pprint.PrettyPrinter(indent=2).pprint(result)
+        result = list(collection.aggregate(mongo_request))  # pylint: disable=unused-variable
+        # print(f"# {hs_filter}")
+        # pprint.PrettyPrinter(indent=2).pprint(result)
 
 
 def test_tag():
@@ -51,13 +51,15 @@ def test_not_tag():
 
 
 def test_equal_ref():
-    hs_filter = 'a == @id'
+    hs_filter = 'id == @id_site'
     mongo_request = mongo_filter(hs_filter, FAKE_NOW, 1, "customer")
     _check_mongodb(hs_filter, mongo_request)
     assert mongo_request == \
            [{'$match': {'customer_id': 'customer', 'start_datetime': {'$lte': FAKE_NOW},
-                        'end_datetime': {'$gt': FAKE_NOW}}}, {'$replaceRoot': {'newRoot': '$entity'}},
-            {'$match': {'$expr': {'$eq': ['$a', 'r:id']}}}, {'$limit': 1}]
+                        'end_datetime': {'$gt': FAKE_NOW}}}, {'$replaceRoot': {'newRoot': '$entity'}}, {'$match': {
+               '$expr': {'$eq': [{'$let': {
+                   'vars': {'id_regex_': {'$regexFind': {'input': '$id', 'regex': 'r:([:.~a-zA-Z0-9_-]+)'}}},
+                   'in': {'$arrayElemAt': ['$$id_regex_.captures', 0]}}}, 'id_site']}}}, {'$limit': 1}]
 
 
 def test_equal_str():
@@ -477,8 +479,11 @@ def test_select_with_id():
     _check_mongodb(hs_filter, mongo_request)
     assert mongo_request == \
            [{'$match': {'customer_id': 'customer', 'start_datetime': {'$lte': FAKE_NOW},
-                        'end_datetime': {'$gt': FAKE_NOW}}}, {'$replaceRoot': {'newRoot': '$entity'}},
-            {'$match': {'$expr': {'$eq': ['$id', 'r:p:demo:r:23a44701-3a62fd7a']}}}, {'$limit': 1}]
+                        'end_datetime': {'$gt': FAKE_NOW}}}, {'$replaceRoot': {'newRoot': '$entity'}}, {'$match': {
+               '$expr': {'$eq': [{'$let': {
+                   'vars': {'id_regex_': {'$regexFind': {'input': '$id', 'regex': 'r:([:.~a-zA-Z0-9_-]+)'}}},
+                   'in': {'$arrayElemAt': ['$$id_regex_.captures', 0]}}}, 'p:demo:r:23a44701-3a62fd7a']}}},
+            {'$limit': 1}]
 
 
 def test_path():

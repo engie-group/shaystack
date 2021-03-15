@@ -455,7 +455,7 @@ class Provider(DBHaystackInterface):
         if now is None:
             now = datetime.now(tz=pytz.UTC)
 
-        init_grid = self.read_grid(customer_id, version)  # TODO : read partial
+        init_grid = self.read_grid(customer_id, version)  # PPR : read partial ?
         new_grid = init_grid + diff_grid
 
         end_date = now - timedelta(milliseconds=1)

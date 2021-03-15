@@ -1,10 +1,11 @@
 import json
+import textwrap
 
 import requests
 
 
 def client_graphql():
-    q = """
+    q = textwrap.dedent("""
         {
           haystack
           {
@@ -16,7 +17,7 @@ def client_graphql():
               version:"2021-04-01T00:00:00 UTC") { ts  float }
           }
         }
-        """
+        """)
 
     resp = requests.post("http://localhost:3000/graphql", params={'query': q})
 

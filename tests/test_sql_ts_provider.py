@@ -29,7 +29,7 @@ def test_create_db():
             'AWS_PROFILE': os.environ['AWS_PROFILE'],
             'AWS_REGION': os.environ['AWS_REGION']
             }
-    with cast(DBTSProvider, get_provider("shaystack.providers.db_timestream", envs)) as provider:
+    with cast(DBTSProvider, get_provider("shaystack.providers.timestream", envs)) as provider:
         provider.create_db()
 
 
@@ -44,7 +44,7 @@ def test_import_ts_grid_in_db_and_his_read(mock1, mock2):
             'AWS_PROFILE': os.environ['AWS_PROFILE'],
             'AWS_REGION': os.environ['AWS_REGION']
             }
-    with cast(DBTSProvider, get_provider("shaystack.providers.db_timestream", envs)) as provider:
+    with cast(DBTSProvider, get_provider("shaystack.providers.timestream", envs)) as provider:
         values = [
             (XStr("hex", "deadbeef"), "Str"),
             ("100", "Str"),
@@ -100,7 +100,7 @@ def test_import_ts_grid_in_db_with_a_lot_of_records(mock1, mock2):
             'AWS_PROFILE': os.environ['AWS_PROFILE'],
             'AWS_REGION': os.environ['AWS_REGION']
             }
-    with cast(DBTSProvider, get_provider("shaystack.providers.db_timestream", envs)) as provider:
+    with cast(DBTSProvider, get_provider("shaystack.providers.timestream", envs)) as provider:
         # Check TS with all types
         entity_id = Ref("abc")
 
@@ -132,6 +132,6 @@ def test_about():
             'AWS_PROFILE': os.environ['AWS_PROFILE'],
             'AWS_REGION': os.environ['AWS_REGION']
             }
-    with get_provider("shaystack.providers.db_timestream", envs) as provider:
+    with get_provider("shaystack.providers.timestream", envs) as provider:
         result = provider.about("http://localhost")
         assert result[0]['moduleName'] == 'SQLProvider'

@@ -253,13 +253,21 @@ $ git tag vX.Y.Z.0rc
 $ # Validate the module
 $ make check-twine
 ```
+
 Then, two solutions:
+
 ```shell
 $ # Publish the module in test twine repository (https://test.pypi.org/legacy/):
 $ make test-twine
 ```
 
-or push the tag. The github action publish the release in TestPypi if the tag is in form: `vX.Y.Zrc`
+or push the tag.
+
+```shell
+$ git push orgin vX.Y.Z.0rc
+```
+
+The github action publish the release in TestPypi if the tag is in form: `vX.Y.Zrc`
 
 It's possible to test a last time all the project, with this release candidate. To do this:
 

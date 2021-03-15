@@ -150,11 +150,8 @@ def test_lru_version(mock):
         assert provider._download_grid(url, version_3).metadata["v"] == "3"
         assert provider._download_grid(url, version_2).metadata["v"] == "2"
         assert provider._download_grid(url, version_1).metadata["v"] == "1"
-        try:
-            provider._download_grid(url, version_0)
-            assert False, "Must return nothing"
-        except ValueError:
-            pass  # Empty body
+        result = provider._download_grid(url, version_0)
+        assert len(result) == 0
 
 
 @patch.object(URLProvider, '_get_url')

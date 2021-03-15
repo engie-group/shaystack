@@ -26,7 +26,7 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 _db_providers = [
     ["shaystack.providers.sql",
-     "sqlite3:///:memory:#haystack", True],
+     "sqlite3:///test.db:#haystack", True],
     ["shaystack.providers.sql",
      "postgresql://postgres:password@localhost:5432/postgres?connect_timeout=100#haystack", True],
     ["shaystack.providers.mongodb",
@@ -39,10 +39,10 @@ def _wrapper(function, provider, db, idx):
         function(provider, db)
     except ServerSelectionTimeoutError as ex:
         _db_providers[idx][2] = False
-        raise SkipTest("Mongo db not started")
+        raise SkipTest("Mongo db not started") from ex
     except psycopg2.OperationalError as ex:
         _db_providers[idx][2] = False
-        raise SkipTest("Postgres db not started")
+        raise SkipTest("Postgres db not started") from ex
 
 
 def _for_each_provider(function):
@@ -83,8 +83,8 @@ def _populate_db(provider: DBHaystackInterface) -> None:
 
 
 # @patch.object(ping.Provider, 'point_write_read')
-def _test_update_grid_in_db(provider: str, db: str):
-    with cast(DBHaystackInterface, get_provider(provider,
+def _test_update_grid_in_db(provider_name: str, db: str):
+    with cast(DBHaystackInterface, get_provider(provider_name,
                                                 {'HAYSTACK_DB': db},
                                                 use_cache=False)) as provider:
         provider.purge_db()
@@ -110,9 +110,9 @@ def test_update_grid_in_db():
     yield from _for_each_provider(_test_update_grid_in_db)
 
 
-def _test_ops(provider: str, db: str):
+def _test_ops(provider_name: str, db: str):
     envs = {'HAYSTACK_DB': db}
-    with get_provider(provider, envs) as provider:
+    with get_provider(provider_name, envs) as provider:
         result = provider.ops()
         assert len(result) == 5
 
@@ -121,55 +121,55 @@ def test_ops():
     yield from _for_each_provider(_test_ops)
 
 
-def _test_read_last_without_filter(provider: str, db: str):
-    with cast(DBHaystackInterface, get_provider(provider,
+def _test_read_last_without_filter(provider_name: str, db: str):
+    with cast(DBHaystackInterface, get_provider(provider_name,
                                                 {'HAYSTACK_DB': db})) as provider:
         _populate_db(provider)
         result = provider.read(0, None, None, None, None)
         assert result.metadata["v"] == "last"
         assert len(result) == 2
-        assert result[0] == {"id": Ref('id1'), 'col': 5, 'dis': 'Dis 1'}
-        assert result[1] == {"id": Ref('id2'), 'col': 6, 'dis': 'Dis 2'}
+        assert result[Ref("id1")] == {"id": Ref('id1'), 'col': 5, 'dis': 'Dis 1'}
+        assert result[Ref("id2")] == {"id": Ref('id2'), 'col': 6, 'dis': 'Dis 2'}
 
 
 def test_read_last_without_filter():
     yield from _for_each_provider(_test_read_last_without_filter)
 
 
-def _test_read_version_without_filter(provider: str, db: str):
-    with cast(DBHaystackInterface, get_provider(provider,
+def _test_read_version_without_filter(provider_name: str, db: str):
+    with cast(DBHaystackInterface, get_provider(provider_name,
                                                 {'HAYSTACK_DB': db})) as provider:
         _populate_db(provider)
         version_2 = datetime.datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, None, None, date_version=version_2)
         assert result.metadata["v"] == "2"
         assert len(result) == 2
-        assert result[0] == {"id": Ref('id1'), 'col': 3, 'dis': 'Dis 1'}
-        assert result[1] == {"id": Ref('id2'), 'col': 4, 'dis': 'Dis 2'}
+        assert result[Ref("id1")] == {"id": Ref('id1'), 'col': 3, 'dis': 'Dis 1'}
+        assert result[Ref("id2")] == {"id": Ref('id2'), 'col': 4, 'dis': 'Dis 2'}
 
 
 def test_read_version_without_filter():
     yield from _for_each_provider(_test_read_version_without_filter)
 
 
-def _test_read_version_with_filter(provider: str, db: str):
-    with cast(DBHaystackInterface, get_provider(provider,
+def _test_read_version_with_filter(provider_name: str, db: str):
+    with cast(DBHaystackInterface, get_provider(provider_name,
                                                 {'HAYSTACK_DB': db})) as provider:
         _populate_db(provider)
         version_2 = datetime.datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, None, "id==@id1", version_2)
         assert result.metadata["v"] == "2"
         assert len(result) == 1
-        assert result[0] == {"id": Ref('id1'), 'col': 3, 'dis': 'Dis 1'}
+        assert result[Ref("id1")] == {"id": Ref('id1'), 'col': 3, 'dis': 'Dis 1'}
 
 
 def test_read_version_with_filter():
     yield from _for_each_provider(_test_read_version_with_filter)
 
 
-def _test_read_version_with_filter_and_select(provider: str, db: str):
+def _test_read_version_with_filter_and_select(provider_name: str, db: str):
     # caplog.set_level(logging.DEBUG)
-    with cast(DBHaystackInterface, get_provider(provider,
+    with cast(DBHaystackInterface, get_provider(provider_name,
                                                 {'HAYSTACK_DB': db})) as provider:
         _populate_db(provider)
         version_2 = datetime.datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
@@ -184,23 +184,23 @@ def test_read_version_with_filter_and_select():
     yield from _for_each_provider(_test_read_version_with_filter_and_select)
 
 
-def _test_read_version_with_ids(provider: str, db: str):
-    with cast(DBHaystackInterface, get_provider(provider,
+def _test_read_version_with_ids(provider_name: str, db: str):
+    with cast(DBHaystackInterface, get_provider(provider_name,
                                                 {'HAYSTACK_DB': db})) as provider:
         _populate_db(provider)
         version_2 = datetime.datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, [Ref("id1")], None, version_2)
         assert result.metadata["v"] == "2"
         assert len(result) == 1
-        assert result[0] == {"id": Ref('id1'), 'col': 3, 'dis': 'Dis 1'}
+        assert result[Ref("id1")] == {"id": Ref('id1'), 'col': 3, 'dis': 'Dis 1'}
 
 
 def test_read_version_with_ids():
     yield from _for_each_provider(_test_read_version_with_ids)
 
 
-def _test_version(provider: str, db: str):
-    with cast(DBHaystackInterface, get_provider(provider,
+def _test_version(provider_name: str, db: str):
+    with cast(DBHaystackInterface, get_provider(provider_name,
                                                 {'HAYSTACK_DB': db})) as provider:
         _populate_db(provider)
         versions = provider.versions()
@@ -211,8 +211,8 @@ def test_version():
     yield from _for_each_provider(_test_version)
 
 
-def _test_values_for_tag_id(provider: str, db: str):
-    with cast(DBHaystackInterface, get_provider(provider,
+def _test_values_for_tag_id(provider_name: str, db: str):
+    with cast(DBHaystackInterface, get_provider(provider_name,
                                                 {'HAYSTACK_DB': db})) as provider:
         _populate_db(provider)
         values = provider.values_for_tag("id")
@@ -223,8 +223,8 @@ def test_values_for_tag_id():
     yield from _for_each_provider(_test_values_for_tag_id)
 
 
-def _test_values_for_tag_col(provider: str, db: str):
-    with cast(DBHaystackInterface, get_provider(provider,
+def _test_values_for_tag_col(provider_name: str, db: str):
+    with cast(DBHaystackInterface, get_provider(provider_name,
                                                 {'HAYSTACK_DB': db})) as provider:
         _populate_db(provider)
         values = provider.values_for_tag("col")
@@ -235,8 +235,8 @@ def test_values_for_tag_col():
     yield from _for_each_provider(_test_values_for_tag_col)
 
 
-def _test_values_for_tag_dis(provider: str, db: str):
-    with cast(DBHaystackInterface, get_provider(provider,
+def _test_values_for_tag_dis(provider_name: str, db: str):
+    with cast(DBHaystackInterface, get_provider(provider_name,
                                                 {'HAYSTACK_DB': db})) as provider:
         _populate_db(provider)
         values = provider.values_for_tag("dis")

@@ -25,10 +25,12 @@ from shaystack.providers.db_haystack_interface import DBHaystackInterface
 FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 _db_providers = [
-    ["shaystack.providers.sql", "sqlite3:///:memory:#haystack", True],
-    ["shaystack.providers.sql", "postgresql://postgres:password@localhost:5432/postgres?connect_timeout=100#haystack",
-     True],
-    ["shaystack.providers.mongodb", "mongodb://localhost/haystackdb?serverSelectionTimeoutMS=100#haystack", True],
+    ["shaystack.providers.sql",
+     "sqlite3:///:memory:#haystack", True],
+    ["shaystack.providers.sql",
+     "postgresql://postgres:password@localhost:5432/postgres?connect_timeout=100#haystack", True],
+    ["shaystack.providers.mongodb",
+     "mongodb://localhost/haystackdb?serverSelectionTimeoutMS=100#haystack", True],
 ]
 
 

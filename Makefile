@@ -417,6 +417,10 @@ async-start-api: $(REQUIREMENTS)
 	sleep 1
 	tail .start/start-api.log
 	echo -e "$(yellow)Local API started$(normal)"
+	echo -e "$(green)PROVIDER=$${HAYSTACK_PROVIDER}"
+	echo -e "$(green)DB=$${HAYSTACK_DB}"
+	echo -e "$(green)TS=$${HAYSTACK_TS}"
+	echo -e "$(green)Use http://$(HOST_API):$(PORT)/graphql or http://$(HOST_API):$(PORT)/haystack$(normal)"
 
 # Stop the background local API server
 async-stop-api:
@@ -622,7 +626,7 @@ functional-url-local: $(REQUIREMENTS)
 	@$(MAKE) async-stop-api >/dev/null
 	export HAYSTACK_PROVIDER=shaystack.providers.db
 	export HAYSTACK_DB=sample/carytown.zinc
-	$(MAKE) async-start-api >/dev/null
+	$(MAKE) HAYSTACK_PROVIDER=$$HAYSTACK_PROVIDER HAYSTACK_DB=$$HAYSTACK_DB async-start-api
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with url serveur and local file OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
@@ -634,7 +638,7 @@ functional-url-s3: $(REQUIREMENTS) aws-update-token
 	@$(MAKE) async-stop-api >/dev/null
 	export HAYSTACK_PROVIDER=shaystack.providers.db
 	export HAYSTACK_DB=s3://shaystack/carytown.zinc
-	$(MAKE) async-start-api >/dev/null
+	$(MAKE)	HAYSTACK_PROVIDER=$$HAYSTACK_PROVIDER HAYSTACK_DB=$$HAYSTACK_DB async-start-api
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with url serveur and s3 file OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
@@ -650,7 +654,7 @@ functional-db-sqlite: $(REQUIREMENTS)
 	export HAYSTACK_DB=sqlite3://localhost/test.db
 	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in SQLite ($${HAYSTACK_DB})$(normal)"
-	$(MAKE) async-start-api >/dev/null
+	$(MAKE) HAYSTACK_PROVIDER=$$HAYSTACK_PROVIDER HAYSTACK_DB=$$HAYSTACK_DB async-start-api
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local SQLite serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
@@ -668,7 +672,8 @@ functional-db-sqlite-ts: $(REQUIREMENTS)
 	export LOG_LEVEL=INFO
 	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB} $${HAYSTACK_TS}
 	echo -e "$(green)Data imported in SQLite and Time stream ($${HAYSTACK_DB})$(normal)"
-	$(MAKE) async-start-api >/dev/null
+	$(MAKE) HAYSTACK_PROVIDER=$$HAYSTACK_PROVIDER HAYSTACK_DB=$$HAYSTACK_DB \
+		HAYSTACK_TS=$$HAYSTACK_TS async-start-api
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local SQLite serveur and Time Stream OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
@@ -685,7 +690,7 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 	export HAYSTACK_DB=postgres://postgres:password@$$PG_IP:5432/postgres
 	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in Postgres ($${HAYSTACK_DB})$(normal)"
-	$(MAKE) async-start-api >/dev/null
+	$(MAKE) HAYSTACK_PROVIDER=$$HAYSTACK_PROVIDER HAYSTACK_DB=$$HAYSTACK_DB async-start-api
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local Postgres serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
@@ -703,7 +708,7 @@ functional-mongodb: $(REQUIREMENTS) clean-mongodb
 	export HAYSTACK_DB=mongodb://$$PG_IP/haystackdb#haystack
 	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in MongoDB ($${HAYSTACK_DB})$(normal)"
-	$(MAKE) async-start-api >/dev/null
+	$(MAKE) HAYSTACK_PROVIDER=$$HAYSTACK_PROVIDER HAYSTACK_DB=$$HAYSTACK_DB async-start-api
 	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
 	echo -e "$(green)Test with local MongoDB serveur OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null

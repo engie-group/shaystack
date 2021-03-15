@@ -18,11 +18,9 @@ from .jsonparser import parse_grid as parse_json_grid, \
     parse_scalar as parse_json_scalar
 from .trioparser import parse_grid as parse_trio_grid, parse_scalar as parse_trio_scalar
 # Bring in version handling
-from .version import Version, LATEST_VER, VER_3_0
+from .version import Version, LATEST_VER
 from .zincparser import parse_grid as parse_zinc_grid, \
     parse_scalar as parse_zinc_scalar
-
-EmptyGrid = Grid(version=VER_3_0, columns={"empty": {}})
 
 LOG = logging.getLogger(__name__)
 

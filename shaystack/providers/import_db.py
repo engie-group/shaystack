@@ -10,6 +10,7 @@ Import haystack file in SQL database.
 import logging
 import os
 import sys
+import traceback
 from datetime import datetime
 from multiprocessing.dummy import freeze_support
 from typing import Optional, cast, List, Dict, Union
@@ -123,6 +124,7 @@ def main(source_uri: str,
         return 0
     except Exception as ex:  # pylint: disable=broad-except
         print(f"Impossible to import data ({ex})", file=sys.stderr)
+        traceback.print_exc()
         return -1
 
 

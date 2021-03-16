@@ -1,0 +1,2132 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1, minimum-scale=1" name="viewport"/>
+    <meta content="pdoc 0.9.2" name="generator"/>
+    <title>shaystack.providers.sql API documentation</title>
+    <meta content="Manipulate Haystack ontology on SQL database …" name="description"/>
+    <link as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css"
+          integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" rel="preload stylesheet">
+    <link as="style" crossorigin
+          href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css"
+          integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" rel="preload stylesheet">
+    <link as="style" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css"
+          rel="stylesheet preload">
+    <style>:root {
+        --highlight-color: #fe9
+    }
+
+    .flex {
+        display: flex !important
+    }
+
+    body {
+        line-height: 1.5em
+    }
+
+    #content {
+        padding: 20px
+    }
+
+    #sidebar {
+        padding: 30px;
+        overflow: hidden
+    }
+
+    #sidebar > *:last-child {
+        margin-bottom: 2cm
+    }
+
+    .http-server-breadcrumbs {
+        font-size: 130%;
+        margin: 0 0 15px 0
+    }
+
+    #footer {
+        font-size: .75em;
+        padding: 5px 30px;
+        border-top: 1px solid #ddd;
+        text-align: right
+    }
+
+    #footer p {
+        margin: 0 0 0 1em;
+        display: inline-block
+    }
+
+    #footer p:last-child {
+        margin-right: 30px
+    }
+
+    h1, h2, h3, h4, h5 {
+        font-weight: 300
+    }
+
+    h1 {
+        font-size: 2.5em;
+        line-height: 1.1em
+    }
+
+    h2 {
+        font-size: 1.75em;
+        margin: 1em 0 .50em 0
+    }
+
+    h3 {
+        font-size: 1.4em;
+        margin: 25px 0 10px 0
+    }
+
+    h4 {
+        margin: 0;
+        font-size: 105%
+    }
+
+    h1:target, h2:target, h3:target, h4:target, h5:target, h6:target {
+        background: var(--highlight-color);
+        padding: .2em 0
+    }
+
+    a {
+        color: #058;
+        text-decoration: none;
+        transition: color .3s ease-in-out
+    }
+
+    a:hover {
+        color: #e82
+    }
+
+    .title code {
+        font-weight: bold
+    }
+
+    h2[id^="header-"] {
+        margin-top: 2em
+    }
+
+    .ident {
+        color: #900
+    }
+
+    pre code {
+        background: #f8f8f8;
+        font-size: .8em;
+        line-height: 1.4em
+    }
+
+    code {
+        background: #f2f2f1;
+        padding: 1px 4px;
+        overflow-wrap: break-word
+    }
+
+    h1 code {
+        background: transparent
+    }
+
+    pre {
+        background: #f8f8f8;
+        border: 0;
+        border-top: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        margin: 1em 0;
+        padding: 1ex
+    }
+
+    #http-server-module-list {
+        display: flex;
+        flex-flow: column
+    }
+
+    #http-server-module-list div {
+        display: flex
+    }
+
+    #http-server-module-list dt {
+        min-width: 10%
+    }
+
+    #http-server-module-list p {
+        margin-top: 0
+    }
+
+    .toc ul, #index {
+        list-style-type: none;
+        margin: 0;
+        padding: 0
+    }
+
+    #index code {
+        background: transparent
+    }
+
+    #index h3 {
+        border-bottom: 1px solid #ddd
+    }
+
+    #index ul {
+        padding: 0
+    }
+
+    #index h4 {
+        margin-top: .6em;
+        font-weight: bold
+    }
+
+    @media (min-width: 200ex) {
+        #index .two-column {
+            column-count: 2
+        }
+    }
+
+    @media (min-width: 300ex) {
+        #index .two-column {
+            column-count: 3
+        }
+    }
+
+    dl {
+        margin-bottom: 2em
+    }
+
+    dl dl:last-child {
+        margin-bottom: 4em
+    }
+
+    dd {
+        margin: 0 0 1em 3em
+    }
+
+    #header-classes + dl > dd {
+        margin-bottom: 3em
+    }
+
+    dd dd {
+        margin-left: 2em
+    }
+
+    dd p {
+        margin: 10px 0
+    }
+
+    .name {
+        background: #eee;
+        font-weight: bold;
+        font-size: .85em;
+        padding: 5px 10px;
+        display: inline-block;
+        min-width: 40%
+    }
+
+    .name:hover {
+        background: #e0e0e0
+    }
+
+    dt:target .name {
+        background: var(--highlight-color)
+    }
+
+    .name > span:first-child {
+        white-space: nowrap
+    }
+
+    .name.class > span:nth-child(2) {
+        margin-left: .4em
+    }
+
+    .inherited {
+        color: #999;
+        border-left: 5px solid #eee;
+        padding-left: 1em
+    }
+
+    .inheritance em {
+        font-style: normal;
+        font-weight: bold
+    }
+
+    .desc h2 {
+        font-weight: 400;
+        font-size: 1.25em
+    }
+
+    .desc h3 {
+        font-size: 1em
+    }
+
+    .desc dt code {
+        background: inherit
+    }
+
+    .source summary, .git-link-div {
+        color: #666;
+        text-align: right;
+        font-weight: 400;
+        font-size: .8em;
+        text-transform: uppercase
+    }
+
+    .source summary > * {
+        white-space: nowrap;
+        cursor: pointer
+    }
+
+    .git-link {
+        color: inherit;
+        margin-left: 1em
+    }
+
+    .source pre {
+        max-height: 500px;
+        overflow: auto;
+        margin: 0
+    }
+
+    .source pre code {
+        font-size: 12px;
+        overflow: visible
+    }
+
+    .hlist {
+        list-style: none
+    }
+
+    .hlist li {
+        display: inline
+    }
+
+    .hlist li:after {
+        content: ',\2002'
+    }
+
+    .hlist li:last-child:after {
+        content: none
+    }
+
+    .hlist .hlist {
+        display: inline;
+        padding-left: 1em
+    }
+
+    img {
+        max-width: 100%
+    }
+
+    td {
+        padding: 0 .5em
+    }
+
+    .admonition {
+        padding: .1em .5em;
+        margin-bottom: 1em
+    }
+
+    .admonition-title {
+        font-weight: bold
+    }
+
+    .admonition.note, .admonition.info, .admonition.important {
+        background: #aef
+    }
+
+    .admonition.todo, .admonition.versionadded, .admonition.tip, .admonition.hint {
+        background: #dfd
+    }
+
+    .admonition.warning, .admonition.versionchanged, .admonition.deprecated {
+        background: #fd4
+    }
+
+    .admonition.error, .admonition.danger, .admonition.caution {
+        background: lightpink
+    }</style>
+    <style media="screen and (min-width: 700px)">@media screen and (min-width: 700px) {
+        #sidebar {
+            width: 30%;
+            height: 100vh;
+            overflow: auto;
+            position: sticky;
+            top: 0
+        }
+
+        #content {
+            width: 70%;
+            max-width: 100ch;
+            padding: 3em 4em;
+            border-left: 1px solid #ddd
+        }
+
+        pre code {
+            font-size: 1em
+        }
+
+        .item .name {
+            font-size: 1em
+        }
+
+        main {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end
+        }
+
+        .toc ul ul, #index ul {
+            padding-left: 1.5em
+        }
+
+        .toc > ul > li {
+            margin-top: .5em
+        }
+    }</style>
+    <style media="print">@media print {
+        #sidebar h1 {
+            page-break-before: always
+        }
+
+        .source {
+            display: none
+        }
+    }
+
+    @media print {
+        * {
+            background: transparent !important;
+            color: #000 !important;
+            box-shadow: none !important;
+            text-shadow: none !important
+        }
+
+        a[href]:after {
+            content: " (" attr(href) ")";
+            font-size: 90%
+        }
+
+        a[href][title]:after {
+            content: none
+        }
+
+        abbr[title]:after {
+            content: " (" attr(title) ")"
+        }
+
+        .ir a:after, a[href^="javascript:"]:after, a[href^="#"]:after {
+            content: ""
+        }
+
+        pre, blockquote {
+            border: 1px solid #999;
+            page-break-inside: avoid
+        }
+
+        thead {
+            display: table-header-group
+        }
+
+        tr, img {
+            page-break-inside: avoid
+        }
+
+        img {
+            max-width: 100% !important
+        }
+
+        @page {
+            margin: 0.5cm
+        }
+
+        p, h2, h3 {
+            orphans: 3;
+            widows: 3
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            page-break-after: avoid
+        }
+    }</style>
+    <script crossorigin defer integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8="
+            src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script>
+    <script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+    <article id="content">
+        <header>
+            <h1 class="title">Module <code>shaystack.providers.sql</code></h1>
+        </header>
+        <section id="section-intro">
+            <p>Manipulate Haystack ontology on SQL database.</p>
+            <p>Set the HAYSTACK_DB with sql database connection URL, similar
+                to <a href="https://docs.sqlalchemy.org/en/13/core/engines.html#database-urls">sqlalchemy</a>
+                May be:
+                - postgresql://scott:tiger@localhost/mydatabase#mytable
+                - postgresql+psycopg2://scott:tiger@localhost/mydatabase
+                - sqlite3://test.db#haystack</p>
+            <p>Each entity was save in one SQL row. A column save the JSON version of entity.</p>
+            <details class="source">
+                <summary>
+                    <span>Expand source code</span>
+                </summary>
+                <pre><code class="python"># -*- coding: utf-8 -*-
+# SQL Provider
+# See the accompanying LICENSE file.
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
+&#34;&#34;&#34;
+Manipulate Haystack ontology on SQL database.
+
+Set the HAYSTACK_DB with sql database connection URL, similar
+to [sqlalchemy](https://docs.sqlalchemy.org/en/13/core/engines.html#database-urls)
+May be:
+- postgresql://scott:tiger@localhost/mydatabase#mytable
+- postgresql+psycopg2://scott:tiger@localhost/mydatabase
+- sqlite3://test.db#haystack
+
+Each entity was save in one SQL row. A column save the JSON version of entity.
+&#34;&#34;&#34;
+import importlib
+import json
+import logging
+import re
+from datetime import datetime, timedelta
+from os.path import dirname
+from types import ModuleType
+from typing import Optional, Tuple, Dict, Any, List, Callable, Set, cast
+from urllib.parse import urlparse, ParseResult
+
+import pytz
+from overrides import overrides
+
+from .db_haystack_interface import DBHaystackInterface
+from .sqldb_protocol import DBConnection
+from .tools import get_secret_manager_secret, _BOTO3_AVAILABLE
+from .url import read_grid_from_uri
+from .. import HaystackException
+from ..datatypes import Ref
+from ..grid import Grid
+from ..jsondumper import dump_scalar, _dump_meta, _dump_columns, _dump_row
+from ..jsonparser import parse_scalar, _parse_row, _parse_metadata, _parse_cols
+from ..type import Entity
+from ..version import LATEST_VER
+
+log = logging.getLogger(&#34;sql.Provider&#34;)
+
+_default_driver = {
+    &#34;sqlite3&#34;: (&#34;supersqlite.sqlite3&#34;, {&#34;database&#34;}),
+    &#34;supersqlite&#34;: (&#34;supersqlite.sqlite3&#34;, {&#34;database&#34;}),
+    &#34;postgresql&#34;: (&#34;psycopg2&#34;, {&#34;host&#34;, &#34;database&#34;, &#34;user&#34;, &#34;password&#34;}),
+    &#34;postgres&#34;: (&#34;psycopg2&#34;, {&#34;host&#34;, &#34;database&#34;, &#34;user&#34;, &#34;password&#34;}),
+    # &#34;mysql&#34;: &#34;mysqldb&#34;,  # Not implemented yet
+    # &#34;oracle&#34;: &#34;cx_oracle&#34;,
+    # &#34;mssql&#34;: &#34;pymssql&#34;,
+}
+
+
+def _validate_grid(grid: Grid):
+    ids = set()
+    for row in grid:
+        if &#39;id&#39; in row:
+            id_row = row[&#39;id&#39;]
+            assert id_row not in ids, f&#34;Id {id_row} is allready in grid&#34;
+            if id_row in ids:
+                return False
+            ids.add(id_row)
+    return True
+
+
+def _import_db_driver(parsed_db: ParseResult,
+                      default_driver: Dict[str, Tuple[str, Set[str]]]) \
+        -&gt; Tuple[ModuleType, str, ParseResult]:
+    if not parsed_db.fragment:
+        parsed_db = urlparse(parsed_db.geturl() + &#34;#haystack&#34;)
+    if parsed_db.scheme.find(&#34;+&#34;) != -1:
+        dialect, driver = parsed_db.scheme.split(&#39;+&#39;)
+        dialect = _fix_dialect_alias(dialect)
+    else:
+        dialect = _fix_dialect_alias(parsed_db.scheme)
+        if dialect not in default_driver:
+            raise ValueError(f&#34;Dialect &#39;{dialect}&#39; not supported ({parsed_db.geturl()})&#34;)
+        driver = default_driver[dialect][0]
+    if driver.find(&#39;.&#39;) != -1:
+        splitted = driver.split(&#39;.&#39;)
+        mod = importlib.import_module(splitted[0])
+        return mod.__dict__[splitted[1]], dialect, parsed_db
+
+    return importlib.import_module(driver), dialect, parsed_db
+
+
+def _fix_dialect_alias(dialect: str) -&gt; str:
+    if dialect == &#34;postgres&#34;:
+        dialect = &#34;postgresql&#34;
+    if dialect == &#34;sqlite&#34;:
+        dialect = &#34;sqlite3&#34;
+    return dialect
+
+
+class Provider(DBHaystackInterface):
+    &#34;&#34;&#34;
+    Expose an Haystack data via the Haystack Rest API and SQL databases
+    &#34;&#34;&#34;
+
+    @property
+    def name(self) -&gt; str:
+        return &#34;SQL&#34;
+
+    def __init__(self, envs: Dict[str, str]):
+        DBHaystackInterface.__init__(self, envs)
+        self._connect = None
+        log.info(&#34;Use %s&#34;, self._get_db())
+        self._parsed_db = urlparse(self._get_db())
+        # Import DB driver compatible with DB-API2 (PEP-0249)
+        self._dialect = None
+        self._default_driver = _default_driver
+        self.database, self._dialect, self._parsed_db = \
+            _import_db_driver(self._parsed_db,
+                              self._default_driver)
+        self._sql = self._dialect_request(self._dialect)
+        self._sql_type_to_json = self._sql[&#34;sql_type_to_json&#34;]
+
+    def _get_db(self) -&gt; str:  # pylint: disable=no-self-use
+        &#34;&#34;&#34; Return the url to the file to expose. &#34;&#34;&#34;
+        return self._envs[&#34;HAYSTACK_DB&#34;]
+
+    @overrides
+    def values_for_tag(self, tag: str,
+                       date_version: Optional[datetime] = None) -&gt; List[Any]:
+        customer_id = self.get_customer_id()
+        distinct = self._sql.get(&#34;DISTINCT_TAG_VALUES&#34;)
+        if distinct is None:
+            raise NotImplementedError(&#34;Not implemented&#34;)
+        conn = self.get_connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(re.sub(r&#34;\[#]&#34;, tag, distinct),
+                           (customer_id,))
+            result = cursor.fetchall()
+            conn.commit()
+            return sorted([parse_scalar(x[0]) for x in result if x[0] is not None])
+        finally:
+            cursor.close()
+
+    @overrides
+    def versions(self) -&gt; List[datetime]:
+        &#34;&#34;&#34;
+        Return datetime for each versions or empty array if is unknown
+        &#34;&#34;&#34;
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            customer_id = self.get_customer_id()
+            cursor.execute(self._sql[&#34;DISTINCT_VERSION&#34;], (customer_id,))
+            result = cursor.fetchall()
+            conn.commit()
+            if result and isinstance(result[0][0], str):
+                return [datetime.strptime(x[0], &#34;%Y-%m-%d %H:%M:%S&#34;).replace(tzinfo=pytz.utc) for x in result]
+            return [x[0] for x in result]
+        finally:
+            cursor.close()
+
+    @overrides
+    def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
+        &#34;&#34;&#34; Implement the Haystack &#39;about&#39; operation &#34;&#34;&#34;
+        grid = super().about(home)
+        about_data = cast(Entity, grid[0])
+        about_data.update(
+            {  # pylint: disable=no-member
+                &#34;productVersion&#34;: &#34;1.0&#34;,
+                &#34;moduleName&#34;: &#34;SQLProvider&#34;,
+                &#34;moduleVersion&#34;: &#34;1.0&#34;,
+            }
+        )
+        return grid
+
+    @overrides
+    def read(
+            self,
+            limit: int,
+            select: Optional[str],
+            entity_ids: Optional[List[Ref]] = None,
+            grid_filter: Optional[str] = None,
+            date_version: Optional[datetime] = None,
+    ) -&gt; Grid:
+        &#34;&#34;&#34; Implement Haystack &#39;read&#39; &#34;&#34;&#34;
+        log.debug(
+            &#34;----&gt; Call read(limit=%s, select=&#39;%s&#39;, ids=%s grid_filter=&#39;%s&#39; date_version=%s)&#34;,
+            repr(limit),
+            repr(select),
+            repr(entity_ids),
+            repr(grid_filter),
+            repr(date_version),
+        )
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            sql_type_to_json = self._sql_type_to_json
+            if date_version is None:
+                date_version = datetime.now().replace(tzinfo=pytz.UTC)
+            exec_sql_filter: Callable = self._sql[&#34;exec_sql_filter&#34;]
+            if entity_ids is None:
+                cursor = exec_sql_filter(self._sql,
+                                         cursor,
+                                         self._parsed_db.fragment,
+                                         grid_filter,
+                                         date_version,
+                                         limit,
+                                         self.get_customer_id(),
+                                         )
+                grid = self._init_grid_from_db(date_version)
+                for row in cursor:
+                    grid.append(_parse_row(sql_type_to_json(row[0]), LATEST_VER))
+                conn.commit()
+                return grid.select(select)
+            customer_id = self.get_customer_id()
+            sql_ids = &#34;(&#39;&#34; + &#34;&#39;,&#39;&#34;.join([entity_id.name
+                                         for entity_id in entity_ids]) + &#34;&#39;)&#34;
+            cursor.execute(self._sql[&#34;SELECT_ENTITY_WITH_ID&#34;] + sql_ids,
+                           (date_version, customer_id))
+
+            grid = self._init_grid_from_db(date_version)
+            for row in cursor:
+                grid.append(_parse_row(sql_type_to_json(row[0]), LATEST_VER))
+            conn.commit()
+            return grid.select(select)
+        finally:
+            cursor.close()
+
+    @overrides
+    def his_read(
+            self,
+            entity_id: Ref,
+            dates_range: Optional[Tuple[datetime, datetime]] = None,
+            date_version: Optional[datetime] = None,
+    ) -&gt; Grid:
+        &#34;&#34;&#34; Implement Haystack &#39;hisRead&#39; &#34;&#34;&#34;
+        log.debug(
+            &#34;----&gt; Call his_read(id=%s , range=%s, &#34; &#34;date_version=%s)&#34;,
+            repr(entity_id),
+            repr(dates_range),
+            repr(date_version),
+        )
+        conn = self.get_connect()
+        cursor = conn.cursor()
+        customer_id = self.get_customer_id()
+        history = Grid(columns=[&#34;ts&#34;, &#34;val&#34;])
+        field_to_datetime_tz = self._sql[&#34;field_to_datetime_tz&#34;]
+        try:
+            if not date_version:
+                date_version = datetime.max.replace(tzinfo=pytz.UTC)
+            if dates_range[1] &gt; date_version:
+                dates_range = list(dates_range)
+                dates_range[1] = date_version
+
+            cursor.execute(self._sql[&#34;SELECT_TS&#34;], (customer_id, entity_id.name,
+                                                    dates_range[0], dates_range[1]))
+            for row in cursor:
+                history.append(
+                    {
+                        &#34;ts&#34;: field_to_datetime_tz(row[0]),
+                        &#34;val&#34;: parse_scalar(row[1])
+                    }
+                )
+            if not history:
+                raise HaystackException(f&#34;id &#39;{entity_id}&#39; not found&#34;)
+            min_date = datetime.max.replace(tzinfo=pytz.UTC)
+            max_date = datetime.min.replace(tzinfo=pytz.UTC)
+
+            for time_serie in history:
+                min_date = min(min_date, time_serie[&#34;ts&#34;])
+                max_date = max(max_date, time_serie[&#34;ts&#34;])
+
+            history.metadata = {
+                &#34;id&#34;: entity_id,
+                &#34;hisStart&#34;: min_date,
+                &#34;hisEnd&#34;: max_date,
+            }
+            return history
+
+        finally:
+            cursor.close()
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        conn = self.get_connect()
+        conn.close()
+        self._connect = False
+
+    def get_connect(self) -&gt; DBConnection:  # PPR: monothread ? No with Zappa
+        &#34;&#34;&#34; Return current connection to database. &#34;&#34;&#34;
+        if not self._connect and self._dialect:  # Lazy connection
+            if self._dialect not in self._default_driver:
+                raise ValueError(f&#34;Dialect &#39;{self._dialect}&#39; not supported&#34;)
+            try:
+                port = self._parsed_db.port  # To manage sqlite in memory
+            except ValueError:
+                port = 0
+            password = self._parsed_db.password
+            if _BOTO3_AVAILABLE and self._parsed_db.username and \
+                    password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):
+                password = get_secret_manager_secret(password[1:-1], self._envs)
+            params = {
+                &#34;host&#34;: self._parsed_db.hostname,
+                &#34;port&#34;: port,
+                &#34;user&#34;: self._parsed_db.username,
+                &#34;passwd&#34;: password,
+                &#34;password&#34;: password,
+                &#34;db&#34;: self._parsed_db.path[1:],
+                &#34;database&#34;: self._parsed_db.path[1:],
+                &#34;dbname&#34;: self._parsed_db.path[1:],
+            }
+            _, keys = self._default_driver[self._dialect]
+            filtered = {key: val for key, val in params.items() if key in keys}
+            connect: DBConnection = self.database.connect(**filtered)
+            self._connect = connect
+            self.create_db()
+        if not self._connect:
+            raise ValueError(&#34;Impossible to use the database url&#34;)
+        return self._connect
+
+    def _init_grid_from_db(self, version: Optional[datetime]) -&gt; Grid:
+        customer = self.get_customer_id()
+        if version is None:
+            version = datetime.max.replace(tzinfo=pytz.UTC, microsecond=0)
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            sql_type_to_json = self._sql_type_to_json
+            cursor.execute(self._sql[&#34;SELECT_META_DATA&#34;],
+                           (version, customer))
+            grid = Grid(version=LATEST_VER)
+            row = cursor.fetchone()
+            if row:
+                meta, cols = row
+                grid.metadata = _parse_metadata(sql_type_to_json(meta), LATEST_VER)
+                _parse_cols(grid, sql_type_to_json(cols), LATEST_VER)
+            conn.commit()
+            return grid
+        finally:
+            cursor.close()
+
+    def _dialect_request(self, dialect: str) -&gt; Dict[str, Any]:
+        table_name = self._parsed_db.fragment
+        if dialect == &#34;sqlite3&#34;:
+            # Lazy import
+            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
+            return get_sqlite_parameters(table_name)
+        if dialect == &#34;supersqlite&#34;:
+            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
+            return get_sqlite_parameters(table_name)
+        if dialect == &#34;postgresql&#34;:
+            from .db_postgres import \
+                get_db_parameters as get_postgres_parameters  # pylint: disable=import-outside-toplevel
+            return get_postgres_parameters(table_name)
+        raise ValueError(&#34;Dialog not implemented&#34;)
+
+    # -----------------------------------------
+    @overrides
+    def create_db(self) -&gt; None:
+        &#34;&#34;&#34;
+        Create the database and schema.
+        &#34;&#34;&#34;
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            # Create table
+            cursor.execute(self._sql[&#34;CREATE_HAYSTACK_TABLE&#34;])
+            # Create index
+            cursor.execute(self._sql[&#34;CREATE_HAYSTACK_INDEX_1&#34;])  # On id
+            cursor.execute(self._sql[&#34;CREATE_HAYSTACK_INDEX_2&#34;])  # On Json, for @&gt; operator
+            # Create table
+            cursor.execute(self._sql[&#34;CREATE_METADATA_TABLE&#34;])
+            # Create ts table
+            cursor.execute(self._sql[&#34;CREATE_TS_TABLE&#34;])
+            cursor.execute(self._sql[&#34;CREATE_TS_INDEX&#34;])  # On id
+            # Save (commit) the changes
+            conn.commit()
+        finally:
+            cursor.close()
+
+    @overrides
+    def read_grid(self,
+                  customer_id: str = &#39;&#39;,
+                  version: Optional[datetime] = None) -&gt; Grid:
+        &#34;&#34;&#34;
+        Read all haystack data for a specific custimer, from the database and return a Grid.
+        Args:
+            customer_id: The customer_id date to read
+            version: version to load
+        Returns:
+            A grid with all data for a customer
+        &#34;&#34;&#34;
+        if version is None:
+            version = datetime.now().replace(tzinfo=pytz.UTC)
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            sql_type_to_json = self._sql_type_to_json
+
+            cursor.execute(self._sql[&#34;SELECT_META_DATA&#34;],
+                           (version, customer_id))
+            grid = Grid(version=LATEST_VER)
+            row = cursor.fetchone()
+            if row:
+                meta, cols = row
+                grid.metadata = _parse_metadata(sql_type_to_json(meta), LATEST_VER)
+                _parse_cols(grid, sql_type_to_json(cols), LATEST_VER)
+
+            cursor.execute(self._sql[&#34;SELECT_ENTITY&#34;],
+                           (version, customer_id))
+
+            for row in cursor:
+                grid.append(_parse_row(sql_type_to_json(row[0]), LATEST_VER))
+            conn.commit()
+            assert _validate_grid(grid), &#34;Error in grid&#34;
+            return grid
+        finally:
+            cursor.close()
+
+    @overrides
+    def purge_db(self) -&gt; None:
+        &#34;&#34;&#34; Purge the current database.
+        All the datas was removed.
+        &#34;&#34;&#34;
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(self._sql[&#34;PURGE_TABLES_HAYSTACK&#34;])
+            cursor.execute(self._sql[&#34;PURGE_TABLES_HAYSTACK_META&#34;])
+            cursor.execute(self._sql[&#34;PURGE_TABLES_TS&#34;])
+            conn.commit()
+        finally:
+            cursor.close()
+
+    @overrides
+    def update_grid(self,
+                    diff_grid: Grid,
+                    version: Optional[datetime],
+                    customer_id: Optional[str],
+                    now: Optional[datetime] = None) -&gt; None:
+        &#34;&#34;&#34;Import the diff_grid inside the database.
+        Args:
+            diff_grid: The difference to apply in database.
+            version: The version to save.
+            customer_id: The customer id to insert in each row.
+            now: The pseudo &#39;now&#39; datetime.
+        &#34;&#34;&#34;
+
+        if not customer_id:
+            customer_id = &#34;&#34;
+        if now is None:
+            now = datetime.now(tz=pytz.UTC)
+
+        init_grid = self.read_grid(customer_id, version)  # PPR : read partial ?
+        new_grid = init_grid + diff_grid
+
+        end_date = now - timedelta(milliseconds=1)
+        if version is None:
+            version = datetime.now().replace(tzinfo=pytz.UTC)
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            # cursor.execute(self._sql[&#34;SELECT_META_DATA&#34;],
+            #                (version, customer_id))
+
+            # Update metadata ?
+            if new_grid.metadata != init_grid.metadata or new_grid.column != init_grid.column:
+                cursor.execute(self._sql[&#34;CLOSE_META_DATA&#34;],
+                               (
+                                   end_date,
+                                   now,
+                                   customer_id
+                               )
+                               )
+                cursor.execute(self._sql[&#34;UPDATE_META_DATA&#34;],
+                               (
+                                   customer_id,
+                                   now,
+                                   json.dumps(_dump_meta(new_grid.metadata)),
+                                   json.dumps(_dump_columns(new_grid.column))
+                               )
+                               )
+                log.debug(&#34;Update metadatas&#34;)
+
+            for row in diff_grid:  # PPR: use a batch ?
+                assert &#34;id&#34; in row, &#34;Can import only entity with id&#34;
+                sql_id = row[&#34;id&#34;].name
+                cursor.execute(self._sql[&#34;CLOSE_ENTITY&#34;],
+                               (
+                                   end_date,
+                                   now,
+                                   sql_id,
+                                   customer_id
+                               )
+                               )
+                if &#34;remove_&#34; not in row:
+                    cursor.execute(self._sql[&#34;INSERT_ENTITY&#34;],
+                                   (
+                                       sql_id,
+                                       customer_id,
+                                       now,
+                                       json.dumps(_dump_row(new_grid, new_grid[row[&#34;id&#34;]]))
+                                   )
+                                   )
+                    log.debug(&#34;Update record %s in DB&#34;, row[&#39;id&#39;].name)
+                else:
+                    log.debug(&#34;Remove record %s in DB&#34;, row[&#39;id&#39;].name)
+
+            conn.commit()
+        finally:
+            cursor.close()
+
+    def import_data(self,  # pylint: disable=too-many-arguments
+                    source_uri: str,
+                    customer_id: str = &#39;&#39;,
+                    reset: bool = False,
+                    version: Optional[datetime] = None
+                    ) -&gt; None:
+        &#34;&#34;&#34;
+        Import source URI to database.
+        Args:
+                source_uri: The source URI.
+                import_time_series: True to import the time-series references via `hisURI` tag
+                reset: Remove all the current data before import the grid.
+                version: The associated version time.
+        &#34;&#34;&#34;
+        if not version:
+            version = datetime.now(tz=pytz.UTC)
+        try:
+            if not customer_id:
+                customer_id = self.get_customer_id()
+            if reset:
+                self.purge_db()
+            self.create_db()
+            original_grid = self.read_grid(customer_id, version)
+            target_grid = read_grid_from_uri(source_uri, envs=self._envs)
+            self.update_grid(target_grid - original_grid, version, customer_id)
+            log.debug(&#34;%s imported&#34;, source_uri)
+
+        except ModuleNotFoundError as ex:
+            log.error(&#34;Call `pip install` &#34;
+                      &#34;with the database driver - %s&#34;, ex.msg)  # type: ignore[attribute-error]
+
+    @overrides
+    def import_ts(self,
+                  source_uri: str,
+                  customer_id: str = &#39;&#39;,
+                  version: Optional[datetime] = None
+                  ):
+        target_grid = read_grid_from_uri(source_uri, envs=self._envs)
+        dir_name = dirname(source_uri)
+        for row in target_grid:
+            if &#34;hisURI&#34; in row:
+                assert &#34;id&#34; in row, &#34;TS must have an id&#34;
+                uri = dir_name + &#39;/&#39; + row[&#39;hisURI&#39;]
+                ts_grid = read_grid_from_uri(uri, envs=self._envs)
+                self._import_ts_in_db(ts_grid, row[&#34;id&#34;], customer_id)
+                log.debug(&#34;%s imported&#34;, uri)
+
+    def _import_ts_in_db(self,
+                         time_series: Grid,
+                         entity_id: Ref,
+                         customer_id: Optional[str],
+                         now: Optional[datetime] = None
+                         ) -&gt; None:
+        &#34;&#34;&#34;
+        Import the Time series inside the database.
+
+        Args:
+            time_series: The time-serie grid.
+            entity_id: The corresponding entity.
+            customer_id: The current customer id.
+            now: The pseudo &#39;now&#39; datetime.
+        &#34;&#34;&#34;
+        assert &#39;ts&#39; in time_series.column, &#34;TS must have a column &#39;ts&#39;&#34;
+        if not customer_id:
+            customer_id = &#34;&#34;
+        conn = self.get_connect()
+        begin_datetime = time_series.metadata.get(&#34;hisStart&#34;)
+        end_datetime = time_series.metadata.get(&#34;hisStart&#34;)
+        if time_series and not begin_datetime:
+            begin_datetime = time_series[0][&#39;ts&#39;]
+        if time_series and not end_datetime:
+            end_datetime = time_series[-1][&#39;ts&#39;]
+        if not begin_datetime:
+            begin_datetime = datetime.min
+        if not end_datetime:
+            end_datetime = datetime.max
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        datetime_tz_to_field = self._sql[&#34;datetime_tz_to_field&#34;]
+        # Clean only the period
+        cursor.execute(self._sql[&#34;CLEAN_TS&#34;],
+                       (
+                           customer_id,
+                           entity_id.name,
+                           datetime_tz_to_field(begin_datetime),
+                           datetime_tz_to_field(end_datetime)
+                       )
+                       )
+
+        # Add add new values
+        cursor.executemany(self._sql[&#34;INSERT_TS&#34;],
+                           [(entity_id.name,
+                             customer_id,
+                             datetime_tz_to_field(row[&#39;ts&#39;]),
+                             dump_scalar(row[&#39;val&#39;])) for row in time_series]
+                           )
+        cursor.close()
+        conn.commit()</code></pre>
+            </details>
+        </section>
+        <section>
+        </section>
+        <section>
+        </section>
+        <section>
+        </section>
+        <section>
+            <h2 class="section-title" id="header-classes">Classes</h2>
+            <dl>
+                <dt id="shaystack.providers.sql.Provider"><code class="flex name class">
+                    <span>class <span class="ident">Provider</span></span>
+                    <span>(</span><span>envs: Dict[str, str])</span>
+                </code></dt>
+                <dd>
+                    <div class="desc"><p>Expose an Haystack data via the Haystack Rest API and SQL databases</p></div>
+                    <details class="source">
+                        <summary>
+                            <span>Expand source code</span>
+                        </summary>
+                        <pre><code class="python">class Provider(DBHaystackInterface):
+    &#34;&#34;&#34;
+    Expose an Haystack data via the Haystack Rest API and SQL databases
+    &#34;&#34;&#34;
+
+    @property
+    def name(self) -&gt; str:
+        return &#34;SQL&#34;
+
+    def __init__(self, envs: Dict[str, str]):
+        DBHaystackInterface.__init__(self, envs)
+        self._connect = None
+        log.info(&#34;Use %s&#34;, self._get_db())
+        self._parsed_db = urlparse(self._get_db())
+        # Import DB driver compatible with DB-API2 (PEP-0249)
+        self._dialect = None
+        self._default_driver = _default_driver
+        self.database, self._dialect, self._parsed_db = \
+            _import_db_driver(self._parsed_db,
+                              self._default_driver)
+        self._sql = self._dialect_request(self._dialect)
+        self._sql_type_to_json = self._sql[&#34;sql_type_to_json&#34;]
+
+    def _get_db(self) -&gt; str:  # pylint: disable=no-self-use
+        &#34;&#34;&#34; Return the url to the file to expose. &#34;&#34;&#34;
+        return self._envs[&#34;HAYSTACK_DB&#34;]
+
+    @overrides
+    def values_for_tag(self, tag: str,
+                       date_version: Optional[datetime] = None) -&gt; List[Any]:
+        customer_id = self.get_customer_id()
+        distinct = self._sql.get(&#34;DISTINCT_TAG_VALUES&#34;)
+        if distinct is None:
+            raise NotImplementedError(&#34;Not implemented&#34;)
+        conn = self.get_connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(re.sub(r&#34;\[#]&#34;, tag, distinct),
+                           (customer_id,))
+            result = cursor.fetchall()
+            conn.commit()
+            return sorted([parse_scalar(x[0]) for x in result if x[0] is not None])
+        finally:
+            cursor.close()
+
+    @overrides
+    def versions(self) -&gt; List[datetime]:
+        &#34;&#34;&#34;
+        Return datetime for each versions or empty array if is unknown
+        &#34;&#34;&#34;
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            customer_id = self.get_customer_id()
+            cursor.execute(self._sql[&#34;DISTINCT_VERSION&#34;], (customer_id,))
+            result = cursor.fetchall()
+            conn.commit()
+            if result and isinstance(result[0][0], str):
+                return [datetime.strptime(x[0], &#34;%Y-%m-%d %H:%M:%S&#34;).replace(tzinfo=pytz.utc) for x in result]
+            return [x[0] for x in result]
+        finally:
+            cursor.close()
+
+    @overrides
+    def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
+        &#34;&#34;&#34; Implement the Haystack &#39;about&#39; operation &#34;&#34;&#34;
+        grid = super().about(home)
+        about_data = cast(Entity, grid[0])
+        about_data.update(
+            {  # pylint: disable=no-member
+                &#34;productVersion&#34;: &#34;1.0&#34;,
+                &#34;moduleName&#34;: &#34;SQLProvider&#34;,
+                &#34;moduleVersion&#34;: &#34;1.0&#34;,
+            }
+        )
+        return grid
+
+    @overrides
+    def read(
+            self,
+            limit: int,
+            select: Optional[str],
+            entity_ids: Optional[List[Ref]] = None,
+            grid_filter: Optional[str] = None,
+            date_version: Optional[datetime] = None,
+    ) -&gt; Grid:
+        &#34;&#34;&#34; Implement Haystack &#39;read&#39; &#34;&#34;&#34;
+        log.debug(
+            &#34;----&gt; Call read(limit=%s, select=&#39;%s&#39;, ids=%s grid_filter=&#39;%s&#39; date_version=%s)&#34;,
+            repr(limit),
+            repr(select),
+            repr(entity_ids),
+            repr(grid_filter),
+            repr(date_version),
+        )
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            sql_type_to_json = self._sql_type_to_json
+            if date_version is None:
+                date_version = datetime.now().replace(tzinfo=pytz.UTC)
+            exec_sql_filter: Callable = self._sql[&#34;exec_sql_filter&#34;]
+            if entity_ids is None:
+                cursor = exec_sql_filter(self._sql,
+                                         cursor,
+                                         self._parsed_db.fragment,
+                                         grid_filter,
+                                         date_version,
+                                         limit,
+                                         self.get_customer_id(),
+                                         )
+                grid = self._init_grid_from_db(date_version)
+                for row in cursor:
+                    grid.append(_parse_row(sql_type_to_json(row[0]), LATEST_VER))
+                conn.commit()
+                return grid.select(select)
+            customer_id = self.get_customer_id()
+            sql_ids = &#34;(&#39;&#34; + &#34;&#39;,&#39;&#34;.join([entity_id.name
+                                         for entity_id in entity_ids]) + &#34;&#39;)&#34;
+            cursor.execute(self._sql[&#34;SELECT_ENTITY_WITH_ID&#34;] + sql_ids,
+                           (date_version, customer_id))
+
+            grid = self._init_grid_from_db(date_version)
+            for row in cursor:
+                grid.append(_parse_row(sql_type_to_json(row[0]), LATEST_VER))
+            conn.commit()
+            return grid.select(select)
+        finally:
+            cursor.close()
+
+    @overrides
+    def his_read(
+            self,
+            entity_id: Ref,
+            dates_range: Optional[Tuple[datetime, datetime]] = None,
+            date_version: Optional[datetime] = None,
+    ) -&gt; Grid:
+        &#34;&#34;&#34; Implement Haystack &#39;hisRead&#39; &#34;&#34;&#34;
+        log.debug(
+            &#34;----&gt; Call his_read(id=%s , range=%s, &#34; &#34;date_version=%s)&#34;,
+            repr(entity_id),
+            repr(dates_range),
+            repr(date_version),
+        )
+        conn = self.get_connect()
+        cursor = conn.cursor()
+        customer_id = self.get_customer_id()
+        history = Grid(columns=[&#34;ts&#34;, &#34;val&#34;])
+        field_to_datetime_tz = self._sql[&#34;field_to_datetime_tz&#34;]
+        try:
+            if not date_version:
+                date_version = datetime.max.replace(tzinfo=pytz.UTC)
+            if dates_range[1] &gt; date_version:
+                dates_range = list(dates_range)
+                dates_range[1] = date_version
+
+            cursor.execute(self._sql[&#34;SELECT_TS&#34;], (customer_id, entity_id.name,
+                                                    dates_range[0], dates_range[1]))
+            for row in cursor:
+                history.append(
+                    {
+                        &#34;ts&#34;: field_to_datetime_tz(row[0]),
+                        &#34;val&#34;: parse_scalar(row[1])
+                    }
+                )
+            if not history:
+                raise HaystackException(f&#34;id &#39;{entity_id}&#39; not found&#34;)
+            min_date = datetime.max.replace(tzinfo=pytz.UTC)
+            max_date = datetime.min.replace(tzinfo=pytz.UTC)
+
+            for time_serie in history:
+                min_date = min(min_date, time_serie[&#34;ts&#34;])
+                max_date = max(max_date, time_serie[&#34;ts&#34;])
+
+            history.metadata = {
+                &#34;id&#34;: entity_id,
+                &#34;hisStart&#34;: min_date,
+                &#34;hisEnd&#34;: max_date,
+            }
+            return history
+
+        finally:
+            cursor.close()
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        conn = self.get_connect()
+        conn.close()
+        self._connect = False
+
+    def get_connect(self) -&gt; DBConnection:  # PPR: monothread ? No with Zappa
+        &#34;&#34;&#34; Return current connection to database. &#34;&#34;&#34;
+        if not self._connect and self._dialect:  # Lazy connection
+            if self._dialect not in self._default_driver:
+                raise ValueError(f&#34;Dialect &#39;{self._dialect}&#39; not supported&#34;)
+            try:
+                port = self._parsed_db.port  # To manage sqlite in memory
+            except ValueError:
+                port = 0
+            password = self._parsed_db.password
+            if _BOTO3_AVAILABLE and self._parsed_db.username and \
+                    password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):
+                password = get_secret_manager_secret(password[1:-1], self._envs)
+            params = {
+                &#34;host&#34;: self._parsed_db.hostname,
+                &#34;port&#34;: port,
+                &#34;user&#34;: self._parsed_db.username,
+                &#34;passwd&#34;: password,
+                &#34;password&#34;: password,
+                &#34;db&#34;: self._parsed_db.path[1:],
+                &#34;database&#34;: self._parsed_db.path[1:],
+                &#34;dbname&#34;: self._parsed_db.path[1:],
+            }
+            _, keys = self._default_driver[self._dialect]
+            filtered = {key: val for key, val in params.items() if key in keys}
+            connect: DBConnection = self.database.connect(**filtered)
+            self._connect = connect
+            self.create_db()
+        if not self._connect:
+            raise ValueError(&#34;Impossible to use the database url&#34;)
+        return self._connect
+
+    def _init_grid_from_db(self, version: Optional[datetime]) -&gt; Grid:
+        customer = self.get_customer_id()
+        if version is None:
+            version = datetime.max.replace(tzinfo=pytz.UTC, microsecond=0)
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            sql_type_to_json = self._sql_type_to_json
+            cursor.execute(self._sql[&#34;SELECT_META_DATA&#34;],
+                           (version, customer))
+            grid = Grid(version=LATEST_VER)
+            row = cursor.fetchone()
+            if row:
+                meta, cols = row
+                grid.metadata = _parse_metadata(sql_type_to_json(meta), LATEST_VER)
+                _parse_cols(grid, sql_type_to_json(cols), LATEST_VER)
+            conn.commit()
+            return grid
+        finally:
+            cursor.close()
+
+    def _dialect_request(self, dialect: str) -&gt; Dict[str, Any]:
+        table_name = self._parsed_db.fragment
+        if dialect == &#34;sqlite3&#34;:
+            # Lazy import
+            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
+            return get_sqlite_parameters(table_name)
+        if dialect == &#34;supersqlite&#34;:
+            from .db_sqlite import get_db_parameters as get_sqlite_parameters  # pylint: disable=import-outside-toplevel
+            return get_sqlite_parameters(table_name)
+        if dialect == &#34;postgresql&#34;:
+            from .db_postgres import \
+                get_db_parameters as get_postgres_parameters  # pylint: disable=import-outside-toplevel
+            return get_postgres_parameters(table_name)
+        raise ValueError(&#34;Dialog not implemented&#34;)
+
+    # -----------------------------------------
+    @overrides
+    def create_db(self) -&gt; None:
+        &#34;&#34;&#34;
+        Create the database and schema.
+        &#34;&#34;&#34;
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            # Create table
+            cursor.execute(self._sql[&#34;CREATE_HAYSTACK_TABLE&#34;])
+            # Create index
+            cursor.execute(self._sql[&#34;CREATE_HAYSTACK_INDEX_1&#34;])  # On id
+            cursor.execute(self._sql[&#34;CREATE_HAYSTACK_INDEX_2&#34;])  # On Json, for @&gt; operator
+            # Create table
+            cursor.execute(self._sql[&#34;CREATE_METADATA_TABLE&#34;])
+            # Create ts table
+            cursor.execute(self._sql[&#34;CREATE_TS_TABLE&#34;])
+            cursor.execute(self._sql[&#34;CREATE_TS_INDEX&#34;])  # On id
+            # Save (commit) the changes
+            conn.commit()
+        finally:
+            cursor.close()
+
+    @overrides
+    def read_grid(self,
+                  customer_id: str = &#39;&#39;,
+                  version: Optional[datetime] = None) -&gt; Grid:
+        &#34;&#34;&#34;
+        Read all haystack data for a specific custimer, from the database and return a Grid.
+        Args:
+            customer_id: The customer_id date to read
+            version: version to load
+        Returns:
+            A grid with all data for a customer
+        &#34;&#34;&#34;
+        if version is None:
+            version = datetime.now().replace(tzinfo=pytz.UTC)
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            sql_type_to_json = self._sql_type_to_json
+
+            cursor.execute(self._sql[&#34;SELECT_META_DATA&#34;],
+                           (version, customer_id))
+            grid = Grid(version=LATEST_VER)
+            row = cursor.fetchone()
+            if row:
+                meta, cols = row
+                grid.metadata = _parse_metadata(sql_type_to_json(meta), LATEST_VER)
+                _parse_cols(grid, sql_type_to_json(cols), LATEST_VER)
+
+            cursor.execute(self._sql[&#34;SELECT_ENTITY&#34;],
+                           (version, customer_id))
+
+            for row in cursor:
+                grid.append(_parse_row(sql_type_to_json(row[0]), LATEST_VER))
+            conn.commit()
+            assert _validate_grid(grid), &#34;Error in grid&#34;
+            return grid
+        finally:
+            cursor.close()
+
+    @overrides
+    def purge_db(self) -&gt; None:
+        &#34;&#34;&#34; Purge the current database.
+        All the datas was removed.
+        &#34;&#34;&#34;
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(self._sql[&#34;PURGE_TABLES_HAYSTACK&#34;])
+            cursor.execute(self._sql[&#34;PURGE_TABLES_HAYSTACK_META&#34;])
+            cursor.execute(self._sql[&#34;PURGE_TABLES_TS&#34;])
+            conn.commit()
+        finally:
+            cursor.close()
+
+    @overrides
+    def update_grid(self,
+                    diff_grid: Grid,
+                    version: Optional[datetime],
+                    customer_id: Optional[str],
+                    now: Optional[datetime] = None) -&gt; None:
+        &#34;&#34;&#34;Import the diff_grid inside the database.
+        Args:
+            diff_grid: The difference to apply in database.
+            version: The version to save.
+            customer_id: The customer id to insert in each row.
+            now: The pseudo &#39;now&#39; datetime.
+        &#34;&#34;&#34;
+
+        if not customer_id:
+            customer_id = &#34;&#34;
+        if now is None:
+            now = datetime.now(tz=pytz.UTC)
+
+        init_grid = self.read_grid(customer_id, version)  # PPR : read partial ?
+        new_grid = init_grid + diff_grid
+
+        end_date = now - timedelta(milliseconds=1)
+        if version is None:
+            version = datetime.now().replace(tzinfo=pytz.UTC)
+        conn = self.get_connect()
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        try:
+            # cursor.execute(self._sql[&#34;SELECT_META_DATA&#34;],
+            #                (version, customer_id))
+
+            # Update metadata ?
+            if new_grid.metadata != init_grid.metadata or new_grid.column != init_grid.column:
+                cursor.execute(self._sql[&#34;CLOSE_META_DATA&#34;],
+                               (
+                                   end_date,
+                                   now,
+                                   customer_id
+                               )
+                               )
+                cursor.execute(self._sql[&#34;UPDATE_META_DATA&#34;],
+                               (
+                                   customer_id,
+                                   now,
+                                   json.dumps(_dump_meta(new_grid.metadata)),
+                                   json.dumps(_dump_columns(new_grid.column))
+                               )
+                               )
+                log.debug(&#34;Update metadatas&#34;)
+
+            for row in diff_grid:  # PPR: use a batch ?
+                assert &#34;id&#34; in row, &#34;Can import only entity with id&#34;
+                sql_id = row[&#34;id&#34;].name
+                cursor.execute(self._sql[&#34;CLOSE_ENTITY&#34;],
+                               (
+                                   end_date,
+                                   now,
+                                   sql_id,
+                                   customer_id
+                               )
+                               )
+                if &#34;remove_&#34; not in row:
+                    cursor.execute(self._sql[&#34;INSERT_ENTITY&#34;],
+                                   (
+                                       sql_id,
+                                       customer_id,
+                                       now,
+                                       json.dumps(_dump_row(new_grid, new_grid[row[&#34;id&#34;]]))
+                                   )
+                                   )
+                    log.debug(&#34;Update record %s in DB&#34;, row[&#39;id&#39;].name)
+                else:
+                    log.debug(&#34;Remove record %s in DB&#34;, row[&#39;id&#39;].name)
+
+            conn.commit()
+        finally:
+            cursor.close()
+
+    def import_data(self,  # pylint: disable=too-many-arguments
+                    source_uri: str,
+                    customer_id: str = &#39;&#39;,
+                    reset: bool = False,
+                    version: Optional[datetime] = None
+                    ) -&gt; None:
+        &#34;&#34;&#34;
+        Import source URI to database.
+        Args:
+                source_uri: The source URI.
+                import_time_series: True to import the time-series references via `hisURI` tag
+                reset: Remove all the current data before import the grid.
+                version: The associated version time.
+        &#34;&#34;&#34;
+        if not version:
+            version = datetime.now(tz=pytz.UTC)
+        try:
+            if not customer_id:
+                customer_id = self.get_customer_id()
+            if reset:
+                self.purge_db()
+            self.create_db()
+            original_grid = self.read_grid(customer_id, version)
+            target_grid = read_grid_from_uri(source_uri, envs=self._envs)
+            self.update_grid(target_grid - original_grid, version, customer_id)
+            log.debug(&#34;%s imported&#34;, source_uri)
+
+        except ModuleNotFoundError as ex:
+            log.error(&#34;Call `pip install` &#34;
+                      &#34;with the database driver - %s&#34;, ex.msg)  # type: ignore[attribute-error]
+
+    @overrides
+    def import_ts(self,
+                  source_uri: str,
+                  customer_id: str = &#39;&#39;,
+                  version: Optional[datetime] = None
+                  ):
+        target_grid = read_grid_from_uri(source_uri, envs=self._envs)
+        dir_name = dirname(source_uri)
+        for row in target_grid:
+            if &#34;hisURI&#34; in row:
+                assert &#34;id&#34; in row, &#34;TS must have an id&#34;
+                uri = dir_name + &#39;/&#39; + row[&#39;hisURI&#39;]
+                ts_grid = read_grid_from_uri(uri, envs=self._envs)
+                self._import_ts_in_db(ts_grid, row[&#34;id&#34;], customer_id)
+                log.debug(&#34;%s imported&#34;, uri)
+
+    def _import_ts_in_db(self,
+                         time_series: Grid,
+                         entity_id: Ref,
+                         customer_id: Optional[str],
+                         now: Optional[datetime] = None
+                         ) -&gt; None:
+        &#34;&#34;&#34;
+        Import the Time series inside the database.
+
+        Args:
+            time_series: The time-serie grid.
+            entity_id: The corresponding entity.
+            customer_id: The current customer id.
+            now: The pseudo &#39;now&#39; datetime.
+        &#34;&#34;&#34;
+        assert &#39;ts&#39; in time_series.column, &#34;TS must have a column &#39;ts&#39;&#34;
+        if not customer_id:
+            customer_id = &#34;&#34;
+        conn = self.get_connect()
+        begin_datetime = time_series.metadata.get(&#34;hisStart&#34;)
+        end_datetime = time_series.metadata.get(&#34;hisStart&#34;)
+        if time_series and not begin_datetime:
+            begin_datetime = time_series[0][&#39;ts&#39;]
+        if time_series and not end_datetime:
+            end_datetime = time_series[-1][&#39;ts&#39;]
+        if not begin_datetime:
+            begin_datetime = datetime.min
+        if not end_datetime:
+            end_datetime = datetime.max
+        # with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        datetime_tz_to_field = self._sql[&#34;datetime_tz_to_field&#34;]
+        # Clean only the period
+        cursor.execute(self._sql[&#34;CLEAN_TS&#34;],
+                       (
+                           customer_id,
+                           entity_id.name,
+                           datetime_tz_to_field(begin_datetime),
+                           datetime_tz_to_field(end_datetime)
+                       )
+                       )
+
+        # Add add new values
+        cursor.executemany(self._sql[&#34;INSERT_TS&#34;],
+                           [(entity_id.name,
+                             customer_id,
+                             datetime_tz_to_field(row[&#39;ts&#39;]),
+                             dump_scalar(row[&#39;val&#39;])) for row in time_series]
+                           )
+        cursor.close()
+        conn.commit()</code></pre>
+                    </details>
+                    <h3>Ancestors</h3>
+                    <ul class="hlist">
+                        <li>
+                            <a href="db_haystack_interface.html#shaystack.providers.db_haystack_interface.DBHaystackInterface"
+                               title="shaystack.providers.db_haystack_interface.DBHaystackInterface">DBHaystackInterface</a>
+                        </li>
+                        <li><a href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface"
+                               title="shaystack.providers.haystack_interface.HaystackInterface">HaystackInterface</a>
+                        </li>
+                        <li>abc.ABC</li>
+                    </ul>
+                    <h3>Methods</h3>
+                    <dl>
+                        <dt id="shaystack.providers.sql.Provider.about"><code class="name flex">
+                            <span>def <span class="ident">about</span></span>(<span>self, home: str) ‑> shaystack.grid.Grid</span>
+                        </code></dt>
+                        <dd>
+                            <div class="desc"><p>Implement the Haystack 'about' operation</p></div>
+                            <details class="source">
+                                <summary>
+                                    <span>Expand source code</span>
+                                </summary>
+                                <pre><code class="python">@overrides
+def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
+    &#34;&#34;&#34; Implement the Haystack &#39;about&#39; operation &#34;&#34;&#34;
+    grid = super().about(home)
+    about_data = cast(Entity, grid[0])
+    about_data.update(
+        {  # pylint: disable=no-member
+            &#34;productVersion&#34;: &#34;1.0&#34;,
+            &#34;moduleName&#34;: &#34;SQLProvider&#34;,
+            &#34;moduleVersion&#34;: &#34;1.0&#34;,
+        }
+    )
+    return grid</code></pre>
+                            </details>
+                        </dd>
+                        <dt id="shaystack.providers.sql.Provider.get_connect"><code class="name flex">
+                            <span>def <span class="ident">get_connect</span></span>(<span>self) ‑> shaystack.providers.sqldb_protocol.DBConnection</span>
+                        </code></dt>
+                        <dd>
+                            <div class="desc"><p>Return current connection to database.</p></div>
+                            <details class="source">
+                                <summary>
+                                    <span>Expand source code</span>
+                                </summary>
+                                <pre><code class="python">def get_connect(self) -&gt; DBConnection:  # PPR: monothread ? No with Zappa
+    &#34;&#34;&#34; Return current connection to database. &#34;&#34;&#34;
+    if not self._connect and self._dialect:  # Lazy connection
+        if self._dialect not in self._default_driver:
+            raise ValueError(f&#34;Dialect &#39;{self._dialect}&#39; not supported&#34;)
+        try:
+            port = self._parsed_db.port  # To manage sqlite in memory
+        except ValueError:
+            port = 0
+        password = self._parsed_db.password
+        if _BOTO3_AVAILABLE and self._parsed_db.username and \
+                password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):
+            password = get_secret_manager_secret(password[1:-1], self._envs)
+        params = {
+            &#34;host&#34;: self._parsed_db.hostname,
+            &#34;port&#34;: port,
+            &#34;user&#34;: self._parsed_db.username,
+            &#34;passwd&#34;: password,
+            &#34;password&#34;: password,
+            &#34;db&#34;: self._parsed_db.path[1:],
+            &#34;database&#34;: self._parsed_db.path[1:],
+            &#34;dbname&#34;: self._parsed_db.path[1:],
+        }
+        _, keys = self._default_driver[self._dialect]
+        filtered = {key: val for key, val in params.items() if key in keys}
+        connect: DBConnection = self.database.connect(**filtered)
+        self._connect = connect
+        self.create_db()
+    if not self._connect:
+        raise ValueError(&#34;Impossible to use the database url&#34;)
+    return self._connect</code></pre>
+                            </details>
+                        </dd>
+                        <dt id="shaystack.providers.sql.Provider.his_read"><code class="name flex">
+                            <span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Union[Tuple[datetime.datetime, datetime.datetime], NoneType] = None, date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+                        </code></dt>
+                        <dd>
+                            <div class="desc"><p>Implement Haystack 'hisRead'</p></div>
+                            <details class="source">
+                                <summary>
+                                    <span>Expand source code</span>
+                                </summary>
+                                <pre><code class="python">@overrides
+def his_read(
+        self,
+        entity_id: Ref,
+        dates_range: Optional[Tuple[datetime, datetime]] = None,
+        date_version: Optional[datetime] = None,
+) -&gt; Grid:
+    &#34;&#34;&#34; Implement Haystack &#39;hisRead&#39; &#34;&#34;&#34;
+    log.debug(
+        &#34;----&gt; Call his_read(id=%s , range=%s, &#34; &#34;date_version=%s)&#34;,
+        repr(entity_id),
+        repr(dates_range),
+        repr(date_version),
+    )
+    conn = self.get_connect()
+    cursor = conn.cursor()
+    customer_id = self.get_customer_id()
+    history = Grid(columns=[&#34;ts&#34;, &#34;val&#34;])
+    field_to_datetime_tz = self._sql[&#34;field_to_datetime_tz&#34;]
+    try:
+        if not date_version:
+            date_version = datetime.max.replace(tzinfo=pytz.UTC)
+        if dates_range[1] &gt; date_version:
+            dates_range = list(dates_range)
+            dates_range[1] = date_version
+
+        cursor.execute(self._sql[&#34;SELECT_TS&#34;], (customer_id, entity_id.name,
+                                                dates_range[0], dates_range[1]))
+        for row in cursor:
+            history.append(
+                {
+                    &#34;ts&#34;: field_to_datetime_tz(row[0]),
+                    &#34;val&#34;: parse_scalar(row[1])
+                }
+            )
+        if not history:
+            raise HaystackException(f&#34;id &#39;{entity_id}&#39; not found&#34;)
+        min_date = datetime.max.replace(tzinfo=pytz.UTC)
+        max_date = datetime.min.replace(tzinfo=pytz.UTC)
+
+        for time_serie in history:
+            min_date = min(min_date, time_serie[&#34;ts&#34;])
+            max_date = max(max_date, time_serie[&#34;ts&#34;])
+
+        history.metadata = {
+            &#34;id&#34;: entity_id,
+            &#34;hisStart&#34;: min_date,
+            &#34;hisEnd&#34;: max_date,
+        }
+        return history
+
+    finally:
+        cursor.close()</code></pre>
+                            </details>
+                        </dd>
+                        <dt id="shaystack.providers.sql.Provider.import_data"><code class="name flex">
+                            <span>def <span class="ident">import_data</span></span>(<span>self, source_uri: str, customer_id: str = '', reset: bool = False, version: Union[datetime.datetime, NoneType] = None) ‑> NoneType</span>
+                        </code></dt>
+                        <dd>
+                            <div class="desc"><p>Import source URI to database.</p>
+                                <h2 id="args">Args</h2>
+                                <dl>
+                                    <dt><strong><code>source_uri</code></strong></dt>
+                                    <dd>The source URI.</dd>
+                                    <dt><strong><code>import_time_series</code></strong></dt>
+                                    <dd>True to import the time-series references via <code>hisURI</code> tag</dd>
+                                    <dt><strong><code>reset</code></strong></dt>
+                                    <dd>Remove all the current data before import the grid.</dd>
+                                    <dt><strong><code>version</code></strong></dt>
+                                    <dd>The associated version time.</dd>
+                                </dl>
+                            </div>
+                            <details class="source">
+                                <summary>
+                                    <span>Expand source code</span>
+                                </summary>
+                                <pre><code class="python">def import_data(self,  # pylint: disable=too-many-arguments
+                source_uri: str,
+                customer_id: str = &#39;&#39;,
+                reset: bool = False,
+                version: Optional[datetime] = None
+                ) -&gt; None:
+    &#34;&#34;&#34;
+    Import source URI to database.
+    Args:
+            source_uri: The source URI.
+            import_time_series: True to import the time-series references via `hisURI` tag
+            reset: Remove all the current data before import the grid.
+            version: The associated version time.
+    &#34;&#34;&#34;
+    if not version:
+        version = datetime.now(tz=pytz.UTC)
+    try:
+        if not customer_id:
+            customer_id = self.get_customer_id()
+        if reset:
+            self.purge_db()
+        self.create_db()
+        original_grid = self.read_grid(customer_id, version)
+        target_grid = read_grid_from_uri(source_uri, envs=self._envs)
+        self.update_grid(target_grid - original_grid, version, customer_id)
+        log.debug(&#34;%s imported&#34;, source_uri)
+
+    except ModuleNotFoundError as ex:
+        log.error(&#34;Call `pip install` &#34;
+                  &#34;with the database driver - %s&#34;, ex.msg)  # type: ignore[attribute-error]</code></pre>
+                            </details>
+                        </dd>
+                        <dt id="shaystack.providers.sql.Provider.purge_db"><code class="name flex">
+                            <span>def <span class="ident">purge_db</span></span>(<span>self) ‑> NoneType</span>
+                        </code></dt>
+                        <dd>
+                            <div class="desc"><p>Purge the current database.
+                                All the datas was removed.</p></div>
+                            <details class="source">
+                                <summary>
+                                    <span>Expand source code</span>
+                                </summary>
+                                <pre><code class="python">@overrides
+def purge_db(self) -&gt; None:
+    &#34;&#34;&#34; Purge the current database.
+    All the datas was removed.
+    &#34;&#34;&#34;
+    conn = self.get_connect()
+    # with conn.cursor() as cursor:
+    cursor = conn.cursor()
+    try:
+        cursor.execute(self._sql[&#34;PURGE_TABLES_HAYSTACK&#34;])
+        cursor.execute(self._sql[&#34;PURGE_TABLES_HAYSTACK_META&#34;])
+        cursor.execute(self._sql[&#34;PURGE_TABLES_TS&#34;])
+        conn.commit()
+    finally:
+        cursor.close()</code></pre>
+                            </details>
+                        </dd>
+                        <dt id="shaystack.providers.sql.Provider.read"><code class="name flex">
+                            <span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Union[str, NoneType], entity_ids: Union[List[shaystack.datatypes.Ref], NoneType] = None, grid_filter: Union[str, NoneType] = None, date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+                        </code></dt>
+                        <dd>
+                            <div class="desc"><p>Implement Haystack 'read'</p></div>
+                            <details class="source">
+                                <summary>
+                                    <span>Expand source code</span>
+                                </summary>
+                                <pre><code class="python">@overrides
+def read(
+        self,
+        limit: int,
+        select: Optional[str],
+        entity_ids: Optional[List[Ref]] = None,
+        grid_filter: Optional[str] = None,
+        date_version: Optional[datetime] = None,
+) -&gt; Grid:
+    &#34;&#34;&#34; Implement Haystack &#39;read&#39; &#34;&#34;&#34;
+    log.debug(
+        &#34;----&gt; Call read(limit=%s, select=&#39;%s&#39;, ids=%s grid_filter=&#39;%s&#39; date_version=%s)&#34;,
+        repr(limit),
+        repr(select),
+        repr(entity_ids),
+        repr(grid_filter),
+        repr(date_version),
+    )
+    conn = self.get_connect()
+    # with conn.cursor() as cursor:
+    cursor = conn.cursor()
+    try:
+        sql_type_to_json = self._sql_type_to_json
+        if date_version is None:
+            date_version = datetime.now().replace(tzinfo=pytz.UTC)
+        exec_sql_filter: Callable = self._sql[&#34;exec_sql_filter&#34;]
+        if entity_ids is None:
+            cursor = exec_sql_filter(self._sql,
+                                     cursor,
+                                     self._parsed_db.fragment,
+                                     grid_filter,
+                                     date_version,
+                                     limit,
+                                     self.get_customer_id(),
+                                     )
+            grid = self._init_grid_from_db(date_version)
+            for row in cursor:
+                grid.append(_parse_row(sql_type_to_json(row[0]), LATEST_VER))
+            conn.commit()
+            return grid.select(select)
+        customer_id = self.get_customer_id()
+        sql_ids = &#34;(&#39;&#34; + &#34;&#39;,&#39;&#34;.join([entity_id.name
+                                     for entity_id in entity_ids]) + &#34;&#39;)&#34;
+        cursor.execute(self._sql[&#34;SELECT_ENTITY_WITH_ID&#34;] + sql_ids,
+                       (date_version, customer_id))
+
+        grid = self._init_grid_from_db(date_version)
+        for row in cursor:
+            grid.append(_parse_row(sql_type_to_json(row[0]), LATEST_VER))
+        conn.commit()
+        return grid.select(select)
+    finally:
+        cursor.close()</code></pre>
+                            </details>
+                        </dd>
+                        <dt id="shaystack.providers.sql.Provider.read_grid"><code class="name flex">
+                            <span>def <span class="ident">read_grid</span></span>(<span>self, customer_id: str = '', version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+                        </code></dt>
+                        <dd>
+                            <div class="desc"><p>Read all haystack data for a specific custimer, from the database and
+                                return a Grid.</p>
+                                <h2 id="args">Args</h2>
+                                <dl>
+                                    <dt><strong><code>customer_id</code></strong></dt>
+                                    <dd>The customer_id date to read</dd>
+                                    <dt><strong><code>version</code></strong></dt>
+                                    <dd>version to load</dd>
+                                </dl>
+                                <h2 id="returns">Returns</h2>
+                                <p>A grid with all data for a customer</p></div>
+                            <details class="source">
+                                <summary>
+                                    <span>Expand source code</span>
+                                </summary>
+                                <pre><code class="python">@overrides
+def read_grid(self,
+              customer_id: str = &#39;&#39;,
+              version: Optional[datetime] = None) -&gt; Grid:
+    &#34;&#34;&#34;
+    Read all haystack data for a specific custimer, from the database and return a Grid.
+    Args:
+        customer_id: The customer_id date to read
+        version: version to load
+    Returns:
+        A grid with all data for a customer
+    &#34;&#34;&#34;
+    if version is None:
+        version = datetime.now().replace(tzinfo=pytz.UTC)
+    conn = self.get_connect()
+    # with conn.cursor() as cursor:
+    cursor = conn.cursor()
+    try:
+        sql_type_to_json = self._sql_type_to_json
+
+        cursor.execute(self._sql[&#34;SELECT_META_DATA&#34;],
+                       (version, customer_id))
+        grid = Grid(version=LATEST_VER)
+        row = cursor.fetchone()
+        if row:
+            meta, cols = row
+            grid.metadata = _parse_metadata(sql_type_to_json(meta), LATEST_VER)
+            _parse_cols(grid, sql_type_to_json(cols), LATEST_VER)
+
+        cursor.execute(self._sql[&#34;SELECT_ENTITY&#34;],
+                       (version, customer_id))
+
+        for row in cursor:
+            grid.append(_parse_row(sql_type_to_json(row[0]), LATEST_VER))
+        conn.commit()
+        assert _validate_grid(grid), &#34;Error in grid&#34;
+        return grid
+    finally:
+        cursor.close()</code></pre>
+                            </details>
+                        </dd>
+                        <dt id="shaystack.providers.sql.Provider.versions"><code class="name flex">
+                            <span>def <span
+                                    class="ident">versions</span></span>(<span>self) ‑> List[datetime.datetime]</span>
+                        </code></dt>
+                        <dd>
+                            <div class="desc"><p>Return datetime for each versions or empty array if is unknown</p>
+                            </div>
+                            <details class="source">
+                                <summary>
+                                    <span>Expand source code</span>
+                                </summary>
+                                <pre><code class="python">@overrides
+def versions(self) -&gt; List[datetime]:
+    &#34;&#34;&#34;
+    Return datetime for each versions or empty array if is unknown
+    &#34;&#34;&#34;
+    conn = self.get_connect()
+    # with conn.cursor() as cursor:
+    cursor = conn.cursor()
+    try:
+        customer_id = self.get_customer_id()
+        cursor.execute(self._sql[&#34;DISTINCT_VERSION&#34;], (customer_id,))
+        result = cursor.fetchall()
+        conn.commit()
+        if result and isinstance(result[0][0], str):
+            return [datetime.strptime(x[0], &#34;%Y-%m-%d %H:%M:%S&#34;).replace(tzinfo=pytz.utc) for x in result]
+        return [x[0] for x in result]
+    finally:
+        cursor.close()</code></pre>
+                            </details>
+                        </dd>
+                    </dl>
+                    <h3>Inherited members</h3>
+                    <ul class="hlist">
+                        <li><code><b><a
+                                href="db_haystack_interface.html#shaystack.providers.db_haystack_interface.DBHaystackInterface"
+                                title="shaystack.providers.db_haystack_interface.DBHaystackInterface">DBHaystackInterface</a></b></code>:
+                            <ul class="hlist">
+                                <li><code><a
+                                        href="db_haystack_interface.html#shaystack.providers.db_haystack_interface.DBHaystackInterface.create_db"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.create_db">create_db</a></code>
+                                </li>
+                                <li><code><a
+                                        href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.formats"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.formats">formats</a></code>
+                                </li>
+                                <li><code><a
+                                        href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.get_customer_id"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.get_customer_id">get_customer_id</a></code>
+                                </li>
+                                <li><code><a
+                                        href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.get_tz"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.get_tz">get_tz</a></code>
+                                </li>
+                                <li><code><a
+                                        href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.his_write"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.his_write">his_write</a></code>
+                                </li>
+                                <li><code><a
+                                        href="db_haystack_interface.html#shaystack.providers.db_haystack_interface.DBHaystackInterface.import_ts"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.import_ts">import_ts</a></code>
+                                </li>
+                                <li><code><a
+                                        href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.invoke_action"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.invoke_action">invoke_action</a></code>
+                                </li>
+                                <li><code><a
+                                        href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.name"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.name">name</a></code>
+                                </li>
+                                <li><code><a
+                                        href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.nav"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.nav">nav</a></code>
+                                </li>
+                                <li><code><a
+                                        href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.ops"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.ops">ops</a></code>
+                                </li>
+                                <li><code><a
+                                        href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.point_write_read"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.point_write_read">point_write_read</a></code>
+                                </li>
+                                <li><code><a
+                                        href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.point_write_write"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.point_write_write">point_write_write</a></code>
+                                </li>
+                                <li><code><a
+                                        href="db_haystack_interface.html#shaystack.providers.db_haystack_interface.DBHaystackInterface.update_grid"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.update_grid">update_grid</a></code>
+                                </li>
+                                <li><code><a
+                                        href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.values_for_tag"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.values_for_tag">values_for_tag</a></code>
+                                </li>
+                                <li><code><a
+                                        href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.watch_poll"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.watch_poll">watch_poll</a></code>
+                                </li>
+                                <li><code><a
+                                        href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.watch_sub"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.watch_sub">watch_sub</a></code>
+                                </li>
+                                <li><code><a
+                                        href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.watch_unsub"
+                                        title="shaystack.providers.db_haystack_interface.DBHaystackInterface.watch_unsub">watch_unsub</a></code>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </dd>
+            </dl>
+        </section>
+    </article>
+    <nav id="sidebar">
+        <h1>Index</h1>
+        <div class="toc">
+            <ul></ul>
+        </div>
+        <ul id="index">
+            <li><h3>Super-module</h3>
+                <ul>
+                    <li><code><a href="index.html" title="shaystack.providers">shaystack.providers</a></code></li>
+                </ul>
+            </li>
+            <li><h3><a href="#header-classes">Classes</a></h3>
+                <ul>
+                    <li>
+                        <h4><code><a href="#shaystack.providers.sql.Provider" title="shaystack.providers.sql.Provider">Provider</a></code>
+                        </h4>
+                        <ul class="two-column">
+                            <li><code><a href="#shaystack.providers.sql.Provider.about"
+                                         title="shaystack.providers.sql.Provider.about">about</a></code></li>
+                            <li><code><a href="#shaystack.providers.sql.Provider.get_connect"
+                                         title="shaystack.providers.sql.Provider.get_connect">get_connect</a></code>
+                            </li>
+                            <li><code><a href="#shaystack.providers.sql.Provider.his_read"
+                                         title="shaystack.providers.sql.Provider.his_read">his_read</a></code></li>
+                            <li><code><a href="#shaystack.providers.sql.Provider.import_data"
+                                         title="shaystack.providers.sql.Provider.import_data">import_data</a></code>
+                            </li>
+                            <li><code><a href="#shaystack.providers.sql.Provider.purge_db"
+                                         title="shaystack.providers.sql.Provider.purge_db">purge_db</a></code></li>
+                            <li><code><a href="#shaystack.providers.sql.Provider.read"
+                                         title="shaystack.providers.sql.Provider.read">read</a></code></li>
+                            <li><code><a href="#shaystack.providers.sql.Provider.read_grid"
+                                         title="shaystack.providers.sql.Provider.read_grid">read_grid</a></code></li>
+                            <li><code><a href="#shaystack.providers.sql.Provider.versions"
+                                         title="shaystack.providers.sql.Provider.versions">versions</a></code></li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+</main>
+<footer id="footer">
+    <p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

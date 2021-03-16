@@ -77,6 +77,9 @@ def parse(grid_str: AnyStr, mode: MODE = MODE_ZINC) -> Grid:
         else:
             grid_str = grid_str.decode(encoding="utf-8")
 
+    if grid_str and grid_str[-1] not in ['\n', '\r']:
+        grid_str += '\n'
+
     if mode == MODE_ZINC:
         return parse_zinc_grid(grid_str)
     if mode == MODE_TRIO:

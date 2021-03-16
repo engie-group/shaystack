@@ -209,7 +209,7 @@ Using `pip install`. You can add the support of some options:
 
 - `pip install "shaystack[flask]"` allows you to use a local [Flask](https://flask.palletsprojects.com/en/1.1.x/)
   server
-- `pip install "shaystack[aws]"` allows you to:
+- `pip install "shaystack[lambda]"` allows you to:
     - Serve the API in an AWS Lambda function
     - Expose haystack data located in an AWS S3 Bucket
 - `pip install "shaystack[flask,graphql]"` allows you to:
@@ -272,6 +272,12 @@ In another shell
 ```console
 $ # - Open the GraphQL console
 $ xdg-open http://localhost:3000/haystack
+```
+
+or
+
+```console
+$ curl "http://localhost:3000/haystack/read?filter=point%20or%20site&limit=5"
 ```
 
 A javascript console is proposed to ask the datas. It's possible to add several API to merge the result from different

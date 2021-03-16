@@ -19,7 +19,7 @@ import pytz
 from nose.tools import assert_is
 
 import shaystack
-from shaystack import MARKER, Grid, MODE_JSON, XStr, MODE_CSV, MODE_TRIO, Quantity, Coordinate
+from shaystack import MARKER, Grid, MODE_JSON, XStr, MODE_CSV, MODE_TRIO, Quantity, Coordinate, MODE_ZINC
 from shaystack.tools import unescape_str
 from shaystack.zincparser import ZincParseException
 
@@ -2343,3 +2343,8 @@ def test_scalar_bytestring_json():
 
 def test_unescape():
     assert unescape_str("a\\nb") == "a\nb"
+
+
+def test_string_without_crlf_at_end():
+    shaystack.parse(SIMPLE_EXAMPLE_ZINC[0:-1], MODE_ZINC)
+    assert True  # No exception

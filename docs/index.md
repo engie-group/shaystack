@@ -47,6 +47,7 @@ Haystack data you host.
   location:
     - Local or remote file system (including AWS S3)
     - Local or remote relational database
+    - Local or remote Mongo database
     - Can be extends with optional AWS Time Stream use for Time Series
     - Other custom data location can be handled by extending
       `shaystack.providers.HaystackInterface`
@@ -433,6 +434,14 @@ AND t1.entity ?| array['site', 'point']
 LIMIT 1
 ```
 
+### Add Haystack API to an existing project
+
+The flexibility of the project allows many integration scenarios.
+![path for integration](integration-shaystack.svg)
+
+Add features from left to right. At differents levels, you can publish an API. The shortest way is to export a haystack
+file to an s3 bucket and publish it via an API.
+
 ### Using AWS
 
 Read [more...](AWS.md)
@@ -449,7 +458,7 @@ $ docker build -t shaystack .
 $ # Run and customize the image
 $ docker run -p 3000:3000 \
   -e HAYSTACK_PROVIDER=shaystack.providers.db \
-  -e HAYSTACK_DB=https://haystackapi.s3.eu-west-3.amazonaws.com/carytown.zinc \
+  -e HAYSTACK_DB=https://shaystack.s3.eu-west-3.amazonaws.com/carytown.zinc \
   -e REFRESH=15 \
   shaystack 
 ```
@@ -531,8 +540,11 @@ See [LICENCE](LICENSE) file
 
 # TODO
 
+- [X] S3
+- [X] Sqlite
+- [X] Postgres
 - [ ] MySQL
-- [ ] MongoDB
+- [X] MongoDB
 - [ ] Implements watch in GraphQL
 - [ ] Implements *write* in GraphQL
 - [ ] A version with FastAPI

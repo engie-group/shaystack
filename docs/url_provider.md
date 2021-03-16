@@ -37,7 +37,7 @@ To use a *pure URL*, use this sample:
 ```console
 $ # Demo
 $ HAYSTACK_PROVIDER=shaystack.providers.db \
-  HAYSTACK_DB=https://haystackapi.s3.eu-west-3.amazonaws.com/carytown.zinc \
+  HAYSTACK_DB=https://shaystack.s3.eu-west-3.amazonaws.com/carytown.zinc \
   shaystack
 ```
 

@@ -525,9 +525,9 @@ Represented by the custom type `shaystack.Coordinate`, which has `latitude` and
 
 A tag may be a list, a dict or another grid (recursive grid). To be used with care.
 
-# Contribute
+# Contributing
 
-See [here](./contribute.md)
+See [here](contributing.md)
 
 # Resources
 

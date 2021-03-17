@@ -55,6 +55,7 @@ _scheme_to_providers = {
     "supersqlite": "sql",
     "postgresql": "sql",
     "postgres": "sql",
+    "mysql": "sql",
     "mongodb": "mongodb",
 }
 

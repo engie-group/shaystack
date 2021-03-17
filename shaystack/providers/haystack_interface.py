@@ -367,7 +367,7 @@ class HaystackInterface(ABC):
             dates_range: The date
             range: May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}),
             {dateTime}
-            date_version: The optional date version to update
+            date_version: The optional date version to read
 
         Returns:
             A grid

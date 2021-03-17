@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="Nosetests in test_db_provider.py" type="tests" factoryName="Nosetests"
+    <configuration default="false" name="Nosetests in test_provider_db.py" type="tests" factoryName="Nosetests"
                    nameIsGenerated="true">
         <module name="haystack-api"/>
         <option name="INTERPRETER_OPTIONS" value=""/>
@@ -23,7 +23,7 @@
         </EXTENSION>
         <option name="_new_regexPattern" value="&quot;&quot;"/>
         <option name="_new_additionalArguments" value="&quot;&quot;"/>
-        <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/test_db_provider.py&quot;"/>
+        <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/test_provider_db.py&quot;"/>
         <option name="_new_targetType" value="&quot;PATH&quot;"/>
         <method v="2"/>
     </configuration>

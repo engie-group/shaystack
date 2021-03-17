@@ -413,7 +413,7 @@ value: N
 comment: A marker
 value: M
 ---
-comment: A \\"remove\\" object
+comment: "A \\"remove\\" object"
 value: R
 ---
 comment: A boolean, indicating False
@@ -441,7 +441,7 @@ comment: A coordinate
 value: C(-27.472500,153.003000)
 ---
 comment: A URI
-value: `http://www.example.com#unicode:\u0109\u1000`
+value: `http://www.example.com#unicode:ĉက`
 ---
 comment: A string
 value: 
@@ -450,7 +450,7 @@ value:
   \\tIndented with \\"quotes\\", \\\\backslashes\\\\
 ---
 comment: A unicode string
-value: This is a Unicode characters: \u0109\u1000
+value: This is a Unicode characters: ĉက
 ---
 comment: A date
 value: 2016-01-13
@@ -1073,3 +1073,4 @@ def test_dump_invalide_scalar():
 
 def test_dump_ambiguous_scalar():
     assert dump_scalar("F", MODE_CSV) == '"""F"""'
+    assert dump_scalar("°F", MODE_TRIO) == '"°F"'

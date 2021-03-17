@@ -30,7 +30,7 @@ def _dump_row(grid: Grid, row: Entity) -> str:
                       c in grid.column.keys() if c in row])
 
 
-_REGULAR_STR = re.compile(r'[^\x00-\x7F]|[A-Za-z_-]')
+_REGULAR_STR = re.compile(r'^[^\x00-\x1F\t°\\]*$')
 
 
 def _dump_str(str_value: str) -> str:
@@ -41,8 +41,8 @@ def _dump_str(str_value: str) -> str:
         if str_value.endswith("\n  "):
             str_value = str_value[:-3]
         return str_value
-    if '\\n' not in str_value and str_value not in ["T", "F", "NA", "R", "N", "M"] \
-            and _REGULAR_STR.match(str_value[0]):
+    if str_value not in ["T", "F", "NA", "R", "N", "M"] \
+            and _REGULAR_STR.match(str_value):
         return str_value
     return '"%s"' % str_value
 

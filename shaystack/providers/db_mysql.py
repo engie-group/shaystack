@@ -330,46 +330,46 @@ def get_db_parameters(table_name: str) -> Dict[str, Union[Callable, str]]:
             '''),
         "SELECT_META_DATA": textwrap.dedent(f'''
             SELECT metadata,cols FROM {table_name}_meta_datas
-            WHERE datetime(?) BETWEEN datetime(start_datetime) AND datetime(end_datetime)
-            AND customer_id=?
+            WHERE %s BETWEEN start_datetime AND end_datetime
+            AND customer_id=%s
             '''),
         "CLOSE_META_DATA": textwrap.dedent(f'''
-            UPDATE {table_name}_meta_datas  SET end_datetime=?
-            WHERE datetime(?) >= datetime(start_datetime) AND end_datetime = '9999-12-31T23:59:59'
-            AND customer_id=?
+            UPDATE {table_name}_meta_datas  SET end_datetime=%s
+            WHERE %s >= start_datetime AND end_datetime = '9999-12-31T23:59:59'
+            AND customer_id=%s
             '''),
         "UPDATE_META_DATA": textwrap.dedent(f'''
-            INSERT INTO {table_name}_meta_datas VALUES (?,?,'9999-12-31T23:59:59',json(?),json(?))
+            INSERT INTO {table_name}_meta_datas VALUES (%s,%s,'9999-12-31T23:59:59',%s,%s)
             '''),
         "SELECT_ENTITY": textwrap.dedent(f'''
             SELECT entity FROM {table_name}
-            WHERE datetime(?) BETWEEN datetime(start_datetime) AND datetime(end_datetime)
-            AND customer_id = ?
+            WHERE %s BETWEEN start_datetime AND end_datetime
+            AND customer_id = %s
             '''),
         "SELECT_ENTITY_WITH_ID": textwrap.dedent(f'''
             SELECT entity FROM {table_name}
-            WHERE datetime(?) BETWEEN datetime(start_datetime) AND datetime(end_datetime)
-            AND customer_id = ?
+            WHERE %s BETWEEN start_datetime AND end_datetime
+            AND customer_id = %s
             AND id IN '''),
         "CLOSE_ENTITY": textwrap.dedent(f'''
-            UPDATE {table_name} SET end_datetime=? 
-            WHERE datetime(?) > datetime(start_datetime) AND end_datetime = '9999-12-31T23:59:59'
-            AND id=? 
-            AND customer_id = ?
+            UPDATE {table_name} SET end_datetime=%s
+            WHERE %s > start_datetime AND end_datetime = '9999-12-31T23:59:59'
+            AND id=%s 
+            AND customer_id = %s
             '''),
         "INSERT_ENTITY": textwrap.dedent(f'''
-            INSERT INTO {table_name} VALUES (?,?,?,'9999-12-31T23:59:59',json(?))
+            INSERT INTO {table_name} VALUES (%s,%s,%s,'9999-12-31T23:59:59',%s)
             '''),
         "DISTINCT_VERSION": textwrap.dedent(f'''
-            SELECT DISTINCT datetime(start_datetime)
+            SELECT DISTINCT start_datetime
             FROM {table_name}
-            WHERE customer_id = ?
-            ORDER BY datetime(start_datetime)
+            WHERE customer_id = %s
+            ORDER BY start_datetime
             '''),
         "DISTINCT_TAG_VALUES": textwrap.dedent(f'''
             SELECT DISTINCT json_extract(entity,'$.[#]')
             FROM {table_name}
-            WHERE customer_id = ?
+            WHERE customer_id = %s
             '''),
 
         "CREATE_TS_TABLE": textwrap.dedent(f'''
@@ -386,20 +386,20 @@ def get_db_parameters(table_name: str) -> Dict[str, Union[Callable, str]]:
             '''),
         "CLEAN_TS": textwrap.dedent(f'''
             DELETE FROM {table_name}_ts
-            WHERE customer_id = ?
-            AND id = ?
-            AND datetime(date_time) BETWEEN datetime(?) AND datetime(?)
+            WHERE customer_id = %s
+            AND id = %s
+            AND date_time BETWEEN %s AND %s
             '''),
         "INSERT_TS": textwrap.dedent(f'''
             INSERT INTO {table_name}_ts
-            VALUES(?,?,datetime(?),json(?))
+            VALUES(%s,%s,%s,%s)
             '''),
         "SELECT_TS": textwrap.dedent(f'''
             SELECT date_time,val FROM {table_name}_ts
-            WHERE customer_id = ?
-            AND id = ?
-            AND datetime(date_time) BETWEEN datetime(?) AND datetime(?) 
-            ORDER BY datetime(date_time)
+            WHERE customer_id = %s
+            AND id = %s
+            AND date_time BETWEEN %s AND %s 
+            ORDER BY date_time
             '''),
         "PURGE_TABLES_TS": textwrap.dedent(f'''
             DELETE FROM {table_name}_ts

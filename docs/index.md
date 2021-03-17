@@ -143,6 +143,7 @@ Shift-4-Haystack is agile and can be deployed in different scenarios. Choose an 
 | S3 bucket with version            |
 | Sqlite database                   |
 | Postgres database                 |
+| MySQL database                    |
 | Mongo database                    |
 | haystack backend + AWS Timestream |
 
@@ -158,10 +159,10 @@ Shift-4-Haystack is agile and can be deployed in different scenarios. Choose an 
 | Standalone GraphQL API                            |
 | GraphQL API integrated inside another via AppSync |
 
-| Serverless  | Technologies               |
-| ----------- | -------------------------- |
-| No          | VM, Docker, Postgres, etc. |
-| Yes         | AWS Lambda, Aurora         |
+| Serverless  | Technologies                             |
+| ----------- | ---------------------------------------- |
+| No          | VM, Docker, Postgres, MySQL, Mongo, etc. |
+| Yes         | AWS Lambda, Aurora                       |
 
 and you can extend these proposed scenario. You can see below, how to install these different scenarios.
 
@@ -201,7 +202,7 @@ datas:
 
 ## API Server deployment
 
-This layer implement the standard HaystackAPI with different providers (URL, S3, Postgres, MongoDB, etc.)
+This layer implement the standard HaystackAPI with different providers (URL, S3, Postgres, MySQL, MongoDB, etc.)
 
 ### Installing
 
@@ -231,6 +232,7 @@ by extending `shaystack.providers.HaystackInterface`
 |Data on AWS S3 Bucket|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=s3://... \`<br/>` shaystack`|Remember to install aws support and boto3 python module. [More...](url_provider.md)|
 |Data in a SuperSQLite database|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=sqlite3://... \`<br/>` shaystack`|Remember to install supersqlite python module. [More...](sql_provider.md)|
 |Data in a Postgresql database|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=postgres://... \`<br/>` shaystack`|Remember to install psycopg2 python module. [More...](sql_provider.md)|
+|Data in a MySQL database|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=mysql://... \`<br/>` shaystack`|Remember to install pymysql python module. [More...](sql_provider.md)|
 |Data in a MongoDB|`HAYSTACK_PROVIDER=shaystack.providers.db\`<br/>`HAYSTACK_DB=mongodb+srv:://...\`<br/>` shaystack`|Remember to install pymongo python module. [More...](mongo_provider.md)|
 |Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.timestream\`<br/>`HAYSTACK_DB=postgres://...\`<br/>`HAYSTACK_TS=timestream:://...\<br /> shaystack`|[More...](timestream_provider.md)|
 |Custom|`HAYSTACK_PROVIDER=shaystack.providers.<your module name>`|Write your own subclass of `shaystack.providers.HaystackInterface shaystack`.|
@@ -549,7 +551,7 @@ See [LICENCE](LICENSE) file
 - [X] S3
 - [X] Sqlite
 - [X] Postgres
-- [ ] MySQL
+- [X] MySQL
 - [X] MongoDB
 - [ ] Implements watch in GraphQL
 - [ ] Implements *write* in GraphQL

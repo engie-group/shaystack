@@ -64,7 +64,7 @@ def _generate_path(table_name: str,
             ['(',
              _select_version(version, num_table),
              f"AND t{num_table}.customer_id='{customer_id}'\n",
-             f"AND t{num_table - 1}.entity->'$.{path}') = "
+             f"AND t{num_table - 1}.entity->'$.{path}' = "
              f"t{num_table}.entity->'$.id')\n"
              ])
         first = False
@@ -117,23 +117,43 @@ def _generate_filter_in_sql(table_name: str,
                 if isinstance(node.right, FilterBinary) and _use_inner_join(node.right):
                     log.warning("SQLite can not implement this request. Result may be invalid")
                 generated_sql = []
-                num_table, sql = _generate_sql_block(table_name, customer_id, version,
-                                                     0,
-                                                     node.left,
-                                                     num_table)
-                generated_sql.append(sql)
+
                 if node.operator == "and":
-                    generated_sql.append("INTERSECT")
+                    num_table += 1
+                    num_table, left_sql = _generate_sql_block(table_name, customer_id, version,
+                                                              0,
+                                                              node.left,
+                                                              num_table)
+                    num_table += 1
+                    num_table, right_sql = _generate_sql_block(table_name, customer_id, version,
+                                                               0,
+                                                               node.right,
+                                                               num_table)
+
+                    num_table += 1
+                    generated_sql.append(f"\nSELECT t{num_table}.entity FROM haystack as t{num_table}\n")
+                    generated_sql.append("WHERE entity->'$.id' in (")
+                    generated_sql.append(left_sql)
+                    generated_sql.append(")\nAND entity->'$.id' in (")
+                    generated_sql.append(right_sql)
+                    generated_sql.append(")\n")
+                    select = generated_sql
+                    where = []
                 else:
+                    num_table, sql = _generate_sql_block(table_name, customer_id, version,
+                                                         0,
+                                                         node.left,
+                                                         num_table)
+                    generated_sql.append(sql)
                     generated_sql.append("UNION")
-                num_table += 1
-                num_table, sql = _generate_sql_block(table_name, customer_id, version,
-                                                     0,
-                                                     node.right,
-                                                     num_table)
-                generated_sql.append(sql)
-                select = generated_sql
-                where = []
+                    num_table += 1
+                    num_table, sql = _generate_sql_block(table_name, customer_id, version,
+                                                         0,
+                                                         node.right,
+                                                         num_table)
+                    generated_sql.append(sql)
+                    select = generated_sql
+                    where = []
             else:
                 where.append('(')
                 parent_left = isinstance(node.left, FilterBinary) and node.left.operator in ["and", "or"]
@@ -169,7 +189,7 @@ def _generate_filter_in_sql(table_name: str,
                                    num_table)
                 where.extend([
                     f"CAST(substr(t{num_table}.entity->"
-                    f"'$.{node.left.paths[-1]}'),3) AS REAL)",
+                    f"'$.{node.left.paths[-1]}',3) AS REAL)",
                     f" {node.operator} {value}\n",
                 ])
             else:
@@ -191,12 +211,13 @@ def _generate_filter_in_sql(table_name: str,
                 else:
                     if isinstance(value, Ref):
                         where.append(
-                            f"t{num_table}.entity->'$.{node.left.paths[-1]}' "
-                            f"LIKE '{str(json.loads(jsondumper.dump_scalar(value)))}%'\n")
+                            f"t{num_table}.entity->'$.{node.left.paths[-1]}' " \
+                            f"LIKE '\"{str(json.loads(jsondumper.dump_scalar(value)))}%\"'\n")
                     else:
                         where.append(
                             f"t{num_table}.entity->'$.{node.left.paths[-1]}' "
-                            f"{_map_operator[node.operator]} '{str(json.loads(jsondumper.dump_scalar(value)))}'\n")
+                            f"{_map_operator[node.operator]} "
+                            f"'{str(json.loads(jsondumper.dump_scalar(value)))}'\n")
 
     else:
         assert False, "Invalid node"
@@ -308,8 +329,8 @@ def get_db_parameters(database_name: str, table_name: str) -> Dict[str, Union[Ca
                 (
                 id VARCHAR(256), 
                 customer_id VARCHAR(128) NOT NULL, 
-                start_datetime DATETIME NOT NULL, 
-                end_datetime DATETIME NOT NULL, 
+                start_datetime DATETIME(6) NOT NULL, 
+                end_datetime DATETIME(6) NOT NULL, 
                 entity JSON NOT NULL
                 );
             '''),
@@ -331,8 +352,8 @@ def get_db_parameters(database_name: str, table_name: str) -> Dict[str, Union[Ca
             CREATE TABLE IF NOT EXISTS {table_name}_meta_datas
                (
                 customer_id VARCHAR(256) NOT NULL, 
-                start_datetime DATETIME NOT NULL, 
-                end_datetime DATETIME NOT NULL, 
+                start_datetime DATETIME(6) NOT NULL, 
+                end_datetime DATETIME(6) NOT NULL, 
                 metadata JSON,
                 cols JSON
                );
@@ -392,7 +413,7 @@ def get_db_parameters(database_name: str, table_name: str) -> Dict[str, Union[Ca
                 (
                 id VARCHAR(256) NOT NULL, 
                 customer_id VARCHAR(128) NOT NULL, 
-                date_time DATETIME NOT NULL, 
+                date_time DATETIME(6) NOT NULL, 
                 val JSON NOT NULL
                 );
             '''),

@@ -30,7 +30,7 @@ _db_providers = [
     ["shaystack.providers.sql",
      "postgresql://postgres:password@localhost:5432/postgres?connect_timeout=100#haystack", True],
     ["shaystack.providers.sql",
-     "mysql://mysql:password@localhost:5432/postgres?connect_timeout=100#haystack", True],
+     "mysql://mysql:password@localhost:5432/haystackdb?connect_timeout=100#haystack", True],
     ["shaystack.providers.mongodb",
      "mongodb://localhost/haystackdb?serverSelectionTimeoutMS=100#haystack", True],
 ]

@@ -22,6 +22,7 @@ LOGLEVEL?=WARNING
 PG_PASSWORD?=password
 PGADMIN_USER?=$(USER)@domain.com
 PGADMIN_PASSWORD?=password
+MYSQL_PASSWORD?=password
 TLS_VERIFY=False
 
 # Default parameter for make [aws-]api-read
@@ -486,7 +487,7 @@ async-start-minio: .minio $(REQUIREMENTS)
 
 
 ## Stop all background server
-async-stop: async-stop-api async-stop-minio stop-pg stop-pgadmin stop-mongodb async-docker-stop
+async-stop: async-stop-api async-stop-minio stop-pg stop-pgadmin stop-mysql stop-mongodb async-docker-stop
 
 
 # -------------------------------------- AWS
@@ -714,7 +715,7 @@ functional-mongodb: $(REQUIREMENTS) clean-mongodb
 	$(MAKE) async-stop-api >/dev/null
 
 .PHONY: functional-database
-functional-database: $(REQUIREMENTS) start-pg start-mongodb
+functional-database: $(REQUIREMENTS) start-pg start-mysql start-mongodb
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Test same request with all databases...$(normal)"
 	@$(CONDA_PYTHON) -m nose tests/test_provider_db.py $(NOSETESTS_ARGS)
@@ -822,6 +823,40 @@ start-pgadmin:
 stop-pgadmin:
 	@docker stop pgadmin 2>/dev/null >/dev/null || true
 	echo -e "$(green)PGAdmin stopped$(normal)"
+
+# ------------- MySQL database
+## Start MySQL database in background
+start-mysql:
+	@docker start mysql || docker run \
+		--name mysql \
+		--hostname mysql \
+		-e MYSQL_DATABASE="haystackdb" \
+		-e MYSQL_PASS="password" \
+		-e MYSQL_ROOT_PASSWORD=$(MYSQL_PASSWORD) \
+		-e MYSQL_USER=haystack \
+		-e MYSQL_PASSWORD=$(MYSQL_PASSWORD) \
+		-p 3306:3306 \
+		-d mysql
+	echo -e "$(yellow)MySQL started$(normal)"
+
+## Stop MySQL database
+stop-mysql:
+	@docker stop mysql 2>/dev/null >/dev/null || true
+	echo -e "$(green)MySQL stopped$(normal)"
+
+## Print Postgres db url connection
+mysql-url: start-mysql
+	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' mysql)
+	echo "mysql://mysql:password@$$IP:3306/mysql#haystack"
+
+mysql-shell:
+	docker exec -it mysql mysql --user=root --password=$(MYSQL_PASSWORD) -h localhost haystackdb
+
+clean-mysql: start-mysql
+	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' mysql)
+	docker exec -it mysql mysql --user=root --password=$(MYSQL_PASSWORD) -h localhost haystackdb \
+	--execute='drop table if exists haystack ; drop table if exists haystack_meta_datas ; drop table if exists haystack_ts;'
+
 
 # ------------- Mongo database
 ## Start Mongo database in background

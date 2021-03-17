@@ -717,7 +717,7 @@ functional-mongodb: $(REQUIREMENTS) clean-mongodb
 functional-database: $(REQUIREMENTS) start-pg start-mongodb
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Test same request with all databases...$(normal)"
-	@$(CONDA_PYTHON) -m nose tests/test_db_provider.py $(NOSETESTS_ARGS)
+	@$(CONDA_PYTHON) -m nose tests/test_provider_db.py $(NOSETESTS_ARGS)
 	echo -e "$(green)Test same request with all databases OK$(normal)"
 
 

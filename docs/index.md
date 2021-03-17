@@ -443,7 +443,7 @@ LIMIT 1
 ### Add Haystack API to an existing project
 
 The flexibility of the project allows many integration scenarios.
-![path for integration](integration-shaystack.svg)
+![path for integration](integration-shaystack.png)
 
 Add features from left to right. At differents levels, you can publish an API. The shortest way is to export a haystack
 file to an s3 bucket and publish it via an API.

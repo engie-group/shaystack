@@ -74,9 +74,9 @@ def test_equal_ref():
         SELECT t1.entity
         FROM haystack as t1
         WHERE
-        ((\'{FAKE_NOW.isoformat()}\' BETWEEN t1.start_datetime AND t1.end_datetime
-        AND t1.customer_id=\'customer\')
-        AND t1.entity->\'$.a\' LIKE \'r:id%\'
+        (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
+        AND t1.customer_id='customer')
+        AND t1.entity->'$.a' LIKE '"r:id%"'
         )
         LIMIT 1
         """)
@@ -554,9 +554,9 @@ def test_equal_number():
         SELECT t1.entity
         FROM haystack as t1
         WHERE
-        ((\'2100-01-01T00:00:00+00:00\' BETWEEN t1.start_datetime AND t1.end_datetime
-        AND t1.customer_id=\'customer\')
-        AND t1.entity->\'$.geoPostalCode\' = \'n:1111.000000\'
+        (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
+        AND t1.customer_id='customer')
+        AND t1.entity->'$.geoPostalCode' = 'n:1111.000000'
         )
         LIMIT 1
         """)
@@ -573,7 +573,7 @@ def test_greater_number():
         WHERE
         (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND CAST(substr(t1.entity->'$.geoPostalCode'),3) AS REAL) > 55400.0
+        AND CAST(substr(t1.entity->'$.geoPostalCode',3) AS REAL) > 55400.0
         )
         LIMIT 1
         """)
@@ -590,7 +590,7 @@ def test_greater_or_equal_number():
         WHERE
         (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND CAST(substr(json_extract(json(t1.entity),'$.geoPostalCode'),3) AS REAL) >= 55400.0
+        AND CAST(substr(t1.entity->'$.geoPostalCode',3) AS REAL) >= 55400.0
         )
         LIMIT 1
         """)
@@ -607,7 +607,7 @@ def test_lower_number():
         WHERE
         (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND CAST(substr(json_extract(json(t1.entity),'$.geoPostalCode'),3) AS REAL) < 55400.0
+        AND CAST(substr(t1.entity->'$.geoPostalCode',3) AS REAL) < 55400.0
         )
         LIMIT 1
         """)
@@ -624,7 +624,7 @@ def test_lower_or_equal_number():
         WHERE
         (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND CAST(substr(json_extract(json(t1.entity),'$.geoPostalCode'),3) AS REAL) <= 55400.0
+        AND CAST(substr(t1.entity->'$.geoPostalCode',3) AS REAL) <= 55400.0
         )
         LIMIT 1
         """)
@@ -641,7 +641,7 @@ def test_greater_quantity():
         WHERE
         (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND CAST(substr(json_extract(json(t1.entity),'$.temp'),3) AS REAL) > 55400.0
+        AND CAST(substr(t1.entity->'$.temp',3) AS REAL) > 55400.0
         )
         LIMIT 1
         """)
@@ -658,7 +658,7 @@ def test_greater_or_equal_quantity():
         WHERE
         (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND CAST(substr(json_extract(json(t1.entity),'$.temp'),3) AS REAL) >= 55400.0
+        AND CAST(substr(t1.entity->'$.temp',3) AS REAL) >= 55400.0
         )
         LIMIT 1
         """)
@@ -673,12 +673,12 @@ def test_path_equal_quantity():
         SELECT t1.entity
         FROM haystack as t1
         INNER JOIN haystack AS t2 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t1.start_datetime) AND datetime(t1.end_datetime)
+        (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t2.start_datetime) AND datetime(t2.end_datetime)
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t2.start_datetime AND t2.end_datetime
         AND t2.customer_id='customer'
-        AND json_object(json(t1.entity),'$.siteRef') = json_object(json(t2.entity),'$.id'))
-        AND json_extract(json(t2.entity),'$.temp') == 'n:55400.000000'
+        AND t1.entity->'$.siteRef' = t2.entity->'$.id')
+        AND t2.entity->'$.temp' = 'n:55400.000000'
         )
         LIMIT 1
         """)
@@ -693,12 +693,12 @@ def test_2path_greater_quantity():
         SELECT t1.entity
         FROM haystack as t1
         INNER JOIN haystack AS t2 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t1.start_datetime) AND datetime(t1.end_datetime)
+        (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t2.start_datetime) AND datetime(t2.end_datetime)
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t2.start_datetime AND t2.end_datetime
         AND t2.customer_id='customer'
-        AND json_object(json(t1.entity),'$.siteRef') = json_object(json(t2.entity),'$.id'))
-        AND CAST(substr(json_extract(json(t2.entity),'$.temp'),3) AS REAL) >= 55400.0
+        AND t1.entity->'$.siteRef' = t2.entity->'$.id')
+        AND CAST(substr(t2.entity->'$.temp',3) AS REAL) >= 55400.0
         )
         LIMIT 1
         """)
@@ -713,17 +713,17 @@ def test_3path_greater_quantity():
         SELECT t1.entity
         FROM haystack as t1
         INNER JOIN haystack AS t2 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t1.start_datetime) AND datetime(t1.end_datetime)
+        (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t2.start_datetime) AND datetime(t2.end_datetime)
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t2.start_datetime AND t2.end_datetime
         AND t2.customer_id='customer'
-        AND json_object(json(t1.entity),'$.siteRef') = json_object(json(t2.entity),'$.id'))
+        AND t1.entity->'$.siteRef' = t2.entity->'$.id')
         )
         INNER JOIN haystack AS t3 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t3.start_datetime) AND datetime(t3.end_datetime)
+        (('{FAKE_NOW.isoformat()}' BETWEEN t3.start_datetime AND t3.end_datetime
         AND t3.customer_id='customer'
-        AND json_object(json(t2.entity),'$.ownerRef') = json_object(json(t3.entity),'$.id'))
-        AND CAST(substr(json_extract(json(t3.entity),'$.temp'),3) AS REAL) >= 55400.0
+        AND t2.entity->'$.ownerRef' = t3.entity->'$.id')
+        AND CAST(substr(t3.entity->'$.temp',3) AS REAL) >= 55400.0
         )
         LIMIT 1
         """)
@@ -738,22 +738,22 @@ def test_4path():
         SELECT t1.entity
         FROM haystack as t1
         INNER JOIN haystack AS t2 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t1.start_datetime) AND datetime(t1.end_datetime)
+        (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t2.start_datetime) AND datetime(t2.end_datetime)
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t2.start_datetime AND t2.end_datetime
         AND t2.customer_id='customer'
-        AND json_object(json(t1.entity),'$.siteRef') = json_object(json(t2.entity),'$.id'))
+        AND t1.entity->'$.siteRef' = t2.entity->'$.id')
         )
         INNER JOIN haystack AS t3 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t3.start_datetime) AND datetime(t3.end_datetime)
+        (('{FAKE_NOW.isoformat()}' BETWEEN t3.start_datetime AND t3.end_datetime
         AND t3.customer_id='customer'
-        AND json_object(json(t2.entity),'$.ownerRef') = json_object(json(t3.entity),'$.id'))
+        AND t2.entity->'$.ownerRef' = t3.entity->'$.id')
         )
         INNER JOIN haystack AS t4 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t4.start_datetime) AND datetime(t4.end_datetime)
+        (('{FAKE_NOW.isoformat()}' BETWEEN t4.start_datetime AND t4.end_datetime
         AND t4.customer_id='customer'
-        AND json_object(json(t3.entity),'$.a') = json_object(json(t4.entity),'$.id'))
-        AND json_extract(json(t4.entity),'$.b') IS NOT NULL
+        AND t3.entity->'$.a' = t4.entity->'$.id')
+        AND t4.entity->'$.b' IS NOT NULL
         )
         LIMIT 1
         """)
@@ -768,12 +768,12 @@ def test_path():
         SELECT t1.entity
         FROM haystack as t1
         INNER JOIN haystack AS t2 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t1.start_datetime) AND datetime(t1.end_datetime)
+        (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t2.start_datetime) AND datetime(t2.end_datetime)
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t2.start_datetime AND t2.end_datetime
         AND t2.customer_id='customer'
-        AND json_object(json(t1.entity),'$.siteRef') = json_object(json(t2.entity),'$.id'))
-        AND json_extract(json(t2.entity),'$.geoPostalCode') IS NOT NULL
+        AND t1.entity->'$.siteRef' = t2.entity->'$.id')
+        AND t2.entity->'$.geoPostalCode' IS NOT NULL
         )
         LIMIT 1
         """)
@@ -785,26 +785,30 @@ def test_path_and():
     _check_mysql(sql_request)
     assert sql_request == textwrap.dedent(f"""\
         -- siteRef->geoPostalCode and siteRef->geoCountry
-        SELECT t1.entity
-        FROM haystack as t1
-        INNER JOIN haystack AS t2 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t1.start_datetime) AND datetime(t1.end_datetime)
-        AND t1.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t2.start_datetime) AND datetime(t2.end_datetime)
-        AND t2.customer_id='customer'
-        AND json_object(json(t1.entity),'$.siteRef') = json_object(json(t2.entity),'$.id'))
-        AND json_extract(json(t2.entity),'$.geoPostalCode') IS NOT NULL
+        SELECT t6.entity FROM haystack as t6
+        WHERE entity->'$.id' in (
+        SELECT t2.entity
+        FROM haystack as t2
+        INNER JOIN haystack AS t3 ON
+        (('{FAKE_NOW.isoformat()}' BETWEEN t2.start_datetime AND t2.end_datetime
+        AND t2.customer_id='customer')
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t3.start_datetime AND t3.end_datetime
+        AND t3.customer_id='customer'
+        AND t2.entity->'$.siteRef' = t3.entity->'$.id')
+        AND t3.entity->'$.geoPostalCode' IS NOT NULL
         )
-        INTERSECT
-        SELECT t3.entity
-        FROM haystack as t3
-        INNER JOIN haystack AS t4 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t3.start_datetime) AND datetime(t3.end_datetime)
-        AND t3.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t4.start_datetime) AND datetime(t4.end_datetime)
-        AND t4.customer_id='customer'
-        AND json_object(json(t3.entity),'$.siteRef') = json_object(json(t4.entity),'$.id'))
-        AND json_extract(json(t4.entity),'$.geoCountry') IS NOT NULL
+        )
+        AND entity->'$.id' in (
+        SELECT t4.entity
+        FROM haystack as t4
+        INNER JOIN haystack AS t5 ON
+        (('{FAKE_NOW.isoformat()}' BETWEEN t4.start_datetime AND t4.end_datetime
+        AND t4.customer_id='customer')
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t5.start_datetime AND t5.end_datetime
+        AND t5.customer_id='customer'
+        AND t4.entity->'$.siteRef' = t5.entity->'$.id')
+        AND t5.entity->'$.geoCountry' IS NOT NULL
+        )
         )
         LIMIT 1
         """)
@@ -819,23 +823,23 @@ def test_path_or():
         SELECT t1.entity
         FROM haystack as t1
         INNER JOIN haystack AS t2 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t1.start_datetime) AND datetime(t1.end_datetime)
+        (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t2.start_datetime) AND datetime(t2.end_datetime)
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t2.start_datetime AND t2.end_datetime
         AND t2.customer_id='customer'
-        AND json_object(json(t1.entity),'$.siteRef') = json_object(json(t2.entity),'$.id'))
-        AND json_extract(json(t2.entity),'$.geoPostalCode') IS NOT NULL
+        AND t1.entity->'$.siteRef' = t2.entity->'$.id')
+        AND t2.entity->'$.geoPostalCode' IS NOT NULL
         )
         UNION
         SELECT t3.entity
         FROM haystack as t3
         INNER JOIN haystack AS t4 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t3.start_datetime) AND datetime(t3.end_datetime)
+        (('{FAKE_NOW.isoformat()}' BETWEEN t3.start_datetime AND t3.end_datetime
         AND t3.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t4.start_datetime) AND datetime(t4.end_datetime)
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t4.start_datetime AND t4.end_datetime
         AND t4.customer_id='customer'
-        AND json_object(json(t3.entity),'$.siteRef') = json_object(json(t4.entity),'$.id'))
-        AND json_extract(json(t4.entity),'$.geoCountry') IS NOT NULL
+        AND t3.entity->'$.siteRef' = t4.entity->'$.id')
+        AND t4.entity->'$.geoCountry' IS NOT NULL
         )
         LIMIT 1
         """)
@@ -914,48 +918,52 @@ def test_path_and_or():
     _check_mysql(sql_request)
     assert sql_request == textwrap.dedent(f"""\
         -- (a->b or c->d) and (e->f or g->h)
-        SELECT t1.entity
-        FROM haystack as t1
-        INNER JOIN haystack AS t2 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t1.start_datetime) AND datetime(t1.end_datetime)
-        AND t1.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t2.start_datetime) AND datetime(t2.end_datetime)
-        AND t2.customer_id='customer'
-        AND json_object(json(t1.entity),'$.a') = json_object(json(t2.entity),'$.id'))
-        AND json_extract(json(t2.entity),'$.b') IS NOT NULL
+        SELECT t10.entity FROM haystack as t10
+        WHERE entity->'$.id' in (
+        SELECT t2.entity
+        FROM haystack as t2
+        INNER JOIN haystack AS t3 ON
+        (('{FAKE_NOW.isoformat()}' BETWEEN t2.start_datetime AND t2.end_datetime
+        AND t2.customer_id='customer')
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t3.start_datetime AND t3.end_datetime
+        AND t3.customer_id='customer'
+        AND t2.entity->'$.a' = t3.entity->'$.id')
+        AND t3.entity->'$.b' IS NOT NULL
         )
         UNION
-        SELECT t3.entity
-        FROM haystack as t3
-        INNER JOIN haystack AS t4 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t3.start_datetime) AND datetime(t3.end_datetime)
-        AND t3.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t4.start_datetime) AND datetime(t4.end_datetime)
-        AND t4.customer_id='customer'
-        AND json_object(json(t3.entity),'$.c') = json_object(json(t4.entity),'$.id'))
-        AND json_extract(json(t4.entity),'$.d') IS NOT NULL
+        SELECT t4.entity
+        FROM haystack as t4
+        INNER JOIN haystack AS t5 ON
+        (('{FAKE_NOW.isoformat()}' BETWEEN t4.start_datetime AND t4.end_datetime
+        AND t4.customer_id='customer')
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t5.start_datetime AND t5.end_datetime
+        AND t5.customer_id='customer'
+        AND t4.entity->'$.c' = t5.entity->'$.id')
+        AND t5.entity->'$.d' IS NOT NULL
         )
-        INTERSECT
-        SELECT t5.entity
-        FROM haystack as t5
-        INNER JOIN haystack AS t6 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t5.start_datetime) AND datetime(t5.end_datetime)
-        AND t5.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t6.start_datetime) AND datetime(t6.end_datetime)
-        AND t6.customer_id='customer'
-        AND json_object(json(t5.entity),'$.e') = json_object(json(t6.entity),'$.id'))
-        AND json_extract(json(t6.entity),'$.f') IS NOT NULL
+        )
+        AND entity->'$.id' in (
+        SELECT t6.entity
+        FROM haystack as t6
+        INNER JOIN haystack AS t7 ON
+        (('{FAKE_NOW.isoformat()}' BETWEEN t6.start_datetime AND t6.end_datetime
+        AND t6.customer_id='customer')
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t7.start_datetime AND t7.end_datetime
+        AND t7.customer_id='customer'
+        AND t6.entity->'$.e' = t7.entity->'$.id')
+        AND t7.entity->'$.f' IS NOT NULL
         )
         UNION
-        SELECT t7.entity
-        FROM haystack as t7
-        INNER JOIN haystack AS t8 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t7.start_datetime) AND datetime(t7.end_datetime)
-        AND t7.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t8.start_datetime) AND datetime(t8.end_datetime)
-        AND t8.customer_id='customer'
-        AND json_object(json(t7.entity),'$.g') = json_object(json(t8.entity),'$.id'))
-        AND json_extract(json(t8.entity),'$.h') IS NOT NULL
+        SELECT t8.entity
+        FROM haystack as t8
+        INNER JOIN haystack AS t9 ON
+        (('{FAKE_NOW.isoformat()}' BETWEEN t8.start_datetime AND t8.end_datetime
+        AND t8.customer_id='customer')
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t9.start_datetime AND t9.end_datetime
+        AND t9.customer_id='customer'
+        AND t8.entity->'$.g' = t9.entity->'$.id')
+        AND t9.entity->'$.h' IS NOT NULL
+        )
         )
         LIMIT 1
         """)
@@ -967,53 +975,61 @@ def test_path_complex():
     _check_mysql(sql_request)
     assert sql_request == textwrap.dedent(f"""\
         -- (a->b or c->d) and e or (f and g->h)
-        SELECT t1.entity
-        FROM haystack as t1
-        INNER JOIN haystack AS t2 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t1.start_datetime) AND datetime(t1.end_datetime)
-        AND t1.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t2.start_datetime) AND datetime(t2.end_datetime)
-        AND t2.customer_id='customer'
-        AND json_object(json(t1.entity),'$.a') = json_object(json(t2.entity),'$.id'))
-        AND json_extract(json(t2.entity),'$.b') IS NOT NULL
+        SELECT t7.entity FROM haystack as t7
+        WHERE entity->'$.id' in (
+        SELECT t2.entity
+        FROM haystack as t2
+        INNER JOIN haystack AS t3 ON
+        (('{FAKE_NOW.isoformat()}' BETWEEN t2.start_datetime AND t2.end_datetime
+        AND t2.customer_id='customer')
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t3.start_datetime AND t3.end_datetime
+        AND t3.customer_id='customer'
+        AND t2.entity->'$.a' = t3.entity->'$.id')
+        AND t3.entity->'$.b' IS NOT NULL
         )
         UNION
-        SELECT t3.entity
-        FROM haystack as t3
-        INNER JOIN haystack AS t4 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t3.start_datetime) AND datetime(t3.end_datetime)
-        AND t3.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t4.start_datetime) AND datetime(t4.end_datetime)
-        AND t4.customer_id='customer'
-        AND json_object(json(t3.entity),'$.c') = json_object(json(t4.entity),'$.id'))
-        AND json_extract(json(t4.entity),'$.d') IS NOT NULL
+        SELECT t4.entity
+        FROM haystack as t4
+        INNER JOIN haystack AS t5 ON
+        (('{FAKE_NOW.isoformat()}' BETWEEN t4.start_datetime AND t4.end_datetime
+        AND t4.customer_id='customer')
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t5.start_datetime AND t5.end_datetime
+        AND t5.customer_id='customer'
+        AND t4.entity->'$.c' = t5.entity->'$.id')
+        AND t5.entity->'$.d' IS NOT NULL
         )
-        INTERSECT
-        SELECT t5.entity
-        FROM haystack as t5
-        WHERE
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t5.start_datetime) AND datetime(t5.end_datetime)
-        AND t5.customer_id='customer')
-        AND json_extract(json(t5.entity),'$.e') IS NOT NULL
         )
-        UNION
+        AND entity->'$.id' in (
         SELECT t6.entity
         FROM haystack as t6
         WHERE
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t6.start_datetime) AND datetime(t6.end_datetime)
+        (('{FAKE_NOW.isoformat()}' BETWEEN t6.start_datetime AND t6.end_datetime
         AND t6.customer_id='customer')
-        AND json_extract(json(t6.entity),'$.f') IS NOT NULL
+        AND t6.entity->'$.e' IS NOT NULL
         )
-        INTERSECT
-        SELECT t7.entity
-        FROM haystack as t7
-        INNER JOIN haystack AS t8 ON
-        ((datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t7.start_datetime) AND datetime(t7.end_datetime)
-        AND t7.customer_id='customer')
-        AND (datetime('2020-10-01T00:00:00+00:00') BETWEEN datetime(t8.start_datetime) AND datetime(t8.end_datetime)
-        AND t8.customer_id='customer'
-        AND json_object(json(t7.entity),'$.g') = json_object(json(t8.entity),'$.id'))
-        AND json_extract(json(t8.entity),'$.h') IS NOT NULL
+        )
+        UNION
+        SELECT t12.entity FROM haystack as t12
+        WHERE entity->'$.id' in (
+        SELECT t9.entity
+        FROM haystack as t9
+        WHERE
+        (('{FAKE_NOW.isoformat()}' BETWEEN t9.start_datetime AND t9.end_datetime
+        AND t9.customer_id='customer')
+        AND t9.entity->'$.f' IS NOT NULL
+        )
+        )
+        AND entity->'$.id' in (
+        SELECT t10.entity
+        FROM haystack as t10
+        INNER JOIN haystack AS t11 ON
+        (('{FAKE_NOW.isoformat()}' BETWEEN t10.start_datetime AND t10.end_datetime
+        AND t10.customer_id='customer')
+        AND ('{FAKE_NOW.isoformat()}' BETWEEN t11.start_datetime AND t11.end_datetime
+        AND t11.customer_id='customer'
+        AND t10.entity->'$.g' = t11.entity->'$.id')
+        AND t11.entity->'$.h' IS NOT NULL
+        )
         )
         LIMIT 1
         """)
@@ -1053,7 +1069,7 @@ def test_select_with_id():
         WHERE
         (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND t1.entity->'$.id' LIKE 'r:p:demo:r:23a44701-3a62fd7a%'
+        AND t1.entity->'$.id' LIKE '"r:p:demo:r:23a44701-3a62fd7a%"'
         )
         LIMIT 1
         """)

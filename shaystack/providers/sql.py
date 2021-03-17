@@ -48,7 +48,7 @@ _default_driver = {
     "supersqlite": ("supersqlite.sqlite3", {"database"}),
     "postgresql": ("psycopg2", {"host", "database", "user", "password"}),
     "postgres": ("psycopg2", {"host", "database", "user", "password"}),
-    "mysql": ("pymysql", {"host", "database", "user", "password"}),  # Not implemented yet
+    "mysql": ("pymysql", {"host", "database", "user", "password", "client_flag"}),  # Not implemented yet
     # "oracle": "cx_oracle",
     # "mssql": "pymssql",
 }
@@ -308,6 +308,7 @@ class Provider(DBHaystackInterface):
                 "db": self._parsed_db.path[1:],
                 "database": self._parsed_db.path[1:],
                 "dbname": self._parsed_db.path[1:],
+                "client_flag": 65536,  # CLIENT.MULTI_STATEMENTS
             }
             _, keys = self._default_driver[self._dialect]
             filtered = {key: val for key, val in params.items() if key in keys}
@@ -341,6 +342,7 @@ class Provider(DBHaystackInterface):
             cursor.close()
 
     def _dialect_request(self, dialect: str) -> Dict[str, Any]:
+        database_name = self._parsed_db.path[1:]
         table_name = self._parsed_db.fragment
         if dialect == "sqlite3":
             # Lazy import
@@ -355,7 +357,7 @@ class Provider(DBHaystackInterface):
             return get_postgres_parameters(table_name)
         if dialect == "mysql":
             from .db_mysql import get_db_parameters as get_mysql_parameters  # pylint: disable=import-outside-toplevel
-            return get_mysql_parameters(table_name)
+            return get_mysql_parameters(database_name, table_name)
         raise ValueError("Dialog not implemented")
 
     # -----------------------------------------

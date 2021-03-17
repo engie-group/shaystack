@@ -698,6 +698,24 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 
 
 # Start Postgres, Clean DB, Start API and try
+functional-db-mysql: $(REQUIREMENTS) clean-mysql
+	@$(VALIDATE_VENV)
+	@echo -e "$(green)Test local MySQL...$(normal)"
+	@$(MAKE) async-stop-api >/dev/null
+	pip install pymysql >/dev/null
+	$(MAKE) start-mysql
+	PG_IP=$(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mysql)
+	export HAYSTACK_PROVIDER=shaystack.providers.db
+	export HAYSTACK_DB=mysql://haystack:password@localhost/haystackdb#haystack
+	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB}
+	echo -e "$(green)Data imported in MySQL ($${HAYSTACK_DB})$(normal)"
+	$(MAKE) HAYSTACK_PROVIDER=$$HAYSTACK_PROVIDER HAYSTACK_DB=$$HAYSTACK_DB async-start-api
+	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
+	echo -e "$(green)Test with local MySQL serveur OK$(normal)"
+	$(MAKE) async-stop-api >/dev/null
+
+
+# Start Postgres, Clean DB, Start API and try
 functional-mongodb: $(REQUIREMENTS) clean-mongodb
 	@$(VALIDATE_VENV)
 	@echo -e "$(green)Test local MongoDB...$(normal)"
@@ -722,7 +740,7 @@ functional-database: $(REQUIREMENTS) start-pg start-mysql start-mongodb
 	echo -e "$(green)Test same request with all databases OK$(normal)"
 
 
-.make-functional-test: functional-url-local functional-db-sqlite functional-db-postgres \
+.make-functional-test: functional-url-local functional-db-sqlite functional-db-postgres functional-db-mysql\
 		functional-url-s3 functional-db-sqlite-ts functional-mongodb functional-database
 	@touch .make-functional-test
 

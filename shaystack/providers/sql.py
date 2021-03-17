@@ -48,7 +48,7 @@ _default_driver = {
     "supersqlite": ("supersqlite.sqlite3", {"database"}),
     "postgresql": ("psycopg2", {"host", "database", "user", "password"}),
     "postgres": ("psycopg2", {"host", "database", "user", "password"}),
-    # "mysql": "mysqldb",  # Not implemented yet
+    "mysql": ("pymysql", {"host", "database", "user", "password"}),  # Not implemented yet
     # "oracle": "cx_oracle",
     # "mssql": "pymssql",
 }
@@ -353,6 +353,9 @@ class Provider(DBHaystackInterface):
             from .db_postgres import \
                 get_db_parameters as get_postgres_parameters  # pylint: disable=import-outside-toplevel
             return get_postgres_parameters(table_name)
+        if dialect == "mysql":
+            from .db_mysql import get_db_parameters as get_mysql_parameters  # pylint: disable=import-outside-toplevel
+            return get_mysql_parameters(table_name)
         raise ValueError("Dialog not implemented")
 
     # -----------------------------------------
@@ -369,7 +372,8 @@ class Provider(DBHaystackInterface):
             cursor.execute(self._sql["CREATE_HAYSTACK_TABLE"])
             # Create index
             cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_1"])  # On id
-            cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_2"])  # On Json, for @> operator
+            if self._sql["CREATE_HAYSTACK_INDEX_2"]:
+                cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_2"])  # On Json, for @> operator
             # Create table
             cursor.execute(self._sql["CREATE_METADATA_TABLE"])
             # Create ts table

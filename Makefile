@@ -706,7 +706,7 @@ functional-db-mysql: $(REQUIREMENTS) clean-mysql
 	$(MAKE) start-mysql
 	PG_IP=$(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mysql)
 	export HAYSTACK_PROVIDER=shaystack.providers.db
-	export HAYSTACK_DB=mysql://haystack:password@localhost/haystackdb#haystack
+	export HAYSTACK_DB=mysql://mysql:password@localhost/haystackdb#haystack
 	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in MySQL ($${HAYSTACK_DB})$(normal)"
 	$(MAKE) HAYSTACK_PROVIDER=$$HAYSTACK_PROVIDER HAYSTACK_DB=$$HAYSTACK_DB async-start-api
@@ -851,7 +851,7 @@ start-mysql:
 		-e MYSQL_DATABASE="haystackdb" \
 		-e MYSQL_PASS="password" \
 		-e MYSQL_ROOT_PASSWORD=$(MYSQL_PASSWORD) \
-		-e MYSQL_USER=haystack \
+		-e MYSQL_USER=mysql \
 		-e MYSQL_PASSWORD=$(MYSQL_PASSWORD) \
 		-p 3306:3306 \
 		-d mysql

@@ -29,6 +29,8 @@ _db_providers = [
      "sqlite3:///test.db#haystack", True],
     ["shaystack.providers.sql",
      "postgresql://postgres:password@localhost:5432/postgres?connect_timeout=100#haystack", True],
+    ["shaystack.providers.sql",
+     "mysql://mysql:password@localhost:5432/postgres?connect_timeout=100#haystack", True],
     ["shaystack.providers.mongodb",
      "mongodb://localhost/haystackdb?serverSelectionTimeoutMS=100#haystack", True],
 ]

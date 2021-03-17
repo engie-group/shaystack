@@ -24,6 +24,11 @@ from ..filter_ast import FilterNode, FilterUnary, FilterBinary, FilterPath
 
 log = logging.getLogger("db.Provider")
 
+_map_operator = \
+    {"==": "=",
+     "!=": "!="
+     }
+
 
 def _use_inner_join(node: FilterNode) -> bool:
     """ Return True if the tree must use inner join """
@@ -59,8 +64,8 @@ def _generate_path(table_name: str,
             ['(',
              _select_version(version, num_table),
              f"AND t{num_table}.customer_id='{customer_id}'\n",
-             f"AND json_object(json(t{num_table - 1}.entity),'$.{path}') = "
-             f"json_object(json(t{num_table}.entity),'$.id'))\n"
+             f"AND t{num_table - 1}.entity->'$.{path}') = "
+             f"t{num_table}.entity->'$.id')\n"
              ])
         first = False
     where.append("AND ")
@@ -91,7 +96,7 @@ def _generate_filter_in_sql(table_name: str,
                                select, where,
                                node.right,
                                num_table)
-            where.append(f"json_extract(json(t{num_table}.entity),'$.{node.right.paths[-1]}') IS NOT NULL\n")
+            where.append(f"t{num_table}.entity->'$.{node.right.paths[-1]}' IS NOT NULL\n")
         elif node.operator == "not":
             assert isinstance(node.right, FilterPath)
             num_table, select, where = \
@@ -99,7 +104,7 @@ def _generate_filter_in_sql(table_name: str,
                                select, where,
                                node.right,
                                num_table)
-            where.append(f"json_extract(json(t{num_table}.entity),'$.{node.right.paths[-1]}') IS NULL\n")
+            where.append(f"t{num_table}.entity->'$.{node.right.paths[-1]}' IS NULL\n")
         else:
             assert False
 
@@ -163,7 +168,7 @@ def _generate_filter_in_sql(table_name: str,
                                    node.left,
                                    num_table)
                 where.extend([
-                    f"CAST(substr(json_extract(json(t{num_table}.entity),"
+                    f"CAST(substr(t{num_table}.entity->"
                     f"'$.{node.left.paths[-1]}'),3) AS REAL)",
                     f" {node.operator} {value}\n",
                 ])
@@ -177,21 +182,21 @@ def _generate_filter_in_sql(table_name: str,
                 if value is None:
                     if node.operator == '!=':
                         where.append(
-                            f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
+                            f"t{num_table}.entity->'$.{node.left.paths[-1]}' "
                             f"IS NOT NULL\n")
                     else:
                         where.append(
-                            f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
+                            f"t{num_table}.entity->'$.{node.left.paths[-1]}' "
                             f"IS NULL\n")
                 else:
                     if isinstance(value, Ref):
                         where.append(
-                            f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
+                            f"t{num_table}.entity->'$.{node.left.paths[-1]}' "
                             f"LIKE '{str(json.loads(jsondumper.dump_scalar(value)))}%'\n")
                     else:
                         where.append(
-                            f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
-                            f"{node.operator} '{str(json.loads(jsondumper.dump_scalar(value)))}'\n")
+                            f"t{num_table}.entity->'$.{node.left.paths[-1]}' "
+                            f"{_map_operator[node.operator]} '{str(json.loads(jsondumper.dump_scalar(value)))}'\n")
 
     else:
         assert False, "Invalid node"
@@ -203,9 +208,9 @@ def _flatten(a_list: List[Any]) -> Iterator[Any]:
 
 
 def _select_version(version: datetime, num_table: int) -> str:
-    return f"datetime('{version.isoformat()}') " \
-           f"BETWEEN datetime(t{num_table}.start_datetime) " \
-           f"AND datetime(t{num_table}.end_datetime)\n"
+    return f"'{version.isoformat()}' " \
+           f"BETWEEN t{num_table}.start_datetime " \
+           f"AND t{num_table}.end_datetime\n"
 
 
 @dataclass
@@ -282,7 +287,7 @@ def _exec_sql_filter(params: Dict[str, Any],
     return cursor
 
 
-def get_db_parameters(table_name: str) -> Dict[str, Union[Callable, str]]:
+def get_db_parameters(database_name: str, table_name: str) -> Dict[str, Union[Callable, str]]:
     """ Return the SQL request and some lambda to manipulate a SuperSQLite database.
 
     Args:
@@ -309,7 +314,17 @@ def get_db_parameters(table_name: str) -> Dict[str, Union[Callable, str]]:
                 );
             '''),
         "CREATE_HAYSTACK_INDEX_1": textwrap.dedent(f'''
-            ALTER TABLE {table_name} ADD INDEX(id, customer_id)
+            select if (
+                    exists(
+                        select distinct index_name from information_schema.statistics 
+                        where table_schema = '{database_name}'
+                        and table_name = '{table_name}' and index_name like 'index_1'
+                    )
+                    ,'select ''index index_1 exists'' _______;'
+                    ,'create index index_1 on {table_name}(id, customer_id)') into @a;
+                PREPARE stmt1 FROM @a;
+                EXECUTE stmt1;
+                DEALLOCATE PREPARE stmt1;
             '''),
         "CREATE_HAYSTACK_INDEX_2": '',
         "CREATE_METADATA_TABLE": textwrap.dedent(f'''
@@ -382,7 +397,17 @@ def get_db_parameters(table_name: str) -> Dict[str, Union[Callable, str]]:
                 );
             '''),
         "CREATE_TS_INDEX": textwrap.dedent(f'''
-            ALTER TABLE {table_name}_ts ADD INDEX(id,customer_id)
+            select if (
+                    exists(
+                        select distinct index_name from information_schema.statistics 
+                        where table_schema = '{database_name}'
+                        and table_name = '{table_name}_ts' and index_name like 'index_1'
+                    )
+                    ,'select ''index index_1 exists'' _______;'
+                    ,'create index index_1 on {table_name}_ts(id, customer_id)') into @a;
+                PREPARE stmt1 FROM @a;
+                EXECUTE stmt1;
+                DEALLOCATE PREPARE stmt1;
             '''),
         "CLEAN_TS": textwrap.dedent(f'''
             DELETE FROM {table_name}_ts

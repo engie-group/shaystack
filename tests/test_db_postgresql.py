@@ -26,7 +26,7 @@ def _check_pg(sql_request: str):
         provider = cast(SQLProvider, get_provider("shaystack.providers.sql", envs))
         conn = provider.get_connect()
         try:
-            conn.cursor().execute(sql_request)
+            list(conn.cursor().execute(sql_request))
         finally:
             conn.rollback()
 

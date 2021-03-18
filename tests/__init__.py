@@ -17,6 +17,7 @@ def _get_mock_s3():
     version_3 = datetime(2020, 10, 1, 0, 0, 3, 0, tzinfo=pytz.UTC)
 
     class MockS3:
+        __slots__ = "history", "his_count"
         def __init__(self):
             self.history = None
             self.his_count = 0

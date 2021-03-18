@@ -29,6 +29,7 @@ from shaystack.providers.sql import Provider as SQLProvider
 
 FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
+
 def main():
     """Loop to test the postgres generation with REPL"""
     envs = os.environ
@@ -40,6 +41,7 @@ def main():
 
     class HaystackRequest(cmd.Cmd):
         """ Haystack REPL interface """
+        __slots__ = ("conn",)
 
         def __init__(self, conn):
             super().__init__()

@@ -141,6 +141,7 @@ class ZincParseException(ValueError):
     """Exception thrown when a grid cannot be parsed successfully. If known, the
     line and column for the grid are given.
     """
+    __slots__ = "grid_str", "line", "col"
 
     def __init__(self, message: str, grid_str: Typing_Optional[str],
                  line: Typing_Optional[int], col: Typing_Optional[int]):
@@ -187,6 +188,8 @@ class ZincParseException(ValueError):
 class _NearestMatch:  # pylint: disable=global-statement
     """This class returns the nearest matching grammar for the given version."""
 
+    __slots__ = ("_known_grammars",)
+
     def __init__(self, known_grammars: Dict[Version, Any]):
         self._known_grammars = known_grammars
 
@@ -209,6 +212,8 @@ class _GenerateMatch:
     input given.
     """
 
+    __slots__ = "_generator_fn", "_known_grammars"
+
     def __init__(self, generator_fn: Callable[[Version], Any]):
         """
         Args:
@@ -224,8 +229,6 @@ class _GenerateMatch:
             a_generator = self._generator_fn(ver)
             self._known_grammars[ver] = a_generator
             return a_generator
-
-
 
 
 # Grammar according to

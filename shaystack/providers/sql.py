@@ -100,6 +100,7 @@ class _LocalConnect(local):
     """
     One connection by thread
     """
+    __slots__ = ("_connect",)
 
     def __init__(self, module: ModuleType, **params):
         super().__init__()
@@ -113,6 +114,8 @@ class Provider(DBHaystackInterface):
     """
     Expose an Haystack data via the Haystack Rest API and SQL databases
     """
+    __slots__ = "_connect", "_parsed_db", "_dialect", "_default_driver", "database", \
+                "_sql", "_sql_type_to_json"
 
     @property
     def name(self) -> str:

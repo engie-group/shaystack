@@ -55,6 +55,8 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         columns: A list of columns, or a dictionary with columns name and corresponding metadata
     """
 
+    __slots__ = "_version", "_version_given", "metadata", "column", "_row", "_index"
+
     def __init__(self,
                  version: Union[str, Version, None] = None,
                  metadata: Union[None, Entity, MetadataObject, SortableDict] = None,

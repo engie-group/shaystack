@@ -17,6 +17,7 @@ class FilterNode:  # pylint: disable=too-few-public-methods
 
 class FilterPath(FilterNode):  # pylint: disable=too-few-public-methods
     """A filter path (a->b->c)"""
+    __slots__ = ("paths",)
 
     def __init__(self, paths: List[str]):
         """
@@ -32,6 +33,8 @@ class FilterPath(FilterNode):  # pylint: disable=too-few-public-methods
 
 class FilterBinary(FilterNode):  # pylint: disable=too-few-public-methods
     """A filter binary operator"""
+
+    __slots__ = "operator", "left", "right"
 
     def __init__(self, operator: str, left: FilterNode, right: FilterNode):
         """
@@ -52,6 +55,8 @@ class FilterBinary(FilterNode):  # pylint: disable=too-few-public-methods
 class FilterUnary(FilterNode):  # pylint: disable=too-few-public-methods
     """A filter unary operator"""
 
+    __slots__ = "operator", "right"
+
     def __init__(self, operator: str, right: FilterNode):
         """
         Models an unary operation in the filter request
@@ -69,6 +74,7 @@ class FilterUnary(FilterNode):  # pylint: disable=too-few-public-methods
 class FilterAST:  # pylint: disable=too-few-public-methods
     """The root of AST"""
 
+    __slots__ = ("head",)
     def __init__(self, head: Optional[FilterNode]):
         """
         Model a parsing filter request.

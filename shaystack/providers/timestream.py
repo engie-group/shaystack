@@ -90,6 +90,7 @@ class Provider(DBProvider):
     """
     Expose an Haystack data via the Haystack Rest API and SQL+TS databases
     """
+    __slots__ = "_parsed_ts", "_ts_table_name", "_ts_database_name", "_boto", "_write_client", "_read_client"
 
     @property
     def name(self) -> str:

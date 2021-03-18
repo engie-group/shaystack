@@ -39,6 +39,7 @@ class Version:
     Args:
         ver_str: The version str
     """
+    __slots__ = "version_nums", "version_extra"
 
     def __init__(self, ver_str: Union[str, 'Version']):
         if isinstance(ver_str, Version):

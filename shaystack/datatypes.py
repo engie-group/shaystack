@@ -27,6 +27,7 @@ MODE_TRIO: MODE = MODE('text/trio')
 MODE_JSON: MODE = MODE('application/json')
 MODE_CSV: MODE = MODE('text/csv')
 
+
 # Update the unit when create a pint.Quantity
 class Quantity(unit_reg.Quantity):
     """
@@ -46,12 +47,14 @@ class Quantity(unit_reg.Quantity):
         new_quantity.symbol = units
         return new_quantity
 
+
 class Coordinate:
     """A 2D co-ordinate in degrees latitude and longitude.
         Args:
             latitude: the latitude
             longitude: the longitude
     """
+    __slots__ = "latitude", "longitude"
 
     def __init__(self, latitude: float, longitude: float):
         self.latitude = latitude
@@ -122,6 +125,7 @@ class XStr:
             encoding: encoding format (accept `hex` and `b64`)
             data: The data
     """
+    __slots__ = "encoding", "data"
 
     def __init__(self, encoding: str, data: str):
         self.encoding = encoding
@@ -206,6 +210,8 @@ class Ref:
             name: the uniq id
             value: the comment to describe the reference
     """
+
+    __slots__ = "name", "value"
 
     def __init__(self, name: str, value: Optional[str] = None):
         assert isinstance(name, str) and re.match("^[a-zA-Z0-9_:\\-.~]+$", name)

@@ -24,6 +24,7 @@ from .zincparser import hs_scalar_3_0, hs_id, hs_all_date, hs_date, \
 
 _ = XStr  # Necessary for generated code
 
+
 def _merge_and_or(key: str, toks: List[FilterBinary]) -> FilterBinary:
     if len(toks) == 1:
         return toks[0]
@@ -183,6 +184,7 @@ class _FnWrapper:
         fun_name: The function name to manage.
         function_template: The body of the function.
     """
+    __slots__ = ("fun_name",)
 
     def __init__(self, fun_name: str, function_template: str):
         self.fun_name = fun_name

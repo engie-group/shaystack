@@ -66,6 +66,7 @@ class Provider(DBHaystackInterface):
 
     It's a generic provider, capable to delegate the request to `sql` or `url` providers.
     """
+    __slots__ = ("_delegate",)
 
     @property
     def name(self) -> str:

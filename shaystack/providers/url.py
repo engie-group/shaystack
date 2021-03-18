@@ -319,6 +319,8 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
     """
     Expose an Haystack file via the Haystactk Rest API.
     """
+    __slots__ = "_periodic_refresh", "_tls_verify", "_s3_client", "_lambda_client", "_lock", "_versions", \
+                "_lru", "_timer", "_concurrency"
 
     @property
     def name(self) -> str:

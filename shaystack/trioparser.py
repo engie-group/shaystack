@@ -35,6 +35,7 @@ class TrioParseException(ValueError):
     """Exception thrown when a grid cannot be parsed successfully. If known, the
     line and column for the grid are given.
     """
+    __slots__ = "grid_str", "line", "col"
 
     def __init__(self, message: str, grid_str: str, line: int, col: int):
         self.grid_str = grid_str
@@ -74,6 +75,7 @@ class TrioParseException(ValueError):
             LOG.exception('Exception encountered formatting log message')
 
         super().__init__(message)
+
 
 trio_multiline_string = Suppress(hs_nl) + Regex(
     r'([ \t]+.*[\n\r]+)*[ \t]+.*(?=[\n\r]+)').leaveWhitespace().setParseAction(

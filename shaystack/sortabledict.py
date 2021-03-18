@@ -20,6 +20,8 @@ import six
 class SortableDict(col.MutableMapping):
     """A dict-like object that permits value ordering/re-ordering."""
 
+    __slots__ = "_values", "_order", "_validate_fn"
+
     def __init__(self,
                  initial: Union[None, List[Tuple[str, Any]], Dict[str, Any]] = None,
                  validate_fn: Optional[Callable[[Any], bool]] = None):

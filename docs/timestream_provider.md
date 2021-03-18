@@ -1,4 +1,4 @@
-# Provider SQL + AWS Time stream
+# Provider + AWS Time stream
 
 This provider extends the DBProvider to manage time-series with
 [AWS Time stream](https://docs.aws.amazon.com/timestream/). Use `HAYSTACK_PROVIDER=shaytack.providers.timestream` to use
@@ -27,7 +27,6 @@ You can publish data in this table, via *[AWS IoT](https://aws.amazon.com/fr/iot
 
 - Use the same `id` as for Haystack.
 - Add eventually a value for `customer_id`
--
 
 ```console
 $ HAYSTACK_PROVIDER=shaystack.providers.timestream \

@@ -11,12 +11,14 @@
 
 import copy
 import datetime
+import traceback
 from typing import cast
 
 import psycopg2
 import pytz
 from nose import SkipTest
 from pymongo.errors import ServerSelectionTimeoutError
+from pymysql import OperationalError
 
 from shaystack import Ref, Grid, VER_3_0
 from shaystack.providers import get_provider
@@ -45,6 +47,13 @@ def _wrapper(function, provider, db, idx):
     except psycopg2.OperationalError as ex:
         _db_providers[idx][2] = False
         raise SkipTest("Postgres db not started") from ex
+    except OperationalError as ex:
+        _db_providers[idx][2] = False
+        raise SkipTest("MySQL db not started") from ex
+    except Exception as ex:
+        traceback.print_exc()
+        _db_providers[idx][2] = False
+        raise ex
 
 
 def _for_each_provider(function):

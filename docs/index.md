@@ -553,7 +553,7 @@ A tag may be a list, a dict or another grid (recursive grid). To be used with ca
 
 # Contributing
 
-See [here](contributing.md)
+See [here](https://github.com/pprados/shaystack/blob/develop/docs/contributing.md)
 
 # Resources
 
@@ -562,7 +562,7 @@ See [here](contributing.md)
 
 # License
 
-See [LICENCE](LICENSE) file
+See [LICENCE](https://github.com/pprados/shaystack/blob/develop/LICENSE) file
 
 # TODO
 

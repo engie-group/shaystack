@@ -3,7 +3,7 @@
 This provider uses an ontology imported in SQL database. Each entity is saved in a row in the JSON format.
 Use `HAYSTACK_PROVIDER=shaytack.providers.db` or `HAYSTACK_PROVIDER=shaytack.providers.sql`
 to use this provider. Add the variable `HAYSTACK_DB` to describe the link to the root table. At this time, only
-SuperSQLite and Postgresql was supported.
+SuperSQLite, Postgresql and MySQL were supported.
 
 ```console
 $ pip install 'shaystack[graphql,lambda]'
@@ -16,6 +16,7 @@ Install the corresponding database driver:
 | sqlite   | `pip install supersqlite` (`apt install build-essential` before, and may take several minutes)|
 | postgres | `pip install psycopg2`                              |
 |          | or `pip install psycopg2-binary`                    |
+| mysql    | `pip install pymysql`                |
 
 You can use `shaystack_import_db` to import a Haystack files into the database, only if the entities are modified
 (to respect the notion of _Version_ with this provider). The corresponding `hisURI` time-series files are uploaded too.
@@ -69,7 +70,8 @@ Samples:
 - `sqlite3:///test.db#haystack`
 - `sqlite3://localhost/test.db`
 - `sqlite3+supersqlite.sqlite3:///test.db#haystack`
-- `postgres://postgres:password@172.17.0.2:5432/postgres`
+- `postgres://username:password@172.17.0.2:5432/postgres`
+- `mysql://username:password@172.17.0.2:5432/haystackdb`
 
 Inside the SQL url, if the password is in form `'<...>'`, and you use AWS lambda,  
 the password is retrieved from the service [`secretManagers`](https://aws.amazon.com/secrets-manager/). The password

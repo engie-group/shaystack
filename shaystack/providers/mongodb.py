@@ -69,7 +69,8 @@ class Provider(DBHaystackInterface):
             table_name = "haystack"
         else:
             parts = list(self._parsed_db)
-            self._parsed_db = urlparse(urlunparse(parts[:-1] + ['']))  # Remove fragment
+            self._db_url = urlunparse(parts[:-1] + [''])  # Remove fragment
+            self._parsed_db = urlparse(self._db_url)
         self._table_name = table_name
 
         password = self._parsed_db.password

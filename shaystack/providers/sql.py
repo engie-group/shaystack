@@ -22,6 +22,7 @@ import logging
 import re
 from datetime import datetime, timedelta
 from os.path import dirname
+from threading import local
 from types import ModuleType
 from typing import Optional, Tuple, Dict, Any, List, Callable, Set, cast
 from urllib.parse import urlparse, ParseResult
@@ -48,7 +49,7 @@ _default_driver = {
     "supersqlite": ("supersqlite.sqlite3", {"database"}),
     "postgresql": ("psycopg2", {"host", "database", "user", "password"}),
     "postgres": ("psycopg2", {"host", "database", "user", "password"}),
-    # "mysql": "mysqldb",  # Not implemented yet
+    "mysql": ("pymysql", {"host", "database", "user", "password", "client_flag"}),  # Not implemented yet
     # "oracle": "cx_oracle",
     # "mssql": "pymssql",
 }
@@ -93,6 +94,19 @@ def _fix_dialect_alias(dialect: str) -> str:
     if dialect == "sqlite":
         dialect = "sqlite3"
     return dialect
+
+
+class _LocalConnect(local):
+    """
+    One connection by thread
+    """
+
+    def __init__(self, module: ModuleType, **params):
+        super().__init__()
+        self._connect = module.connect(**params)
+
+    def get_connect(self):
+        return self._connect
 
 
 class Provider(DBHaystackInterface):
@@ -308,15 +322,17 @@ class Provider(DBHaystackInterface):
                 "db": self._parsed_db.path[1:],
                 "database": self._parsed_db.path[1:],
                 "dbname": self._parsed_db.path[1:],
+                "client_flag": 65536,  # CLIENT.MULTI_STATEMENTS
             }
             _, keys = self._default_driver[self._dialect]
             filtered = {key: val for key, val in params.items() if key in keys}
-            connect: DBConnection = self.database.connect(**filtered)
-            self._connect = connect
+            self._connect = _LocalConnect(self.database, **filtered)
+            # connect: DBConnection = self.database.connect(**filtered)
+            # self._connect = connect
             self.create_db()
         if not self._connect:
             raise ValueError("Impossible to use the database url")
-        return self._connect
+        return self._connect.get_connect()
 
     def _init_grid_from_db(self, version: Optional[datetime]) -> Grid:
         customer = self.get_customer_id()
@@ -341,6 +357,7 @@ class Provider(DBHaystackInterface):
             cursor.close()
 
     def _dialect_request(self, dialect: str) -> Dict[str, Any]:
+        database_name = self._parsed_db.path[1:]
         table_name = self._parsed_db.fragment
         if dialect == "sqlite3":
             # Lazy import
@@ -353,6 +370,9 @@ class Provider(DBHaystackInterface):
             from .db_postgres import \
                 get_db_parameters as get_postgres_parameters  # pylint: disable=import-outside-toplevel
             return get_postgres_parameters(table_name)
+        if dialect == "mysql":
+            from .db_mysql import get_db_parameters as get_mysql_parameters  # pylint: disable=import-outside-toplevel
+            return get_mysql_parameters(database_name, table_name)
         raise ValueError("Dialog not implemented")
 
     # -----------------------------------------
@@ -369,7 +389,8 @@ class Provider(DBHaystackInterface):
             cursor.execute(self._sql["CREATE_HAYSTACK_TABLE"])
             # Create index
             cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_1"])  # On id
-            cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_2"])  # On Json, for @> operator
+            if self._sql["CREATE_HAYSTACK_INDEX_2"]:
+                cursor.execute(self._sql["CREATE_HAYSTACK_INDEX_2"])  # On Json, for @> operator
             # Create table
             cursor.execute(self._sql["CREATE_METADATA_TABLE"])
             # Create ts table
@@ -454,7 +475,6 @@ class Provider(DBHaystackInterface):
             customer_id = ""
         if now is None:
             now = datetime.now(tz=pytz.UTC)
-
         init_grid = self.read_grid(customer_id, version)  # PPR : read partial ?
         new_grid = init_grid + diff_grid
 

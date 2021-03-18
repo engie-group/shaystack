@@ -22,6 +22,7 @@ import pytz
 from shaystack.grid_filter import _filter_to_python
 from shaystack.providers import get_provider
 from shaystack.providers.db_mongo import _mongo_filter
+from shaystack.providers.db_mysql import _sql_filter as mysql_sql_filter
 from shaystack.providers.db_postgres import _sql_filter as pg_sql_filter
 from shaystack.providers.db_sqlite import _sql_filter as sqlite_sql_filter
 from shaystack.providers.sql import Provider as SQLProvider
@@ -48,6 +49,7 @@ def main():
             try:
                 _, python_code = _filter_to_python(arg)
                 print(python_code)
+                print()
             except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
 
@@ -55,7 +57,22 @@ def main():
             try:
                 sql_request = pg_sql_filter("haystack", arg, FAKE_NOW, 1, "customer")
                 print(sql_request)
+                print()
                 if scheme.startswith("postgres"):
+                    cursor = self.conn.cursor()
+                    cursor.execute(sql_request)
+                    cursor.close()
+            except Exception:  # pylint: disable=broad-except
+                traceback.print_exc()
+            finally:
+                conn.rollback()
+
+        def do_mysql(self, arg: str) -> None:
+            try:
+                sql_request = mysql_sql_filter("haystack", arg, FAKE_NOW, 1, "customer")
+                print(sql_request)
+                print()
+                if scheme.startswith("mysql"):
                     cursor = self.conn.cursor()
                     cursor.execute(sql_request)
                     cursor.close()
@@ -68,6 +85,7 @@ def main():
             try:
                 sql_request = sqlite_sql_filter("haystack", arg, FAKE_NOW, 1, "customer")
                 print(sql_request)
+                print()
                 if scheme.startswith("sqlite"):
                     cursor = self.conn.cursor()
                     cursor.execute(sql_request)
@@ -81,6 +99,7 @@ def main():
             try:
                 mongo_request = _mongo_filter(arg, FAKE_NOW, 1, "customer")
                 pprint.PrettyPrinter(indent=4).pprint(mongo_request)
+                print()
             except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
             finally:

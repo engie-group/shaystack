@@ -9,7 +9,7 @@
             <env name="FLASK_ENV" value="dev"/>
             <env name="HAYSTACK_PROVIDER" value="shaystack.providers.db"/>
             <env name="LOG_LEVEL" value="DEBUG"/>
-            <env name="HAYSTACK_DB" value="postgresql://postgres:password@172.17.0.2:5432/postgres#haystack"/>
+            <env name="HAYSTACK_DB" value="postgresql://postgres:password@localhost:5432/postgres#haystack"/>
             <env name="HAYSTACK_DB_SECRET" value="alpha-Haystack"/>
         </envs>
         <option name="SDK_HOME" value=""/>

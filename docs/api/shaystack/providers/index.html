@@ -517,6 +517,12 @@ def purge_grid(grid: Grid) -&gt; Grid:
                 <dd>
                     <div class="desc"><p>Tools to convert haystack filter to mongo request</p></div>
                 </dd>
+                <dt><code class="name"><a href="db_mysql.html" title="shaystack.providers.db_mysql">shaystack.providers.db_mysql</a></code>
+                </dt>
+                <dd>
+                    <div class="desc"><p>Save Haystack ontology in SQLite database with JSon extension.
+                        Convert the haystack filter to sqlite SQL equivalent syntax.</p></div>
+                </dd>
                 <dt><code class="name"><a href="haystack_interface.html" title="shaystack.providers.haystack_interface">shaystack.providers.haystack_interface</a></code>
                 </dt>
                 <dd>
@@ -1051,7 +1057,7 @@ def purge_grid(grid: Grid) -&gt; Grid:
             dates_range: The date
             range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
             {dateTime}
-            date_version: The optional date version to update
+            date_version: The optional date version to read
 
         Returns:
             A grid
@@ -1272,7 +1278,7 @@ def about(self, home: str) -&gt; Grid:
                                     </dd>
                                     <dt>{dateTime}</dt>
                                     <dt><strong><code>date_version</code></strong></dt>
-                                    <dd>The optional date version to update</dd>
+                                    <dd>The optional date version to read</dd>
                                 </dl>
                                 <h2 id="returns">Returns</h2>
                                 <p>A grid</p></div>
@@ -1294,7 +1300,7 @@ def his_read(
         dates_range: The date
         range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
         {dateTime}
-        date_version: The optional date version to update
+        date_version: The optional date version to read
 
     Returns:
         A grid
@@ -1815,6 +1821,8 @@ def watch_unsub(
                     </li>
                     <li><code><a href="db_mongo.html"
                                  title="shaystack.providers.db_mongo">shaystack.providers.db_mongo</a></code></li>
+                    <li><code><a href="db_mysql.html"
+                                 title="shaystack.providers.db_mysql">shaystack.providers.db_mysql</a></code></li>
                     <li><code><a href="haystack_interface.html" title="shaystack.providers.haystack_interface">shaystack.providers.haystack_interface</a></code>
                     </li>
                     <li><code><a href="import_db.html" title="shaystack.providers.import_db">shaystack.providers.import_db</a></code>

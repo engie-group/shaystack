@@ -1,4 +1,4 @@
-# Contribute
+# Contributing
 
 You are welcome to contribute.
 

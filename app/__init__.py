@@ -72,8 +72,14 @@ def main(host: str, port: int) -> int:
     """Stack a flask server. The command line must set the host and port.
 
     Args:
+
         host: Network to listen (0.0.0.0 to accept call from all network)
         port: Port to listen
+
+    Envs:
+
+        HAYSTACK_PROVIDER: to select a provider (shaystack.providers.db)
+        HAYSTACK_DB: the URL to select the backend with the ontology
     """
     if not "HAYSTACK_PROVIDER" in os.environ:
         print("Set 'HAYSTACK_PROVIDER' to use Shift-4-haystack", file=sys.stderr)

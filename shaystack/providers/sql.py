@@ -22,6 +22,7 @@ import logging
 import re
 from datetime import datetime, timedelta
 from os.path import dirname
+from threading import local
 from types import ModuleType
 from typing import Optional, Tuple, Dict, Any, List, Callable, Set, cast
 from urllib.parse import urlparse, ParseResult
@@ -93,6 +94,19 @@ def _fix_dialect_alias(dialect: str) -> str:
     if dialect == "sqlite":
         dialect = "sqlite3"
     return dialect
+
+
+class _LocalConnect(local):
+    """
+    One connection by thread
+    """
+
+    def __init__(self, module: ModuleType, **params):
+        super().__init__()
+        self._connect = module.connect(**params)
+
+    def get_connect(self):
+        return self._connect
 
 
 class Provider(DBHaystackInterface):
@@ -312,12 +326,13 @@ class Provider(DBHaystackInterface):
             }
             _, keys = self._default_driver[self._dialect]
             filtered = {key: val for key, val in params.items() if key in keys}
-            connect: DBConnection = self.database.connect(**filtered)
-            self._connect = connect
+            self._connect = _LocalConnect(self.database, **filtered)
+            # connect: DBConnection = self.database.connect(**filtered)
+            # self._connect = connect
             self.create_db()
         if not self._connect:
             raise ValueError("Impossible to use the database url")
-        return self._connect
+        return self._connect.get_connect()
 
     def _init_grid_from_db(self, version: Optional[datetime]) -> Grid:
         customer = self.get_customer_id()

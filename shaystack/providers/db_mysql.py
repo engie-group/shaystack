@@ -319,8 +319,7 @@ def get_db_parameters(database_name: str, table_name: str) -> Dict[str, Union[Ca
     return {
         "sql_type_to_json": json.loads,
         "exec_sql_filter": _exec_sql_filter,
-        "field_to_datetime_tz": lambda val:
-        datetime.strptime(val, "%Y-%m-%d %H:%M:%S").replace(tzinfo=pytz.utc),
+        "field_to_datetime_tz": lambda val: val.replace(tzinfo=pytz.utc),
         "datetime_tz_to_field": lambda dt: datetime(dt.year, dt.month, dt.day,
                                                     dt.hour, dt.minute, dt.second, dt.microsecond,
                                                     tzinfo=dt.tzinfo).replace(tzinfo=pytz.utc).isoformat(),

@@ -486,6 +486,7 @@ import pytz
 from shaystack.grid_filter import _filter_to_python
 from shaystack.providers import get_provider
 from shaystack.providers.db_mongo import _mongo_filter
+from shaystack.providers.db_mysql import _sql_filter as mysql_sql_filter
 from shaystack.providers.db_postgres import _sql_filter as pg_sql_filter
 from shaystack.providers.db_sqlite import _sql_filter as sqlite_sql_filter
 from shaystack.providers.sql import Provider as SQLProvider
@@ -512,6 +513,7 @@ def main():
             try:
                 _, python_code = _filter_to_python(arg)
                 print(python_code)
+                print()
             except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
 
@@ -519,7 +521,22 @@ def main():
             try:
                 sql_request = pg_sql_filter(&#34;haystack&#34;, arg, FAKE_NOW, 1, &#34;customer&#34;)
                 print(sql_request)
+                print()
                 if scheme.startswith(&#34;postgres&#34;):
+                    cursor = self.conn.cursor()
+                    cursor.execute(sql_request)
+                    cursor.close()
+            except Exception:  # pylint: disable=broad-except
+                traceback.print_exc()
+            finally:
+                conn.rollback()
+
+        def do_mysql(self, arg: str) -&gt; None:
+            try:
+                sql_request = mysql_sql_filter(&#34;haystack&#34;, arg, FAKE_NOW, 1, &#34;customer&#34;)
+                print(sql_request)
+                print()
+                if scheme.startswith(&#34;mysql&#34;):
                     cursor = self.conn.cursor()
                     cursor.execute(sql_request)
                     cursor.close()
@@ -532,6 +549,7 @@ def main():
             try:
                 sql_request = sqlite_sql_filter(&#34;haystack&#34;, arg, FAKE_NOW, 1, &#34;customer&#34;)
                 print(sql_request)
+                print()
                 if scheme.startswith(&#34;sqlite&#34;):
                     cursor = self.conn.cursor()
                     cursor.execute(sql_request)
@@ -545,6 +563,7 @@ def main():
             try:
                 mongo_request = _mongo_filter(arg, FAKE_NOW, 1, &#34;customer&#34;)
                 pprint.PrettyPrinter(indent=4).pprint(mongo_request)
+                print()
             except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
             finally:
@@ -598,6 +617,7 @@ if __name__ == &#39;__main__&#39;:
             try:
                 _, python_code = _filter_to_python(arg)
                 print(python_code)
+                print()
             except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
 
@@ -605,7 +625,22 @@ if __name__ == &#39;__main__&#39;:
             try:
                 sql_request = pg_sql_filter(&#34;haystack&#34;, arg, FAKE_NOW, 1, &#34;customer&#34;)
                 print(sql_request)
+                print()
                 if scheme.startswith(&#34;postgres&#34;):
+                    cursor = self.conn.cursor()
+                    cursor.execute(sql_request)
+                    cursor.close()
+            except Exception:  # pylint: disable=broad-except
+                traceback.print_exc()
+            finally:
+                conn.rollback()
+
+        def do_mysql(self, arg: str) -&gt; None:
+            try:
+                sql_request = mysql_sql_filter(&#34;haystack&#34;, arg, FAKE_NOW, 1, &#34;customer&#34;)
+                print(sql_request)
+                print()
+                if scheme.startswith(&#34;mysql&#34;):
                     cursor = self.conn.cursor()
                     cursor.execute(sql_request)
                     cursor.close()
@@ -618,6 +653,7 @@ if __name__ == &#39;__main__&#39;:
             try:
                 sql_request = sqlite_sql_filter(&#34;haystack&#34;, arg, FAKE_NOW, 1, &#34;customer&#34;)
                 print(sql_request)
+                print()
                 if scheme.startswith(&#34;sqlite&#34;):
                     cursor = self.conn.cursor()
                     cursor.execute(sql_request)
@@ -631,6 +667,7 @@ if __name__ == &#39;__main__&#39;:
             try:
                 mongo_request = _mongo_filter(arg, FAKE_NOW, 1, &#34;customer&#34;)
                 pprint.PrettyPrinter(indent=4).pprint(mongo_request)
+                print()
             except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
             finally:

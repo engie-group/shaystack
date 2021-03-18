@@ -1090,6 +1090,9 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
         else:
             grid_str = grid_str.decode(encoding=&#34;utf-8&#34;)
 
+    if grid_str and grid_str[-1] not in [&#39;\n&#39;, &#39;\r&#39;]:
+        grid_str += &#39;\n&#39;
+
     if mode == MODE_ZINC:
         return parse_zinc_grid(grid_str)
     if mode == MODE_TRIO:
@@ -3161,7 +3164,7 @@ def version(self) -&gt; Version:  # pragma: no cover
             dates_range: The date
             range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
             {dateTime}
-            date_version: The optional date version to update
+            date_version: The optional date version to read
 
         Returns:
             A grid
@@ -3382,7 +3385,7 @@ def about(self, home: str) -&gt; Grid:
                                     </dd>
                                     <dt>{dateTime}</dt>
                                     <dt><strong><code>date_version</code></strong></dt>
-                                    <dd>The optional date version to update</dd>
+                                    <dd>The optional date version to read</dd>
                                 </dl>
                                 <h2 id="returns">Returns</h2>
                                 <p>A grid</p></div>
@@ -3404,7 +3407,7 @@ def his_read(
         dates_range: The date
         range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
         {dateTime}
-        date_version: The optional date version to update
+        date_version: The optional date version to read
 
     Returns:
         A grid

@@ -830,7 +830,7 @@ class HaystackInterface(ABC):
             dates_range: The date
             range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
             {dateTime}
-            date_version: The optional date version to update
+            date_version: The optional date version to read
 
         Returns:
             A grid
@@ -1677,7 +1677,7 @@ def parse_date_range(date_range: str, timezone: tzinfo) -&gt; Tuple[datetime, da
             dates_range: The date
             range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
             {dateTime}
-            date_version: The optional date version to update
+            date_version: The optional date version to read
 
         Returns:
             A grid
@@ -1902,7 +1902,7 @@ def about(self, home: str) -&gt; Grid:
                                     </dd>
                                     <dt>{dateTime}</dt>
                                     <dt><strong><code>date_version</code></strong></dt>
-                                    <dd>The optional date version to update</dd>
+                                    <dd>The optional date version to read</dd>
                                 </dl>
                                 <h2 id="returns">Returns</h2>
                                 <p>A grid</p></div>
@@ -1924,7 +1924,7 @@ def his_read(
         dates_range: The date
         range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
         {dateTime}
-        date_version: The optional date version to update
+        date_version: The optional date version to read
 
     Returns:
         A grid

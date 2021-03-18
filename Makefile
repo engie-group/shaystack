@@ -600,6 +600,7 @@ aws-docker-deploy: aws-update-token ~/.docker/config.json
 	@$(VALIDATE_VENV)
 	$(CONDA_PYTHON) -m nose -s tests -a '!aws' --where=tests $(NOSETESTS_ARGS)
 	date >.make-unit-test
+
 ## Run unit test
 unit-test: .make-unit-test
 

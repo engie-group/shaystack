@@ -23,7 +23,8 @@ def skip(msg: str) -> None:
 def test_create_db():
     try:
         envs = {'HAYSTACK_DB': HAYSTACK_DB}
-        with cast(SQLProvider, get_provider("shaystack.providers.sql", envs)) as provider:
+        with cast(SQLProvider, get_provider("shaystack.providers.sql", envs,
+                                            use_cache=False)) as provider:
             provider.create_db()
     except psycopg2.OperationalError as ex:
         raise SkipTest("Postgres db not started") from ex
@@ -32,7 +33,8 @@ def test_create_db():
 def test_update_grid():
     try:
         envs = {'HAYSTACK_DB': HAYSTACK_DB}
-        with cast(SQLProvider, get_provider("shaystack.providers.sql", envs)) as provider:
+        with cast(SQLProvider, get_provider("shaystack.providers.sql", envs,
+                                            use_cache=False)) as provider:
             provider.purge_db()
             provider.create_db()
             grid = Grid(metadata={"dis": "hello"},
@@ -47,7 +49,8 @@ def test_update_grid():
 def test_about():
     try:
         with get_provider("shaystack.providers.sql",
-                          {'HAYSTACK_DB': HAYSTACK_DB}) as provider:
+                          {'HAYSTACK_DB': HAYSTACK_DB},
+                          use_cache=False) as provider:
             result = provider.about("http://localhost")
             assert result[0]['moduleName'] == 'SQLProvider'
     except psycopg2.OperationalError as ex:

@@ -813,7 +813,7 @@ stop-pg:
 	echo -e "$(green)Postgres stopped$(normal)"
 
 ## Print Postgres db url connection
-pg-url: start-pg
+url-pg: start-pg
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
 	echo "postgres://postgres:password@$$IP:5432/postgres#haystack"
 
@@ -864,13 +864,15 @@ stop-mysql:
 	echo -e "$(green)MySQL stopped$(normal)"
 
 ## Print Postgres db url connection
-mysql-url: start-mysql
+url-mysql: start-mysql
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' mysql)
-	echo "mysql://mysql:password@$$IP:3306/mysql#haystack"
+	echo "mysql://mysql:password@$$IP:3306/haystackdb#haystack"
 
+# Start a shell for MySQL
 mysql-shell:
 	docker exec -it mysql mysql --user=root --password=$(MYSQL_PASSWORD) -h localhost haystackdb
 
+# Clean MySQL database
 clean-mysql: start-mysql
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' mysql)
 	docker exec -it mysql mysql --user=root --password=$(MYSQL_PASSWORD) -h localhost haystackdb \
@@ -900,6 +902,12 @@ mongo: start-mongodb
 mongodb-shell:
 	docker exec -it mongodb bash
 
+## Print Postgres db url connection
+url-mongo: start-mongodb
+	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' mongodb)
+	echo "mongo://$$IP:3306/haystackdb#haystack"
+
+# Clean Mongo database
 clean-mongodb: start-mongodb
 	@docker exec -it mongodb mongo mongodb://localhost/haystackdb \
 	--quiet --eval 'db.haystack.drop();db.haystack_ts.drop();db.haystack_meta_datas.drop();' >/dev/null

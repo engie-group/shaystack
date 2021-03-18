@@ -13,8 +13,9 @@ export PIP_INDEX_URL=https://test.pypi.org/simple
 export PIP_EXTRA_INDEX_URL=https://pypi.org/simple
 ```
 
-Shift-for-Haystack is a set of API to implement [Haystack project specification](https://project-haystack.org/). It's
-compatible with moderne Python with typing, Flask server in data center, Edge (Raspberry?) or in AWS Lambda function.
+Shift-for-Haystack is a set of API to implement the [Haystack project specification](https://project-haystack.org/).
+It's compatible with modern Python with typing, Flask server in data center, Edge (Raspberry?) or in AWS Lambda
+function.
 
 ## About Haystack, and who is it for
 
@@ -143,6 +144,7 @@ Shift-4-Haystack is agile and can be deployed in different scenarios. Choose an 
 | S3 bucket with version            |
 | Sqlite database                   |
 | Postgres database                 |
+| MySQL database                    |
 | Mongo database                    |
 | haystack backend + AWS Timestream |
 
@@ -158,10 +160,10 @@ Shift-4-Haystack is agile and can be deployed in different scenarios. Choose an 
 | Standalone GraphQL API                            |
 | GraphQL API integrated inside another via AppSync |
 
-| Serverless  | Technologies               |
-| ----------- | -------------------------- |
-| No          | VM, Docker, Postgres, etc. |
-| Yes         | AWS Lambda, Aurora         |
+| Serverless  | Technologies                             |
+| ----------- | ---------------------------------------- |
+| No          | VM, Docker, Postgres, MySQL, Mongo, etc. |
+| Yes         | AWS Lambda, Aurora                       |
 
 and you can extend these proposed scenario. You can see below, how to install these different scenarios.
 
@@ -201,7 +203,7 @@ datas:
 
 ## API Server deployment
 
-This layer implement the standard HaystackAPI with different providers (URL, S3, Postgres, MongoDB, etc.)
+This layer implement the standard HaystackAPI with different providers (URL, S3, Postgres, MySQL, MongoDB, etc.)
 
 ### Installing
 
@@ -231,6 +233,7 @@ by extending `shaystack.providers.HaystackInterface`
 |Data on AWS S3 Bucket|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=s3://... \`<br/>` shaystack`|Remember to install aws support and boto3 python module. [More...](url_provider.md)|
 |Data in a SuperSQLite database|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=sqlite3://... \`<br/>` shaystack`|Remember to install supersqlite python module. [More...](sql_provider.md)|
 |Data in a Postgresql database|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=postgres://... \`<br/>` shaystack`|Remember to install psycopg2 python module. [More...](sql_provider.md)|
+|Data in a MySQL database|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=mysql://... \`<br/>` shaystack`|Remember to install pymysql python module. [More...](sql_provider.md)|
 |Data in a MongoDB|`HAYSTACK_PROVIDER=shaystack.providers.db\`<br/>`HAYSTACK_DB=mongodb+srv:://...\`<br/>` shaystack`|Remember to install pymongo python module. [More...](mongo_provider.md)|
 |Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.timestream\`<br/>`HAYSTACK_DB=postgres://...\`<br/>`HAYSTACK_TS=timestream:://...\<br /> shaystack`|[More...](timestream_provider.md)|
 |Custom|`HAYSTACK_PROVIDER=shaystack.providers.<your module name>`|Write your own subclass of `shaystack.providers.HaystackInterface shaystack`.|
@@ -403,6 +406,7 @@ languages:
 - python
 - sqlite
 - postegresl
+- mysql
 - mongodb
 
 For the developer point of view, it may be interesting to analyse the translation. We propose a tool for that.
@@ -417,7 +421,7 @@ help
 
 Undocumented commands:
 ======================
-bye  mongo  pg  python  sqlite
+bye  mongo  mysql  pg  python  sqlite
 
 (Cmd) 
 ```
@@ -443,10 +447,26 @@ LIMIT 1
 ### Add Haystack API to an existing project
 
 The flexibility of the project allows many integration scenarios.
+
+To expose your current datas with haystack, the first step is:
+
+- associate your fields to a collections of haystack tags
+- group your tags in entities
+- add a uniq `id' for each entities
+- add reference between entities
+
+Then, with this model, choice a path to expose your haystack data.
+
 ![path for integration](integration-shaystack.png)
 
-Add features from left to right. At differents levels, you can publish an API. The shortest way is to export a haystack
-file to an s3 bucket and publish it via an API.
+Add features from left to right. At different levels, you can publish an API. The shortest way is to export a haystack
+file to a s3 bucket and publish it via an API. You can exporte the data in a file, or directly in another table of you
+database. Later, you link your data model with the haystack model with a double write (write in Y), some trigger in your
+data model to maintain the consistency between tables or create a view from your data model to be compatible with the
+haystack json model. Or, you can create your provider to read and convert your datas to haystack format.
+
+Later, you can add a connection with your IOT to expose the current value of points, and add the
+`watch` features.
 
 ### Using AWS
 
@@ -511,7 +531,7 @@ like the `None` object.
 
 ### `Bin` and `XBin`
 
-These are represented bytes array with specific MIME type. Accept `hex` or `b64` to encode and decode the bytes array.
+These are represented bytes array. Accept `hex` or `b64` to encode and decode the bytes array.
 
 ### `Uri`
 
@@ -549,10 +569,10 @@ See [LICENCE](LICENSE) file
 - [X] S3
 - [X] Sqlite
 - [X] Postgres
-- [ ] MySQL
+- [X] MySQL
 - [X] MongoDB
-- [ ] Implements watch in GraphQL
+- [ ] Implements *watch* in GraphQL
 - [ ] Implements *write* in GraphQL
-- [ ] A version with FastAPI
-- [ ] Pypy (when pip install typed-ast running)
+- [ ] An alternative with FastAPI
+- [ ] Compatible with Pypy (when pip install typed-ast running)
 - [ ] Docker images with ARM

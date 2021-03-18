@@ -15,7 +15,7 @@ from shaystack.providers.mongodb import Provider as MongoProvider
 
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "WARNING"))
 
-FAKE_NOW = datetime.datetime(2022, 1, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
+FAKE_NOW = datetime.datetime(2100, 1, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 
 # If .env set the HAYSTACK_DB to postgres, check to execute the sql request

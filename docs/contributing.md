@@ -309,15 +309,16 @@ $ make release
 ## Conversion between haystack filter to SQL
 
 The SQL provider must convert the Haystack request to SQL. Because the usage of JSON inside SQL is not normalized, each
-database use a different approach. A dedicated conversion is applied for SQLite and Postgres.
+database use a different approach. A dedicated conversion is applied for SQLite, Postgres and MySQL.
 
 To test the different conversion, you can use a REPL tools.
 
 ```console
-$ python tests/repl_db.py
+$ shaystack_repr
 ```
 
-Then, you can test the conversion for Postgres (`pg`) or Sqlite (`sqlite`)
+Then, you can test the conversion for Postgres (`pg`), Sqlite (`sqlite`), MySQL (`mysql`), MongoDB (`mongo`) or
+Python (`python`)
 
 ```console
 Documented commands (type help <topic>):

@@ -619,6 +619,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                     <div class="desc"><p>Implement Haystack about.</p>
                         <h2 id="args">Args</h2>
                         <dl>
+                            <dt><strong><code>envs</code></strong></dt>
+                            <dd>The environments variables</dd>
                             <dt><strong><code>request</code></strong></dt>
                             <dd>The HTTP Request</dd>
                             <dt><strong><code>stage</code></strong></dt>
@@ -634,6 +636,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
     &#34;&#34;&#34;
     Implement Haystack about.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -737,6 +740,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                     <div class="desc"><p>Implement Haystack 'formats'.</p>
                         <h2 id="args">Args</h2>
                         <dl>
+                            <dt><strong><code>envs</code></strong></dt>
+                            <dd>The environments variables</dd>
                             <dt><strong><code>request</code></strong></dt>
                             <dd>The HTTP Request</dd>
                             <dt><strong><code>stage</code></strong></dt>
@@ -748,10 +753,12 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                         <summary>
                             <span>Expand source code</span>
                         </summary>
-                        <pre><code class="python">def formats(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
+                        <pre><code class="python">def formats(envs: Dict[str, str], request: HaystackHttpRequest,
+            stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
     Implement Haystack &#39;formats&#39;.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -808,6 +815,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                     <div class="desc"><p>Implement Haystack 'hisRead'.</p>
                         <h2 id="args">Args</h2>
                         <dl>
+                            <dt><strong><code>envs</code></strong></dt>
+                            <dd>The environments variables</dd>
                             <dt><strong><code>request</code></strong></dt>
                             <dd>The HTTP Request</dd>
                             <dt><strong><code>stage</code></strong></dt>
@@ -819,10 +828,12 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                         <summary>
                             <span>Expand source code</span>
                         </summary>
-                        <pre><code class="python">def his_read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
+                        <pre><code class="python">def his_read(envs: Dict[str, str], request: HaystackHttpRequest,
+             stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
     Implement Haystack &#39;hisRead&#39;.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -878,6 +889,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                     <div class="desc"><p>Implement Haystack 'hisWrite'.</p>
                         <h2 id="args">Args</h2>
                         <dl>
+                            <dt><strong><code>envs</code></strong></dt>
+                            <dd>The environments variables</dd>
                             <dt><strong><code>request</code></strong></dt>
                             <dd>The HTTP Request</dd>
                             <dt><strong><code>stage</code></strong></dt>
@@ -889,10 +902,12 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                         <summary>
                             <span>Expand source code</span>
                         </summary>
-                        <pre><code class="python">def his_write(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
+                        <pre><code class="python">def his_write(envs: Dict[str, str], request: HaystackHttpRequest,
+              stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
     Implement Haystack &#39;hisWrite&#39;.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -936,6 +951,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                     <div class="desc"><p>Implement Haystack 'invokeAction'.</p>
                         <h2 id="args">Args</h2>
                         <dl>
+                            <dt><strong><code>envs</code></strong></dt>
+                            <dd>The environments variables</dd>
                             <dt><strong><code>request</code></strong></dt>
                             <dd>The HTTP Request</dd>
                             <dt><strong><code>stage</code></strong></dt>
@@ -947,10 +964,12 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                         <summary>
                             <span>Expand source code</span>
                         </summary>
-                        <pre><code class="python">def invoke_action(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
+                        <pre><code class="python">def invoke_action(envs: Dict[str, str], request: HaystackHttpRequest,
+                  stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
     Implement Haystack &#39;invokeAction&#39;.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -1014,6 +1033,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                     <div class="desc"><p>Implement Haystack 'nav'.</p>
                         <h2 id="args">Args</h2>
                         <dl>
+                            <dt><strong><code>envs</code></strong></dt>
+                            <dd>The environments variables</dd>
                             <dt><strong><code>request</code></strong></dt>
                             <dd>The HTTP Request</dd>
                             <dt><strong><code>stage</code></strong></dt>
@@ -1029,6 +1050,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
     &#34;&#34;&#34;
     Implement Haystack &#39;nav&#39;.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -1055,7 +1077,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                     </details>
                 </dd>
                 <dt id="shaystack.parse"><code class="name flex">
-                    <span>def <span class="ident">parse</span></span>(<span>grid_str: ~AnyStr, mode: Mode = 'text/zinc') ‑> shaystack.grid.Grid</span>
+                    <span>def <span class="ident">parse</span></span>(<span>grid_str: str, mode: Mode = 'text/zinc') ‑> shaystack.grid.Grid</span>
                 </code></dt>
                 <dd>
                     <div class="desc"><p>Parse a grid.</p>
@@ -1072,7 +1094,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                         <summary>
                             <span>Expand source code</span>
                         </summary>
-                        <pre><code class="python">def parse(grid_str: AnyStr, mode: MODE = MODE_ZINC) -&gt; Grid:
+                        <pre><code class="python">def parse(grid_str: str, mode: MODE = MODE_ZINC) -&gt; Grid:
     # Decode incoming text
     &#34;&#34;&#34;
     Parse a grid.
@@ -1223,6 +1245,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                     <div class="desc"><p>Implement Haystack 'pointWrite'.</p>
                         <h2 id="args">Args</h2>
                         <dl>
+                            <dt><strong><code>envs</code></strong></dt>
+                            <dd>The environments variables</dd>
                             <dt><strong><code>request</code></strong></dt>
                             <dd>The HTTP Request</dd>
                             <dt><strong><code>stage</code></strong></dt>
@@ -1234,10 +1258,12 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                         <summary>
                             <span>Expand source code</span>
                         </summary>
-                        <pre><code class="python">def point_write(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
+                        <pre><code class="python">def point_write(envs: Dict[str, str], request: HaystackHttpRequest,
+                stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
     Implement Haystack &#39;pointWrite&#39;.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -1276,7 +1302,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
             duration = parse_scalar(args[&#34;duration&#34;])
             assert isinstance(duration, Quantity)
         if &#34;version&#34; in args:
-            date_version = parse_hs_datetime_format(args[&#34;version&#34;].split(&#34; &#34;))
+            date_version = parse_hs_datetime_format(args[&#34;version&#34;])
         if entity_id is None:
             raise ValueError(&#34;&#39;id&#39; must be set&#34;)
         if val is not None:
@@ -1305,6 +1331,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                     </p>
                         <h2 id="args">Args</h2>
                         <dl>
+                            <dt><strong><code>envs</code></strong></dt>
+                            <dd>The environments variables</dd>
                             <dt><strong><code>request</code></strong></dt>
                             <dd>The HTTP Request</dd>
                             <dt><strong><code>stage</code></strong></dt>
@@ -1320,6 +1348,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
     &#34;&#34;&#34;
     Implement Haystack `read`
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -1335,7 +1364,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
         limit = 0
         if grid_request:
             if &#34;id&#34; in grid_request.column:
-                read_ids = grid_request
+                read_ids = [row[&#34;id&#34;] for row in grid_request]
             else:
                 if &#34;filter&#34; in grid_request.column:
                     read_filter = grid_request[0].get(&#34;filter&#34;, &#34;&#34;)
@@ -1352,9 +1381,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
         # Priority of query string
         if args:
             if &#34;id&#34; in args:
-                read_ids = Grid(version=grid_request.version, columns=[&#34;id&#34;])
-                for i in args[&#34;id&#34;].split(&#34;,&#34;):
-                    read_ids.append({&#34;id&#34;: Ref(i)})
+                read_ids = [Ref(entity_id) for entity_id in args[&#34;id&#34;].split(&#34;,&#34;)]
             else:
                 if &#34;filter&#34; in args:
                     read_filter = args[&#34;filter&#34;]
@@ -1363,7 +1390,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
             if &#34;select&#34; in args:
                 select = args[&#34;select&#34;]
             if &#34;version&#34; in args:
-                date_version = parse_hs_datetime_format(args[&#34;version&#34;].split(&#34; &#34;))
+                date_version = parse_hs_datetime_format(args[&#34;version&#34;])
 
         if read_filter is None:
             read_filter = &#34;&#34;
@@ -1421,6 +1448,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                     <div class="desc"><p>Implement Haystack 'watchPoll'.</p>
                         <h2 id="args">Args</h2>
                         <dl>
+                            <dt><strong><code>envs</code></strong></dt>
+                            <dd>The environments variables</dd>
                             <dt><strong><code>request</code></strong></dt>
                             <dd>The HTTP Request</dd>
                             <dt><strong><code>stage</code></strong></dt>
@@ -1432,10 +1461,12 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                         <summary>
                             <span>Expand source code</span>
                         </summary>
-                        <pre><code class="python">def watch_poll(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
+                        <pre><code class="python">def watch_poll(envs: Dict[str, str], request: HaystackHttpRequest,
+               stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
     Implement Haystack &#39;watchPoll&#39;.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -1474,6 +1505,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                     <div class="desc"><p>Implement Haystack 'watchSub'.</p>
                         <h2 id="args">Args</h2>
                         <dl>
+                            <dt><strong><code>envs</code></strong></dt>
+                            <dd>The environments variables</dd>
                             <dt><strong><code>request</code></strong></dt>
                             <dd>The HTTP Request</dd>
                             <dt><strong><code>stage</code></strong></dt>
@@ -1485,10 +1518,12 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                         <summary>
                             <span>Expand source code</span>
                         </summary>
-                        <pre><code class="python">def watch_sub(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
+                        <pre><code class="python">def watch_sub(envs: Dict[str, str], request: HaystackHttpRequest,
+              stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
     Implement Haystack &#39;watchSub&#39;.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -1536,6 +1571,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                     <div class="desc"><p>Implement Haystack 'watchUnsub'.</p>
                         <h2 id="args">Args</h2>
                         <dl>
+                            <dt><strong><code>envs</code></strong></dt>
+                            <dd>The environments variables</dd>
                             <dt><strong><code>request</code></strong></dt>
                             <dd>The HTTP Request</dd>
                             <dt><strong><code>stage</code></strong></dt>
@@ -1547,10 +1584,12 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                         <summary>
                             <span>Expand source code</span>
                         </summary>
-                        <pre><code class="python">def watch_unsub(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -&gt; HaystackHttpResponse:
+                        <pre><code class="python">def watch_unsub(envs: Dict[str, str], request: HaystackHttpRequest,
+                stage: str) -&gt; HaystackHttpResponse:
     &#34;&#34;&#34;
     Implement Haystack &#39;watchUnsub&#39;.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -1600,13 +1639,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                 </code></dt>
                 <dd>
                     <div class="desc"><p>A convenience class to allow identification of a Bin from other string
-                        types.</p>
-                        <h2 id="args">Args</h2>
-                        <dl>
-                            <dt><strong><code>data</code></strong></dt>
-                            <dd>the datas</dd>
-                        </dl>
-                    </div>
+                        types.</p></div>
                     <details class="source">
                         <summary>
                             <span>Expand source code</span>
@@ -1614,8 +1647,6 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                         <pre><code class="python">class Bin(str):
     &#34;&#34;&#34;A convenience class to allow identification of a Bin from other string
     types.
-    Args:
-        data: the datas
     &#34;&#34;&#34;
 
     def __repr__(self) -&gt; str:
@@ -1655,6 +1686,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
             latitude: the latitude
             longitude: the longitude
     &#34;&#34;&#34;
+    __slots__ = &#34;latitude&#34;, &#34;longitude&#34;
 
     def __init__(self, latitude: float, longitude: float):
         self.latitude = latitude
@@ -1684,10 +1716,23 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
     def __hash__(self) -&gt; int:
         return hash(self.latitude) ^ hash(self.longitude)</code></pre>
                     </details>
+                    <h3>Instance variables</h3>
+                    <dl>
+                        <dt id="shaystack.Coordinate.latitude"><code class="name">var <span
+                                class="ident">latitude</span></code></dt>
+                        <dd>
+                            <div class="desc"><p>Return an attribute of instance, which is of type owner.</p></div>
+                        </dd>
+                        <dt id="shaystack.Coordinate.longitude"><code class="name">var <span
+                                class="ident">longitude</span></code></dt>
+                        <dd>
+                            <div class="desc"><p>Return an attribute of instance, which is of type owner.</p></div>
+                        </dd>
+                    </dl>
                 </dd>
                 <dt id="shaystack.Grid"><code class="flex name class">
                     <span>class <span class="ident">Grid</span></span>
-                    <span>(</span><span>version: Union[str, shaystack.version.Version, NoneType] = None, metadata: Union[NoneType, Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, NoneType]], shaystack.metadata.MetadataObject, shaystack.sortabledict.SortableDict] = None, columns: Union[NoneType, Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, NoneType]], Iterable[Union[Tuple[str, Any], str]], shaystack.sortabledict.SortableDict] = None)</span>
+                    <span>(</span><span>version: Union[str, shaystack.version.Version, NoneType] = None, metadata: Union[NoneType, Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, List[Any], Dict[str, Any], NoneType]], shaystack.metadata.MetadataObject, shaystack.sortabledict.SortableDict] = None, columns: Union[shaystack.sortabledict.SortableDict, Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, List[Any], Dict[str, Any], NoneType]], Iterable[Union[Tuple[str, Any], str]], NoneType] = None)</span>
                 </code></dt>
                 <dd>
                     <div class="desc"><p>A grid is basically a series of tabular records. The grid has a header
@@ -1749,13 +1794,15 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
         columns: A list of columns, or a dictionary with columns name and corresponding metadata
     &#34;&#34;&#34;
 
+    __slots__ = &#34;_version&#34;, &#34;_version_given&#34;, &#34;metadata&#34;, &#34;column&#34;, &#34;_row&#34;, &#34;_index&#34;
+
     def __init__(self,
                  version: Union[str, Version, None] = None,
                  metadata: Union[None, Entity, MetadataObject, SortableDict] = None,
-                 columns: Union[None,
+                 columns: Union[SortableDict,
                                 Entity,
                                 Iterable[Union[Tuple[str, Any], str]],
-                                SortableDict] = None):
+                                None] = None):
         version_given = version is not None
         if version_given:
             version = Version(version)
@@ -1768,13 +1815,13 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
         self.metadata = MetadataObject(validate_fn=self._detect_or_validate)
 
         # The columns
-        self.column: Dict[str, Any] = SortableDict()
+        self.column = SortableDict()
 
         # Rows
         self._row: List[Entity] = []
 
         # Internal index
-        self._index: Optional[Entity] = None
+        self._index: Optional[Dict[Ref, Entity]] = None
 
         if metadata is not None:
             self.metadata.update(metadata.items())
@@ -1795,6 +1842,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                 metadata_object.extend(col_meta)
                 self.column.add_item(col_id, metadata_object)
 
+    # noinspection PyArgumentList
     @staticmethod
     def _approx_check(version_1: Any, version_2: Any) -&gt; bool:
         &#34;&#34;&#34;
@@ -1807,24 +1855,26 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
             true if the values are approximately identical
         &#34;&#34;&#34;
         if isinstance(version_1, numbers.Number) and isinstance(version_2, numbers.Number):
+            # noinspection PyUnresolvedReferences
             return abs(version_1 - version_2) &lt; 0.000001
         # pylint: disable=C0123
         if type(version_1) != type(version_2) and \
                 not (isinstance(version_1, str) and isinstance(version_2, str)):
             return False
         # pylint: enable=C0123
-        if isinstance(version_1, datetime.time):
+        if isinstance(version_1, datetime.time) and isinstance(version_2, datetime.time):
+            # noinspection PyArgumentList
             return version_1.replace(microsecond=0) == version_2.replace(microsecond=0)
-        if isinstance(version_1, datetime.datetime):
+        if isinstance(version_1, datetime.datetime) and isinstance(version_2, datetime.datetime):
             dt1, dt2 = version_1.replace(tzinfo=pytz.UTC), version_2.replace(tzinfo=pytz.UTC)
             return dt1.date() == dt2.date() and Grid._approx_check(dt1.time(), dt2.time())
-        if isinstance(version_1, Quantity):
+        if isinstance(version_1, Quantity) and isinstance(version_2, Quantity):
             return version_1.units == version_2.units and \
                    Grid._approx_check(version_1.m, version_2.m)
-        if isinstance(version_1, Coordinate):
+        if isinstance(version_1, Coordinate) and isinstance(version_2, Coordinate):
             return Grid._approx_check(version_1.latitude, version_2.latitude) and \
                    Grid._approx_check(version_1.longitude, version_2.longitude)
-        if isinstance(version_1, dict):
+        if isinstance(version_1, dict) and isinstance(version_2, dict):
             for key, val in version_1.items():
                 if not Grid._approx_check(val, version_2.get(key, None)):
                     return False
@@ -2302,7 +2352,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
             new_grid.append({key: val for key, val in row.items() if key in cols})
         return new_grid
 
-    def _detect_or_validate(self, val: Any) -&gt; None:
+    def _detect_or_validate(self, val: Any) -&gt; bool:
         &#34;&#34;&#34;Detect the version used from the row content, or validate against the
         version if given.
         &#34;&#34;&#34;
@@ -2310,6 +2360,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                 or isinstance(val, (list, dict, SortableDict, Grid)):
             # Project Haystack 3.0 type.
             self._assert_version(VER_3_0)
+        return True
 
     def _assert_version(self, version: Version) -&gt; None:
         &#34;&#34;&#34;Assert that the grid version is equal to or above the given value. If
@@ -2337,6 +2388,16 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                     </ul>
                     <h3>Instance variables</h3>
                     <dl>
+                        <dt id="shaystack.Grid.column"><code class="name">var <span class="ident">column</span></code>
+                        </dt>
+                        <dd>
+                            <div class="desc"><p>Return an attribute of instance, which is of type owner.</p></div>
+                        </dd>
+                        <dt id="shaystack.Grid.metadata"><code class="name">var <span
+                                class="ident">metadata</span></code></dt>
+                        <dd>
+                            <div class="desc"><p>Return an attribute of instance, which is of type owner.</p></div>
+                        </dd>
                         <dt id="shaystack.Grid.nearest_version"><code class="name">var <span class="ident">nearest_version</span>
                             : shaystack.version.Version</code></dt>
                         <dd>
@@ -2408,7 +2469,7 @@ def version(self) -&gt; Version:  # pragma: no cover
                             </details>
                         </dd>
                         <dt id="shaystack.Grid.extend"><code class="name flex">
-                            <span>def <span class="ident">extend</span></span>(<span>self, values: Iterable[Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, NoneType]]]) ‑> shaystack.grid.Grid</span>
+                            <span>def <span class="ident">extend</span></span>(<span>self, values: Iterable[Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, List[Any], Dict[str, Any], NoneType]]]) ‑> shaystack.grid.Grid</span>
                         </code></dt>
                         <dd>
                             <div class="desc"><p>Add a list of entities inside the grid</p>
@@ -2522,7 +2583,7 @@ def version(self) -&gt; Version:  # pragma: no cover
                             </details>
                         </dd>
                         <dt id="shaystack.Grid.get"><code class="name flex">
-                            <span>def <span class="ident">get</span></span>(<span>self, index: shaystack.datatypes.Ref, default: Union[Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, NoneType]], NoneType] = None) ‑> Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, NoneType]]</span>
+                            <span>def <span class="ident">get</span></span>(<span>self, index: shaystack.datatypes.Ref, default: Union[Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, List[Any], Dict[str, Any], NoneType]], NoneType] = None) ‑> Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, List[Any], Dict[str, Any], NoneType]]</span>
                         </code></dt>
                         <dd>
                             <div class="desc"><p>Return an entity with the corresponding id.</p>
@@ -2555,7 +2616,7 @@ def version(self) -&gt; Version:  # pragma: no cover
                             </details>
                         </dd>
                         <dt id="shaystack.Grid.insert"><code class="name flex">
-                            <span>def <span class="ident">insert</span></span>(<span>self, index: int, value: Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, NoneType]]) ‑> shaystack.grid.Grid</span>
+                            <span>def <span class="ident">insert</span></span>(<span>self, index: int, value: Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, List[Any], Dict[str, Any], NoneType]]) ‑> shaystack.grid.Grid</span>
                         </code></dt>
                         <dd>
                             <div class="desc"><p>Insert a new entity before the index position.</p>
@@ -2646,7 +2707,7 @@ def version(self) -&gt; Version:  # pragma: no cover
                             </details>
                         </dd>
                         <dt id="shaystack.Grid.pop"><code class="name flex">
-                            <span>def <span class="ident">pop</span></span>(<span>self, *index: Union[int, shaystack.datatypes.Ref]) ‑> Union[Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, NoneType]], NoneType]</span>
+                            <span>def <span class="ident">pop</span></span>(<span>self, *index: Union[int, shaystack.datatypes.Ref]) ‑> Union[Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, List[Any], Dict[str, Any], NoneType]], NoneType]</span>
                         </code></dt>
                         <dd>
                             <div class="desc"><p>Delete the row at index or with specified Ref id. If multiple
@@ -2867,6 +2928,7 @@ def version(self) -&gt; Version:  # pragma: no cover
     def __exit__(self, exc_type, exc_value, exc_traceback):
         pass
 
+    # noinspection PyMethodMayBeStatic
     def get_tz(self) -&gt; BaseTzInfo:  # pylint: disable=no-self-use
         &#34;&#34;&#34; Return server time zone. &#34;&#34;&#34;
         return get_localzone()
@@ -2946,6 +3008,7 @@ def version(self) -&gt; Version:  # pragma: no cover
         )
         return grid
 
+    # noinspection PyUnresolvedReferences
     def ops(self) -&gt; Grid:
         &#34;&#34;&#34; Implement the Haystack &#39;ops&#39; ops.
 
@@ -2986,6 +3049,7 @@ def version(self) -&gt; Version:  # pragma: no cover
                              &#34;user action on a target record.&#34;,
         }
         # Remove abstract method
+        # noinspection PyUnresolvedReferences
         for abstract_method in self.__class__.__base__.__abstractmethods__:
             all_haystack_ops.pop(abstract_method, None)
         if (
@@ -3154,15 +3218,14 @@ def version(self) -&gt; Version:  # pragma: no cover
     def his_read(
             self,
             entity_id: Ref,
-            dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+            dates_range: Tuple[datetime, datetime],
             date_version: Optional[datetime] = None,
     ) -&gt; Grid:  # pylint: disable=no-self-use
         &#34;&#34;&#34; Implement the Haystack &#39;hisRead&#39; ops.
 
         Args:
             entity_id: The entity to read
-            dates_range: The date
-            range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
+            dates_range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
             {dateTime}
             date_version: The optional date version to read
 
@@ -3370,7 +3433,7 @@ def about(self, home: str) -&gt; Grid:
                             </details>
                         </dd>
                         <dt id="shaystack.HaystackInterface.his_read"><code class="name flex">
-                            <span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Union[datetime.datetime, str, Tuple[datetime.datetime, datetime.datetime]], date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+                            <span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Tuple[datetime.datetime, datetime.datetime], date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
                         </code></dt>
                         <dd>
                             <div class="desc"><p>Implement the Haystack 'hisRead' ops.</p>
@@ -3379,8 +3442,6 @@ def about(self, home: str) -&gt; Grid:
                                     <dt><strong><code>entity_id</code></strong></dt>
                                     <dd>The entity to read</dd>
                                     <dt><strong><code>dates_range</code></strong></dt>
-                                    <dd>The date</dd>
-                                    <dt><strong><code>range</code></strong></dt>
                                     <dd>May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}),
                                     </dd>
                                     <dt>{dateTime}</dt>
@@ -3397,15 +3458,14 @@ def about(self, home: str) -&gt; Grid:
 def his_read(
         self,
         entity_id: Ref,
-        dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+        dates_range: Tuple[datetime, datetime],
         date_version: Optional[datetime] = None,
 ) -&gt; Grid:  # pylint: disable=no-self-use
     &#34;&#34;&#34; Implement the Haystack &#39;hisRead&#39; ops.
 
     Args:
         entity_id: The entity to read
-        dates_range: The date
-        range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
+        dates_range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
         {dateTime}
         date_version: The optional date version to read
 
@@ -3581,6 +3641,7 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
                          &#34;user action on a target record.&#34;,
     }
     # Remove abstract method
+    # noinspection PyUnresolvedReferences
     for abstract_method in self.__class__.__base__.__abstractmethods__:
         all_haystack_ops.pop(abstract_method, None)
     if (
@@ -4143,6 +4204,8 @@ def watch_unsub(
             value: the comment to describe the reference
     &#34;&#34;&#34;
 
+    __slots__ = &#34;name&#34;, &#34;value&#34;
+
     def __init__(self, name: str, value: Optional[str] = None):
         assert isinstance(name, str) and re.match(&#34;^[a-zA-Z0-9_:\\-.~]+$&#34;, name)
         self.name = name
@@ -4204,6 +4267,14 @@ def has_value(self):
     return self.value is not None</code></pre>
                             </details>
                         </dd>
+                        <dt id="shaystack.Ref.name"><code class="name">var <span class="ident">name</span></code></dt>
+                        <dd>
+                            <div class="desc"><p>Return an attribute of instance, which is of type owner.</p></div>
+                        </dd>
+                        <dt id="shaystack.Ref.value"><code class="name">var <span class="ident">value</span></code></dt>
+                        <dd>
+                            <div class="desc"><p>Return an attribute of instance, which is of type owner.</p></div>
+                        </dd>
                     </dl>
                 </dd>
                 <dt id="shaystack.Uri"><code class="flex name class">
@@ -4212,13 +4283,7 @@ def has_value(self):
                 </code></dt>
                 <dd>
                     <div class="desc"><p>A convenience class to allow identification of a URI from other string
-                        types.</p>
-                        <h2 id="args">Args</h2>
-                        <dl>
-                            <dt><strong><code>uri</code></strong></dt>
-                            <dd>The uri</dd>
-                        </dl>
-                    </div>
+                        types.</p></div>
                     <details class="source">
                         <summary>
                             <span>Expand source code</span>
@@ -4226,8 +4291,6 @@ def has_value(self):
                         <pre><code class="python">class Uri(str):
     &#34;&#34;&#34;A convenience class to allow identification of a URI from other string
     types.
-    Args:
-        uri: The uri
     &#34;&#34;&#34;
 
     def __repr__(self) -&gt; str:
@@ -4266,6 +4329,7 @@ def has_value(self):
     Args:
         ver_str: The version str
     &#34;&#34;&#34;
+    __slots__ = &#34;version_nums&#34;, &#34;version_extra&#34;
 
     def __init__(self, ver_str: Union[str, &#39;Version&#39;]):
         if isinstance(ver_str, Version):
@@ -4474,6 +4538,19 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
                             </details>
                         </dd>
                     </dl>
+                    <h3>Instance variables</h3>
+                    <dl>
+                        <dt id="shaystack.Version.version_extra"><code class="name">var <span class="ident">version_extra</span></code>
+                        </dt>
+                        <dd>
+                            <div class="desc"><p>Return an attribute of instance, which is of type owner.</p></div>
+                        </dd>
+                        <dt id="shaystack.Version.version_nums"><code class="name">var <span
+                                class="ident">version_nums</span></code></dt>
+                        <dd>
+                            <div class="desc"><p>Return an attribute of instance, which is of type owner.</p></div>
+                        </dd>
+                    </dl>
                 </dd>
                 <dt id="shaystack.XStr"><code class="flex name class">
                     <span>class <span class="ident">XStr</span></span>
@@ -4500,6 +4577,7 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
             encoding: encoding format (accept `hex` and `b64`)
             data: The data
     &#34;&#34;&#34;
+    __slots__ = &#34;encoding&#34;, &#34;data&#34;
 
     def __init__(self, encoding: str, data: str):
         self.encoding = encoding
@@ -4535,6 +4613,18 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
             return True
         return not self.data == other.data  # Check only binary data</code></pre>
                     </details>
+                    <h3>Instance variables</h3>
+                    <dl>
+                        <dt id="shaystack.XStr.data"><code class="name">var <span class="ident">data</span></code></dt>
+                        <dd>
+                            <div class="desc"><p>Return an attribute of instance, which is of type owner.</p></div>
+                        </dd>
+                        <dt id="shaystack.XStr.encoding"><code class="name">var <span
+                                class="ident">encoding</span></code></dt>
+                        <dd>
+                            <div class="desc"><p>Return an attribute of instance, which is of type owner.</p></div>
+                        </dd>
+                    </dl>
                     <h3>Methods</h3>
                     <dl>
                         <dt id="shaystack.XStr.data_to_string"><code class="name flex">
@@ -4621,11 +4711,19 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
                     <li>
                         <h4><code><a href="#shaystack.Coordinate" title="shaystack.Coordinate">Coordinate</a></code>
                         </h4>
+                        <ul class="">
+                            <li><code><a href="#shaystack.Coordinate.latitude" title="shaystack.Coordinate.latitude">latitude</a></code>
+                            </li>
+                            <li><code><a href="#shaystack.Coordinate.longitude" title="shaystack.Coordinate.longitude">longitude</a></code>
+                            </li>
+                        </ul>
                     </li>
                     <li>
                         <h4><code><a href="#shaystack.Grid" title="shaystack.Grid">Grid</a></code></h4>
                         <ul class="two-column">
                             <li><code><a href="#shaystack.Grid.clear" title="shaystack.Grid.clear">clear</a></code></li>
+                            <li><code><a href="#shaystack.Grid.column" title="shaystack.Grid.column">column</a></code>
+                            </li>
                             <li><code><a href="#shaystack.Grid.copy" title="shaystack.Grid.copy">copy</a></code></li>
                             <li><code><a href="#shaystack.Grid.extend" title="shaystack.Grid.extend">extend</a></code>
                             </li>
@@ -4637,6 +4735,8 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
                             <li><code><a href="#shaystack.Grid.insert" title="shaystack.Grid.insert">insert</a></code>
                             </li>
                             <li><code><a href="#shaystack.Grid.keys" title="shaystack.Grid.keys">keys</a></code></li>
+                            <li><code><a href="#shaystack.Grid.metadata"
+                                         title="shaystack.Grid.metadata">metadata</a></code></li>
                             <li><code><a href="#shaystack.Grid.nearest_version" title="shaystack.Grid.nearest_version">nearest_version</a></code>
                             </li>
                             <li><code><a href="#shaystack.Grid.pack_columns" title="shaystack.Grid.pack_columns">pack_columns</a></code>
@@ -4718,6 +4818,8 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
                         <ul class="">
                             <li><code><a href="#shaystack.Ref.has_value"
                                          title="shaystack.Ref.has_value">has_value</a></code></li>
+                            <li><code><a href="#shaystack.Ref.name" title="shaystack.Ref.name">name</a></code></li>
+                            <li><code><a href="#shaystack.Ref.value" title="shaystack.Ref.value">value</a></code></li>
                         </ul>
                     </li>
                     <li>
@@ -4728,13 +4830,20 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
                         <ul class="">
                             <li><code><a href="#shaystack.Version.nearest" title="shaystack.Version.nearest">nearest</a></code>
                             </li>
+                            <li><code><a href="#shaystack.Version.version_extra"
+                                         title="shaystack.Version.version_extra">version_extra</a></code></li>
+                            <li><code><a href="#shaystack.Version.version_nums" title="shaystack.Version.version_nums">version_nums</a></code>
+                            </li>
                         </ul>
                     </li>
                     <li>
                         <h4><code><a href="#shaystack.XStr" title="shaystack.XStr">XStr</a></code></h4>
                         <ul class="">
+                            <li><code><a href="#shaystack.XStr.data" title="shaystack.XStr.data">data</a></code></li>
                             <li><code><a href="#shaystack.XStr.data_to_string" title="shaystack.XStr.data_to_string">data_to_string</a></code>
                             </li>
+                            <li><code><a href="#shaystack.XStr.encoding"
+                                         title="shaystack.XStr.encoding">encoding</a></code></li>
                         </ul>
                     </li>
                 </ul>

@@ -137,6 +137,7 @@ def test_tag_values(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "shaystack.providers.url"})
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
+# noinspection PyPep8
 def test_versions(mock_s3, mock_get_url):
     """
     Args:
@@ -168,6 +169,7 @@ def test_versions(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "shaystack.providers.url"})
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
+# noinspection PyPep8
 def test_entities_with_id(mock_s3, mock_get_url):
     """
     Args:
@@ -206,6 +208,7 @@ def test_entities_with_id(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "shaystack.providers.url"})
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
+# noinspection PyPep8
 def test_entities_with_filter(mock_s3, mock_get_url):
     """
     Args:
@@ -234,6 +237,7 @@ def test_entities_with_filter(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "shaystack.providers.url"})
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
+# noinspection PyPep8
 def test_entities_with_select(mock_s3, mock_get_url):
     """
     Args:
@@ -260,6 +264,7 @@ def test_entities_with_select(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "shaystack.providers.url"})
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
+# noinspection PyPep8
 def test_entities_with_limit(mock_s3, mock_get_url):
     """
     Args:
@@ -288,6 +293,7 @@ def test_entities_with_limit(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "shaystack.providers.url"})
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
+# noinspection PyPep8
 def test_his_read_with_boolean(mock_s3, mock_get_url):
     """
     Args:
@@ -338,6 +344,7 @@ def test_his_read_with_boolean(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "shaystack.providers.url"})
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
+# noinspection PyPep8
 def test_his_read_with_number(mock_s3, mock_get_url):
     """
     Args:
@@ -386,6 +393,7 @@ def test_his_read_with_number(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "shaystack.providers.url"})
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
+# noinspection PyPep8
 def test_his_read_with_uri(mock_s3, mock_get_url):
     """
     Args:
@@ -427,6 +435,7 @@ def test_his_read_with_uri(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "shaystack.providers.url"})
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
+# noinspection PyPep8
 def test_his_read_with_ref(mock_s3, mock_get_url):
     """
     Args:
@@ -469,6 +478,7 @@ def test_his_read_with_ref(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "shaystack.providers.url"})
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
+# noinspection PyPep8
 def test_his_read_with_datetime(mock_s3, mock_get_url):
     """
     Args:
@@ -515,6 +525,7 @@ def test_his_read_with_datetime(mock_s3, mock_get_url):
 @patch.dict('os.environ', {'HAYSTACK_PROVIDER': "shaystack.providers.url"})
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
+# noinspection PyPep8
 def test_his_read_with_coordinate(mock_s3, mock_get_url):
     """
     Args:

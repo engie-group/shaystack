@@ -102,6 +102,7 @@ class _LocalConnect(local):
     """
     __slots__ = ("_connect",)
 
+    # noinspection PyUnresolvedReferences
     def __init__(self, module: ModuleType, **params):
         super().__init__()
         self._connect = module.connect(**params)
@@ -482,8 +483,6 @@ class Provider(DBHaystackInterface):
         new_grid = init_grid + diff_grid
 
         end_date = now - timedelta(milliseconds=1)
-        if version is None:
-            version = datetime.now().replace(tzinfo=pytz.UTC)
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -548,7 +547,7 @@ class Provider(DBHaystackInterface):
         Import source URI to database.
         Args:
                 source_uri: The source URI.
-                import_time_series: True to import the time-series references via `hisURI` tag
+                customer_id: The customer id.
                 reset: Remove all the current data before import the grid.
                 version: The associated version time.
         """
@@ -566,8 +565,9 @@ class Provider(DBHaystackInterface):
             log.debug("%s imported", source_uri)
 
         except ModuleNotFoundError as ex:
+            # noinspection PyUnresolvedReferences
             log.error("Call `pip install` "
-                      "with the database driver - %s", ex.msg)  # type: ignore[attribute-error]
+                      "with the database driver - %s", ex.msg)  # pytype: disable=attribute-error
 
     @overrides
     def import_ts(self,
@@ -585,6 +585,7 @@ class Provider(DBHaystackInterface):
                 self._import_ts_in_db(ts_grid, row["id"], customer_id)
                 log.debug("%s imported", uri)
 
+    # noinspection PyUnusedLocal
     def _import_ts_in_db(self,
                          time_series: Grid,
                          entity_id: Ref,

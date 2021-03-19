@@ -505,9 +505,7 @@ class DBHaystackInterface(HaystackInterface):
         Args:
             source_uri: The source URI.
             customer_id: The current customer id to inject in each records.
-            import_time_series: True to import the time-series references via `hisURI` tag
             reset: Remove all the current data before import the grid.
-            compare: Compare current version and new version to update the delta
             version: The associated version time.
         &#34;&#34;&#34;
 
@@ -600,9 +598,7 @@ class DBHaystackInterface(HaystackInterface):
         Args:
             source_uri: The source URI.
             customer_id: The current customer id to inject in each records.
-            import_time_series: True to import the time-series references via `hisURI` tag
             reset: Remove all the current data before import the grid.
-            compare: Compare current version and new version to update the delta
             version: The associated version time.
         &#34;&#34;&#34;
 
@@ -697,12 +693,8 @@ def create_db(self) -&gt; None:
                                     <dd>The source URI.</dd>
                                     <dt><strong><code>customer_id</code></strong></dt>
                                     <dd>The current customer id to inject in each records.</dd>
-                                    <dt><strong><code>import_time_series</code></strong></dt>
-                                    <dd>True to import the time-series references via <code>hisURI</code> tag</dd>
                                     <dt><strong><code>reset</code></strong></dt>
                                     <dd>Remove all the current data before import the grid.</dd>
-                                    <dt><strong><code>compare</code></strong></dt>
-                                    <dd>Compare current version and new version to update the delta</dd>
                                     <dt><strong><code>version</code></strong></dt>
                                     <dd>The associated version time.</dd>
                                 </dl>
@@ -723,9 +715,7 @@ def import_data(self,
     Args:
         source_uri: The source URI.
         customer_id: The current customer id to inject in each records.
-        import_time_series: True to import the time-series references via `hisURI` tag
         reset: Remove all the current data before import the grid.
-        compare: Compare current version and new version to update the delta
         version: The associated version time.
     &#34;&#34;&#34;</code></pre>
                             </details>

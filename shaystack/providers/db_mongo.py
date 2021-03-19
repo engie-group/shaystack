@@ -70,7 +70,7 @@ def _join_stages(node: Union[FilterNode, HaystackType],
     for paths in uniq_paths:
         for i in range(1, len(paths)):
             full_path = "_entity_.".join(paths[0:i])
-            aggrations_stages.extend( \
+            aggrations_stages.extend(
                 [
                     {
                         "$lookup":
@@ -153,10 +153,9 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
 
             return {_relative_ops[node.operator]: [
                 to_double,
-                _to_float(node.right),
+                _to_float(cast(HaystackType, node.right)),
             ]}
-        assert 0, "Invalid operator"
-        return None
+        raise ValueError("Invalid operator")
     return json_dump_scalar(node)
 
 

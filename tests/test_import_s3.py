@@ -13,6 +13,7 @@ def _get_mock_s3():
             self.history = None
             self.his_count = 0
 
+        # noinspection PyMethodMayBeStatic,PyPep8Naming,PyUnusedLocal
         def get_object(self, Bucket, Key, IfNoneMatch):  # pylint: disable=unused-argument, no-self-use
             if Key == 'sample/carytown.zinc':
                 grid = Grid(columns=["hisURI"])

@@ -3,11 +3,14 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 import gc
 from datetime import time, date, datetime
+from typing import cast
 
 from iso8601 import iso8601
 
 from shaystack import Grid, Uri, Ref, Coordinate, MARKER, XStr, grid_filter
+from shaystack.empty_grid import EmptyGrid
 from shaystack.filter_ast import FilterUnary, FilterBinary, FilterPath, FilterAST
+# noinspection PyProtectedMember
 from shaystack.grid_filter import hs_filter, _FnWrapper, filter_function
 from shaystack.zoneinfo import timezone
 
@@ -135,14 +138,14 @@ def test_filter_boolean_operator():
     result = hs_filter.parseString('bool==true and bool!=false', parseAll=True)[0]
     assert isinstance(result, FilterBinary)
     assert result.operator == "and"
-    assert result.left.operator == "=="
-    assert result.right.operator == "!="
+    assert cast(FilterBinary, cast(FilterBinary, result).left).operator == "=="
+    assert cast(FilterBinary, cast(FilterBinary, result).right).operator == "!="
 
     result = hs_filter.parseString('bool>=true or bool<=false', parseAll=True)[0]
     assert isinstance(result, FilterBinary)
     assert result.operator == "or"
-    assert result.left.operator == ">="
-    assert result.right.operator == "<="
+    assert cast(FilterBinary, cast(FilterBinary, result).left).operator == ">="
+    assert cast(FilterBinary, cast(FilterBinary, result).right).operator == "<="
 
     result = hs_filter.parseString('(bool<true or bool>false) and not bool', parseAll=True)[0]
     assert isinstance(result, FilterBinary)
@@ -160,20 +163,20 @@ def test_filter_boolean_operator():
     assert result.left.operator == "has"
     assert isinstance(result.right, FilterBinary)
     assert result.right.operator == "=="
-    assert result.right.left.paths == ["siteRef", "geoCity"]
+    assert cast(FilterPath, result.right.left).paths == ["siteRef", "geoCity"]
 
 
 def test_generated_filter():
-    assert filter_function('equip == "Chicago"')(None, {"equip": "Chicago"})
-    assert filter_function('equip == "Chicago" or not acme')(None, {"equip": "Chicago"})
-    assert filter_function('equip == "Chicago" or not acme')(None, {"equip": "NewYork"})
-    assert not filter_function('equip == "Chicago" or not acme')(None, {"acme": MARKER})
+    assert filter_function('equip == "Chicago"')(EmptyGrid, {"equip": "Chicago"})
+    assert filter_function('equip == "Chicago" or not acme')(EmptyGrid, {"equip": "Chicago"})
+    assert filter_function('equip == "Chicago" or not acme')(EmptyGrid, {"equip": "NewYork"})
+    assert not filter_function('equip == "Chicago" or not acme')(EmptyGrid, {"acme": MARKER})
 
 
 def test_generated_filter_with_reference():
     grid = Grid(columns={'id': {}})
     grid.insert(0, {'id': Ref('id1')})
-    assert filter_function('ref == @id1')(None, {"ref": Ref("id1")})
+    assert filter_function('ref == @id1')(EmptyGrid, {"ref": Ref("id1")})
 
 
 def test_grid_filter():
@@ -258,6 +261,7 @@ def test_grid_specification_filter_sample():
     assert result[0]['equip'] == 'Chicago'
 
 
+# noinspection PyUnresolvedReferences
 def test_if_generated_function_removed():
     # Check if the generated function will be removed
     wrapper = _FnWrapper("_acme", "def _acme(): pass")

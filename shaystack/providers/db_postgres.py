@@ -89,6 +89,7 @@ class _Union(_Root):
 
 @dataclass
 class _Compare(_Root):
+    # noinspection PyMethodMayBeStatic
     def is_merge(self) -> bool:  # pylint: disable=no-self-use
         return False
 
@@ -109,6 +110,7 @@ class _Or(_Root):
     right: _Root
 
 
+# noinspection PyUnresolvedReferences,PyTypeChecker
 def _merge_has_operators(left, right, merged_class: Type) -> Optional[_Root]:
     type_left = type(left)
     type_right = type(right)
@@ -136,6 +138,7 @@ def _merge_has_operators(left, right, merged_class: Type) -> Optional[_Root]:
 
 
 # Phase 1 : reorganize AST
+# noinspection PyUnresolvedReferences,PyTypeChecker
 def _optimize_filter_for_sql(node: FilterNode) -> Union[_Root, FilterNode]:
     if isinstance(node, FilterPath):
         return _Path(node.paths)
@@ -182,7 +185,7 @@ def _generate_sql_block(table_name: str,
                         customer_id: str,
                         version: datetime,
                         limit: int,
-                        node: FilterNode,
+                        node: _Root,
                         num_table: int) -> Tuple[int, str]:
     init_num_table = num_table
     select = [textwrap.dedent(f"""
@@ -245,7 +248,7 @@ def _generate_filter_in_sql(table_name: str,
                             version: datetime,
                             select: List[Union[str, List[Any]]],
                             where: List[Union[str, List[Any]]],
-                            node: FilterNode,
+                            node: _Root,
                             num_table: int
                             ) -> Tuple[int, List[Union[str, List[Any]]], List[Union[str, List[Any]]]]:
     # Use RootBlock nodes
@@ -300,7 +303,7 @@ def _generate_filter_in_sql(table_name: str,
                                                            num_table)
         where = ["".join(_flatten(where))[:-1], ")\n"]
     elif isinstance(node, _Intersect):
-        generated_sql = []
+        generated_sql = list()
         generated_sql.append('\n(')
         num_table, sql = _generate_sql_block(table_name, customer_id, version,
                                              0,
@@ -318,7 +321,7 @@ def _generate_filter_in_sql(table_name: str,
         select = generated_sql
         where = []
     elif isinstance(node, _Union):
-        generated_sql = []
+        generated_sql = list()
         generated_sql.append('\n(')
         num_table, sql = _generate_sql_block(table_name, customer_id, version,
                                              0,
@@ -388,7 +391,7 @@ def _sql_filter(table_name: str,
         customer_id,
         version,
         limit,
-        _optimize_filter_for_sql(parse_filter(grid_filter).head),  # pytlint: disable=protected-access
+        _optimize_filter_for_sql(parse_filter(grid_filter).head),  # pylint: disable=protected-access
         num_table=1)
     sql_request = f'-- {grid_filter}{sql}'
     return sql_request
@@ -424,7 +427,7 @@ def get_db_parameters(table_name: str) -> Dict[str, Union[Callable, str]]:
     Args:
         table_name: The table name to use.
     Returns:
-        A dictionary with SQL request or lamdas
+        A dictionary with SQL request or lambdas
     """
     return {
         "sql_type_to_json": lambda x: x,

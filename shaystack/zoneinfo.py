@@ -493,6 +493,7 @@ def timezone_name(date_time: datetime.datetime) -> str:
 
     # Easy case: pytz timezone.
     try:
+        # noinspection PyUnresolvedReferences
         tz_name = date_time.tzinfo.zone  # type: ignore
         return tz_rmap[tz_name]
     except KeyError:

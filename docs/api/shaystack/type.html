@@ -472,14 +472,17 @@
 The typing for Haystack
 &#34;&#34;&#34;
 from datetime import date, time, datetime
-from typing import Union, Dict
+from typing import Union, Dict, List, Any
 
 from .datatypes import Quantity, Coordinate, Uri, Bin, XStr, _MarkerType, _NAType, _RemoveType, Ref
 
 HaystackType = Union[str, int, float, bool,
                      date, time, datetime,
                      Ref, Quantity, Coordinate, Uri, Bin, XStr,
-                     _MarkerType, _NAType, _RemoveType, None]
+                     _MarkerType, _NAType, _RemoveType,
+                     List[Any],
+                     Dict[str, Any],
+                     None]
 &#34;&#34;&#34; All haystack compatible values (see https://project-haystack.org/doc/TagModel#tagKinds) &#34;&#34;&#34;
 
 Entity = Dict[str, HaystackType]

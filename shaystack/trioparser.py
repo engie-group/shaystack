@@ -105,7 +105,7 @@ hs_trio_tag = ((Optional(hs_id) + Suppress(hs_nl)) ^ hs_trio_tagpair).setName('t
 
 hs_row = hs_trio_tag | Suppress(Regex("//.*[\n\r]+").leaveWhitespace())
 
-hs_record = (hs_row[...] + Suppress((LineStart() + Literal('-')[1, ...] + hs_nl) | \
+hs_record = (hs_row[...] + Suppress((LineStart() + Literal('-')[1, ...] + hs_nl) |
                                     StringEnd())).setParseAction(
     toks_to_dict)
 
@@ -162,7 +162,3 @@ def parse_scalar(scalar_data: str, version: Version = LATEST_VER) -> Any:
         raise TrioParseException(
             'Failed to parse scalar: %s' % _reformat_exception(parse_exception),
             scalar_data, 1, parse_exception.col) from parse_exception
-    except:
-        LOG.debug('Failing scalar data: %r (version %r)',
-                  scalar_data, version)
-        raise

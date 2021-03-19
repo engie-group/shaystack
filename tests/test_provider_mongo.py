@@ -7,6 +7,7 @@ from pymongo.errors import ServerSelectionTimeoutError
 
 from shaystack import Ref, Grid
 from shaystack.providers import get_provider
+# noinspection PyProtectedMember
 from shaystack.providers.mongodb import Provider as MongoProvider, _conv_row_to_entity
 
 # Set HAYSTACK_DB variable, before running the tests to validate with another database

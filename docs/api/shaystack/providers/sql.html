@@ -570,7 +570,9 @@ class _LocalConnect(local):
     &#34;&#34;&#34;
     One connection by thread
     &#34;&#34;&#34;
+    __slots__ = (&#34;_connect&#34;,)
 
+    # noinspection PyUnresolvedReferences
     def __init__(self, module: ModuleType, **params):
         super().__init__()
         self._connect = module.connect(**params)
@@ -583,6 +585,8 @@ class Provider(DBHaystackInterface):
     &#34;&#34;&#34;
     Expose an Haystack data via the Haystack Rest API and SQL databases
     &#34;&#34;&#34;
+    __slots__ = &#34;_connect&#34;, &#34;_parsed_db&#34;, &#34;_dialect&#34;, &#34;_default_driver&#34;, &#34;database&#34;, \
+                &#34;_sql&#34;, &#34;_sql_type_to_json&#34;
 
     @property
     def name(self) -&gt; str:
@@ -949,8 +953,6 @@ class Provider(DBHaystackInterface):
         new_grid = init_grid + diff_grid
 
         end_date = now - timedelta(milliseconds=1)
-        if version is None:
-            version = datetime.now().replace(tzinfo=pytz.UTC)
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -1015,7 +1017,7 @@ class Provider(DBHaystackInterface):
         Import source URI to database.
         Args:
                 source_uri: The source URI.
-                import_time_series: True to import the time-series references via `hisURI` tag
+                customer_id: The customer id.
                 reset: Remove all the current data before import the grid.
                 version: The associated version time.
         &#34;&#34;&#34;
@@ -1033,8 +1035,9 @@ class Provider(DBHaystackInterface):
             log.debug(&#34;%s imported&#34;, source_uri)
 
         except ModuleNotFoundError as ex:
+            # noinspection PyUnresolvedReferences
             log.error(&#34;Call `pip install` &#34;
-                      &#34;with the database driver - %s&#34;, ex.msg)  # type: ignore[attribute-error]
+                      &#34;with the database driver - %s&#34;, ex.msg)  # pytype: disable=attribute-error
 
     @overrides
     def import_ts(self,
@@ -1052,6 +1055,7 @@ class Provider(DBHaystackInterface):
                 self._import_ts_in_db(ts_grid, row[&#34;id&#34;], customer_id)
                 log.debug(&#34;%s imported&#34;, uri)
 
+    # noinspection PyUnusedLocal
     def _import_ts_in_db(self,
                          time_series: Grid,
                          entity_id: Ref,
@@ -1128,6 +1132,8 @@ class Provider(DBHaystackInterface):
     &#34;&#34;&#34;
     Expose an Haystack data via the Haystack Rest API and SQL databases
     &#34;&#34;&#34;
+    __slots__ = &#34;_connect&#34;, &#34;_parsed_db&#34;, &#34;_dialect&#34;, &#34;_default_driver&#34;, &#34;database&#34;, \
+                &#34;_sql&#34;, &#34;_sql_type_to_json&#34;
 
     @property
     def name(self) -&gt; str:
@@ -1494,8 +1500,6 @@ class Provider(DBHaystackInterface):
         new_grid = init_grid + diff_grid
 
         end_date = now - timedelta(milliseconds=1)
-        if version is None:
-            version = datetime.now().replace(tzinfo=pytz.UTC)
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -1560,7 +1564,7 @@ class Provider(DBHaystackInterface):
         Import source URI to database.
         Args:
                 source_uri: The source URI.
-                import_time_series: True to import the time-series references via `hisURI` tag
+                customer_id: The customer id.
                 reset: Remove all the current data before import the grid.
                 version: The associated version time.
         &#34;&#34;&#34;
@@ -1578,8 +1582,9 @@ class Provider(DBHaystackInterface):
             log.debug(&#34;%s imported&#34;, source_uri)
 
         except ModuleNotFoundError as ex:
+            # noinspection PyUnresolvedReferences
             log.error(&#34;Call `pip install` &#34;
-                      &#34;with the database driver - %s&#34;, ex.msg)  # type: ignore[attribute-error]
+                      &#34;with the database driver - %s&#34;, ex.msg)  # pytype: disable=attribute-error
 
     @overrides
     def import_ts(self,
@@ -1597,6 +1602,7 @@ class Provider(DBHaystackInterface):
                 self._import_ts_in_db(ts_grid, row[&#34;id&#34;], customer_id)
                 log.debug(&#34;%s imported&#34;, uri)
 
+    # noinspection PyUnusedLocal
     def _import_ts_in_db(self,
                          time_series: Grid,
                          entity_id: Ref,
@@ -1660,6 +1666,14 @@ class Provider(DBHaystackInterface):
                         </li>
                         <li>abc.ABC</li>
                     </ul>
+                    <h3>Instance variables</h3>
+                    <dl>
+                        <dt id="shaystack.providers.sql.Provider.database"><code class="name">var <span class="ident">database</span></code>
+                        </dt>
+                        <dd>
+                            <div class="desc"><p>Return an attribute of instance, which is of type owner.</p></div>
+                        </dd>
+                    </dl>
                     <h3>Methods</h3>
                     <dl>
                         <dt id="shaystack.providers.sql.Provider.about"><code class="name flex">
@@ -1803,8 +1817,8 @@ def his_read(
                                 <dl>
                                     <dt><strong><code>source_uri</code></strong></dt>
                                     <dd>The source URI.</dd>
-                                    <dt><strong><code>import_time_series</code></strong></dt>
-                                    <dd>True to import the time-series references via <code>hisURI</code> tag</dd>
+                                    <dt><strong><code>customer_id</code></strong></dt>
+                                    <dd>The customer id.</dd>
                                     <dt><strong><code>reset</code></strong></dt>
                                     <dd>Remove all the current data before import the grid.</dd>
                                     <dt><strong><code>version</code></strong></dt>
@@ -1825,7 +1839,7 @@ def his_read(
     Import source URI to database.
     Args:
             source_uri: The source URI.
-            import_time_series: True to import the time-series references via `hisURI` tag
+            customer_id: The customer id.
             reset: Remove all the current data before import the grid.
             version: The associated version time.
     &#34;&#34;&#34;
@@ -1843,8 +1857,9 @@ def his_read(
         log.debug(&#34;%s imported&#34;, source_uri)
 
     except ModuleNotFoundError as ex:
+        # noinspection PyUnresolvedReferences
         log.error(&#34;Call `pip install` &#34;
-                  &#34;with the database driver - %s&#34;, ex.msg)  # type: ignore[attribute-error]</code></pre>
+                  &#34;with the database driver - %s&#34;, ex.msg)  # pytype: disable=attribute-error</code></pre>
                             </details>
                         </dd>
                         <dt id="shaystack.providers.sql.Provider.purge_db"><code class="name flex">
@@ -2130,6 +2145,8 @@ def versions(self) -&gt; List[datetime]:
                         <ul class="two-column">
                             <li><code><a href="#shaystack.providers.sql.Provider.about"
                                          title="shaystack.providers.sql.Provider.about">about</a></code></li>
+                            <li><code><a href="#shaystack.providers.sql.Provider.database"
+                                         title="shaystack.providers.sql.Provider.database">database</a></code></li>
                             <li><code><a href="#shaystack.providers.sql.Provider.get_connect"
                                          title="shaystack.providers.sql.Provider.get_connect">get_connect</a></code>
                             </li>

@@ -56,7 +56,7 @@ def test_watch_sub_with_args(mock):
     request.headers["Accept"] = mime_type
     request.args["watchDis"] = "myWatch"
     request.args["watchId"] = "myid"
-    request.args["lease"] = 1
+    request.args["lease"] = "1"
     ids = ["@id1", "@id2"]
     request.args["ids"] = str(ids)
 

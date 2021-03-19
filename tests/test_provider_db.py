@@ -109,8 +109,8 @@ def _test_update_grid_in_db(provider_name: str, db: str):
         right = Grid(columns={"id": {}, "a": {}, "b": {}, "c": {}})
         right.append({"id": Ref("id1"), "a": 3, "c": 5})
         provider.update_grid(left, version=None, customer_id="customer", now=FAKE_NOW)
-        NEXT_FAKE = FAKE_NOW + datetime.timedelta(minutes=1)
-        provider.update_grid(right - left, version=None, customer_id="customer", now=NEXT_FAKE)
+        next_fake = FAKE_NOW + datetime.timedelta(minutes=1)
+        provider.update_grid(right - left, version=None, customer_id="customer", now=next_fake)
         grid = provider.read_grid("customer", None)
         assert len(grid) == 1
         grid = provider.read_grid("customer", FAKE_NOW)

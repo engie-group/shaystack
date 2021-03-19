@@ -13,7 +13,7 @@ import sys
 import traceback
 from datetime import datetime
 from multiprocessing.dummy import freeze_support
-from typing import Optional, cast, List, Dict, Union
+from typing import Optional, cast, List, Dict
 
 import click
 import pytz
@@ -34,7 +34,7 @@ def import_in_db(source_uri: str,  # pylint: disable=too-many-arguments
                  import_time_series: bool,
                  reset: bool,
                  version: Optional[datetime],
-                 envs: Union[Dict[str, str], os._Environ]  # pylint: disable=protected-access
+                 envs: Dict[str, str]  # pylint: disable=protected-access
                  ) -> None:
     """
     Import source URI to database.
@@ -45,7 +45,6 @@ def import_in_db(source_uri: str,  # pylint: disable=too-many-arguments
             customer_id: The current customer id to inject in each records.
             import_time_series: True to import the time-series references via `hisURI` tag
             reset: Remove all the current data before import the grid.
-            compare: Compare current version and new version to update the delta
             version: The associated version time.
             envs: Environement (like os.environ)
     """
@@ -69,7 +68,9 @@ def import_in_db(source_uri: str,  # pylint: disable=too-many-arguments
                                    customer_id,
                                    version)
     except ModuleNotFoundError as ex:
-        log.error("Call `pip install` with the database driver - %s", ex.msg)  # type: ignore[attribute-error]
+        # noinspection PyUnresolvedReferences
+        log.error("Call `pip install` with the database "
+                  "driver - %s", ex.msg)  # pytype: disable=attribute-error
 
 
 @click.command(short_help='Import haystack file in database')
@@ -117,7 +118,7 @@ def main(source_uri: str,
                      import_time_series=time_series,
                      reset=reset,
                      version=None,
-                     envs=os.environ)
+                     envs=cast(Dict[str, str], os.environ))
         if ts_uri:
             print(f"{source_uri} imported in {database_uri} and {ts_uri}")
         else:

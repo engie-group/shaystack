@@ -9,11 +9,12 @@ import datetime
 import json
 import textwrap
 from csv import reader
+from typing import cast, List
 
 import pytz
 
 import shaystack
-from shaystack import dump_scalar, MODE_TRIO, MODE_ZINC, MODE_CSV
+from shaystack import dump_scalar, MODE_TRIO, MODE_ZINC, MODE_CSV, Entity
 from .test_parser import SIMPLE_EXAMPLE_ZINC, SIMPLE_EXAMPLE_JSON, \
     METADATA_EXAMPLE_JSON, SIMPLE_EXAMPLE_CSV, METADATA_EXAMPLE_CSV, SIMPLE_EXAMPLE_TRIO
 
@@ -559,6 +560,7 @@ def test_scalar_dict_zinc_v3():
                         "\"A quantity in a dict\",{quantity:500miles}\n")
 
 
+# noinspection PyPep8
 def test_scalar_dict_trio_v3():
     grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['comment'] = {}
@@ -582,6 +584,7 @@ def test_scalar_dict_trio_v3():
         },
     ])
     grid_str = shaystack.dump(grid, mode=shaystack.MODE_TRIO)
+    # noinspection PyPep8,PyPep8
     ref_str = textwrap.dedent('''
         comment: An empty dict
         value: {}
@@ -592,7 +595,7 @@ def test_scalar_dict_trio_v3():
         comment: A references in a dict
         value: {'''[1:]) + \
               (" ".join([str(k) + ":" + str(v)
-                         for k, v in {"ref": "@a-ref", "ref2": "@a-ref"}.items()]) \
+                         for k, v in {"ref": "@a-ref", "ref2": "@a-ref"}.items()])
                .replace("ref2:@a-ref", "ref2:@a-ref \"a value\"")) + \
               textwrap.dedent('''
         }
@@ -966,11 +969,11 @@ def test_grid_types_zinc():
     ])
     grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['inner'] = {}
-    grid.extend([
+    grid.extend(cast(List[Entity], [
         {
             'inner': innergrid,
         },
-    ])
+    ]))
     grid_str = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
     assert grid_str == ('ver:"3.0"\n'
                         'inner\n'
@@ -990,11 +993,11 @@ def test_grid_types_trio():
     ])
     grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['inner'] = {}
-    grid.extend([
+    grid.extend(cast(List[Entity], [
         {
             'inner': innergrid,
         },
-    ])
+    ]))
     grid_str = shaystack.dump(grid, mode=shaystack.MODE_TRIO)
     ref_str = textwrap.dedent('''
         inner: Zinc:
@@ -1015,11 +1018,11 @@ def test_grid_types_json():
     ])
     grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['inner'] = {}
-    grid.extend([
+    grid.extend(cast(List[Entity], [
         {
             'inner': innergrid,
         },
-    ])
+    ]))
     grid_str = shaystack.dump(grid, mode=shaystack.MODE_JSON)
     grid_json = json.loads(grid_str)
     assert grid_json == {
@@ -1051,11 +1054,11 @@ def test_grid_types_csv():
     ])
     grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['inner'] = {}
-    grid.extend([
+    grid.extend(cast(List[Entity], [
         {
             'inner': innergrid,
         },
-    ])
+    ]))
     grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
     assert grid_csv == '''

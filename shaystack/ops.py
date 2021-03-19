@@ -20,7 +20,7 @@ from decimal import Decimal
 from typing import Optional, Any, List, cast
 from typing import Tuple, Dict
 
-from accept_types import AcceptableType, get_best_match
+from accept_types import get_best_match
 from pyparsing import ParseException
 
 from .datatypes import Ref, Quantity, MARKER, MODE_TRIO, MODE
@@ -47,11 +47,6 @@ class HaystackHttpRequest:
     A wrapper between http request and Haystack API provider.
 
     Convert the custom technology HTTP request to this format
-
-    Args:
-        body: The http body in string
-        args: The http argument in an map of string
-        headers: All HTTP headers
     """
 
     body: str = ""
@@ -69,12 +64,6 @@ class HaystackHttpResponse:
     A wrapper between http response and Haystack API provider.
 
     Convert the custom technology HTTP request to this format
-
-    Args:
-        status_code: The HTTP status code
-        status: The message
-        headers: The HTTP headers for the response
-        body: The body
     """
 
     status_code: int = 200
@@ -157,7 +146,7 @@ def _get_best_encoding_match(
     return None
 
 
-def _parse_header(header: str) -> List[AcceptableType]:
+def _parse_header(header: str) -> List[_AcceptableEncoding]:
     """Parse an ``Accept`` header into a sorted list of :class:`AcceptableType`
     instances.
     """
@@ -358,6 +347,7 @@ def about(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hay
     """
     Implement Haystack about.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -385,6 +375,7 @@ def ops(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hayst
     """
     Implement Haystack `ops`.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -402,10 +393,12 @@ def ops(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hayst
     return response
 
 
-def formats(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def formats(envs: Dict[str, str], request: HaystackHttpRequest,
+            stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'formats'.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -459,6 +452,7 @@ def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hays
     """
     Implement Haystack `read`
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -491,7 +485,7 @@ def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hays
         # Priority of query string
         if args:
             if "id" in args:
-                read_ids = [Ref(id) for id in args["id"].split(",")]
+                read_ids = [Ref(entity_id) for entity_id in args["id"].split(",")]
             else:
                 if "filter" in args:
                     read_filter = args["filter"]
@@ -526,6 +520,7 @@ def nav(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hayst
     """
     Implement Haystack 'nav'.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -551,10 +546,12 @@ def nav(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hayst
     return response
 
 
-def watch_sub(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def watch_sub(envs: Dict[str, str], request: HaystackHttpRequest,
+              stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'watchSub'.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -595,10 +592,12 @@ def watch_sub(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) ->
     return response
 
 
-def watch_unsub(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def watch_unsub(envs: Dict[str, str], request: HaystackHttpRequest,
+                stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'watchUnsub'.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -637,10 +636,12 @@ def watch_unsub(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) 
     return response
 
 
-def watch_poll(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def watch_poll(envs: Dict[str, str], request: HaystackHttpRequest,
+               stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'watchPoll'.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -672,10 +673,12 @@ def watch_poll(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -
     return response
 
 
-def point_write(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def point_write(envs: Dict[str, str], request: HaystackHttpRequest,
+                stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'pointWrite'.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -735,10 +738,12 @@ def point_write(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) 
     return response
 
 
-def his_read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def his_read(envs: Dict[str, str], request: HaystackHttpRequest,
+             stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'hisRead'.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -787,10 +792,12 @@ def his_read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> 
     return response
 
 
-def his_write(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def his_write(envs: Dict[str, str], request: HaystackHttpRequest,
+              stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'hisWrite'.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 
@@ -827,10 +834,12 @@ def his_write(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) ->
     return response
 
 
-def invoke_action(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def invoke_action(envs: Dict[str, str], request: HaystackHttpRequest,
+                  stage: str) -> HaystackHttpResponse:
     """
     Implement Haystack 'invokeAction'.
     Args:
+        envs: The environments variables
         request: The HTTP Request
         stage: The current stage (`prod`, `dev`, etc.)
 

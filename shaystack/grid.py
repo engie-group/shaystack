@@ -30,6 +30,7 @@ from .version import Version, VER_3_0
 log = logging.getLogger("ping.Provider")
 
 
+# noinspection PyArgumentList
 class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
     """A grid is basically a series of tabular records. The grid has a header
     which describes some metadata about the grid and its columns. This is
@@ -60,10 +61,10 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
     def __init__(self,
                  version: Union[str, Version, None] = None,
                  metadata: Union[None, Entity, MetadataObject, SortableDict] = None,
-                 columns: Union[None,
+                 columns: Union[SortableDict,
                                 Entity,
                                 Iterable[Union[Tuple[str, Any], str]],
-                                SortableDict] = None):
+                                None] = None):
         version_given = version is not None
         if version_given:
             version = Version(version)
@@ -76,13 +77,13 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         self.metadata = MetadataObject(validate_fn=self._detect_or_validate)
 
         # The columns
-        self.column: Dict[str, Any] = SortableDict()
+        self.column = SortableDict()
 
         # Rows
         self._row: List[Entity] = []
 
         # Internal index
-        self._index: Optional[Entity] = None
+        self._index: Optional[Dict[Ref, Entity]] = None
 
         if metadata is not None:
             self.metadata.update(metadata.items())
@@ -103,6 +104,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                 metadata_object.extend(col_meta)
                 self.column.add_item(col_id, metadata_object)
 
+    # noinspection PyArgumentList
     @staticmethod
     def _approx_check(version_1: Any, version_2: Any) -> bool:
         """
@@ -115,24 +117,26 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             true if the values are approximately identical
         """
         if isinstance(version_1, numbers.Number) and isinstance(version_2, numbers.Number):
+            # noinspection PyUnresolvedReferences
             return abs(version_1 - version_2) < 0.000001
         # pylint: disable=C0123
         if type(version_1) != type(version_2) and \
                 not (isinstance(version_1, str) and isinstance(version_2, str)):
             return False
         # pylint: enable=C0123
-        if isinstance(version_1, datetime.time):
+        if isinstance(version_1, datetime.time) and isinstance(version_2, datetime.time):
+            # noinspection PyArgumentList
             return version_1.replace(microsecond=0) == version_2.replace(microsecond=0)
-        if isinstance(version_1, datetime.datetime):
+        if isinstance(version_1, datetime.datetime) and isinstance(version_2, datetime.datetime):
             dt1, dt2 = version_1.replace(tzinfo=pytz.UTC), version_2.replace(tzinfo=pytz.UTC)
             return dt1.date() == dt2.date() and Grid._approx_check(dt1.time(), dt2.time())
-        if isinstance(version_1, Quantity):
+        if isinstance(version_1, Quantity) and isinstance(version_2, Quantity):
             return version_1.units == version_2.units and \
                    Grid._approx_check(version_1.m, version_2.m)
-        if isinstance(version_1, Coordinate):
+        if isinstance(version_1, Coordinate) and isinstance(version_2, Coordinate):
             return Grid._approx_check(version_1.latitude, version_2.latitude) and \
                    Grid._approx_check(version_1.longitude, version_2.longitude)
-        if isinstance(version_1, dict):
+        if isinstance(version_1, dict) and isinstance(version_2, dict):
             for key, val in version_1.items():
                 if not Grid._approx_check(val, version_2.get(key, None)):
                     return False
@@ -610,7 +614,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             new_grid.append({key: val for key, val in row.items() if key in cols})
         return new_grid
 
-    def _detect_or_validate(self, val: Any) -> None:
+    def _detect_or_validate(self, val: Any) -> bool:
         """Detect the version used from the row content, or validate against the
         version if given.
         """
@@ -618,6 +622,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                 or isinstance(val, (list, dict, SortableDict, Grid)):
             # Project Haystack 3.0 type.
             self._assert_version(VER_3_0)
+        return True
 
     def _assert_version(self, version: Version) -> None:
         """Assert that the grid version is equal to or above the given value. If

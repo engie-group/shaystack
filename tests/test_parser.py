@@ -2102,12 +2102,13 @@ def test_malformed_row_zinc():
         assert zpe.col == 1
 
 
+# noinspection PyTypeChecker
 def test_malformed_scalar_zinc():
     # This should always raise an error after logging
     try:
         shaystack.parse_scalar(12341234, mode=shaystack.MODE_ZINC)  # type: ignore
         assert False, 'Should have failed'
-    except AttributeError:
+    except ZincParseException:
         pass
 
 

@@ -50,7 +50,7 @@ def test_watch_poll_with_args(mock) -> None:
     request = HaystackHttpRequest()
     request.headers["Accept"] = mime_type
     request.args["watchId"] = "0123456789ABCDEF"
-    request.args["refresh"] = True
+    request.args["refresh"] = "true"
 
     # WHEN
     response = shaystack.watch_poll(envs, request, "dev")

@@ -49,7 +49,7 @@ def test_watch_unsub_with_args(mock) -> None:
     request = HaystackHttpRequest()
     request.headers["Accept"] = mime_type
     request.args["watchId"] = "0123456789ABCDEF"
-    request.args["close"] = True
+    request.args["close"] = "true"
     ids = {"@id1", "@id2"}
     request.args["ids"] = str(ids)
 

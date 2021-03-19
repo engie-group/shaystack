@@ -551,10 +551,12 @@ def _delete_table(client: BaseClient,
         pass  # Ignore
 
 
+# noinspection PyUnusedLocal
 class Provider(DBProvider):
     &#34;&#34;&#34;
     Expose an Haystack data via the Haystack Rest API and SQL+TS databases
     &#34;&#34;&#34;
+    __slots__ = &#34;_parsed_ts&#34;, &#34;_ts_table_name&#34;, &#34;_ts_database_name&#34;, &#34;_boto&#34;, &#34;_write_client&#34;, &#34;_read_client&#34;
 
     @property
     def name(self) -&gt; str:
@@ -742,8 +744,7 @@ class Provider(DBProvider):
             return XStr(*split)
         if python_type == &#34;NoneType&#34;:
             return None
-        assert False, f&#34;Unknown type {python_type}&#34;
-        return None
+        raise ValueError(f&#34;Unknown type {python_type}&#34;)
 
     _kind_type = {
         &#34;marker&#34;: &#34;BOOLEAN&#34;,
@@ -804,6 +805,7 @@ class Provider(DBProvider):
 
                 for row in page[&#39;Rows&#39;]:
                     datas = row[&#39;Data&#39;]
+                    # noinspection PyUnresolvedReferences
                     scalar_value = dateutil.parser.isoparse(datas[0][&#39;ScalarValue&#39;])
                     if not scalar_value.tzname():
                         scalar_value = scalar_value.replace(tzinfo=pytz.UTC)
@@ -886,6 +888,7 @@ class Provider(DBProvider):
     &#34;&#34;&#34;
     Expose an Haystack data via the Haystack Rest API and SQL+TS databases
     &#34;&#34;&#34;
+    __slots__ = &#34;_parsed_ts&#34;, &#34;_ts_table_name&#34;, &#34;_ts_database_name&#34;, &#34;_boto&#34;, &#34;_write_client&#34;, &#34;_read_client&#34;
 
     @property
     def name(self) -&gt; str:
@@ -1073,8 +1076,7 @@ class Provider(DBProvider):
             return XStr(*split)
         if python_type == &#34;NoneType&#34;:
             return None
-        assert False, f&#34;Unknown type {python_type}&#34;
-        return None
+        raise ValueError(f&#34;Unknown type {python_type}&#34;)
 
     _kind_type = {
         &#34;marker&#34;: &#34;BOOLEAN&#34;,
@@ -1135,6 +1137,7 @@ class Provider(DBProvider):
 
                 for row in page[&#39;Rows&#39;]:
                     datas = row[&#39;Data&#39;]
+                    # noinspection PyUnresolvedReferences
                     scalar_value = dateutil.parser.isoparse(datas[0][&#39;ScalarValue&#39;])
                     if not scalar_value.tzname():
                         scalar_value = scalar_value.replace(tzinfo=pytz.UTC)

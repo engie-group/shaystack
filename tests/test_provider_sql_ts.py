@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytz
 from nose.plugins.attrib import attr
 
+# noinspection PyProtectedMember
 from shaystack import Ref, Grid, Quantity, MARKER, REMOVE, Coordinate, NA, parse_date_range, XStr
 from shaystack.providers import get_provider
 from shaystack.providers.sql import Provider as SQLProvider

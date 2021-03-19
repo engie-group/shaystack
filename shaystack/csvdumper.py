@@ -195,7 +195,7 @@ def dump_grid(grid: Grid) -> AnyStr:
     """
 
     # Use list and join
-    csv_result = []
+    csv_result: List[str] = []
     _dump_columns(csv_result, grid.column)
     _dump_rows(csv_result, grid)
     return ''.join(csv_result)

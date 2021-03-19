@@ -110,7 +110,10 @@ def main():
         def do_bye(self, _: str) -> bool:  # pylint: disable=unused-argument,no-self-use
             return True
 
-    HaystackRequest(conn).cmdloop()
+    try:
+        HaystackRequest(conn).cmdloop()
+    except KeyboardInterrupt:
+        return 0
     return 0
 
 

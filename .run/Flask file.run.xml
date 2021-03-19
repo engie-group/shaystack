@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="Flask url" type="PythonConfigurationType" factoryName="Python">
+    <configuration default="false" name="Flask file" type="PythonConfigurationType" factoryName="Python">
         <module name="haystack-api"/>
         <option name="INTERPRETER_OPTIONS" value=""/>
         <option name="PARENT_ENVS" value="true"/>
@@ -8,7 +8,7 @@
             <env name="FLASK_DEBUG" value="1"/>
             <env name="FLASK_ENV" value="dev"/>
             <env name="HAYSTACK_PROVIDER" value="shaystack.providers.db"/>
-            <env name="HAYSTACK_DB" value="https://shaystack.s3.eu-west-3.amazonaws.com/carytown.zinc"/>
+            <env name="HAYSTACK_DB" value="sample/carytown.zinc"/>
             <env name="LOG_LEVEL" value="DEBUG"/>
         </envs>
         <option name="SDK_HOME" value=""/>

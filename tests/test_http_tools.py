@@ -1,3 +1,4 @@
+# noinspection PyProtectedMember
 from shaystack.ops import _get_best_encoding_match
 
 

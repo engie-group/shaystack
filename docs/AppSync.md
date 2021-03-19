@@ -4,7 +4,8 @@ With AWS AppSync, it's possible to merge the Haystack GraphQL API with another G
 
 ## Schema
 
-The current GraphQL schema for Haystack is [here](../schema.graphql)
+The current GraphQL schema for Haystack
+is [here](https://raw.githubusercontent.com/pprados/shaystack/develop/schema.graphql)
 
 ## Delegate part of global GraphQL to haystack GraphQL API
 
@@ -27,9 +28,13 @@ In the AWS AppSync console:
   - Choose the data source `SHaystackLambda`
   - Function name `SHaystackWrapper`
   - Description `Delegate part of Graphql request to Haystack GraphQL API`
-  - import the body of [`request-filter.json`](request-filter.json) inside the
+  - import the body
+    of [`request-filter.json`](https://raw.githubusercontent.com/pprados/shaystack/develop/AWS_appsync/request-filter.json)
+    inside the
     `Configure the request mapping template`
-  - import the body of [`response-filter.json`](response-filter.json) inside the
+  - import the body
+    of [`response-filter.json`](https://raw.githubusercontent.com/pprados/shaystack/develop/AWS_appsync/response-filter.json)
+    inside the
     `Configure the response mapping template`
   - ask the API URL (`zappa status --json | jq -r '."API Gateway URL"'`).
   - You must receive something like `https://jihndyzv6h.execute-api.us-east-2.amazonaws.com/dev`. Extract only the host
@@ -41,7 +46,8 @@ In the AWS AppSync console:
 ![alt New Data Source][newFunction]
 
 * Import the schema
-  - Copy the body of [`schema.graphql`](../schema.graphql) in the schema of AppSync
+  - Copy the body of [`schema.graphql`](https://raw.githubusercontent.com/pprados/shaystack/develop/schema.graphql) in
+    the schema of AppSync
   - Save the schema
   - Add the end of the Resolver list, attach a resolver for the filed `haystack`
 

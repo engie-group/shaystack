@@ -2,7 +2,7 @@ from datetime import datetime, date, timedelta
 
 import pytz
 from mock import patch
-from tzlocal.unix import get_localzone
+from tzlocal import get_localzone
 
 import shaystack
 from shaystack import Ref

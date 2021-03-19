@@ -546,14 +546,11 @@ class Provider(DBHaystackInterface):
 
     It&#39;s a generic provider, capable to delegate the request to `sql` or `url` providers.
     &#34;&#34;&#34;
-
-    @property
-    def name(self) -&gt; str:
-        return self._delegate.name()
+    __slots__ = (&#34;_delegate&#34;,)
 
     def __init__(self, envs: Dict[str, str]):
         super().__init__(envs)
-        if not &#34;HAYSTACK_DB&#34; in envs:
+        if &#34;HAYSTACK_DB&#34; not in envs:
             print(&#34;Set &#39;HAYSTACK_DB&#39; to use database&#34;, file=sys.stderr)
             sys.exit(-1)
         parsed_db = urlparse(envs[&#34;HAYSTACK_DB&#34;])
@@ -566,6 +563,11 @@ class Provider(DBHaystackInterface):
 
         provider_name = __name__[0:__name__.rindex(&#39;.&#39;) + 1] + _scheme_to_providers[dialect]
         self._delegate = cast(DBHaystackInterface, get_provider(provider_name, self._envs))
+
+    @property
+    def name(self) -&gt; str:
+        # noinspection PyCallingNonCallable
+        return self._delegate.name()
 
     @overrides
     def values_for_tag(self, tag: str,
@@ -679,14 +681,11 @@ class Provider(DBHaystackInterface):
 
     It&#39;s a generic provider, capable to delegate the request to `sql` or `url` providers.
     &#34;&#34;&#34;
-
-    @property
-    def name(self) -&gt; str:
-        return self._delegate.name()
+    __slots__ = (&#34;_delegate&#34;,)
 
     def __init__(self, envs: Dict[str, str]):
         super().__init__(envs)
-        if not &#34;HAYSTACK_DB&#34; in envs:
+        if &#34;HAYSTACK_DB&#34; not in envs:
             print(&#34;Set &#39;HAYSTACK_DB&#39; to use database&#34;, file=sys.stderr)
             sys.exit(-1)
         parsed_db = urlparse(envs[&#34;HAYSTACK_DB&#34;])
@@ -699,6 +698,11 @@ class Provider(DBHaystackInterface):
 
         provider_name = __name__[0:__name__.rindex(&#39;.&#39;) + 1] + _scheme_to_providers[dialect]
         self._delegate = cast(DBHaystackInterface, get_provider(provider_name, self._envs))
+
+    @property
+    def name(self) -&gt; str:
+        # noinspection PyCallingNonCallable
+        return self._delegate.name()
 
     @overrides
     def values_for_tag(self, tag: str,

@@ -22,7 +22,7 @@ def client_graphql():
     resp = requests.post("http://localhost:3000/graphql", params={'query': q})
 
     json_resp = json.loads(resp.text)
-    assert (json_resp == \
+    assert (json_resp ==
             {'data': {
                 'haystack': {'with_hist': [{'id': 'r:p:demo:r:23a44701-bbc36976 Tariff His', 'dis': 's:Tariff His'}],
                              'with_ids': [{'id': 'r:p:demo:r:23a44701-1af1bca9 Richmond weather',

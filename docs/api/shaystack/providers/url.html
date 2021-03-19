@@ -522,11 +522,10 @@ from multiprocessing.pool import ThreadPool
 from os.path import dirname
 from pathlib import Path
 from threading import Lock
-from typing import Optional, Union, Tuple, Any, List, cast, Dict
+from typing import Optional, Tuple, Any, List, cast, Dict
 from urllib.parse import urlparse, ParseResult
 
 import pytz
-from botocore.exceptions import ClientError
 from overrides import overrides
 
 from .db_haystack_interface import DBHaystackInterface
@@ -542,8 +541,11 @@ from ..zincparser import ZincParseException
 
 BOTO3_AVAILABLE = False
 try:
+    # noinspection PyUnresolvedReferences
     import boto3
     from botocore.client import BaseClient  # pylint: disable=ungrouped-imports
+    # noinspection PyUnresolvedReferences
+    from botocore.exceptions import ClientError
 
     BOTO3_AVAILABLE = True
 except ImportError:
@@ -630,6 +632,7 @@ def read_grid_from_uri(uri: str, envs: Dict[str, str]) -&gt; Grid:
     Read a grid from uri.
     Args:
         uri: The URI to reference the datas (accept classical url or s3 url).
+        envs: The environment variables
 
     Returns:
         The grid.
@@ -664,6 +667,9 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
     )
     suffix = Path(parsed_source.path).suffix
     use_gzip = False
+    destination_grid = EmptyGrid.copy()
+    source_grid = EmptyGrid.copy()
+
     if parsed_source.scheme == &#39;s3&#39; and not compare_grid:
         # Try to copy from s3 to s3
         if update_time_series:
@@ -727,7 +733,7 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
                         raise
                 else:
                     raise
-            except ZincParseException as ex:
+            except ZincParseException:
                 # Ignore. Override target
                 log.warning(&#34;Zinc parser exception with %s&#34;, (parsed_destination.geturl()))
                 destination_grid = EmptyGrid
@@ -755,6 +761,7 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
                    force, merge_ts, envs=envs)
 
 
+# noinspection PyUnusedLocal
 def _import_ts(parsed_source: ParseResult,  # pylint: disable=too-many-locals,too-many-arguments
                parsed_destination: ParseResult,
                source_grid: Grid,
@@ -798,10 +805,13 @@ def _import_ts(parsed_source: ParseResult,  # pylint: disable=too-many-locals,to
             pool.starmap(_update_grid_on_s3, requests)
 
 
+# noinspection PyMethodMayBeStatic
 class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attributes
     &#34;&#34;&#34;
     Expose an Haystack file via the Haystactk Rest API.
     &#34;&#34;&#34;
+    __slots__ = &#34;_periodic_refresh&#34;, &#34;_tls_verify&#34;, &#34;_s3_client&#34;, &#34;_lambda_client&#34;, &#34;_lock&#34;, &#34;_versions&#34;, \
+                &#34;_lru&#34;, &#34;_timer&#34;, &#34;_concurrency&#34;
 
     @property
     def name(self) -&gt; str:
@@ -878,7 +888,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
     def his_read(
             self,
             entity_id: Ref,
-            dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+            dates_range: Tuple[datetime, datetime],
             date_version: Optional[datetime] = None
     ) -&gt; Grid:
         &#34;&#34;&#34; Implement Haystack &#39;hisRead&#39; &#34;&#34;&#34;
@@ -908,15 +918,16 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                         break
 
                 # Remove data not in the range
-                filter_history = [row for row in history if dates_range[0] &lt;= row[&#39;ts&#39;] &lt; dates_range[1]]
+                filter_history = [row for row in history if
+                                  dates_range[0] &lt;= cast(datetime, cast(Entity, row)[&#39;ts&#39;]) &lt; dates_range[1]]
                 history.clear()
                 history.extend(filter_history)
 
                 min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
                 max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
                 for time_serie in history:
-                    min_date = min(min_date, time_serie[&#34;ts&#34;])
-                    max_date = max(max_date, time_serie[&#34;ts&#34;])
+                    min_date = min(min_date, cast(datetime, cast(Entity, time_serie)[&#34;ts&#34;]))
+                    max_date = max(max_date, cast(datetime, cast(Entity, time_serie)[&#34;ts&#34;]))
 
                 history.metadata = {
                     &#34;id&#34;: entity_id,
@@ -1095,11 +1106,13 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         self._refresh_versions(parsed_uri)
         for version, _ in self._versions[uri].items():
             if not date_version or version &lt;= date_version:
+                # noinspection PyArgumentList,PyTypeChecker
                 return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
         return Grid()
 
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -&gt; None:
+        # noinspection PyAttributeOutsideInit
         self._download_grid_effective_version = \
             functools.lru_cache(size,  # type: ignore
                                 Provider._download_grid_effective_version.__wrapped__)  # type: ignore
@@ -1108,6 +1121,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
 
     def cache_clear(self) -&gt; None:
         &#34;&#34;&#34; Force to clear the local cache. &#34;&#34;&#34;
+        # noinspection PyUnresolvedReferences
         self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member
 
     @overrides
@@ -1137,7 +1151,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             Args:
                 source_uri: The source URI.
                 customer_id: The current customer id to inject in each records.
-                import_time_series: True to import the time-series references via `hisURI` tag
                 reset: Remove all the current data before import the grid.
                 version: The associated version time.
         &#34;&#34;&#34;
@@ -1182,7 +1195,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         parsed_source = urlparse(source_uri)
         parsed_destination = urlparse(destination_uri)
         if not parsed_destination.path:
-            destination_uri = destination_uri + &#34;/&#34;
+            destination_uri += &#34;/&#34;
         if destination_uri.endswith(&#39;/&#39;):
             destination_uri += Path(parsed_source.path).name
         parsed_destination = urlparse(destination_uri)
@@ -1294,6 +1307,8 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                         <dl>
                             <dt><strong><code>uri</code></strong></dt>
                             <dd>The URI to reference the datas (accept classical url or s3 url).</dd>
+                            <dt><strong><code>envs</code></strong></dt>
+                            <dd>The environment variables</dd>
                         </dl>
                         <h2 id="returns">Returns</h2>
                         <p>The grid.</p></div>
@@ -1306,6 +1321,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
     Read a grid from uri.
     Args:
         uri: The URI to reference the datas (accept classical url or s3 url).
+        envs: The environment variables
 
     Returns:
         The grid.
@@ -1343,6 +1359,8 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
     &#34;&#34;&#34;
     Expose an Haystack file via the Haystactk Rest API.
     &#34;&#34;&#34;
+    __slots__ = &#34;_periodic_refresh&#34;, &#34;_tls_verify&#34;, &#34;_s3_client&#34;, &#34;_lambda_client&#34;, &#34;_lock&#34;, &#34;_versions&#34;, \
+                &#34;_lru&#34;, &#34;_timer&#34;, &#34;_concurrency&#34;
 
     @property
     def name(self) -&gt; str:
@@ -1419,7 +1437,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
     def his_read(
             self,
             entity_id: Ref,
-            dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+            dates_range: Tuple[datetime, datetime],
             date_version: Optional[datetime] = None
     ) -&gt; Grid:
         &#34;&#34;&#34; Implement Haystack &#39;hisRead&#39; &#34;&#34;&#34;
@@ -1449,15 +1467,16 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                         break
 
                 # Remove data not in the range
-                filter_history = [row for row in history if dates_range[0] &lt;= row[&#39;ts&#39;] &lt; dates_range[1]]
+                filter_history = [row for row in history if
+                                  dates_range[0] &lt;= cast(datetime, cast(Entity, row)[&#39;ts&#39;]) &lt; dates_range[1]]
                 history.clear()
                 history.extend(filter_history)
 
                 min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
                 max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
                 for time_serie in history:
-                    min_date = min(min_date, time_serie[&#34;ts&#34;])
-                    max_date = max(max_date, time_serie[&#34;ts&#34;])
+                    min_date = min(min_date, cast(datetime, cast(Entity, time_serie)[&#34;ts&#34;]))
+                    max_date = max(max_date, cast(datetime, cast(Entity, time_serie)[&#34;ts&#34;]))
 
                 history.metadata = {
                     &#34;id&#34;: entity_id,
@@ -1636,11 +1655,13 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         self._refresh_versions(parsed_uri)
         for version, _ in self._versions[uri].items():
             if not date_version or version &lt;= date_version:
+                # noinspection PyArgumentList,PyTypeChecker
                 return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
         return Grid()
 
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -&gt; None:
+        # noinspection PyAttributeOutsideInit
         self._download_grid_effective_version = \
             functools.lru_cache(size,  # type: ignore
                                 Provider._download_grid_effective_version.__wrapped__)  # type: ignore
@@ -1649,6 +1670,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
 
     def cache_clear(self) -&gt; None:
         &#34;&#34;&#34; Force to clear the local cache. &#34;&#34;&#34;
+        # noinspection PyUnresolvedReferences
         self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member
 
     @overrides
@@ -1678,7 +1700,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             Args:
                 source_uri: The source URI.
                 customer_id: The current customer id to inject in each records.
-                import_time_series: True to import the time-series references via `hisURI` tag
                 reset: Remove all the current data before import the grid.
                 version: The associated version time.
         &#34;&#34;&#34;
@@ -1723,7 +1744,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         parsed_source = urlparse(source_uri)
         parsed_destination = urlparse(destination_uri)
         if not parsed_destination.path:
-            destination_uri = destination_uri + &#34;/&#34;
+            destination_uri += &#34;/&#34;
         if destination_uri.endswith(&#39;/&#39;):
             destination_uri += Path(parsed_source.path).name
         parsed_destination = urlparse(destination_uri)
@@ -1815,11 +1836,12 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
                                 </summary>
                                 <pre><code class="python">def cache_clear(self) -&gt; None:
     &#34;&#34;&#34; Force to clear the local cache. &#34;&#34;&#34;
+    # noinspection PyUnresolvedReferences
     self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member</code></pre>
                             </details>
                         </dd>
                         <dt id="shaystack.providers.url.Provider.his_read"><code class="name flex">
-                            <span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Union[datetime.datetime, str, Tuple[datetime.datetime, datetime.datetime]], date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+                            <span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Tuple[datetime.datetime, datetime.datetime], date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
                         </code></dt>
                         <dd>
                             <div class="desc"><p>Implement Haystack 'hisRead'</p></div>
@@ -1831,7 +1853,7 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
 def his_read(
         self,
         entity_id: Ref,
-        dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+        dates_range: Tuple[datetime, datetime],
         date_version: Optional[datetime] = None
 ) -&gt; Grid:
     &#34;&#34;&#34; Implement Haystack &#39;hisRead&#39; &#34;&#34;&#34;
@@ -1861,15 +1883,16 @@ def his_read(
                     break
 
             # Remove data not in the range
-            filter_history = [row for row in history if dates_range[0] &lt;= row[&#39;ts&#39;] &lt; dates_range[1]]
+            filter_history = [row for row in history if
+                              dates_range[0] &lt;= cast(datetime, cast(Entity, row)[&#39;ts&#39;]) &lt; dates_range[1]]
             history.clear()
             history.extend(filter_history)
 
             min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
             max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
             for time_serie in history:
-                min_date = min(min_date, time_serie[&#34;ts&#34;])
-                max_date = max(max_date, time_serie[&#34;ts&#34;])
+                min_date = min(min_date, cast(datetime, cast(Entity, time_serie)[&#34;ts&#34;]))
+                max_date = max(max_date, cast(datetime, cast(Entity, time_serie)[&#34;ts&#34;]))
 
             history.metadata = {
                 &#34;id&#34;: entity_id,
@@ -1895,7 +1918,6 @@ def his_read(
                                 <pre><code>Args:
     source_uri: The source URI.
     customer_id: The current customer id to inject in each records.
-    import_time_series: True to import the time-series references via &lt;code&gt;hisURI&lt;/code&gt; tag
     reset: Remove all the current data before import the grid.
     version: The associated version time.
 </code></pre>
@@ -1919,7 +1941,6 @@ def import_data(self,  # pylint: disable=too-many-arguments
         Args:
             source_uri: The source URI.
             customer_id: The current customer id to inject in each records.
-            import_time_series: True to import the time-series references via `hisURI` tag
             reset: Remove all the current data before import the grid.
             version: The associated version time.
     &#34;&#34;&#34;
@@ -1989,6 +2010,7 @@ def read(
                                     <span>Expand source code</span>
                                 </summary>
                                 <pre><code class="python">def set_lru_size(self, size: int) -&gt; None:
+    # noinspection PyAttributeOutsideInit
     self._download_grid_effective_version = \
         functools.lru_cache(size,  # type: ignore
                             Provider._download_grid_effective_version.__wrapped__)  # type: ignore</code></pre>

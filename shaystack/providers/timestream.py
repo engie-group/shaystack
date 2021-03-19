@@ -86,6 +86,7 @@ def _delete_table(client: BaseClient,
         pass  # Ignore
 
 
+# noinspection PyUnusedLocal
 class Provider(DBProvider):
     """
     Expose an Haystack data via the Haystack Rest API and SQL+TS databases
@@ -278,8 +279,7 @@ class Provider(DBProvider):
             return XStr(*split)
         if python_type == "NoneType":
             return None
-        assert False, f"Unknown type {python_type}"
-        return None
+        raise ValueError(f"Unknown type {python_type}")
 
     _kind_type = {
         "marker": "BOOLEAN",
@@ -340,6 +340,7 @@ class Provider(DBProvider):
 
                 for row in page['Rows']:
                     datas = row['Data']
+                    # noinspection PyUnresolvedReferences
                     scalar_value = dateutil.parser.isoparse(datas[0]['ScalarValue'])
                     if not scalar_value.tzname():
                         scalar_value = scalar_value.replace(tzinfo=pytz.UTC)

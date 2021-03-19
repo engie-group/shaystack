@@ -68,13 +68,9 @@ class Provider(DBHaystackInterface):
     """
     __slots__ = ("_delegate",)
 
-    @property
-    def name(self) -> str:
-        return self._delegate.name()
-
     def __init__(self, envs: Dict[str, str]):
         super().__init__(envs)
-        if not "HAYSTACK_DB" in envs:
+        if "HAYSTACK_DB" not in envs:
             print("Set 'HAYSTACK_DB' to use database", file=sys.stderr)
             sys.exit(-1)
         parsed_db = urlparse(envs["HAYSTACK_DB"])
@@ -87,6 +83,11 @@ class Provider(DBHaystackInterface):
 
         provider_name = __name__[0:__name__.rindex('.') + 1] + _scheme_to_providers[dialect]
         self._delegate = cast(DBHaystackInterface, get_provider(provider_name, self._envs))
+
+    @property
+    def name(self) -> str:
+        # noinspection PyCallingNonCallable
+        return self._delegate.name()
 
     @overrides
     def values_for_tag(self, tag: str,

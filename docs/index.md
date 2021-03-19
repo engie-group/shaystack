@@ -26,21 +26,19 @@ area.
 Haystack core data model is the Grid, it can be serialized in many formats,
 mainly [Zinc](https://www.project-haystack.org/doc/Zinc),
 [Trio](https://www.project-haystack.org/doc/Trio)
-[Json](https://www.project-haystack.org/doc/Json)
-and [Csv](https://www.project-haystack.org/doc/Csv)
+[Json](https://www.project-haystack.org/doc/Json) and [Csv](https://www.project-haystack.org/doc/Csv)
 
 ## About this project
 
 This project implements client side haystack code. Useful to parse or dump Haystack files
 ([Zinc](https://www.project-haystack.org/doc/Zinc),
 [Json](https://www.project-haystack.org/doc/Json),
-[Trio](https://www.project-haystack.org/doc/Trio)
-and [Csv](https://www.project-haystack.org/doc/Csv)).
+[Trio](https://www.project-haystack.org/doc/Trio) and [Csv](https://www.project-haystack.org/doc/Csv)).
 
 On the server side, it also implements [Haystack Rest API](https://www.project-haystack.org/doc/Rest), useful to serve
 Haystack data you host.
 
-- We implemented different serving options See [API Server](.:#server-side-haystack-api-server)
+- We implemented different serving options See [API Server](#server-side-haystack-api-server)
     - Each offering two API endpoints:
         - Classical REST Haystack API
         - GraphQL API
@@ -50,8 +48,7 @@ Haystack data you host.
     - Local or remote relational database
     - Local or remote Mongo database
     - Can be extends with optional AWS Time Stream use for Time Series
-    - Other custom data location can be handled by extending
-      `shaystack.providers.HaystackInterface`
+    - Other custom data location can be handled by extending `shaystack.providers.HaystackInterface`
 
 # History
 
@@ -103,7 +100,7 @@ read, filter, manipulate and print `Grid` objects containing haystack data.
 
 # Python API
 
-The [documentation of the API is here](api/shaystack/).
+The [documentation of the API is here](https://pprados.github.io/shaystack/api/shaystack/index.html).
 
 # Data science
 
@@ -192,7 +189,7 @@ These [operations](https://project-haystack.org/doc/Rest) are implemented in bot
 - [nav](https://project-haystack.org/doc/Ops#nav)
 - [invokeAction](https://project-haystack.org/doc/Ops#invokeAction)
 
-These [operations](https://project-haystack.org/doc/Rest) are implemented only in classical endpoint, with real-time
+These [operations](https://project-haystack.org/doc/Rest) are implemented only in a classical endpoint, with real-time
 datas:
 
 - [watchSub](https://project-haystack.org/doc/Ops#watchSub)
@@ -231,7 +228,7 @@ by extending `shaystack.providers.HaystackInterface`
 |Data on ftp server|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=ftp://... \`<br/>` shaystack`|[More...](url_provider.md)|
 |Data on local filesystem|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=file://... \`<br/>` shaystack`|[More...](url_provider.md)|
 |Data on AWS S3 Bucket|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=s3://... \`<br/>` shaystack`|Remember to install aws support and boto3 python module. [More...](url_provider.md)|
-|Data in a SuperSQLite database|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=sqlite3://... \`<br/>` shaystack`|Remember to install supersqlite python module. [More...](sql_provider.md)|
+|Data in a SuperSQLite database|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=sqlite3://... \`<br/>` shaystack`|Remember to install Supersqlite python module. [More...](sql_provider.md)|
 |Data in a Postgresql database|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=postgres://... \`<br/>` shaystack`|Remember to install psycopg2 python module. [More...](sql_provider.md)|
 |Data in a MySQL database|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=mysql://... \`<br/>` shaystack`|Remember to install pymysql python module. [More...](sql_provider.md)|
 |Data in a MongoDB|`HAYSTACK_PROVIDER=shaystack.providers.db\`<br/>`HAYSTACK_DB=mongodb+srv:://...\`<br/>` shaystack`|Remember to install pymongo python module. [More...](mongo_provider.md)|
@@ -248,7 +245,7 @@ Set some environment variables, and use the command `shaystack` (check `shaystac
 We propose different providers, with the objective in mind:
 
 - Expose the haystack files and historical data with an API
-- and manage the evolution of these files with the notion of `version`.
+- manage the evolution of these files with the notion of `version`.
 
 To demonstrate this scenario, we want to publish the sample from `sample/` files from S3 bucket or from an SQL database.
 We must import this ontology and time-series inside the bucket or database before to use. To manage the different
@@ -283,12 +280,12 @@ or
 $ curl "http://localhost:3000/haystack/read?filter=point%20or%20site&limit=5"
 ```
 
-A javascript console is proposed to ask the datas. It's possible to add several API to merge the result from different
+A javascript console is proposed to ask the datas. It's possible to add several APIs to merge the result from different
 sources of data.
 
 ![Haystack UI](haystack-ui.png)
 
-For example, one datasource comes from a ETL to expose the ontology of the inventory and energy bills from the
+For example, one datasource comes from an ETL to expose the ontology of the inventory and energy bills from the
 accounting department in a S3 bucket. The second datasource is the BMS (Building Management System)
 compatible with Haystack, with the real-time data. If the entities use the same `id`, all the information were merged.
 The same filter was apply for each API.
@@ -395,7 +392,7 @@ grid.select("id,dis")
 grid.select("!hisURL")
 ```
 
-The syntax to analyse the daterange in `hisRead` is extended to accept a comma without value before or after (`date,`
+The syntax to analyse the date range in `hisRead` is extended to accept a comma without value before or after (`date,`
 , `,datetime`, etc.)
 
 ### Haystack filter
@@ -404,10 +401,10 @@ A big part of the code is to convert the haystack *filter* to database request. 
 languages:
 
 - python
-- sqlite
-- postegresl
-- mysql
-- mongodb
+- SQLite
+- PostgreSQL
+- MYSql
+- Mongodb
 
 For the developer point of view, it may be interesting to analyse the translation. We propose a tool for that.
 
@@ -448,11 +445,11 @@ LIMIT 1
 
 The flexibility of the project allows many integration scenarios.
 
-To expose your current datas with haystack, the first step is:
+To expose your current datas with a haystack, the first step is:
 
 - associate your fields to a collections of haystack tags
 - group your tags in entities
-- add a uniq `id' for each entities
+- add a uniq `id' for each entity
 - add reference between entities
 
 Then, with this model, choice a path to expose your haystack data.
@@ -471,7 +468,8 @@ Later, you can add a connection with your IOT to expose the current value of poi
 To implement a provider, two strategies are proposed:
 
 - Read the entire ontology in memory, apply the `filter()` and return the result
-- Convert the filter request to a specific request on your datamodel, convert the row to entities an return the result.
+- Convert the filter request to a specific request on your data model, convert the row to entities and return the
+  result.
   
 ### Using AWS
 
@@ -497,7 +495,8 @@ $ docker run -p 3000:3000 \
 ## Using with Excel or PowerBI
 
 Because the default negotiated format is CSV, you can call the REST API with PowerQuery or Excel. Try the sample file
-['SHaystack.xlsm'](SHaystack.xlsm) and set a correct haystack API url
+['SHaystack.xlsm'](https://raw.githubusercontent.com/pprados/shaystack/develop/SHaystack.xlsm) and set a correct
+haystack API url
 (http://10.0.2.2:3000/haystack with a local virtual windows). You can load all the data inside Excel table.
 
 # Optional part
@@ -572,7 +571,7 @@ See [LICENCE](https://github.com/pprados/shaystack/blob/develop/LICENSE) file
 # TODO
 
 - [X] S3
-- [X] Sqlite
+- [X] SQLite
 - [X] Postgres
 - [X] MySQL
 - [X] MongoDB

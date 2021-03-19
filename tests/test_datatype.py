@@ -12,6 +12,7 @@ from __future__ import unicode_literals
 import binascii
 import random
 from copy import copy, deepcopy
+from typing import Dict, Any
 
 from nose.tools import eq_
 
@@ -25,7 +26,7 @@ def check_singleton_deepcopy(a_singleton):
         a_singleton:
     """
     orig_dict = {'some_value': a_singleton}
-    copy_dict = deepcopy(orig_dict)
+    copy_dict: Dict[str, Any] = deepcopy(orig_dict)
     assert copy_dict['some_value'] is a_singleton
 
 
@@ -65,7 +66,7 @@ def test_ref_not_ref_eq():
     try:
         ref_1 = shaystack.Ref(name='a.ref')
         ref_2 = 'not.a.ref'
-        ref_1 is not ref_2  # pylint: disable=pointless-statement
+        assert ref_1 is not ref_2  # pylint: disable=pointless-statement
         assert False
     except AssertionError:
         pass
@@ -75,7 +76,7 @@ def test_ref_not_ref_ne():
     try:
         ref_1 = shaystack.Ref(name='a.ref')
         ref_2 = 'not.a.ref'
-        ref_1 is not ref_2  # pylint: disable=pointless-statement
+        assert ref_1 is not ref_2  # pylint: disable=pointless-statement
         assert False
     except AssertionError:
         pass
@@ -217,7 +218,7 @@ def test_coord_eq():
 
 def test_coord_eq_not_coord():
     try:
-        shaystack.Coordinate(latitude=33.77, longitude=-77.45) == (33.77, -77.45)  # pylint: disable=W0106
+        assert shaystack.Coordinate(latitude=33.77, longitude=-77.45) == (33.77, -77.45)  # pylint: disable=W0106
         assert False
     except AssertionError:
         pass
@@ -228,7 +229,7 @@ def test_coord_eq_my_coord():
         hsc = shaystack.Coordinate(latitude=33.77, longitude=-77.45)
         my_coordinate = MyCoordinate(33.77, -77.45)
         assert my_coordinate == hsc
-        hsc == my_coordinate  # pylint: disable=pointless-statement
+        assert hsc == my_coordinate  # pylint: disable=pointless-statement
         assert False
     except AssertionError:
         pass
@@ -241,8 +242,9 @@ def test_coord_ne():
 
 def test_coord_ne_not_coord():
     try:
-        (shaystack.Coordinate(latitude=33.77, longitude=-77.45)  # pylint: disable=W0106
-         != (33.77, -77.45))
+        assert (shaystack.Coordinate(latitude=33.77,
+                                     longitude=-77.45) != (33.77, -77.45))  # pylint: disable=W0106
+
         assert False
     except AssertionError:
         pass
@@ -253,7 +255,7 @@ def test_coord_ne_my_coord():
         hsc = shaystack.Coordinate(latitude=33.77, longitude=-77.45)
         my_coordinate = MyCoordinate(-33.77, 77.45)
         assert my_coordinate != hsc
-        hsc != my_coordinate  # pylint: disable=pointless-statement
+        assert hsc != my_coordinate  # pylint: disable=pointless-statement
         assert False
     except AssertionError:
         pass

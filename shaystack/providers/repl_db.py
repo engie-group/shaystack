@@ -14,7 +14,7 @@ import os
 import pprint
 import sys
 import traceback
-from typing import cast
+from typing import cast, Dict
 from urllib.parse import urlparse
 
 import pytz
@@ -32,22 +32,25 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 def main():
     """Loop to test the postgres generation with REPL"""
-    envs = os.environ
+    envs = cast(Dict[str, str], os.environ)
     if "HAYSTACK_DB" not in envs:
         envs["HAYSTACK_DB"] = "sqlite3:///:memory:"
     provider = get_provider("shaystack.providers.sql", envs)
     conn = cast(SQLProvider, provider).get_connect()
     scheme = urlparse(envs["HAYSTACK_DB"]).scheme
 
+    # noinspection PyMethodMayBeStatic
     class HaystackRequest(cmd.Cmd):
         """ Haystack REPL interface """
         __slots__ = ("conn",)
 
+        # noinspection PyShadowingNames
         def __init__(self, conn):
             super().__init__()
             self.conn = conn
 
         def do_python(self, arg: str) -> None:  # pylint: disable=no-self-use
+            # noinspection PyBroadException
             try:
                 _, python_code = _filter_to_python(arg)
                 print(python_code)
@@ -56,6 +59,7 @@ def main():
                 traceback.print_exc()
 
         def do_pg(self, arg: str) -> None:
+            # noinspection PyBroadException
             try:
                 sql_request = pg_sql_filter("haystack", arg, FAKE_NOW, 1, "customer")
                 print(sql_request)
@@ -70,6 +74,7 @@ def main():
                 conn.rollback()
 
         def do_mysql(self, arg: str) -> None:
+            # noinspection PyBroadException
             try:
                 sql_request = mysql_sql_filter("haystack", arg, FAKE_NOW, 1, "customer")
                 print(sql_request)
@@ -84,6 +89,7 @@ def main():
                 conn.rollback()
 
         def do_sqlite(self, arg: str) -> None:
+            # noinspection PyBroadException
             try:
                 sql_request = sqlite_sql_filter("haystack", arg, FAKE_NOW, 1, "customer")
                 print(sql_request)
@@ -98,6 +104,7 @@ def main():
                 conn.rollback()
 
         def do_mongo(self, arg: str) -> None:  # pylint: disable=no-self-use
+            # noinspection PyBroadException
             try:
                 mongo_request = _mongo_filter(arg, FAKE_NOW, 1, "customer")
                 pprint.PrettyPrinter(indent=4).pprint(mongo_request)

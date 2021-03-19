@@ -9,14 +9,17 @@
 The typing for Haystack
 """
 from datetime import date, time, datetime
-from typing import Union, Dict
+from typing import Union, Dict, List, Any
 
 from .datatypes import Quantity, Coordinate, Uri, Bin, XStr, _MarkerType, _NAType, _RemoveType, Ref
 
 HaystackType = Union[str, int, float, bool,
                      date, time, datetime,
                      Ref, Quantity, Coordinate, Uri, Bin, XStr,
-                     _MarkerType, _NAType, _RemoveType, None]
+                     _MarkerType, _NAType, _RemoveType,
+                     List[Any],
+                     Dict[str, Any],
+                     None]
 """ All haystack compatible values (see https://project-haystack.org/doc/TagModel#tagKinds) """
 
 Entity = Dict[str, HaystackType]

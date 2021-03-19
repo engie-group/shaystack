@@ -14,7 +14,7 @@ import logging
 import textwrap
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Any, Optional, List, Tuple, Union, Iterator, Callable
+from typing import Dict, Any, Optional, List, Tuple, Union, Iterator, Callable, cast
 
 import pytz
 
@@ -28,7 +28,7 @@ log = logging.getLogger("db.Provider")
 def _use_inner_join(node: FilterNode) -> bool:
     """ Return True if the tree must use inner join """
     if isinstance(node, FilterUnary):
-        return len(node.right.paths) > 1
+        return len(cast(FilterPath, node.right).paths) > 1
     if isinstance(node, FilterBinary):
         if isinstance(node.left, _FilterDate):
             return False
@@ -160,11 +160,11 @@ def _generate_filter_in_sql(table_name: str,
                 num_table, select, where = \
                     _generate_path(table_name, customer_id, version,
                                    select, where,
-                                   node.left,
+                                   cast(FilterPath, node.left),
                                    num_table)
                 where.extend([
                     f"CAST(substr(json_extract(json(t{num_table}.entity),"
-                    f"'$.{node.left.paths[-1]}'),3) AS REAL)",
+                    f"'$.{cast(FilterPath, node.left).paths[-1]}'),3) AS REAL)",
                     f" {node.operator} {value}\n",
                 ])
             else:
@@ -172,25 +172,29 @@ def _generate_filter_in_sql(table_name: str,
                 num_table, select, where = \
                     _generate_path(table_name, customer_id, version,
                                    select, where,
-                                   node.left,
+                                   cast(FilterPath, node.left),
                                    num_table)
                 if value is None:
                     if node.operator == '!=':
                         where.append(
-                            f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
+                            f"json_extract(json(t{num_table}.entity),"
+                            f"'$.{cast(FilterPath, node.left).paths[-1]}') "
                             f"IS NOT NULL\n")
                     else:
                         where.append(
-                            f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
+                            f"json_extract(json(t{num_table}.entity),"
+                            f"'$.{cast(FilterPath, node.left).paths[-1]}') "
                             f"IS NULL\n")
                 else:
                     if isinstance(value, Ref):
                         where.append(
-                            f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
+                            f"json_extract(json(t{num_table}.entity),"
+                            f"'$.{cast(FilterPath, node.left).paths[-1]}') "
                             f"LIKE '{str(json.loads(jsondumper.dump_scalar(value)))}%'\n")
                     else:
                         where.append(
-                            f"json_extract(json(t{num_table}.entity),'$.{node.left.paths[-1]}') "
+                            f"json_extract(json(t{num_table}.entity),"
+                            f"'$.{cast(FilterPath, node.left).paths[-1]}') "
                             f"{node.operator} '{str(json.loads(jsondumper.dump_scalar(value)))}'\n")
 
     else:

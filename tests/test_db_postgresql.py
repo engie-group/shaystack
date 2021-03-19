@@ -11,6 +11,7 @@ from typing import cast
 import pytz
 
 from shaystack.providers import get_provider
+# noinspection PyProtectedMember
 from shaystack.providers.db_postgres import _sql_filter as sql_filter
 from shaystack.providers.sql import Provider as SQLProvider
 

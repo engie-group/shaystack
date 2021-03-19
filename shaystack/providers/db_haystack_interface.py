@@ -42,9 +42,7 @@ class DBHaystackInterface(HaystackInterface):
         Args:
             source_uri: The source URI.
             customer_id: The current customer id to inject in each records.
-            import_time_series: True to import the time-series references via `hisURI` tag
             reset: Remove all the current data before import the grid.
-            compare: Compare current version and new version to update the delta
             version: The associated version time.
         """
 

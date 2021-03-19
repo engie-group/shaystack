@@ -63,6 +63,7 @@ def dump_grid(grid: Grid) -> str:
 
 _INDENT = re.compile(r"^", flags=re.MULTILINE)
 
+
 def dump_scalar(scalar: Any, version: Version = LATEST_VER) -> str:
     """
     Dump a scalar to Trio

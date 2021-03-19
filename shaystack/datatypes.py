@@ -88,8 +88,6 @@ class Coordinate:
 class Uri(str):
     """A convenience class to allow identification of a URI from other string
     types.
-    Args:
-        uri: The uri
     """
 
     def __repr__(self) -> str:
@@ -105,8 +103,6 @@ class Uri(str):
 class Bin(str):
     """A convenience class to allow identification of a Bin from other string
     types.
-    Args:
-        data: the datas
     """
 
     def __repr__(self) -> str:

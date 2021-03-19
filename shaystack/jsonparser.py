@@ -238,7 +238,7 @@ def parse_scalar(scalar: Union[str, bool, float, int, list, dict], version: Vers
     return _parse_embedded_scalar(scalar, version=version)
 
 
-def parse_grid(grid_str: str) -> Grid:
+def parse_grid(grid_str: Union[str, Dict[str, Any]]) -> Grid:
     """
     Parse a grid from json string.
     Args:

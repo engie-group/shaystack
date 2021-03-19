@@ -75,6 +75,7 @@ class FilterAST:  # pylint: disable=too-few-public-methods
     """The root of AST"""
 
     __slots__ = ("head",)
+
     def __init__(self, head: Optional[FilterNode]):
         """
         Model a parsing filter request.

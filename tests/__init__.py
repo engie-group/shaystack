@@ -16,12 +16,15 @@ def _get_mock_s3():
     version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
     version_3 = datetime(2020, 10, 1, 0, 0, 3, 0, tzinfo=pytz.UTC)
 
+    # noinspection PyUnusedLocal
     class MockS3:
         __slots__ = "history", "his_count"
+
         def __init__(self):
             self.history = None
             self.his_count = 0
 
+        # noinspection PyMethodMayBeStatic
         def list_object_versions(self, **args):  # pylint: disable=R0201, W0613
             return {
                 "Versions":

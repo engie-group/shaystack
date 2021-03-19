@@ -575,7 +575,7 @@ def purge_grid(grid: Grid) -&gt; Grid:
             <h2 class="section-title" id="header-functions">Functions</h2>
             <dl>
                 <dt id="shaystack.providers.get_provider"><code class="name flex">
-                    <span>def <span class="ident">get_provider</span></span>(<span>class_str: str, envs: Union[Dict[str, str], os._Environ], use_cache=True) ‑> <a
+                    <span>def <span class="ident">get_provider</span></span>(<span>class_str: str, envs: Dict[str, str], use_cache=True) ‑> <a
                         href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface"
                         title="shaystack.providers.haystack_interface.HaystackInterface">HaystackInterface</a></span>
                 </code></dt>
@@ -590,6 +590,8 @@ def purge_grid(grid: Grid) -&gt; Grid:
                             <dd>The name of the module that contains the provider.</dd>
                             <dt><strong><code>envs</code></strong></dt>
                             <dd>Environement variable (os.env ?)</dd>
+                            <dt><strong><code>use_cache</code></strong></dt>
+                            <dd>Use cached provider or create a new one</dd>
                         </dl>
                         <h2 id="returns">Returns</h2>
                         <p>A instance of this subclass if it exists</p></div>
@@ -597,7 +599,7 @@ def purge_grid(grid: Grid) -&gt; Grid:
                         <summary>
                             <span>Expand source code</span>
                         </summary>
-                        <pre><code class="python">def get_provider(class_str: str, envs: Union[Dict[str, str], os._Environ],  # pylint: disable=protected-access
+                        <pre><code class="python">def get_provider(class_str: str, envs: Dict[str, str],  # pylint: disable=protected-access
                  use_cache=True  # pylint: disable=protected-access
                  ) -&gt; HaystackInterface:
     &#34;&#34;&#34;Return an instance of the provider.
@@ -608,6 +610,7 @@ def purge_grid(grid: Grid) -&gt; Grid:
     Args:
         class_str: The name of the module that contains the provider.
         envs: Environement variable (os.env ?)
+        use_cache: Use cached provider or create a new one
 
     Returns:
         A instance of this subclass if it exists
@@ -624,6 +627,7 @@ def purge_grid(grid: Grid) -&gt; Grid:
     # Implement all abstract method.
     # Then, it&#39;s possible to generate the Ops operator dynamically
     # pylint: disable=missing-function-docstring,useless-super-delegation
+    # noinspection PyShadowingNames
     class FullInterface(provider_class):  # pylint: disable=missing-class-docstring
         def __init__(self, envs: Dict[str, str]):
             provider_class.__init__(self, envs)
@@ -760,6 +764,7 @@ def purge_grid(grid: Grid) -&gt; Grid:
     def __exit__(self, exc_type, exc_value, exc_traceback):
         pass
 
+    # noinspection PyMethodMayBeStatic
     def get_tz(self) -&gt; BaseTzInfo:  # pylint: disable=no-self-use
         &#34;&#34;&#34; Return server time zone. &#34;&#34;&#34;
         return get_localzone()
@@ -839,6 +844,7 @@ def purge_grid(grid: Grid) -&gt; Grid:
         )
         return grid
 
+    # noinspection PyUnresolvedReferences
     def ops(self) -&gt; Grid:
         &#34;&#34;&#34; Implement the Haystack &#39;ops&#39; ops.
 
@@ -879,6 +885,7 @@ def purge_grid(grid: Grid) -&gt; Grid:
                              &#34;user action on a target record.&#34;,
         }
         # Remove abstract method
+        # noinspection PyUnresolvedReferences
         for abstract_method in self.__class__.__base__.__abstractmethods__:
             all_haystack_ops.pop(abstract_method, None)
         if (
@@ -1047,15 +1054,14 @@ def purge_grid(grid: Grid) -&gt; Grid:
     def his_read(
             self,
             entity_id: Ref,
-            dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+            dates_range: Tuple[datetime, datetime],
             date_version: Optional[datetime] = None,
     ) -&gt; Grid:  # pylint: disable=no-self-use
         &#34;&#34;&#34; Implement the Haystack &#39;hisRead&#39; ops.
 
         Args:
             entity_id: The entity to read
-            dates_range: The date
-            range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
+            dates_range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
             {dateTime}
             date_version: The optional date version to read
 
@@ -1263,7 +1269,7 @@ def about(self, home: str) -&gt; Grid:
                             </details>
                         </dd>
                         <dt id="shaystack.providers.HaystackInterface.his_read"><code class="name flex">
-                            <span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Union[datetime.datetime, str, Tuple[datetime.datetime, datetime.datetime]], date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+                            <span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Tuple[datetime.datetime, datetime.datetime], date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
                         </code></dt>
                         <dd>
                             <div class="desc"><p>Implement the Haystack 'hisRead' ops.</p>
@@ -1272,8 +1278,6 @@ def about(self, home: str) -&gt; Grid:
                                     <dt><strong><code>entity_id</code></strong></dt>
                                     <dd>The entity to read</dd>
                                     <dt><strong><code>dates_range</code></strong></dt>
-                                    <dd>The date</dd>
-                                    <dt><strong><code>range</code></strong></dt>
                                     <dd>May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}),
                                     </dd>
                                     <dt>{dateTime}</dt>
@@ -1290,15 +1294,14 @@ def about(self, home: str) -&gt; Grid:
 def his_read(
         self,
         entity_id: Ref,
-        dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+        dates_range: Tuple[datetime, datetime],
         date_version: Optional[datetime] = None,
 ) -&gt; Grid:  # pylint: disable=no-self-use
     &#34;&#34;&#34; Implement the Haystack &#39;hisRead&#39; ops.
 
     Args:
         entity_id: The entity to read
-        dates_range: The date
-        range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
+        dates_range: May be &#34;today&#34;, &#34;yesterday&#34;, {date}, ({date},{date}), ({datetime},{datetime}),
         {dateTime}
         date_version: The optional date version to read
 
@@ -1474,6 +1477,7 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
                          &#34;user action on a target record.&#34;,
     }
     # Remove abstract method
+    # noinspection PyUnresolvedReferences
     for abstract_method in self.__class__.__base__.__abstractmethods__:
         all_haystack_ops.pop(abstract_method, None)
     if (

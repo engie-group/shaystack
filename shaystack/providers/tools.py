@@ -14,6 +14,7 @@ from botocore.exceptions import ClientError
 
 _BOTO3_AVAILABLE = False
 try:
+    # noinspection PyUnresolvedReferences
     import boto3
 
     _BOTO3_AVAILABLE = True

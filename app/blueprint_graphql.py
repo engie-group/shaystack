@@ -16,7 +16,9 @@ import sys
 import click
 
 try:
+    # noinspection PyUnresolvedReferences
     from flask import Blueprint
+    # noinspection PyUnresolvedReferences
     from flask_graphql import GraphQLView
 except ImportError:
     os.abort()
@@ -37,6 +39,7 @@ class Query(graphene.ObjectType):
 
     haystack = graphene.Field(graphene.NonNull(ReadHaystack))
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_haystack(parent, info):
         """
@@ -47,6 +50,7 @@ class Query(graphene.ObjectType):
         return ReadHaystack()
 
 
+# noinspection PyTypeChecker
 schema = graphene.Schema(query=Query)
 
 graphql_blueprint = Blueprint('graphql',

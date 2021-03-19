@@ -12,11 +12,7 @@ from shaystack.grid import Grid
 from shaystack.grid_diff import grid_diff, grid_merge
 from .test_acid import gen_random_grid, gen_random_scalar, gen_random_str
 
-GENERATION_NUMBER, \
-PERCENT_PATCH, \
-PERCENT_MOVE_COL, \
-PERCENT_ADD_VAL, \
-PERCENT_DUPLICATE = (10, 30, 5, 10, 5)
+GENERATION_NUMBER, PERCENT_PATCH, PERCENT_MOVE_COL, PERCENT_ADD_VAL, PERCENT_DUPLICATE = (10, 30, 5, 10, 5)
 
 
 class RefuseRemove(BaseException):
@@ -127,6 +123,7 @@ def _validate_grid(grid):
     Args:
         grid:
     """
+    # noinspection PyProtectedMember
     addr = [id(row) for row in grid._row]
     assert len(addr) == len(set(addr)), "Row in multiple place in grid"
     ids = [x['id'] for x in grid if 'id' in x]

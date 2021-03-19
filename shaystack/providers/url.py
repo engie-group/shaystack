@@ -39,7 +39,7 @@ from multiprocessing.pool import ThreadPool
 from os.path import dirname
 from pathlib import Path
 from threading import Lock
-from typing import Optional, Union, Tuple, Any, List, cast, Dict
+from typing import Optional, Tuple, Any, List, cast, Dict
 from urllib.parse import urlparse, ParseResult
 
 import pytz
@@ -58,8 +58,10 @@ from ..zincparser import ZincParseException
 
 BOTO3_AVAILABLE = False
 try:
+    # noinspection PyUnresolvedReferences
     import boto3
     from botocore.client import BaseClient  # pylint: disable=ungrouped-imports
+    # noinspection PyUnresolvedReferences
     from botocore.exceptions import ClientError
 
     BOTO3_AVAILABLE = True
@@ -147,6 +149,7 @@ def read_grid_from_uri(uri: str, envs: Dict[str, str]) -> Grid:
     Read a grid from uri.
     Args:
         uri: The URI to reference the datas (accept classical url or s3 url).
+        envs: The environment variables
 
     Returns:
         The grid.
@@ -181,6 +184,9 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
     )
     suffix = Path(parsed_source.path).suffix
     use_gzip = False
+    destination_grid = EmptyGrid.copy()
+    source_grid = EmptyGrid.copy()
+
     if parsed_source.scheme == 's3' and not compare_grid:
         # Try to copy from s3 to s3
         if update_time_series:
@@ -244,7 +250,7 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
                         raise
                 else:
                     raise
-            except ZincParseException as ex:
+            except ZincParseException:
                 # Ignore. Override target
                 log.warning("Zinc parser exception with %s", (parsed_destination.geturl()))
                 destination_grid = EmptyGrid
@@ -272,6 +278,7 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
                    force, merge_ts, envs=envs)
 
 
+# noinspection PyUnusedLocal
 def _import_ts(parsed_source: ParseResult,  # pylint: disable=too-many-locals,too-many-arguments
                parsed_destination: ParseResult,
                source_grid: Grid,
@@ -315,6 +322,7 @@ def _import_ts(parsed_source: ParseResult,  # pylint: disable=too-many-locals,to
             pool.starmap(_update_grid_on_s3, requests)
 
 
+# noinspection PyMethodMayBeStatic
 class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attributes
     """
     Expose an Haystack file via the Haystactk Rest API.
@@ -397,7 +405,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
     def his_read(
             self,
             entity_id: Ref,
-            dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+            dates_range: Tuple[datetime, datetime],
             date_version: Optional[datetime] = None
     ) -> Grid:
         """ Implement Haystack 'hisRead' """
@@ -427,15 +435,16 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                         break
 
                 # Remove data not in the range
-                filter_history = [row for row in history if dates_range[0] <= row['ts'] < dates_range[1]]
+                filter_history = [row for row in history if
+                                  dates_range[0] <= cast(datetime, cast(Entity, row)['ts']) < dates_range[1]]
                 history.clear()
                 history.extend(filter_history)
 
                 min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
                 max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
                 for time_serie in history:
-                    min_date = min(min_date, time_serie["ts"])
-                    max_date = max(max_date, time_serie["ts"])
+                    min_date = min(min_date, cast(datetime, cast(Entity, time_serie)["ts"]))
+                    max_date = max(max_date, cast(datetime, cast(Entity, time_serie)["ts"]))
 
                 history.metadata = {
                     "id": entity_id,
@@ -614,11 +623,13 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         self._refresh_versions(parsed_uri)
         for version, _ in self._versions[uri].items():
             if not date_version or version <= date_version:
+                # noinspection PyArgumentList,PyTypeChecker
                 return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
         return Grid()
 
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -> None:
+        # noinspection PyAttributeOutsideInit
         self._download_grid_effective_version = \
             functools.lru_cache(size,  # type: ignore
                                 Provider._download_grid_effective_version.__wrapped__)  # type: ignore
@@ -627,6 +638,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
 
     def cache_clear(self) -> None:
         """ Force to clear the local cache. """
+        # noinspection PyUnresolvedReferences
         self._download_grid_effective_version.cache_clear()  # pylint: disable=no-member
 
     @overrides
@@ -656,7 +668,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             Args:
                 source_uri: The source URI.
                 customer_id: The current customer id to inject in each records.
-                import_time_series: True to import the time-series references via `hisURI` tag
                 reset: Remove all the current data before import the grid.
                 version: The associated version time.
         """
@@ -701,7 +712,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         parsed_source = urlparse(source_uri)
         parsed_destination = urlparse(destination_uri)
         if not parsed_destination.path:
-            destination_uri = destination_uri + "/"
+            destination_uri += "/"
         if destination_uri.endswith('/'):
             destination_uri += Path(parsed_source.path).name
         parsed_destination = urlparse(destination_uri)

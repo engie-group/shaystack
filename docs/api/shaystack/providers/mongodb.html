@@ -516,6 +516,7 @@ def _conv_row_to_entity(row: Dict[str, Any]) -&gt; Entity:
     return {k: json_parse_scalar(v) for k, v in row.items()}
 
 
+# noinspection PyPep8,PyPep8,PyPep8,PyPep8
 class Provider(DBHaystackInterface):
     &#34;&#34;&#34;
     Expose an Haystack data via the Haystack Rest API and SQL databases
@@ -545,7 +546,7 @@ class Provider(DBHaystackInterface):
                 password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):
             password = get_secret_manager_secret(password[1:-1], self._envs)
             parts = list(self._parsed_db)
-            user, _, host = re.split(&#39;:|@&#39;, parts[1])
+            user, _, host = re.split(&#39;[:|@]&#39;, parts[1])
             parts[1] = f&#34;{user}:{password}@{host}&#34;
             self._db_url = urlunparse(parts)
             self._parsed_db = urlparse(urlunparse(parts))
@@ -825,6 +826,7 @@ class Provider(DBHaystackInterface):
             grid.append(_conv_row_to_entity(row[&#34;entity&#34;]))
         return grid
 
+    # noinspection PyPep8
     def _init_grid_from_db(self, version: Optional[datetime]) -&gt; Grid:
         customer_id = self.get_customer_id()
         if version is None:
@@ -832,8 +834,10 @@ class Provider(DBHaystackInterface):
         meta_collection = self._get_meta_collection()
 
         grid = Grid(version=LATEST_VER)
+        # noinspection PyPep8
         meta_record = list(meta_collection.aggregate(
             [
+                # noinspection PyPep8
                 {&#39;$match&#39;:
                     {
                         &#39;customer_id&#39;: customer_id,
@@ -932,7 +936,7 @@ class Provider(DBHaystackInterface):
         Import source URI to database.
         Args:
                 source_uri: The source URI.
-                import_time_series: True to import the time-series references via `hisURI` tag
+                customer_id: The customer id.
                 reset: Remove all the current data before import the grid.
                 version: The associated version time.
         &#34;&#34;&#34;
@@ -965,6 +969,7 @@ class Provider(DBHaystackInterface):
                 self._import_ts_in_db(ts_grid, row[&#34;id&#34;], customer_id)
                 log.debug(&#34;%s imported&#34;, uri)
 
+    # noinspection PyUnusedLocal
     def _import_ts_in_db(self,
                          time_series: Grid,
                          entity_id: Ref,
@@ -1090,7 +1095,7 @@ class Provider(DBHaystackInterface):
                 password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):
             password = get_secret_manager_secret(password[1:-1], self._envs)
             parts = list(self._parsed_db)
-            user, _, host = re.split(&#39;:|@&#39;, parts[1])
+            user, _, host = re.split(&#39;[:|@]&#39;, parts[1])
             parts[1] = f&#34;{user}:{password}@{host}&#34;
             self._db_url = urlunparse(parts)
             self._parsed_db = urlparse(urlunparse(parts))
@@ -1370,6 +1375,7 @@ class Provider(DBHaystackInterface):
             grid.append(_conv_row_to_entity(row[&#34;entity&#34;]))
         return grid
 
+    # noinspection PyPep8
     def _init_grid_from_db(self, version: Optional[datetime]) -&gt; Grid:
         customer_id = self.get_customer_id()
         if version is None:
@@ -1377,8 +1383,10 @@ class Provider(DBHaystackInterface):
         meta_collection = self._get_meta_collection()
 
         grid = Grid(version=LATEST_VER)
+        # noinspection PyPep8
         meta_record = list(meta_collection.aggregate(
             [
+                # noinspection PyPep8
                 {&#39;$match&#39;:
                     {
                         &#39;customer_id&#39;: customer_id,
@@ -1477,7 +1485,7 @@ class Provider(DBHaystackInterface):
         Import source URI to database.
         Args:
                 source_uri: The source URI.
-                import_time_series: True to import the time-series references via `hisURI` tag
+                customer_id: The customer id.
                 reset: Remove all the current data before import the grid.
                 version: The associated version time.
         &#34;&#34;&#34;
@@ -1510,6 +1518,7 @@ class Provider(DBHaystackInterface):
                 self._import_ts_in_db(ts_grid, row[&#34;id&#34;], customer_id)
                 log.debug(&#34;%s imported&#34;, uri)
 
+    # noinspection PyUnusedLocal
     def _import_ts_in_db(self,
                          time_series: Grid,
                          entity_id: Ref,
@@ -1738,8 +1747,8 @@ def his_read(
                                 <dl>
                                     <dt><strong><code>source_uri</code></strong></dt>
                                     <dd>The source URI.</dd>
-                                    <dt><strong><code>import_time_series</code></strong></dt>
-                                    <dd>True to import the time-series references via <code>hisURI</code> tag</dd>
+                                    <dt><strong><code>customer_id</code></strong></dt>
+                                    <dd>The customer id.</dd>
                                     <dt><strong><code>reset</code></strong></dt>
                                     <dd>Remove all the current data before import the grid.</dd>
                                     <dt><strong><code>version</code></strong></dt>
@@ -1760,7 +1769,7 @@ def his_read(
     Import source URI to database.
     Args:
             source_uri: The source URI.
-            import_time_series: True to import the time-series references via `hisURI` tag
+            customer_id: The customer id.
             reset: Remove all the current data before import the grid.
             version: The associated version time.
     &#34;&#34;&#34;

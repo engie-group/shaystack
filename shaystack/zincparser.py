@@ -597,7 +597,7 @@ def parse_scalar(scalar_data: str, version: Version = LATEST_VER) -> Any:
     Returns:
         The scala value
     """
-    if scalar_data != scalar_data.strip():
+    if not isinstance(scalar_data, str) or scalar_data != scalar_data.strip():
         raise ZincParseException('Failed to parse scalar: %s' % scalar_data, None, None, None)
     try:
         return hs_scalar[version].parseString(scalar_data, parseAll=True)[0]
@@ -606,7 +606,3 @@ def parse_scalar(scalar_data: str, version: Version = LATEST_VER) -> Any:
         raise ZincParseException(
             'Failed to parse scalar: %s' % _reformat_exception(parse_exception),
             scalar_data, 1, parse_exception.col) from parse_exception
-    except:
-        LOG.debug('Failing scalar data: %r (version %r)',
-                  scalar_data, version)
-        raise

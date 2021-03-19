@@ -8,12 +8,11 @@
 Base of haystack implementation.
 """
 import logging
-import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, date, timedelta, tzinfo
 from importlib import import_module
-from typing import Any, Tuple, Dict, Optional, List, cast, Union
+from typing import Any, Tuple, Dict, Optional, List, cast
 
 import pytz
 from pytz import BaseTzInfo
@@ -40,6 +39,7 @@ class HttpError(Exception):
     msg: str
 
 
+# noinspection PyMethodMayBeStatic
 class HaystackInterface(ABC):
     """
     Interface to implement to be compatible with Haystack REST protocol.
@@ -70,6 +70,7 @@ class HaystackInterface(ABC):
     def __exit__(self, exc_type, exc_value, exc_traceback):
         pass
 
+    # noinspection PyMethodMayBeStatic
     def get_tz(self) -> BaseTzInfo:  # pylint: disable=no-self-use
         """ Return server time zone. """
         return get_localzone()
@@ -149,6 +150,7 @@ class HaystackInterface(ABC):
         )
         return grid
 
+    # noinspection PyUnresolvedReferences
     def ops(self) -> Grid:
         """ Implement the Haystack 'ops' ops.
 
@@ -189,6 +191,7 @@ class HaystackInterface(ABC):
                              "user action on a target record.",
         }
         # Remove abstract method
+        # noinspection PyUnresolvedReferences
         for abstract_method in self.__class__.__base__.__abstractmethods__:
             all_haystack_ops.pop(abstract_method, None)
         if (
@@ -357,15 +360,14 @@ class HaystackInterface(ABC):
     def his_read(
             self,
             entity_id: Ref,
-            dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
+            dates_range: Tuple[datetime, datetime],
             date_version: Optional[datetime] = None,
     ) -> Grid:  # pylint: disable=no-self-use
         """ Implement the Haystack 'hisRead' ops.
 
         Args:
             entity_id: The entity to read
-            dates_range: The date
-            range: May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}),
+            dates_range: May be "today", "yesterday", {date}, ({date},{date}), ({datetime},{datetime}),
             {dateTime}
             date_version: The optional date version to read
 
@@ -415,8 +417,6 @@ class HaystackInterface(ABC):
         raise NotImplementedError()
 
 
-
-
 _providers = {}
 
 
@@ -425,7 +425,8 @@ def no_cache():
     return False
 
 
-def get_provider(class_str: str, envs: Union[Dict[str, str], os._Environ],  # pylint: disable=protected-access
+# noinspection PyProtectedMember,PyUnresolvedReferences
+def get_provider(class_str: str, envs: Dict[str, str],  # pylint: disable=protected-access
                  use_cache=True  # pylint: disable=protected-access
                  ) -> HaystackInterface:
     """Return an instance of the provider.
@@ -436,6 +437,7 @@ def get_provider(class_str: str, envs: Union[Dict[str, str], os._Environ],  # py
     Args:
         class_str: The name of the module that contains the provider.
         envs: Environement variable (os.env ?)
+        use_cache: Use cached provider or create a new one
 
     Returns:
         A instance of this subclass if it exists
@@ -452,6 +454,7 @@ def get_provider(class_str: str, envs: Union[Dict[str, str], os._Environ],  # py
     # Implement all abstract method.
     # Then, it's possible to generate the Ops operator dynamically
     # pylint: disable=missing-function-docstring,useless-super-delegation
+    # noinspection PyShadowingNames
     class FullInterface(provider_class):  # pylint: disable=missing-class-docstring
         def __init__(self, envs: Dict[str, str]):
             provider_class.__init__(self, envs)
@@ -544,7 +547,8 @@ def get_provider(class_str: str, envs: Union[Dict[str, str], os._Environ],  # py
 SINGLETON_PROVIDER = None
 
 
-def get_singleton_provider(envs: Union[Dict[str, str], os._Environ]  # pylint: disable=protected-access
+# noinspection PyProtectedMember
+def get_singleton_provider(envs: Dict[str, str]  # pylint: disable=protected-access
                            ) -> HaystackInterface:
     """
     Return the current provider, deduce from the `HAYSTACK_PROVIDER` variable.
@@ -597,7 +601,7 @@ def parse_date_range(date_range: str, timezone: tzinfo) -> Tuple[datetime, datet
                 (datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=timezone),
                  datetime.combine(split_date[1], datetime.max.time()).replace(tzinfo=timezone))
         if isinstance(split_date[0], datetime):
-            return (split_date[0], datetime.max.replace(tzinfo=pytz.UTC))
+            return split_date[0], datetime.max.replace(tzinfo=pytz.UTC)
         tzdate = datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=timezone)
         return tzdate, tzdate + timedelta(days=1, milliseconds=-1)
     if date_range == "today":

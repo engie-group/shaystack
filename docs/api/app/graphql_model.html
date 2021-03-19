@@ -477,7 +477,7 @@ import json
 import logging
 import os
 from datetime import datetime, date, time
-from typing import Optional, List, Any, Union, Type
+from typing import Optional, List, Any, Union, Type, Dict, cast
 
 import graphene
 import pytz
@@ -489,6 +489,7 @@ from shaystack import Ref, Uri, Coordinate, parse_hs_datetime_format, Grid
 from shaystack.grid_filter import parse_hs_time_format, parse_hs_date_format
 from shaystack.providers.haystack_interface import get_singleton_provider, parse_date_range
 from shaystack.type import Entity
+# noinspection PyProtectedMember,PyProtectedMember,PyProtectedMember
 from shaystack.zincdumper import _dump_hs_date_time, _dump_hs_time, _dump_hs_date
 
 BOTO3_AVAILABLE = False
@@ -823,37 +824,47 @@ class ReadHaystack(graphene.ObjectType):
         description=&#34;Point write values&#34;
     )
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_about(parent: &#39;ReadHaystack&#39;,
                       info: ResolveInfo):
         log.debug(&#34;resolve_about(parent,info)&#34;)
-        grid = get_singleton_provider(os.environ).about(&#34;http://localhost&#34;)
+        envs = cast(Dict[str, str], os.environ)
+        grid = get_singleton_provider(envs).about(&#34;http://localhost&#34;)
         result = ReadHaystack._conv_entity(HSAbout, grid[0])
         result.serverTime = grid[0][&#34;serverTime&#34;]  # pylint: disable=invalid-name
         result.bootTime = grid[0][&#34;serverBootTime&#34;]  # pylint: disable=invalid-name, attribute-defined-outside-init
         return result
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_ops(parent: &#39;ReadHaystack&#39;,
                     info: ResolveInfo):
         log.debug(&#34;resolve_about(parent,info)&#34;)
-        grid = get_singleton_provider(os.environ).ops()
+        envs = cast(Dict[str, str], os.environ)
+        grid = get_singleton_provider(envs).ops()
         return ReadHaystack._conv_list_to_object_type(HSOps, grid)
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_tag_values(parent: &#39;ReadHaystack&#39;,
                            info: ResolveInfo,
                            tag: str,
                            version: Optional[HSDateTime] = None):
         log.debug(&#34;resolve_values(parent,info,%s)&#34;, tag)
-        return get_singleton_provider(os.environ).values_for_tag(tag, version)
+        envs = cast(Dict[str, str], os.environ)
+        return get_singleton_provider(envs).values_for_tag(tag, version)
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_versions(parent: &#39;ReadHaystack&#39;,
                          info: ResolveInfo):
         log.debug(&#34;resolve_versions(parent,info)&#34;)
-        return get_singleton_provider(os.environ).versions()
+        envs = cast(Dict[str, str], os.environ)
+        return get_singleton_provider(envs).versions()
 
+    # noinspection PyShadowingBuiltins
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_entities(parent: &#39;ReadHaystack&#39;,
                          info: ResolveInfo,
@@ -868,9 +879,11 @@ class ReadHaystack(graphene.ObjectType):
             &#34;limit=%s, version=%s)&#34;, ids, select, filter, limit, version)
         if ids:
             ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]
-        grid = get_singleton_provider(os.environ).read(limit, select, ids, filter, version)
+        envs = cast(Dict[str, str], os.environ)
+        grid = get_singleton_provider(envs).read(limit, select, ids, filter, version)
         return grid.purge()
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_histories(parent: &#39;ReadHaystack&#39;,
                           info: ResolveInfo,
@@ -881,7 +894,8 @@ class ReadHaystack(graphene.ObjectType):
             version = HSDateTime.parse_value(version)
         log.debug(&#34;resolve_histories(parent,info,ids=%s, range=%s, version=%s)&#34;,
                   ids, dates_range, version)
-        provider = get_singleton_provider(os.environ)
+        envs = cast(Dict[str, str], os.environ)
+        provider = get_singleton_provider(envs)
         grid_date_range = parse_date_range(dates_range, provider.get_tz())
         return [ReadHaystack._conv_history(
             provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version),
@@ -889,6 +903,7 @@ class ReadHaystack(graphene.ObjectType):
         )
             for entity_id in ids]
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_point_write(parent: &#39;ReadHaystack&#39;,
                             info: ResolveInfo,
@@ -899,7 +914,8 @@ class ReadHaystack(graphene.ObjectType):
         log.debug(&#34;resolve_point_write(parent,info, entity_id=%s, version=%s)&#34;,
                   entity_id, version)
         ref = Ref(ReadHaystack._filter_id(entity_id))
-        grid = get_singleton_provider(os.environ).point_write_read(ref, version)
+        envs = cast(Dict[str, str], os.environ)
+        grid = get_singleton_provider(envs).point_write_read(ref, version)
         return ReadHaystack._conv_list_to_object_type(HSPointWrite, grid)
 
     @staticmethod
@@ -942,7 +958,7 @@ class ReadHaystack(graphene.ObjectType):
         return cast_value
 
     @staticmethod
-    def _conv_history(entities: Entity, info: ResolveInfo):
+    def _conv_history(entities: Grid, info: ResolveInfo):
         return [ReadHaystack._conv_value(entity, info) for entity in entities]
 
     @staticmethod
@@ -2052,37 +2068,47 @@ def serialize(a_uri: Uri) -&gt; str:
         description=&#34;Point write values&#34;
     )
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_about(parent: &#39;ReadHaystack&#39;,
                       info: ResolveInfo):
         log.debug(&#34;resolve_about(parent,info)&#34;)
-        grid = get_singleton_provider(os.environ).about(&#34;http://localhost&#34;)
+        envs = cast(Dict[str, str], os.environ)
+        grid = get_singleton_provider(envs).about(&#34;http://localhost&#34;)
         result = ReadHaystack._conv_entity(HSAbout, grid[0])
         result.serverTime = grid[0][&#34;serverTime&#34;]  # pylint: disable=invalid-name
         result.bootTime = grid[0][&#34;serverBootTime&#34;]  # pylint: disable=invalid-name, attribute-defined-outside-init
         return result
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_ops(parent: &#39;ReadHaystack&#39;,
                     info: ResolveInfo):
         log.debug(&#34;resolve_about(parent,info)&#34;)
-        grid = get_singleton_provider(os.environ).ops()
+        envs = cast(Dict[str, str], os.environ)
+        grid = get_singleton_provider(envs).ops()
         return ReadHaystack._conv_list_to_object_type(HSOps, grid)
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_tag_values(parent: &#39;ReadHaystack&#39;,
                            info: ResolveInfo,
                            tag: str,
                            version: Optional[HSDateTime] = None):
         log.debug(&#34;resolve_values(parent,info,%s)&#34;, tag)
-        return get_singleton_provider(os.environ).values_for_tag(tag, version)
+        envs = cast(Dict[str, str], os.environ)
+        return get_singleton_provider(envs).values_for_tag(tag, version)
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_versions(parent: &#39;ReadHaystack&#39;,
                          info: ResolveInfo):
         log.debug(&#34;resolve_versions(parent,info)&#34;)
-        return get_singleton_provider(os.environ).versions()
+        envs = cast(Dict[str, str], os.environ)
+        return get_singleton_provider(envs).versions()
 
+    # noinspection PyShadowingBuiltins
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_entities(parent: &#39;ReadHaystack&#39;,
                          info: ResolveInfo,
@@ -2097,9 +2123,11 @@ def serialize(a_uri: Uri) -&gt; str:
             &#34;limit=%s, version=%s)&#34;, ids, select, filter, limit, version)
         if ids:
             ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]
-        grid = get_singleton_provider(os.environ).read(limit, select, ids, filter, version)
+        envs = cast(Dict[str, str], os.environ)
+        grid = get_singleton_provider(envs).read(limit, select, ids, filter, version)
         return grid.purge()
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_histories(parent: &#39;ReadHaystack&#39;,
                           info: ResolveInfo,
@@ -2110,7 +2138,8 @@ def serialize(a_uri: Uri) -&gt; str:
             version = HSDateTime.parse_value(version)
         log.debug(&#34;resolve_histories(parent,info,ids=%s, range=%s, version=%s)&#34;,
                   ids, dates_range, version)
-        provider = get_singleton_provider(os.environ)
+        envs = cast(Dict[str, str], os.environ)
+        provider = get_singleton_provider(envs)
         grid_date_range = parse_date_range(dates_range, provider.get_tz())
         return [ReadHaystack._conv_history(
             provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version),
@@ -2118,6 +2147,7 @@ def serialize(a_uri: Uri) -&gt; str:
         )
             for entity_id in ids]
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def resolve_point_write(parent: &#39;ReadHaystack&#39;,
                             info: ResolveInfo,
@@ -2128,7 +2158,8 @@ def serialize(a_uri: Uri) -&gt; str:
         log.debug(&#34;resolve_point_write(parent,info, entity_id=%s, version=%s)&#34;,
                   entity_id, version)
         ref = Ref(ReadHaystack._filter_id(entity_id))
-        grid = get_singleton_provider(os.environ).point_write_read(ref, version)
+        envs = cast(Dict[str, str], os.environ)
+        grid = get_singleton_provider(envs).point_write_read(ref, version)
         return ReadHaystack._conv_list_to_object_type(HSPointWrite, grid)
 
     @staticmethod
@@ -2171,7 +2202,7 @@ def serialize(a_uri: Uri) -&gt; str:
         return cast_value
 
     @staticmethod
-    def _conv_history(entities: Entity, info: ResolveInfo):
+    def _conv_history(entities: Grid, info: ResolveInfo):
         return [ReadHaystack._conv_value(entity, info) for entity in entities]
 
     @staticmethod
@@ -2257,7 +2288,8 @@ def serialize(a_uri: Uri) -&gt; str:
 def resolve_about(parent: &#39;ReadHaystack&#39;,
                   info: ResolveInfo):
     log.debug(&#34;resolve_about(parent,info)&#34;)
-    grid = get_singleton_provider(os.environ).about(&#34;http://localhost&#34;)
+    envs = cast(Dict[str, str], os.environ)
+    grid = get_singleton_provider(envs).about(&#34;http://localhost&#34;)
     result = ReadHaystack._conv_entity(HSAbout, grid[0])
     result.serverTime = grid[0][&#34;serverTime&#34;]  # pylint: disable=invalid-name
     result.bootTime = grid[0][&#34;serverBootTime&#34;]  # pylint: disable=invalid-name, attribute-defined-outside-init
@@ -2289,7 +2321,8 @@ def resolve_entities(parent: &#39;ReadHaystack&#39;,
         &#34;limit=%s, version=%s)&#34;, ids, select, filter, limit, version)
     if ids:
         ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]
-    grid = get_singleton_provider(os.environ).read(limit, select, ids, filter, version)
+    envs = cast(Dict[str, str], os.environ)
+    grid = get_singleton_provider(envs).read(limit, select, ids, filter, version)
     return grid.purge()</code></pre>
                             </details>
                         </dd>
@@ -2313,7 +2346,8 @@ def resolve_histories(parent: &#39;ReadHaystack&#39;,
         version = HSDateTime.parse_value(version)
     log.debug(&#34;resolve_histories(parent,info,ids=%s, range=%s, version=%s)&#34;,
               ids, dates_range, version)
-    provider = get_singleton_provider(os.environ)
+    envs = cast(Dict[str, str], os.environ)
+    provider = get_singleton_provider(envs)
     grid_date_range = parse_date_range(dates_range, provider.get_tz())
     return [ReadHaystack._conv_history(
         provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version),
@@ -2336,7 +2370,8 @@ def resolve_histories(parent: &#39;ReadHaystack&#39;,
 def resolve_ops(parent: &#39;ReadHaystack&#39;,
                 info: ResolveInfo):
     log.debug(&#34;resolve_about(parent,info)&#34;)
-    grid = get_singleton_provider(os.environ).ops()
+    envs = cast(Dict[str, str], os.environ)
+    grid = get_singleton_provider(envs).ops()
     return ReadHaystack._conv_list_to_object_type(HSOps, grid)</code></pre>
                             </details>
                         </dd>
@@ -2360,7 +2395,8 @@ def resolve_point_write(parent: &#39;ReadHaystack&#39;,
     log.debug(&#34;resolve_point_write(parent,info, entity_id=%s, version=%s)&#34;,
               entity_id, version)
     ref = Ref(ReadHaystack._filter_id(entity_id))
-    grid = get_singleton_provider(os.environ).point_write_read(ref, version)
+    envs = cast(Dict[str, str], os.environ)
+    grid = get_singleton_provider(envs).point_write_read(ref, version)
     return ReadHaystack._conv_list_to_object_type(HSPointWrite, grid)</code></pre>
                             </details>
                         </dd>
@@ -2381,7 +2417,8 @@ def resolve_tag_values(parent: &#39;ReadHaystack&#39;,
                        tag: str,
                        version: Optional[HSDateTime] = None):
     log.debug(&#34;resolve_values(parent,info,%s)&#34;, tag)
-    return get_singleton_provider(os.environ).values_for_tag(tag, version)</code></pre>
+    envs = cast(Dict[str, str], os.environ)
+    return get_singleton_provider(envs).values_for_tag(tag, version)</code></pre>
                             </details>
                         </dd>
                         <dt id="app.graphql_model.ReadHaystack.resolve_versions"><code class="name flex">
@@ -2398,7 +2435,8 @@ def resolve_tag_values(parent: &#39;ReadHaystack&#39;,
 def resolve_versions(parent: &#39;ReadHaystack&#39;,
                      info: ResolveInfo):
     log.debug(&#34;resolve_versions(parent,info)&#34;)
-    return get_singleton_provider(os.environ).versions()</code></pre>
+    envs = cast(Dict[str, str], os.environ)
+    return get_singleton_provider(envs).versions()</code></pre>
                             </details>
                         </dd>
                     </dl>

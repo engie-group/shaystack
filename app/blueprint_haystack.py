@@ -8,6 +8,7 @@
 A flask blueprint to manage Haystack API
 """
 import os
+from typing import Dict, cast
 
 from flask import Blueprint, Response, send_from_directory, safe_join
 from flask import request as flash_request
@@ -48,7 +49,7 @@ def flask_about() -> Response:
     Returns:
         Flask HTTP response
     """
-    envs = os.environ
+    envs = cast(Dict[str, str], os.environ)
     return _as_response(about(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
@@ -58,7 +59,7 @@ def flask_ops() -> Response:
     Returns:
         Flask HTTP response
     """
-    envs = os.environ
+    envs = cast(Dict[str, str], os.environ)
     return _as_response(ops(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
@@ -68,7 +69,7 @@ def flask_formats() -> Response:
     Returns:
         Flask HTTP response
     """
-    envs = os.environ
+    envs = cast(Dict[str, str], os.environ)
     return _as_response(formats(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
@@ -78,7 +79,7 @@ def flask_read() -> Response:
     Returns:
         Flask HTTP response
     """
-    envs = os.environ
+    envs = cast(Dict[str, str], os.environ)
     return _as_response(read(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
@@ -88,7 +89,7 @@ def flask_nav() -> Response:
     Returns:
         Flask HTTP response
     """
-    envs = os.environ
+    envs = cast(Dict[str, str], os.environ)
     return _as_response(nav(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
@@ -98,7 +99,7 @@ def flask_watch_sub() -> Response:
     Returns:
         Flask HTTP response
     """
-    envs = os.environ
+    envs = cast(Dict[str, str], os.environ)
     return _as_response(watch_sub(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
@@ -108,7 +109,7 @@ def flask_watch_unsub() -> Response:
     Returns:
         Flask HTTP response
     """
-    envs = os.environ
+    envs = cast(Dict[str, str], os.environ)
     return _as_response(watch_unsub(envs, _as_request(flash_request),
                                     envs.get("FLASK_ENV", "prod")))
 
@@ -119,7 +120,7 @@ def flask_watch_poll() -> Response:
     Returns:
         Flask HTTP response
     """
-    envs = os.environ
+    envs = cast(Dict[str, str], os.environ)
     return _as_response(watch_poll(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
@@ -129,7 +130,7 @@ def flask_point_write() -> Response:
     Returns:
         Flask HTTP response
     """
-    envs = os.environ
+    envs = cast(Dict[str, str], os.environ)
     return _as_response(point_write(envs, _as_request(flash_request),
                                     envs.get("FLASK_ENV", "prod")))
 
@@ -140,7 +141,7 @@ def flask_his_read() -> Response:
     Returns:
         Flask HTTP response
     """
-    envs = os.environ
+    envs = cast(Dict[str, str], os.environ)
     return _as_response(his_read(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
@@ -150,7 +151,7 @@ def flask_his_write() -> Response:
     Returns:
         Flask HTTP response
     """
-    envs = os.environ
+    envs = cast(Dict[str, str], os.environ)
     return _as_response(his_write(envs, _as_request(flash_request), envs.get("FLASK_ENV", "prod")))
 
 
@@ -160,7 +161,7 @@ def flask_invoke_action() -> Response:
     Returns:
         Flask HTTP response
     """
-    envs = os.environ
+    envs = cast(Dict[str, str], os.environ)
     return _as_response(invoke_action(envs, _as_request(flash_request),
                                       envs.get("FLASK_ENV", "prod")))
 

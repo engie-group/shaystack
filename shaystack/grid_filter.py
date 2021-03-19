@@ -229,7 +229,9 @@ def filter_set_lru_size(lru_size: int) -> None:
     Args:
         lru_size: The new LRU size
     """
+    # noinspection PyGlobalUndefined
     global _filter_function  # pylint: disable=W0601, C0103
+    # noinspection PyUnresolvedReferences
     original_function = _filter_function.__wrapped__  # pylint: disable=E1101
     _filter_function = lru_cache(lru_size, original_function)  # type: ignore
 

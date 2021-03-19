@@ -22,6 +22,7 @@ LOGLEVEL?=WARNING
 PG_PASSWORD?=password
 PGADMIN_USER?=$(USER)@domain.com
 PGADMIN_PASSWORD?=password
+MYSQL_USER?=mysql
 MYSQL_PASSWORD?=password
 TLS_VERIFY=False
 
@@ -173,7 +174,7 @@ help:
 
 # --------------------------- Info
 ## Print all URL
-info: api pg-url aws-api
+info: api url-pg aws-api
 
 conda-info:
 	conda info
@@ -852,7 +853,7 @@ start-mysql:
 		-e MYSQL_DATABASE="haystackdb" \
 		-e MYSQL_PASS="password" \
 		-e MYSQL_ROOT_PASSWORD=$(MYSQL_PASSWORD) \
-		-e MYSQL_USER=mysql \
+		-e MYSQL_USER=$(MYSQL_USER) \
 		-e MYSQL_PASSWORD=$(MYSQL_PASSWORD) \
 		-p 3306:3306 \
 		-d mysql

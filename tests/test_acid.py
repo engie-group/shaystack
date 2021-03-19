@@ -13,12 +13,14 @@ import sys
 from typing import Optional, Dict, List, Union
 
 from shaystack import HaystackType
+# noinspection PyProtectedMember
 from shaystack.datatypes import Ref, Bin, Uri, Quantity, Coordinate, XStr, MARKER, REMOVE, NA, MODE_TRIO, MODE, \
     _MarkerType, _RemoveType, _NAType
 from shaystack.dumper import dump
 from shaystack.grid import Grid, VER_3_0
 from shaystack.metadata import MetadataObject
 from shaystack.parser import MODE_ZINC, parse, MODE_JSON, MODE_CSV
+# noinspection PyProtectedMember
 from shaystack.zoneinfo import _get_tz_map, timezone
 
 STR_CHARSET = string.ascii_letters + string.digits + '\n\r\t\f\b'
@@ -198,7 +200,9 @@ def gen_random_grid(metadata: bool = True, minrow: int = 0, empty_col: bool = Tr
     # Generate a randomised grid of values and try parsing it back.
     """
     Args:
-        metadata:
+        metadata: With metadata ?
+        minrow: Minimum number of rows
+        empty_col: Accept empty column ?
     """
     grid = Grid(version=VER_3_0)
     if metadata:

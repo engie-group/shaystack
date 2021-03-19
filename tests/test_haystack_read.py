@@ -79,8 +79,7 @@ def test_read_with_zinc_and_id(mock) -> None:
     response = shaystack.read(envs, request, "dev")
 
     # THEN
-    ids = Grid(columns=["id"])
-    ids.append({"id": Ref("me")})
+    ids = [Ref("me")]
     mock.assert_called_once_with(0, None, ids, '', None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
@@ -104,8 +103,7 @@ def test_read_with_arg_and_id(mock) -> None:
     response = shaystack.read(envs, request, "dev")
 
     # THEN
-    ids = Grid(columns=["id"])
-    ids.append({"id": Ref("me")})
+    ids = [Ref("me")]
     mock.assert_called_once_with(0, None, ids, '', None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)

@@ -1,4 +1,4 @@
-db.![Shift-Haystack](logo.png)
+![Shift-Haystack](logo.png)
 
 | The API is not stable and can be changed without any notice. |
 | --------------------------------------------------------- |

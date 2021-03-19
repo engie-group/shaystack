@@ -856,6 +856,7 @@ start-mysql:
 		-e MYSQL_PASSWORD=$(MYSQL_PASSWORD) \
 		-p 3306:3306 \
 		-d mysql
+	sleep 2
 	echo -e "$(yellow)MySQL started$(normal)"
 
 ## Stop MySQL database
@@ -887,6 +888,7 @@ start-mongodb:
 		--hostname mongodb \
 		-p 27017-27019:27017-27019 \
 		-d mongodb
+	sleep 2
 	echo -e "$(yellow)MongoDB started$(normal)"
 
 ## Stop mongo database

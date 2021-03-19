@@ -17,14 +17,13 @@ from ast import literal_eval
 from dataclasses import dataclass, field
 from datetime import datetime, date
 from decimal import Decimal
-from numbers import Number
 from typing import Optional, Any, List, cast
 from typing import Tuple, Dict
 
 from accept_types import AcceptableType, get_best_match
 from pyparsing import ParseException
 
-from .datatypes import Ref, Quantity, MARKER, MODE_TRIO
+from .datatypes import Ref, Quantity, MARKER, MODE_TRIO, MODE
 from .dumper import dump
 from .empty_grid import EmptyGrid
 from .exception import HaystackException
@@ -36,7 +35,7 @@ from .providers.haystack_interface import (
 )
 
 _DEFAULT_VERSION = VER_3_0
-DEFAULT_MIME_TYPE: str = MODE_CSV
+DEFAULT_MIME_TYPE = MODE_CSV
 _DEFAULT_MIME_TYPE_WITH_METADATA = MODE_ZINC
 
 log = logging.getLogger("shaystack")
@@ -119,7 +118,7 @@ class _AcceptableEncoding:
         """
         Return true if encoding_type match the pattern
         """
-        return self.pattern.match(encoding_type)
+        return self.pattern.match(encoding_type) is not None
 
     def __str__(self) -> str:
         display = self.encoding_type
@@ -173,7 +172,7 @@ def _parse_header(header: str) -> List[AcceptableType]:
     return sorted(encoding_types, reverse=True)
 
 
-def _get_weight(tail: str) -> Number:
+def _get_weight(tail: str) -> Decimal:
     """Given the tail of a mime type header (the bit after the first ``;``),
     find the ``q`` (weight, or quality) parameter.
 
@@ -213,8 +212,8 @@ def _parse_body(request: HaystackHttpRequest) -> Grid:
     if "Content-Type" not in request.headers:
         grid = parse(request.body, mode=DEFAULT_MIME_TYPE)
     else:
-        content_type = request.headers["Content-Type"]
-        if mode_to_suffix(content_type):
+        content_type = cast(MODE, request.headers["Content-Type"])
+        if mode_to_suffix(cast(MODE, content_type)):
             grid = parse(request.body, mode=content_type)
         elif request.body:
             raise HttpError(406, f"Content-Type '{content_type}' not supported")
@@ -230,7 +229,7 @@ def _format_response(
         grid_response: Grid,
         status_code: int,
         status_msg: str,
-        default=None,
+        default: Optional[MODE] = None,
 ) -> HaystackHttpResponse:
     """
     Convert the grid and HTTP status to HTTP response.
@@ -259,7 +258,7 @@ def _format_response(
 
 
 def _dump_response(
-        accept: str, grid: Grid, default: Optional[str] = None
+        accept: str, grid: Grid, default: Optional[MODE] = None
 ) -> Tuple[str, str]:
     """
     Dump the response and return the mime type and body
@@ -340,7 +339,7 @@ def _manage_exception(
         status_msg = ex_http.msg
     if isinstance(ex, ParseException):
         status_code = 200
-        status_msg = f"Parsing error with '{ex.line}'"
+        status_msg = f"Parsing error with '{ex.line}'"  # type: ignore
         error_grid.metadata["dis"] = status_msg
     if isinstance(ex, HaystackException):
         status_code = 200
@@ -475,7 +474,7 @@ def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hays
         limit = 0
         if grid_request:
             if "id" in grid_request.column:
-                read_ids = grid_request
+                read_ids = [row["id"] for row in grid_request]
             else:
                 if "filter" in grid_request.column:
                     read_filter = grid_request[0].get("filter", "")
@@ -492,9 +491,7 @@ def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hays
         # Priority of query string
         if args:
             if "id" in args:
-                read_ids = Grid(version=grid_request.version, columns=["id"])
-                for i in args["id"].split(","):
-                    read_ids.append({"id": Ref(i)})
+                read_ids = [Ref(id) for id in args["id"].split(",")]
             else:
                 if "filter" in args:
                     read_filter = args["filter"]
@@ -503,7 +500,7 @@ def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hays
             if "select" in args:
                 select = args["select"]
             if "version" in args:
-                date_version = parse_hs_datetime_format(args["version"].split(" "))
+                date_version = parse_hs_datetime_format(args["version"])
 
         if read_filter is None:
             read_filter = ""
@@ -717,7 +714,7 @@ def point_write(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) 
             duration = parse_scalar(args["duration"])
             assert isinstance(duration, Quantity)
         if "version" in args:
-            date_version = parse_hs_datetime_format(args["version"].split(" "))
+            date_version = parse_hs_datetime_format(args["version"])
         if entity_id is None:
             raise ValueError("'id' must be set")
         if val is not None:

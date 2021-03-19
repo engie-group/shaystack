@@ -410,7 +410,7 @@ def test_wc1382_unicode_str_zinc():
 
     grid = shaystack.parse(
         open(os.path.join(THIS_DIR,
-                          'wc1382-unicode-grid.txt'), 'rb').read(),
+                          'wc1382-unicode-grid.txt'), 'rb').read().decode("utf-8"),
         mode=shaystack.MODE_ZINC)
     assert len(grid) == 3
 

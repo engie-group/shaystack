@@ -9,7 +9,7 @@
 Generic parser from file to `Grid`. The mode can be `MODE_ZINC`, `MODE_JSON` or `MODE_CSV`
 """
 import logging
-from typing import Optional, Any, Union, AnyStr, cast
+from typing import Optional, Any, Union, cast
 
 from .csvparser import parse_grid as parse_csv_grid, parse_scalar as parse_csv_scalar
 from .datatypes import MODE_ZINC, MODE_JSON, MODE_CSV, MODE, MODE_TRIO
@@ -59,7 +59,7 @@ def mode_to_suffix(mode: MODE) -> Optional[str]:
     return _mode_to_suffix.get(mode, None)
 
 
-def parse(grid_str: AnyStr, mode: MODE = MODE_ZINC) -> Grid:
+def parse(grid_str: str, mode: MODE = MODE_ZINC) -> Grid:
     # Decode incoming text
     """
     Parse a grid.

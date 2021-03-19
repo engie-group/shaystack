@@ -43,7 +43,6 @@ from typing import Optional, Union, Tuple, Any, List, cast, Dict
 from urllib.parse import urlparse, ParseResult
 
 import pytz
-from botocore.exceptions import ClientError
 from overrides import overrides
 
 from .db_haystack_interface import DBHaystackInterface
@@ -61,6 +60,7 @@ BOTO3_AVAILABLE = False
 try:
     import boto3
     from botocore.client import BaseClient  # pylint: disable=ungrouped-imports
+    from botocore.exceptions import ClientError
 
     BOTO3_AVAILABLE = True
 except ImportError:

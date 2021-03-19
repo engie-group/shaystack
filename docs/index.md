@@ -468,6 +468,11 @@ haystack json model. Or, you can create your provider to read and convert your d
 Later, you can add a connection with your IOT to expose the current value of points, and add the
 `watch` features.
 
+To implement a provider, two strategies are proposed:
+
+- Read the entire ontology in memory, apply the `filter()` and return the result
+- Convert the filter request to a specific request on your datamodel, convert the row to entities an return the result.
+  
 ### Using AWS
 
 Read [more...](AWS.md)

@@ -34,7 +34,6 @@ from .db_haystack_interface import DBHaystackInterface
 from .sqldb_protocol import DBConnection
 from .tools import get_secret_manager_secret, _BOTO3_AVAILABLE
 from .url import read_grid_from_uri
-from .. import HaystackException
 from ..datatypes import Ref
 from ..grid import Grid
 from ..jsondumper import dump_scalar, _dump_meta, _dump_columns, _dump_row
@@ -280,14 +279,16 @@ class Provider(DBHaystackInterface):
                         "val": parse_scalar(row[1])
                     }
                 )
-            if not history:
-                raise HaystackException(f"id '{entity_id}' not found")
-            min_date = datetime.max.replace(tzinfo=pytz.UTC)
-            max_date = datetime.min.replace(tzinfo=pytz.UTC)
+            if history:
+                min_date = datetime.max.replace(tzinfo=pytz.UTC)
+                max_date = datetime.min.replace(tzinfo=pytz.UTC)
 
-            for time_serie in history:
-                min_date = min(min_date, time_serie["ts"])
-                max_date = max(max_date, time_serie["ts"])
+                for time_serie in history:
+                    min_date = min(min_date, time_serie["ts"])
+                    max_date = max(max_date, time_serie["ts"])
+            else:
+                min_date = date_version
+                max_date = date_version
 
             history.metadata = {
                 "id": entity_id,

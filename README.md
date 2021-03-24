@@ -25,5 +25,7 @@ This project implements client side haystack code. Useful to parse or dump Hayst
 On the server side, it also implements [Haystack Rest API](https://www.project-haystack.org/doc/Rest), useful to serve
 Haystack data you host.
 
+[Try it ?](https://colab.research.google.com/github/pprados/shaystack/blob/develop/haystack.ipynb)
+
 The [full documentation is here](https://pprados.github.io/shaystack/)
 and the [documentation of API is here](https://pprados.github.io/shaystack/api/shaystack/index.html)

@@ -3,7 +3,7 @@
 This provider uses an ontology imported in SQL database. Each entity is saved in a row in the JSON format.
 Use `HAYSTACK_PROVIDER=shaytack.providers.db` or `HAYSTACK_PROVIDER=shaytack.providers.sql`
 to use this provider. Add the variable `HAYSTACK_DB` to describe the link to the root table. At this time, only
-SuperSQLite, Postgresql and MySQL were supported.
+SuperSQLite, Postgresql, MySQL and Athena were supported.
 
 ```console
 $ pip install 'shaystack[graphql,lambda]'
@@ -16,7 +16,8 @@ Install the corresponding database driver:
 | sqlite   | `pip install supersqlite` (`apt install build-essential` before, and may take several minutes)|
 | postgres | `pip install psycopg2`                              |
 |          | or `pip install psycopg2-binary`                    |
-| mysql    | `pip install pymysql`                |
+| mysql    | `pip install pymysql`                               |
+| athena   | install the postgres or mysql driver                |
 
 You can use `shaystack_import_db` to import a Haystack files into the database, only if the entities are modified
 (to respect the notion of _Version_ with this provider). The corresponding `hisURI` time-series files are uploaded too.

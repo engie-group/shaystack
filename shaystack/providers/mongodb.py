@@ -30,7 +30,7 @@ from .db_haystack_interface import DBHaystackInterface
 from .db_mongo import _mongo_filter as mongo_filter
 from .tools import _BOTO3_AVAILABLE, get_secret_manager_secret
 from .url import read_grid_from_uri
-from .. import Entity, LATEST_VER, HaystackException, re
+from .. import Entity, LATEST_VER, re
 from ..datatypes import Ref
 from ..grid import Grid
 from ..jsondumper import dump_scalar as json_dump_scalar, _dump_meta, _dump_columns
@@ -239,14 +239,17 @@ class Provider(DBHaystackInterface):
                     "val": json_parse_scalar(row['val'])
                 }
             )
-        if not history:
-            raise HaystackException(f"id '{entity_id}' not found")
-        min_date = datetime.max.replace(tzinfo=pytz.UTC)
-        max_date = datetime.min.replace(tzinfo=pytz.UTC)
 
-        for time_serie in history:
-            min_date = min(min_date, time_serie["ts"])
-            max_date = max(max_date, time_serie["ts"])
+        if history:
+            min_date = datetime.max.replace(tzinfo=pytz.UTC)
+            max_date = datetime.min.replace(tzinfo=pytz.UTC)
+
+            for time_serie in history:
+                min_date = min(min_date, time_serie["ts"])
+                max_date = max(max_date, time_serie["ts"])
+        else:
+            min_date = date_version
+            max_date = date_version
 
         history.metadata = {
             "id": entity_id,

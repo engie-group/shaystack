@@ -16,13 +16,17 @@ from typing import Any, List, Callable, Tuple
 from pyparsing import ZeroOrMore, Literal, Forward, Suppress
 
 from . import Grid
-from .datatypes import Ref, XStr
+from .datatypes import Ref, XStr, MARKER, NA, REMOVE
 from .filter_ast import FilterPath, FilterBinary, FilterUnary, FilterAST, FilterNode
 from .type import Entity
 from .zincparser import hs_scalar_3_0, hs_id, hs_all_date, hs_date, \
     hs_time, pyparser_lock
 
-_ = XStr  # Necessary for generated code
+# Necessary for generated code
+_ = XStr
+_ = MARKER
+_ = NA
+_ = REMOVE
 
 
 def _merge_and_or(key: str, toks: List[FilterBinary]) -> FilterBinary:

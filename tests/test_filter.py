@@ -91,6 +91,9 @@ def test_filter_tag_equal_values():
     assert isinstance(result.right, XStr)
     assert result.right == XStr("hex", "010203")
 
+    result = hs_filter.parseString('his == M', parseAll=True)[0]
+    assert result.right is MARKER
+
 
 def test_filter_tag_comparison_operator():
     result = hs_filter.parseString('bool == true', parseAll=True)[0]

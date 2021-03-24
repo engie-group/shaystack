@@ -98,6 +98,8 @@ $ pip install "shaystack[flask,graphql,lambda]"
 [`haystack.ipynb`](https://github.com/pprados/shaystack/blob/develop/haystack.ipynb) jupyter notebook contains code to
 read, filter, manipulate and print `Grid` objects containing haystack data.
 
+Try it online [here](https://colab.research.google.com/github/pprados/shaystack/blob/develop/haystack.ipynb)
+
 # Python API
 
 The [documentation of the API is here](https://pprados.github.io/shaystack/api/shaystack/index.html).

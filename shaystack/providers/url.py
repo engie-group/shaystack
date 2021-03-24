@@ -440,11 +440,15 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 history.clear()
                 history.extend(filter_history)
 
-                min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
-                max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
-                for time_serie in history:
-                    min_date = min(min_date, cast(datetime, cast(Entity, time_serie)["ts"]))
-                    max_date = max(max_date, cast(datetime, cast(Entity, time_serie)["ts"]))
+                if history:
+                    min_date = datetime(MAXYEAR, 1, 3, tzinfo=pytz.utc)
+                    max_date = datetime(MINYEAR, 12, 31, tzinfo=pytz.utc)
+                    for time_serie in history:
+                        min_date = min(min_date, cast(datetime, cast(Entity, time_serie)["ts"]))
+                        max_date = max(max_date, cast(datetime, cast(Entity, time_serie)["ts"]))
+                else:
+                    min_date = date_version
+                    max_date = date_version
 
                 history.metadata = {
                     "id": entity_id,

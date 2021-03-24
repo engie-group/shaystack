@@ -327,7 +327,7 @@ class Provider(DBProvider):
         if not customer_id:
             customer_id = ' '
         try:
-            grid = Grid(columns=["ts", "val"])
+            history = Grid(columns=["ts", "val"])
 
             select_all = f"SELECT time,hs_type,unit,measure_value::{timestream_type} " \
                          f"FROM {self._ts_database_name}.{self._ts_table_name} " \
@@ -349,9 +349,26 @@ class Provider(DBProvider):
                     str_val = datas[3]['ScalarValue']
                     if not hs_type:
                         hs_type = "float"
-                    grid.append({"ts": scalar_value,
-                                 "val": Provider._cast_timeserie_to_hs(str_val, hs_type, unit)})
-            return grid
+                    history.append({"ts": scalar_value,
+                                    "val": Provider._cast_timeserie_to_hs(str_val, hs_type, unit)})
+
+            if history:
+                min_date = datetime.max.replace(tzinfo=pytz.UTC)
+                max_date = datetime.min.replace(tzinfo=pytz.UTC)
+
+                for time_serie in history:
+                    min_date = min(min_date, time_serie["ts"])
+                    max_date = max(max_date, time_serie["ts"])
+            else:
+                min_date = date_version
+                max_date = date_version
+
+            history.metadata = {
+                "id": entity_id,
+                "hisStart": min_date,
+                "hisEnd": max_date,
+            }
+            return history
         except ValueError as err:
             log.error("Exception while running query: %s", err)
             raise

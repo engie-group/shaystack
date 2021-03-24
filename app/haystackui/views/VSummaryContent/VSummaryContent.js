@@ -1,5 +1,5 @@
 const template = `
-  <div v-if="isAnyData" class="summary-content">
+  <div v-if="isAnyData && isDataLoaded" class="summary-content">
     <div class="summary-content__graph">
       <c-graph
         v-if="isDataLoaded"
@@ -24,6 +24,9 @@ const template = `
         class="summary-content__entity-row"
       />
     </div>
+  <div v-else-if="!isDataLoaded" class="summary-content__spinner">
+    <v-progress-circular :size="100" :width="10" indeterminate></v-progress-circular>
+  </div>
   <div v-else class="summary-content">
     NO DATA
   </div>

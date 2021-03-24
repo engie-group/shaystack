@@ -86,13 +86,21 @@ export default {
       return Object.keys(this.dataEntity).map(key => {
         const result = this.getEntityValue(key)
         let apiSource = null
+        let tagKey = key
+        const splittedKey = key.split('_')
+        if (splittedKey.length > 1) {
+          if (Number(splittedKey[1])) {
+            // eslint-disable-next-line
+            tagKey = splittedKey[0]
+          }
+        }
         if (key !== 'his') {
           apiSource = result.apiSource
         } else {
           apiSource = typeof result.apiSource === 'object' ? result.apiSource[0] : result.apiSource
         }
         return {
-          tag: key.split('_')[0],
+          tag: tagKey,
           value: result.val,
           row_class: [result.val === '✓' ? `${key} haystack-marker` : key, `apiSource_${apiSource}`]
         }

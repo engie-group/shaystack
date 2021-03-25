@@ -213,21 +213,72 @@ def test_read_with_marker_equal():
     yield from _for_each_provider(_test_read_with_marker_equal)
 
 
-# def _test_read_with_hour_greater(provider_name: str, db: str):
-#     with cast(DBHaystackInterface, get_provider(provider_name,
-#                                                 {'HAYSTACK_DB': db},
-#                                                 use_cache=False)) as provider:
-#         _populate_db(provider)
-#         result = provider.read(0, None, None, "hour > 18:00", None), f"with {db}"
-#         assert len(result) == 1, f"with {db}"
-#         assert result[Ref("id1")] == {"id": Ref("id1"), "col": 1, "dis": "Dis 1", "his": MARKER,
-#                         "hour": datetime.time(20, 0),
-#                         "date": datetime.date(2021, 1, 1),
-#                         "datetime": datetime.datetime(2021, 1, 1, 10, 0, tzinfo=pytz.UTC)}, f"with {db}"
-#
-#
-# def test_read_with_hour_greater():
-#     yield from _for_each_provider(_test_read_with_hour_greater)
+def _test_read_with_hour_greater(provider_name: str, db: str):
+    with cast(DBHaystackInterface, get_provider(provider_name,
+                                                {'HAYSTACK_DB': db},
+                                                use_cache=False)) as provider:
+        _populate_db(provider)
+        result = provider.read(0, None, None, "hour > 18:00", None)
+        assert len(result) == 1, f"with {db}"
+        assert result[Ref("id1")] == {"id": Ref("id1"), "col": 5, "dis": "Dis 1", "his": MARKER,
+                                      "hour": datetime.time(20, 0),
+                                      "date": datetime.date(2021, 1, 1),
+                                      "datetime": datetime.datetime(2021, 1, 1, 10, 0, tzinfo=pytz.UTC)}, f"with {db}"
+
+
+def test_read_with_hour_greater():
+    yield from _for_each_provider(_test_read_with_hour_greater)
+
+
+def _test_read_with_date_greater(provider_name: str, db: str):
+    with cast(DBHaystackInterface, get_provider(provider_name,
+                                                {'HAYSTACK_DB': db},
+                                                use_cache=False)) as provider:
+        _populate_db(provider)
+        result = provider.read(0, None, None, "date > 2020-01-01", None)
+        assert len(result) == 1, f"with {db}"
+        assert result[Ref("id1")] == {"id": Ref("id1"), "col": 5, "dis": "Dis 1", "his": MARKER,
+                                      "hour": datetime.time(20, 0),
+                                      "date": datetime.date(2021, 1, 1),
+                                      "datetime": datetime.datetime(2021, 1, 1, 10, 0, tzinfo=pytz.UTC)}, f"with {db}"
+
+
+def test_read_with_date_greater():
+    yield from _for_each_provider(_test_read_with_date_greater)
+
+
+def _test_read_with_datetime_greater(provider_name: str, db: str):
+    with cast(DBHaystackInterface, get_provider(provider_name,
+                                                {'HAYSTACK_DB': db},
+                                                use_cache=False)) as provider:
+        _populate_db(provider)
+        result = provider.read(0, None, None, "datetime > 2020-01-01T00:00:00+00:00", None)
+        assert len(result) == 1, f"with {db}"
+        assert result[Ref("id1")] == {"id": Ref("id1"), "col": 5, "dis": "Dis 1", "his": MARKER,
+                                      "hour": datetime.time(20, 0),
+                                      "date": datetime.date(2021, 1, 1),
+                                      "datetime": datetime.datetime(2021, 1, 1, 10, 0, tzinfo=pytz.UTC)}, f"with {db}"
+
+
+def test_read_with_datetime_greater():
+    yield from _for_each_provider(_test_read_with_datetime_greater)
+
+
+def _test_read_with_str_greater(provider_name: str, db: str):
+    with cast(DBHaystackInterface, get_provider(provider_name,
+                                                {'HAYSTACK_DB': db},
+                                                use_cache=False)) as provider:
+        _populate_db(provider)
+        result = provider.read(0, None, None, 'dis > "A"', None)
+        assert len(result) == 2, f"with {db}"
+        assert result[Ref("id1")] == {"id": Ref("id1"), "col": 5, "dis": "Dis 1", "his": MARKER,
+                                      "hour": datetime.time(20, 0),
+                                      "date": datetime.date(2021, 1, 1),
+                                      "datetime": datetime.datetime(2021, 1, 1, 10, 0, tzinfo=pytz.UTC)}, f"with {db}"
+
+
+def test_read_with_str_greater():
+    yield from _for_each_provider(_test_read_with_str_greater)
 
 
 def _test_read_version_with_filter_and_select(provider_name: str, db: str):

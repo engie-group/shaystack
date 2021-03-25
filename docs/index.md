@@ -372,11 +372,12 @@ You can select the format you want in the request.
 
 ### Specification limitation
 
-At this time, in a filter, it's only possible to compare with a number.
+At this time, in a filter, it's only possible to compare with a number, date, hour or datetime.
 
 - `geoPostalCode > 50000` // Ok
 - `curVal > 38°` // Ok
-- `date > 2010-03-11T23:55:00-05:00` // Not implemented
+- `time > 12:01` // Ok
+- `datetime > 2010-03-11T23:55:00 Paris` // Ok
 - `name > "hello"` // Not implemented
 
 The specification is not clear.

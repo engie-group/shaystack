@@ -52,13 +52,12 @@ def index():
     """Empty page to check the deployment"""
     if USE_GRAPHQL:
         return """
-        <body>
-        <a href="haystack">Haystack API</a><br />
-        <a href="graphql">Haystack GraphQL API</a><br />
-        </body>
-        """
-    else:
-        return """
+            <body>
+            <a href="haystack">Haystack API</a><br />
+            <a href="graphql">Haystack GraphQL API</a><br />
+            </body>
+            """
+    return """
         <body>
         <a href="haystack">Haystack API</a><br />
         </body>

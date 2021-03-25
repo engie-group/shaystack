@@ -26,14 +26,13 @@ log = logging.getLogger("db.Provider")
 
 def _sqlescape(a_str: str) -> str:
     return a_str.translate(
-        a_str.maketrans({
+        str.maketrans({
             "\0": "\\0",
             "\r": "\\r",
             "\x08": "\\b",
             "\x09": "\\t",
             "\x1a": "\\z",
             "\n": "\\n",
-            "\r": "\\r",
             "\"": "",
             "'": "",
             "\\": "\\\\",

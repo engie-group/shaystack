@@ -20,7 +20,7 @@ from nose import SkipTest
 from pymongo.errors import ServerSelectionTimeoutError
 from pymysql import OperationalError
 
-from shaystack import Ref, Grid, VER_3_0
+from shaystack import Ref, Grid, VER_3_0, MARKER
 from shaystack.providers import get_provider
 from shaystack.providers.db_haystack_interface import DBHaystackInterface
 
@@ -63,8 +63,8 @@ def _for_each_provider(function):
 
 
 def _get_grids():
-    sample_grid = Grid(version=VER_3_0, columns=["id", "col", "dis"])
-    sample_grid.append({"id": Ref("id1"), "col": 1, "dis": "Dis 1"})
+    sample_grid = Grid(version=VER_3_0, columns=["id", "col", "dis", "his"])
+    sample_grid.append({"id": Ref("id1"), "col": 1, "dis": "Dis 1", "his": MARKER})
     sample_grid.append({"id": Ref("id2"), "col": 2, "dis": "Dis 2"})
     version_1 = datetime.datetime(2020, 10, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)
     version_2 = datetime.datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
@@ -176,6 +176,19 @@ def _test_read_version_with_filter(provider_name: str, db: str):
 
 def test_read_version_with_filter():
     yield from _for_each_provider(_test_read_version_with_filter)
+
+
+def _test_read_with_marker_equal(provider_name: str, db: str):
+    with cast(DBHaystackInterface, get_provider(provider_name,
+                                                {'HAYSTACK_DB': db})) as provider:
+        _populate_db(provider)
+        result = provider.read(0, None, None, "his==M", None)
+        assert len(result) == 1
+        assert result[Ref("id1")] == {"id": Ref('id1'), 'col': 5, 'dis': 'Dis 1', "his": MARKER}
+
+
+def test_read_with_marker_equal():
+    yield from _for_each_provider(_test_read_with_marker_equal)
 
 
 def _test_read_version_with_filter_and_select(provider_name: str, db: str):

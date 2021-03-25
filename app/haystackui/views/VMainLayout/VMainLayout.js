@@ -56,7 +56,7 @@ const template = `
 </div>
 `
 import { API_COLORS } from '../../services/index.js'
-
+console.log('layout', API_COLORS)
 export default {
   template,
   data() {

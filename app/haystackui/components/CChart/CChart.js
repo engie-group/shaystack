@@ -2,7 +2,6 @@ const template = `
   <div :id="id" class="bar-chart__chart"></div>
 `
 import { API_COLORS } from '../../services/index.js'
-
 export default {
   template,
   name: 'CChart',
@@ -34,7 +33,7 @@ export default {
   },
   data() {
     return {
-      colors: ['#dc143c', '#0000ff', '#00a86b', '#cc5500']
+      colors: API_COLORS
     }
   },
   mounted() {

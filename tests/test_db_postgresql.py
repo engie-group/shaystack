@@ -376,9 +376,9 @@ def test_and_not_ltag_rtag():
         SELECT t1.entity
         FROM haystack as t1
         WHERE
-        \'2020-10-01T00:00:00+00:00\' BETWEEN t1.start_datetime AND t1.end_datetime
-        AND t1.customer_id=\'customer\'
-        AND NOT t1.entity ?& array[\'site\', \'ref\']
+        '{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
+        AND t1.customer_id='customer'
+        AND NOT t1.entity ?& array['site', 'ref']
         LIMIT 1
         """)
     _check_pg(sql_request)
@@ -392,9 +392,9 @@ def test_and_not_andtag_rtag():
         SELECT t1.entity
         FROM haystack as t1
         WHERE
-        \'2020-10-01T00:00:00+00:00\' BETWEEN t1.start_datetime AND t1.end_datetime
-        AND t1.customer_id=\'customer\'
-        AND NOT t1.entity ?& array[\'site\', \'ref\', \'his\']
+        '{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
+        AND t1.customer_id='customer'
+        AND NOT t1.entity ?& array['site', 'ref', 'his']
         LIMIT 1
         """)
     _check_pg(sql_request)
@@ -408,9 +408,9 @@ def test_and_not_ltag_andtag():
         SELECT t1.entity
         FROM haystack as t1
         WHERE
-        \'2020-10-01T00:00:00+00:00\' BETWEEN t1.start_datetime AND t1.end_datetime
-        AND t1.customer_id=\'customer\'
-        AND NOT t1.entity ?& array[\'site\', \'ref\', \'his\']
+        '{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
+        AND t1.customer_id='customer'
+        AND NOT t1.entity ?& array['site', 'ref', 'his']
         LIMIT 1
         """)
     _check_pg(sql_request)
@@ -440,9 +440,9 @@ def test_equal():
         SELECT t1.entity
         FROM haystack as t1
         WHERE
-        \'2020-10-01T00:00:00+00:00\' BETWEEN t1.start_datetime AND t1.end_datetime
-        AND t1.customer_id=\'customer\'
-        AND t1.entity->>\'geoPostal\' = \'n:78000.000000\'
+        '{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
+        AND t1.customer_id='customer'
+        AND t1.entity->>'geoPostal' = 'n:78000.000000'
         LIMIT 1
         """)
     _check_pg(sql_request)
@@ -490,9 +490,9 @@ def test_equal_number():
         SELECT t1.entity
         FROM haystack as t1
         WHERE
-        \'2020-10-01T00:00:00+00:00\' BETWEEN t1.start_datetime AND t1.end_datetime
-        AND t1.customer_id=\'customer\'
-        AND t1.entity->>\'geoPostalCode\' = \'n:1111.000000\'
+        '{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
+        AND t1.customer_id='customer'
+        AND t1.entity->>'geoPostalCode' = 'n:1111.000000'
         LIMIT 1
         """)
     _check_pg(sql_request)

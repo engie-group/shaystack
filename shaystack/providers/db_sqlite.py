@@ -24,21 +24,22 @@ from ..filter_ast import FilterNode, FilterUnary, FilterBinary, FilterPath
 
 log = logging.getLogger("db.Provider")
 
+
 def _sqlescape(a_str: str) -> str:
     return a_str.translate(
-        a_str.maketrans({
+        str.maketrans({
             "\0": "\\0",
             "\r": "\\r",
             "\x08": "\\b",
             "\x09": "\\t",
             "\x1a": "\\z",
             "\n": "\\n",
-            "\r": "\\r",
             "\"": "",
             "'": "",
             "\\": "\\\\",
             "%": "\\%"
         }))
+
 
 def _use_inner_join(node: FilterNode) -> bool:
     """ Return True if the tree must use inner join """
@@ -364,7 +365,8 @@ def get_db_parameters(table_name: str) -> Dict[str, Union[Callable, str]]:
         datetime.datetime.strptime(val, "%Y-%m-%d %H:%M:%S").replace(tzinfo=pytz.utc),
         "datetime_tz_to_field": lambda dt: datetime.datetime(dt.year, dt.month, dt.day,
                                                              dt.hour, dt.minute, dt.second, dt.microsecond,
-                                                             tzinfo=dt.tzinfo).replace(tzinfo=pytz.utc).isoformat(),
+                                                             tzinfo=dt.tzinfo)
+            .replace(tzinfo=pytz.utc).isoformat(),
         "CREATE_HAYSTACK_TABLE": textwrap.dedent(f'''
             CREATE TABLE IF NOT EXISTS {table_name}
                 (

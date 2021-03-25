@@ -9,7 +9,7 @@
 Parse the filter syntax to produce a FilterAST.
 See https://www.project-haystack.org/doc/Filters
 """
-from datetime import datetime, time, date
+import datetime
 from functools import lru_cache
 from typing import Any, List, Callable, Tuple
 
@@ -265,7 +265,7 @@ def parse_hs_datetime_format(datetime_str: str) -> datetime:
     return hs_all_date.parseString(datetime_str, parseAll=True)[0]
 
 
-def parse_hs_date_format(date_str) -> date:
+def parse_hs_date_format(date_str) -> datetime.date:
     """
     Parse the haystack date (for filter).
     Args:
@@ -278,7 +278,7 @@ def parse_hs_date_format(date_str) -> date:
     return hs_date.parseString(date_str, parseAll=True)[0]
 
 
-def parse_hs_time_format(time_str) -> time:
+def parse_hs_time_format(time_str) -> datetime.time:
     """
     Parse the haystack date (for filter).
     Args:

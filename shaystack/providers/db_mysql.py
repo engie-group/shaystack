@@ -13,7 +13,7 @@ import json
 import logging
 import textwrap
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, date, time
 from typing import Dict, Any, Optional, List, Tuple, Union, Iterator, Callable, cast
 
 import pytz
@@ -188,9 +188,58 @@ def _generate_filter_in_sql(table_name: str,
                                    cast(FilterPath, node.left),
                                    num_table)
                 where.extend([
-                    f"CAST(substr(t{num_table}.entity->"
+                    f"CAST(SUBSTR(t{num_table}.entity->"
                     f"'$.{cast(FilterPath, node.left).paths[-1]}',3) AS REAL)",
                     f" {node.operator} {value}\n",
+                ])
+            elif isinstance(value, time) and node.operator not in ('==', '!='):
+                # Comparison with numbers. Must remove the header 'n:'
+                num_table, select, where = \
+                    _generate_path(table_name, customer_id, version,
+                                   select, where,
+                                   cast(FilterPath, node.left),
+                                   num_table)
+                where.extend([
+                    f"CAST(SUBSTR(t{num_table}.entity->"
+                    f"'$.{cast(FilterPath, node.left).paths[-1]}',4,8) AS TIME)",
+                    f" {node.operator} CAST('{value}' AS TIME)\n",
+                ])
+            elif isinstance(value, datetime) and node.operator not in ('==', '!='):
+                # Comparison with numbers. Must remove the header 'n:'
+                num_table, select, where = \
+                    _generate_path(table_name, customer_id, version,
+                                   select, where,
+                                   cast(FilterPath, node.left),
+                                   num_table)
+                where.extend([
+                    f"CAST(SUBSTR(t{num_table}.entity->"
+                    f"'$.{cast(FilterPath, node.left).paths[-1]}',4,10) AS DATETIME)",
+                    f" {node.operator} CAST('{value}' AS DATETIME)\n",
+                ])
+            elif isinstance(value, date) and node.operator not in ('==', '!='):
+                # Comparison with numbers. Must remove the header 'n:'
+                num_table, select, where = \
+                    _generate_path(table_name, customer_id, version,
+                                   select, where,
+                                   cast(FilterPath, node.left),
+                                   num_table)
+                where.extend([
+                    f"CAST(SUBSTR(t{num_table}.entity->"
+                    f"'$.{cast(FilterPath, node.left).paths[-1]}',4,25) AS DATE)",
+                    f" {node.operator} CAST('{value}' AS DATE)\n",
+                ])
+            elif isinstance(value, str) and node.operator not in ('==', '!='):
+                # Comparison with numbers. Must remove the header 'n:'
+                num_table, select, where = \
+                    _generate_path(table_name, customer_id, version,
+                                   select, where,
+                                   cast(FilterPath, node.left),
+                                   num_table)
+                where.extend([
+                    f"(SUBSTR(t{num_table}.entity->"
+                    f"'$.{cast(FilterPath, node.left).paths[-1]}'",
+                    f",4,LENGTH('$.{cast(FilterPath, node.left).paths[-1]}')-4)"
+                    f" {node.operator} '{value}')\n",
                 ])
             else:
                 assert node.operator in ('==', '!='), "Operator not supported for this type"

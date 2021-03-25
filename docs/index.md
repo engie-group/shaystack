@@ -370,18 +370,6 @@ bool # cast to bool
 
 You can select the format you want in the request.
 
-### Specification limitation
-
-At this time, in a filter, it's only possible to compare with a number, date, hour or datetime.
-
-- `geoPostalCode > 50000` // Ok
-- `curVal > 38°` // Ok
-- `time > 12:01` // Ok
-- `datetime > 2010-03-11T23:55:00 Paris` // Ok
-- `name > "hello"` // Not implemented
-
-The specification is not clear.
-
 ### Specification extension
 
 To manage the history of ontologies, it's possible to add a parameter almost all request: `Version`

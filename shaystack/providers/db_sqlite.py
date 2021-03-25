@@ -24,9 +24,9 @@ from ..filter_ast import FilterNode, FilterUnary, FilterBinary, FilterPath
 
 log = logging.getLogger("db.Provider")
 
-def _sqlescape(str):
-    return str.translate(
-        str.maketrans({
+def _sqlescape(a_str: str) -> str:
+    return a_str.translate(
+        a_str.maketrans({
             "\0": "\\0",
             "\r": "\\r",
             "\x08": "\\b",

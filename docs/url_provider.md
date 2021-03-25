@@ -1,7 +1,7 @@
 # URL Provider
 
 Use `HAYSTACK_PROVIDER=shaystack.providers.db` or `HAYSTACK_PROVIDER=shaystack.providers.url`
-to use this provider. Add the variable `HAYSTACK_DB=<url>` to expose an Haystack file via the Haystack protocol. The
+to use this provider. Add the variable `HAYSTACK_DB=<url>` to expose a Haystack file via the Haystack protocol. The
 methods `/read` and `/hisRead` was implemented. The `<url>` may have the classic form (`http://...`, `ftp://...`
 , `file://...`, etc.) or can reference an S3 file
 (`s3://...` [more...](AWS.md)). The time series to manage history must be referenced in the entity, with the `hisURI`

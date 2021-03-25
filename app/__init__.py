@@ -60,7 +60,7 @@ def index():
     else:
         return """
         <body>
-            <a href="haystack">Haystack API</a><br />
+        <a href="haystack">Haystack API</a><br />
         </body>
         """
 

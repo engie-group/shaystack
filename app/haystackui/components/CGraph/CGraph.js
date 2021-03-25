@@ -146,7 +146,7 @@ export default {
       tooltip : {
         enabled : true, 
         formatter : function() {
-          return `<div> <span> ${this.point.dis} </span> </div>`
+          return `<div> <span> ${this.point.dis ? this.point.dis : this.point.id} </span> </div>`
         }
       },
       series: [

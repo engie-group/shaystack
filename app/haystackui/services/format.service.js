@@ -1,6 +1,6 @@
 /* eslint-disable */
 import dataUtils from './data.utils.js'
-
+import { API_COLORS } from './index.js'
 const formatService = {
   formatIdEntity: id => {
     return id.split(' ')[0].substring(2)
@@ -197,7 +197,7 @@ const formatService = {
     return mergeEntities.concat(entitiesFromFirstSource.concat(entitiesFromSecondSource))
   },
   getLinkBetweenEntities: (entitiesFromAllSource) => {
-    const colors = { fromSource: ['#dc143c', '#0000ff', '#00a86b', '#cc5500', '#6A0DAD', '#805A46'], outFromSource: '#c1e1ec' }
+    const colors = { fromSource: API_COLORS, outFromSource: '#c1e1ec' }
     const radiusNode = { fromSource: 10, outFromSource: 5 }
     const entitiesLink = []
     const entitiesNameToEntitiesId = formatService.idToNameEntity(entitiesFromAllSource)

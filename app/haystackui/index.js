@@ -188,11 +188,11 @@ const router = new VueRouter({
   mode: 'history',
   routes: [
     {
-      path: '',
+      path: '*/haystack/',
       component: VMainLayout,
       children: [
         {
-          path: '/haystack/',
+          path: '',
           name: 'summary',
           component: VSummaryContent
         }

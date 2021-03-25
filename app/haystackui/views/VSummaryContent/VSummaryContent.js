@@ -24,18 +24,19 @@ const template = `
         class="summary-content__entity-row"
       />
     </div>
+  </div>
   <div v-else-if="!isDataLoaded" class="summary-content__spinner">
     <v-progress-circular :size="100" :width="10" indeterminate></v-progress-circular>
   </div>
   <div v-else class="summary-content">
     NO DATA
   </div>
-  </div>
 `
+import { API_COLORS } from '../../services/index.js'
 import formatService from '../../services/format.service.js'
 import CEntityRow from '../../components/CEntityRow/CEntityRow.js'
 import CGraph from '../../components/CGraph/CGraph.js'
-
+console.log('summary', API_COLORS)
 export default {
   template,
   components: { CEntityRow, CGraph },
@@ -110,10 +111,7 @@ export default {
       return top >= window.pageYOffset && top + height <= window.pageYOffset + window.innerHeight
     },
     isPointFromSource(pointName, colorEntities) {
-      return colorEntities.find(
-        entityColor =>
-          entityColor.id === pointName && ['#dc143c', '#0000ff', '#00a86b', '#cc5500'].includes(entityColor.color)
-      )
+      return colorEntities.find(entityColor => entityColor.id === pointName && API_COLORS.includes(entityColor.color))
     },
     async onRefClick(refId) {
       this.$refs[refId][0].$el.scrollIntoView(true)

@@ -14,7 +14,7 @@ import logging
 import textwrap
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, time, date
 from typing import List, Type, Any, Union, Tuple, Optional, Dict, Iterator, Callable
 
 from .sqldb_protocol import DBCursor
@@ -22,6 +22,22 @@ from .. import parse_filter, jsondumper, Quantity, Ref
 from ..filter_ast import FilterPath, FilterBinary, FilterUnary, FilterNode
 
 log = logging.getLogger("db.Provider")
+
+
+def _sqlescape(a_str: str) -> str:
+    return a_str.translate(
+        str.maketrans({
+            "\0": "\\0",
+            "\r": "\\r",
+            "\x08": "\\b",
+            "\x09": "\\t",
+            "\x1a": "\\z",
+            "\n": "\\n",
+            "\"": "",
+            "'": "",
+            "\\": "\\\\",
+            "%": "\\%"
+        }))
 
 
 class _Root(ABC):  # pylint: disable=missing-module-docstring
@@ -350,8 +366,52 @@ def _generate_filter_in_sql(table_name: str,
                                node.path,
                                num_table)
             where.extend([
-                f"substring(t{num_table}.entity->>'{node.path.paths[-1]}' from 3)::float",
+                f"SUBSTRING(t{num_table}.entity->>'{node.path.paths[-1]}',3)::float",
                 f" {node.operator} {value}\n",
+            ])
+        elif isinstance(value, time) and node.operator not in ('==', '!='):
+            # Comparison with time. Must remove the header 't:'
+            num_table, select, where = \
+                _generate_path(table_name, customer_id, version,
+                               select, where,
+                               node.path,
+                               num_table)
+            where.extend([
+                f"SUBSTRING(t{num_table}.entity->>'{node.path.paths[-1]}',3)::TIME",
+                f" {node.operator} TIME '{value}'\n",
+            ])
+        elif isinstance(value, datetime) and node.operator not in ('==', '!='):
+            # Comparison with time. Must remove the header 't:'
+            num_table, select, where = \
+                _generate_path(table_name, customer_id, version,
+                               select, where,
+                               node.path,
+                               num_table)
+            where.extend([
+                f"SUBSTRING(t{num_table}.entity->>'{node.path.paths[-1]}',3,25)::TIMESTAMP",
+                f" {node.operator} TIMESTAMP '{value.isoformat()}'\n",
+            ])
+        elif isinstance(value, str) and node.operator not in ('==', '!='):
+            # Comparison with time. Must remove the header 't:'
+            num_table, select, where = \
+                _generate_path(table_name, customer_id, version,
+                               select, where,
+                               node.path,
+                               num_table)
+            where.extend([
+                f"SUBSTRING(t{num_table}.entity->>'{node.path.paths[-1]}',3)",
+                f" {node.operator} '{_sqlescape(value)}'\n",
+            ])
+        elif isinstance(value, date) and node.operator not in ('==', '!='):
+            # Comparison with time. Must remove the header 't:'
+            num_table, select, where = \
+                _generate_path(table_name, customer_id, version,
+                               select, where,
+                               node.path,
+                               num_table)
+            where.extend([
+                f"SUBSTRING(t{num_table}.entity->>'{node.path.paths[-1]}',3)::DATE",
+                f" {node.operator} DATE '{value}'\n",
             ])
         else:
             assert node.operator in ('=', '!='), "Operator not supported for this type"

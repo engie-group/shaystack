@@ -9,7 +9,7 @@
 Parse the filter syntax to produce a FilterAST.
 See https://www.project-haystack.org/doc/Filters
 """
-from datetime import datetime, time, date
+from datetime import datetime, date, time
 from functools import lru_cache
 from typing import Any, List, Callable, Tuple
 

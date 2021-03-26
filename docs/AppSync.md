@@ -15,7 +15,7 @@ AppSync.
 In the AWS AppSync console:
 
 * First, deploy your AWS Lambda function with Haystack GraphQL API
-* Build from scratch a new API with the name `SHaystack`
+* In AppSync, build from scratch a new GraphQL API with the name `SHaystack`
 * Create a datasource `HaystackLambda` with an AWS Lambda function
   - Select "Lambda Function"
   - Select the AWS Lambda for Haystack
@@ -49,7 +49,7 @@ In the AWS AppSync console:
   - Copy the body of [`schema.graphql`](https://raw.githubusercontent.com/pprados/shaystack/develop/schema.graphql) in
     the schema of AppSync
   - Save the schema
-  - Add the end of the Resolver list, attach a resolver for the filed `haystack`
+  - At the end of the Resolver list, attach a resolver for the filed `haystack`
 
 ![alt Attach Resolver][attachResolver]
 

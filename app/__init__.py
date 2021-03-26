@@ -87,10 +87,6 @@ def main(host: str, port: int) -> int:
         HAYSTACK_PROVIDER: to select a provider (shaystack.providers.db)
         HAYSTACK_DB: the URL to select the backend with the ontology
     """
-    if "HAYSTACK_PROVIDER" not in os.environ:
-        print("Set 'HAYSTACK_PROVIDER' to use Shift-4-haystack", file=sys.stderr)
-        sys.exit(-1)
-
     debug = (os.environ.get("FLASK_DEBUG", "0") == "1")
     app.run(host=host,
             port=port,

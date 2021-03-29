@@ -574,7 +574,7 @@ def test_greater_number():
         WHERE
         (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND CAST(substr(t1.entity->'$.geoPostalCode',3) AS REAL) > 55400.0
+        AND CAST(SUBSTR(t1.entity->'$.geoPostalCode',3) AS REAL) > 55400.0
         )
         LIMIT 1
         """)
@@ -591,7 +591,7 @@ def test_greater_or_equal_number():
         WHERE
         (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND CAST(substr(t1.entity->'$.geoPostalCode',3) AS REAL) >= 55400.0
+        AND CAST(SUBSTR(t1.entity->'$.geoPostalCode',3) AS REAL) >= 55400.0
         )
         LIMIT 1
         """)
@@ -608,7 +608,7 @@ def test_lower_number():
         WHERE
         (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND CAST(substr(t1.entity->'$.geoPostalCode',3) AS REAL) < 55400.0
+        AND CAST(SUBSTR(t1.entity->'$.geoPostalCode',3) AS REAL) < 55400.0
         )
         LIMIT 1
         """)
@@ -625,7 +625,7 @@ def test_lower_or_equal_number():
         WHERE
         (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND CAST(substr(t1.entity->'$.geoPostalCode',3) AS REAL) <= 55400.0
+        AND CAST(SUBSTR(t1.entity->'$.geoPostalCode',3) AS REAL) <= 55400.0
         )
         LIMIT 1
         """)
@@ -642,7 +642,7 @@ def test_greater_quantity():
         WHERE
         (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND CAST(substr(t1.entity->'$.temp',3) AS REAL) > 55400.0
+        AND CAST(SUBSTR(t1.entity->'$.temp',3) AS REAL) > 55400.0
         )
         LIMIT 1
         """)
@@ -659,7 +659,7 @@ def test_greater_or_equal_quantity():
         WHERE
         (('{FAKE_NOW.isoformat()}' BETWEEN t1.start_datetime AND t1.end_datetime
         AND t1.customer_id='customer')
-        AND CAST(substr(t1.entity->'$.temp',3) AS REAL) >= 55400.0
+        AND CAST(SUBSTR(t1.entity->'$.temp',3) AS REAL) >= 55400.0
         )
         LIMIT 1
         """)
@@ -699,7 +699,7 @@ def test_2path_greater_quantity():
         AND ('{FAKE_NOW.isoformat()}' BETWEEN t2.start_datetime AND t2.end_datetime
         AND t2.customer_id='customer'
         AND t1.entity->'$.siteRef' = t2.entity->'$.id')
-        AND CAST(substr(t2.entity->'$.temp',3) AS REAL) >= 55400.0
+        AND CAST(SUBSTR(t2.entity->'$.temp',3) AS REAL) >= 55400.0
         )
         LIMIT 1
         """)
@@ -724,7 +724,7 @@ def test_3path_greater_quantity():
         (('{FAKE_NOW.isoformat()}' BETWEEN t3.start_datetime AND t3.end_datetime
         AND t3.customer_id='customer'
         AND t2.entity->'$.ownerRef' = t3.entity->'$.id')
-        AND CAST(substr(t3.entity->'$.temp',3) AS REAL) >= 55400.0
+        AND CAST(SUBSTR(t3.entity->'$.temp',3) AS REAL) >= 55400.0
         )
         LIMIT 1
         """)

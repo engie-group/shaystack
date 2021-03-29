@@ -14,7 +14,7 @@ import sys
 import click
 
 try:
-    from flask import Flask, send_from_directory
+    from flask import Flask, send_from_directory, request, redirect
     from flask_cors import CORS
     from app.blueprint_haystack import haystack_blueprint
 except ImportError as ex:
@@ -30,9 +30,7 @@ try:
 
     USE_GRAPHQL = True
 except ImportError:
-    print("To use GraphQL feature, use "
-          "'pip install \"shaystack[graphql]\"'", file=sys.stderr)
-    sys.exit(-1)
+    USE_GRAPHQL = False
 
 app = Flask(__name__)
 cors = CORS(app, resources={
@@ -50,17 +48,25 @@ if USE_GRAPHQL:
 @app.route('/')
 def index():
     """Empty page to check the deployment"""
+    redirect_js = """
+    <script>
+    if (! window.location.pathname.toString().endsWith("/")) {
+      document.location.href=window.location+"/"; 
+    }
+    </script>
+    """
     if USE_GRAPHQL:
-        return """
+        return f"""
+            {redirect_js}
+            <body>
+            <a href="haystack">Haystack API</a><br />
+            <a href="graphql">Haystack GraphQL API</a><br />
+            </body>
+            """
+    return f"""
+        {redirect_js}
         <body>
         <a href="haystack">Haystack API</a><br />
-        <a href="graphql">Haystack GraphQL API</a><br />
-        </body>
-        """
-    else:
-        return """
-        <body>
-            <a href="haystack">Haystack API</a><br />
         </body>
         """
 
@@ -88,10 +94,6 @@ def main(host: str, port: int) -> int:
         HAYSTACK_PROVIDER: to select a provider (shaystack.providers.db)
         HAYSTACK_DB: the URL to select the backend with the ontology
     """
-    if "HAYSTACK_PROVIDER" not in os.environ:
-        print("Set 'HAYSTACK_PROVIDER' to use Shift-4-haystack", file=sys.stderr)
-        sys.exit(-1)
-
     debug = (os.environ.get("FLASK_DEBUG", "0") == "1")
     app.run(host=host,
             port=port,

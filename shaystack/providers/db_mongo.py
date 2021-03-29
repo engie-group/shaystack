@@ -8,7 +8,7 @@
 """
 Tools to convert haystack filter to mongo request
 """
-from datetime import datetime
+from datetime import datetime, date, time
 from typing import Optional, Dict, Any, List, Union, cast
 
 from shaystack import parse_filter, HaystackType, Quantity, Ref
@@ -135,26 +135,116 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
         if node.operator in _relative_ops:
             path = _conv_filter(node.left)
             var = cast(FilterPath, node.left).paths[0]
-            to_double = {
-                "$let": {
-                    "vars": {
-                        f"{var}_regex_": {
-                            "$regexFind": {
-                                "input": f"${path}",
-                                "regex": "n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)"
+
+            if isinstance(node.right, (Quantity, int, float)):
+                to_double = {
+                    "$let": {
+                        "vars": {
+                            f"{var}_regex_": {
+                                "$regexFind": {
+                                    "input": f"${path}",
+                                    "regex": "n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)"
+                                }
+                            }
+                        },
+                        "in": {"$toDouble": {
+                            "$arrayElemAt": [f"$${var}_regex_.captures", 0]
+                        }}
+                    }
+                }
+
+                return {_relative_ops[node.operator]: [
+                    to_double,
+                    _to_float(cast(HaystackType, node.right)),
+                ]}
+            if isinstance(node.right, time):
+                to_date = {
+                    "$let": {
+                        "vars": {
+                            f"{var}_regex_": {
+                                "$regexFind": {
+                                    "input": f"${path}",
+                                    "regex": "h:([0-9:]+)"
+                                }
+                            }
+                        },
+                        "in": {"$toDate":
+                            {
+                                '$concat':
+                                    [
+                                        '2000-1-1T',
+                                        {"$arrayElemAt": [f"$${var}_regex_.captures", 0]}
+                                    ]
                             }
                         }
-                    },
-                    "in": {"$toDouble": {
-                        "$arrayElemAt": [f"$${var}_regex_.captures", 0]
-                    }}
+                    }
                 }
-            }
+                return {_relative_ops[node.operator]: [
+                    to_date,
+                    datetime.combine(date(2000, 1, 1), node.right),
+                    # node.right
+                ]}
+            if isinstance(node.right, datetime):
+                to_date = {
+                    "$let": {
+                        "vars": {
+                            f"{var}_regex_": {
+                                "$regexFind": {
+                                    "input": f"${path}",
+                                    "regex": "t:([^ ]+)"
+                                }
+                            }
+                        },
+                        "in": {"$toDate": {
+                            "$arrayElemAt": [f"$${var}_regex_.captures", 0]
+                        }}
+                    }
+                }
+                return {_relative_ops[node.operator]: [
+                    to_date,
+                    node.right,
+                ]}
+            if isinstance(node.right, date):
+                to_date = {
+                    "$let": {
+                        "vars": {
+                            f"{var}_regex_": {
+                                "$regexFind": {
+                                    "input": f"${path}",
+                                    "regex": "d:([0-9-]+)"
+                                }
+                            }
+                        },
+                        "in": {"$toDate": {
+                            "$arrayElemAt": [f"$${var}_regex_.captures", 0]
+                        }}
+                    }
+                }
+                return {_relative_ops[node.operator]: [
+                    to_date,
+                    datetime.combine(node.right, time()),
+                ]}
+            if isinstance(node.right, str):
+                to_str = {
+                    "$let": {
+                        "vars": {
+                            f"{var}_regex_": {
+                                "$regexFind": {
+                                    "input": f"${path}",
+                                    "regex": "s:(.+)"
+                                }
+                            }
+                        },
+                        "in": {
+                            "$arrayElemAt": [f"$${var}_regex_.captures", 0]
+                        }
+                    }
+                }
+                return {_relative_ops[node.operator]: [
+                    to_str,
+                    node.right,
+                ]}
 
-            return {_relative_ops[node.operator]: [
-                to_double,
-                _to_float(cast(HaystackType, node.right)),
-            ]}
         raise ValueError("Invalid operator")
     return json_dump_scalar(node)
 

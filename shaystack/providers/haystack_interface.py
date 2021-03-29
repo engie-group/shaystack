@@ -556,12 +556,10 @@ def get_singleton_provider(envs: Dict[str, str]  # pylint: disable=protected-acc
         The current provider for the process.
     """
     global SINGLETON_PROVIDER  # pylint: disable=global-statement
-    assert (
-            "HAYSTACK_PROVIDER" in envs
-    ), "Set 'HAYSTACK_PROVIDER' environment variable"
+    provider = envs.get("HAYSTACK_PROVIDER", "shaystack.providers.db")
     if not SINGLETON_PROVIDER or no_cache():
-        log.debug("Provider=%s", envs["HAYSTACK_PROVIDER"])
-        SINGLETON_PROVIDER = get_provider(envs["HAYSTACK_PROVIDER"], envs)
+        log.debug("Provider=%s", provider)
+        SINGLETON_PROVIDER = get_provider(provider, envs)
     return SINGLETON_PROVIDER
 
 

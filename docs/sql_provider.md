@@ -16,7 +16,7 @@ Install the corresponding database driver:
 | sqlite   | `pip install supersqlite` (`apt install build-essential` before, and may take several minutes)|
 | postgres | `pip install psycopg2`                              |
 |          | or `pip install psycopg2-binary`                    |
-| mysql    | `pip install pymysql`                               |
+| mysql    | `pip install pymysql cryptography`                  |
 | athena   | install the postgres or mysql driver                |
 
 You can use `shaystack_import_db` to import a Haystack files into the database, only if the entities are modified
@@ -91,6 +91,24 @@ The column `entity` use a json version of haystack entity (See [here](https://pr
 
 The time-series are saved in a table `<table_name>_ts`. If you prefer to use a dedicated time-series database, overload
 the method `hisRead()` (see [Timestream provider](timestream_provider.md))
+
+<table_name>
+
+| id  | customer_id | start_datetime | end_datetime | entity |
+| --- | ----------- | -------------- | ------------ | ------ |
+| str | str         | datetime       | datetime     | json   |
+
+<table_name>_meta_datas
+
+| customer_id | start_datetime | end_datetime | metatdata | cols |
+| ----------- | -------------- | ------------ | --------- | ---- |
+| str         | datetime       | datetime     | json      | json |
+
+<table_name>_ts
+
+| id  | customer_id | date_time | val | 
+| --- | ----------- | --------- | --- | 
+| str | str         | datetime  | str | 
 
 To manage the multi-tenancy, it's possible to use different approach:
 

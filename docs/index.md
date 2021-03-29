@@ -147,11 +147,11 @@ Shift-4-Haystack is agile and can be deployed in different scenarios. Choose an 
 | Mongo database                    |
 | haystack backend + AWS Timestream |
 
-| Multi tenancy                 |
-| ----------------------------- |
-| Single tenancy                |
-| Multiple, shared SQL table    |
-| Multiple, dedicated SQL table |
+| Multi tenancy             |
+| ------------------------- |
+| Single tenancy            |
+| Multiple, shared table    |
+| Multiple, dedicated table |
 
 | API                                               |
 | ------------------------------------------------- |
@@ -216,7 +216,7 @@ Using `pip install`. You can add the support of some options:
 - `pip install "shaystack[flask,graphql]"` allows you to:
     - Expose the `/graphql` endpoint in addition to the classical `/haystack` endpoint
 
-You can mix two or more options, if you need them all, use `pip install "shaystack[flask,graphql,aws]"`
+You can mix two or more options, if you need them all, use `pip install "shaystack[flask,graphql,lambda]"`
 
 ### Choosing and configuring your provider
 
@@ -234,11 +234,11 @@ by extending `shaystack.providers.HaystackInterface`
 |Data in a Postgresql database|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=postgres://... \`<br/>` shaystack`|Remember to install psycopg2 python module. [More...](sql_provider.md)|
 |Data in a MySQL database|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=mysql://... \`<br/>` shaystack`|Remember to install pymysql python module. [More...](sql_provider.md)|
 |Data in a MongoDB|`HAYSTACK_PROVIDER=shaystack.providers.db\`<br/>`HAYSTACK_DB=mongodb+srv:://...\`<br/>` shaystack`|Remember to install pymongo python module. [More...](mongo_provider.md)|
-|Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.timestream\`<br/>`HAYSTACK_DB=postgres://...\`<br/>`HAYSTACK_TS=timestream:://...\<br /> shaystack`|[More...](timestream_provider.md)|
-|Custom|`HAYSTACK_PROVIDER=shaystack.providers.<your module name>`|Write your own subclass of `shaystack.providers.HaystackInterface shaystack`.|
+|Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.timestream\`<br/>`HAYSTACK_DB=...\`<br/>`HAYSTACK_TS=timestream:://...\<br /> shaystack`|[More...](timestream_provider.md)|
+|Custom|`HAYSTACK_PROVIDER=shaystack.providers.<your module name>\`<br/>` shaystack`|Write your own subclass of `shaystack.providers.HaystackInterface|
 
 Note: Existing providers are not connected to IOT for simplicity. If you want to connect the haystack API with IOT, you
-must implement a custom provider.
+must implement a custom provider or extend one of them.
 
 ### Starting the server
 
@@ -263,9 +263,9 @@ For the demonstration,
 $ # Demo
 $ # - Install components
 $ pip install 'shaystack[graphql]'
-$ # - Expose haystack with GraphQL API
+$ # - Expose haystack file with Haystack and GraphQL API
 $ HAYSTACK_PROVIDER=shaystack.providers.db \
-  HAYSTACK_DB=sample/carytown.zinc \
+  HAYSTACK_DB=https://shaystack.s3.eu-west-3.amazonaws.com/carytown.zinc \
   shaystack
 ```
 
@@ -306,7 +306,7 @@ $ # - Install components
 $ pip install 'shaystack[graphql]'
 $ # - Expose haystack with GraphQL API
 $ HAYSTACK_PROVIDER=shaystack.providers.db \
-  HAYSTACK_DB=sample/carytown.zinc \
+  HAYSTACK_DB=https://shaystack.s3.eu-west-3.amazonaws.com/carytown.zinc \
   shaystack
 ```
 
@@ -370,17 +370,6 @@ bool # cast to bool
 
 You can select the format you want in the request.
 
-### Specification limitation
-
-At this time, in a filter, it's only possible to compare with a number.
-
-- `geoPostalCode > 50000` // Ok
-- `curVal > 38°` // Ok
-- `date > 2010-03-11T23:55:00-05:00` // Not implemented
-- `name > "hello"` // Not implemented
-
-The specification is not clear.
-
 ### Specification extension
 
 To manage the history of ontologies, it's possible to add a parameter almost all request: `Version`
@@ -399,13 +388,13 @@ The syntax to analyse the date range in `hisRead` is extended to accept a comma 
 
 ### Haystack filter
 
-A big part of the code is to convert the haystack *filter* to database request. We implemented a conversion to different
-languages:
+A big part of the code is to convert the haystack *filter* to a database request. We implemented a conversion to
+different languages:
 
 - python
 - SQLite
 - PostgreSQL
-- MYSql
+- MySql
 - Mongodb
 
 For the developer point of view, it may be interesting to analyse the translation. We propose a tool for that.
@@ -445,9 +434,9 @@ LIMIT 1
 
 ### Add Haystack API to an existing project
 
-The flexibility of the project allows many integration scenarios.
+The flexibility of shift-4-haystack allows many integration scenarios.
 
-To expose your current datas with a haystack, the first step is:
+To expose your current datas with a haystack protocol, the steps are:
 
 - associate your fields to a collections of haystack tags
 - group your tags in entities
@@ -499,7 +488,7 @@ $ docker run -p 3000:3000 \
 Because the default negotiated format is CSV, you can call the REST API with PowerQuery or Excel. Try the sample file
 ['SHaystack.xlsm'](https://raw.githubusercontent.com/pprados/shaystack/develop/SHaystack.xlsm) and set a correct
 haystack API url
-(http://10.0.2.2:3000/haystack with a local virtual windows). You can load all the data inside Excel table.
+(http://10.0.2.2:3000/haystack with a local virtual windows). You can load all and filter the data inside Excel table.
 
 # Optional part
 

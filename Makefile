@@ -550,7 +550,7 @@ endif
 .PHONY: aws-api
 ## Print AWS API endpoint URL
 aws-api: aws-update-token
-	@echo $(AWS_API_HOME)
+	@echo $(AWS_API_HOME)/
 
 ## Print GraphQL API endpoint URL
 aws-graphql-api: aws-update-token

@@ -8,12 +8,12 @@
 Save Haystack ontology in SQLite database with JSon extension.
 Convert the haystack filter to sqlite SQL equivalent syntax.
 """
+import datetime
 import itertools
 import json
 import logging
 import textwrap
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Dict, Any, Optional, List, Tuple, Union, Iterator, Callable, cast
 
 import pytz
@@ -23,6 +23,22 @@ from .. import parse_filter, jsondumper, Quantity, Ref
 from ..filter_ast import FilterNode, FilterUnary, FilterBinary, FilterPath
 
 log = logging.getLogger("db.Provider")
+
+
+def _sqlescape(a_str: str) -> str:
+    return a_str.translate(
+        str.maketrans({
+            "\0": "\\0",
+            "\r": "\\r",
+            "\x08": "\\b",
+            "\x09": "\\t",
+            "\x1a": "\\z",
+            "\n": "\\n",
+            "\"": "",
+            "'": "",
+            "\\": "\\\\",
+            "%": "\\%"
+        }))
 
 
 def _use_inner_join(node: FilterNode) -> bool:
@@ -38,7 +54,7 @@ def _use_inner_join(node: FilterNode) -> bool:
 
 def _generate_path(table_name: str,
                    customer_id: str,
-                   version: datetime,
+                   version: datetime.datetime,
                    select: List[Union[str, List[Any]]],
                    where: List[Union[str, List[Any]]],
                    node: FilterPath,
@@ -69,7 +85,7 @@ def _generate_path(table_name: str,
 
 def _generate_filter_in_sql(table_name: str,
                             customer_id: str,
-                            version: datetime,
+                            version: datetime.datetime,
                             select: List[Union[str, List[Any]]],
                             where: List[Union[str, List[Any]]],
                             node: FilterNode,
@@ -167,6 +183,54 @@ def _generate_filter_in_sql(table_name: str,
                     f"'$.{cast(FilterPath, node.left).paths[-1]}'),3) AS REAL)",
                     f" {node.operator} {value}\n",
                 ])
+            elif isinstance(value, datetime.time) and node.operator not in ('==', '!='):
+                # Comparison with hour. Must remove the header 'h:'
+                num_table, select, where = \
+                    _generate_path(table_name, customer_id, version,
+                                   select, where,
+                                   cast(FilterPath, node.left),
+                                   num_table)
+                where.extend([
+                    f"time(substr(json_extract(json(t{num_table}.entity),"
+                    f"'$.{cast(FilterPath, node.left).paths[-1]}'),3))",
+                    f" {node.operator} time('{value}')\n",
+                ])
+            elif isinstance(value, datetime.datetime) and node.operator not in ('==', '!='):
+                # Comparison with numbers. Must remove the header 't:'
+                num_table, select, where = \
+                    _generate_path(table_name, customer_id, version,
+                                   select, where,
+                                   cast(FilterPath, node.left),
+                                   num_table)
+                where.extend([
+                    f"datetime(substr(json_extract(json(t{num_table}.entity),"
+                    f"'$.{cast(FilterPath, node.left).paths[-1]}'),3,25))",
+                    f" {node.operator} datetime('{value.isoformat()}')\n",
+                ])
+            elif isinstance(value, datetime.date) and node.operator not in ('==', '!='):
+                # Comparison with date. Must remove the header 'd:'
+                num_table, select, where = \
+                    _generate_path(table_name, customer_id, version,
+                                   select, where,
+                                   cast(FilterPath, node.left),
+                                   num_table)
+                where.extend([
+                    f"date(substr(json_extract(json(t{num_table}.entity),"
+                    f"'$.{cast(FilterPath, node.left).paths[-1]}'),3))",
+                    f" {node.operator} date('{value}')\n",
+                ])
+            elif isinstance(value, str) and node.operator not in ('==', '!='):
+                # Comparison with str. Must remove the header 's:'
+                num_table, select, where = \
+                    _generate_path(table_name, customer_id, version,
+                                   select, where,
+                                   cast(FilterPath, node.left),
+                                   num_table)
+                where.extend([
+                    f"substr(json_extract(json(t{num_table}.entity),"
+                    f"'$.{cast(FilterPath, node.left).paths[-1]}'),3)",
+                    f" {node.operator} '{_sqlescape(value)}'\n",
+                ])
             else:
                 assert node.operator in ('==', '!='), "Operator not supported for this type"
                 num_table, select, where = \
@@ -206,7 +270,7 @@ def _flatten(a_list: List[Any]) -> Iterator[Any]:
     return itertools.chain.from_iterable(a_list)
 
 
-def _select_version(version: datetime, num_table: int) -> str:
+def _select_version(version: datetime.datetime, num_table: int) -> str:
     return f"datetime('{version.isoformat()}') " \
            f"BETWEEN datetime(t{num_table}.start_datetime) " \
            f"AND datetime(t{num_table}.end_datetime)\n"
@@ -214,14 +278,14 @@ def _select_version(version: datetime, num_table: int) -> str:
 
 @dataclass
 class _FilterDate(FilterNode):
-    version: datetime
+    version: datetime.datetime
     num_table: int
     customer_id: str
 
 
 def _generate_sql_block(table_name: str,
                         customer_id: str,
-                        version: datetime,
+                        version: datetime.datetime,
                         limit: int,
                         node: FilterNode,
                         num_table: int) -> Tuple[int, str]:
@@ -251,7 +315,7 @@ def _generate_sql_block(table_name: str,
 
 def _sql_filter(table_name: str,
                 grid_filter: Optional[str],
-                version: datetime,
+                version: datetime.datetime,
                 limit: int = 0,
                 customer_id: str = '') -> str:
     _, sql = _generate_sql_block(
@@ -269,7 +333,7 @@ def _exec_sql_filter(params: Dict[str, Any],
                      cursor,
                      table_name: str,
                      grid_filter: Optional[str],
-                     version: datetime,
+                     version: datetime.datetime,
                      limit: int = 0,
                      customer_id: Optional[str] = None) -> DBCursor:
     if grid_filter is None or grid_filter == '':
@@ -298,10 +362,11 @@ def get_db_parameters(table_name: str) -> Dict[str, Union[Callable, str]]:
         "sql_type_to_json": json.loads,
         "exec_sql_filter": _exec_sql_filter,
         "field_to_datetime_tz": lambda val:
-        datetime.strptime(val, "%Y-%m-%d %H:%M:%S").replace(tzinfo=pytz.utc),
-        "datetime_tz_to_field": lambda dt: datetime(dt.year, dt.month, dt.day,
-                                                    dt.hour, dt.minute, dt.second, dt.microsecond,
-                                                    tzinfo=dt.tzinfo).replace(tzinfo=pytz.utc).isoformat(),
+        datetime.datetime.strptime(val, "%Y-%m-%d %H:%M:%S").replace(tzinfo=pytz.utc),
+        "datetime_tz_to_field": lambda dt: datetime.datetime(dt.year, dt.month, dt.day,
+                                                             dt.hour, dt.minute, dt.second, dt.microsecond,
+                                                             tzinfo=dt.tzinfo)
+            .replace(tzinfo=pytz.utc).isoformat(),
         "CREATE_HAYSTACK_TABLE": textwrap.dedent(f'''
             CREATE TABLE IF NOT EXISTS {table_name}
                 (

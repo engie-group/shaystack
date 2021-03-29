@@ -23,6 +23,18 @@ const template = `
       background-color="white"
       @change="updateFilter($event)"
     />
+    <div class="main-layout__tootltips">
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-icon icon v-bind="attrs" v-on="on">info</v-icon>
+        </template>
+        <h3>Filter Example:</h3>
+        <span
+          >site or equip<br />(not his)<br />curVal > 10<br />occupiedEnd >= 18:00 and geoCity =="Richmond"<br />point
+          and siteRef->geoCountry == "US"
+        </span>
+      </v-tooltip>
+    </div>
     <v-combobox
       class="main-layout__combobox"
       v-model="comboboxInput"

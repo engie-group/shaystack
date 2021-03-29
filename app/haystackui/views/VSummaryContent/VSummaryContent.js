@@ -126,23 +126,24 @@ export default {
       })
       this.$store.commit('SET_FILTER_API', { filterApi: newApiFilter })
       const { query } = this.$route
-      this.$router.replace({ hash: refId, query }).catch(() => {})
+      this.$router.push({ hash: refId, query: { a: query.a, q: newApiFilter } }).catch(() => {})
     },
     async onGraphClick(pointName) {
       const linkBetweenEntities = this.getRelationGraphEntity(this.entities)
       const colorEntities = linkBetweenEntities[1]
       const entityNameToEntityId = linkBetweenEntities[2]
+      const { query } = this.$route
       if (!this.isPointFromSource(pointName, colorEntities)) {
         const newApiFilter = `id==@${entityNameToEntityId[pointName] || pointName}`
         await this.$store.dispatch('reloadAllData', {
           entity: newApiFilter
         })
         this.$store.commit('SET_FILTER_API', { filterApi: newApiFilter })
+        this.$router.push({ query: { a: query.a, q: newApiFilter } }).catch(() => {})
       } else {
         const entityId = Object.keys(entityNameToEntityId).find(key => entityNameToEntityId[key] === pointName)
         this.$refs[entityId][0].$el.scrollIntoView(true)
         window.scrollBy(0, -70)
-        const { query } = this.$route
         this.$router.push({ hash: entityId, query }).catch(() => {})
       }
     },
@@ -180,6 +181,23 @@ export default {
     },
     getRelationGraphEntity(entities) {
       return formatService.getLinkBetweenEntities(entities)
+    },
+    redirectOnRightHash() {
+      if (this.isAnyData) {
+        if (this.entitiesGroupedById) {
+          const entityNames = this.entitiesGroupedById.map(entity => this.getEntityId(entity))
+          if (entityNames.indexOf(decodeURI(this.$route.hash).substring(1)) >= 0) {
+            if (this.$refs[decodeURI(this.$route.hash).substring(1)]) {
+              const elementRef = this.$refs[decodeURI(this.$route.hash).substring(1)][0]
+              if (elementRef) {
+                elementRef.$el.scrollIntoView()
+                window.scrollBy(0, -70)
+              }
+            }
+          }
+        }
+        window.addEventListener('scroll', this.handleScroll, { passive: true })
+      }
     }
   },
   watch: {
@@ -202,21 +220,7 @@ export default {
     }
   },
   updated() {
-    if (this.isAnyData) {
-      if (this.entitiesGroupedById) {
-        const entityNames = this.entitiesGroupedById.map(entity => this.getEntityId(entity))
-        if (entityNames.indexOf(decodeURI(this.$route.hash).substring(1)) >= 0) {
-          if (this.$refs[decodeURI(this.$route.hash).substring(1)]) {
-            const elementRef = this.$refs[decodeURI(this.$route.hash).substring(1)][0]
-            if (elementRef) {
-              elementRef.$el.scrollIntoView()
-              window.scrollBy(0, -70)
-            }
-          }
-        }
-      }
-      window.addEventListener('scroll', this.handleScroll, { passive: true })
-    }
+    this.redirectOnRightHash()
   }
 }
 

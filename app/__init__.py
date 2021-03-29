@@ -30,9 +30,7 @@ try:
 
     USE_GRAPHQL = True
 except ImportError:
-    print("To use GraphQL feature, use "
-          "'pip install \"shaystack[graphql]\"'", file=sys.stderr)
-    sys.exit(-1)
+    USE_GRAPHQL = False
 
 app = Flask(__name__)
 cors = CORS(app, resources={

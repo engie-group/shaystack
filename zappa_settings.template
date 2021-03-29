@@ -1,0 +1,18 @@
+{
+  "dev": {
+    "profile_name": "YOUR_PROFILE",
+    "aws_region": "YOUR_REGION",
+    "project_name": "YOUR_PROJECT_NAME",
+    "s3_bucket": "YOUR_S3_BUCKET_FOR_LAMBDA_CODE",
+
+    "app_function": "app.__init__.app",
+    "runtime": "python3.8",
+    "aws_environment_variables": {
+      "LOG_LEVEL": "INFO",
+      "TLS_VERIFY": "False",
+      "HAYSTACK_PROVIDER": "shaystack.providers.db",
+      "HAYSTACK_DB": "YOUR_DB_URL",
+      "HAYSTACK_TS": ""
+    }
+  }
+}

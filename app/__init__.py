@@ -14,7 +14,7 @@ import sys
 import click
 
 try:
-    from flask import Flask, send_from_directory
+    from flask import Flask, send_from_directory, request, redirect
     from flask_cors import CORS
     from app.blueprint_haystack import haystack_blueprint
 except ImportError as ex:
@@ -48,14 +48,23 @@ if USE_GRAPHQL:
 @app.route('/')
 def index():
     """Empty page to check the deployment"""
+    redirect_js = """
+    <script>
+    if (! window.location.pathname.toString().endsWith("/")) {
+      document.location.href=window.location+"/"; 
+    }
+    </script>
+    """
     if USE_GRAPHQL:
-        return """
+        return f"""
+            {redirect_js}
             <body>
             <a href="haystack">Haystack API</a><br />
             <a href="graphql">Haystack GraphQL API</a><br />
             </body>
             """
-    return """
+    return f"""
+        {redirect_js}
         <body>
         <a href="haystack">Haystack API</a><br />
         </body>

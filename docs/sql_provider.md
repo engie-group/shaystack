@@ -16,7 +16,7 @@ Install the corresponding database driver:
 | sqlite   | `pip install supersqlite` (`apt install build-essential` before, and may take several minutes)|
 | postgres | `pip install psycopg2`                              |
 |          | or `pip install psycopg2-binary`                    |
-| mysql    | `pip install pymysql`                               |
+| mysql    | `pip install pymysql cryptography`                  |
 | athena   | install the postgres or mysql driver                |
 
 You can use `shaystack_import_db` to import a Haystack files into the database, only if the entities are modified

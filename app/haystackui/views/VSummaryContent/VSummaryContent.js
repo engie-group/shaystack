@@ -32,11 +32,10 @@ const template = `
     NO DATA
   </div>
 `
-import { API_COLORS } from '../../services/index.js'
+import { API_COLORS, dataUtils } from '../../services/index.js'
 import formatService from '../../services/format.service.js'
 import CEntityRow from '../../components/CEntityRow/CEntityRow.js'
 import CGraph from '../../components/CGraph/CGraph.js'
-console.log('summary', API_COLORS)
 export default {
   template,
   components: { CEntityRow, CGraph },
@@ -84,6 +83,16 @@ export default {
         if (this.$route.query.q) {
           await this.$store.commit('SET_FILTER_API', { filterApi: this.$route.query.q })
         } else this.$store.commit('SET_FILTER_API', { filterApi: '' })
+        if (this.$route.query.d) {
+          const startDate = this.$route.query.d.split(',')[0]
+          const endDate = this.$route.query.d.split(',')[1]
+          if (dataUtils.checkDateFormat(startDate)) {
+            await this.$store.commit('SET_START_DATE_RANGE', { startDateRange: startDate })
+          }
+          if (dataUtils.checkDateFormat(endDate)) {
+            await this.$store.commit('SET_END_DATE_RANGE', { endDateRange: endDate })
+          }
+        }
       }
       await this.$store.dispatch('reloadAllData', { entity: this.filterApi })
     },
@@ -213,9 +222,7 @@ export default {
         haystackApiHost: `${window.location.origin}${window.location.pathname}`
       })
       if (this.apiServers.length !== 0) {
-        console.log('TEST2', this.apiServers.map(api => api.haystackApiHost).join('","'))
         this.$router.push({ query: { a: `["${this.apiServers.map(api => api.haystackApiHost).join('","')}"]` } }).catch(() => {})
-        console.log(this.apiServers.join('","'))
       }
     }
   },

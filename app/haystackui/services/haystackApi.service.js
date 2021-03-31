@@ -6,7 +6,6 @@ class HaystackApiService {
   // Invoquer format pour savoir si l'api est compatible avec le format JSON
 
   get api() {
-    console.log('TEST', this.haystackApiHost)
     return axios.create({
       baseURL: `${this.haystackApiHost}`,
       timeout: 20000,

@@ -30,8 +30,16 @@ const template = `
         </template>
         <h3>Filter Example:</h3>
         <span
-          >site or equip<br />(not his)<br />curVal > 10<br />occupiedEnd >= 18:00 and geoCity =="Richmond"<br />point
-          and siteRef->geoCountry == "US"
+          ><h4>site or equip</h4>
+          find site or equipment entities<br />
+          <h4>(not his)</h4>
+          find entities with no histories<br />
+          <h4>curVal > 10</h4>
+          find all entities with a curval > 10<br />
+          <h4>occupiedEnd >= 18:00 and geoCity == "Richmond"</h4>
+          find all entities that close after 6 p.m. in Richmond<br />
+          <h4>point and siteRef->geoCountry == "US"</h4>
+          find all the point based in US
         </span>
       </v-tooltip>
     </div>
@@ -59,7 +67,27 @@ const template = `
           >
         </div>
       </template>
-    </v-combobox>
+  </v-combobox>
+    <v-text-field
+      class="summary-content__text-field__date"
+      label="Select start date"
+      outlined
+      v-model="dateStartInput"
+      :value="startDateRange"
+      dense
+      background-color="white"
+      @change="updateStartDateRange($event)"
+    />
+    <v-text-field
+      class="summary-content__text-field__date"
+      label="Select end date"
+      outlined
+      v-model="dateEndInput"
+      :value="endDateRange"
+      dense
+      background-color="white"
+      @change="updateEndDateRange($event)"
+    />
     <v-spacer></v-spacer>
   </v-app-bar>
   <main>
@@ -67,8 +95,7 @@ const template = `
   </main>
 </div>
 `
-import { API_COLORS } from '../../services/index.js'
-console.log('layout', API_COLORS)
+import { API_COLORS, dataUtils } from '../../services/index.js'
 export default {
   template,
   data() {
@@ -79,6 +106,20 @@ export default {
   computed: {
     filterApi() {
       return this.$store.getters.filterApi
+    },
+    startDateRange() {
+      const filterDateStart =
+        this.$store.getters.dateRange.start === '0001-01-01' ? null : this.$store.getters.dateRange.start
+      // eslint-disable-next-line
+      this.dateStartInput = filterDateStart
+      return filterDateStart
+    },
+    endDateRange() {
+      const filterEndDate =
+        this.$store.getters.dateRange.end === '9998-12-31' ? null : this.$store.getters.dateRange.end
+      // eslint-disable-next-line
+      this.dateEndInput = filterEndDate
+      return filterEndDate
     },
     getApiServers() {
       return this.$store.getters.apiServers.map(apiServer => apiServer.haystackApiHost)
@@ -118,6 +159,36 @@ export default {
         const { a } = this.$route.query
         this.$router.push({ query: { q: newFilter, a } })
         await this.$store.dispatch('reloadAllData', { entity: newFilter })
+      }
+    },
+    async updateStartDateRange(newStartDate) {
+      if (dataUtils.checkDateFormat(newStartDate) || newStartDate === '') {
+        const startDateRange = newStartDate === '' ? '0001-01-01' : newStartDate
+        this.$store.commit('SET_START_DATE_RANGE', { startDateRange })
+        await this.$store.dispatch('reloadAllData', { entity: this.filterApi })
+        const { a, q } = this.$route.query
+        if ((!this.endDateRange || this.endDateRange === '') && newStartDate === '') {
+          this.$router.push({ query: { q, a } })
+        } else
+          this.$router.push({ query: { q, a, d: `${newStartDate},${this.endDateRange ? this.endDateRange : ''}` } })
+      } else {
+        this.dateStartInput = this.startDateRange
+        alert('Wrong format Date. Date should be yyyy-mm-dd')
+      }
+    },
+    async updateEndDateRange(newEndDate) {
+      if (dataUtils.checkDateFormat(newEndDate) || newEndDate === '') {
+        const endDateRange = newEndDate === '' ? '9998-12-31' : newEndDate
+        this.$store.commit('SET_END_DATE_RANGE', { endDateRange })
+        await this.$store.dispatch('reloadAllData', { entity: this.filterApi })
+        const { a, q } = this.$route.query
+        if ((!this.startDateRange || this.startDateRange === '') && newEndDate === '') {
+          this.$router.push({ query: { q, a } })
+        } else
+          this.$router.push({ query: { q, a, d: `${this.startDateRange ? this.startDateRange : ''},${newEndDate}` } })
+      } else {
+        this.dateEndInput = this.endDateRange
+        alert('Wrong format Date. Date should be yyyy-mm-dd')
       }
     },
     circleApiClass(apiHost) {

@@ -10,6 +10,7 @@ const state = {
   entities: [[]],
   histories: [{}],
   apiServers: [],
+  dateRange: { start: '0001-01-01', end: '9998-12-31' },
   isDataLoaded: false,
   filterApi: ''
 }
@@ -61,6 +62,16 @@ export const mutations = {
   },
   SET_FILTER_API(state, { filterApi }) {
     state.filterApi = filterApi
+  },
+  SET_START_DATE_RANGE(state, { startDateRange }) {
+    const dateRange = { ...state.dateRange }
+    dateRange.start = startDateRange
+    state.dateRange = dateRange
+  },
+  SET_END_DATE_RANGE(state, { endDateRange }) {
+    const dateRange = { ...state.dateRange }
+    dateRange.end = endDateRange
+    state.dateRange = dateRange
   }
 }
 export const getters = {
@@ -81,6 +92,9 @@ export const getters = {
   },
   filterApi(state) {
     return state.filterApi
+  },
+  dateRange(state) {
+    return state.dateRange
   }
 }
 export const actions = {
@@ -114,22 +128,22 @@ export const actions = {
   },
   async fetchHistories(context, { idsEntityWithHis, apiNumber }) {
     const isHisReadAvailable = await context.getters.apiServers[apiNumber].isHisReadAvailable()
+    const dateRange = `${state.dateRange.start},${state.dateRange.end}`
     if (isHisReadAvailable) {
       const histories = await Promise.all(
         idsEntityWithHis.map(async entity => {
           if (typeof entity.apiSource === 'object') {
             if (entity.apiSource.find(apiSourceNumber => apiSourceNumber === apiNumber + 1)) {
-              return context.getters.apiServers[apiNumber].getHistory(entity.id)
+              return context.getters.apiServers[apiNumber].getHistory(entity.id, dateRange)
             }
             return []
           }
           // eslint-disable-next-line
-            if (entity.apiSource === apiNumber + 1) return context.getters.apiServers[apiNumber].getHistory(entity.id)
+          if (entity.apiSource === apiNumber + 1) return context.getters.apiServers[apiNumber].getHistory(entity.id, dateRange)
           return []
         })
       )
       const idHistories = {}
-      // eslint-disable-next-line no-return-assign
       idsEntityWithHis.forEach(
         // eslint-disable-next-line no-return-assign
         (key, index) =>
@@ -140,7 +154,6 @@ export const actions = {
       await context.commit('SET_HISTORIES', { idHistories, apiNumber })
     }
   },
-
   async fetchAllEntity(context, { entity }) {
     const { apiServers } = context.getters
     await Promise.all(

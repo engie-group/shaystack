@@ -1,4 +1,13 @@
 const dataUtils = {
+  checkDateFormat: dateString => {
+    const splittedDate = dateString.split('-')
+    if (splittedDate.length !== 3) return false
+    const year = splittedDate[0]
+    const month = splittedDate[1]
+    const day = splittedDate[2]
+    if (year.length === 4 && month.length === 2 && day.length === 2) return dateString
+    return false
+  },
   formatDate: dateString => {
     const date = new Date(dateString.substring(2).split(' ')[0])
     return date.getTime()

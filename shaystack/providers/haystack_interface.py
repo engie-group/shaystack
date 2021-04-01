@@ -241,7 +241,6 @@ class HaystackInterface(ABC):
         Returns:
             The requested Grid
         """
-        # PPR: Add nextToken for paginate ?
         raise NotImplementedError()
 
     @abstractmethod
@@ -595,9 +594,15 @@ def parse_date_range(date_range: str, timezone: tzinfo) -> Tuple[datetime, datet
             assert type(split_date[0]) == type(  # pylint: disable=C0123
                 split_date[1]
             )
-            return \
-                (datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=timezone),
-                 datetime.combine(split_date[1], datetime.max.time()).replace(tzinfo=timezone))
+            if split_date[0] == date.min:
+                begin_datetime = datetime.min
+            else:
+                begin_datetime = datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=timezone)
+            if split_date[1] == date.max:
+                end_datetime = datetime.max
+            else:
+                end_datetime = datetime.combine(split_date[1], datetime.max.time()).replace(tzinfo=timezone)
+            return (begin_datetime, end_datetime)
         if isinstance(split_date[0], datetime):
             return split_date[0], datetime.max.replace(tzinfo=pytz.UTC)
         tzdate = datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=timezone)

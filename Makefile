@@ -888,7 +888,7 @@ start-mongodb:
 		--name mongodb \
 		--hostname mongodb \
 		-p 27017-27019:27017-27019 \
-		-d mongodb
+		-d mongo
 	sleep 2
 	echo -e "$(yellow)MongoDB started$(normal)"
 

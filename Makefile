@@ -888,7 +888,7 @@ start-mongodb:
 		--name mongodb \
 		--hostname mongodb \
 		-p 27017-27019:27017-27019 \
-		-d mongodb
+		-d mongo
 	sleep 2
 	echo -e "$(yellow)MongoDB started$(normal)"
 
@@ -1126,3 +1126,8 @@ release: clean .make-validate check-twine
 	echo -e "$(green)Enter the Pypi password$(normal)"
 	twine upload --sign \
 		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
+
+## Publish the release and tag
+publish-release:
+	TAG=$(shell git describe --abbrev=0)
+	git push --atomic origin master $TAG

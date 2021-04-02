@@ -271,7 +271,8 @@ class Provider(DBHaystackInterface):
                 dates_range[1] = date_version
 
             cursor.execute(self._sql["SELECT_TS"], (customer_id, entity_id.name,
-                                                    dates_range[0], dates_range[1]))
+                                                    dates_range[0],
+                                                    dates_range[1] + timedelta(microseconds=-1)))
             for row in cursor:
                 history.append(
                     {
@@ -483,7 +484,7 @@ class Provider(DBHaystackInterface):
         init_grid = self.read_grid(customer_id, version)  # PPR : read partial ?
         new_grid = init_grid + diff_grid
 
-        end_date = now - timedelta(milliseconds=1)
+        end_date = now - timedelta(microseconds=1)
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()

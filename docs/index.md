@@ -17,6 +17,12 @@ Shift-for-Haystack is a set of API to implement the [Haystack project specificat
 It's compatible with modern Python with typing, Flask server in data center, Edge (Raspberry?) or in AWS Lambda
 function.
 
+## Quick link
+
+- [Try-it online](#inspect-the-data-with-code)?
+- Using [AWS Lambda](#using-aws)?
+- [REST API Provider](#choosing-and-configuring-your-provider)?
+
 ## About Haystack, and who is it for
 
 [Haystack project]((https://project-haystack.org/)) is an open source initiative to standardize semantic data models for
@@ -93,13 +99,13 @@ Then, install the module with all options
 $ pip install "shaystack[flask,graphql,lambda]"
 ```
 
-## Inspect the datas with code
+## Inspect the data with code
 
 [`haystack.ipynb`](https://github.com/pprados/shaystack/blob/develop/haystack.ipynb) jupyter notebook contains code to
 read, filter, manipulate and print `Grid` objects containing haystack data.
 
 Try it online [here](https://colab.research.google.com/github/pprados/shaystack/blob/develop/haystack.ipynb)
-
+or test the [User interface]()
 # Python API
 
 The [documentation of the API is here](https://pprados.github.io/shaystack/api/shaystack/index.html).
@@ -122,47 +128,24 @@ df = panda.DataFrame(grid.filter("point and co2e"))  # Convert grid to data fram
 
 Shift-4-Haystack is agile and can be deployed in different scenarios. Choose an option for each feature.
 
-| Python version |
-|:------:|
-|   3.7  |
-|   3.8  |
-|   3.9  |
-
-| Deployment              |
-| ----------------------- |
-| Internet Flask server   |
-| Edge Flask server       |
-| Docker Flask server     |
-| Internet AWS Lambda API |
-
-| Haystack backend                  |
-| --------------------------------- |
-| local file                        |
-| url                               |
-| S3 bucket without version         |
-| S3 bucket with version            |
-| Sqlite database                   |
-| Postgres database                 |
-| MySQL database                    |
-| Mongo database                    |
-| haystack backend + AWS Timestream |
-
-| Multi tenancy             |
-| ------------------------- |
-| Single tenancy            |
-| Multiple, shared table    |
-| Multiple, dedicated table |
-
-| API                                               |
-| ------------------------------------------------- |
-| Haystack REST API                                 |
-| Standalone GraphQL API                            |
-| GraphQL API integrated inside another via AppSync |
+| Haystack backend                  |  Python version | Deployment              |Multi tenancy             | API                                               |
+| --------------------------------- | :--------------:| ----------------------- |------------------------- | ------------------------------------------------- |
+| local file                        |    3.7          | Internet Flask server   |Single tenancy            | Haystack REST API                                 |
+| url                               |    3.8          | Edge Flask server       |Multiple, shared table    | Standalone GraphQL API                            |
+| S3 bucket without version         |    3.9          | Docker Flask server     |Multiple, dedicated table | GraphQL API integrated inside another via AppSync |
+| S3 bucket with version            |                 | Internet AWS Lambda API |||
+| Sqlite database                   ||||
+| Postgres database                 ||||
+| MySQL database                    ||||
+| Mongo database                    ||||
+| haystack backend + AWS Timestream ||||
 
 | Serverless  | Technologies                             |
 | ----------- | ---------------------------------------- |
 | No          | VM, Docker, Postgres, MySQL, Mongo, etc. |
 | Yes         | AWS Lambda, Aurora                       |
+
+
 
 and you can extend these proposed scenario. You can see below, how to install these different scenarios.
 
@@ -384,7 +367,7 @@ grid.select("!hisURL")
 ```
 
 The syntax to analyse the date range in `hisRead` is extended to accept a comma without value before or after (`date,`
-, `,datetime`, etc.)
+, `,datetime`, etc.) and usage of `today` and `yesterday` in left or right.
 
 ### Haystack filter
 
@@ -464,7 +447,7 @@ To implement a provider, two strategies are proposed:
   
 ### Using AWS
 
-Read [more...](AWS.md)
+To use Lambda or S3 bucket, read [more...](AWS.md)
 
 ### Docker
 

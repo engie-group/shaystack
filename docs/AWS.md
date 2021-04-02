@@ -66,29 +66,30 @@ $ HAYSTACK_PROVIDER=shaystack.providers.db \
 ## AWS Lambda
 
 The code is compatible with AWS Lambda. Install this option (`pip install "shaystack[lambda]"`)
-and create a file `zappa_settings.json` with something like this:
+and create a file `zappa_settings.json` with something like this
+(see [here](https://github.com/zappa/Zappa/blob/master/README.md):
 
 ```json
 {
   "dev": {
-    "profile_name": "default",
-    "aws_region": "us-east-2",
+    "profile_name": "YOUR_PROFILE",
+    "aws_region": "YOUR_REGION",
+    "project_name": "YOUR_PROJECT_NAME",
+    "s3_bucket": "YOUR_S3_BUCKET_FOR_LAMBDA_CODE",
     "app_function": "app.__init__.app",
-    "project_name": "my_haystack",
-    "s3_bucket": "my_haystack-zappa",
     "runtime": "python3.8",
     "aws_environment_variables": {
       "LOG_LEVEL": "INFO",
       "TLS_VERIFY": "False",
       "HAYSTACK_PROVIDER": "shaystack.providers.db",
-      "HAYSTACK_DB": "s3://shaystack/carytown.zinc",
+      "HAYSTACK_DB": "YOUR_DB_URL",
       "HAYSTACK_TS": ""
     }
   }
 }
 ```        
 
-Update the parameter values like `project_name`, `s3_bucket` or `HAYSTACK_DB`.
+Update the parameter values for your context. For `YOUR_DB_URL`, you may use `s3://shaystack/carytown.zinc`.
 
 Then, use [zappa](https://github.com/Miserlou/Zappa) to deploy.
 

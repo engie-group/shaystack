@@ -9,7 +9,7 @@
 Parse the filter syntax to produce a FilterAST.
 See https://www.project-haystack.org/doc/Filters
 """
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta, tzinfo
 from functools import lru_cache
 from typing import Any, List, Callable, Tuple
 
@@ -252,16 +252,26 @@ def filter_function(grid_filter: str) -> Callable[[Grid, Entity], bool]:
     return _filter_function(grid_filter).get()
 
 
-def parse_hs_datetime_format(datetime_str: str) -> datetime:
+def parse_hs_datetime_format(datetime_str: str, timezone: tzinfo) -> datetime:
     """
     Parse the haystack date time (for filter).
     Args:
         datetime_str: The string to parse
+        timezone: Time zone info
     Returns:
         the corresponding `datetime`
     Raises:
         `pyparsing.ParseException` if the string does not conform
     """
+    if datetime_str == "today":
+        return datetime.combine(date.today(), datetime.min.time()) \
+            .replace(tzinfo=timezone)
+    if datetime_str == "yesterday":
+        return datetime.combine(date.today() - timedelta(days=1), datetime.min.time()) \
+            .replace(tzinfo=timezone)
+    if datetime_str == "today":
+        return datetime.combine(date.today(), datetime.min.time()) \
+            .replace(tzinfo=timezone)
     return hs_all_date.parseString(datetime_str, parseAll=True)[0]
 
 

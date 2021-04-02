@@ -466,6 +466,7 @@ def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hays
         read_ids: Optional[List[Ref]] = None
         select = read_filter = date_version = None
         limit = 0
+        default_tz = provider.get_tz()
         if grid_request:
             if "id" in grid_request.column:
                 read_ids = [row["id"] for row in grid_request]
@@ -494,7 +495,7 @@ def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hays
             if "select" in args:
                 select = args["select"]
             if "version" in args:
-                date_version = parse_hs_datetime_format(args["version"])
+                date_version = parse_hs_datetime_format(args["version"], default_tz)
 
         if read_filter is None:
             read_filter = ""
@@ -693,6 +694,7 @@ def point_write(envs: Dict[str, str], request: HaystackHttpRequest,
         level = 17
         val = who = duration = None
         entity_id = None
+        default_tz = provider.get_tz()
         if grid_request:
             entity_id = grid_request[0]["id"]
             date_version = grid_request[0].get("version", None)
@@ -717,7 +719,7 @@ def point_write(envs: Dict[str, str], request: HaystackHttpRequest,
             duration = parse_scalar(args["duration"])
             assert isinstance(duration, Quantity)
         if "version" in args:
-            date_version = parse_hs_datetime_format(args["version"])
+            date_version = parse_hs_datetime_format(args["version"], default_tz)
         if entity_id is None:
             raise ValueError("'id' must be set")
         if val is not None:
@@ -756,6 +758,7 @@ def his_read(envs: Dict[str, str], request: HaystackHttpRequest,
         grid_request = _parse_body(request)
         entity_id = date_version = None
         date_range = None
+        default_tz = provider.get_tz()
         if grid_request:
             if "id" in grid_request.column:
                 entity_id = grid_request[0].get("id", "")
@@ -772,7 +775,7 @@ def his_read(envs: Dict[str, str], request: HaystackHttpRequest,
             if "range" in args:
                 date_range = args["range"]
             if "version" in args:
-                date_version = parse_hs_datetime_format(args["version"])
+                date_version = parse_hs_datetime_format(args["version"], default_tz)
 
         grid_date_range = parse_date_range(date_range, provider.get_tz())
         log.debug(
@@ -811,6 +814,7 @@ def his_write(envs: Dict[str, str], request: HaystackHttpRequest,
         entity_id = grid_request.metadata.get("id")
         date_version = grid_request.metadata.get("version")
         time_serie_grid = grid_request
+        default_tz = provider.get_tz()
 
         # Priority of query string
         if args:
@@ -820,12 +824,12 @@ def his_write(envs: Dict[str, str], request: HaystackHttpRequest,
                 time_serie_grid = Grid(version=VER_3_0, columns=["date", "val"])
                 time_serie_grid.extend(
                     [
-                        {"date": parse_hs_datetime_format(d), "val": v}
+                        {"date": parse_hs_datetime_format(d, default_tz), "val": v}
                         for d, v in literal_eval(args["ts"])
                     ]
                 )
         if "version" in args:
-            date_version = parse_hs_datetime_format(args["version"])
+            date_version = parse_hs_datetime_format(args["version"], default_tz)
         grid_response = provider.his_write(entity_id, time_serie_grid, date_version)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, "OK")

@@ -407,7 +407,7 @@ class Provider(DBHaystackInterface):
             now = datetime.now(tz=pytz.UTC)
         if version is None:
             version = datetime.now().replace(tzinfo=pytz.UTC)
-        end_date = now - timedelta(milliseconds=1)
+        end_date = now - timedelta(microseconds=1)
 
         # Read only modified rows
         init_grid = self._read_partial_grid(

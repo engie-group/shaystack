@@ -241,7 +241,6 @@ class HaystackInterface(ABC):
         Returns:
             The requested Grid
         """
-        # PPR: Add nextToken for paginate ?
         raise NotImplementedError()
 
     @abstractmethod
@@ -563,51 +562,87 @@ def get_singleton_provider(envs: Dict[str, str]  # pylint: disable=protected-acc
     return SINGLETON_PROVIDER
 
 
+_DATETIME_MIN_TZ = datetime.min.replace(tzinfo=pytz.utc)
+_DATETIME_MAX_TZ = datetime.max.replace(tzinfo=pytz.utc)
+
+
 def parse_date_range(date_range: str, timezone: tzinfo) -> Tuple[datetime, datetime]:
     """
     Parse a date_range string.
     Args:
-        date_range: The string with differents acceptable format.
+        date_range: The string with different acceptable format.
         timezone: The current time-zone to convert the date to datetime.
 
     Returns:
-        A tuple with the begin and end datetime.
+        A tuple with the begin (inclusive) and end datetime (exclusive).
     """
     if not date_range:
         return datetime.min.replace(tzinfo=pytz.UTC), \
                datetime.max.replace(tzinfo=pytz.UTC)
     if date_range not in ("today", "yesterday"):
-        split_date = [parse_hs_datetime_format(x) if x else None for x in date_range.split(",")]
-        if len(split_date) > 1:
+        str_date = date_range.split(",")
+        split_date = [parse_hs_datetime_format(x, timezone) if x else None for x in str_date]
+        if len(str_date) > 1:
+            if str_date[1] in ("today", "yesterday"):
+                split_date[1] += timedelta(days=1)
+
+            # Convert to same type
+            if isinstance(split_date[0], datetime) or isinstance(split_date[1], datetime):
+                # One is a datetime. The other must be convert to datetime
+                if not split_date[0]:
+                    split_date[0] = _DATETIME_MIN_TZ
+                if not isinstance(split_date[0], datetime):
+                    split_date[0] = datetime.combine(split_date[0], datetime.min.time())
+                if not split_date[1]:
+                    split_date[1] = _DATETIME_MAX_TZ
+                if not isinstance(split_date[1], datetime):
+                    split_date[1] = datetime.combine(split_date[1], datetime.min.time())
+
+            # Add missing tzinfo
+            if isinstance(split_date[0], datetime) and not split_date[0].tzinfo:
+                split_date[0] = split_date[0].replace(tzinfo=timezone)
+            if len(str_date) > 1 and isinstance(split_date[1], datetime) and not split_date[1].tzinfo:
+                split_date[1] = split_date[1].replace(tzinfo=timezone)
+
+            # Add missing part
             if isinstance(split_date[0], datetime) or isinstance(split_date[1], datetime):
                 if not split_date[0]:
-                    split_date[0] = datetime.min.replace(tzinfo=pytz.UTC)
+                    split_date[0] = _DATETIME_MIN_TZ
                 if not split_date[1]:
-                    split_date[1] = datetime.max.replace(tzinfo=pytz.UTC)
-                assert type(split_date[0]) == type(  # pylint: disable=C0123
-                    split_date[1]
-                )
-                return cast(Tuple[datetime, datetime], tuple(split_date))
-            if not split_date[0]:
-                split_date[0] = date.min
-            if not split_date[1]:
-                split_date[1] = date.max
-            assert type(split_date[0]) == type(  # pylint: disable=C0123
-                split_date[1]
-            )
-            return \
-                (datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=timezone),
-                 datetime.combine(split_date[1], datetime.max.time()).replace(tzinfo=timezone))
+                    split_date[1] = _DATETIME_MAX_TZ
+            elif isinstance(split_date[0], date) or isinstance(split_date[1], date):
+                if not split_date[0]:
+                    split_date[0] = _DATETIME_MIN_TZ
+                if not split_date[1]:
+                    split_date[1] = _DATETIME_MAX_TZ
+                if not isinstance(split_date[0], datetime):
+                    if split_date[0] == date.min:
+                        split_date[0] = _DATETIME_MIN_TZ
+                    else:
+                        split_date[0] = datetime.combine(split_date[0],
+                                                         datetime.min.time()).replace(tzinfo=timezone)
+
+                if not isinstance(split_date[1], datetime):
+                    if split_date[1] == date.max:
+                        split_date[1] = _DATETIME_MAX_TZ
+                    else:
+                        split_date[1] = datetime.combine(split_date[1],
+                                                         datetime.max.time()).replace(tzinfo=timezone)
+            return cast(Tuple[datetime, datetime], (split_date[0], split_date[1]))
         if isinstance(split_date[0], datetime):
-            return split_date[0], datetime.max.replace(tzinfo=pytz.UTC)
-        tzdate = datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=timezone)
-        return tzdate, tzdate + timedelta(days=1, milliseconds=-1)
+            if not split_date[0].tzinfo:
+                split_date[0] = split_date[0].replace(tzinfo=timezone)
+            return split_date[0], _DATETIME_MAX_TZ
+        assert isinstance(split_date[0], date)
+        split_date[0] = datetime.combine(split_date[0], datetime.min.time()).replace(tzinfo=timezone)
+        return split_date[0], split_date[0] + timedelta(days=1)
+
     if date_range == "today":
         today = datetime.combine(date.today(), datetime.min.time()) \
             .replace(tzinfo=timezone)
-        return today, today + timedelta(days=1, milliseconds=-1)
+        return today, today + timedelta(days=1)
     if date_range == "yesterday":
         yesterday = datetime.combine(date.today() - timedelta(days=1), datetime.min.time()) \
             .replace(tzinfo=timezone)
-        return yesterday, yesterday + timedelta(days=1, milliseconds=-1)
+        return yesterday, yesterday + timedelta(days=1)
     raise ValueError(f"date_range {date_range} unknown")

@@ -120,7 +120,7 @@ class HSDateTime(graphene.String):
             return value
         if isinstance(value, date):
             return datetime.combine(value, datetime.max.time()).replace(tzinfo=pytz.UTC)
-        return parse_hs_datetime_format(value)
+        return parse_hs_datetime_format(value, pytz.UTC)
 
 
 class HSDate(graphene.String):

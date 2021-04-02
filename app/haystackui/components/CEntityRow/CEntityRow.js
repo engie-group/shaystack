@@ -135,8 +135,13 @@ export default {
     },
     dataChart() {
       return this.his
-        .filter(hisData => dataUtils.isNumberTypeChart(hisData))
-        .map(historic => (historic ? formatService.formatCharts(historic) : null))
+        .map((his, index) => {
+          return { his, apiNumber: index }
+        })
+        .filter(hisData => dataUtils.isNumberTypeChart(hisData.his))
+        .map(historic => {
+          return { his: historic.his ? formatService.formatCharts(historic.his) : null, apiNumber: historic.apiNumber }
+        })
     },
     dataHisTable() {
       const dataHisTable = this.his.filter(hisData => !dataUtils.isNumberTypeChart(hisData))

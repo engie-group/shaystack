@@ -10,7 +10,7 @@ const state = {
   entities: [[]],
   histories: [{}],
   apiServers: [],
-  dateRange: { start: '0001-01-01', end: '9998-12-31' },
+  dateRange: { start: '', end: '' },
   isDataLoaded: false,
   filterApi: ''
 }
@@ -124,11 +124,10 @@ export const actions = {
       entities: formatService.addApiSourceInformationToEntity(entities.rows, apiNumber + 1),
       apiNumber
     })
-    // await context.commit('SET_ENTITIES', { entities: entities.rows, apiNumber })
   },
   async fetchHistories(context, { idsEntityWithHis, apiNumber }) {
     const isHisReadAvailable = await context.getters.apiServers[apiNumber].isHisReadAvailable()
-    const dateRange = `${state.dateRange.start},${state.dateRange.end}`
+    const dateRange = formatService.formatDateRangeUrl(state.dateRange)
     if (isHisReadAvailable) {
       const histories = await Promise.all(
         idsEntityWithHis.map(async entity => {

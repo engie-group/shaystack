@@ -27,6 +27,30 @@ const formatService = {
     entityName.shift()
     return entityName.join(' ')
   },
+  formatDateRangeUrl(dateRange) {
+    if (dateRange.start === 'today' || dateRange.start === 'yesterday') {
+      if (dateRange.end === '' || !dateRange.end) return dateRange.start
+      else return `${formatService.dateConvertor(dateRange.start).toISOString()},${formatService.dateConvertor(dateRange.end, false).toISOString()}`
+    }
+    else if (dateRange.end === 'today' || dateRange.end === 'yesterday') {
+      if (dateRange.start === '') return dateRange.end
+      else return `${formatService.dateConvertor(dateRange.start).toISOString()},${formatService.dateConvertor(dateRange.end).toISOString()}`
+    }
+    else
+      return `${dateRange.start},${dateRange.end}`
+  },
+  dateConvertor(date, isStartDate=true) {
+    if (date === 'today') return isStartDate ? new Date() : new Date(new Date().setDate(new Date().getDate() + 1))
+    else if (date === 'yesterday') return isStartDate ? new Date(new Date().setDate(new Date().getDate() - 1)) : new Date()
+    else if (!date || date === '') return ''
+    else return new Date(date)
+  },
+  checkDateRangeIsCorrect(dateStart, dateEnd) {
+    const dateStartObject = formatService.dateConvertor(dateStart)
+    const dateEndObject = formatService.dateConvertor(dateEnd)
+    if (dateStartObject === '' || dateEndObject === '') return true
+    else return dateStartObject < dateEndObject
+  },
   idToNameEntity: entitiesfromAllSource => {
     let mapEntityIdToEntityName = {}
     entitiesfromAllSource.map(entities => {

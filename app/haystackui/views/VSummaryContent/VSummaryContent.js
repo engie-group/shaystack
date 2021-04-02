@@ -84,14 +84,20 @@ export default {
           await this.$store.commit('SET_FILTER_API', { filterApi: this.$route.query.q })
         } else this.$store.commit('SET_FILTER_API', { filterApi: '' })
         if (this.$route.query.d) {
-          const startDate = this.$route.query.d.split(',')[0]
-          const endDate = this.$route.query.d.split(',')[1]
-          if (dataUtils.checkDateFormat(startDate)) {
+          const splittedUrl = this.$route.query.d.split(',')
+          if (splittedUrl.length > 1) {
+            const startDate = dataUtils.checkDateFormat(this.$route.query.d.split(',')[0])
+            const endDate = dataUtils.checkDateFormat(this.$route.query.d.split(',')[1])
             await this.$store.commit('SET_START_DATE_RANGE', { startDateRange: startDate })
+            await this.$store.commit('SET_END_DATE_RANGE', { endDateRange: endDate || '' })
+          } else {
+            await this.$store.commit('SET_START_DATE_RANGE', { startDateRange: this.$route.query.d })
+            await this.$store.commit('SET_END_DATE_RANGE', { endDateRange: '' })
           }
-          if (dataUtils.checkDateFormat(endDate)) {
-            await this.$store.commit('SET_END_DATE_RANGE', { endDateRange: endDate })
-          }
+        }
+        if (!this.$route.query.d) {
+          await this.$store.commit('SET_START_DATE_RANGE', { startDateRange: '' })
+          await this.$store.commit('SET_END_DATE_RANGE', { endDateRange: '' })
         }
       }
       await this.$store.dispatch('reloadAllData', { entity: this.filterApi })

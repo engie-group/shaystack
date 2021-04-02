@@ -1,12 +1,10 @@
 const dataUtils = {
-  checkDateFormat: dateString => {
-    const splittedDate = dateString.split('-')
-    if (splittedDate.length !== 3) return false
-    const year = splittedDate[0]
-    const month = splittedDate[1]
-    const day = splittedDate[2]
-    if (year.length === 4 && month.length === 2 && day.length === 2) return dateString
-    return false
+    checkDateFormat: dateString => {
+    if (dateString === 'today') return dateString
+    if (dateString === 'yesterday') return dateString
+    const dateObject = new Date(dateString)
+    if (dateObject.toString() === 'Invalid Date') return null
+    return dateString
   },
   formatDate: dateString => {
     const date = new Date(dateString.substring(2).split(' ')[0])
@@ -36,7 +34,12 @@ const dataUtils = {
   },
   sortChartDataByDate(dataChart) {
     const dataChartSorted = dataChart.slice()
-    return dataChartSorted.map(dataApi => dataApi.sort((firstData, secondData) => secondData[0] - firstData[0]))
+    return dataChartSorted.map(dataApi => {
+      return {
+        apiNumber: dataApi.apiNumber,
+        his: dataApi.his.sort((firstData, secondData) => secondData[0] - firstData[0])
+      }
+    })
   }
 }
 

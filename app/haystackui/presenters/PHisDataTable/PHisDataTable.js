@@ -138,7 +138,6 @@ export default {
     },
     isCoordinate(item) {
       if (typeof item !== 'string') return false
-      // if (item.value.length < 4) return false
       return item.substring(0, 2) === 'c:'
     },
     getUrlCoordinate(coordinate) {
@@ -146,9 +145,7 @@ export default {
     },
     isDuplicateKey(item) {
       const keysDuplicated = Object.keys(this.dataEntity).filter(key => key.split('_')[0] === item)
-      // const itemSplitted = item.split('_')
       return keysDuplicated.length > 1
-      // return itemSplitted.length > 1 && Number(itemSplitted[1])
     },
     getEntityId(entity) {
       return entity.id.val.split(' ')[0].substring(2)

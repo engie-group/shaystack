@@ -51,16 +51,18 @@ class HaystackApiService {
       return []
     }
   }
-
-  // getHistory => hisRead
-  async getHistory(id, range = '') {
-      try {
-          const response = await this.api.get(`/hisRead?id=@${id}&range=${range}`)
-          return response.data.rows
-      } catch {
-          return []
-      }
+  async getHistory(id, range = '2020-01-01,2022-12-31') {
+    try {
+      const response =
+        range === ','
+          ? await this.api.get(`/hisRead?id=@${id}`)
+          : await this.api.get(`/hisRead?id=@${id}&range=${range}`)
+      return response.data.rows
+    } catch {
+      return []
+    }
   }
+
 }
 
 export default HaystackApiService

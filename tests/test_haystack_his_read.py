@@ -92,7 +92,7 @@ def test_his_read_with_range_today(mock) -> None:
     today = datetime.combine(date.today(), datetime.min.time()).replace(tzinfo=get_localzone())
     mock.assert_called_once_with(Ref("1234"),
                                  (today,
-                                  today + timedelta(days=1, milliseconds=-1)
+                                  today + timedelta(days=1)
                                   ), None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
@@ -123,7 +123,7 @@ def test_his_read_with_range_yesterday(mock) -> None:
     yesterday = datetime.combine(date.today() - timedelta(days=1), datetime.min.time()) \
         .replace(tzinfo=get_localzone())
     mock.assert_called_once_with(Ref("1234"),
-                                 (yesterday, yesterday + timedelta(days=1, milliseconds=-1)), None)
+                                 (yesterday, yesterday + timedelta(days=1)), None)
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert shaystack.parse(response.body, mime_type) is not None
@@ -249,7 +249,7 @@ def test_his_read_with_range_one_date(mock) -> None:
     cur_datetime = datetime.combine(date_1, datetime.min.time()).replace(tzinfo=get_localzone())
     mock.assert_called_once_with(Ref("1234"),
                                  (cur_datetime,
-                                  cur_datetime + timedelta(days=1, milliseconds=-1)
+                                  cur_datetime + timedelta(days=1)
                                   ), None)
 
     assert response.status_code == 200

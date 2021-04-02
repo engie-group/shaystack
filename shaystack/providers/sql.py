@@ -483,7 +483,7 @@ class Provider(DBHaystackInterface):
         init_grid = self.read_grid(customer_id, version)  # PPR : read partial ?
         new_grid = init_grid + diff_grid
 
-        end_date = now - timedelta(milliseconds=1)
+        end_date = now - timedelta(microseconds=1)
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()

@@ -367,7 +367,7 @@ grid.select("!hisURL")
 ```
 
 The syntax to analyse the date range in `hisRead` is extended to accept a comma without value before or after (`date,`
-, `,datetime`, etc.)
+, `,datetime`, etc.) and usage of `today` and `yesterday` in left or right.
 
 ### Haystack filter
 

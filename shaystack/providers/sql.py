@@ -271,7 +271,8 @@ class Provider(DBHaystackInterface):
                 dates_range[1] = date_version
 
             cursor.execute(self._sql["SELECT_TS"], (customer_id, entity_id.name,
-                                                    dates_range[0], dates_range[1]))
+                                                    dates_range[0],
+                                                    dates_range[1] + timedelta(microseconds=-1)))
             for row in cursor:
                 history.append(
                     {

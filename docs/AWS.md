@@ -1,5 +1,14 @@
 # Using with Amazon AWS
 
+<!--TOC-->
+
+- [Using with Amazon AWS](#using-with-amazon-aws)
+  - [AWS Bucket](#aws-bucket)
+  - [AWS Lambda](#aws-lambda)
+  - [AWS AppSync](#aws-appsync)
+
+<!--TOC-->
+
 This module offers two layers to use AWS cloud. It's possible to publish the haystack files in a bucket, and use the URL
 provider to expose an API (REST and GraphQL)
 and it's possible to use the AWS Lambda to publish the API.

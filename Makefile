@@ -290,7 +290,7 @@ ifeq ($(USE_OKTA),Y)
 	pip install gimme-aws-creds
 endif
 	echo -e "$(cyan)Install binary dependencies ...$(normal)"
-	conda install -y -c conda-forge conda setuptools compilers make git jq libpq curl psycopg2
+	conda install -y -c conda-forge conda setuptools compilers make git jq libpq curl psycopg2 md-toc
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	pip install supersqlite
 	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"
@@ -356,14 +356,18 @@ compile-all:
 	$(CONDA_PYTHON) -m compileall
 
 # -------------------------------------- Docs
-.PHONY: docs
+.PHONY: docs docs-tm
 
 docs/api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	pdoc -f --html -o docs/api shaystack app
 
+docs-tm: docs/index.md docs/contributing.md docs/AWS.md docs/AppSync.md
+	md_toc -p github $?
+
 ## Generate the API HTML documentation
-docs: docs/api
+docs: docs/api docs-tm docs/*
+	@touch docs
 
 ## Start the pdoc server to update the docstrings
 start-docs:

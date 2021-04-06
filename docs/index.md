@@ -1,19 +1,60 @@
 ![Shift-Haystack](logo.png)
 
 | The API is not stable and can be changed without any notice. |
-| --------------------------------------------------------- |
+| ------------------------------------------------------------ |
+
+<!--TOC-->
+
+- [Quick link](#quick-link)
+- [About Haystack, and who is it for](#about-haystack-and-who-is-it-for)
+- [About this project](#about-this-project)
+- [History](#history)
+- [Client side: Haystack client python module](#client-side-haystack-client-python-module)
+  - [Inspect the data with code](#inspect-the-data-with-code)
+  - [Python API](#python-api)
+  - [Data science](#data-science)
+- [Features](#features)
+- [Server Side: Haystack API Server](#server-side-haystack-api-server)
+  - [API Server deployment](#api-server-deployment)
+    - [Installing](#installing)
+    - [Choosing and configuring your provider](#choosing-and-configuring-your-provider)
+    - [Starting the server](#starting-the-server)
+- [Using Haystack API with UI](#using-haystack-api-with-ui)
+- [Using GraphQL API](#using-graphql-api)
+- [Specification extension](#specification-extension)
+- [Haystack filter](#haystack-filter)
+- [Add Haystack API to an existing project](#add-haystack-api-to-an-existing-project)
+- [Using AWS](#using-aws)
+- [Docker](#docker)
+- [Using with Excel or PowerBI](#using-with-excel-or-powerbi)
+- [Optional part](#optional-part)
+- [Data types](#data-types)
+  - [`Null`, `Boolean`, `Date`, `Time`, `Date/Time` and `strings`.](#null-boolean-date-time-datetime-and-strings)
+  - [`Numbers`](#numbers)
+  - [`Marker` and `Remove`](#marker-and-remove)
+  - [`Bin` and `XBin`](#bin-and-xbin)
+  - [`Uri`](#uri)
+  - [`Ref`](#ref)
+  - [`Coordinate`](#coordinate)
+  - [Collection `List`, `Dict` or `Grid`](#collection-list-dict-or-grid)
+- [Contributing](#contributing)
+- [Resources](#resources)
+- [License](#license)
+- [TODO](#todo)
+
+<!--TOC-->
 
 Shift-for-Haystack is a set of API to implement the [Haystack project specification](https://project-haystack.org/).
 It's compatible with modern Python with typing, Flask server in data center, Edge (Raspberry?) or in AWS Lambda
 function.
 
-## Quick link
+# Quick link
 
 - [Try-it online](#inspect-the-data-with-code)?
 - Using [AWS Lambda](#using-aws)?
 - [REST API Provider](#choosing-and-configuring-your-provider)?
 
-## About Haystack, and who is it for
+# About Haystack, and who is it for
 
 [Haystack project]((https://project-haystack.org/)) is an open source initiative to standardize semantic data models for
 Internet Of Things. It enables interoperability between any IoT data producer and consumer, mainly in the Smart Building
@@ -24,7 +65,7 @@ mainly [Zinc](https://www.project-haystack.org/doc/Zinc),
 [Trio](https://www.project-haystack.org/doc/Trio)
 [Json](https://www.project-haystack.org/doc/Json) and [Csv](https://www.project-haystack.org/doc/Csv)
 
-## About this project
+# About this project
 
 This project implements client side haystack code. Useful to parse or dump Haystack files
 ([Zinc](https://www.project-haystack.org/doc/Zinc),
@@ -96,11 +137,12 @@ to read, filter, manipulate and print `Grid` objects containing haystack data.
 
 Try it online [here](https://colab.research.google.com/github/engie-group/shaystack/blob/develop/haystack.ipynb)
 or test the [User interface]()
-# Python API
+
+## Python API
 
 The [documentation of the API is here](https://engie-group.github.io/shaystack/api/shaystack/index.html).
 
-# Data science
+## Data science
 
 It's easy to convert a grid to a dataframe.
 
@@ -226,7 +268,7 @@ To demonstrate this scenario, we want to publish the sample from `sample/` files
 We must import this ontology and time-series inside the bucket or database before to use. To manage the different
 versions of files, you must use a dedicated tool, to import only the difference between versions.
 
-### Using Haystack API with UI
+# Using Haystack API with UI
 
 Now, it's time to manipulate the ontology.
 
@@ -265,7 +307,7 @@ accounting department in a S3 bucket. The second datasource is the BMS (Building
 compatible with Haystack, with the real-time data. If the entities use the same `id`, all the information were merged.
 The same filter was apply for each API.
 
-### Using GraphQL API
+# Using GraphQL API
 
 All the providers can be invoked with a GraphQL API in place of the standard Haystack Rest API. After installing the
 component with the good option (`pip install 'shaystack[graphql]'`), start the provider and use the url
@@ -343,7 +385,7 @@ bool # cast to bool
 
 You can select the format you want in the request.
 
-### Specification extension
+# Specification extension
 
 To manage the history of ontologies, it's possible to add a parameter almost all request: `Version`
 This parameter must have the datetime when you want to ask the ontology. The result is the *vue*
@@ -359,7 +401,7 @@ grid.select("!hisURL")
 The syntax to analyse the date range in `hisRead` is extended to accept a comma without value before or after (`date,`
 , `,datetime`, etc.) and usage of `today` and `yesterday` in left or right.
 
-### Haystack filter
+# Haystack filter
 
 A big part of the code is to convert the haystack *filter* to a database request. We implemented a conversion to
 different languages:
@@ -405,7 +447,7 @@ AND t1.entity ?| array['site', 'point']
 LIMIT 1
 ```
 
-### Add Haystack API to an existing project
+# Add Haystack API to an existing project
 
 The flexibility of shift-4-haystack allows many integration scenarios.
 
@@ -434,12 +476,12 @@ To implement a provider, two strategies are proposed:
 - Read the entire ontology in memory, apply the `filter()` and return the result
 - Convert the filter request to a specific request on your data model, convert the row to entities and return the
   result.
-  
-### Using AWS
+
+# Using AWS
 
 To use Lambda or S3 bucket, read [more...](AWS.md)
 
-### Docker
+# Docker
 
 The `Dockerfile` can be used to generate an image with a set of parameter.
 
@@ -456,7 +498,7 @@ $ docker run -p 3000:3000 \
   shaystack 
 ```
 
-## Using with Excel or PowerBI
+# Using with Excel or PowerBI
 
 Because the default negotiated format is CSV, you can call the REST API with PowerQuery or Excel. Try the sample file
 ['SHaystack.xlsm'](https://raw.githubusercontent.com/engie-group/shaystack/develop/SHaystack.xlsm) and set a correct
@@ -481,41 +523,41 @@ Use `pip install "shaystack[_<options>_]"`, like:
 
 Shift-4-haystack converts the common Python data types:
 
-### `Null`, `Boolean`, `Date`, `Time`, `Date/Time` and `strings`.
+## `Null`, `Boolean`, `Date`, `Time`, `Date/Time` and `strings`.
 
 In the case of Date/Time, the `tzinfo` parameter is set to the equivalent timezone provided by the `pytz` library where
 possible.
 
-### `Numbers`
+## `Numbers`
 
 Numbers without a unit are represented as `float` objects. Numbers with a unit are represented by
 the `shaystack.Quantity` custom type which has two attributes: `value` and `unit`. The unit use
 the [Pint](https://pint.readthedocs.io/en/stable/) framework to manage and convert unit.
 
-### `Marker` and `Remove`
+## `Marker` and `Remove`
 
 These are singletons, represented by `shaystack.MARKER` and `shaystack.REMOVE`. They behave and are intended to be used
 like the `None` object.
 
-### `Bin` and `XBin`
+## `Bin` and `XBin`
 
 These are represented bytes array. Accept `hex` or `b64` to encode and decode the bytes array.
 
-### `Uri`
+## `Uri`
 
 This is a classical `Uri` for Haystack
 
-### `Ref`
+## `Ref`
 
 Represented by the custom type `shaystack.Ref` which has `name` (`str`)
 and `value` attributes. The `name` must be conforme with the haystack specification.
 
-### `Coordinate`
+## `Coordinate`
 
 Represented by the custom type `shaystack.Coordinate`, which has `latitude` and
 `longitude` types (both `float`)
 
-### Collection `List`, `Dict` or `Grid`
+## Collection `List`, `Dict` or `Grid`
 
 A tag may be a list, a dict or another grid (recursive grid). To be used with care.
 

@@ -1,5 +1,13 @@
 # Use AWS AppSync
 
+<!--TOC-->
+
+- [Use AWS AppSync](#use-aws-appsync)
+  - [Schema](#schema)
+  - [Delegate part of global GraphQL to haystack GraphQL API](#delegate-part-of-global-graphql-to-haystack-graphql-api)
+
+<!--TOC-->
+
 With AWS AppSync, it's possible to merge the Haystack GraphQL API with another GraphQL API.
 
 ## Schema

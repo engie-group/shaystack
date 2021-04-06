@@ -477,7 +477,7 @@ import sys
 import click
 
 try:
-    from flask import Flask, send_from_directory
+    from flask import Flask, send_from_directory, request, redirect
     from flask_cors import CORS
     from app.blueprint_haystack import haystack_blueprint
 except ImportError as ex:
@@ -493,9 +493,7 @@ try:
 
     USE_GRAPHQL = True
 except ImportError:
-    print(&#34;To use GraphQL feature, use &#34;
-          &#34;&#39;pip install \&#34;shaystack[graphql]\&#34;&#39;&#34;, file=sys.stderr)
-    sys.exit(-1)
+    USE_GRAPHQL = False
 
 app = Flask(__name__)
 cors = CORS(app, resources={
@@ -513,12 +511,27 @@ if USE_GRAPHQL:
 @app.route(&#39;/&#39;)
 def index():
     &#34;&#34;&#34;Empty page to check the deployment&#34;&#34;&#34;
-    return &#34;&#34;&#34;
-    &lt;body&gt;
-    &lt;a href=&#34;haystack/&#34;&gt;Haystack API&lt;/a&gt;&lt;br /&gt;
-    &lt;a href=&#34;graphql/&#34;&gt;Haystack GraphQL API&lt;/a&gt;&lt;br /&gt;
-    &lt;/body&gt;
+    redirect_js = &#34;&#34;&#34;
+    &lt;script&gt;
+    if (! window.location.pathname.toString().endsWith(&#34;/&#34;)) {
+      document.location.href=window.location+&#34;/&#34;; 
+    }
+    &lt;/script&gt;
     &#34;&#34;&#34;
+    if USE_GRAPHQL:
+        return f&#34;&#34;&#34;
+            {redirect_js}
+            &lt;body&gt;
+            &lt;a href=&#34;haystack&#34;&gt;Haystack API&lt;/a&gt;&lt;br /&gt;
+            &lt;a href=&#34;graphql&#34;&gt;Haystack GraphQL API&lt;/a&gt;&lt;br /&gt;
+            &lt;/body&gt;
+            &#34;&#34;&#34;
+    return f&#34;&#34;&#34;
+        {redirect_js}
+        &lt;body&gt;
+        &lt;a href=&#34;haystack&#34;&gt;Haystack API&lt;/a&gt;&lt;br /&gt;
+        &lt;/body&gt;
+        &#34;&#34;&#34;
 
 
 @app.route(&#39;/favicon.ico&#39;)
@@ -544,10 +557,6 @@ def main(host: str, port: int) -&gt; int:
         HAYSTACK_PROVIDER: to select a provider (shaystack.providers.db)
         HAYSTACK_DB: the URL to select the backend with the ontology
     &#34;&#34;&#34;
-    if &#34;HAYSTACK_PROVIDER&#34; not in os.environ:
-        print(&#34;Set &#39;HAYSTACK_PROVIDER&#39; to use Shift-4-haystack&#34;, file=sys.stderr)
-        sys.exit(-1)
-
     debug = (os.environ.get(&#34;FLASK_DEBUG&#34;, &#34;0&#34;) == &#34;1&#34;)
     app.run(host=host,
             port=port,
@@ -614,12 +623,27 @@ def favicon():
                         <pre><code class="python">@app.route(&#39;/&#39;)
 def index():
     &#34;&#34;&#34;Empty page to check the deployment&#34;&#34;&#34;
-    return &#34;&#34;&#34;
-    &lt;body&gt;
-    &lt;a href=&#34;haystack/&#34;&gt;Haystack API&lt;/a&gt;&lt;br /&gt;
-    &lt;a href=&#34;graphql/&#34;&gt;Haystack GraphQL API&lt;/a&gt;&lt;br /&gt;
-    &lt;/body&gt;
-    &#34;&#34;&#34;</code></pre>
+    redirect_js = &#34;&#34;&#34;
+    &lt;script&gt;
+    if (! window.location.pathname.toString().endsWith(&#34;/&#34;)) {
+      document.location.href=window.location+&#34;/&#34;; 
+    }
+    &lt;/script&gt;
+    &#34;&#34;&#34;
+    if USE_GRAPHQL:
+        return f&#34;&#34;&#34;
+            {redirect_js}
+            &lt;body&gt;
+            &lt;a href=&#34;haystack&#34;&gt;Haystack API&lt;/a&gt;&lt;br /&gt;
+            &lt;a href=&#34;graphql&#34;&gt;Haystack GraphQL API&lt;/a&gt;&lt;br /&gt;
+            &lt;/body&gt;
+            &#34;&#34;&#34;
+    return f&#34;&#34;&#34;
+        {redirect_js}
+        &lt;body&gt;
+        &lt;a href=&#34;haystack&#34;&gt;Haystack API&lt;/a&gt;&lt;br /&gt;
+        &lt;/body&gt;
+        &#34;&#34;&#34;</code></pre>
                     </details>
                 </dd>
             </dl>

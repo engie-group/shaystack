@@ -3,16 +3,6 @@
 | The API is not stable and can be changed without any notice. |
 | --------------------------------------------------------- |
 
-| This is a pre-release version |
-| ----------------------------- |
-
-To use the release candidate package hosted in **test.pypi.org**, use
-
-```bash
-export PIP_INDEX_URL=https://test.pypi.org/simple
-export PIP_EXTRA_INDEX_URL=https://pypi.org/simple
-```
-
 Shift-for-Haystack is a set of API to implement the [Haystack project specification](https://project-haystack.org/).
 It's compatible with modern Python with typing, Flask server in data center, Edge (Raspberry?) or in AWS Lambda
 function.

@@ -161,9 +161,9 @@ export default {
         await this.$store.dispatch('createApiServer', { haystackApiHost })
         await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
         if (JSON.stringify(this.getApiServers) !== JSON.stringify(apiServersBeforeAdd)) {
-          const { q } = this.$route.query
+          const { q, d } = this.$route.query
           const { hash } = this.$route
-          this.$router.push({ hash, query: { q, a: `["${this.getApiServers.join('","')}"]` } })
+          this.$router.push({ hash, query: { q, d, a: `["${this.getApiServers.join('","')}"]` } })
         }
         this.comboboxInput = ''
       }

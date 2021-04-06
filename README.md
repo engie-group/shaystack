@@ -1,4 +1,4 @@
-![Logo](https://github.com/pprados/shaystack/blob/develop/docs/logo.png?raw=true)
+![Logo](https://github.com/engie-group/shaystack/blob/develop/docs/logo.png?raw=true)
 
 # Shift-4-Haystack
 
@@ -27,5 +27,5 @@ Haystack data you host.
 
 [Try it ?](https://colab.research.google.com/github/pprados/shaystack/blob/develop/haystack.ipynb)
 
-The [full documentation is here](https://pprados.github.io/shaystack/)
-and the [documentation of API is here](https://pprados.github.io/shaystack/api/shaystack/index.html)
+The [full documentation is here](https://engie-group.github.io/shaystack/)
+and the [documentation of API is here](https://engie-group.github.io/shaystack/api/shaystack/index.html)

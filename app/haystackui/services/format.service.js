@@ -37,7 +37,7 @@ const formatService = {
       else return `${formatService.dateConvertor(dateRange.start).toISOString()},${formatService.dateConvertor(dateRange.end).toISOString()}`
     }
     else
-      return `${dateRange.start},${dateRange.end}`
+      return `${dateRange.start === '' ? '' : formatService.dateConvertor(dateRange.start).toISOString()},${dateRange.end === '' ? '' : formatService.dateConvertor(dateRange.end).toISOString()}`
   },
   dateConvertor(date, isStartDate=true) {
     if (date === 'today') return isStartDate ? new Date() : new Date(new Date().setDate(new Date().getDate() + 1))

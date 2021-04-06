@@ -48,6 +48,8 @@ Shift-for-Haystack is a set of API to implement the [Haystack project specificat
 It's compatible with modern Python with typing, Flask server in data center, Edge (Raspberry?) or in AWS Lambda
 function.
 
+[![Shift-4-haystack demo](http://img.youtube.com/vi/5DBcHUlwv4g/0.jpg)](http://www.youtube.com/watch?v=5DBcHUlwv4g "Shift-4-Haystack demo")
+
 # Quick link
 
 - [Try-it online](#inspect-the-data-with-code)?

@@ -74,7 +74,7 @@ $ cd $TMP/haystack
 ```
 
 Download and
-unzip [sample zip file](https://downgit.github.io/#/home?url=https://github.com/pprados/shaystack/tree/develop/sample)
+unzip [sample zip file](https://downgit.github.io/#/home?url=https://github.com/engie-group/shaystack/tree/develop/sample)
 in this directory.
 
 ```console
@@ -101,14 +101,14 @@ $ pip install "shaystack[flask,graphql,lambda]"
 
 ## Inspect the data with code
 
-[`haystack.ipynb`](https://github.com/pprados/shaystack/blob/develop/haystack.ipynb) jupyter notebook contains code to
-read, filter, manipulate and print `Grid` objects containing haystack data.
+[`haystack.ipynb`](https://github.com/engie-group/shaystack/blob/develop/haystack.ipynb) jupyter notebook contains code
+to read, filter, manipulate and print `Grid` objects containing haystack data.
 
-Try it online [here](https://colab.research.google.com/github/pprados/shaystack/blob/develop/haystack.ipynb)
+Try it online [here](https://colab.research.google.com/github/engie-group/shaystack/blob/develop/haystack.ipynb)
 or test the [User interface]()
 # Python API
 
-The [documentation of the API is here](https://pprados.github.io/shaystack/api/shaystack/index.html).
+The [documentation of the API is here](https://engie-group.github.io/shaystack/api/shaystack/index.html).
 
 # Data science
 
@@ -157,7 +157,7 @@ This implementation can offer two API endpoints:
     - Available on `http://<host>:<port>/haystack`
 - GraphQL
     - Available on `http://<host>:<port>/graphql` and compliant
-      with [`schema.graphql`](https://github.com/pprados/shaystack/blob/develop/schema.graphql)
+      with [`schema.graphql`](https://github.com/engie-group/shaystack/blob/develop/schema.graphql)
 
 This API can negotiate:
 
@@ -455,7 +455,7 @@ The `Dockerfile` can be used to generate an image with a set of parameter.
 
 ```console
 $ # Get docker file
-$ wget https://github.com/pprados/shaystack/blob/develop/Dockerfile
+$ wget https://github.com/engie-group/shaystack/blob/develop/Dockerfile
 $ # Build the image
 $ docker build -t shaystack .
 $ # Run and customize the image
@@ -469,7 +469,7 @@ $ docker run -p 3000:3000 \
 ## Using with Excel or PowerBI
 
 Because the default negotiated format is CSV, you can call the REST API with PowerQuery or Excel. Try the sample file
-['SHaystack.xlsm'](https://raw.githubusercontent.com/pprados/shaystack/develop/SHaystack.xlsm) and set a correct
+['SHaystack.xlsm'](https://raw.githubusercontent.com/engie-group/shaystack/develop/SHaystack.xlsm) and set a correct
 haystack API url
 (http://10.0.2.2:3000/haystack with a local virtual windows). You can load all and filter the data inside Excel table.
 
@@ -531,7 +531,7 @@ A tag may be a list, a dict or another grid (recursive grid). To be used with ca
 
 # Contributing
 
-See [here](https://github.com/pprados/shaystack/blob/develop/docs/contributing.md)
+See [here](https://github.com/engie-group/shaystack/blob/develop/docs/contributing.md)
 
 # Resources
 
@@ -540,7 +540,7 @@ See [here](https://github.com/pprados/shaystack/blob/develop/docs/contributing.m
 
 # License
 
-See [LICENCE](https://github.com/pprados/shaystack/blob/develop/LICENSE) file
+See [LICENCE](https://github.com/engie-group/shaystack/blob/develop/LICENSE) file
 
 # TODO
 

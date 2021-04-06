@@ -1,5 +1,34 @@
 # Contributing
 
+<!--TOC-->
+
+- [Contributing](#contributing)
+  - [Organization](#organization)
+  - [Build the application](#build-the-application)
+  - [Build in docker container](#build-in-docker-container)
+  - [Windows WSL](#windows-wsl)
+  - [Tests](#tests)
+  - [Use the Makefile to test API locally](#use-the-makefile-to-test-api-locally)
+    - [Invoke local API](#invoke-local-api)
+    - [GraphQL API](#graphql-api)
+  - [Deploy on Docker](#deploy-on-docker)
+  - [Deploy the application on AWS Lambda](#deploy-the-application-on-aws-lambda)
+  - [Update the application on AWS Lambda](#update-the-application-on-aws-lambda)
+  - [Undeploy the application on AWS Lambda](#undeploy-the-application-on-aws-lambda)
+  - [Lambda function logs](#lambda-function-logs)
+    - [Invoke AWS API](#invoke-aws-api)
+    - [Use AWS Time stream](#use-aws-time-stream)
+    - [Customize environment variable](#customize-environment-variable)
+  - [Cleanup](#cleanup)
+- [Validate all the code before commit](#validate-all-the-code-before-commit)
+  - [Release](#release)
+- [Tips](#tips)
+  - [Conversion between haystack filter to SQL](#conversion-between-haystack-filter-to-sql)
+  - [Help](#help)
+  - [OKTA](#okta)
+
+<!--TOC-->
+
 You are welcome to contribute.
 
 ## Organization

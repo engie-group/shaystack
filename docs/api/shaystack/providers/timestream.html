@@ -792,7 +792,7 @@ class Provider(DBProvider):
         if not customer_id:
             customer_id = &#39; &#39;
         try:
-            grid = Grid(columns=[&#34;ts&#34;, &#34;val&#34;])
+            history = Grid(columns=[&#34;ts&#34;, &#34;val&#34;])
 
             select_all = f&#34;SELECT time,hs_type,unit,measure_value::{timestream_type} &#34; \
                          f&#34;FROM {self._ts_database_name}.{self._ts_table_name} &#34; \
@@ -814,9 +814,26 @@ class Provider(DBProvider):
                     str_val = datas[3][&#39;ScalarValue&#39;]
                     if not hs_type:
                         hs_type = &#34;float&#34;
-                    grid.append({&#34;ts&#34;: scalar_value,
-                                 &#34;val&#34;: Provider._cast_timeserie_to_hs(str_val, hs_type, unit)})
-            return grid
+                    history.append({&#34;ts&#34;: scalar_value,
+                                    &#34;val&#34;: Provider._cast_timeserie_to_hs(str_val, hs_type, unit)})
+
+            if history:
+                min_date = datetime.max.replace(tzinfo=pytz.UTC)
+                max_date = datetime.min.replace(tzinfo=pytz.UTC)
+
+                for time_serie in history:
+                    min_date = min(min_date, time_serie[&#34;ts&#34;])
+                    max_date = max(max_date, time_serie[&#34;ts&#34;])
+            else:
+                min_date = date_version
+                max_date = date_version
+
+            history.metadata = {
+                &#34;id&#34;: entity_id,
+                &#34;hisStart&#34;: min_date,
+                &#34;hisEnd&#34;: max_date,
+            }
+            return history
         except ValueError as err:
             log.error(&#34;Exception while running query: %s&#34;, err)
             raise
@@ -1124,7 +1141,7 @@ class Provider(DBProvider):
         if not customer_id:
             customer_id = &#39; &#39;
         try:
-            grid = Grid(columns=[&#34;ts&#34;, &#34;val&#34;])
+            history = Grid(columns=[&#34;ts&#34;, &#34;val&#34;])
 
             select_all = f&#34;SELECT time,hs_type,unit,measure_value::{timestream_type} &#34; \
                          f&#34;FROM {self._ts_database_name}.{self._ts_table_name} &#34; \
@@ -1146,9 +1163,26 @@ class Provider(DBProvider):
                     str_val = datas[3][&#39;ScalarValue&#39;]
                     if not hs_type:
                         hs_type = &#34;float&#34;
-                    grid.append({&#34;ts&#34;: scalar_value,
-                                 &#34;val&#34;: Provider._cast_timeserie_to_hs(str_val, hs_type, unit)})
-            return grid
+                    history.append({&#34;ts&#34;: scalar_value,
+                                    &#34;val&#34;: Provider._cast_timeserie_to_hs(str_val, hs_type, unit)})
+
+            if history:
+                min_date = datetime.max.replace(tzinfo=pytz.UTC)
+                max_date = datetime.min.replace(tzinfo=pytz.UTC)
+
+                for time_serie in history:
+                    min_date = min(min_date, time_serie[&#34;ts&#34;])
+                    max_date = max(max_date, time_serie[&#34;ts&#34;])
+            else:
+                min_date = date_version
+                max_date = date_version
+
+            history.metadata = {
+                &#34;id&#34;: entity_id,
+                &#34;hisStart&#34;: min_date,
+                &#34;hisEnd&#34;: max_date,
+            }
+            return history
         except ValueError as err:
             log.error(&#34;Exception while running query: %s&#34;, err)
             raise

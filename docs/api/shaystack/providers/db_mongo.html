@@ -471,7 +471,7 @@
 &#34;&#34;&#34;
 Tools to convert haystack filter to mongo request
 &#34;&#34;&#34;
-from datetime import datetime
+from datetime import datetime, date, time
 from typing import Optional, Dict, Any, List, Union, cast
 
 from shaystack import parse_filter, HaystackType, Quantity, Ref
@@ -598,26 +598,116 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -&gt; Union[Dict[str, An
         if node.operator in _relative_ops:
             path = _conv_filter(node.left)
             var = cast(FilterPath, node.left).paths[0]
-            to_double = {
-                &#34;$let&#34;: {
-                    &#34;vars&#34;: {
-                        f&#34;{var}_regex_&#34;: {
-                            &#34;$regexFind&#34;: {
-                                &#34;input&#34;: f&#34;${path}&#34;,
-                                &#34;regex&#34;: &#34;n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)&#34;
+
+            if isinstance(node.right, (Quantity, int, float)):
+                to_double = {
+                    &#34;$let&#34;: {
+                        &#34;vars&#34;: {
+                            f&#34;{var}_regex_&#34;: {
+                                &#34;$regexFind&#34;: {
+                                    &#34;input&#34;: f&#34;${path}&#34;,
+                                    &#34;regex&#34;: &#34;n:([-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?)&#34;
+                                }
+                            }
+                        },
+                        &#34;in&#34;: {&#34;$toDouble&#34;: {
+                            &#34;$arrayElemAt&#34;: [f&#34;$${var}_regex_.captures&#34;, 0]
+                        }}
+                    }
+                }
+
+                return {_relative_ops[node.operator]: [
+                    to_double,
+                    _to_float(cast(HaystackType, node.right)),
+                ]}
+            if isinstance(node.right, time):
+                to_date = {
+                    &#34;$let&#34;: {
+                        &#34;vars&#34;: {
+                            f&#34;{var}_regex_&#34;: {
+                                &#34;$regexFind&#34;: {
+                                    &#34;input&#34;: f&#34;${path}&#34;,
+                                    &#34;regex&#34;: &#34;h:([0-9:]+)&#34;
+                                }
+                            }
+                        },
+                        &#34;in&#34;: {&#34;$toDate&#34;:
+                            {
+                                &#39;$concat&#39;:
+                                    [
+                                        &#39;2000-1-1T&#39;,
+                                        {&#34;$arrayElemAt&#34;: [f&#34;$${var}_regex_.captures&#34;, 0]}
+                                    ]
                             }
                         }
-                    },
-                    &#34;in&#34;: {&#34;$toDouble&#34;: {
-                        &#34;$arrayElemAt&#34;: [f&#34;$${var}_regex_.captures&#34;, 0]
-                    }}
+                    }
                 }
-            }
+                return {_relative_ops[node.operator]: [
+                    to_date,
+                    datetime.combine(date(2000, 1, 1), node.right),
+                    # node.right
+                ]}
+            if isinstance(node.right, datetime):
+                to_date = {
+                    &#34;$let&#34;: {
+                        &#34;vars&#34;: {
+                            f&#34;{var}_regex_&#34;: {
+                                &#34;$regexFind&#34;: {
+                                    &#34;input&#34;: f&#34;${path}&#34;,
+                                    &#34;regex&#34;: &#34;t:([^ ]+)&#34;
+                                }
+                            }
+                        },
+                        &#34;in&#34;: {&#34;$toDate&#34;: {
+                            &#34;$arrayElemAt&#34;: [f&#34;$${var}_regex_.captures&#34;, 0]
+                        }}
+                    }
+                }
+                return {_relative_ops[node.operator]: [
+                    to_date,
+                    node.right,
+                ]}
+            if isinstance(node.right, date):
+                to_date = {
+                    &#34;$let&#34;: {
+                        &#34;vars&#34;: {
+                            f&#34;{var}_regex_&#34;: {
+                                &#34;$regexFind&#34;: {
+                                    &#34;input&#34;: f&#34;${path}&#34;,
+                                    &#34;regex&#34;: &#34;d:([0-9-]+)&#34;
+                                }
+                            }
+                        },
+                        &#34;in&#34;: {&#34;$toDate&#34;: {
+                            &#34;$arrayElemAt&#34;: [f&#34;$${var}_regex_.captures&#34;, 0]
+                        }}
+                    }
+                }
+                return {_relative_ops[node.operator]: [
+                    to_date,
+                    datetime.combine(node.right, time()),
+                ]}
+            if isinstance(node.right, str):
+                to_str = {
+                    &#34;$let&#34;: {
+                        &#34;vars&#34;: {
+                            f&#34;{var}_regex_&#34;: {
+                                &#34;$regexFind&#34;: {
+                                    &#34;input&#34;: f&#34;${path}&#34;,
+                                    &#34;regex&#34;: &#34;s:(.+)&#34;
+                                }
+                            }
+                        },
+                        &#34;in&#34;: {
+                            &#34;$arrayElemAt&#34;: [f&#34;$${var}_regex_.captures&#34;, 0]
+                        }
+                    }
+                }
+                return {_relative_ops[node.operator]: [
+                    to_str,
+                    node.right,
+                ]}
 
-            return {_relative_ops[node.operator]: [
-                to_double,
-                _to_float(cast(HaystackType, node.right)),
-            ]}
         raise ValueError(&#34;Invalid operator&#34;)
     return json_dump_scalar(node)
 

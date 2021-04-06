@@ -504,7 +504,6 @@ from .db_haystack_interface import DBHaystackInterface
 from .sqldb_protocol import DBConnection
 from .tools import get_secret_manager_secret, _BOTO3_AVAILABLE
 from .url import read_grid_from_uri
-from .. import HaystackException
 from ..datatypes import Ref
 from ..grid import Grid
 from ..jsondumper import dump_scalar, _dump_meta, _dump_columns, _dump_row
@@ -742,7 +741,8 @@ class Provider(DBHaystackInterface):
                 dates_range[1] = date_version
 
             cursor.execute(self._sql[&#34;SELECT_TS&#34;], (customer_id, entity_id.name,
-                                                    dates_range[0], dates_range[1]))
+                                                    dates_range[0],
+                                                    dates_range[1] + timedelta(microseconds=-1)))
             for row in cursor:
                 history.append(
                     {
@@ -750,14 +750,16 @@ class Provider(DBHaystackInterface):
                         &#34;val&#34;: parse_scalar(row[1])
                     }
                 )
-            if not history:
-                raise HaystackException(f&#34;id &#39;{entity_id}&#39; not found&#34;)
-            min_date = datetime.max.replace(tzinfo=pytz.UTC)
-            max_date = datetime.min.replace(tzinfo=pytz.UTC)
+            if history:
+                min_date = datetime.max.replace(tzinfo=pytz.UTC)
+                max_date = datetime.min.replace(tzinfo=pytz.UTC)
 
-            for time_serie in history:
-                min_date = min(min_date, time_serie[&#34;ts&#34;])
-                max_date = max(max_date, time_serie[&#34;ts&#34;])
+                for time_serie in history:
+                    min_date = min(min_date, time_serie[&#34;ts&#34;])
+                    max_date = max(max_date, time_serie[&#34;ts&#34;])
+            else:
+                min_date = date_version
+                max_date = date_version
 
             history.metadata = {
                 &#34;id&#34;: entity_id,
@@ -952,7 +954,7 @@ class Provider(DBHaystackInterface):
         init_grid = self.read_grid(customer_id, version)  # PPR : read partial ?
         new_grid = init_grid + diff_grid
 
-        end_date = now - timedelta(milliseconds=1)
+        end_date = now - timedelta(microseconds=1)
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -1289,7 +1291,8 @@ class Provider(DBHaystackInterface):
                 dates_range[1] = date_version
 
             cursor.execute(self._sql[&#34;SELECT_TS&#34;], (customer_id, entity_id.name,
-                                                    dates_range[0], dates_range[1]))
+                                                    dates_range[0],
+                                                    dates_range[1] + timedelta(microseconds=-1)))
             for row in cursor:
                 history.append(
                     {
@@ -1297,14 +1300,16 @@ class Provider(DBHaystackInterface):
                         &#34;val&#34;: parse_scalar(row[1])
                     }
                 )
-            if not history:
-                raise HaystackException(f&#34;id &#39;{entity_id}&#39; not found&#34;)
-            min_date = datetime.max.replace(tzinfo=pytz.UTC)
-            max_date = datetime.min.replace(tzinfo=pytz.UTC)
+            if history:
+                min_date = datetime.max.replace(tzinfo=pytz.UTC)
+                max_date = datetime.min.replace(tzinfo=pytz.UTC)
 
-            for time_serie in history:
-                min_date = min(min_date, time_serie[&#34;ts&#34;])
-                max_date = max(max_date, time_serie[&#34;ts&#34;])
+                for time_serie in history:
+                    min_date = min(min_date, time_serie[&#34;ts&#34;])
+                    max_date = max(max_date, time_serie[&#34;ts&#34;])
+            else:
+                min_date = date_version
+                max_date = date_version
 
             history.metadata = {
                 &#34;id&#34;: entity_id,
@@ -1499,7 +1504,7 @@ class Provider(DBHaystackInterface):
         init_grid = self.read_grid(customer_id, version)  # PPR : read partial ?
         new_grid = init_grid + diff_grid
 
-        end_date = now - timedelta(milliseconds=1)
+        end_date = now - timedelta(microseconds=1)
         conn = self.get_connect()
         # with conn.cursor() as cursor:
         cursor = conn.cursor()
@@ -1780,7 +1785,8 @@ def his_read(
             dates_range[1] = date_version
 
         cursor.execute(self._sql[&#34;SELECT_TS&#34;], (customer_id, entity_id.name,
-                                                dates_range[0], dates_range[1]))
+                                                dates_range[0],
+                                                dates_range[1] + timedelta(microseconds=-1)))
         for row in cursor:
             history.append(
                 {
@@ -1788,14 +1794,16 @@ def his_read(
                     &#34;val&#34;: parse_scalar(row[1])
                 }
             )
-        if not history:
-            raise HaystackException(f&#34;id &#39;{entity_id}&#39; not found&#34;)
-        min_date = datetime.max.replace(tzinfo=pytz.UTC)
-        max_date = datetime.min.replace(tzinfo=pytz.UTC)
+        if history:
+            min_date = datetime.max.replace(tzinfo=pytz.UTC)
+            max_date = datetime.min.replace(tzinfo=pytz.UTC)
 
-        for time_serie in history:
-            min_date = min(min_date, time_serie[&#34;ts&#34;])
-            max_date = max(max_date, time_serie[&#34;ts&#34;])
+            for time_serie in history:
+                min_date = min(min_date, time_serie[&#34;ts&#34;])
+                max_date = max(max_date, time_serie[&#34;ts&#34;])
+        else:
+            min_date = date_version
+            max_date = date_version
 
         history.metadata = {
             &#34;id&#34;: entity_id,

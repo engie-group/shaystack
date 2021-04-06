@@ -846,6 +846,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
         grid_request = _parse_body(request)
         entity_id = date_version = None
         date_range = None
+        default_tz = provider.get_tz()
         if grid_request:
             if &#34;id&#34; in grid_request.column:
                 entity_id = grid_request[0].get(&#34;id&#34;, &#34;&#34;)
@@ -862,7 +863,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
             if &#34;range&#34; in args:
                 date_range = args[&#34;range&#34;]
             if &#34;version&#34; in args:
-                date_version = parse_hs_datetime_format(args[&#34;version&#34;])
+                date_version = parse_hs_datetime_format(args[&#34;version&#34;], default_tz)
 
         grid_date_range = parse_date_range(date_range, provider.get_tz())
         log.debug(
@@ -921,6 +922,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
         entity_id = grid_request.metadata.get(&#34;id&#34;)
         date_version = grid_request.metadata.get(&#34;version&#34;)
         time_serie_grid = grid_request
+        default_tz = provider.get_tz()
 
         # Priority of query string
         if args:
@@ -930,12 +932,12 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                 time_serie_grid = Grid(version=VER_3_0, columns=[&#34;date&#34;, &#34;val&#34;])
                 time_serie_grid.extend(
                     [
-                        {&#34;date&#34;: parse_hs_datetime_format(d), &#34;val&#34;: v}
+                        {&#34;date&#34;: parse_hs_datetime_format(d, default_tz), &#34;val&#34;: v}
                         for d, v in literal_eval(args[&#34;ts&#34;])
                     ]
                 )
         if &#34;version&#34; in args:
-            date_version = parse_hs_datetime_format(args[&#34;version&#34;])
+            date_version = parse_hs_datetime_format(args[&#34;version&#34;], default_tz)
         grid_response = provider.his_write(entity_id, time_serie_grid, date_version)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, &#34;OK&#34;)
@@ -1157,7 +1159,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                     </details>
                 </dd>
                 <dt id="shaystack.parse_hs_datetime_format"><code class="name flex">
-                    <span>def <span class="ident">parse_hs_datetime_format</span></span>(<span>datetime_str: str) ‑> datetime.datetime</span>
+                    <span>def <span class="ident">parse_hs_datetime_format</span></span>(<span>datetime_str: str, timezone: datetime.tzinfo) ‑> datetime.datetime</span>
                 </code></dt>
                 <dd>
                     <div class="desc"><p>Parse the haystack date time (for filter).</p>
@@ -1165,6 +1167,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                         <dl>
                             <dt><strong><code>datetime_str</code></strong></dt>
                             <dd>The string to parse</dd>
+                            <dt><strong><code>timezone</code></strong></dt>
+                            <dd>Time zone info</dd>
                         </dl>
                         <h2 id="returns">Returns</h2>
                         <p>the corresponding <code>datetime</code></p>
@@ -1174,16 +1178,26 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
                         <summary>
                             <span>Expand source code</span>
                         </summary>
-                        <pre><code class="python">def parse_hs_datetime_format(datetime_str: str) -&gt; datetime:
+                        <pre><code class="python">def parse_hs_datetime_format(datetime_str: str, timezone: tzinfo) -&gt; datetime:
     &#34;&#34;&#34;
     Parse the haystack date time (for filter).
     Args:
         datetime_str: The string to parse
+        timezone: Time zone info
     Returns:
         the corresponding `datetime`
     Raises:
         `pyparsing.ParseException` if the string does not conform
     &#34;&#34;&#34;
+    if datetime_str == &#34;today&#34;:
+        return datetime.combine(date.today(), datetime.min.time()) \
+            .replace(tzinfo=timezone)
+    if datetime_str == &#34;yesterday&#34;:
+        return datetime.combine(date.today() - timedelta(days=1), datetime.min.time()) \
+            .replace(tzinfo=timezone)
+    if datetime_str == &#34;today&#34;:
+        return datetime.combine(date.today(), datetime.min.time()) \
+            .replace(tzinfo=timezone)
     return hs_all_date.parseString(datetime_str, parseAll=True)[0]</code></pre>
                     </details>
                 </dd>
@@ -1278,6 +1292,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
         level = 17
         val = who = duration = None
         entity_id = None
+        default_tz = provider.get_tz()
         if grid_request:
             entity_id = grid_request[0][&#34;id&#34;]
             date_version = grid_request[0].get(&#34;version&#34;, None)
@@ -1302,7 +1317,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
             duration = parse_scalar(args[&#34;duration&#34;])
             assert isinstance(duration, Quantity)
         if &#34;version&#34; in args:
-            date_version = parse_hs_datetime_format(args[&#34;version&#34;])
+            date_version = parse_hs_datetime_format(args[&#34;version&#34;], default_tz)
         if entity_id is None:
             raise ValueError(&#34;&#39;id&#39; must be set&#34;)
         if val is not None:
@@ -1362,6 +1377,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
         read_ids: Optional[List[Ref]] = None
         select = read_filter = date_version = None
         limit = 0
+        default_tz = provider.get_tz()
         if grid_request:
             if &#34;id&#34; in grid_request.column:
                 read_ids = [row[&#34;id&#34;] for row in grid_request]
@@ -1390,7 +1406,7 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
             if &#34;select&#34; in args:
                 select = args[&#34;select&#34;]
             if &#34;version&#34; in args:
-                date_version = parse_hs_datetime_format(args[&#34;version&#34;])
+                date_version = parse_hs_datetime_format(args[&#34;version&#34;], default_tz)
 
         if read_filter is None:
             read_filter = &#34;&#34;
@@ -3099,7 +3115,6 @@ def version(self) -&gt; Version:  # pragma: no cover
         Returns:
             The requested Grid
         &#34;&#34;&#34;
-        # PPR: Add nextToken for paginate ?
         raise NotImplementedError()
 
     @abstractmethod
@@ -3792,7 +3807,6 @@ def read(
     Returns:
         The requested Grid
     &#34;&#34;&#34;
-    # PPR: Add nextToken for paginate ?
     raise NotImplementedError()</code></pre>
                             </details>
                         </dd>

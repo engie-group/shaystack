@@ -585,7 +585,7 @@ class HSDateTime(graphene.String):
             return value
         if isinstance(value, date):
             return datetime.combine(value, datetime.max.time()).replace(tzinfo=pytz.UTC)
-        return parse_hs_datetime_format(value)
+        return parse_hs_datetime_format(value, pytz.UTC)
 
 
 class HSDate(graphene.String):
@@ -1314,7 +1314,7 @@ def serialize(a_date: date) -&gt; str:
             return value
         if isinstance(value, date):
             return datetime.combine(value, datetime.max.time()).replace(tzinfo=pytz.UTC)
-        return parse_hs_datetime_format(value)</code></pre>
+        return parse_hs_datetime_format(value, pytz.UTC)</code></pre>
                     </details>
                     <h3>Ancestors</h3>
                     <ul class="hlist">
@@ -1376,7 +1376,7 @@ def parse_value(value: Union[datetime, date, str]) -&gt; datetime:
         return value
     if isinstance(value, date):
         return datetime.combine(value, datetime.max.time()).replace(tzinfo=pytz.UTC)
-    return parse_hs_datetime_format(value)</code></pre>
+    return parse_hs_datetime_format(value, pytz.UTC)</code></pre>
                             </details>
                         </dd>
                         <dt id="app.graphql_model.HSDateTime.serialize"><code class="name flex">

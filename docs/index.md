@@ -487,17 +487,32 @@ To use Lambda or S3 bucket, read [more...](AWS.md)
 
 The `Dockerfile` can be used to generate an image with a set of parameter.
 
+Use a pre-builded image.
+
+```console
+$ docker run -it -p 3000:3000 \
+  -e HAYSTACK_PROVIDER=shaystack.providers.db \
+  -e HAYSTACK_DB=https://shaystack.s3.eu-west-3.amazonaws.com/carytown.zinc \
+  -e REFRESH=15 \
+  pprados/shaystack 
+```
+
+or build your image
+
 ```console
 $ # Get docker file
 $ wget https://github.com/engie-group/shaystack/blob/develop/Dockerfile
 $ # Build the image
-$ docker build -t shaystack .
-$ # Run and customize the image
-$ docker run -p 3000:3000 \
-  -e HAYSTACK_PROVIDER=shaystack.providers.db \
-  -e HAYSTACK_DB=https://shaystack.s3.eu-west-3.amazonaws.com/carytown.zinc \
-  -e REFRESH=15 \
-  shaystack 
+$ docker build \
+		--build-arg PORT='3000' \
+		--build-arg HAYSTACK_PROVIDER='shaystack.providers.db' \
+		--build-arg HAYSTACK_DB='https://shaystack.s3.eu-west-3.amazonaws.com/carytown.zinc' \
+		--build-arg HAYSTACK_TS='' \
+		--build-arg REFRESH='15' \
+		--tag 'shaystack' \
+		.
+$ # Run the image
+$ docker run -it -p 3000:3000 shaystack 
 ```
 
 # Using with Excel or PowerBI

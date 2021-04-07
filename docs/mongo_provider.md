@@ -27,7 +27,7 @@ You can use the parameters:
 * `--reset` to clean the oldest versions before import a new one
 * `--no-time-series` if you don't want to import the time-series referenced in `hisURI` tags'
 
-To demonstrate the usage with sqlite,
+To demonstrate the usage with mongodb,
 
 ```console
 $ # Demo
@@ -58,8 +58,8 @@ pressure,heat,return,storeNum,his,metro,stage,hisURI
 "VA","23221",,,,,,1.0,,"Richmond",,
 ```
 
-The Mongo url is in form: mongodb\[+srv]://\[\<user\>\[:\<password\>]@>\<host\>\[:\<port\>]/\<database
-name\>\[?\<parameters...>]\[#\<table name\>]
+The Mongo url is in form: \<mongodb\[+srv]\>://\[\<user\>\[:\<password\>]@]\<host\>\[:\<port\>]/\<database
+name\>\[?\<parameters=...>]\[#\<table name\>]
 See [here](https://docs.mongodb.com/manual/reference/connection-string/)
 
 Samples:
@@ -70,35 +70,35 @@ Samples:
 
 Inside the Mongo url, if the password is in form `'<...>'`, and you use AWS lambda,  
 the password is retrieved from the service [`secretManagers`](https://aws.amazon.com/secrets-manager/). The password
-must be in form `'<secret_id:key>'`. In the secret container `secret_id` at the key `key`, the database password must be
+must be in form `'<secret_id|key>'`. In the secret container `secret_id` at the key `key`, the database password must be
 set.
 
 After the deployment, you can use this provider like any others providers. The haystack filter was automatically
 converted to MongoDB request. Three collections were created:
 
-- <table_name> (`haystack` by default)
-- <table_name>_meta_datas
-- <table_name>_ts
+- <collection_name> (`haystack` by default)
+- <collection_name>_meta_datas
+- <collection_name>_ts
 - and some index.
 
 The column `entity` use a json version of haystack entity (See [here](https://project-haystack.org/doc/Json)).
 
-The time-series are saved in a table `<table_name>_ts`. If you prefer to use a dedicated time-series database, overload
-the method `hisRead()` (see [Timestream provider](timestream_provider.md))
+The time-series are saved in a table `<collection_name>_ts`. If you prefer to use a dedicated time-series database,
+overload the method `hisRead()` (see [Timestream provider](timestream_provider.md))
 
-<table_name>
+<collection_name>
 
 | _id  | customer_id | start_datetime | end_datetime | entity |
 | ---- | ----------- | -------------- | ------------ | ------ |
 | id   | str         | datetime       | datetime     | bson   |
 
-<table_name>_meta_datas
+<collection_name>_meta_datas
 
 | _id | customer_id | start_datetime | end_datetime | metatdata | cols |
 | --- | ----------- | -------------- | ------------ | --------- | ---- |
 | id  | str         | datetime       | datetime     | bson      | bson |
 
-<table_name>_ts
+<collection_name>_ts
 
 | _id | id  | customer_id | date_time | val | 
 | --- | --- | ----------- | --------- | --- | 

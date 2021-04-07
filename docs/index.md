@@ -503,7 +503,7 @@ or build your image
 
 ```console
 $ # Get docker file
-$ wget https://github.com/engie-group/shaystack/blob/develop/Dockerfile
+$ wget https://github.com/engie-group/shaystack/blob/develop/docker/Dockerfile
 $ # Build the image
 $ docker build \
 		--build-arg PORT='3000' \

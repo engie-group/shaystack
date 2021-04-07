@@ -44,7 +44,7 @@
 
 <!--TOC-->
 
-Shift-for-Haystack is a set of API to implement the [Haystack project specification](https://project-haystack.org/).
+Shift-for-Haystack is a set of APgitI to implement the [Haystack project specification](https://project-haystack.org/).
 It's compatible with modern Python with typing, Flask server in data center, Edge (Raspberry?) or in AWS Lambda
 function.
 
@@ -139,6 +139,8 @@ to read, filter, manipulate and print `Grid` objects containing haystack data.
 
 Try it online [here](https://colab.research.google.com/github/engie-group/shaystack/blob/develop/haystack.ipynb)
 or test the [User interface](https://skz7riv2yk.execute-api.us-east-2.amazonaws.com/dev/)
+
+Or run with [docker](#docker)
 
 ## Python API
 

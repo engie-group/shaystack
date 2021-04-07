@@ -1128,6 +1128,6 @@ release: clean .make-validate check-twine
 		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
 
 ## Publish the release and tag
-publish-release:
+push-release:
 	TAG=$(shell git describe --abbrev=0)
 	git push --atomic origin master $TAG

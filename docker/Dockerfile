@@ -2,7 +2,7 @@ FROM python:3
 
 ARG PORT=3000
 ARG HAYSTACK_PROVIDER=shaystack.providers.db
-ARG HAYSTACK_DB=sqlite:///test.db#haystack
+ARG HAYSTACK_DB=https://shaystack.s3.eu-west-3.amazonaws.com/carytown.zinc
 ARG HAYSTACK_TS
 ARG REFRESH=15
 ARG STAGE=prod
@@ -16,8 +16,6 @@ ENV PIP_INDEX_URL=${PIP_INDEX_URL}
 ENV PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
 
 RUN pip install "shaystack[flask,graphql,lambda]"
-
-COPY sample sample
 
 ENV HAYSTACK_PROVIDER=${HAYSTACK_PROVIDER}
 ENV HAYSTACK_DB=${HAYSTACK_DB}

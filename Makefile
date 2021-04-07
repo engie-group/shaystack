@@ -926,7 +926,6 @@ docker-build:
 	echo -e "$(green)PROVIDER=$${HAYSTACK_PROVIDER}"
 	echo -e "$(green)DB=$${HAYSTACK_DB}"
 	echo -e "$(green)TS=$${HAYSTACK_TS}"
-	echo -e "$(green)Use http://$(HOST_API):$(PORT)/graphql or http://$(HOST_API):$(PORT)/haystack$(normal)"
 	@docker build \
 		--build-arg PORT='$(PORT)' \
 		--build-arg HAYSTACK_PROVIDER='$(HAYSTACK_PROVIDER)' \
@@ -1119,6 +1118,7 @@ keyring:
 	@[ -s "$$TWINE_USERNAME" ] && read -p "Twine username:" TWINE_USERNAME
 	keyring set https://upload.pypi.org/legacy/ $$TWINE_USERNAME
 
+.PHONY: push-docker-release push-release release
 
 ## Publish a distribution on pypi.org
 release: clean .make-validate check-twine
@@ -1131,7 +1131,13 @@ release: clean .make-validate check-twine
 	twine upload --sign \
 		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
 
+push-docker-release: docker-build
+	TAG=$(shell git describe --abbrev=0)
+	docker push $(DOCKER_REPOSITORY)/shaystack
+	docker image tag $(DOCKER_REPOSITORY)/shaystack $(DOCKER_REPOSITORY)/shaystack:$(TAG)
+	docker push $(DOCKER_REPOSITORY)/shaystack:$(TAG)
+
 ## Publish the release and tag
-push-release:
+push-release: push-docker-release
 	TAG=$(shell git describe --abbrev=0)
 	git push --atomic origin master $TAG

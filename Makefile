@@ -1131,13 +1131,14 @@ release: clean .make-validate check-twine
 	twine upload --sign \
 		$(shell find dist -type f \( -name "*.whl" -or -name '*.gz' \) -and ! -iname "*dev*" )
 
-push-docker-release: docker-build
+# Push release in dockerhub
+docker-push-release: docker-build
 	TAG=$(shell git describe --abbrev=0)
 	docker push $(DOCKER_REPOSITORY)/shaystack
 	docker image tag $(DOCKER_REPOSITORY)/shaystack $(DOCKER_REPOSITORY)/shaystack:$(TAG)
 	docker push $(DOCKER_REPOSITORY)/shaystack:$(TAG)
 
 ## Publish the release and tag
-push-release: push-docker-release
+push-release: docker-push-release
 	TAG=$(shell git describe --abbrev=0)
 	git push --atomic origin master $TAG

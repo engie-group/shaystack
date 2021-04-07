@@ -36,7 +36,7 @@ You are welcome to contribute.
 The project includes the following files and folders:
 
 - `app` - Code for the application's Flask, GraphQL and Lambda function.
-- `aws appsync` - Special parameters and information for AWS AppSync
+- `AWS_appsync` - Special parameters and information for AWS AppSync
 - `docker` - Docker files
 - `shaystack` - The generic wrapper between technology and implementation
 - `shaystack/providers` - Sample of providers.
@@ -57,7 +57,7 @@ To initialise the Conda environment, use `make configure` and activate the conda
 to `test`, `start-api`, etc. See `make help` to print all major target.
 
 ```console
-$ git clone {{ site.github.clone_url }}  
+$ git clone https://github.com/engie-group/shaystack.git  
 $ cd shaystack
 $ make configure
 $ conda activate shaystack
@@ -70,8 +70,8 @@ $ make help
 
 For MAC users or for others contexts (CI/CD), it's possible to use a Docker container to build the project.
 
-Use `make docker-build-dmake` to create the image `$USER/shaystack-dmake`. Then, you can start this image to build the
-project inside a docker container. Add the proposed `alias` in your `.bash_aliases` or
+Use `make docker-build-dmake` to create the docker image `$USER/shaystack-dmake`. Then, you can start this image to
+build the project inside a docker container. Add the proposed `alias` in your `.bash_aliases` or
 equivalent (`make docker-alias-dmake`)
 Now, use `dmake` (Docker make) in place of `make`.
 
@@ -81,7 +81,7 @@ $ dmake test
 
 You can use `dmake shell` to start a shell **inside** the container.
 
-Note: the conda environment is `docker-shaystack`.
+*Note: the conda environment is `docker-shaystack`.*
 
 ## Windows WSL
 
@@ -188,8 +188,7 @@ $ make graphql-schema
 
 #### Use AWS AppSync
 
-It's possible to use AWS AppSync to integrate the Haystack GraphQL API. Read the file [`AppSync.md`](AppSync.md)
-in the folder `aws appsync`.
+It's possible to use AWS AppSync to integrate the Haystack GraphQL API. Read the page [`AppSync.md`](AppSync.md).
 
 ## Deploy on Docker
 
@@ -318,17 +317,17 @@ import shaystack
 ...
 ```
 
-To release a new official public version, publish the code in `master` branch, and:
+To release a new official public version:
 
 Then
 ```shell
 $ # Commit
 $ git commit -a
 $ # Start release
-$ git flow release start X.Y
+$ git flow release start vX.Y.Z
 $ ...
 $ # Stop the release
-$ git flow release stop X.Y
+$ git flow release stop vX.Y.Z
 $ # Publish the release
 $ make release
 ```
@@ -338,7 +337,7 @@ $ make release
 ## Conversion between haystack filter to SQL
 
 The SQL provider must convert the Haystack request to SQL. Because the usage of JSON inside SQL is not normalized, each
-database use a different approach. A dedicated conversion is applied for SQLite, Postgres and MySQL.
+database use a different approach. A dedicated conversion is applied for SQLite, Postgres, MySQL and Mongo.
 
 To test the different conversion, you can use a REPL tools.
 
@@ -356,7 +355,7 @@ help
 
 Undocumented commands:
 ======================
-bye  pg  sqlite mongo
+bye  pg  mysql sqlite mongo
 
 (Cmd) pg site or point
 -- site or point
@@ -392,6 +391,11 @@ Don't forget to try `make help`.
 If you use Okta technology, you can set in `.env`
 
 ```bash
-USE_OKTA=Y
-GIMME="echo 0 | gimme-aws-creds --username XXXX"
+echo USE_OKTA=Y >>.env
 ```
+
+and customize the file `~/.okta_aws_login_config` with:
+
+* `okta_username = XXXX`
+* `preferred_mfa_type = push`
+* `write_aws_creds = True`

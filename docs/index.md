@@ -44,10 +44,11 @@
 
 <!--TOC-->
 
-Shift-for-Haystack is a set of APgitI to implement the [Haystack project specification](https://project-haystack.org/).
+Shift-for-Haystack is a set of API to implement the [Haystack project specification](https://project-haystack.org/).
 It's compatible with modern Python with typing, Flask server in data center, Edge (Raspberry?) or in AWS Lambda
 function.
 
+Clic to see a demo.
 [![Shift-4-haystack demo](http://img.youtube.com/vi/5DBcHUlwv4g/0.jpg)](http://www.youtube.com/watch?v=5DBcHUlwv4g "Shift-4-Haystack demo")
 
 # Quick link
@@ -137,10 +138,9 @@ $ pip install "shaystack[flask,graphql,lambda]"
 [`haystack.ipynb`](https://github.com/engie-group/shaystack/blob/develop/haystack.ipynb) jupyter notebook contains code
 to read, filter, manipulate and print `Grid` objects containing haystack data.
 
-Try it online [here](https://colab.research.google.com/github/pprados/shaystack/blob/develop/haystack.ipynb)
-or test the [User interface](https://skz7riv2yk.execute-api.us-east-2.amazonaws.com/dev/)
-
-Or run it with [docker](#docker)
+Try it online [here](https://colab.research.google.com/github/pprados/shaystack/blob/develop/haystack.ipynb), test
+the [User interface](https://skz7riv2yk.execute-api.us-east-2.amazonaws.com/dev/)
+or run it with [docker](#docker)
 
 ## Python API
 
@@ -225,7 +225,7 @@ This layer implement the standard HaystackAPI with different providers (URL, S3,
 
 ### Installing
 
-Using `pip install`. You can add the support of some options:
+Using `pip install shaystack`. You can add the support of some options for server side:
 
 - `pip install "shaystack[flask]"` allows you to use a local [Flask](https://flask.palletsprojects.com/en/1.1.x/)
   server
@@ -256,8 +256,8 @@ by extending `shaystack.providers.HaystackInterface`
 |Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.timestream\`<br/>`HAYSTACK_DB=...\`<br/>`HAYSTACK_TS=timestream:://...\<br /> shaystack`|[More...](timestream_provider.md)|
 |Custom|`HAYSTACK_PROVIDER=shaystack.providers.<your module name>\`<br/>` shaystack`|Write your own subclass of `shaystack.providers.HaystackInterface|
 
-Note: Existing providers are not connected to IOT for simplicity. If you want to connect the haystack API with IOT, you
-must implement a custom provider or extend one of them.
+*Note: Existing providers are not connected to IOT for simplicity. If you want to connect the haystack API with IOT, you
+must implement a custom provider or extend one of them.*
 
 ### Starting the server
 
@@ -282,7 +282,7 @@ For the demonstration,
 $ # Demo
 $ # - Install components
 $ pip install 'shaystack[graphql]'
-$ # - Expose haystack file with Haystack and GraphQL API
+$ # - Expose haystack file on s3 bucket, with Haystack and GraphQL API
 $ HAYSTACK_PROVIDER=shaystack.providers.db \
   HAYSTACK_DB=https://shaystack.s3.eu-west-3.amazonaws.com/carytown.zinc \
   shaystack
@@ -291,14 +291,14 @@ $ HAYSTACK_PROVIDER=shaystack.providers.db \
 In another shell
 
 ```console
-$ # - Open the GraphQL console
-$ xdg-open http://localhost:3000/haystack
+$ curl "http://localhost:3000/haystack/read?filter=point%20or%20site&limit=5"
 ```
 
 or
 
 ```console
-$ curl "http://localhost:3000/haystack/read?filter=point%20or%20site&limit=5"
+$ # - Open the GraphQL console
+$ xdg-open http://localhost:3000/haystack
 ```
 
 A javascript console is proposed to ask the datas. It's possible to add several APIs to merge the result from different

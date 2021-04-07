@@ -58,7 +58,7 @@ $ shaystack_import_db sample/carytown.zinc "s3://${MY_BUCKET}"
 You can use the parameters:
 
 * `--customer` to set the customer id for all imported records
-* `--no-time-series` if you don't want to upload the time-series referenced in `hisURI` tags'
+* `--no-time-series` if you don't want to upload the time-series referenced in `hisURI` tags
 * `--reset` to force the upload, and create a new version for all files in the bucket.
 
 If the source and target are in different buckets in the same region, the copy was done from bucket to bucket.
@@ -76,7 +76,7 @@ $ HAYSTACK_PROVIDER=shaystack.providers.db \
 
 The code is compatible with AWS Lambda. Install this option (`pip install "shaystack[lambda]"`)
 and create a file `zappa_settings.json` with something like this
-(see [here](https://github.com/zappa/Zappa/blob/master/README.md):
+(see [here](https://github.com/zappa/Zappa/blob/master/README.md) ):
 
 ```json
 {

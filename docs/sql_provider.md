@@ -63,7 +63,7 @@ pressure,heat,return,storeNum,his,metro,stage,hisURI
 "VA","23221",,,,,,1.0,,"Richmond",,
 ```
 
-The SQL url is in form: <dialect\[+\<driver\>]>://\[\<user\>\[:\<password\>]@>\<host\>\[:\<port\>]/\<database
+The SQL url is in form: <dialect\[+\<driver\>]>://\[\<user\>\[:\<password\>]@]\<host\>\[:\<port\>]/\<database
 name\>\[#\<table name\>]
 
 Samples:

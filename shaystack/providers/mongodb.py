@@ -504,6 +504,10 @@ class Provider(DBHaystackInterface):
                 ts_grid = read_grid_from_uri(uri, envs=self._envs)
                 self._import_ts_in_db(ts_grid, row["id"], customer_id)
                 log.debug("%s imported", uri)
+            elif "history" in row:
+                ts_grid = row["history"]
+                self._import_ts_in_db(ts_grid, row["id"], customer_id)
+                log.debug("%s imported", uri)
 
     # noinspection PyUnusedLocal
     def _import_ts_in_db(self,

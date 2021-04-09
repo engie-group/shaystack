@@ -46,7 +46,7 @@ def import_in_db(source_uri: str,  # pylint: disable=too-many-arguments
             import_time_series: True to import the time-series references via `hisURI` tag
             reset: Remove all the current data before import the grid.
             version: The associated version time.
-            envs: Environement (like os.environ)
+            envs: Environment (like os.environ)
     """
     envs["HAYSTACK_DB"] = destination_uri
     provider_name = "shaystack.providers.db"

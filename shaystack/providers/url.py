@@ -100,6 +100,14 @@ def _download_uri(parsed_uri: ParseResult, envs: Dict[str, str]) -> bytes:
             data = response.read()
     return data
 
+def reformat_url(url: str) -> str:
+    separatorPath = '/'
+    urlToReformat = url
+    while ('..' in urlToReformat):
+        urlSplitted = urlToReformat.split(separatorPath)
+        indexToDelete = urlSplitted.index('..')
+        urlToReformat = separatorPath.join(urlSplitted[:indexToDelete - 1] + urlSplitted[indexToDelete + 1:])
+    return urlToReformat
 
 def _get_hash_of_s3_file(s3_client, parsed: ParseResult) -> str:
     try:
@@ -535,7 +543,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             data = stream.getvalue()
         else:
             # Manage default cwd
-            uri = parsed_uri.geturl()
+            uri = reformat_url(parsed_uri.geturl())
             if not parsed_uri.scheme:
                 uri = Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri()
             with urllib.request.urlopen(uri) as response:

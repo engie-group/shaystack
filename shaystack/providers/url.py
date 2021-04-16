@@ -528,8 +528,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             assert BOTO3_AVAILABLE, "Use 'pip install boto3'"
             s3_client = self._s3()
             extra_args = None
-            print('TESTTTTTTTTTTTTTTTTTTTTTTTTTTTTT')
-            print(parsed_uri.geturl())
             obj_versions = self._versions[reformat_url(parsed_uri.geturl())]
             version_id = None
             for date_version, version_id in obj_versions.items():
@@ -546,7 +544,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         else:
             # Manage default cwd
             uri = reformat_url(parsed_uri.geturl())
-            print(uri)
             if not parsed_uri.scheme:
                 uri = Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri()
             with urllib.request.urlopen(uri) as response:

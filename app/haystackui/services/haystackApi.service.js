@@ -43,9 +43,10 @@ class HaystackApiService {
   }
 
   // getEntity => read  and entity => filter
-  async getEntity(entity) {
+  async getEntity(entity, limit, version = '') {
+    const versionParam = version === '' ? '' : `&version=${new Date(version).toISOString()}`
     try {
-      const response = await this.api.get(`/read?filter=${entity}&limit=40`)
+      const response = await this.api.get(`/read?filter=${entity}&limit=${limit}${versionParam}`)
       return response.data
     } catch {
       return []

@@ -10,6 +10,8 @@ const state = {
   entities: [[]],
   histories: [{}],
   apiServers: [],
+  limit: 40,
+  version: '',
   dateRange: { start: '', end: '' },
   isDataLoaded: false,
   filterApi: ''
@@ -72,6 +74,12 @@ export const mutations = {
     const dateRange = { ...state.dateRange }
     dateRange.end = endDateRange
     state.dateRange = dateRange
+  },
+  SET_LIMIT(state, { limit }) {
+    state.limit = limit
+  },
+  SET_VERSION(state, { version }) {
+    state.version = version
   }
 }
 export const getters = {
@@ -95,6 +103,12 @@ export const getters = {
   },
   dateRange(state) {
     return state.dateRange
+  },
+  limit(state) {
+    return state.limit
+  },
+  version(state) {
+    return state.version
   }
 }
 export const actions = {
@@ -119,7 +133,7 @@ export const actions = {
     await context.commit('SET_ENTITIES', { entities, apiNumber })
   },
   async fetchEntity(context, { entity, apiNumber }) {
-    const entities = await context.getters.apiServers[apiNumber].getEntity(entity)
+    const entities = await context.getters.apiServers[apiNumber].getEntity(entity, state.limit, state.version)
     await context.dispatch('commitNewEntities', {
       entities: formatService.addApiSourceInformationToEntity(entities.rows, apiNumber + 1),
       apiNumber

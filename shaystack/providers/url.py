@@ -528,7 +528,9 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             assert BOTO3_AVAILABLE, "Use 'pip install boto3'"
             s3_client = self._s3()
             extra_args = None
-            obj_versions = self._versions[parsed_uri.geturl()]
+            print('TESTTTTTTTTTTTTTTTTTTTTTTTTTTTTT')
+            print(parsed_uri.geturl())
+            obj_versions = self._versions[reformat_url(parsed_uri.geturl())]
             version_id = None
             for date_version, version_id in obj_versions.items():
                 if date_version == effective_version:
@@ -544,6 +546,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         else:
             # Manage default cwd
             uri = reformat_url(parsed_uri.geturl())
+            print(uri)
             if not parsed_uri.scheme:
                 uri = Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri()
             with urllib.request.urlopen(uri) as response:
@@ -631,12 +634,13 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         return parse(body, mode)
 
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
-        parsed_uri = urlparse(uri, allow_fragments=False)
+        reformatted_uri = reformat_url(uri)
+        parsed_uri = urlparse(reformatted_uri, allow_fragments=False)
         self._refresh_versions(parsed_uri)
-        for version, _ in self._versions[uri].items():
+        for version, _ in self._versions[reformatted_uri].items():
             if not date_version or version <= date_version:
                 # noinspection PyArgumentList,PyTypeChecker
-                return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
+                return self._download_grid_effective_version(reformatted_uri, version)  # pylint: disable=too-many-function-args
         return Grid()
 
     # pylint: disable=no-member

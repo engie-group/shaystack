@@ -80,6 +80,12 @@ export default {
           const defaultApiServers = JSON.parse(this.$route.query.a)
           await this.$store.dispatch('setHaystackApi', { apiServers: defaultApiServers })
         }
+        if (this.$route.query.l) {
+          await this.$store.commit('SET_LIMIT', { limit: this.$route.query.l })
+        }
+        if (this.$route.query.v) {
+          await this.$store.commit('SET_VERSION', { version: this.$route.query.v })
+        }
         if (this.$route.query.q) {
           await this.$store.commit('SET_FILTER_API', { filterApi: this.$route.query.q })
         } else this.$store.commit('SET_FILTER_API', { filterApi: '' })
@@ -141,7 +147,7 @@ export default {
       })
       this.$store.commit('SET_FILTER_API', { filterApi: newApiFilter })
       const { query } = this.$route
-      this.$router.push({ hash: refId, query: { a: query.a, q: newApiFilter } }).catch(() => {})
+      this.$router.push({ hash: refId, query: { a: query.a, q: newApiFilter, d: query.d, l: query.l, v: query.v } }).catch(() => {})
     },
     async onGraphClick(pointName) {
       const linkBetweenEntities = this.getRelationGraphEntity(this.entities)
@@ -154,7 +160,7 @@ export default {
           entity: newApiFilter
         })
         this.$store.commit('SET_FILTER_API', { filterApi: newApiFilter })
-        this.$router.push({ query: { a: query.a, q: newApiFilter } }).catch(() => {})
+        this.$router.push({ query: { a: query.a, q: newApiFilter, d: query.d, l: query.l, v: query.v } }).catch(() => {})
       } else {
         const entityId = Object.keys(entityNameToEntityId).find(key => entityNameToEntityId[key] === pointName)
         this.$refs[entityId][0].$el.scrollIntoView(true)

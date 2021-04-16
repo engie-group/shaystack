@@ -15,7 +15,8 @@ const template = `
       <h2 class="main-layout__title">Haystack</h2>
     </div>
     <v-text-field
-      class="summary-content__text-field"
+      height="40px"
+      class="main-layout__text-field"
       label="Filter"
       outlined
       :value="filterApi"
@@ -45,6 +46,7 @@ const template = `
     </div>
     <v-combobox
       class="main-layout__combobox"
+      height="40px"
       v-model="comboboxInput"
       :items="getApiServers"
       label="Add or Remove a targeted Endpoint API"
@@ -69,7 +71,8 @@ const template = `
       </template>
   </v-combobox>
     <v-text-field
-      class="summary-content__text-field__date"
+      height="40px"
+      class="main-layout__text-field__date"
       label="Select start date"
       outlined
       v-model="dateStartInput"
@@ -79,7 +82,8 @@ const template = `
       @change="updateStartDateRange($event)"
     />
     <v-text-field
-      class="summary-content__text-field__date"
+      height="40px"
+      class="main-layout__text-field__date"
       label="Select end date"
       outlined
       v-model="dateEndInput"
@@ -106,6 +110,52 @@ const template = `
       </v-tooltip>
     </div>
     <v-spacer></v-spacer>
+      <v-menu v-model="menu" bottom :offset-y="true" :close-on-content-click="false">
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn class="main-layout__params" dark icon v-bind="attrs" v-on="on">
+            <v-icon>mdi-cogs</v-icon>
+          </v-btn>
+        </template>
+        <div class="main-layout__settings">
+          <span class="main-layout__settings__text">Limit: </span>
+          <v-btn class="main-layout__settings__buttons" color="grey" icon x-small dark @click.native="increaseLimit()">
+            <v-icon dark>
+              mdi-plus
+            </v-icon>
+          </v-btn>
+          <v-text-field
+            class="main-layout__settings__text-field__limit"
+            outlined
+            :value="limit"
+            dense
+            background-color="white"
+            @change="updateLimit($event)"
+          />
+          <v-btn
+            class="mx-2 main-layout__settings__buttons"
+            color="grey"
+            icon
+            x-small
+            dark
+            @click.native="decreaseLimit()"
+          >
+            <v-icon dark>
+              mdi-minus
+            </v-icon>
+          </v-btn>
+        </div>
+        <div class="main-layout__settings">
+          <span class="main-layout__settings__text-version">Version: </span>
+          <v-text-field
+            class="main-layout__settings__text-field__version"
+            outlined
+            dense
+            :value="version"
+            background-color="white"
+            @change="updateVersion($event)"
+          />
+        </div>
+      </v-menu>
   </v-app-bar>
   <main>
     <router-view class="router-view" />
@@ -117,12 +167,21 @@ export default {
   template,
   data() {
     return {
-      comboboxInput: ''
+      comboboxInput: '',
+      dateStartInput: this.startDateRange,
+      dateEndInput: this.endDateRange,
+      menu: false
     }
   },
   computed: {
     filterApi() {
       return this.$store.getters.filterApi
+    },
+    version() {
+      return this.$store.getters.version
+    },
+    limit() {
+      return this.$store.getters.limit
     },
     startDateRange() {
       const filterDateStart = this.$store.getters.dateRange.start === '' ? null : this.$store.getters.dateRange.start
@@ -149,8 +208,9 @@ export default {
       if (this.getApiServers.length > 0) {
         await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
       }
-      const { q } = this.$route.query
-      if (this.getApiServers.length > 0) this.$router.push({ query: { q, a: `["${this.getApiServers.join('","')}"]` } })
+      const { q, d, l, v } = this.$route.query
+      if (this.getApiServers.length > 0)
+        this.$router.push({ query: { q, d, l, v, a: `["${this.getApiServers.join('","')}"]` } })
       else this.$router.push({ query: { q } })
       this.comboboxInput = ''
     },
@@ -161,9 +221,9 @@ export default {
         await this.$store.dispatch('createApiServer', { haystackApiHost })
         await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
         if (JSON.stringify(this.getApiServers) !== JSON.stringify(apiServersBeforeAdd)) {
-          const { q, d } = this.$route.query
+          const { q, d, l, v } = this.$route.query
           const { hash } = this.$route
-          this.$router.push({ hash, query: { q, d, a: `["${this.getApiServers.join('","')}"]` } })
+          this.$router.push({ hash, query: { q, d, l, v, a: `["${this.getApiServers.join('","')}"]` } })
         }
         this.comboboxInput = ''
       }
@@ -171,10 +231,46 @@ export default {
     async updateFilter(newFilter) {
       if (newFilter !== this.$store.getters.filterApi) {
         this.$store.commit('SET_FILTER_API', { filterApi: newFilter })
-        const { a, d } = this.$route.query
-        this.$router.push({ query: { q: newFilter, a, d } })
+        const { a, d, l, v } = this.$route.query
+        this.$router.push({ query: { q: newFilter, a, d, l, v } })
         await this.$store.dispatch('reloadAllData', { entity: newFilter })
       }
+    },
+    async updateLimit(newLimit) {
+      if (newLimit !== this.$store.getters.limit) {
+        if (formatService.isNumber(newLimit)) {
+          this.$store.commit('SET_LIMIT', { limit: newLimit })
+          const { a, d, q, v } = this.$route.query
+          this.$router.push({ query: { q, a, d, v, l: newLimit } })
+          await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
+        } else alert('Limit should be a number')
+      }
+    },
+    async updateVersion(newVersion) {
+      if (newVersion !== this.$store.getters.version) {
+        if (dataUtils.checkDateFormat(newVersion)) {
+          this.$store.commit('SET_VERSION', { version: newVersion })
+          const { a, d, q, l } = this.$route.query
+          this.$router.push({ query: { q, a, d, l, v: newVersion } })
+          await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
+        } else {
+          alert('Wrong format Date')
+        }
+      }
+    },
+    async increaseLimit() {
+      const increasedLimit = Number(this.limit) + 1
+      this.$store.commit('SET_LIMIT', { limit: increasedLimit })
+      const { a, d, q, v } = this.$route.query
+      this.$router.push({ query: { q, a, d, v, l: increasedLimit } })
+      await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
+    },
+    async decreaseLimit() {
+      const decreasedLimit = Number(this.limit) - 1
+      this.$store.commit('SET_LIMIT', { limit: decreasedLimit })
+      const { a, d, q, v } = this.$route.query
+      this.$router.push({ query: { q, a, d, v, l: decreasedLimit } })
+      await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
     },
     async updateStartDateRange(newStartDate) {
       const startDateRange = !newStartDate || newStartDate === '' ? '' : dataUtils.checkDateFormat(newStartDate)
@@ -182,16 +278,16 @@ export default {
         if (startDateRange || startDateRange === '') {
           if (formatService.checkDateRangeIsCorrect(startDateRange, this.endDateRange)) {
             this.$store.commit('SET_START_DATE_RANGE', { startDateRange })
-            const { a, q } = this.$route.query
+            const { a, q, l, v } = this.$route.query
             if ((!this.endDateRange || this.endDateRange === '') && startDateRange === '') {
-              this.$router.push({ query: { q, a } })
+              this.$router.push({ query: { q, a, l, v } })
             } else if ((startDateRange === 'today' || startDateRange === 'yesterday') && !this.endDateRange)
               this.$router.push({
-                query: { q, a, d: `${startDateRange}` }
+                query: { q, a, l, v, d: `${startDateRange}` }
               })
             else
               this.$router.push({
-                query: { q, a, d: `${startDateRange},${this.endDateRange ? this.endDateRange : ''}` }
+                query: { q, a, l, v, d: `${startDateRange},${this.endDateRange ? this.endDateRange : ''}` }
               })
           } else alert('Begin Date should be smaller than end Date')
         } else {
@@ -206,16 +302,16 @@ export default {
         if (endDateRange || endDateRange === '') {
           if (formatService.checkDateRangeIsCorrect(this.startDateRange, endDateRange)) {
             this.$store.commit('SET_END_DATE_RANGE', { endDateRange })
-            const { a, q } = this.$route.query
+            const { a, q, l, v } = this.$route.query
             if ((!this.startDateRange || this.startDateRange === '') && endDateRange === '')
-              this.$router.push({ query: { q, a } })
+              this.$router.push({ query: { q, a, l, v } })
             else if ((endDateRange === 'today' || endDateRange === 'yesterday') && !this.startDateRange)
               this.$router.push({
-                query: { q, a, d: `${endDateRange}` }
+                query: { q, a, l, v, d: `${endDateRange}` }
               })
             else
               this.$router.push({
-                query: { q, a, d: `${this.startDateRange ? this.startDateRange : ''},${endDateRange}` }
+                query: { q, a, l, v, d: `${this.startDateRange ? this.startDateRange : ''},${endDateRange}` }
               })
           } else alert('Begin Date should be smaller than end Date')
         } else {

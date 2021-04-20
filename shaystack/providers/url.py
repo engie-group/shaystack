@@ -100,14 +100,19 @@ def _download_uri(parsed_uri: ParseResult, envs: Dict[str, str]) -> bytes:
             data = response.read()
     return data
 
-def reformat_url(url: str) -> str:
-    separatorPath = '/'
-    urlToReformat = url
-    while ('..' in urlToReformat):
-        urlSplitted = urlToReformat.split(separatorPath)
-        indexToDelete = urlSplitted.index('..')
-        urlToReformat = separatorPath.join(urlSplitted[:indexToDelete - 1] + urlSplitted[indexToDelete + 1:])
-    return urlToReformat
+
+def _absolute_path(path: str) -> str:
+    if not path.startswith("/"):
+        return path
+    path_splitted = path.split('/')
+    result = []
+    for part in path_splitted:
+        if part == '..':
+            result.pop()
+        else:
+            result.append(part)
+    return '/'.join(result)
+
 
 def _get_hash_of_s3_file(s3_client, parsed: ParseResult) -> str:
     try:
@@ -163,6 +168,7 @@ def read_grid_from_uri(uri: str, envs: Dict[str, str]) -> Grid:
         The grid.
     """
     parsed_uri = urlparse(uri, allow_fragments=False)
+    parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
 
     data = _download_uri(parsed_uri, envs)
     if parsed_uri.path.endswith(".gz"):
@@ -528,7 +534,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             assert BOTO3_AVAILABLE, "Use 'pip install boto3'"
             s3_client = self._s3()
             extra_args = None
-            obj_versions = self._versions[reformat_url(parsed_uri.geturl())]
+            obj_versions = self._versions[parsed_uri.geturl()]
             version_id = None
             for date_version, version_id in obj_versions.items():
                 if date_version == effective_version:
@@ -543,7 +549,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             data = stream.getvalue()
         else:
             # Manage default cwd
-            uri = reformat_url(parsed_uri.geturl())
             if not parsed_uri.scheme:
                 uri = Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri()
             with urllib.request.urlopen(uri) as response:
@@ -631,13 +636,15 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         return parse(body, mode)
 
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
-        reformatted_uri = reformat_url(uri)
-        parsed_uri = urlparse(reformatted_uri, allow_fragments=False)
+        parsed_uri = urlparse(uri, allow_fragments=False)
+        parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
         self._refresh_versions(parsed_uri)
-        for version, _ in self._versions[reformatted_uri].items():
+        for version, _ in self._versions[parsed_uri.geturl()].items():
             if not date_version or version <= date_version:
                 # noinspection PyArgumentList,PyTypeChecker
-                return self._download_grid_effective_version(reformatted_uri, version)  # pylint: disable=too-many-function-args
+                return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
+                    parsed_uri.geturl(),
+                    version)
         return Grid()
 
     # pylint: disable=no-member

@@ -21,7 +21,6 @@ from shaystack import \
 from shaystack.ops import HaystackHttpRequest, HaystackHttpResponse
 
 haystack_blueprint = Blueprint('haystack', __name__,
-                               static_folder=safe_join(os.path.dirname(__file__), 'haystackui'),
                                url_prefix='/haystack')
 
 
@@ -164,9 +163,3 @@ def flask_invoke_action() -> Response:
     envs = cast(Dict[str, str], os.environ)
     return _as_response(invoke_action(envs, _as_request(flash_request),
                                       envs.get("FLASK_ENV", "prod")))
-
-
-@haystack_blueprint.route('/', methods=['GET'], defaults={'filename': 'index.html'})
-@haystack_blueprint.route('/<path:filename>', methods=['GET'])
-def flash_web_ui(filename) -> Response:
-    return send_from_directory(haystack_blueprint.static_folder, filename)

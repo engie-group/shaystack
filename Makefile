@@ -17,6 +17,7 @@ USE_OKTA?=N
 AWS_PROFILE?=default
 AWS_REGION?=eu-west-3
 AWS_CLUSTER_NAME=haystack
+HAYSTACK_INTERFACE=app/haystackui/plugins/customPlugin.js
 AWS_STAGE?=$(STAGE)
 LOGLEVEL?=WARNING
 PG_PASSWORD?=password
@@ -54,7 +55,7 @@ STAGE=dev
 AWS_STAGE?=$(STAGE)
 ZAPPA_ENV=zappa_venv
 DOCKER_REPOSITORY=$(USER)
-PORT?=3000
+PORT?=3010
 INPUT_NETWORK?=localhost
 HOST_API?=localhost
 COOKIE_SECRET_KEY?=2d1a12a6-3232-4328-9365-b5b65e64a68f
@@ -85,6 +86,7 @@ export COOKIE_SECRET_KEY
 export PYTHON_VERSION
 export TLS_VERIFY
 export TWINE_USERNAME
+export HAYSTACK_INTERFACE
 
 # Calculate the make extended parameter
 # Keep only the unknown target

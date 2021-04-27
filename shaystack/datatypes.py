@@ -210,6 +210,8 @@ class Ref:
     __slots__ = "name", "value"
 
     def __init__(self, name: str, value: Optional[str] = None):
+        if name.startswith("@"):
+            name = name[1:]
         assert isinstance(name, str) and re.match("^[a-zA-Z0-9_:\\-.~]+$", name)
         self.name = name
         self.value = value

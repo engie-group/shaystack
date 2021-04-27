@@ -240,8 +240,6 @@ const App = {
   vuetify
 }
 
-// const vuetify = new Vuetify({})
-
 window.addEventListener('load', () => {
   new Vue(App)
 })

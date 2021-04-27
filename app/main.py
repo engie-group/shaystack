@@ -10,9 +10,7 @@ A Flask layer to haystack interface.
 import logging
 import os
 import sys
-
 import click
-
 try:
     from flask import Flask, send_from_directory, request, redirect
     from flask_cors import CORS
@@ -78,10 +76,7 @@ def favicon():
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
-@click.command()
-@click.option('-h', '--host', default='localhost')
-@click.option('-p', '--port', default=3000, type=int)
-def main(host: str, port: int) -> int:
+def start_shaystack(host: str, port: int) -> int:
     """Stack a flask server. The command line must set the host and port.
 
     Args:
@@ -89,7 +84,8 @@ def main(host: str, port: int) -> int:
         host: Network to listen (0.0.0.0 to accept call from all network)
         port: Port to listen
 
-    Envs:
+    Envs
+
 
         HAYSTACK_PROVIDER: to select a provider (shaystack.providers.db)
         HAYSTACK_DB: the URL to select the backend with the ontology
@@ -99,6 +95,13 @@ def main(host: str, port: int) -> int:
             port=port,
             debug=debug)
     return 0
+
+
+@click.command()
+@click.option('-h', '--host', default='localhost')
+@click.option('-p', '--port', default=3000, type=int)
+def main(host, port):
+    return start_shaystack(host, port)
 
 
 if __name__ == '__main__':

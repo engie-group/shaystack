@@ -10,13 +10,12 @@ A Flask layer to haystack interface.
 import logging
 import os
 import sys
-
 import click
-
 try:
     from flask import Flask, send_from_directory, request, redirect
     from flask_cors import CORS
     from app.blueprint_haystack import haystack_blueprint
+    from app.blueprint_haystackui import haystackui_blueprint
 except ImportError as ex:
     print('To start shift-4-haystack, use \'pip install "shaystack[flask]"\' or '
           '\'pip install "shaystack[flask,graphql]"\' and set \'HAYSTACK_PROVIDER\' variable',
@@ -31,8 +30,6 @@ try:
     USE_GRAPHQL = True
 except ImportError:
     USE_GRAPHQL = False
-
-from app.blueprint_haystackui import haystackui_blueprint
 
 app = Flask(__name__)
 cors = CORS(app, resources={
@@ -81,10 +78,7 @@ def favicon():
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
-@click.command()
-@click.option('-h', '--host', default='localhost')
-@click.option('-p', '--port', default=3000, type=int)
-def main(host: str, port: int) -> int:
+def start_shaystack(host: str, port: int) -> int:
     """Stack a flask server. The command line must set the host and port.
 
     Args:
@@ -102,6 +96,13 @@ def main(host: str, port: int) -> int:
             port=port,
             debug=debug)
     return 0
+
+
+@click.command()
+@click.option('-h', '--host', default='localhost')
+@click.option('-p', '--port', default=3000, type=int)
+def main(host, port):
+    return start_shaystack(host, port)
 
 
 if __name__ == '__main__':

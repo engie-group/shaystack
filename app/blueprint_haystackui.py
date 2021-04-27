@@ -19,9 +19,7 @@ haystackui_blueprint = Blueprint('haystackui', __name__,
 @haystackui_blueprint.route('/<path:filename>', methods=['GET'])
 def flash_web_ui(filename) -> Response:
     print('filename: ', filename)
-    if('HAYSTACK_INTERFACE' in os.environ and filename == 'plugins/customPlugin.js'):
-        print('HAYSTACK_INTERFACE: ', os.environ['HAYSTACK_INTERFACE'])
-        print(os.getcwd())
+    if(os.environ.get('HAYSTACK_INTERFACE') and os.environ.get('HAYSTACK_INTERFACE')!='' and filename == 'plugins/customPlugin.js'):
         return send_from_directory(os.getcwd(), os.environ['HAYSTACK_INTERFACE'])
     else:
         return send_from_directory(haystackui_blueprint.static_folder, filename)

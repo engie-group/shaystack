@@ -3,7 +3,7 @@ import VSummaryContent from './views/VSummaryContent/VSummaryContent.js'
 import HaystackApiService from './services/haystackApi.service.js'
 import formatService from './services/format.service.js'
 import dataUtils from './services/data.utils.js'
-import uiPlugin from './plugins/customPlugin.js'
+import MyCustomPlugin from './plugins/customPlugin.js'
 
 Vue.use(Vuex)
 window.env = window.env || {}
@@ -230,7 +230,7 @@ const router = new VueRouter({
 Vue.use(Vuetify, {
   iconfont: 'mdi'
 })
-Vue.use(uiPlugin)
+Vue.use(MyCustomPlugin)
 const vuetify = new Vuetify({})
 const App = {
   el: 'main',

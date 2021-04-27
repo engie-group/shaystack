@@ -70,6 +70,19 @@ const template = `
         </div>
       </template>
   </v-combobox>
+    <div class="main-layout__tootltips" v-if="existingApiEndPointFromPlugin">
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-icon icon v-bind="attrs" v-on="on">info</v-icon>
+        </template>
+        <h4>
+          Api Endpoint Available:
+        </h4>
+        <span
+          ><li v-for="apiEndpoint in existingApiEndPointFromPlugin">{{ apiEndpoint }}</li>
+        </span>
+      </v-tooltip>
+    </div>
     <v-text-field
       height="40px"
       class="main-layout__text-field__date"
@@ -176,6 +189,10 @@ export default {
   computed: {
     filterApi() {
       return this.$store.getters.filterApi
+    },
+    existingApiEndPointFromPlugin(){
+      if (this.getExistingApiEndpoint) return this.getExistingApiEndpoint()
+      else return null
     },
     version() {
       return this.$store.getters.version

@@ -406,6 +406,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             grid_filter,
             date_version,
         )
+        self.create_db()
         grid = self._download_grid(self._get_url(), date_version)
         if entity_ids:
             result = Grid(grid.version, metadata=grid.metadata, columns=grid.column)
@@ -429,6 +430,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             dates_range,
             date_version,
         )
+        self.create_db()
         if not date_version:
             date_version = datetime.now().replace(tzinfo=pytz.UTC)
         grid = self._download_grid(self._get_url(), date_version)
@@ -550,8 +552,8 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         else:
             # Manage default cwd
             if not parsed_uri.scheme:
-                uri = Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri()
-            with urllib.request.urlopen(uri) as response:
+                parsed_uri = urlparse(Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri())
+            with urllib.request.urlopen(parsed_uri.geturl()) as response:
                 data = response.read()
         if parsed_uri.path.endswith(".gz"):
             return gzip.decompress(data)

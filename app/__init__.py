@@ -78,10 +78,7 @@ def favicon():
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
-@click.command()
-@click.option('-h', '--host', default='localhost')
-@click.option('-p', '--port', default=3000, type=int)
-def main(host: str, port: int) -> int:
+def start_shaystack(host: str, port: int) -> int:
     """Stack a flask server. The command line must set the host and port.
 
     Args:
@@ -99,6 +96,13 @@ def main(host: str, port: int) -> int:
             port=port,
             debug=debug)
     return 0
+
+
+@click.command()
+@click.option('-h', '--host', default='localhost')
+@click.option('-p', '--port', default=3000, type=int)
+def main(host, port):
+    return start_shaystack(host, port)
 
 
 if __name__ == '__main__':

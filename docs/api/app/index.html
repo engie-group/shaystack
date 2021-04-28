@@ -541,10 +541,7 @@ def favicon():
                                &#39;favicon.ico&#39;, mimetype=&#39;image/vnd.microsoft.icon&#39;)
 
 
-@click.command()
-@click.option(&#39;-h&#39;, &#39;--host&#39;, default=&#39;localhost&#39;)
-@click.option(&#39;-p&#39;, &#39;--port&#39;, default=3000, type=int)
-def main(host: str, port: int) -&gt; int:
+def start_shaystack(host: str, port: int) -&gt; int:
     &#34;&#34;&#34;Stack a flask server. The command line must set the host and port.
 
     Args:
@@ -562,6 +559,13 @@ def main(host: str, port: int) -&gt; int:
             port=port,
             debug=debug)
     return 0
+
+
+@click.command()
+@click.option(&#39;-h&#39;, &#39;--host&#39;, default=&#39;localhost&#39;)
+@click.option(&#39;-p&#39;, &#39;--port&#39;, default=3000, type=int)
+def main(host, port):
+    return start_shaystack(host, port)
 
 
 if __name__ == &#39;__main__&#39;:
@@ -646,6 +650,46 @@ def index():
         &#34;&#34;&#34;</code></pre>
                     </details>
                 </dd>
+                <dt id="app.start_shaystack"><code class="name flex">
+                    <span>def <span
+                            class="ident">start_shaystack</span></span>(<span>host: str, port: int) ‑> int</span>
+                </code></dt>
+                <dd>
+                    <div class="desc"><p>Stack a flask server. The command line must set the host and port.</p>
+                        <h2 id="args">Args</h2>
+                        <dl>
+                            <dt><strong><code>host</code></strong></dt>
+                            <dd>Network to listen (0.0.0.0 to accept call from all network)</dd>
+                            <dt><strong><code>port</code></strong></dt>
+                            <dd>Port to listen</dd>
+                        </dl>
+                        <h2 id="envs">Envs</h2>
+                        <p>HAYSTACK_PROVIDER: to select a provider (shaystack.providers.db)
+                            HAYSTACK_DB: the URL to select the backend with the ontology</p></div>
+                    <details class="source">
+                        <summary>
+                            <span>Expand source code</span>
+                        </summary>
+                        <pre><code class="python">def start_shaystack(host: str, port: int) -&gt; int:
+    &#34;&#34;&#34;Stack a flask server. The command line must set the host and port.
+
+    Args:
+
+        host: Network to listen (0.0.0.0 to accept call from all network)
+        port: Port to listen
+
+    Envs:
+
+        HAYSTACK_PROVIDER: to select a provider (shaystack.providers.db)
+        HAYSTACK_DB: the URL to select the backend with the ontology
+    &#34;&#34;&#34;
+    debug = (os.environ.get(&#34;FLASK_DEBUG&#34;, &#34;0&#34;) == &#34;1&#34;)
+    app.run(host=host,
+            port=port,
+            debug=debug)
+    return 0</code></pre>
+                    </details>
+                </dd>
             </dl>
         </section>
         <section>
@@ -670,6 +714,7 @@ def index():
                 <ul class="">
                     <li><code><a href="#app.favicon" title="app.favicon">favicon</a></code></li>
                     <li><code><a href="#app.index" title="app.index">index</a></code></li>
+                    <li><code><a href="#app.start_shaystack" title="app.start_shaystack">start_shaystack</a></code></li>
                 </ul>
             </li>
         </ul>

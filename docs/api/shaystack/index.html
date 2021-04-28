@@ -4221,6 +4221,8 @@ def watch_unsub(
     __slots__ = &#34;name&#34;, &#34;value&#34;
 
     def __init__(self, name: str, value: Optional[str] = None):
+        if name.startswith(&#34;@&#34;):
+            name = name[1:]
         assert isinstance(name, str) and re.match(&#34;^[a-zA-Z0-9_:\\-.~]+$&#34;, name)
         self.name = name
         self.value = value

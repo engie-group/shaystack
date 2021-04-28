@@ -362,7 +362,14 @@ docs/api: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	pdoc -f --html -o docs/api shaystack app
 
-docs-tm: docs/index.md docs/contributing.md docs/AWS.md docs/AppSync.md
+docs/dep-licenses.md: setup.cfg setup.py
+	@pip-licenses --order=license \
+		--format=markdown \
+		--ignore-packages conda-package-handling ruamel-yaml-conda \
+		>docs/dep-licenses.md
+	echo -e "$(green)'docs/dep-licenses.md' generated$(normal)"
+
+docs-tm: docs/index.md docs/contributing.md docs/AWS.md docs/AppSync.md docs/dep-licenses.md
 	md_toc -p github $?
 
 ## Generate the API HTML documentation
@@ -1054,10 +1061,6 @@ docker-rm-dmake:
 dist/:
 	mkdir dist
 
-toto:
-	PBR_VERSION="$$(git describe --tags)"
-	echo "PBR_VERSION=$${PBR_VERSION}"
-
 .PHONY: bdist
 dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC) schema.graphql | dist/
 	@$(VALIDATE_VENV)
@@ -1065,14 +1068,13 @@ dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC) schema.gra
 	$(CONDA_PYTHON) setup.py bdist_wheel
 
 ## Create a binary wheel distribution
-bdist: dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl | dist/
+bdist: dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl docs/dep-licenses.md | dist/
 
 .PHONY: sdist
 dist/$(PRJ_PACKAGE)-*.tar.gz: $(REQUIREMENTS) schema.graphql | dist/
 	@$(VALIDATE_VENV)
 	$(CONDA_PYTHON) setup.py sdist
 
-sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
 sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
 
 .PHONY: clean-dist dist

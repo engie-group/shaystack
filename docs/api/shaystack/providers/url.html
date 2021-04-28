@@ -584,6 +584,19 @@ def _download_uri(parsed_uri: ParseResult, envs: Dict[str, str]) -&gt; bytes:
     return data
 
 
+def _absolute_path(path: str) -&gt; str:
+    if not path.startswith(&#34;/&#34;):
+        return path
+    path_splitted = path.split(&#39;/&#39;)
+    result = []
+    for part in path_splitted:
+        if part == &#39;..&#39;:
+            result.pop()
+        else:
+            result.append(part)
+    return &#39;/&#39;.join(result)
+
+
 def _get_hash_of_s3_file(s3_client, parsed: ParseResult) -&gt; str:
     try:
         head = s3_client.head_object(Bucket=parsed.hostname,
@@ -638,6 +651,7 @@ def read_grid_from_uri(uri: str, envs: Dict[str, str]) -&gt; Grid:
         The grid.
     &#34;&#34;&#34;
     parsed_uri = urlparse(uri, allow_fragments=False)
+    parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
 
     data = _download_uri(parsed_uri, envs)
     if parsed_uri.path.endswith(&#34;.gz&#34;):
@@ -875,6 +889,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             grid_filter,
             date_version,
         )
+        self.create_db()
         grid = self._download_grid(self._get_url(), date_version)
         if entity_ids:
             result = Grid(grid.version, metadata=grid.metadata, columns=grid.column)
@@ -898,6 +913,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             dates_range,
             date_version,
         )
+        self.create_db()
         if not date_version:
             date_version = datetime.now().replace(tzinfo=pytz.UTC)
         grid = self._download_grid(self._get_url(), date_version)
@@ -1018,10 +1034,9 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             data = stream.getvalue()
         else:
             # Manage default cwd
-            uri = parsed_uri.geturl()
             if not parsed_uri.scheme:
-                uri = Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri()
-            with urllib.request.urlopen(uri) as response:
+                parsed_uri = urlparse(Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri())
+            with urllib.request.urlopen(parsed_uri.geturl()) as response:
                 data = response.read()
         if parsed_uri.path.endswith(&#34;.gz&#34;):
             return gzip.decompress(data)
@@ -1107,11 +1122,14 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
 
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -&gt; Grid:
         parsed_uri = urlparse(uri, allow_fragments=False)
+        parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
         self._refresh_versions(parsed_uri)
-        for version, _ in self._versions[uri].items():
+        for version, _ in self._versions[parsed_uri.geturl()].items():
             if not date_version or version &lt;= date_version:
                 # noinspection PyArgumentList,PyTypeChecker
-                return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
+                return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
+                    parsed_uri.geturl(),
+                    version)
         return Grid()
 
     # pylint: disable=no-member
@@ -1331,6 +1349,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         The grid.
     &#34;&#34;&#34;
     parsed_uri = urlparse(uri, allow_fragments=False)
+    parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
 
     data = _download_uri(parsed_uri, envs)
     if parsed_uri.path.endswith(&#34;.gz&#34;):
@@ -1428,6 +1447,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             grid_filter,
             date_version,
         )
+        self.create_db()
         grid = self._download_grid(self._get_url(), date_version)
         if entity_ids:
             result = Grid(grid.version, metadata=grid.metadata, columns=grid.column)
@@ -1451,6 +1471,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             dates_range,
             date_version,
         )
+        self.create_db()
         if not date_version:
             date_version = datetime.now().replace(tzinfo=pytz.UTC)
         grid = self._download_grid(self._get_url(), date_version)
@@ -1571,10 +1592,9 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             data = stream.getvalue()
         else:
             # Manage default cwd
-            uri = parsed_uri.geturl()
             if not parsed_uri.scheme:
-                uri = Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri()
-            with urllib.request.urlopen(uri) as response:
+                parsed_uri = urlparse(Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri())
+            with urllib.request.urlopen(parsed_uri.geturl()) as response:
                 data = response.read()
         if parsed_uri.path.endswith(&#34;.gz&#34;):
             return gzip.decompress(data)
@@ -1660,11 +1680,14 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
 
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -&gt; Grid:
         parsed_uri = urlparse(uri, allow_fragments=False)
+        parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
         self._refresh_versions(parsed_uri)
-        for version, _ in self._versions[uri].items():
+        for version, _ in self._versions[parsed_uri.geturl()].items():
             if not date_version or version &lt;= date_version:
                 # noinspection PyArgumentList,PyTypeChecker
-                return self._download_grid_effective_version(uri, version)  # pylint: disable=too-many-function-args
+                return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
+                    parsed_uri.geturl(),
+                    version)
         return Grid()
 
     # pylint: disable=no-member
@@ -1871,6 +1894,7 @@ def his_read(
         dates_range,
         date_version,
     )
+    self.create_db()
     if not date_version:
         date_version = datetime.now().replace(tzinfo=pytz.UTC)
     grid = self._download_grid(self._get_url(), date_version)
@@ -2001,6 +2025,7 @@ def read(
         grid_filter,
         date_version,
     )
+    self.create_db()
     grid = self._download_grid(self._get_url(), date_version)
     if entity_ids:
         result = Grid(grid.version, metadata=grid.metadata, columns=grid.column)

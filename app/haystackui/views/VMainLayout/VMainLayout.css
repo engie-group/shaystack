@@ -107,6 +107,13 @@
     background: white;
   }
 }
+.v-tooltip__content {
+  pointer-events: initial;
+}
+.main-layout__click-button {
+  width: 10x;
+  float: right;
+}
 .main-layout__text-field__date {
   margin-top: 23px !important;
   padding-left: 10px !important;

@@ -70,11 +70,14 @@ const template = `
         </div>
       </template>
   </v-combobox>
-    <div class="main-layout__tootltips" v-if="existingApiEndPointFromPlugin">
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <v-icon icon v-bind="attrs" v-on="on">info</v-icon>
-        </template>
+
+    <div class="main-layout__tootltips" v-if="existingApiEndPointFromPlugin" data-app>
+      <v-tooltip v-model="showExistingApi" bottom>
+        <template v-slot:activator="{ attrs }">
+            <v-btn icon color="rgba(0,0,0,.87)" @click="showExistingApi = !showExistingApi" v-if="existingApiEndPointFromPlugin">
+                <v-icon icon v-bind="attrs" v-on="on">info</v-icon>
+            </v-btn>
+          </template>
         <h4>
           Api Endpoint Available:
         </h4>
@@ -183,7 +186,8 @@ export default {
       comboboxInput: '',
       dateStartInput: this.startDateRange,
       dateEndInput: this.endDateRange,
-      menu: false
+      menu: false,
+      showExistingApi: false
     }
   },
   computed: {
@@ -217,6 +221,14 @@ export default {
     }
   },
   methods: {
+    copyText(item) {
+      const virtualElement = document.createElement('textarea')
+      document.body.appendChild(virtualElement)
+      virtualElement.value = item
+      virtualElement.select()
+      document.execCommand('copy')
+      document.body.removeChild(virtualElement)
+    },
     isApiServerAlreadyExists(host) {
       return Boolean(this.$store.getters.apiServers.find(apiServer => apiServer.haystackApiHost === host))
     },

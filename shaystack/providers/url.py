@@ -393,7 +393,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             self,
             limit: int,
             select: Optional[str],
-            entity_ids: Optional[Grid] = None,
+            entity_ids: Optional[List[Ref]] = None,
             grid_filter: Optional[str] = None,
             date_version: Optional[datetime] = None,
     ) -> Grid:

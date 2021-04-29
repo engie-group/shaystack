@@ -25,6 +25,7 @@ PGADMIN_PASSWORD?=password
 MYSQL_USER?=mysql
 MYSQL_PASSWORD?=password
 TLS_VERIFY=False
+TERM?=dumb
 
 # Default parameter for make [aws-]api-read
 READ_PARAMS?=?filter=his&limit=5

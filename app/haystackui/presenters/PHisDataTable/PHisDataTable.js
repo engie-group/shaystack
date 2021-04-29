@@ -35,7 +35,7 @@ const template = `
   </v-data-table>
 `
 
-import formatService from '../../services/format.service.js'
+import formatService from '../../services/formatService.js'
 
 export default {
   template,
@@ -95,14 +95,13 @@ export default {
     customSort(items) {
       if (this.isEntityData) {
         const copyItems = items.slice()
-        const sortedItems = copyItems
+        return copyItems
           .sort((item1, item2) => item1.attribute.localeCompare(item2.attribute))
           .sort((item1, item2) => {
             if (item1.attribute === 'id') return -1
             if (item2.attribute === 'id') return 1
             return 0
           })
-        return sortedItems
       }
       return items.slice()
     },

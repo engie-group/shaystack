@@ -6,7 +6,7 @@
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
 """
-Abstract Syntax Tree for the filter syntax (See https://www.project-haystack.org/doc/Filters)
+Abstract Syntax Tree for the filter syntax (See https://project-haystack.org/doc/docHaystack/Filters)
 """
 from typing import List, Optional
 

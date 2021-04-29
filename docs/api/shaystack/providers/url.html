@@ -876,7 +876,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             self,
             limit: int,
             select: Optional[str],
-            entity_ids: Optional[Grid] = None,
+            entity_ids: Optional[List[Ref]] = None,
             grid_filter: Optional[str] = None,
             date_version: Optional[datetime] = None,
     ) -&gt; Grid:
@@ -983,6 +983,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         return self._lambda_client
 
     def _function_concurrency(self) -&gt; int:  # pylint: disable=no-self-use
+        return 1000
         # if not self._concurrency:
         #     try:
         #         self._concurrency = self._lambda().get_function_concurrency(
@@ -991,7 +992,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         #         log.warning(&#34;Impossible to get `ReservedConcurrentExecutions`&#34;)
         #         self._concurrency = 1000  # Default value if error
         # return self._concurrency
-        return 1000
 
     def _s3(self) -&gt; BaseClient:
         # AWS_S3_ENDPOINT may be http://localhost:9000 to use minio (make start-minio)
@@ -1067,7 +1067,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 meta = s3_client.get_object(Bucket=parsed_uri.netloc, Key=parsed_uri.path[1:])
                 obj_versions = [meta[&#34;LastModified&#34;], meta[&#34;VersionId&#34;]]
             obj_versions = sorted(obj_versions, key=lambda x: x[0], reverse=True)
-            self._lock.acquire()
+            self._lock.acquire()  # pylint: disable=consider-using-with
             all_versions = self._versions.get(parsed_uri.geturl(), OrderedDict())
             concurrency = self._function_concurrency()
             for date_version, version_id in obj_versions:
@@ -1434,7 +1434,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             self,
             limit: int,
             select: Optional[str],
-            entity_ids: Optional[Grid] = None,
+            entity_ids: Optional[List[Ref]] = None,
             grid_filter: Optional[str] = None,
             date_version: Optional[datetime] = None,
     ) -&gt; Grid:
@@ -1541,6 +1541,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         return self._lambda_client
 
     def _function_concurrency(self) -&gt; int:  # pylint: disable=no-self-use
+        return 1000
         # if not self._concurrency:
         #     try:
         #         self._concurrency = self._lambda().get_function_concurrency(
@@ -1549,7 +1550,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         #         log.warning(&#34;Impossible to get `ReservedConcurrentExecutions`&#34;)
         #         self._concurrency = 1000  # Default value if error
         # return self._concurrency
-        return 1000
 
     def _s3(self) -&gt; BaseClient:
         # AWS_S3_ENDPOINT may be http://localhost:9000 to use minio (make start-minio)
@@ -1625,7 +1625,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 meta = s3_client.get_object(Bucket=parsed_uri.netloc, Key=parsed_uri.path[1:])
                 obj_versions = [meta[&#34;LastModified&#34;], meta[&#34;VersionId&#34;]]
             obj_versions = sorted(obj_versions, key=lambda x: x[0], reverse=True)
-            self._lock.acquire()
+            self._lock.acquire()  # pylint: disable=consider-using-with
             all_versions = self._versions.get(parsed_uri.geturl(), OrderedDict())
             concurrency = self._function_concurrency()
             for date_version, version_id in obj_versions:
@@ -1999,7 +1999,7 @@ def import_data(self,  # pylint: disable=too-many-arguments
                             </details>
                         </dd>
                         <dt id="shaystack.providers.url.Provider.read"><code class="name flex">
-                            <span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Union[str, NoneType], entity_ids: Union[shaystack.grid.Grid, NoneType] = None, grid_filter: Union[str, NoneType] = None, date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+                            <span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Union[str, NoneType], entity_ids: Union[List[shaystack.datatypes.Ref], NoneType] = None, grid_filter: Union[str, NoneType] = None, date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
                         </code></dt>
                         <dd>
                             <div class="desc"><p>Implement Haystack 'read'</p></div>
@@ -2012,7 +2012,7 @@ def read(
         self,
         limit: int,
         select: Optional[str],
-        entity_ids: Optional[Grid] = None,
+        entity_ids: Optional[List[Ref]] = None,
         grid_filter: Optional[str] = None,
         date_version: Optional[datetime] = None,
 ) -&gt; Grid:

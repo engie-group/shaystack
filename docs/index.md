@@ -56,33 +56,35 @@ Click to see a demo.
 
 - [Try-it online](#inspect-the-data-with-code)?
 - Using [AWS Lambda](#using-aws)?
-- [REST API Provider](#choosing-and-configuring-your-provider)?
+- [HTTP API Provider](#choosing-and-configuring-your-provider)?
 
 # About Haystack, and who is it for
 
-[Haystack project]((https://project-haystack.org/)) is an open source initiative to standardize semantic data models for
+[Haystack project](https://project-haystack.org/) is an open source initiative to standardize semantic data models for
 Internet Of Things. It enables interoperability between any IoT data producer and consumer, mainly in the Smart Building
 area.
 
 Haystack core data model is the Grid, it can be serialized in many formats,
-mainly [Zinc](https://www.project-haystack.org/doc/Zinc),
-[Trio](https://www.project-haystack.org/doc/Trio)
-[Json](https://www.project-haystack.org/doc/Json) and [Csv](https://www.project-haystack.org/doc/Csv)
+mainly [Zinc](https://www.project-haystack.org/doc/docHaystack/Zinc),
+[Trio](https://www.project-haystack.org/doc/docHaystack/Trio)
+[Json](https://www.project-haystack.org/doc/docHaystack/Json)
+and [Csv](https://www.project-haystack.org/doc/docHaystack/Csv)
 
 # About this project
 
 This project implements client side haystack code. Useful to parse or dump Haystack files
-([Zinc](https://www.project-haystack.org/doc/Zinc),
-[Json](https://www.project-haystack.org/doc/Json),
-[Trio](https://www.project-haystack.org/doc/Trio) and [Csv](https://www.project-haystack.org/doc/Csv)).
+([Zinc](https://www.project-haystack.org/doc/docHaystack/Zinc),
+[Json](https://www.project-haystack.org/doc/docHaystack/Json),
+[Trio](https://www.project-haystack.org/doc/docHaystack/Trio)
+and [Csv](https://www.project-haystack.org/doc/docHaystack/Csv)).
 
-On the server side, it also implements [Haystack Rest API](https://www.project-haystack.org/doc/Rest), useful to serve
-Haystack data you host.
+On the server side, it also implements [Haystack HTTP API](https://project-haystack.org/doc/docHaystack/HttpApi), useful
+to serve Haystack data you host.
 
 - We implemented different serving options See [API Server](#server-side-haystack-api-server)
     - Each offering two API endpoints:
-        - Classical REST Haystack API
-        - GraphQL API
+      - Classical Haystack HTTP API
+      - GraphQL API
 - We introduced and implemented the *Provider* concept, which handles various options in terms on haystack data
   location:
     - Local or remote file system (including AWS S3)
@@ -167,7 +169,7 @@ Shift-4-Haystack is agile and can be deployed in different scenarios. Choose an 
 
 | Haystack backend                  |  Python version | Deployment              |Multi tenancy             | API                                               |
 | --------------------------------- | :--------------:| ----------------------- |------------------------- | ------------------------------------------------- |
-| local file                        |    3.7          | Internet Flask server   |Single tenancy            | Haystack REST API                                 |
+| local file                        |    3.7          | Internet Flask server   |Single tenancy            | Haystack HTTP API                                 |
 | url                               |    3.8          | Edge Flask server       |Multiple, shared table    | Standalone GraphQL API                            |
 | S3 bucket without version         |    3.9          | Docker Flask server     |Multiple, dedicated table | GraphQL API integrated inside another via AppSync |
 | S3 bucket with version            |                 | Internet AWS Lambda API |||
@@ -190,35 +192,35 @@ and you can extend these proposed scenario. You can see below, how to install th
 
 This implementation can offer two API endpoints:
 
-- Classical [REST Haystack](https://www.project-haystack.org/doc/Rest)
-    - Available on `http://<host>:<port>/haystack`
+- Classical [Haystack HTTP API](https://project-haystack.org/doc/docHaystack/HttpApi)
+  - Available on `http://<host>:<port>/haystack`
 - GraphQL
-    - Available on `http://<host>:<port>/graphql` and compliant
-      with [`schema.graphql`](https://github.com/engie-group/shaystack/blob/develop/schema.graphql)
+  - Available on `http://<host>:<port>/graphql` and compliant
+    with [`schema.graphql`](https://github.com/engie-group/shaystack/blob/develop/schema.graphql)
 
 This API can negotiate:
 
 - Request format (`Content-Type: text/zinc`, `text/trio`, `application/json` or `text/csv`)
 - Response format (`Accept: text/zinc, text/trio, application/json, text/csv`)
 
-These [operations](https://project-haystack.org/doc/Rest) are implemented in both endpoints:
+These [operations](https://project-haystack.org/doc/docHaystack/Ops) are implemented in both endpoints:
 
-- [about](https://project-haystack.org/doc/Ops#about)
-- [ops](https://project-haystack.org/doc/Ops#ops)
-- [formats](https://project-haystack.org/doc/Ops#formats)
-- [read](https://project-haystack.org/doc/Ops#read)
-- [hisRead](https://project-haystack.org/doc/Ops#hisRead)
-- [nav](https://project-haystack.org/doc/Ops#nav)
-- [invokeAction](https://project-haystack.org/doc/Ops#invokeAction)
+- [about](https://project-haystack.org/doc/docHaystack/Ops#about)
+- [ops](https://project-haystack.org/doc/docHaystack/Ops#ops)
+- [formats](https://project-haystack.org/doc/docHaystack/Ops#formats)
+- [read](https://project-haystack.org/doc/docHaystack/Ops#read)
+- [hisRead](https://project-haystack.org/doc/docHaystack/Ops#hisRead)
+- [nav](https://project-haystack.org/doc/docHaystack/Ops#nav)
+- [invokeAction](https://project-haystack.org/doc/docHaystack/Ops#invokeAction)
 
-These [operations](https://project-haystack.org/doc/Rest) are implemented only in a classical endpoint, with real-time
-datas:
+These [operations](https://project-haystack.org/doc/docHaystack/Ops) are implemented only in a classical endpoint, with
+real-time datas:
 
-- [watchSub](https://project-haystack.org/doc/Ops#watchSub)
-- [watchUnsub](https://project-haystack.org/doc/Ops#watchUnsub)
-- [watchPoll](https://project-haystack.org/doc/Ops#watchPoll)
-- [pointWrite](https://project-haystack.org/doc/Ops#pointWrite)
-- [hisWrite](https://project-haystack.org/doc/Ops#hisWrite)
+- [watchSub](https://project-haystack.org/doc/docHaystack/Ops#watchSub)
+- [watchUnsub](https://project-haystack.org/doc/docHaystack/Ops#watchUnsub)
+- [watchPoll](https://project-haystack.org/doc/docHaystack/Ops#watchPoll)
+- [pointWrite](https://project-haystack.org/doc/docHaystack/Ops#pointWrite)
+- [hisWrite](https://project-haystack.org/doc/docHaystack/Ops#hisWrite)
 
 ## API Server deployment
 
@@ -314,7 +316,7 @@ The same filter was apply for each API.
 
 # Using GraphQL API
 
-All the providers can be invoked with a GraphQL API in place of the standard Haystack Rest API. After installing the
+All the providers can be invoked with a GraphQL API in place of the standard Haystack HTTP API. After installing the
 component with the good option (`pip install 'shaystack[graphql]'`), start the provider and use the url
 `http://localhost:3000/graphql`. You can see an interface to use the ontology.
 
@@ -520,7 +522,7 @@ $ docker run -it -p 3000:3000 shaystack
 
 # Using with Excel or PowerBI
 
-Because the default negotiated format is CSV, you can call the REST API with PowerQuery or Excel. Try the sample file
+Because the default negotiated format is CSV, you can call the HTTP API with PowerQuery or Excel. Try the sample file
 ['SHaystack.xlsm'](https://raw.githubusercontent.com/engie-group/shaystack/develop/SHaystack.xlsm) and set a correct
 haystack API url
 (http://10.0.2.2:3000/haystack with a local virtual windows). You can load all and filter the data inside Excel table.

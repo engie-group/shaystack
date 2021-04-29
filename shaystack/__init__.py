@@ -11,7 +11,7 @@ Propose API :
 
 - to read or write Haystack file (Zinc, JSon, CSV)
 - to manipulate ontology in memory (Grid class)
-- to implement REST API (https://www.project-haystack.org/doc/Rest)
+- to implement REST API (https://project-haystack.org/doc/docHaystack/HttpApi)
 - to implement GraphQL API
 
 With some sample provider:

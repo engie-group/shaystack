@@ -18,6 +18,7 @@ import pytz
 from overrides import overrides
 
 from .haystack_interface import HaystackInterface
+from .. import EmptyGrid
 from ..datatypes import MARKER
 from ..grid import Grid, VER_3_0, Ref, Quantity
 from ..type import Entity
@@ -155,11 +156,12 @@ class Provider(HaystackInterface):
     @overrides
     def watch_unsub(
             self, watch_id: str, ids: List[Ref], close: bool
-    ) -> None:  # pylint: disable=no-self-use
+    ) -> Grid:  # pylint: disable=no-self-use
         """Return EmptyGrid."""
         log.info(
             'watch_unsub(watch_id="%s", ids=%s, close_all=%s)', watch_id, ids, close
         )
+        return EmptyGrid
 
     @overrides
     def watch_poll(

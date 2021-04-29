@@ -4,7 +4,7 @@ import HaystackApiService from './services/haystackApi.service.js'
 import formatService from './services/format.service.js'
 import dataUtils from './services/data.utils.js'
 import MyCustomPlugin from './plugins/customPlugin.js'
-
+Vue.use(MyCustomPlugin)
 Vue.use(Vuex)
 window.env = window.env || {}
 const state = {
@@ -15,7 +15,8 @@ const state = {
   version: '',
   dateRange: { start: '', end: '' },
   isDataLoaded: false,
-  filterApi: ''
+  filterApi: '',
+  apiKey: Vue.prototype.getApiKey ? Vue.prototype.getApiKey() : ''
 }
 export const mutations = {
   SET_ENTITIES(state, { entities, apiNumber }) {
@@ -52,7 +53,7 @@ export const mutations = {
     apiServers.map(apiServer => {
       newEntities.push([])
       newHistories.push({})
-      newApiServers.push(new HaystackApiService({ haystackApiHost: apiServer }))
+      newApiServers.push(new HaystackApiService({ haystackApiHost: apiServer, apiKey: state.apiKey }))
     })
     state.entities = newEntities
     state.histories = newHistories
@@ -60,7 +61,7 @@ export const mutations = {
   },
   SET_HAYSTACK_API(state, { haystackApiHost }) {
     const newApiServers = state.apiServers.slice()
-    newApiServers.push(new HaystackApiService({ haystackApiHost }))
+    newApiServers.push(new HaystackApiService({ haystackApiHost, apiKey: state.apiKey }))
     state.apiServers = newApiServers
   },
   SET_FILTER_API(state, { filterApi }) {
@@ -116,7 +117,7 @@ export const actions = {
   async setHaystackApi(context, { apiServers }) {
     const availableApiServers = await Promise.all(
       apiServers.filter(async apiServer => {
-        const newApiServer = new HaystackApiService({ haystackApiHost: apiServer })
+        const newApiServer = new HaystackApiService({ haystackApiHost: apiServer, apiKey: state.apiKey })
         const isAvailable = await newApiServer.isHaystackApi()
         return isAvailable
       })
@@ -124,7 +125,7 @@ export const actions = {
     context.commit('SET_API_SERVERS', { apiServers: availableApiServers })
   },
   async createApiServer(context, { haystackApiHost }) {
-    const newApiServer = new HaystackApiService({ haystackApiHost })
+    const newApiServer = new HaystackApiService({ haystackApiHost, apiKey: state.apiKey })
     const isNewServerAvailable = await newApiServer.isHaystackApi()
     if (isNewServerAvailable) {
       await context.commit('SET_HAYSTACK_API', { haystackApiHost })
@@ -230,7 +231,6 @@ const router = new VueRouter({
 Vue.use(Vuetify, {
   iconfont: 'mdi'
 })
-Vue.use(MyCustomPlugin)
 const vuetify = new Vuetify({})
 const App = {
   el: 'main',

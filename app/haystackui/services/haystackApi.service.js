@@ -1,6 +1,7 @@
 class HaystackApiService {
-  constructor({ haystackApiHost }) {
+  constructor({ haystackApiHost, apiKey }) {
     this.haystackApiHost = haystackApiHost
+    this.apiKey = apiKey
   }
   // Invoquer ops pour savoir les méthodes qui sont disponibles
   // Invoquer format pour savoir si l'api est compatible avec le format JSON
@@ -11,7 +12,8 @@ class HaystackApiService {
       timeout: 20000,
       withCredentials: false,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'KeyId': this.apiKey
       }
     })
   }

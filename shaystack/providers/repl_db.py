@@ -34,20 +34,21 @@ def main():
     """Loop to test the postgres generation with REPL"""
     envs = cast(Dict[str, str], os.environ)
     if "HAYSTACK_DB" not in envs:
-        envs["HAYSTACK_DB"] = "sqlite3:///:memory:"
-    provider = get_provider("shaystack.providers.sql", envs)
-    conn = cast(SQLProvider, provider).get_connect()
+        envs["HAYSTACK_DB"] = "sqlite3+sqlite3:///:memory:"
+    if "HAYSTACK_PROVIDER" not in envs:
+        envs["HAYSTACK_PROVIDER"] = "shaystack.providers.db"
+    provider = get_provider(envs["HAYSTACK_PROVIDER"], envs)
     scheme = urlparse(envs["HAYSTACK_DB"]).scheme
 
     # noinspection PyMethodMayBeStatic
     class HaystackRequest(cmd.Cmd):
         """ Haystack REPL interface """
-        __slots__ = ("conn",)
+        __slots__ = ("provider",)
 
         # noinspection PyShadowingNames
-        def __init__(self, conn):
+        def __init__(self, provider):
             super().__init__()
-            self.conn = conn
+            self.provider = provider
 
         def do_python(self, arg: str) -> None:  # pylint: disable=no-self-use
             # noinspection PyBroadException
@@ -64,14 +65,12 @@ def main():
                 sql_request = pg_sql_filter("haystack", arg, FAKE_NOW, 1, "customer")
                 print(sql_request)
                 print()
-                if scheme.startswith("postgres"):
-                    cursor = self.conn.cursor()
+                if scheme.startswith("postgres") and isinstance(self.provider, SQLProvider):
+                    cursor = self.provider.get_connect().cursor()
                     cursor.execute(sql_request)
                     cursor.close()
             except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
-            finally:
-                conn.rollback()
 
         def do_mysql(self, arg: str) -> None:
             # noinspection PyBroadException
@@ -79,14 +78,12 @@ def main():
                 sql_request = mysql_sql_filter("haystack", arg, FAKE_NOW, 1, "customer")
                 print(sql_request)
                 print()
-                if scheme.startswith("mysql"):
-                    cursor = self.conn.cursor()
+                if scheme.startswith("mysql") and isinstance(self.provider, SQLProvider):
+                    cursor = self.provider.get_connect().cursor()
                     cursor.execute(sql_request)
                     cursor.close()
             except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
-            finally:
-                conn.rollback()
 
         def do_sqlite(self, arg: str) -> None:
             # noinspection PyBroadException
@@ -94,14 +91,12 @@ def main():
                 sql_request = sqlite_sql_filter("haystack", arg, FAKE_NOW, 1, "customer")
                 print(sql_request)
                 print()
-                if scheme.startswith("sqlite"):
-                    cursor = self.conn.cursor()
+                if scheme.startswith("sqlite") and isinstance(self.provider, SQLProvider):
+                    cursor = self.provider.get_connect().cursor()
                     cursor.execute(sql_request)
                     cursor.close()
             except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
-            finally:
-                conn.rollback()
 
         def do_mongo(self, arg: str) -> None:  # pylint: disable=no-self-use
             # noinspection PyBroadException
@@ -111,14 +106,12 @@ def main():
                 print()
             except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()
-            finally:
-                conn.rollback()
 
         def do_bye(self, _: str) -> bool:  # pylint: disable=unused-argument,no-self-use
             return True
 
     try:
-        HaystackRequest(conn).cmdloop()
+        HaystackRequest(provider).cmdloop()
     except KeyboardInterrupt:
         return 0
     return 0

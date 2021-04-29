@@ -594,8 +594,6 @@ See [here](https://github.com/engie-group/shaystack/blob/develop/docs/contributi
 
 See [LICENCE](https://github.com/engie-group/shaystack/blob/develop/LICENSE) file
 
-[Dependencies licenses]()
-
 # TODO
 
 - [X] S3

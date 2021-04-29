@@ -584,7 +584,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 meta = s3_client.get_object(Bucket=parsed_uri.netloc, Key=parsed_uri.path[1:])
                 obj_versions = [meta["LastModified"], meta["VersionId"]]
             obj_versions = sorted(obj_versions, key=lambda x: x[0], reverse=True)
-            self._lock.acquire()
+            self._lock.acquire()  # pylint: disable=consider-using-with
             all_versions = self._versions.get(parsed_uri.geturl(), OrderedDict())
             concurrency = self._function_concurrency()
             for date_version, version_id in obj_versions:

@@ -190,14 +190,6 @@ def _parse_body(request: HaystackHttpRequest) -> Grid:
     Returns:
         The grid
     """
-    # if "Content-Encoding" in request.headers and request.is_base64:
-    #     content_encoding = request.headers["Content-Encoding"]
-    #     if content_encoding != "gzip":
-    #         raise ValueError(f"Content-Encoding '{content_encoding}' not supported")
-    #     body = codecs.decode(str.encode(request.body), "unicode-escape")
-    #     log.debug("decode body=%s", body)
-    #     request.body = gzip.decompress(base64.b64decode(body)).decode("utf-8")
-    #     request.isBase64Encoded = False
     if "Content-Type" not in request.headers:
         grid = parse(request.body, mode=DEFAULT_MIME_TYPE)
     else:
@@ -533,12 +525,10 @@ def nav(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hayst
         provider = get_singleton_provider(envs)
         grid_request = _parse_body(request)
         nav_id = None
-        if grid_request:
-            if "navId" in grid_request.column:
-                nav_id = grid_request[0]["navId"]
-        if args:
-            if "navId" in args:
-                nav_id = args["navId"]
+        if grid_request and "navId" in grid_request.column:
+            nav_id = grid_request[0]["navId"]
+        if args and "navId" in args:
+            nav_id = args["navId"]
         grid_response = provider.nav(nav_id=nav_id)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, "OK")

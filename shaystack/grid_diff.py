@@ -173,7 +173,7 @@ def grid_merge(orig_grid: Grid, diff: Grid) -> Grid:  # pylint: disable=too-many
     """
     Merge two grid.
 
-    Apply the difference describe in `diff` to the `original_grid` and produce a new grid.
+    Apply the difference describe in `diff` to t71he `original_grid` and produce a new grid.
 
     Args:
         orig_grid: The original grid
@@ -267,9 +267,8 @@ def _merge_metadata(metadata: MetadataObject, original_metadata: MetadataObject)
         original_metadata: Original metadata
     """
     for k_metadata, v_metadata in metadata.items():
-        if k_metadata == 'diff_' and v_metadata == MARKER:
-            pass
-        elif REMOVE == v_metadata:
-            del original_metadata[k_metadata]
-        else:
-            original_metadata[k_metadata] = v_metadata
+        if not (k_metadata == 'diff_' and v_metadata == MARKER):
+            if REMOVE == v_metadata:
+                del original_metadata[k_metadata]
+            else:
+                original_metadata[k_metadata] = v_metadata

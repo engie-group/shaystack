@@ -45,9 +45,8 @@ def _search_paths(node: Union[FilterNode, HaystackType], acc: List[List[str]]) -
     if isinstance(node, FilterBinary):
         _search_paths(node.left, acc)
         _search_paths(node.right, acc)
-    if isinstance(node, FilterPath):
-        if len(node.paths) > 1:
-            acc.append(node.paths)
+    if isinstance(node, FilterPath) and len(node.paths) > 1:
+        acc.append(node.paths)
 
 
 def _join_stages(node: Union[FilterNode, HaystackType],
@@ -104,8 +103,6 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
     if isinstance(node, FilterUnary):
         if node.operator == "has":
             return {"$ne": [{"$type": f"${_conv_filter(node.right)}"}, "missing"]}
-            # return {_conv_filter(node.right): {"$exists": True}}
-            # return {"$cond": {"if": _conv_filter(node.right), "then": 1, "else": 0}}
         if node.operator == "not":
             if isinstance(node.right, FilterPath):
                 return {"$eq": [{"$type": f"${_conv_filter(node.right)}"}, "missing"]}

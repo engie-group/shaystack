@@ -76,11 +76,9 @@ def import_in_db(source_uri: str,  # pylint: disable=too-many-arguments
 @click.command(short_help='Import haystack file in database')
 @click.argument('source_uri',
                 metavar='<source uri>',
-                # help='filename or uri (may be s3:/...)'
                 )
 @click.argument('target_uris',
                 metavar='<target uri>',
-                # help='uri to describe db connection'
                 nargs=-1
                 )
 @click.option("--customer",

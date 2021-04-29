@@ -803,8 +803,6 @@ class Provider(DBHaystackInterface):
             _, keys = self._default_driver[self._dialect]
             filtered = {key: val for key, val in params.items() if key in keys}
             self._connect = _LocalConnect(self.database, **filtered)
-            # connect: DBConnection = self.database.connect(**filtered)
-            # self._connect = connect
             self.create_db()
         if not self._connect:
             raise ValueError(&#34;Impossible to use the database url&#34;)
@@ -1357,8 +1355,6 @@ class Provider(DBHaystackInterface):
             _, keys = self._default_driver[self._dialect]
             filtered = {key: val for key, val in params.items() if key in keys}
             self._connect = _LocalConnect(self.database, **filtered)
-            # connect: DBConnection = self.database.connect(**filtered)
-            # self._connect = connect
             self.create_db()
         if not self._connect:
             raise ValueError(&#34;Impossible to use the database url&#34;)
@@ -1749,8 +1745,6 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
         _, keys = self._default_driver[self._dialect]
         filtered = {key: val for key, val in params.items() if key in keys}
         self._connect = _LocalConnect(self.database, **filtered)
-        # connect: DBConnection = self.database.connect(**filtered)
-        # self._connect = connect
         self.create_db()
     if not self._connect:
         raise ValueError(&#34;Impossible to use the database url&#34;)

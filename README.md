@@ -9,21 +9,21 @@ Internet Of Things. It enables interoperability between any IoT data producer an
 area.
 
 Haystack core data model is the Grid, it can be serialized in many formats,
-mainly [Zinc](https://www.project-haystack.org/doc/Zinc),
-[Trio](https://www.project-haystack.org/doc/Trio),
-[Json](https://www.project-haystack.org/doc/Json)
-and [Csv](https://www.project-haystack.org/doc/Csv)
+mainly [Zinc](https://www.project-haystack.org/doc/docHaystack/Zinc),
+[Trio](https://www.project-haystack.org/doc/docHaystack/Trio),
+[Json](https://www.project-haystack.org/doc/docHaystack/Json)
+and [Csv](https://www.project-haystack.org/doc/docHaystack/Csv)
 
 ## About this project
 
 This project implements client side haystack code. Useful to parse or dump Haystack files
-([Zinc](https://www.project-haystack.org/doc/Zinc),
-[Trio](https://www.project-haystack.org/doc/Trio),
-[Json](https://www.project-haystack.org/doc/Json),
-[Csv](https://www.project-haystack.org/doc/Csv)).
+([Zinc](https://www.project-haystack.org/doc/docHaystack/Zinc),
+[Trio](https://www.project-haystack.org/doc/docHaystack/Trio),
+[Json](https://www.project-haystack.org/doc/docHaystack/Json),
+[Csv](https://www.project-haystack.org/doc/docHaystack/Csv)).
 
-On the server side, it also implements [Haystack Rest API](https://www.project-haystack.org/doc/Rest), useful to serve
-Haystack data you host.
+On the server side, it also implements [Haystack Rest API](https://project-haystack.org/doc/docHaystack/HttpApi), useful
+to serve Haystack data you host.
 
 - [Try it with colab?](https://colab.research.google.com/github/pprados/shaystack/blob/develop/haystack.ipynb)
 - [Try it with AWS Lambda?](https://skz7riv2yk.execute-api.us-east-2.amazonaws.com/dev)

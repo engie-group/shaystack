@@ -270,7 +270,7 @@ class HSAbout(graphene.ObjectType):  # pylint: disable=too-few-public-methods
 class HSOps(graphene.ObjectType):  # pylint: disable=too-few-public-methods
     """Result of 'ops' haystack operation"""
 
-    name = graphene.String(description="Name of operation (see https://project-haystack.org/doc/Ops)")
+    name = graphene.String(description="Name of operation (see https://project-haystack.org/doc/docHaystack/Ops)")
     summary = graphene.String(description="Summary of operation")
 
 
@@ -334,7 +334,7 @@ class ReadHaystack(graphene.ObjectType):
         limit=graphene.Int(default_value=0,
                            description="Maximum number of items to return"),
         filter=graphene.String(default_value='',
-                               description="Filter or item (see https://project-haystack.org/doc/Filters"),
+                               description="Filter or item (see https://project-haystack.org/doc/docHaystack/Filters"),
         version=HSDateTime(description="Date of the version or nothing for the last version"),
         description="Selected entities of ontology"
     )

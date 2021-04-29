@@ -735,7 +735,7 @@ class HSAbout(graphene.ObjectType):  # pylint: disable=too-few-public-methods
 class HSOps(graphene.ObjectType):  # pylint: disable=too-few-public-methods
     &#34;&#34;&#34;Result of &#39;ops&#39; haystack operation&#34;&#34;&#34;
 
-    name = graphene.String(description=&#34;Name of operation (see https://project-haystack.org/doc/Ops)&#34;)
+    name = graphene.String(description=&#34;Name of operation (see https://project-haystack.org/doc/docHaystack/Ops)&#34;)
     summary = graphene.String(description=&#34;Summary of operation&#34;)
 
 
@@ -799,7 +799,7 @@ class ReadHaystack(graphene.ObjectType):
         limit=graphene.Int(default_value=0,
                            description=&#34;Maximum number of items to return&#34;),
         filter=graphene.String(default_value=&#39;&#39;,
-                               description=&#34;Filter or item (see https://project-haystack.org/doc/Filters&#34;),
+                               description=&#34;Filter or item (see https://project-haystack.org/doc/docHaystack/Filters&#34;),
         version=HSDateTime(description=&#34;Date of the version or nothing for the last version&#34;),
         description=&#34;Selected entities of ontology&#34;
     )
@@ -1421,7 +1421,7 @@ def serialize(date_time: datetime) -&gt; str:
                         <pre><code class="python">class HSOps(graphene.ObjectType):  # pylint: disable=too-few-public-methods
     &#34;&#34;&#34;Result of &#39;ops&#39; haystack operation&#34;&#34;&#34;
 
-    name = graphene.String(description=&#34;Name of operation (see https://project-haystack.org/doc/Ops)&#34;)
+    name = graphene.String(description=&#34;Name of operation (see https://project-haystack.org/doc/docHaystack/Ops)&#34;)
     summary = graphene.String(description=&#34;Summary of operation&#34;)</code></pre>
                     </details>
                     <h3>Ancestors</h3>
@@ -2043,7 +2043,7 @@ def serialize(a_uri: Uri) -&gt; str:
         limit=graphene.Int(default_value=0,
                            description=&#34;Maximum number of items to return&#34;),
         filter=graphene.String(default_value=&#39;&#39;,
-                               description=&#34;Filter or item (see https://project-haystack.org/doc/Filters&#34;),
+                               description=&#34;Filter or item (see https://project-haystack.org/doc/docHaystack/Filters&#34;),
         version=HSDateTime(description=&#34;Date of the version or nothing for the last version&#34;),
         description=&#34;Selected entities of ontology&#34;
     )

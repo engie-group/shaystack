@@ -87,7 +87,8 @@ converted to SQL. Three tables were created:
 - <table_name>_ts
 - and some index.
 
-The column `entity` use a json version of haystack entity (See [here](https://project-haystack.org/doc/Json)).
+The column `entity` use a json version of haystack entity (
+See [here](https://project-haystack.org/doc/docHaystack/Json)).
 
 The time-series are saved in a table `<table_name>_ts`. If you prefer to use a dedicated time-series database, overload
 the method `hisRead()` (see [Timestream provider](timestream_provider.md))

@@ -19,13 +19,15 @@ export const mutations = {
   SET_ENTITIES(state, { entities, apiNumber }) {
     const newEntities = state.entities.slice() //  Extract NewEntities[apiNumber]
     // eslint-disable-next-line
-    newEntities.length < (apiNumber + 1) ? newEntities.push(entities) : (newEntities[apiNumber] = entities)
+    if (newEntities.length < (apiNumber + 1)) newEntities.push(entities)
+    else newEntities[apiNumber] = entities
     state.entities = newEntities
   },
   SET_HISTORIES(state, { idHistories, apiNumber }) {
     const newHistories = state.histories.slice() // Extract newHistories[apiNumber]
     // eslint-disable-next-line
-    newHistories.length < apiNumber + 1 ? newHistories.push(idHistories) : (newHistories[apiNumber] = idHistories)
+    if (newHistories.length < apiNumber + 1) newHistories.push(idHistories)
+    else newHistories[apiNumber] = idHistories
     state.histories = newHistories
   },
   DELETE_HAYSTACK_API(state, { haystackApiHost }) {

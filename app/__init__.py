@@ -104,6 +104,5 @@ def start_shaystack(host: str, port: int) -> int:
 def main(host, port):
     return start_shaystack(host, port)
 
-
 if __name__ == '__main__':
     sys.exit(main())  # pylint: disable=no-value-for-parameter,unexpected-keyword-arg

@@ -33,7 +33,7 @@ const template = `
   </div>
 `
 import { API_COLORS, dataUtils } from '../../services/index.js'
-import formatService from '../../services/format.service.js'
+import formatService from '../../services/formatService.js'
 import CEntityRow from '../../components/CEntityRow/CEntityRow.js'
 import CGraph from '../../components/CGraph/CGraph.js'
 export default {

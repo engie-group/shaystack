@@ -38,7 +38,6 @@ export default {
 
     if (angle) {
       const path = ['M', left.plotX, left.plotY, right.plotX, right.plotY]
-      const lastPoint = left
       const nextLastPoint = right
       const pointRadius = 40
       const arrowLength = 5
@@ -144,7 +143,7 @@ export default {
         enabled: false
       },
       tooltip : {
-        enabled : true, 
+        enabled : true,
         formatter : function() {
           return `<div> <span> ${this.point.dis ? this.point.dis : this.point.id} </span> </div>`
         }

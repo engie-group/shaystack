@@ -2,9 +2,6 @@ class HaystackApiService {
   constructor({ haystackApiHost }) {
     this.haystackApiHost = haystackApiHost
   }
-  // Invoquer ops pour savoir les méthodes qui sont disponibles
-  // Invoquer format pour savoir si l'api est compatible avec le format JSON
-
   get api() {
     return axios.create({
       baseURL: `${this.haystackApiHost}`,
@@ -24,10 +21,10 @@ class HaystackApiService {
         opsResponse.data.rows.find(row => row.name === 's:read') &&
         formatResponse.data.rows.find(row => row.mime === 's:application/json' && row.receive === 'm:')
       if (isHaystackApiAvailable) return true
-      alert('API not available for')
+      alert('API not available for') // TODO no alert
       return false
     } catch {
-      alert('Not an Haystack API')
+      alert('Not an Haystack API') // TODO no alert
       return false
     }
   }
@@ -42,7 +39,6 @@ class HaystackApiService {
     }
   }
 
-  // getEntity => read  and entity => filter
   async getEntity(entity, limit, version = '') {
     const versionParam = version === '' ? '' : `&version=${new Date(version).toISOString()}`
     try {

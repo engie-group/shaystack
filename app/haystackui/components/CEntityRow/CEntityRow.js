@@ -36,8 +36,8 @@ const template = `
   </div>
 `
 
-import formatService from '../../services/format.service.js'
-import dataUtils from '../../services/data.utils.js'
+import formatService from '../../services/formatService.js'
+import dataUtils from '../../services/dataUtils.js'
 import CChart from '../CChart/CChart.js'
 import PHisDataTable from '../../presenters/PHisDataTable/PHisDataTable.js'
 
@@ -185,26 +185,24 @@ export default {
     getEntityValue(dataEntityKey) {
       const value = this.dataEntity[dataEntityKey].val
       const { apiSource } = this.dataEntity[dataEntityKey]
-      if (!value) return 'NaN'
       if (value === 'b:') return { val: value.substring(2), apiSource }
       if (value === 'm:') return { val: '✓', apiSource }
       if (value.substring(0, 2) === 'c:') return { val: value, apiSource }
       if (value.substring(0, 2) === 'r:') return { val: value, apiSource }
       if (value.substring(0, 2) === 'n:') return this.getNumberValue(dataEntityKey)
       if (value.substring(0, 2) === 'r:') return { val: value, apiSource }
-      if (value === '') return { val: '', apiSource }
+      if (!value) return { val: '', apiSource }  //false
       return { val: value.substring(2), apiSource }
     },
-    getHisTableValue(row) {
+    getHisTableValue(row) { //TO FIX SAME TYPE
       const value = row.val
       if (typeof value === 'boolean') return value
-      if (!value) return value
       if (value === 'm:') return '✓'
       if (value.substring(0, 2) === 'c:') return value
       if (value.substring(0, 2) === 'r:') return value
       if (value.substring(0, 2) === 'n:') return this.getNumberValue(value)
       if (value.substring(0, 2) === 'r:') return value
-      if (value === '') return value
+      if (!value) return value
       return value.substring(2)
     }
   }

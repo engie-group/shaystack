@@ -500,6 +500,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         return self._lambda_client
 
     def _function_concurrency(self) -> int:  # pylint: disable=no-self-use
+        return 1000
         # if not self._concurrency:
         #     try:
         #         self._concurrency = self._lambda().get_function_concurrency(
@@ -508,7 +509,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         #         log.warning("Impossible to get `ReservedConcurrentExecutions`")
         #         self._concurrency = 1000  # Default value if error
         # return self._concurrency
-        return 1000
 
     def _s3(self) -> BaseClient:
         # AWS_S3_ENDPOINT may be http://localhost:9000 to use minio (make start-minio)

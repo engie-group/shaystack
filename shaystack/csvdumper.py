@@ -128,8 +128,6 @@ def _dump_time(time: datetime.time) -> str:
 
 
 def _dump_date_time(date_time: datetime.datetime) -> str:
-    # tz_name = timezone_name(date_time)
-    # return '%s %s' % (date_time.isoformat(), tz_name)
     return '%s' % (date_time.isoformat())  # Note: Excel can not parse the date time with tz_name
 
 

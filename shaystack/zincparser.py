@@ -242,7 +242,6 @@ hs_digit = Regex(r'\d')
 hs_digits = Regex(r'[0-9_]+').setParseAction(
     lambda toks: [''.join([t.replace('_', '') for t in toks[0]])])
 hs_alpha = Regex(r'[a-zA-Z]')
-# hs_rowSep = Regex(r' *\n *').setName('rowSep')
 hs_plusMinus = Literal('+') ^ '-'
 
 # Forward declaration of data types.

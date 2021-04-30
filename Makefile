@@ -340,7 +340,8 @@ clean-zappa:
 
 ## Clean project
 clean: async-stop clean-zappa
-	@rm -rf bin/* .mypy_cache .pytest_cache .start build nohup.out dist .make-* .pytype out.json
+	@rm -rf bin/* .eggs shaystack.egg-info .ipynb_checkpoints .mypy_cache .pytest_cache .start build nohup.out dist \
+		.make-* .pytype out.json test.db zappa_settings.json ChangeLog
 	mkdir dist/
 
 .PHONY: clean-all
@@ -1048,7 +1049,7 @@ docker-inspect-dmake:
 
 # Remove the dmake image
 docker-rm-dmake:
-	@docker image rm $(DOCKER_REPOSITORY)/$(PRJ)-dmake
+	@docker image rm $(DOCKER_REPOSITORY)/$(PRJ)-dmake || true
 	echo -e "$(cyan)Docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' removed$(normal)"
 
 # --------------------------- Distribution

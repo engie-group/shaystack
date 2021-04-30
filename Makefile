@@ -238,7 +238,7 @@ env:
 		fi
 	fi
 	branch="\$$(git branch | grep \* | cut -d ' ' -f2)"
-	if [ "\$${branch}" = "master" ] && [ "\$${FORCE}" != y ] ; then
+	if [ "\$${branch}" = "master" ] || [[ "\$${branch}" = release/* ]] && [ "\$${FORCE}" != y ] ; then
 		printf "\$${green}Validate the project before push the commit... (\$${yellow}make validate\$${green})\$${normal}\n"
 		make validate
 		ERR=\$$?
@@ -830,7 +830,7 @@ pg-shell:
 
 clean-pg: start-pg
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
-	docker exec -e PGPASSWORD=$(PG_PASSWORD) -it postgres psql -U postgres -h $$IP \
+	docker exec -e PGPASSWORD=$(PG_PASSWORD) -t postgres psql -U postgres -h $$IP \
 	-c 'drop table if exists haystack;drop table if exists haystack_meta_datas;drop table if exists haystack_ts;'
 
 
@@ -883,7 +883,7 @@ mysql-shell:
 # Clean MySQL database
 clean-mysql: start-mysql
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' mysql)
-	docker exec -it mysql mysql --user=root --password=$(MYSQL_PASSWORD) -h localhost haystackdb \
+	docker exec -t mysql mysql --user=root --password=$(MYSQL_PASSWORD) -h localhost haystackdb \
 	--execute='drop table if exists haystack ; drop table if exists haystack_meta_datas ; drop table if exists haystack_ts;'
 
 
@@ -918,7 +918,7 @@ url-mongo: start-mongodb
 
 # Clean Mongo database
 clean-mongodb: start-mongodb
-	@docker exec -it mongodb mongo mongodb://localhost/haystackdb \
+	@docker exec -t mongodb mongo mongodb://localhost/haystackdb \
 	--quiet --eval 'db.haystack.drop();db.haystack_ts.drop();db.haystack_meta_datas.drop();' >/dev/null
 
 # --------------------------- Docker

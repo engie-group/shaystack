@@ -26,6 +26,7 @@ PGADMIN_PASSWORD?=password
 MYSQL_USER?=mysql
 MYSQL_PASSWORD?=password
 TLS_VERIFY=False
+TERM?=dumb
 
 # Default parameter for make [aws-]api-read
 READ_PARAMS?=?filter=his&limit=5
@@ -55,7 +56,7 @@ STAGE=dev
 AWS_STAGE?=$(STAGE)
 ZAPPA_ENV=zappa_venv
 DOCKER_REPOSITORY=$(USER)
-PORT?=3010
+PORT?=3000
 INPUT_NETWORK?=localhost
 HOST_API?=localhost
 COOKIE_SECRET_KEY?=2d1a12a6-3232-4328-9365-b5b65e64a68f

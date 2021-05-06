@@ -15,7 +15,7 @@ try:
     from flask import Flask, send_from_directory, request, redirect
     from flask_cors import CORS
     from app.blueprint_haystack import haystack_blueprint
-    from app.blueprint_haystackui import haystackui_blueprint
+    from app.blueprint_haystackui import HaystackUiBlueprint
 except ImportError as ex:
     print('To start shift-4-haystack, use \'pip install "shaystack[flask]"\' or '
           '\'pip install "shaystack[flask,graphql]"\' and set \'HAYSTACK_PROVIDER\' variable',
@@ -40,10 +40,8 @@ _log_level = os.environ.get("LOG_LEVEL", "WARNING")
 logging.basicConfig(level=_log_level)
 app.logger.setLevel(_log_level)  # pylint: disable=no-member
 app.register_blueprint(haystack_blueprint)
-app.register_blueprint(haystackui_blueprint)
 if USE_GRAPHQL:
     app.register_blueprint(graphql_blueprint)
-
 
 @app.route('/')
 def index():
@@ -91,12 +89,17 @@ def start_shaystack(host: str, port: int) -> int:
         HAYSTACK_PROVIDER: to select a provider (shaystack.providers.db)
         HAYSTACK_DB: the URL to select the backend with the ontology
     """
+    if(os.environ.get('USE_OKTA')!='Y'):
+        haystackui_blueprint = HaystackUiBlueprint().haystackui_blueprint
+    else:
+        haystackui_blueprint = HaystackUiBlueprint().get_haystackui_blueprint_with_routes()
+    app.register_blueprint(haystackui_blueprint)
+
     debug = (os.environ.get("FLASK_DEBUG", "0") == "1")
     app.run(host=host,
             port=port,
             debug=debug)
     return 0
-
 
 @click.command()
 @click.option('-h', '--host', default='localhost')

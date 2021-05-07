@@ -12,7 +12,6 @@ class HaystackApiService {
     {
       'Content-Type': 'application/json'
     }
-    console.log('TESTT', headers)
     return axios.create({
       baseURL: `${this.haystackApiHost}`,
       timeout: 20000,

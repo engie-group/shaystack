@@ -17,7 +17,9 @@ from flask import Flask, send_from_directory
 try:
     from flask_cors import CORS
     from app.blueprint_haystack import create_haystack_bp
+    from app.blueprint_haystackui import create_haystackui_bp
 except ImportError as ex:
+    print('THIS IS THIS EXCEPTION')
     print('To start shift-4-haystack, use \'pip install "shaystack[flask]"\' or '
           '\'pip install "shaystack[flask,graphql]"\' and set \'HAYSTACK_PROVIDER\' variable',
           file=sys.stderr)
@@ -74,6 +76,7 @@ def init_app(app: Flask) -> Flask:
 
 def add_blueprints(app: Flask) -> Flask:
     app.register_blueprint(create_haystack_bp())
+    app.register_blueprint(create_haystackui_bp())
     if USE_GRAPHQL:
         app.register_blueprint(create_graphql_bp())
     CORS(app, resources={

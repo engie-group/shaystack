@@ -4,14 +4,20 @@ class HaystackApiService {
     this.apiKey = apiKey
   }
   get api() {
+    const headers = this.apiKey ?
+    {
+      'Content-Type': 'application/json',
+      'KeyId': this.apiKey
+    } :
+    {
+      'Content-Type': 'application/json'
+    }
+    console.log('TESTT', headers)
     return axios.create({
       baseURL: `${this.haystackApiHost}`,
       timeout: 20000,
       withCredentials: false,
-      headers: {
-        'Content-Type': 'application/json',
-        'KeyId': this.apiKey
-      }
+      headers
     })
   }
 

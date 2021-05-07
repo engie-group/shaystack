@@ -15,7 +15,8 @@ const state = {
   version: '',
   dateRange: { start: '', end: '' },
   isDataLoaded: false,
-  filterApi: ''
+  filterApi: '',
+  apiKey: Vue.prototype.getApiKey ? Vue.prototype.getApiKey() : null
 }
 export const mutations = {
   SET_ENTITIES(state, { entities, apiNumber }) {

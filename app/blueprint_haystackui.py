@@ -11,19 +11,18 @@ import os
 
 from flask import Blueprint, Response, send_from_directory, safe_join
 
-class HaystackUiBlueprint():
+def initiate_haystackui_bp(name='haystackui'):
+    return Blueprint(name, __name__,
+                           static_folder=safe_join(os.path.dirname(__file__), 'haystackui'),
+                           url_prefix='/haystack')
 
-    def __init__(self, name='haystackui'):
-        self.haystackui_blueprint = Blueprint(name, __name__,
-                               static_folder=safe_join(os.path.dirname(__file__), 'haystackui'),
-                               url_prefix='/haystack')
-
-    def get_haystackui_blueprint_with_routes(self):
-        @self.haystackui_blueprint.route('/', methods=['GET'], defaults={'filename': 'index.html'})
-        @self.haystackui_blueprint.route('/<path:filename>', methods=['GET'])
-        def flash_web_ui(filename) -> Response:
-            if(os.environ.get('HAYSTACK_INTERFACE') and os.environ.get('HAYSTACK_INTERFACE')!='' and filename == 'plugins/customPlugin.js'):
-                return send_from_directory(os.getcwd(), os.environ['HAYSTACK_INTERFACE'])
-            else:
-                return send_from_directory(self.haystackui_blueprint.static_folder, filename)
-        return self.haystackui_blueprint
+def create_haystackui_bp():
+    haystackui_blueprint = initiate_haystackui_bp()
+    @haystackui_blueprint.route('/', methods=['GET'], defaults={'filename': 'index.html'})
+    @haystackui_blueprint.route('/<path:filename>', methods=['GET'])
+    def flash_web_ui(filename) -> Response:
+        if(os.environ.get('HAYSTACK_INTERFACE') and os.environ.get('HAYSTACK_INTERFACE')!='' and filename == 'plugins/customPlugin.js'):
+            return send_from_directory(os.getcwd(), os.environ['HAYSTACK_INTERFACE'])
+        else:
+            return send_from_directory(haystackui_blueprint.static_folder, filename)
+    return haystackui_blueprint

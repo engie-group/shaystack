@@ -188,7 +188,6 @@ def _optimize_filter_for_sql(node: FilterNode) -> Union[_Root, FilterNode]:
         return _Compare(operator, left, right)
     if isinstance(node, FilterUnary):
         if node.operator == "has":
-            # right = _optimize_filter_for_sql(node.right)
             return _Has(_Path(node.right.paths))
         if node.operator == "not":
             return _NotHas(_Path(node.right.paths))

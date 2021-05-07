@@ -10,7 +10,7 @@
 <!--TOC-->
 
 This module offers two layers to use AWS cloud. It's possible to publish the haystack files in a bucket, and use the URL
-provider to expose an API (REST and GraphQL)
+provider to expose an API (HTTP and GraphQL)
 and it's possible to use the AWS Lambda to publish the API.
 
 To import the dependencies:
@@ -109,7 +109,7 @@ $ pip install "shaystack[graphql,lambda]"
 $ zappa deploy
 ```
 
-You can use the Lambda API to invoke the REST or GraphQL API.
+You can use the Lambda API to invoke the HTTP or GraphQL API.
 
 ```console
 $ # Extract the API URL

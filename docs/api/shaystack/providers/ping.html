@@ -483,6 +483,7 @@ import pytz
 from overrides import overrides
 
 from .haystack_interface import HaystackInterface
+from .. import EmptyGrid
 from ..datatypes import MARKER
 from ..grid import Grid, VER_3_0, Ref, Quantity
 from ..type import Entity
@@ -620,11 +621,12 @@ class Provider(HaystackInterface):
     @overrides
     def watch_unsub(
             self, watch_id: str, ids: List[Ref], close: bool
-    ) -&gt; None:  # pylint: disable=no-self-use
+    ) -&gt; Grid:  # pylint: disable=no-self-use
         &#34;&#34;&#34;Return EmptyGrid.&#34;&#34;&#34;
         log.info(
             &#39;watch_unsub(watch_id=&#34;%s&#34;, ids=%s, close_all=%s)&#39;, watch_id, ids, close
         )
+        return EmptyGrid
 
     @overrides
     def watch_poll(
@@ -821,11 +823,12 @@ class Provider(HaystackInterface):
     @overrides
     def watch_unsub(
             self, watch_id: str, ids: List[Ref], close: bool
-    ) -&gt; None:  # pylint: disable=no-self-use
+    ) -&gt; Grid:  # pylint: disable=no-self-use
         &#34;&#34;&#34;Return EmptyGrid.&#34;&#34;&#34;
         log.info(
             &#39;watch_unsub(watch_id=&#34;%s&#34;, ids=%s, close_all=%s)&#39;, watch_id, ids, close
         )
+        return EmptyGrid
 
     @overrides
     def watch_poll(
@@ -1114,7 +1117,7 @@ def watch_sub(
                             </details>
                         </dd>
                         <dt id="shaystack.providers.ping.Provider.watch_unsub"><code class="name flex">
-                            <span>def <span class="ident">watch_unsub</span></span>(<span>self, watch_id: str, ids: List[Ref], close: bool) ‑> NoneType</span>
+                            <span>def <span class="ident">watch_unsub</span></span>(<span>self, watch_id: str, ids: List[Ref], close: bool) ‑> shaystack.grid.Grid</span>
                         </code></dt>
                         <dd>
                             <div class="desc"><p>Return EmptyGrid.</p></div>
@@ -1125,11 +1128,12 @@ def watch_sub(
                                 <pre><code class="python">@overrides
 def watch_unsub(
         self, watch_id: str, ids: List[Ref], close: bool
-) -&gt; None:  # pylint: disable=no-self-use
+) -&gt; Grid:  # pylint: disable=no-self-use
     &#34;&#34;&#34;Return EmptyGrid.&#34;&#34;&#34;
     log.info(
         &#39;watch_unsub(watch_id=&#34;%s&#34;, ids=%s, close_all=%s)&#39;, watch_id, ids, close
-    )</code></pre>
+    )
+    return EmptyGrid</code></pre>
                             </details>
                         </dd>
                     </dl>

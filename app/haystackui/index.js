@@ -1,10 +1,10 @@
 import VMainLayout from './views/VMainLayout/VMainLayout.js'
 import VSummaryContent from './views/VSummaryContent/VSummaryContent.js'
 import HaystackApiService from './services/haystackApi.service.js'
-import formatService from './services/format.service.js'
-import dataUtils from './services/data.utils.js'
+import formatService from './services/formatService.js'
 import MyCustomPlugin from './plugins/customPlugin.js'
 Vue.use(MyCustomPlugin)
+
 Vue.use(Vuex)
 window.env = window.env || {}
 const state = {
@@ -15,20 +15,21 @@ const state = {
   version: '',
   dateRange: { start: '', end: '' },
   isDataLoaded: false,
-  filterApi: '',
-  apiKey: Vue.prototype.getApiKey ? Vue.prototype.getApiKey() : ''
+  filterApi: ''
 }
 export const mutations = {
   SET_ENTITIES(state, { entities, apiNumber }) {
-    const newEntities = state.entities.slice()
+    const newEntities = state.entities.slice() //  Extract NewEntities[apiNumber]
     // eslint-disable-next-line
-    newEntities.length < (apiNumber + 1) ? newEntities.push(entities) : (newEntities[apiNumber] = entities)
+    if (newEntities.length < (apiNumber + 1)) newEntities.push(entities)
+    else newEntities[apiNumber] = entities
     state.entities = newEntities
   },
   SET_HISTORIES(state, { idHistories, apiNumber }) {
-    const newHistories = state.histories.slice()
+    const newHistories = state.histories.slice() // Extract newHistories[apiNumber]
     // eslint-disable-next-line
-    newHistories.length < apiNumber + 1 ? newHistories.push(idHistories) : (newHistories[apiNumber] = idHistories)
+    if (newHistories.length < apiNumber + 1) newHistories.push(idHistories)
+    else newHistories[apiNumber] = idHistories
     state.histories = newHistories
   },
   DELETE_HAYSTACK_API(state, { haystackApiHost }) {
@@ -118,8 +119,7 @@ export const actions = {
     const availableApiServers = await Promise.all(
       apiServers.filter(async apiServer => {
         const newApiServer = new HaystackApiService({ haystackApiHost: apiServer, apiKey: state.apiKey })
-        const isAvailable = await newApiServer.isHaystackApi()
-        return isAvailable
+        return await newApiServer.isHaystackApi()
       })
     )
     context.commit('SET_API_SERVERS', { apiServers: availableApiServers })
@@ -241,8 +241,6 @@ const App = {
   store,
   vuetify
 }
-
-// const vuetify = new Vuetify({})
 
 window.addEventListener('load', () => {
   new Vue(App)

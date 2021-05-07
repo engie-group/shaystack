@@ -393,7 +393,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             self,
             limit: int,
             select: Optional[str],
-            entity_ids: Optional[Grid] = None,
+            entity_ids: Optional[List[Ref]] = None,
             grid_filter: Optional[str] = None,
             date_version: Optional[datetime] = None,
     ) -> Grid:
@@ -406,6 +406,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             grid_filter,
             date_version,
         )
+        self.create_db()
         grid = self._download_grid(self._get_url(), date_version)
         if entity_ids:
             result = Grid(grid.version, metadata=grid.metadata, columns=grid.column)
@@ -429,6 +430,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             dates_range,
             date_version,
         )
+        self.create_db()
         if not date_version:
             date_version = datetime.now().replace(tzinfo=pytz.UTC)
         grid = self._download_grid(self._get_url(), date_version)
@@ -498,6 +500,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         return self._lambda_client
 
     def _function_concurrency(self) -> int:  # pylint: disable=no-self-use
+        return 1000
         # if not self._concurrency:
         #     try:
         #         self._concurrency = self._lambda().get_function_concurrency(
@@ -506,7 +509,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         #         log.warning("Impossible to get `ReservedConcurrentExecutions`")
         #         self._concurrency = 1000  # Default value if error
         # return self._concurrency
-        return 1000
 
     def _s3(self) -> BaseClient:
         # AWS_S3_ENDPOINT may be http://localhost:9000 to use minio (make start-minio)
@@ -550,8 +552,8 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         else:
             # Manage default cwd
             if not parsed_uri.scheme:
-                uri = Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri()
-            with urllib.request.urlopen(uri) as response:
+                parsed_uri = urlparse(Path.resolve(Path.cwd().joinpath(parsed_uri.geturl())).as_uri())
+            with urllib.request.urlopen(parsed_uri.geturl()) as response:
                 data = response.read()
         if parsed_uri.path.endswith(".gz"):
             return gzip.decompress(data)
@@ -582,7 +584,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 meta = s3_client.get_object(Bucket=parsed_uri.netloc, Key=parsed_uri.path[1:])
                 obj_versions = [meta["LastModified"], meta["VersionId"]]
             obj_versions = sorted(obj_versions, key=lambda x: x[0], reverse=True)
-            self._lock.acquire()
+            self._lock.acquire()  # pylint: disable=consider-using-with
             all_versions = self._versions.get(parsed_uri.geturl(), OrderedDict())
             concurrency = self._function_concurrency()
             for date_version, version_id in obj_versions:

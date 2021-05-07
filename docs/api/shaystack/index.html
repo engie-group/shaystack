@@ -462,7 +462,7 @@ Propose API : …" name="description"/>
             <ul>
                 <li>to read or write Haystack file (Zinc, JSon, CSV)</li>
                 <li>to manipulate ontology in memory (Grid class)</li>
-                <li>to implement REST API (<a href="https://www.project-haystack.org/doc/Rest">https://www.project-haystack.org/doc/Rest</a>)
+                <li>to implement REST API (<a href="https://project-haystack.org/doc/docHaystack/HttpApi">https://project-haystack.org/doc/docHaystack/HttpApi</a>)
                 </li>
                 <li>to implement GraphQL API</li>
             </ul>
@@ -489,7 +489,7 @@ Propose API :
 
 - to read or write Haystack file (Zinc, JSon, CSV)
 - to manipulate ontology in memory (Grid class)
-- to implement REST API (https://www.project-haystack.org/doc/Rest)
+- to implement REST API (https://project-haystack.org/doc/docHaystack/HttpApi)
 - to implement GraphQL API
 
 With some sample provider:
@@ -1064,12 +1064,10 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
         provider = get_singleton_provider(envs)
         grid_request = _parse_body(request)
         nav_id = None
-        if grid_request:
-            if &#34;navId&#34; in grid_request.column:
-                nav_id = grid_request[0][&#34;navId&#34;]
-        if args:
-            if &#34;navId&#34; in args:
-                nav_id = args[&#34;navId&#34;]
+        if grid_request and &#34;navId&#34; in grid_request.column:
+            nav_id = grid_request[0][&#34;navId&#34;]
+        if args and &#34;navId&#34; in args:
+            nav_id = args[&#34;navId&#34;]
         grid_response = provider.nav(nav_id=nav_id)
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, &#34;OK&#34;)
@@ -1845,9 +1843,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
         if columns is not None:
             if isinstance(columns, (dict, SortableDict)):
                 columns = list(columns.items())
-            elif isinstance(columns, Sequence):
-                if columns and not isinstance(columns[0], tuple):
-                    columns = list(zip(columns, [{}] * len(columns)))
+            elif isinstance(columns, Sequence) and columns and not isinstance(columns[0], tuple):
+                columns = list(zip(columns, [{}] * len(columns)))
 
             for col_id, col_meta in columns:
                 # Convert sorted lists and dicts back to a list of items.
@@ -1935,9 +1932,8 @@ __email__ = &#39;shaystack@prados.fr&#39;</code></pre>
             # Search record in other with same values
             find = False
             if &#39;id&#39; in left:
-                if left[&#39;id&#39;] in other:
-                    if self._approx_check(left, other[left[&#39;id&#39;]]):
-                        find = True
+                if left[&#39;id&#39;] in other and self._approx_check(left, other[left[&#39;id&#39;]]):
+                    find = True
             else:
                 for right in other._row:
                     if id(right) not in pending_right_row:
@@ -4221,6 +4217,8 @@ def watch_unsub(
     __slots__ = &#34;name&#34;, &#34;value&#34;
 
     def __init__(self, name: str, value: Optional[str] = None):
+        if name.startswith(&#34;@&#34;):
+            name = name[1:]
         assert isinstance(name, str) and re.match(&#34;^[a-zA-Z0-9_:\\-.~]+$&#34;, name)
         self.name = name
         self.value = value

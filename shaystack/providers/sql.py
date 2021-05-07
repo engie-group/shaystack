@@ -333,8 +333,6 @@ class Provider(DBHaystackInterface):
             _, keys = self._default_driver[self._dialect]
             filtered = {key: val for key, val in params.items() if key in keys}
             self._connect = _LocalConnect(self.database, **filtered)
-            # connect: DBConnection = self.database.connect(**filtered)
-            # self._connect = connect
             self.create_db()
         if not self._connect:
             raise ValueError("Impossible to use the database url")

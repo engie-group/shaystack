@@ -8,7 +8,7 @@ from shaystack.providers import HaystackInterface
 
 class Provider(HaystackInterface):
     @overrides
-    def watch_sub(self, watch_dis: str, watch_id: str,
+    def watch_sub(self, watch_dis: str, watch_id: Optional[str],
                   ids: List[Ref], lease: Optional[int]) -> Grid:
         raise NotImplementedError()
 
@@ -17,5 +17,5 @@ class Provider(HaystackInterface):
         raise NotImplementedError()
 
     @overrides
-    def watch_unsub(self, watch_id: str, ids: List[Ref], close: bool) -> None:
+    def watch_unsub(self, watch_id: str, ids: List[Ref], close: bool) -> Grid:
         raise NotImplementedError()

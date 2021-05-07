@@ -28,7 +28,7 @@
                 <ENTRY IS_ENABLED="true" PARSER="runconfig"/>
             </ENTRIES>
         </EXTENSION>
-        <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/__init__.py"/>
+        <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/main.py"/>
         <option name="PARAMETERS" value=""/>
         <option name="SHOW_COMMAND_LINE" value="true"/>
         <option name="EMULATE_TERMINAL" value="false"/>

@@ -221,14 +221,6 @@ export default {
     }
   },
   methods: {
-    copyText(item) {
-      const virtualElement = document.createElement('textarea')
-      document.body.appendChild(virtualElement)
-      virtualElement.value = item
-      virtualElement.select()
-      document.execCommand('copy')
-      document.body.removeChild(virtualElement)
-    },
     isApiServerAlreadyExists(host) {
       return Boolean(this.$store.getters.apiServers.find(apiServer => apiServer.haystackApiHost === host))
     },

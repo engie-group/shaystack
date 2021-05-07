@@ -40,7 +40,7 @@
             "about"
           ]
         },
-        "description": "Haystack operation about with zinc result.\nSee https://project-haystack.org/doc/Ops#about"
+        "description": "Haystack operation about with zinc result.\nSee https://project-haystack.org/doc/docHaystack/Ops#about"
       },
       "response": []
     },
@@ -84,7 +84,7 @@
             "about"
           ]
         },
-        "description": "Haystack operation about with json result.\nSee https://project-haystack.org/doc/Ops#about"
+        "description": "Haystack operation about with json result.\nSee https://project-haystack.org/doc/docHaystack/Ops#about"
       },
       "response": []
     },
@@ -127,7 +127,7 @@
             "ops"
           ]
         },
-        "description": "Haystack operation ops with zinc result.\nSee https://project-haystack.org/doc/Ops#ops"
+        "description": "Haystack operation ops with zinc result.\nSee https://project-haystack.org/doc/docHaystack/Ops#ops"
       },
       "response": []
     },
@@ -175,7 +175,7 @@
             "ops"
           ]
         },
-        "description": "Haystack operation ops with json result.\nSee https://project-haystack.org/doc/Ops#ops"
+        "description": "Haystack operation ops with json result.\nSee https://project-haystack.org/doc/docHaystack/Ops#ops"
       },
       "response": []
     },
@@ -213,7 +213,7 @@
             "formats"
           ]
         },
-        "description": "Haystack operation formats with zinc result.\nSee https://project-haystack.org/doc/Ops#formats"
+        "description": "Haystack operation formats with zinc result.\nSee https://project-haystack.org/doc/docHaystack/Ops#formats"
       },
       "response": []
     },
@@ -257,7 +257,7 @@
             "formats"
           ]
         },
-        "description": "Haystack operation formats with json result.\nSee https://project-haystack.org/doc/Ops#formats"
+        "description": "Haystack operation formats with json result.\nSee https://project-haystack.org/doc/docHaystack/Ops#formats"
       },
       "response": []
     },
@@ -312,7 +312,7 @@
             "read"
           ]
         },
-        "description": "Haystack operation read with zinc result.\nSee https://project-haystack.org/doc/Ops#read"
+        "description": "Haystack operation read with zinc result.\nSee https://project-haystack.org/doc/docHaystack/Ops#read"
       },
       "response": []
     },
@@ -360,7 +360,7 @@
             "read"
           ]
         },
-        "description": "Haystack operation read with json result.\nSee https://project-haystack.org/doc/Ops#read"
+        "description": "Haystack operation read with json result.\nSee https://project-haystack.org/doc/docHaystack/Ops#read"
       },
       "response": []
     },
@@ -404,7 +404,7 @@
             "formats"
           ]
         },
-        "description": "Haystack operation nav with zinc result.\nSee https://project-haystack.org/doc/Ops#nav"
+        "description": "Haystack operation nav with zinc result.\nSee https://project-haystack.org/doc/docHaystack/Ops#nav"
       },
       "response": []
     },
@@ -448,7 +448,7 @@
             "formats"
           ]
         },
-        "description": "Haystack operation nav with json result.\nSee https://project-haystack.org/doc/Ops#nav"
+        "description": "Haystack operation nav with json result.\nSee https://project-haystack.org/doc/docHaystack/Ops#nav"
       },
       "response": []
     },
@@ -505,7 +505,7 @@
             "hisRead"
           ]
         },
-        "description": "Haystack operation hisRead with zinc result.\nSee https://project-haystack.org/doc/Ops#hisRead"
+        "description": "Haystack operation hisRead with zinc result.\nSee https://project-haystack.org/doc/docHaystack/Ops#hisRead"
       },
       "response": []
     },
@@ -562,7 +562,7 @@
             "hisRead"
           ]
         },
-        "description": "Haystack operation hisRead with json result.\nSee https://project-haystack.org/doc/Ops#hisRead"
+        "description": "Haystack operation hisRead with json result.\nSee https://project-haystack.org/doc/docHaystack/Ops#hisRead"
       },
       "response": []
     },
@@ -609,7 +609,7 @@
             "invokeAction"
           ]
         },
-        "description": "Haystack operation invokeAction with zinc result.\nSee https://project-haystack.org/doc/Ops#invokeAction"
+        "description": "Haystack operation invokeAction with zinc result.\nSee https://project-haystack.org/doc/docHaystack/Ops#invokeAction"
       },
       "response": []
     },
@@ -652,7 +652,7 @@
             "invokeAction"
           ]
         },
-        "description": "Haystack operation invokeAction with json result.\nSee https://project-haystack.org/doc/Ops#invokeAction"
+        "description": "Haystack operation invokeAction with json result.\nSee https://project-haystack.org/doc/docHaystack/Ops#invokeAction"
       },
       "response": []
     },
@@ -704,7 +704,7 @@
             "hisWrite"
           ]
         },
-        "description": "Haystack operation hisWrite with zinc result.\nSee https://project-haystack.org/doc/Ops#hisWrite"
+        "description": "Haystack operation hisWrite with zinc result.\nSee https://project-haystack.org/doc/docHaystack/Ops#hisWrite"
       },
       "response": []
     },
@@ -756,7 +756,7 @@
             "hisWrite"
           ]
         },
-        "description": "Haystack operation hisWrite with json result.\nSee https://project-haystack.org/doc/Ops#hisWrite"
+        "description": "Haystack operation hisWrite with json result.\nSee https://project-haystack.org/doc/docHaystack/Ops#hisWrite"
       },
       "response": []
     },
@@ -808,7 +808,7 @@
             "pointWrite"
           ]
         },
-        "description": "Haystack operation pointWrite with zinc result.\nSee https://project-haystack.org/doc/Ops#pointWrite"
+        "description": "Haystack operation pointWrite with zinc result.\nSee https://project-haystack.org/doc/docHaystack/Ops#pointWrite"
       },
       "response": []
     },
@@ -860,7 +860,7 @@
             "pointWrite"
           ]
         },
-        "description": "Haystack operation pointWrite with json result.\nSee https://project-haystack.org/doc/Ops#pointWrite"
+        "description": "Haystack operation pointWrite with json result.\nSee https://project-haystack.org/doc/docHaystack/Ops#pointWrite"
       },
       "response": []
     },
@@ -912,7 +912,7 @@
             "watchSub"
           ]
         },
-        "description": "Haystack operation watchSub with zinc result.\nSee https://project-haystack.org/doc/Ops#watchSub"
+        "description": "Haystack operation watchSub with zinc result.\nSee https://project-haystack.org/doc/docHaystack/Ops#watchSub"
       },
       "response": []
     },
@@ -964,7 +964,7 @@
             "watchSub"
           ]
         },
-        "description": "Haystack operation watchSub with json result.\nSee https://project-haystack.org/doc/Ops#watchSub"
+        "description": "Haystack operation watchSub with json result.\nSee https://project-haystack.org/doc/docHaystack/Ops#watchSub"
       },
       "response": []
     },
@@ -1016,7 +1016,7 @@
             "watchUnsub"
           ]
         },
-        "description": "Haystack operation watchUnsub with zinc result.\nSee https://project-haystack.org/doc/Ops#watchUnsub"
+        "description": "Haystack operation watchUnsub with zinc result.\nSee https://project-haystack.org/doc/docHaystack/Ops#watchUnsub"
       },
       "response": []
     },
@@ -1068,7 +1068,7 @@
             "watchUnsub"
           ]
         },
-        "description": "Haystack operation watchUnsub with json result.\nSee https://project-haystack.org/doc/Ops#watchUnsub"
+        "description": "Haystack operation watchUnsub with json result.\nSee https://project-haystack.org/doc/docHaystack/Ops#watchUnsub"
       },
       "response": []
     },
@@ -1123,7 +1123,7 @@
             "watchPoll"
           ]
         },
-        "description": "Haystack operation watchPoll with zinc result.\nSee https://project-haystack.org/doc/Ops#watchPoll"
+        "description": "Haystack operation watchPoll with zinc result.\nSee https://project-haystack.org/doc/docHaystack/Ops#watchPoll"
       },
       "response": []
     },
@@ -1178,7 +1178,7 @@
             "watchPoll"
           ]
         },
-        "description": "Haystack operation watchPoll with json result.\nSee https://project-haystack.org/doc/Ops#watchPoll"
+        "description": "Haystack operation watchPoll with json result.\nSee https://project-haystack.org/doc/docHaystack/Ops#watchPoll"
       },
       "response": []
     }

@@ -7,7 +7,7 @@
 
 """
 Parse the filter syntax to produce a FilterAST.
-See https://www.project-haystack.org/doc/Filters
+See https://project-haystack.org/doc/docHaystack/Filters
 """
 from datetime import datetime, date, time, timedelta, tzinfo
 from functools import lru_cache

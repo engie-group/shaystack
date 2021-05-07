@@ -21,7 +21,7 @@ At this time (2021/1/1), here are the differences.
 | Auto update list of columns    |     |  Y  |
 | Convert file type to mode      |     |  Y  |
 | Convert mode to file type      |     |  Y  |
-| Haystack REST API              |     |  Y  |
+| Haystack HTTP API              |     |  Y  |
 | Haystack GraphQL API           |     |  Y  |
 | Default haystack version       | 2.0 | 3.0 |
 | Use pint.Quantity              |     |  Y  |

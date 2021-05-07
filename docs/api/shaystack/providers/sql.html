@@ -803,8 +803,6 @@ class Provider(DBHaystackInterface):
             _, keys = self._default_driver[self._dialect]
             filtered = {key: val for key, val in params.items() if key in keys}
             self._connect = _LocalConnect(self.database, **filtered)
-            # connect: DBConnection = self.database.connect(**filtered)
-            # self._connect = connect
             self.create_db()
         if not self._connect:
             raise ValueError(&#34;Impossible to use the database url&#34;)
@@ -1054,6 +1052,10 @@ class Provider(DBHaystackInterface):
                 assert &#34;id&#34; in row, &#34;TS must have an id&#34;
                 uri = dir_name + &#39;/&#39; + row[&#39;hisURI&#39;]
                 ts_grid = read_grid_from_uri(uri, envs=self._envs)
+                self._import_ts_in_db(ts_grid, row[&#34;id&#34;], customer_id)
+                log.debug(&#34;%s imported&#34;, uri)
+            elif &#34;history&#34; in row:
+                ts_grid = row[&#34;history&#34;]
                 self._import_ts_in_db(ts_grid, row[&#34;id&#34;], customer_id)
                 log.debug(&#34;%s imported&#34;, uri)
 
@@ -1353,8 +1355,6 @@ class Provider(DBHaystackInterface):
             _, keys = self._default_driver[self._dialect]
             filtered = {key: val for key, val in params.items() if key in keys}
             self._connect = _LocalConnect(self.database, **filtered)
-            # connect: DBConnection = self.database.connect(**filtered)
-            # self._connect = connect
             self.create_db()
         if not self._connect:
             raise ValueError(&#34;Impossible to use the database url&#34;)
@@ -1606,6 +1606,10 @@ class Provider(DBHaystackInterface):
                 ts_grid = read_grid_from_uri(uri, envs=self._envs)
                 self._import_ts_in_db(ts_grid, row[&#34;id&#34;], customer_id)
                 log.debug(&#34;%s imported&#34;, uri)
+            elif &#34;history&#34; in row:
+                ts_grid = row[&#34;history&#34;]
+                self._import_ts_in_db(ts_grid, row[&#34;id&#34;], customer_id)
+                log.debug(&#34;%s imported&#34;, uri)
 
     # noinspection PyUnusedLocal
     def _import_ts_in_db(self,
@@ -1741,8 +1745,6 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
         _, keys = self._default_driver[self._dialect]
         filtered = {key: val for key, val in params.items() if key in keys}
         self._connect = _LocalConnect(self.database, **filtered)
-        # connect: DBConnection = self.database.connect(**filtered)
-        # self._connect = connect
         self.create_db()
     if not self._connect:
         raise ValueError(&#34;Impossible to use the database url&#34;)

@@ -10,12 +10,13 @@ A Flask layer to haystack interface.
 import logging
 import os
 import sys
+
 import click
+
 try:
-    from flask import Flask, send_from_directory, request, redirect
+    from flask import Flask, send_from_directory
     from flask_cors import CORS
     from app.blueprint_haystack import haystack_blueprint
-    from app.blueprint_haystackui import HaystackUiBlueprint
 except ImportError as ex:
     print('To start shift-4-haystack, use \'pip install "shaystack[flask]"\' or '
           '\'pip install "shaystack[flask,graphql]"\' and set \'HAYSTACK_PROVIDER\' variable',
@@ -29,7 +30,9 @@ try:
 
     USE_GRAPHQL = True
 except ImportError:
-    USE_GRAPHQL = False
+    print("To use GraphQL feature, use "
+          "'pip install \"shaystack[graphql]\"'", file=sys.stderr)
+    sys.exit(-1)
 
 app = Flask(__name__)
 cors = CORS(app, resources={
@@ -43,30 +46,11 @@ app.register_blueprint(haystack_blueprint)
 if USE_GRAPHQL:
     app.register_blueprint(graphql_blueprint)
 
+
 @app.route('/')
 def index():
     """Empty page to check the deployment"""
-    redirect_js = """
-    <script>
-    if (! window.location.pathname.toString().endsWith("/")) {
-      document.location.href=window.location+"/"; 
-    }
-    </script>
-    """
-    if USE_GRAPHQL:
-        return f"""
-            {redirect_js}
-            <body>
-            <a href="haystack">Haystack API</a><br />
-            <a href="graphql">Haystack GraphQL API</a><br />
-            </body>
-            """
-    return f"""
-        {redirect_js}
-        <body>
-        <a href="haystack">Haystack API</a><br />
-        </body>
-        """
+    return "Flask is up and running"
 
 
 @app.route('/favicon.ico')
@@ -76,36 +60,25 @@ def favicon():
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
-def start_shaystack(host: str, port: int) -> int:
+@click.command()
+@click.option('-h', '--host', default='localhost')
+@click.option('-p', '--port', default=3000, type=int)
+def main(host: str, port: int) -> int:
     """Stack a flask server. The command line must set the host and port.
 
     Args:
-
         host: Network to listen (0.0.0.0 to accept call from all network)
         port: Port to listen
-
-    Envs:
-
-        HAYSTACK_PROVIDER: to select a provider (shaystack.providers.db)
-        HAYSTACK_DB: the URL to select the backend with the ontology
     """
-    if(os.environ.get('USE_OKTA')!='Y'):
-        haystackui_blueprint = HaystackUiBlueprint().haystackui_blueprint
-    else:
-        haystackui_blueprint = HaystackUiBlueprint().get_haystackui_blueprint_with_routes()
-    app.register_blueprint(haystackui_blueprint)
+    if not "HAYSTACK_PROVIDER" in os.environ:
+        print("Set 'HAYSTACK_PROVIDER' to use Shift-4-haystack", file=sys.stderr)
+        sys.exit(-1)
 
     debug = (os.environ.get("FLASK_DEBUG", "0") == "1")
     app.run(host=host,
             port=port,
             debug=debug)
     return 0
-
-@click.command()
-@click.option('-h', '--host', default='localhost')
-@click.option('-p', '--port', default=3000, type=int)
-def main(host, port):
-    return start_shaystack(host, port)
 
 
 if __name__ == '__main__':

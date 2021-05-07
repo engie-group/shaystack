@@ -17,7 +17,6 @@ USE_OKTA?=N
 AWS_PROFILE?=default
 AWS_REGION?=eu-west-3
 AWS_CLUSTER_NAME=haystack
-HAYSTACK_INTERFACE=
 AWS_STAGE?=$(STAGE)
 LOGLEVEL?=WARNING
 PG_PASSWORD?=password
@@ -87,7 +86,6 @@ export COOKIE_SECRET_KEY
 export PYTHON_VERSION
 export TLS_VERIFY
 export TWINE_USERNAME
-export HAYSTACK_INTERFACE
 
 # Calculate the make extended parameter
 # Keep only the unknown target
@@ -240,7 +238,7 @@ env:
 		fi
 	fi
 	branch="\$$(git branch | grep \* | cut -d ' ' -f2)"
-	if [ "\$${branch}" = "master" ] && [ "\$${FORCE}" != y ] ; then
+	if [ "\$${branch}" = "master" ] || [[ "\$${branch}" = release/* ]] && [ "\$${FORCE}" != y ] ; then
 		printf "\$${green}Validate the project before push the commit... (\$${yellow}make validate\$${green})\$${normal}\n"
 		make validate
 		ERR=\$$?
@@ -342,7 +340,8 @@ clean-zappa:
 
 ## Clean project
 clean: async-stop clean-zappa
-	@rm -rf bin/* .mypy_cache .pytest_cache .start build nohup.out dist .make-* .pytype out.json
+	@rm -rf bin/* .eggs shaystack.egg-info .ipynb_checkpoints .mypy_cache .pytest_cache .start build nohup.out dist \
+		.make-* .pytype out.json test.db zappa_settings.json ChangeLog
 	mkdir dist/
 
 .PHONY: clean-all
@@ -413,7 +412,7 @@ start-api: $(REQUIREMENTS)
 	echo -e "$(green)TS=$${HAYSTACK_TS}"
 	echo -e "$(green)Use http://$(HOST_API):$(PORT)/graphql or http://$(HOST_API):$(PORT)/haystack$(normal)"
 	FLASK_DEBUG=1 FLASK_ENV=$(STAGE) \
-	$(CONDA_PYTHON) -m app.__init__ --port $(PORT) --host $(INPUT_NETWORK)
+	$(CONDA_PYTHON) -m app.main --port $(PORT) --host $(INPUT_NETWORK)
 
 # Start local API server in background
 async-start-api: $(REQUIREMENTS)
@@ -421,7 +420,7 @@ async-start-api: $(REQUIREMENTS)
 	[ -e .start/start-api.pid ] && echo -e "$(yellow)Local API was allready started$(normal)" && exit
 	mkdir -p .start
 	FLASK_DEBUG=1 FLASK_APP=app.run FLASK_ENV=$(STAGE) \
-	nohup $(CONDA_PYTHON) -m app.__init__ --port $(PORT) >.start/start-api.log 2>&1 &
+	nohup $(CONDA_PYTHON) -m app.main --port $(PORT) >.start/start-api.log 2>&1 &
 	echo $$! >.start/start-api.pid
 	sleep 1
 	tail .start/start-api.log
@@ -831,7 +830,7 @@ pg-shell:
 
 clean-pg: start-pg
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgres)
-	docker exec -e PGPASSWORD=$(PG_PASSWORD) -it postgres psql -U postgres -h $$IP \
+	docker exec -e PGPASSWORD=$(PG_PASSWORD) -t postgres psql -U postgres -h $$IP \
 	-c 'drop table if exists haystack;drop table if exists haystack_meta_datas;drop table if exists haystack_ts;'
 
 
@@ -884,7 +883,7 @@ mysql-shell:
 # Clean MySQL database
 clean-mysql: start-mysql
 	@IP=$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' mysql)
-	docker exec -it mysql mysql --user=root --password=$(MYSQL_PASSWORD) -h localhost haystackdb \
+	docker exec -t mysql mysql --user=root --password=$(MYSQL_PASSWORD) -h localhost haystackdb \
 	--execute='drop table if exists haystack ; drop table if exists haystack_meta_datas ; drop table if exists haystack_ts;'
 
 
@@ -919,7 +918,7 @@ url-mongo: start-mongodb
 
 # Clean Mongo database
 clean-mongodb: start-mongodb
-	@docker exec -it mongodb mongo mongodb://localhost/haystackdb \
+	@docker exec -t mongodb mongo mongodb://localhost/haystackdb \
 	--quiet --eval 'db.haystack.drop();db.haystack_ts.drop();db.haystack_meta_datas.drop();' >/dev/null
 
 # --------------------------- Docker
@@ -1050,16 +1049,12 @@ docker-inspect-dmake:
 
 # Remove the dmake image
 docker-rm-dmake:
-	@docker image rm $(DOCKER_REPOSITORY)/$(PRJ)-dmake
+	@docker image rm $(DOCKER_REPOSITORY)/$(PRJ)-dmake || true
 	echo -e "$(cyan)Docker image '$(DOCKER_REPOSITORY)/$(PRJ)-make' removed$(normal)"
 
 # --------------------------- Distribution
 dist/:
 	mkdir dist
-
-toto:
-	PBR_VERSION="$$(git describe --tags)"
-	echo "PBR_VERSION=$${PBR_VERSION}"
 
 .PHONY: bdist
 dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC) schema.graphql | dist/
@@ -1075,7 +1070,6 @@ dist/$(PRJ_PACKAGE)-*.tar.gz: $(REQUIREMENTS) schema.graphql | dist/
 	@$(VALIDATE_VENV)
 	$(CONDA_PYTHON) setup.py sdist
 
-sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
 sdist: dist/$(PRJ_PACKAGE)-*.tar.gz | dist/
 
 .PHONY: clean-dist dist

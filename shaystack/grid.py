@@ -91,9 +91,8 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         if columns is not None:
             if isinstance(columns, (dict, SortableDict)):
                 columns = list(columns.items())
-            elif isinstance(columns, Sequence):
-                if columns and not isinstance(columns[0], tuple):
-                    columns = list(zip(columns, [{}] * len(columns)))
+            elif isinstance(columns, Sequence) and columns and not isinstance(columns[0], tuple):
+                columns = list(zip(columns, [{}] * len(columns)))
 
             for col_id, col_meta in columns:
                 # Convert sorted lists and dicts back to a list of items.
@@ -181,9 +180,8 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             # Search record in other with same values
             find = False
             if 'id' in left:
-                if left['id'] in other:
-                    if self._approx_check(left, other[left['id']]):
-                        find = True
+                if left['id'] in other and self._approx_check(left, other[left['id']]):
+                    find = True
             else:
                 for right in other._row:
                     if id(right) not in pending_right_row:

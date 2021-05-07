@@ -3,9 +3,6 @@ class HaystackApiService {
     this.haystackApiHost = haystackApiHost
     this.apiKey = apiKey
   }
-  // Invoquer ops pour savoir les méthodes qui sont disponibles
-  // Invoquer format pour savoir si l'api est compatible avec le format JSON
-
   get api() {
     return axios.create({
       baseURL: `${this.haystackApiHost}`,
@@ -44,7 +41,6 @@ class HaystackApiService {
     }
   }
 
-  // getEntity => read  and entity => filter
   async getEntity(entity, limit, version = '') {
     const versionParam = version === '' ? '' : `&version=${new Date(version).toISOString()}`
     try {

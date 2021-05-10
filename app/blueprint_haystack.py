@@ -21,7 +21,7 @@ from shaystack.ops import HaystackHttpRequest, HaystackHttpResponse
 
 def create_haystack_bp() -> Blueprint:
     haystack_blueprint = Blueprint('haystack', __name__,
-                                   static_folder=safe_join(os.path.dirname(__file__), 'haystackui'),
+                                   static_folder=safe_join(os.path.dirname(__file__), 'haystack'),
                                    url_prefix='/haystack')
 
     @haystack_blueprint.route('/about', methods=['POST', 'GET'])
@@ -134,7 +134,13 @@ def create_haystack_bp() -> Blueprint:
         envs = cast(Dict[str, str], os.environ)
         return _as_response(invoke_action(envs, _as_request(flash_request),
                                           envs.get("FLASK_ENV", "prod")))
-
+    @haystack_blueprint.route('/', methods=['GET'], defaults={'filename': 'index.html'})
+    @haystack_blueprint.route('/<path:filename>', methods=['GET'])
+    def flash_web_ui(filename) -> Response:
+        if(os.environ.get('HAYSTACK_INTERFACE') and os.environ.get('HAYSTACK_INTERFACE')!='' and filename == 'plugins/customPlugin.js'):
+            return send_from_directory(os.getcwd(), os.environ['HAYSTACK_INTERFACE'])
+        else:
+            return send_from_directory(haystack_blueprint.static_folder, filename)
     return haystack_blueprint
 
 

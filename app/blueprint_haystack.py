@@ -21,7 +21,7 @@ from shaystack.ops import HaystackHttpRequest, HaystackHttpResponse
 
 def create_haystack_bp() -> Blueprint:
     haystack_blueprint = Blueprint('haystack', __name__,
-                                   static_folder=safe_join(os.path.dirname(__file__), 'haystack'),
+                                   static_folder=safe_join(os.path.dirname(__file__), 'haystackui'),
                                    url_prefix='/haystack')
 
     @haystack_blueprint.route('/about', methods=['POST', 'GET'])

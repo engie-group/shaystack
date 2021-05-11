@@ -17,10 +17,11 @@ from shaystack import \
     about, ops, formats, read, nav, watch_sub, \
     watch_unsub, watch_poll, point_write, his_read, his_write, invoke_action
 from shaystack.ops import HaystackHttpRequest, HaystackHttpResponse
+prefix = os.environ.get('URL_PREFIX') if os.environ.get('URL_PREFIX') else ''
 
 haystack_blueprint = Blueprint('haystack', __name__,
                                static_folder=safe_join(os.path.dirname(__file__), 'haystackui'),
-                               url_prefix='/haystack')
+                               url_prefix=f'{prefix}/haystack')
 
 
 def _as_request(request: flash_request) -> HaystackHttpRequest:

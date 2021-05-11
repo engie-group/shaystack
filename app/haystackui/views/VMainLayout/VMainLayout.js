@@ -171,6 +171,16 @@ const template = `
             @change="updateVersion($event)"
           />
         </div>
+        <div class="main-layout__settings">
+          <v-btn
+            color="blue-grey"
+            rounded
+            class="main-layout__settings__cache-button white--text"
+            @click.native="clearLocalStorage()"
+          >
+            Clear api keys
+          </v-btn>
+        </div>
       </v-menu>
   </v-app-bar>
   <main>
@@ -239,7 +249,8 @@ export default {
       const haystackApiHost = this.comboboxInput
       if (!this.isApiServerAlreadyExists(haystackApiHost)) {
         const apiServersBeforeAdd = this.getApiServers.slice()
-        await this.$store.dispatch('createApiServer', { haystackApiHost })
+        const apiKey = prompt('You can enter an api token if needed', '')
+        await this.$store.dispatch('createApiServer', { haystackApiHost, apiKey })
         await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
         if (JSON.stringify(this.getApiServers) !== JSON.stringify(apiServersBeforeAdd)) {
           const { q, d, l, v } = this.$route.query
@@ -344,6 +355,9 @@ export default {
     circleApiClass(apiHost) {
       const apiNumber = this.$store.getters.apiServers.findIndex(apiServer => apiServer.haystackApiHost === apiHost)
       return `background: ${API_COLORS[apiNumber]};`
+    },
+    clearLocalStorage() {
+      localStorage.clear()
     }
   }
 }

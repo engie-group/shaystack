@@ -15,8 +15,7 @@ const state = {
   version: '',
   dateRange: { start: '', end: '' },
   isDataLoaded: false,
-  filterApi: '',
-  apiKey: Vue.prototype.getApiKey ? Vue.prototype.getApiKey() : null
+  filterApi: ''
 }
 export const mutations = {
   SET_ENTITIES(state, { entities, apiNumber }) {
@@ -55,15 +54,17 @@ export const mutations = {
     apiServers.map(apiServer => {
       newEntities.push([])
       newHistories.push({})
-      newApiServers.push(new HaystackApiService({ haystackApiHost: apiServer, apiKey: state.apiKey }))
+      const apiKey = localStorage.getItem(apiServer) ? localStorage.getItem(apiServer) : ''
+      newApiServers.push(new HaystackApiService({ haystackApiHost: apiServer, apiKey }))
     })
     state.entities = newEntities
     state.histories = newHistories
     state.apiServers = newApiServers
   },
-  SET_HAYSTACK_API(state, { haystackApiHost }) {
+  SET_HAYSTACK_API(state, { haystackApiHost, apiKey }) {
     const newApiServers = state.apiServers.slice()
-    newApiServers.push(new HaystackApiService({ haystackApiHost, apiKey: state.apiKey }))
+    newApiServers.push(new HaystackApiService({ haystackApiHost, apiKey }))
+    localStorage.setItem(haystackApiHost, apiKey)
     state.apiServers = newApiServers
   },
   SET_FILTER_API(state, { filterApi }) {
@@ -116,20 +117,22 @@ export const getters = {
   }
 }
 export const actions = {
-  async setHaystackApi(context, { apiServers }) {
+   async setHaystackApi(context, { apiServers }) {
     const availableApiServers = await Promise.all(
       apiServers.filter(async apiServer => {
-        const newApiServer = new HaystackApiService({ haystackApiHost: apiServer, apiKey: state.apiKey })
-        return await newApiServer.isHaystackApi()
+        const apiKey = localStorage.getItem(apiServer) ? localStorage.getItem(apiServer) : ''
+        const newApiServer = new HaystackApiService({ haystackApiHost: apiServer, apiKey })
+        const isAvailable = await newApiServer.isHaystackApi()
+        return isAvailable
       })
     )
     context.commit('SET_API_SERVERS', { apiServers: availableApiServers })
   },
-  async createApiServer(context, { haystackApiHost }) {
-    const newApiServer = new HaystackApiService({ haystackApiHost, apiKey: state.apiKey })
+  async createApiServer(context, { haystackApiHost, apiKey }) {
+    const newApiServer = new HaystackApiService({ haystackApiHost, apiKey })
     const isNewServerAvailable = await newApiServer.isHaystackApi()
     if (isNewServerAvailable) {
-      await context.commit('SET_HAYSTACK_API', { haystackApiHost })
+      await context.commit('SET_HAYSTACK_API', { haystackApiHost, apiKey })
     }
   },
   async commitNewEntities(context, { entities, apiNumber }) {

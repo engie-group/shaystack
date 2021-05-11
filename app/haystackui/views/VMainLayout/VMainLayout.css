@@ -137,3 +137,7 @@
   left: 5px;
   top: 9px;
 }
+.main-layout__settings__cache-button {
+  margin: auto;
+  width: 100px;
+}

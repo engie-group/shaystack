@@ -34,6 +34,7 @@
 }
 .main-layout__tootltips {
   padding-left: 5px;
+  padding-right:  10px;
 }
 .v-tooltip__content {
   background: white !important;
@@ -75,6 +76,7 @@
 .main-layout__text-field {
   margin-top: 23px !important;
   padding: 0 20px !important;
+  padding-right: 0px !important;
   width: 1%;
   .v-input--is-focused {
     background: white;
@@ -86,6 +88,7 @@
 .main-layout__combobox {
   margin-top: 23px !important;
   padding: 0 20px !important;
+  padding-right: 0px !important;
   width: 20%;
 }
 .main-layout__combobox-image {
@@ -103,6 +106,13 @@
   .v-input--is-focused {
     background: white;
   }
+}
+.v-tooltip__content {
+  pointer-events: initial;
+}
+.main-layout__click-button {
+  width: 10x;
+  float: right;
 }
 .main-layout__text-field__date {
   margin-top: 23px !important;
@@ -126,4 +136,8 @@
   //background: red;
   left: 5px;
   top: 9px;
+}
+.main-layout__settings__cache-button {
+  margin: auto;
+  width: 100px;
 }

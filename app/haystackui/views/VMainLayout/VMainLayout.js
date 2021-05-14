@@ -70,6 +70,22 @@ const template = `
         </div>
       </template>
   </v-combobox>
+
+    <div class="main-layout__tootltips" v-if="existingApiEndPointFromPlugin" data-app>
+      <v-tooltip v-model="showExistingApi" bottom>
+        <template v-slot:activator="{ attrs }">
+            <v-btn icon color="rgba(0,0,0,.87)" @click="showExistingApi = !showExistingApi" v-if="existingApiEndPointFromPlugin">
+                <v-icon icon v-bind="attrs">info</v-icon>
+            </v-btn>
+          </template>
+        <h4>
+          Api Endpoint Available:
+        </h4>
+        <span
+          ><li v-for="apiEndpoint in existingApiEndPointFromPlugin">{{ apiEndpoint }}</li>
+        </span>
+      </v-tooltip>
+    </div>
     <v-text-field
       height="40px"
       class="main-layout__text-field__date"
@@ -155,6 +171,16 @@ const template = `
             @change="updateVersion($event)"
           />
         </div>
+        <div class="main-layout__settings">
+          <v-btn
+            color="blue-grey"
+            rounded
+            class="main-layout__settings__cache-button white--text"
+            @click.native="clearLocalStorage()"
+          >
+            Clear api keys
+          </v-btn>
+        </div>
       </v-menu>
   </v-app-bar>
   <main>
@@ -170,12 +196,17 @@ export default {
       comboboxInput: '',
       dateStartInput: this.startDateRange,
       dateEndInput: this.endDateRange,
-      menu: false
+      menu: false,
+      showExistingApi: false
     }
   },
   computed: {
     filterApi() {
       return this.$store.getters.filterApi
+    },
+    existingApiEndPointFromPlugin(){
+      if (this.getExistingApiEndpoint) return this.getExistingApiEndpoint()
+      else return null
     },
     version() {
       return this.$store.getters.version
@@ -218,7 +249,8 @@ export default {
       const haystackApiHost = this.comboboxInput
       if (!this.isApiServerAlreadyExists(haystackApiHost)) {
         const apiServersBeforeAdd = this.getApiServers.slice()
-        await this.$store.dispatch('createApiServer', { haystackApiHost })
+        const apiKey = prompt('You can enter an api token if needed', '')
+        await this.$store.dispatch('createApiServer', { haystackApiHost, apiKey })
         await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
         if (JSON.stringify(this.getApiServers) !== JSON.stringify(apiServersBeforeAdd)) {
           const { q, d, l, v } = this.$route.query
@@ -323,6 +355,9 @@ export default {
     circleApiClass(apiHost) {
       const apiNumber = this.$store.getters.apiServers.findIndex(apiServer => apiServer.haystackApiHost === apiHost)
       return `background: ${API_COLORS[apiNumber]};`
+    },
+    clearLocalStorage() {
+      localStorage.clear()
     }
   }
 }

@@ -412,7 +412,7 @@ start-api: $(REQUIREMENTS)
 	echo -e "$(green)TS=$${HAYSTACK_TS}"
 	echo -e "$(green)Use http://$(HOST_API):$(PORT)/graphql or http://$(HOST_API):$(PORT)/haystack$(normal)"
 	FLASK_DEBUG=1 FLASK_ENV=$(STAGE) \
-	$(CONDA_PYTHON) -m app.__init__ --port $(PORT) --host $(INPUT_NETWORK)
+	$(CONDA_PYTHON) -m app.main --port $(PORT) --host $(INPUT_NETWORK)
 
 # Start local API server in background
 async-start-api: $(REQUIREMENTS)
@@ -420,7 +420,7 @@ async-start-api: $(REQUIREMENTS)
 	[ -e .start/start-api.pid ] && echo -e "$(yellow)Local API was allready started$(normal)" && exit
 	mkdir -p .start
 	FLASK_DEBUG=1 FLASK_APP=app.run FLASK_ENV=$(STAGE) \
-	nohup $(CONDA_PYTHON) -m app.__init__ --port $(PORT) >.start/start-api.log 2>&1 &
+	nohup $(CONDA_PYTHON) -m app.main --port $(PORT) >.start/start-api.log 2>&1 &
 	echo $$! >.start/start-api.pid
 	sleep 1
 	tail .start/start-api.log

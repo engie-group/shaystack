@@ -1,15 +1,22 @@
 class HaystackApiService {
-  constructor({ haystackApiHost }) {
+  constructor({ haystackApiHost, apiKey }) {
     this.haystackApiHost = haystackApiHost
+    this.apiKey = apiKey
   }
   get api() {
+    const headers = this.apiKey ?
+    {
+      'Content-Type': 'application/json',
+      'KeyId': this.apiKey
+    } :
+    {
+      'Content-Type': 'application/json'
+    }
     return axios.create({
       baseURL: `${this.haystackApiHost}`,
       timeout: 20000,
       withCredentials: false,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers
     })
   }
 
@@ -21,10 +28,10 @@ class HaystackApiService {
         opsResponse.data.rows.find(row => row.name === 's:read') &&
         formatResponse.data.rows.find(row => row.mime === 's:application/json' && row.receive === 'm:')
       if (isHaystackApiAvailable) return true
-      alert('API not available for') // TODO no alert
+      alert('API not available for')
       return false
     } catch {
-      alert('Not an Haystack API') // TODO no alert
+      alert('Not an Haystack API')
       return false
     }
   }

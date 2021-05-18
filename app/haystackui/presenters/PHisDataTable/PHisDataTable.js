@@ -24,6 +24,7 @@ const template = `
           >{{ getRefName(item) }}</span
         >
         <span v-else>{{ getRefName(item) }}</span>
+        <v-icon v-if="isDuplicateKey(item.attribute)" class="material-icons entity-row__click-button">warning</v-icon>
         <v-icon class="material-icons entity-row__click-button" @click="copyText(item)">content_copy</v-icon>
       </div>
       <div v-else-if="isDuplicateKey(item.attribute)">

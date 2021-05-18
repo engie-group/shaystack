@@ -2,7 +2,7 @@
   "dev": {
     "profile_name": "${AWS_PROFILE}",
     "aws_region": "${AWS_REGION}",
-    "app_function": "app.main.app",
+    "app_function": "app.main.main",
     "project_name": "${PRJ}",
     "s3_bucket": "${PRJ}-zappa",
     "runtime": "python${PYTHON_VERSION}",

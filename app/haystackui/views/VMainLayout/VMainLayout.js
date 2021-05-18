@@ -126,6 +126,9 @@ const template = `
       </v-tooltip>
     </div>
     <v-spacer></v-spacer>
+      <div class="main-layout__download_button">
+        <v-btn icon :href="convertData()" download="ontology.json"><v-icon>file_download</v-icon></v-btn>
+      </div>
       <v-menu v-model="menu" bottom :offset-y="true" :close-on-content-click="false">
         <template v-slot:activator="{ on, attrs }">
           <v-btn class="main-layout__params" dark icon v-bind="attrs" v-on="on">
@@ -360,6 +363,20 @@ export default {
     },
     clearLocalStorage() {
       localStorage.clear()
+    },
+    convertData() {
+      const entities = this.$store.getters.entities.slice()
+      let data
+      if (entities.length === 0) data = {}
+      else {
+        data = entities.length === 1 ? entities[0] : formatService.groupAllEntitiesById(entities)
+        data = formatService.addApiSourceInEntities(data, this.getApiServers)
+      }
+      const contentType = 'application/json'
+      const dData = JSON.stringify(data, null, 2)
+      const blob = new Blob([dData], { type: contentType })
+      const url = window.URL.createObjectURL(blob)
+      return url
     }
   }
 }

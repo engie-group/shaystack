@@ -260,6 +260,19 @@ const formatService = {
       })
     })
     return [entitiesLink, colorsLinkOutFromSource, entitiesNameToEntitiesId]
+  },
+  addApiSourceInEntities(entities, apiHosts) {
+    const entitiesCopy = []
+    entities.forEach(entity => {
+      const newEntity = {}
+      Object.keys(entity).map(function(key, index) {
+        const apiSource = apiHosts[entity[key].apiSource - 1]
+        const val = entity[key].val
+        newEntity[key] = { val, apiSource }
+      })
+      entitiesCopy.push(newEntity)
+    })
+    return entitiesCopy
   }
 }
 

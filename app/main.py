@@ -87,7 +87,7 @@ def create_app() -> Flask:
     return add_blueprints(init_app(Flask(__name__)))
 
 
-def start_shaystack(host: str, port: int) -> int:
+def start_shaystack(host: str, port: int, app: Flask) -> int:
     """Stack a flask server. The command line must set the host and port.
 
     Args:
@@ -111,7 +111,7 @@ app = create_app()
 @click.option('-h', '--host', default='localhost')
 @click.option('-p', '--port', default=3000, type=int)
 def main(host, port):
-    return start_shaystack(host, port)
+    return start_shaystack(host, port, app)
 
 
 if __name__ == '__main__':

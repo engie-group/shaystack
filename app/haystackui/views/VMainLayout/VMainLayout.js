@@ -253,9 +253,7 @@ export default {
       if (!this.isApiServerAlreadyExists(haystackApiHost)) {
         const apiServersBeforeAdd = this.getApiServers.slice()
         const preRegisterToken = localStorage.getItem(haystackApiHost)
-        console.log(preRegisterToken)
-        const apiKey = prompt('You can enter an api token if needed', preRegisterToken ? preRegisterToken : '')
-        await this.$store.dispatch('createApiServer', { haystackApiHost, apiKey })
+        await this.$store.dispatch('createApiServer', { haystackApiHost })
         await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
         if (JSON.stringify(this.getApiServers) !== JSON.stringify(apiServersBeforeAdd)) {
           const { q, d, l, v } = this.$route.query

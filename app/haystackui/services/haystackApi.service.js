@@ -27,11 +27,22 @@ class HaystackApiService {
       const isHaystackApiAvailable =
         opsResponse.data.rows.find(row => row.name === 's:read') &&
         formatResponse.data.rows.find(row => row.mime === 's:application/json' && row.receive === 'm:')
-      if (isHaystackApiAvailable) return true
-      alert('API not available for')
-      return false
-    } catch {
-      alert('Not an Haystack API')
+      if (isHaystackApiAvailable) return 'available'
+      alert('unavailable')
+      return 'unavailable'
+    } catch (error) {
+      const statusCodeError = error.response.status
+      if (statusCodeError === 403 || statusCodeError === 401) {
+        return 'notAuthenticated'
+      }
+      if (statusCodeError === 404) {
+        alert('this is not a haystack API')
+        return 'unreachable'
+      }
+      if (statusCodeError === 500) {
+        alert('internal error')
+        return 'internError'
+      }
       return false
     }
   }

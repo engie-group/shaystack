@@ -122,17 +122,25 @@ export const actions = {
       apiServers.filter(async apiServer => {
         const apiKey = localStorage.getItem(apiServer) ? localStorage.getItem(apiServer) : ''
         const newApiServer = new HaystackApiService({ haystackApiHost: apiServer, apiKey })
-        const isAvailable = await newApiServer.isHaystackApi()
-        return isAvailable
+        const apiServerStatus = await newApiServer.isHaystackApi()
+        return apiServerStatus === 'available'
       })
     )
     context.commit('SET_API_SERVERS', { apiServers: availableApiServers })
   },
-  async createApiServer(context, { haystackApiHost, apiKey }) {
+  async createApiServer(context, { haystackApiHost }) {
+    const apiKey = localStorage.getItem(haystackApiHost) ? localStorage.getItem(haystackApiHost) : ''
     const newApiServer = new HaystackApiService({ haystackApiHost, apiKey })
-    const isNewServerAvailable = await newApiServer.isHaystackApi()
-    if (isNewServerAvailable) {
+    const newServerStatus = await newApiServer.isHaystackApi()
+    if (newServerStatus === 'available') {
       await context.commit('SET_HAYSTACK_API', { haystackApiHost, apiKey })
+    } else if (newServerStatus === 'notAuthenticated') {
+      const apiKey = prompt('You need to enter an api token', '')
+      const newApiServerWithToken = new HaystackApiService({ haystackApiHost, apiKey })
+      const newServerStatusWithToken = await newApiServerWithToken.isHaystackApi()
+      if (newServerStatusWithToken === 'available') {
+        await context.commit('SET_HAYSTACK_API', { haystackApiHost, apiKey })
+      } else alert('wrong token')
     }
   },
   async commitNewEntities(context, { entities, apiNumber }) {

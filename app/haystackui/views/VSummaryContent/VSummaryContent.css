@@ -17,3 +17,7 @@
 .summary-content__entity-row {
   background-color: white;
 }
+.summary-content__alert-no-data {
+  width: 500px;
+  margin: 0 auto;
+}

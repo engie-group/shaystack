@@ -8,6 +8,7 @@ const template = `
         alt="Vuetify Logo"
         class="shrink mr-2"
         contain
+        src="https://raw.githubusercontent.com/engie-group/shaystack/develop/docs/logo.png"
         transition="scale-transition"
         width="90"
         disabled

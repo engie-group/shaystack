@@ -12,7 +12,7 @@ const template = `
         width="90"
         disabled
       />
-      <h2 class="main-layout__title">Haystack</h2>
+      <h2 class="main-layout__title">Shift For Haystack</h2>
     </div>
     <v-text-field
       height="40px"

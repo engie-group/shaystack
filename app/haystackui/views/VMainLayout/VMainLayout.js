@@ -190,11 +190,14 @@ const template = `
   <main>
     <router-view class="router-view" />
   </main>
+  <c-footer />
 </div>
 `
 import { API_COLORS, dataUtils, formatService } from '../../services/index.js'
+import CFooter from '../../components/CFooter/CFooter.js'
 export default {
   template,
+  components: { CFooter },
   data() {
     return {
       comboboxInput: '',
@@ -369,13 +372,12 @@ export default {
       if (entities.length === 0) data = {}
       else {
         data = entities.length === 1 ? entities[0] : formatService.groupAllEntitiesById(entities)
-        data = formatService.addApiSourceInEntities(data, this.getApiServers)
+        data = formatService.formatHaystackJson(data)
       }
       const contentType = 'application/json'
       const dData = JSON.stringify(data, null, 2)
       const blob = new Blob([dData], { type: contentType })
-      const url = window.URL.createObjectURL(blob)
-      return url
+      return window.URL.createObjectURL(blob)
     }
   }
 }

@@ -261,14 +261,12 @@ const formatService = {
     })
     return [entitiesLink, colorsLinkOutFromSource, entitiesNameToEntitiesId]
   },
-  addApiSourceInEntities(entities, apiHosts) {
+  formatHaystackJson(entities) {
     const entitiesCopy = []
     entities.forEach(entity => {
       const newEntity = {}
       Object.keys(entity).map(function(key, index) {
-        const apiSource = apiHosts[entity[key].apiSource - 1]
-        const val = entity[key].val
-        newEntity[key] = { val, apiSource }
+        newEntity[key] = entity[key].val
       })
       entitiesCopy.push(newEntity)
     })

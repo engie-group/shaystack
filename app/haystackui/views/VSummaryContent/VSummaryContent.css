@@ -21,3 +21,6 @@
   width: 500px;
   margin: 0 auto;
 }
+.summary-content__entity-row:last-child {
+  margin-bottom: 200px;
+}

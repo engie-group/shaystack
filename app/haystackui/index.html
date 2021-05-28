@@ -13,13 +13,13 @@
   <link rel="stylesheet" href="./views/VMainLayout/VMainLayout.css">
   <link rel="stylesheet" href="./views/VSummaryContent/VSummaryContent.css">
   <link rel="stylesheet" href="./components/CEntityRow/CEntityRow.css">
+  <link rel="stylesheet" href="./components/CFooter/CFooter.css">
   <script src=https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.4.11/vuetify.min.js></script>
 
 
 
+  <script src="./index.js" type="module"></script>
 
-  <script src="./index.js" type="module">
-  </script>
 
   <meta charset="utf-8">
   <title>Haystack Interface</title>
@@ -28,7 +28,9 @@
 <body>
   <main>
     <v-app>
-      <router-view class="router-view" />
+      <v-main>
+        <router-view class="router-view" />
+      </v-main>
     </v-app>
   </main>
 </body>

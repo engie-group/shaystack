@@ -1,6 +1,25 @@
 .main-layout {
-  background-color: #f2f2f2;
   height: 100%;
+  background-color: #f2f2f2;
+}
+.main-layout__app-bar {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+}
+.main-layout__app-bar > div {
+  margin: 5px;
+}
+.main-layout__input-combobox {
+  display: flex;
+  width: 25%;
+}
+.main-layout__input {
+  display: flex;
+}
+.main-layout__button {
+  display: flex;
 }
 .main-layout__params {
   color: grey !important;
@@ -15,27 +34,18 @@
 .main-layout__settings {
   background: white;
   width: 200px;
-  height: 50px !important;
   display: flex;
   justify-content: space-between;
   vertical-align: middle;
 }
 .main-layout__settings__text-version {
-  margin-left: 10px;
-  margin-top: 5px;
-  margin-right: 10px;
 }
 .main-layout__settings__buttons {
-  margin-top: 10px;
-  margin-right: 6px;
 }
 .main-layout__settings__text {
-  margin-left: 10px;
-  margin-top: 10px;
 }
 .main-layout__tootltips {
-  padding-left: 5px;
-  padding-right:  10px;
+  display: flex;
 }
 .v-tooltip__content {
   background: white !important;
@@ -51,8 +61,6 @@
 }
 .main-layout__settings__text-field__limit {
   width: 2%;
-  margin-top: 5px !important;
-  height: 10px !important;
   display: inline-block;
   .v-input--is-focused {
     background: white;
@@ -60,9 +68,6 @@
 }
 .main-layout__settings__text-field__version {
   width: 2%;
-  margin-top: 5px;
-  height: 10px !important;
-  margin-right: 10px !important;
   display: inline-block;
   .v-input--is-focused {
     background: white;
@@ -75,9 +80,6 @@
   background-color: white;
 }
 .main-layout__text-field {
-  margin-top: 23px !important;
-  padding: 0 20px !important;
-  padding-right: 0px !important;
   width: 1%;
   .v-input--is-focused {
     background: white;
@@ -87,9 +89,6 @@
   background-color: white;
 }
 .main-layout__combobox {
-  margin-top: 23px !important;
-  padding: 0 20px !important;
-  padding-right: 0px !important;
   width: 20%;
 }
 .main-layout__combobox-image {
@@ -101,23 +100,12 @@
   cursor: default !important;
 }
 .main-layout__text-field {
-  margin-top: 23px !important;
-  padding-left: 10px !important;
   width: 15%;
   .v-input--is-focused {
     background: white;
   }
 }
-.v-tooltip__content {
-  pointer-events: initial;
-}
-.main-layout__click-button {
-  width: 10x;
-  float: right;
-}
 .main-layout__text-field__date {
-  margin-top: 23px !important;
-  padding-left: 10px !important;
   width: 5%;
   .v-input--is-focused {
     background: white;
@@ -140,5 +128,4 @@
 }
 .main-layout__settings__cache-button {
   margin: auto;
-  width: 100px;
 }

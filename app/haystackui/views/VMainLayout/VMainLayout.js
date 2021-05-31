@@ -126,70 +126,72 @@ const template = `
         <div class="main-layout__button">
           <v-btn icon :href="convertData()" download="ontology.json" class="test"><v-icon>file_download</v-icon></v-btn>
         </div>
-        <v-menu v-model="menu" bottom :offset-y="true" :close-on-content-click="false" style="display:flex;">
+        <v-menu v-model="menu" bottom offset-y :close-on-content-click="false">
           <template v-slot:activator="{ on, attrs }">
             <v-btn class="main-layout__params" dark icon v-bind="attrs" v-on="on">
               <v-icon>mdi-cogs</v-icon>
             </v-btn>
           </template>
-          <div class="main-layout__settings">
-            <span class="main-layout__settings__text">Limit: </span>
-            <v-btn
-              class="main-layout__settings__buttons"
-              color="grey"
-              icon
-              x-small
-              dark
-              @click.native="increaseLimit()"
-            >
-              <v-icon dark>
-                mdi-plus
-              </v-icon>
-            </v-btn>
-            <v-text-field
-              class="main-layout__settings__text-field__limit"
-              outlined
-              :value="limit"
-              dense
-              background-color="white"
-              @change="updateLimit($event)"
-              hide-details
-            />
-            <v-btn
-              class="mx-2 main-layout__settings__buttons"
-              color="grey"
-              icon
-              x-small
-              dark
-              @click.native="decreaseLimit()"
-            >
-              <v-icon dark>
-                mdi-minus
-              </v-icon>
-            </v-btn>
-          </div>
-          <div class="main-layout__settings">
-            <span class="main-layout__settings__text-version">Version: </span>
-            <v-text-field
-              class="main-layout__settings__text-field__version"
-              outlined
-              dense
-              :value="version"
-              background-color="white"
-              @change="updateVersion($event)"
-              hide-details
-            />
-          </div>
-          <div class="main-layout__settings">
-            <v-btn
-              color="blue-grey"
-              rounded
-              class="main-layout__settings__cache-button white--text"
-              @click.native="clearLocalStorage()"
-            >
-              Clear api keys
-            </v-btn>
-          </div>
+          <v-list class="main-layout__menu-list">
+            <v-list-item class="main-layout__settings">
+              <span class="main-layout__settings__text">Limit: </span>
+              <v-btn
+                class="main-layout__settings__buttons"
+                color="grey"
+                icon
+                x-small
+                dark
+                @click.native="increaseLimit()"
+              >
+                <v-icon dark>
+                  mdi-plus
+                </v-icon>
+              </v-btn>
+              <v-text-field
+                class="main-layout__settings__text-field__limit"
+                outlined
+                :value="limit"
+                dense
+                background-color="white"
+                @change="updateLimit($event)"
+                hide-details
+              />
+              <v-btn
+                class="mx-2 main-layout__settings__buttons"
+                color="grey"
+                icon
+                x-small
+                dark
+                @click.native="decreaseLimit()"
+              >
+                <v-icon dark>
+                  mdi-minus
+                </v-icon>
+              </v-btn>
+            </v-list-item>
+            <v-list-item class="main-layout__settings">
+              <span class="main-layout__settings__text-version">Version: </span>
+              <v-text-field
+                class="main-layout__settings__text-field__version"
+                outlined
+                dense
+                :value="version"
+                background-color="white"
+                @change="updateVersion($event)"
+                hide-details
+              />
+            </v-list-item>
+            <v-list-item class="main-layout__settings">
+              <v-btn
+                color="blue-grey"
+                rounded
+                class="main-layout__settings__cache-button white--text"
+                @click.native="clearLocalStorage()"
+              >
+                Clear api keys
+              </v-btn>
+            </v-list-item>
+          </v-list>
         </v-menu>
   </v-app-bar>
   <main>

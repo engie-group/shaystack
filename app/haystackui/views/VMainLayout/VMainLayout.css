@@ -33,16 +33,9 @@
 }
 .main-layout__settings {
   background: white;
-  width: 200px;
   display: flex;
   justify-content: space-between;
   vertical-align: middle;
-}
-.main-layout__settings__text-version {
-}
-.main-layout__settings__buttons {
-}
-.main-layout__settings__text {
 }
 .main-layout__tootltips {
   display: flex;
@@ -52,16 +45,12 @@
   color: black !important;
   border: 1px solid !important;
 }
-.main-layout__api-server-selection {
-  padding-left: 5px;
-  width: 100px;
-}
 .v-input__slot {
   min-height: 20px !important;
 }
 .main-layout__settings__text-field__limit {
-  width: 2%;
-  display: inline-block;
+  display: flex;
+  width: 1%;
   .v-input--is-focused {
     background: white;
   }
@@ -84,6 +73,12 @@
   .v-input--is-focused {
     background: white;
   }
+}
+.main-layout__menu-list {
+  display: flex;
+  flex: auto;
+  width: 200px;
+  flex-direction: column;
 }
 .v-toolbar__content {
   background-color: white;

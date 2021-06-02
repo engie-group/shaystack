@@ -55,6 +55,10 @@
     background: white;
   }
 }
+.v-tooltip__content {
+  pointer-events: initial;
+}
+
 .main-layout__settings__text-field__version {
   width: 2%;
   display: inline-block;

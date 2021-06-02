@@ -77,6 +77,22 @@ const template = `
             </template>
           </v-combobox>
         </div>
+        <div class="main-layout__tootltips" v-if="existingApiEndPointFromPlugin" data-app>
+          <v-tooltip v-model="showExistingApi" bottom>
+            <template v-slot:activator="{ attrs }">
+                <v-btn icon color="rgba(0,0,0,.87)" @click="showExistingApi = !showExistingApi" v-if="existingApiEndPointFromPlugin">
+                    <v-icon icon v-bind="attrs">info</v-icon>
+                </v-btn>
+              </template>
+            <h4>
+              Api Endpoint Available:
+            </h4>
+            <span
+              ><li v-for="apiEndpoint in existingApiEndPointFromPlugin">{{ apiEndpoint }}</li>
+            </span>
+          </v-tooltip>
+        </div>
+
         <div class="main-layout__input">
           <v-text-field
             height="40px"

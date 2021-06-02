@@ -238,7 +238,8 @@ export default {
     await this.reloadPageFromQueryParameters()
     if (this.apiServers.length === 0) {
       await this.$store.dispatch('createApiServer', {
-        haystackApiHost: `${window.location.origin}${window.location.pathname}`
+        haystackApiHost: `${window.location.origin}${window.location.pathname}`,
+        isStart: true
       })
       if (this.apiServers.length !== 0) {
         this.$router.push({ query: { a: `["${this.apiServers.map(api => api.haystackApiHost).join('","')}"]` } }).catch(() => {})

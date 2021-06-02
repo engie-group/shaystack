@@ -125,10 +125,10 @@ export const actions = {
     )
     context.commit('SET_API_SERVERS', { apiServers: availableApiServers })
   },
-  async createApiServer(context, { haystackApiHost }) {
+  async createApiServer(context, { haystackApiHost, isStart }) {
     const apiKey = localStorage.getItem(haystackApiHost) ? localStorage.getItem(haystackApiHost) : ''
     const newApiServer = new HaystackApiService({ haystackApiHost, apiKey })
-    const newServerStatus = await newApiServer.isHaystackApi()
+    const newServerStatus = await newApiServer.isHaystackApi(isStart)
     if (newServerStatus === 'available') {
       await context.commit('SET_HAYSTACK_API', { haystackApiHost, apiKey })
     } else if (newServerStatus === 'notAuthenticated') {

@@ -9,7 +9,7 @@ const template = `
             alt="Vuetify Logo"
             class="shrink mr-2"
             contain
-            src="require('../../assets/engieLogo.png')"
+            src="https://raw.githubusercontent.com/engie-group/shaystack/develop/docs/logo.png"
             transition="scale-transition"
             width="90"
             disabled
@@ -77,6 +77,22 @@ const template = `
             </template>
           </v-combobox>
         </div>
+        <div class="main-layout__tootltips" v-if="existingApiEndPointFromPlugin" data-app>
+          <v-tooltip v-model="showExistingApi" bottom>
+            <template v-slot:activator="{ attrs }">
+                <v-btn icon color="rgba(0,0,0,.87)" @click="showExistingApi = !showExistingApi" v-if="existingApiEndPointFromPlugin">
+                    <v-icon icon v-bind="attrs">info</v-icon>
+                </v-btn>
+              </template>
+            <h4>
+              Api Endpoint Available:
+            </h4>
+            <span
+              ><li v-for="apiEndpoint in existingApiEndPointFromPlugin">{{ apiEndpoint }}</li>
+            </span>
+          </v-tooltip>
+        </div>
+
         <div class="main-layout__input">
           <v-text-field
             height="40px"
@@ -263,7 +279,7 @@ export default {
       const haystackApiHost = this.comboboxInput
       if (!this.isApiServerAlreadyExists(haystackApiHost)) {
         const apiServersBeforeAdd = this.getApiServers.slice()
-        await this.$store.dispatch('createApiServer', { haystackApiHost })
+        await this.$store.dispatch('createApiServer', { haystackApiHost, isStart: false })
         await this.$store.dispatch('reloadDataForOneApi', {
           entity: this.$store.getters.filterApi,
           apiNumber: this.getApiServers.length - 1

@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 import HaystackApiService from './services/haystackApi.service.js'
 import formatService from './services/formatService.js'
 
@@ -11,33 +12,30 @@ const state = {
   version: '',
   dateRange: { start: '', end: '' },
   isDataLoaded: false,
-  filterApi: ''
+  filterApi: '',
+  isActionApi: false
 }
 export const mutations = {
-  SET_ENTITIES(state, { entities, apiNumber }) {
-    const newEntities = state.entities.slice() //  Extract NewEntities[apiNumber]
+  SET_IS_ACTION_API(state, { isActionApi }) {
+    state.isActionApi = isActionApi
+  },
+  SET_ENTITIES(state, { entities }) {
+    state.entities = entities
+  },
+  SET_HISTORIES(state, { histories }) {
+    state.histories = histories
+  },
+  ADD_NEW_ENTITIES(state, { entities, apiNumber }) {
+    const newEntities = state.entities.slice()
     // eslint-disable-next-line
-    if (newEntities.length < (apiNumber + 1)) newEntities.push(entities)
-    else newEntities[apiNumber] = entities
+    newEntities.length < (apiNumber + 1) ? newEntities.push(entities) : (newEntities[apiNumber] = entities)
     state.entities = newEntities
   },
-  SET_HISTORIES(state, { idHistories, apiNumber }) {
-    const newHistories = state.histories.slice() // Extract newHistories[apiNumber]
-    // eslint-disable-next-line
-    if (newHistories.length < apiNumber + 1) newHistories.push(idHistories)
-    else newHistories[apiNumber] = idHistories
-    state.histories = newHistories
-  },
-  DELETE_HAYSTACK_API(state, { haystackApiHost }) {
-    const newApiServers = state.apiServers.slice()
+  ADD_NEW_HISTORIES(state, { idHistories, apiNumber }) {
     const newHistories = state.histories.slice()
-    const newEntities = state.entities.slice()
-    const indexOfApiServerToDelete = state.apiServers.findIndex(
-      apiServer => apiServer.haystackApiHost === haystackApiHost
-    )
-    state.histories = newHistories.slice(indexOfApiServerToDelete, indexOfApiServerToDelete)
-    state.entities = newEntities.slice(indexOfApiServerToDelete, indexOfApiServerToDelete)
-    state.apiServers = newApiServers.filter(apiServer => apiServer.haystackApiHost !== haystackApiHost)
+    // eslint-disable-next-line
+    newHistories.length < apiNumber + 1 ? newHistories.push(idHistories) : (newHistories[apiNumber] = idHistories)
+    state.histories = newHistories
   },
   SET_IS_DATA_LOADED(state, { isDataLoaded }) {
     state.isDataLoaded = isDataLoaded
@@ -84,6 +82,9 @@ export const mutations = {
   }
 }
 export const getters = {
+  isActionApi(state) {
+    return state.isActionApi
+  },
   apiServers(state) {
     return state.apiServers
   },
@@ -113,7 +114,7 @@ export const getters = {
   }
 }
 export const actions = {
-   async setHaystackApi(context, { apiServers }) {
+  async setHaystackApi(context, { apiServers }) {
     const availableApiServers = await Promise.all(
       apiServers.filter(async apiServer => {
         const apiKey = localStorage.getItem(apiServer) ? localStorage.getItem(apiServer) : ''
@@ -138,13 +139,15 @@ export const actions = {
         await context.commit('SET_HAYSTACK_API', { haystackApiHost, apiKey })
       } else alert('wrong token')
     }
+    context.commit('SET_IS_ACTION_API', { isActionApi: true })
   },
   async commitNewEntities(context, { entities, apiNumber }) {
-    await context.commit('SET_ENTITIES', { entities, apiNumber })
+    await context.commit('ADD_NEW_ENTITIES', { entities, apiNumber })
   },
   async fetchEntity(context, { entity, apiNumber }) {
     const entities = await context.getters.apiServers[apiNumber].getEntity(entity, state.limit, state.version)
     await context.dispatch('commitNewEntities', {
+      // eslint-disable-next-line
       entities: formatService.addApiSourceInformationToEntity(entities.rows, apiNumber + 1),
       apiNumber
     })
@@ -174,7 +177,7 @@ export const actions = {
             return { ...history, apiSource: apiNumber }
           }))
       )
-      await context.commit('SET_HISTORIES', { idHistories, apiNumber })
+      await context.commit('ADD_NEW_HISTORIES', { idHistories, apiNumber })
     }
   },
   async fetchAllEntity(context, { entity }) {
@@ -202,6 +205,20 @@ export const actions = {
       })
     )
   },
+  async reloadDataForOneApi(context, { entity, apiNumber }) {
+    context.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
+    await context.dispatch('fetchEntity', { entity, apiNumber })
+    const { entities } = context.getters
+    const entitiesCopy = entities.slice()
+    const groupEntities = entitiesCopy.length === 1 ? entitiesCopy[0] : formatService.groupAllEntitiesById(entitiesCopy)
+    const idsEntityWithHis = groupEntities
+      .filter(entity => entity.his)
+      .map(entity => {
+        return { id: formatService.formatIdEntity(entity.id.val), apiSource: entity.his.apiSource }
+      })
+    await context.dispatch('fetchHistories', { idsEntityWithHis, apiNumber })
+    context.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
+  },
   async reloadAllData(context, { entity }) {
     context.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
     const { apiServers } = context.getters
@@ -210,6 +227,27 @@ export const actions = {
         await context.dispatch('fetchAllHistories')
       })
     }
+    context.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
+  },
+  async deleteHaystackApi(context, { haystackApiHost }) {
+    const { apiServers } = context.getters
+    await context.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
+    const newApiServers = state.apiServers.slice()
+    let newHistories = state.histories.slice()
+    let newEntities = state.entities.slice()
+    const indexOfApiServerToDelete = state.apiServers.findIndex(
+      apiServer => apiServer.haystackApiHost === haystackApiHost
+    )
+    newHistories.splice(indexOfApiServerToDelete, 1)
+    newEntities.splice(indexOfApiServerToDelete, 1)
+    if (indexOfApiServerToDelete !== apiServers.length) {
+      newHistories = formatService.reajustHistoriesApiSource(newHistories, indexOfApiServerToDelete)
+      newEntities = formatService.reajustEntitiespiSource(newEntities, indexOfApiServerToDelete)
+    }
+    context.commit('SET_ENTITIES', { entities: newEntities })
+    context.commit('SET_HISTORIES', { histories: newHistories })
+    state.apiServers = newApiServers.filter(apiServer => apiServer.haystackApiHost !== haystackApiHost)
+    context.commit('SET_IS_ACTION_API', { isActionApi: true })
     context.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
   }
 }

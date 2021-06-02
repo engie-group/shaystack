@@ -124,3 +124,6 @@
 .main-layout__settings__cache-button {
   margin: auto;
 }
+.test {
+  width: 10% !important;
+}

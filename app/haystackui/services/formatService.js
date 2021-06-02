@@ -261,6 +261,44 @@ const formatService = {
     })
     return [entitiesLink, colorsLinkOutFromSource, entitiesNameToEntitiesId]
   },
+    reajustEntitiespiSource(entities, indexApiDeleted) {
+    const entitiesCopy = entities.slice()
+    let entitiesReajusted = []
+    entitiesCopy.map((apiEntities, index) => {
+      if (index < indexApiDeleted) entitiesReajusted.push(apiEntities)
+      else {
+        let apiEntitiesReajusted = []
+        apiEntities.map(entity => {
+          const entityReajusted = {}
+          Object.keys(entity).map(key => {
+            entityReajusted[key] = { val: entity[key].val, apiSource: entity[key].apiSource - 1}
+          })
+          apiEntitiesReajusted.push(entityReajusted)
+        })
+        entitiesReajusted.push(apiEntitiesReajusted)
+      }
+    })
+    return entitiesReajusted
+  },
+  reajustHistoriesApiSource(histories, indexApiDeleted) {
+    const historiesCopy = histories.slice()
+    let historiesReajusted = []
+    historiesCopy.map((apiHistories, index) => {
+      if (index < indexApiDeleted) historiesReajusted.push(apiHistories)
+      else {
+        let apiHistoriesReajusted = {}
+        Object.keys(apiHistories).map(historyId => {
+          const historyEntity = []
+          apiHistories[historyId].map(pointHistoryId => {
+            historyEntity.push({ val: pointHistoryId.val, ts: pointHistoryId.ts, apiSource: pointHistoryId.apiSource - 1 })
+          })
+          apiHistoriesReajusted[historyId] = historyEntity
+        })
+        historiesReajusted.push(apiHistoriesReajusted)
+      }
+    })
+    return historiesReajusted
+  },
   formatHaystackJson(entities) {
     const entitiesCopy = []
     entities.forEach(entity => {

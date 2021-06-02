@@ -43,6 +43,9 @@ export default {
     isAnyData() {
       return !(this.entities.length === 0 || (this.entities.length === 1 && this.entities[0].length === 0))
     },
+    isActionApi() {
+      return this.$store.getters.isActionApi
+    },
     filterApi() {
       return this.$store.getters.filterApi
     },
@@ -224,7 +227,11 @@ export default {
   watch: {
     // eslint-disable-next-line
     async $route(to, from) {
-      if (JSON.stringify(to.query) !== JSON.stringify(from.query)) await this.reloadPageFromQueryParameters()
+      if (JSON.stringify(to.query) !== JSON.stringify(from.query) && !this.isActionApi) {
+        await this.reloadPageFromQueryParameters()
+      } else if (this.isActionApi) {
+        this.$store.commit('SET_IS_ACTION_API', { isActionApi: false })
+      }
     }
   },
   async beforeMount() {

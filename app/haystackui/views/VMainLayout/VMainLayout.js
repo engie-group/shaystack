@@ -249,10 +249,10 @@ export default {
       return Boolean(this.$store.getters.apiServers.find(apiServer => apiServer.haystackApiHost === host))
     },
     async changeApiServers(haystackApiHost) {
-      this.$store.commit('DELETE_HAYSTACK_API', { haystackApiHost })
-      if (this.getApiServers.length > 0) {
-        await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
-      }
+      await this.$store.dispatch('deleteHaystackApi', { haystackApiHost })
+      // if (this.getApiServers.length > 0) {
+      //   await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
+      // }
       const { q, d, l, v } = this.$route.query
       if (this.getApiServers.length > 0)
         this.$router.push({ query: { q, d, l, v, a: `["${this.getApiServers.join('","')}"]` } })
@@ -263,9 +263,11 @@ export default {
       const haystackApiHost = this.comboboxInput
       if (!this.isApiServerAlreadyExists(haystackApiHost)) {
         const apiServersBeforeAdd = this.getApiServers.slice()
-        const preRegisterToken = localStorage.getItem(haystackApiHost)
         await this.$store.dispatch('createApiServer', { haystackApiHost })
-        await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
+        await this.$store.dispatch('reloadDataForOneApi', {
+          entity: this.$store.getters.filterApi,
+          apiNumber: this.getApiServers.length - 1
+        })
         if (JSON.stringify(this.getApiServers) !== JSON.stringify(apiServersBeforeAdd)) {
           const { q, d, l, v } = this.$route.query
           const { hash } = this.$route

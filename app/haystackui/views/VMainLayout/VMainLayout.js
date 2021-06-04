@@ -255,7 +255,6 @@ const template = `
   <main>
     <router-view class="router-view" />
   </main>
-  <c-footer />
 </div>
 `
 import { API_COLORS, dataUtils, formatService } from '../../services/index.js'

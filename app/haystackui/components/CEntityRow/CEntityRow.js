@@ -1,39 +1,41 @@
 const template = `
-  <div class="entity-row__container">
-    <h2 data-test-entity-title class="entity-row__title">{{ entityName }}</h2>
-    <div class="content-container">
-      <div class="entity-row__table">
-        <p-his-data-table
-          :isEntityData="true"
-          @onRefClick="onRefClick"
-          @onExternalRefClick="onExternalRefClick"
-          :dataHisTable="entityTableValues"
-          :dataEntity="dataEntity"
-          :allEntities="allEntities"
-        />
-      </div>
-      <div class="entity-row__chart">
-        <c-chart
-          data-test-history-chart
-          v-if="displayChart"
-          :id="chartId"
-          :data="sortDataChart(dataChart)"
-          :unit="unit"
-          title="Historical values"
-        />
-        <p-his-data-table
-          :isEntityData="false"
-          v-if="displayHisTableData"
-          @onRefClick="onRefClick"
-          @onExternalRefClick="onExternalRefClick"
-          :dataHisTable="hisTableValues"
-          :dataEntity="dataEntity"
-          :allEntities="allEntities"
-        >
-        </p-his-data-table>
+  <v-card>
+    <div class="entity-row__container">
+      <h2 data-test-entity-title class="entity-row__title">{{ entityName }}</h2>
+      <div class="content-container">
+        <div class="entity-row__table">
+          <p-his-data-table
+            :isEntityData="true"
+            @onRefClick="onRefClick"
+            @onExternalRefClick="onExternalRefClick"
+            :dataHisTable="entityTableValues"
+            :dataEntity="dataEntity"
+            :allEntities="allEntities"
+          />
+        </div>
+        <div class="entity-row__chart">
+          <c-chart
+            data-test-history-chart
+            v-if="displayChart"
+            :id="chartId"
+            :data="sortDataChart(dataChart)"
+            :unit="unit"
+            title="Historical values"
+          />
+          <p-his-data-table
+            :isEntityData="false"
+            v-if="displayHisTableData"
+            @onRefClick="onRefClick"
+            @onExternalRefClick="onExternalRefClick"
+            :dataHisTable="hisTableValues"
+            :dataEntity="dataEntity"
+            :allEntities="allEntities"
+          >
+          </p-his-data-table>
+        </div>
       </div>
     </div>
-  </div>
+  </v-card>
 `
 
 import formatService from '../../services/formatService.js'
@@ -74,8 +76,7 @@ export default {
           text: 'Tag',
           align: 'start',
           sortable: false,
-          value: 'tag',
-          width: '40%'
+          value: 'tag'
         },
         { text: 'Value', value: 'value', sortable: false }
       ]
@@ -185,24 +186,26 @@ export default {
     getEntityValue(dataEntityKey) {
       const value = this.dataEntity[dataEntityKey].val
       const { apiSource } = this.dataEntity[dataEntityKey]
+      if (!value) return 'NaN'
       if (value === 'b:') return { val: value.substring(2), apiSource }
       if (value === 'm:') return { val: '✓', apiSource }
       if (value.substring(0, 2) === 'c:') return { val: value, apiSource }
       if (value.substring(0, 2) === 'r:') return { val: value, apiSource }
       if (value.substring(0, 2) === 'n:') return this.getNumberValue(dataEntityKey)
       if (value.substring(0, 2) === 'r:') return { val: value, apiSource }
-      if (!value) return { val: '', apiSource }  //false
+      if (value === '') return { val: '', apiSource }
       return { val: value.substring(2), apiSource }
     },
-    getHisTableValue(row) { //TO FIX SAME TYPE
+    getHisTableValue(row) {
       const value = row.val
       if (typeof value === 'boolean') return value
+      if (!value) return value
       if (value === 'm:') return '✓'
       if (value.substring(0, 2) === 'c:') return value
       if (value.substring(0, 2) === 'r:') return value
       if (value.substring(0, 2) === 'n:') return this.getNumberValue(value)
       if (value.substring(0, 2) === 'r:') return value
-      if (!value) return value
+      if (value === '') return value
       return value.substring(2)
     }
   }

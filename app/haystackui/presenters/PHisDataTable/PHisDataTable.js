@@ -1,39 +1,45 @@
 const template = `
-  <v-data-table
-    :headers="headers"
-    :items="dataTables"
-    :hide-default-footer="true"
-    :disable-pagination="true"
-    :custom-sort="customSort"
-    item-class="row_class"
-    :dense="true"
-  >
-    <template v-slot:[\`item.value\`]="{ item }">
-      <div v-if="isCoordinate(item.value)">
-        <a :href="getUrlCoordinate(item.value)" target="_blank">{{ item.value.substring(2) }}</a>
-        <v-icon v-if="isDuplicateKey(item.attribute)" class="material-icons entity-row__click-button">warning</v-icon>
-      </div>
-      <div v-else-if="isRef(item.value)">
-        <span v-if="isRefClickable(item)" class="entity-row__ref-row" @click="refClicked(getRefId(item))">{{
-          getRefName(item)
-        }}</span>
-        <span
-          v-else-if="isExternalRef(item)"
-          class="entity-row__external-ref-row"
-          @click="externalRefClicked(getRefId(item))"
-          >{{ getRefName(item) }}</span
-        >
-        <span v-else>{{ getRefName(item) }}</span>
-        <v-icon v-if="isDuplicateKey(item.attribute)" class="material-icons entity-row__click-button">warning</v-icon>
-        <v-icon class="material-icons entity-row__click-button" @click="copyText(item)">content_copy</v-icon>
-      </div>
-      <div v-else-if="isDuplicateKey(item.attribute)">
-        <span>{{ item.value }}</span>
-        <v-icon v-if="hisUri(item.attribute)" class="material-icons entity-row__click-button">warning</v-icon>
-      </div>
-      <span v-else>{{ item.value }}</span>
-    </template>
-  </v-data-table>
+  <v-card>
+    <div style="margin: 5px;">
+      <v-data-table
+        :headers="headers"
+        :items="dataTables"
+        :hide-default-footer="true"
+        :disable-pagination="true"
+        :custom-sort="customSort"
+        item-class="row_class"
+        :dense="true"
+      >
+        <template v-slot:[\`item.value\`]="{ item }">
+          <div v-if="isCoordinate(item.value)">
+            <a :href="getUrlCoordinate(item.value)" target="_blank">{{ item.value.substring(2) }}</a>
+            <v-icon v-if="isDuplicateKey(item.attribute)" class="material-icons entity-row__click-button"
+              >warning</v-icon
+            >
+          </div>
+          <div v-else-if="isRef(item.value)">
+            <span v-if="isRefClickable(item)" class="entity-row__ref-row" @click="refClicked(getRefId(item))">{{
+              getRefName(item)
+            }}</span>
+            <span
+              v-else-if="isExternalRef(item)"
+              class="entity-row__external-ref-row"
+              @click="externalRefClicked(getRefId(item))"
+              >{{ getRefName(item) }}</span
+            >
+            <span v-else>{{ getRefName(item) }}</span>
+            <v-icon v-if="isDuplicateKey(item.attribute)" class="material-icons entity-row__click-button">warning</v-icon>
+            <v-icon class="material-icons entity-row__click-button" @click="copyText(item)">content_copy</v-icon>
+          </div>
+          <div v-else-if="isDuplicateKey(item.attribute)">
+            <span>{{ item.value }}</span>
+            <v-icon v-if="hisUri(item.attribute)" class="material-icons entity-row__click-button">warning</v-icon>
+          </div>
+          <span v-else>{{ item.value }}</span>
+        </template>
+      </v-data-table>
+    </div>
+  </v-card>
 `
 
 import formatService from '../../services/formatService.js'

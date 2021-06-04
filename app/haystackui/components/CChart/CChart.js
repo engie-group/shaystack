@@ -1,11 +1,13 @@
 const template = `
-  <div :id="id" class="bar-chart__chart"></div>
+  <v-card>
+    <div :id="id" style="margin: 30px;" class="bar-chart__chart"></div>
+  </v-card>
 `
 import { API_COLORS } from '../../services/index.js'
 export default {
   template,
   name: 'CChart',
-  props: {
+    props: {
     id: {
       type: String,
       default: ''
@@ -61,3 +63,4 @@ export default {
     })
   }
 }
+

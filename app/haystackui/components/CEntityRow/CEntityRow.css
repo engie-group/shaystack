@@ -19,7 +19,8 @@
   margin-bottom: 30px;
 }
 .entity-row__chart {
-  width: 50%;
+  display: flex;
+  align-items: center;
   margin: 0 auto;
 }
 .entity-row__click-button {
@@ -31,10 +32,6 @@
   padding: 0 !important;
   font-weight: bold;
   letter-spacing: normal;
-}
-.entity-row__ref-row {
-  text-decoration: underline dotted;
-  cursor: pointer;
 }
 .apiSource_1 {
   background: #d4bbbb;
@@ -67,6 +64,10 @@
   background: #4516f5;
 }
 
+.entity-row__ref-row {
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
 .entity-row__external-ref-row {
   text-decoration: underline dotted;
   cursor: pointer;

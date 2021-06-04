@@ -1,5 +1,7 @@
 const template = `
-  <div :id="id" class="bar-chart__chart"></div>
+  <v-card>
+    <div :id="id" class="bar-chart__chart"></div>
+  </v-card>
 `
 
 /* eslint-disable */
@@ -38,6 +40,7 @@ export default {
 
     if (angle) {
       const path = ['M', left.plotX, left.plotY, right.plotX, right.plotY]
+      const lastPoint = left
       const nextLastPoint = right
       const pointRadius = 40
       const arrowLength = 5
@@ -119,7 +122,7 @@ export default {
       },
       chart: {
         type: 'networkgraph',
-        width: '1400',
+        width: '1000',
         height: '600'
       },
       plotOptions: {

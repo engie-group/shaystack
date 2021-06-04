@@ -16,9 +16,9 @@
 }
 .summary-content__entity-row {
   background-color: white;
+  margin: 0 20px;
 }
 .summary-content__alert-no-data {
-  width: 500px;
   margin: 0 auto;
 }
 .summary-content__entity-row:last-child {

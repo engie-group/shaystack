@@ -2,21 +2,48 @@
   height: 100%;
   background-color: #f2f2f2;
 }
+.main-layout__extended {
+  padding: 0;
+  width: calc(100% - 20rem);
+  margin-left: 20rem;
+}
+.main-layout__not-extended {
+  padding: 0;
+  width: calc(100% - 2rem);
+  margin-left: 2rem;
+}
+.main-layout__headers {
+  display: flex;
+  height: 100% !important;
+  width: 20rem;
+}
+.main-layout__headers__not-extended {
+  display: flex;
+  height: 100% !important;
+  width: 3rem;
+}
+.main-layout__headers__not-extended__buton {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
 .main-layout__app-bar {
   display: flex;
   height: 100%;
   width: 100%;
   align-items: center;
+  flex-direction: column;
 }
 .main-layout__app-bar > div {
   margin: 5px;
 }
 .main-layout__input-combobox {
   display: flex;
-  width: 25%;
+  width: 100%;
 }
 .main-layout__input {
   display: flex;
+  width: 80%;
 }
 .main-layout__button {
   display: flex;
@@ -31,6 +58,7 @@
 .v-ripple__container {
   opacity: 0 !important;
 }
+
 .main-layout__settings {
   background: white;
   display: flex;
@@ -50,15 +78,11 @@
 }
 .main-layout__settings__text-field__limit {
   display: flex;
-  width: 1%;
+  width: 100%;
   .v-input--is-focused {
     background: white;
   }
 }
-.v-tooltip__content {
-  pointer-events: initial;
-}
-
 .main-layout__settings__text-field__version {
   width: 2%;
   display: inline-block;
@@ -73,7 +97,7 @@
   background-color: white;
 }
 .main-layout__text-field {
-  width: 1%;
+  width: 100%;
   .v-input--is-focused {
     background: white;
   }
@@ -85,6 +109,8 @@
   flex-direction: column;
 }
 .v-toolbar__content {
+  height: 100% !important;
+  width: 100%;
   background-color: white;
 }
 .main-layout__combobox {
@@ -98,18 +124,7 @@
 .v-list-item--link {
   cursor: default !important;
 }
-.main-layout__text-field {
-  width: 15%;
-  .v-input--is-focused {
-    background: white;
-  }
-}
-.main-layout__text-field__date {
-  width: 5%;
-  .v-input--is-focused {
-    background: white;
-  }
-}
+
 .main-layout__combobox-api-text {
   padding-left: 15px;
   margin-right: 20px;
@@ -128,4 +143,47 @@
 .main-layout__settings__cache-button {
   margin: auto;
 }
-
+.main-layout__box {
+  display: flex;
+  flex-direction: column;
+  justify-items: space-between;
+  width: 80%;
+}
+.main-layout__box-description {
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 10px;
+}
+.main-layout__box-description__title {
+  color: grey;
+  text-decoration: underline;
+  padding-right: 15px;
+}
+.main-layout__box-description__tooltip {
+  margin-left: auto;
+  display: flex;
+}
+.main-layout__box__limit {
+  display: flex;
+  flex-direction: column;
+}
+.main-layout__box__limit {
+  display: flex;
+  flex-direction: row;
+}
+.main-layout__text-field__date {
+  padding: 10px 0px !important;
+}
+.main-layout__footer {
+  display: flex;
+  margin-top: auto !important;
+  flex-direction: column;
+  width: 100%;
+  justify-content: center;
+}
+.main-layout__footer-links {
+  color: black !important;
+}
+.v-sheet.v-card {
+  border-radius: 10px !important;
+}

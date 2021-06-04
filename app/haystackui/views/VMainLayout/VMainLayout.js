@@ -1,8 +1,8 @@
 const template = `
-    <div class="main-layout">
+    <div class="main-layout" :class="{ 'main-layout__extended': isExtended, 'main-layout__not-extended': !isExtended }">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,700,900" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons" />
-    <v-app-bar app>
+    <v-app-bar app class="main-layout__headers" v-if="isExtended">
       <div class="main-layout__app-bar">
         <div class="d-flex align-center main-layout__bar">
           <v-img
@@ -15,67 +15,204 @@ const template = `
             disabled
           />
           <h2 class="main-layout__title">Shift For Haystack</h2>
+          <v-btn color="grey" icon dark @click.native="changeExtention()">
+            <v-icon>mdi-format-list-bulleted-square</v-icon>
+          </v-btn>
         </div>
-        <v-text-field
-          height="40px"
-          class="main-layout__text-field"
-          label="Filter"
-          outlined
-          :value="filterApi"
-          dense
-          background-color="white"
-          @change="updateFilter($event)"
-          hide-details
-        />
-        <div class="main-layout__tootltips">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon icon v-bind="attrs" v-on="on">info</v-icon>
-            </template>
-            <h3>Filter Example:</h3>
-            <span
-              ><h4>site or equip</h4>
-              find site or equipment entities<br />
-              <h4>(not his)</h4>
-              find entities with no histories<br />
-              <h4>curVal > 10</h4>
-              find all entities with a curval > 10<br />
-              <h4>occupiedEnd >= 18:00 and geoCity == "Richmond"</h4>
-              find all entities that close after 6 p.m. in Richmond<br />
-              <h4>point and siteRef->geoCountry == "US"</h4>
-              find all the point based in US
-            </span>
-          </v-tooltip>
-        </div>
-        <div class="main-layout__input-combobox">
-          <v-combobox
-            class="main-layout__combobox"
-            height="40px"
-            width="30%"
-            v-model="comboboxInput"
-            :items="getApiServers"
-            label="Add or Remove a targeted Endpoint API"
-            dense
-            outlined
-            v-on:keyup.enter="updateAPI()"
-            hide-details
-          >
-            <template
-              v-slot:item="{
-                item
-              }"
-            >
-              <div class="main-layout__combobox-row">
-                <span class="circle" :style="circleApiClass(item)"></span>
-                <span class="pr-2 main-layout__combobox-api-text">
-                  {{ item }}
+        <div class="main-layout__box">
+          <div class="main-layout__box-description">
+            <h4 class="main-layout__box-description__title">Query with filter</h4>
+            <div class="main-layout__box-description__tooltip">
+              <v-tooltip right>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon icon v-bind="attrs" v-on="on">info</v-icon>
+                </template>
+                <h3>Filter Example:</h3>
+                <span
+                  ><h4>site or equip</h4>
+                  find site or equipment entities<br />
+                  <h4>(not his)</h4>
+                  find entities with no histories<br />
+                  <h4>curVal > 10</h4>
+                  find all entities with a curval > 10<br />
+                  <h4>occupiedEnd >= 18:00 and geoCity == "Richmond"</h4>
+                  find all entities that close after 6 p.m. in Richmond<br />
+                  <h4>point and siteRef->geoCountry == "US"</h4>
+                  find all the point based in US
                 </span>
-                <v-icon size="28" class="material-icons main-layout__combobox-image" @click="changeApiServers(item)"
-                  >delete</v-icon
-                >
-              </div>
-            </template>
-          </v-combobox>
+              </v-tooltip>
+            </div>
+          </div>
+          <v-text-field
+            height="40px"
+            width="80%"
+            class="main-layout__text-field"
+            label="Filter"
+            outlined
+            :value="filterApi"
+            dense
+            background-color="white"
+            @change="updateFilter($event)"
+            hide-details
+          />
+        </div>
+        <div class="main-layout__box">
+          <div class="main-layout__box-description">
+            <h4 class="main-layout__box-description__title">Add a target API Endpoint</h4>
+          </div>
+          <div class="main-layout__input-combobox">
+            <v-combobox
+              class="main-layout__combobox"
+              height="40px"
+              width="30%"
+              v-model="comboboxInput"
+              :items="getApiServers"
+              label="API Endpoint"
+              dense
+              outlined
+              v-on:keyup.enter="updateAPI()"
+              hide-details
+            >
+              <template
+                v-slot:item="{
+                  item
+                }"
+              >
+                <div class="main-layout__combobox-row">
+                  <span class="circle" :style="circleApiClass(item)"></span>
+                  <span class="pr-2 main-layout__combobox-api-text">
+                    {{ item }}
+                  </span>
+                  <v-icon size="28" class="material-icons main-layout__combobox-image" @click="changeApiServers(item)"
+                    >delete</v-icon
+                  >
+                </div>
+              </template>
+            </v-combobox>
+          </div>
+        </div>
+        <div class="main-layout__box">
+          <div class="main-layout__box-description">
+            <h4 class="main-layout__box-description__title">Select your date range</h4>
+            <div class="main-layout__box-description__tooltip">
+              <v-tooltip right>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon icon v-bind="attrs" v-on="on">info</v-icon>
+                </template>
+                <h4>
+                  Date Example:
+                </h4>
+                <span
+                  ><li>today</li>
+                  <li>yesterday</li>
+                  <li>2020-01-01</li>
+                  <li>2020/01/01</li>
+                  <li>2020-01-01T12:00:00.00Z</li>
+                </span>
+              </v-tooltip>
+            </div>
+          </div>
+          <v-text-field
+            height="40px"
+            class="main-layout__text-field main-layout__text-field__date"
+            label="Select start date"
+            outlined
+            v-model="dateStartInput"
+            :value="startDateRange"
+            dense
+            background-color="white"
+            @change="updateStartDateRange($event)"
+            hide-details
+          />
+          <v-text-field
+            height="40px"
+            class="main-layout__text-field main-layout__text-field__date"
+            label="Select end date"
+            outlined
+            v-model="dateEndInput"
+            :value="endDateRange"
+            dense
+            background-color="white"
+            @change="updateEndDateRange($event)"
+            hide-details
+          />
+        </div>
+        <div class="main-layout__box">
+          <div class="main-layout__box-description">
+            <h4 class="main-layout__box-description__title">Limit Number entities per page</h4>
+          </div>
+          <div class="main-layout__box__limit">
+            <v-btn
+              class="mx-2 main-layout__settings__buttons"
+              color="grey"
+              icon
+              x-small
+              dark
+              @click.native="decreaseLimit()"
+            >
+              <v-icon dark>
+                mdi-minus
+              </v-icon>
+            </v-btn>
+            <v-text-field
+              class="main-layout__settings__text-field__limit"
+              outlined
+              :value="limit"
+              dense
+              background-color="white"
+              @change="updateLimit($event)"
+              hide-details
+            />
+            <v-btn
+              class="mx-2 main-layout__settings__buttons"
+              color="grey"
+              icon
+              x-small
+              dark
+              @click.native="increaseLimit()"
+            >
+              <v-icon dark>
+                mdi-plus
+              </v-icon>
+            </v-btn>
+          </div>
+        </div>
+        <div class="main-layout__box">
+          <div class="main-layout__box-description">
+            <h4 class="main-layout__box-description__title">Change version entities</h4>
+          </div>
+          <v-text-field
+            class="main-layout__text-field"
+            height="40px"
+            outlined
+            dense
+            :value="version"
+            background-color="white"
+            @change="updateVersion($event)"
+            label="Enter a version"
+            hide-details
+          />
+        </div>
+        <div class="main-layout__box">
+          <div class="main-layout__box-description">
+            <h4 class="main-layout__box-description__title">Download entities as Haystack format</h4>
+          </div>
+          <div class="main-layout__button">
+            <v-btn icon :href="convertData()" download="ontology.json"><v-icon>file_download</v-icon></v-btn>
+          </div>
+        </div>
+        <div class="main-layout__box">
+          <div class="main-layout__box-description">
+            <h4 class="main-layout__box-description__title">Clear your api tokens stored in navigator</h4>
+          </div>
+          <v-btn
+            color="blue-grey"
+            rounded
+            class="main-layout__settings__cache-button white--text"
+            @click.native="clearLocalStorage()"
+          >
+            Clear api keys
+          </v-btn>
         </div>
         <div class="main-layout__tootltips" v-if="existingApiEndPointFromPlugin" data-app>
           <v-tooltip v-model="showExistingApi" bottom>
@@ -92,124 +229,24 @@ const template = `
             </span>
           </v-tooltip>
         </div>
-
-        <div class="main-layout__input">
-          <v-text-field
-            height="40px"
-            class="main-layout__text-field__date"
-            label="Select start date"
-            outlined
-            v-model="dateStartInput"
-            :value="startDateRange"
-            dense
-            background-color="white"
-            @change="updateStartDateRange($event)"
-            hide-details
-          />
+        <div class="main-layout__footer">
+          <a href="https://github.com/engie-group/shaystack" class="main-layout__footer-links">
+            Github Project
+          </a>
+          <a href="mailto:franck.SEUTIN@engie.com" class="main-layout__footer-links">
+            Contact
+          </a>
+          <span>Haystack version: 3.0</span>
         </div>
-        <div class="main-layout__input">
-          <v-text-field
-            height="40px"
-            class="main-layout__text-field__date"
-            label="Select end date"
-            outlined
-            v-model="dateEndInput"
-            :value="endDateRange"
-            dense
-            background-color="white"
-            @change="updateEndDateRange($event)"
-            hide-details
-          />
-        </div>
-        <div class="main-layout__tootltips">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon icon v-bind="attrs" v-on="on">info</v-icon>
-            </template>
-            <h4>
-              Date Example:
-            </h4>
-            <span
-              ><li>today</li>
-              <li>yesterday</li>
-              <li>2020-01-01</li>
-              <li>2020/01/01</li>
-              <li>2020-01-01T12:00:00.00Z</li>
-            </span>
-          </v-tooltip>
-        </div>
-        <v-spacer></v-spacer>
-        <div class="main-layout__button">
-          <v-btn icon :href="convertData()" download="ontology.json" class="test"><v-icon>file_download</v-icon></v-btn>
-        </div>
-        <v-menu v-model="menu" bottom offset-y :close-on-content-click="false">
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn class="main-layout__params" dark icon v-bind="attrs" v-on="on">
-              <v-icon>mdi-cogs</v-icon>
-            </v-btn>
-          </template>
-          <v-list class="main-layout__menu-list">
-            <v-list-item class="main-layout__settings">
-              <span class="main-layout__settings__text">Limit: </span>
-              <v-btn
-                class="main-layout__settings__buttons"
-                color="grey"
-                icon
-                x-small
-                dark
-                @click.native="increaseLimit()"
-              >
-                <v-icon dark>
-                  mdi-plus
-                </v-icon>
-              </v-btn>
-              <v-text-field
-                class="main-layout__settings__text-field__limit"
-                outlined
-                :value="limit"
-                dense
-                background-color="white"
-                @change="updateLimit($event)"
-                hide-details
-              />
-              <v-btn
-                class="mx-2 main-layout__settings__buttons"
-                color="grey"
-                icon
-                x-small
-                dark
-                @click.native="decreaseLimit()"
-              >
-                <v-icon dark>
-                  mdi-minus
-                </v-icon>
-              </v-btn>
-            </v-list-item>
-            <v-list-item class="main-layout__settings">
-              <span class="main-layout__settings__text-version">Version: </span>
-              <v-text-field
-                class="main-layout__settings__text-field__version"
-                outlined
-                dense
-                :value="version"
-                background-color="white"
-                @change="updateVersion($event)"
-                hide-details
-              />
-            </v-list-item>
-            <v-list-item class="main-layout__settings">
-              <v-btn
-                color="blue-grey"
-                rounded
-                class="main-layout__settings__cache-button white--text"
-                @click.native="clearLocalStorage()"
-              >
-                Clear api keys
-              </v-btn>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-  </v-app-bar>
+      </div>
+    </v-app-bar>
+    <v-app-bar app class="main-layout__headers__not-extended" v-else>
+      <div class="main-layout__headers__not-extended__buton">
+        <v-btn color="grey" icon dark @click.native="changeExtention()">
+          <v-icon>mdi-format-list-bulleted-square</v-icon>
+        </v-btn>
+      </div>
+    </v-app-bar>
   <main>
     <router-view class="router-view" />
   </main>
@@ -227,7 +264,8 @@ export default {
       dateStartInput: this.startDateRange,
       dateEndInput: this.endDateRange,
       menu: false,
-      showExistingApi: false
+      showExistingApi: false,
+      isExtended: false
     }
   },
   computed: {
@@ -261,6 +299,9 @@ export default {
     }
   },
   methods: {
+    changeExtention() {
+      this.isExtended = !this.isExtended
+    },
     isApiServerAlreadyExists(host) {
       return Boolean(this.$store.getters.apiServers.find(apiServer => apiServer.haystackApiHost === host))
     },

@@ -214,20 +214,25 @@ const template = `
             Clear api keys
           </v-btn>
         </div>
-        <div class="main-layout__tootltips" v-if="existingApiEndPointFromPlugin" data-app>
-          <v-tooltip v-model="showExistingApi" bottom>
-            <template v-slot:activator="{ attrs }">
-                <v-btn icon color="rgba(0,0,0,.87)" @click="showExistingApi = !showExistingApi" v-if="existingApiEndPointFromPlugin">
-                    <v-icon icon v-bind="attrs">info</v-icon>
-                </v-btn>
-              </template>
-            <h4>
-              Api Endpoint Available:
-            </h4>
-            <span
-              ><li v-for="apiEndpoint in existingApiEndPointFromPlugin">{{ apiEndpoint }}</li>
-            </span>
-          </v-tooltip>
+        <div class="main-layout__box" v-if="existingApiEndPointFromPlugin">
+          <div class="main-layout__box-description">
+            <h4 class="main-layout__box-description__title">Api endpoints availables list</h4>
+            <div class="main-layout__box-description__tooltip">
+              <v-tooltip v-model="showExistingApi" right>
+                <template v-slot:activator="{ attrs }">
+                    <v-btn icon color="rgba(0,0,0,.87)" @click="showExistingApi = !showExistingApi" v-if="existingApiEndPointFromPlugin">
+                        <v-icon icon v-bind="attrs">info</v-icon>
+                    </v-btn>
+                  </template>
+                <h4>
+                  Api Endpoint Available:
+                </h4>
+                <span
+                  ><li v-for="apiEndpoint in existingApiEndPointFromPlugin">{{ apiEndpoint }}</li>
+                </span>
+              </v-tooltip>
+            </div>
+          </div>
         </div>
         <div class="main-layout__footer">
           <a href="https://github.com/engie-group/shaystack" class="main-layout__footer-links">

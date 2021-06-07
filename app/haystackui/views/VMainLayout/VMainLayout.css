@@ -16,6 +16,8 @@
   display: flex;
   height: 100% !important;
   width: 20rem;
+  overflow-y: scroll;
+  background-color: white !important;
 }
 .main-layout__headers__not-extended {
   display: flex;

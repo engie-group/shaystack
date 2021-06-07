@@ -258,10 +258,8 @@ const template = `
 </div>
 `
 import { API_COLORS, dataUtils, formatService } from '../../services/index.js'
-import CFooter from '../../components/CFooter/CFooter.js'
 export default {
   template,
-  components: { CFooter },
   data() {
     return {
       comboboxInput: '',

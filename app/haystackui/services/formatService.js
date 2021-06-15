@@ -8,6 +8,9 @@ const formatService = {
   isRef: value => {
     return value.substring(0,2) === 'r:'
   },
+  isNumber: string => {
+    return Boolean(Number(string))
+  },
   isEntityFromSource: (entitiesFromAllSource, entityId) => {
     let isEntityFromSource = false
     entitiesFromAllSource.map(entities => {

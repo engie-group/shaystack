@@ -12,7 +12,7 @@ import logging
 from typing import Optional, Any, Union, cast
 
 from .csvparser import parse_grid as parse_csv_grid, parse_scalar as parse_csv_scalar
-from .datatypes import MODE_ZINC, MODE_JSON, MODE_CSV, MODE, MODE_TRIO
+from .datatypes import MODE_ZINC, MODE_JSON, MODE_CSV, MODE, MODE_TRIO, MODE_HAYSON
 from .grid import Grid
 from .jsonparser import parse_grid as parse_json_grid, \
     parse_scalar as parse_json_scalar
@@ -26,12 +26,14 @@ LOG = logging.getLogger(__name__)
 
 _suffix_to_mode = {".zinc": MODE_ZINC,
                    ".json": MODE_JSON,
+                   ".hayson.json": MODE_HAYSON,
                    ".trio": MODE_TRIO,
                    ".csv": MODE_CSV
                    }
 
 _mode_to_suffix = {MODE_ZINC: ".zinc",
                    MODE_JSON: ".json",
+                   MODE_HAYSON: ".hayson.json",
                    MODE_TRIO: ".trio",
                    MODE_CSV: ".csv"
                    }
@@ -86,6 +88,8 @@ def parse(grid_str: str, mode: MODE = MODE_ZINC) -> Grid:
         return parse_trio_grid(grid_str)
     if mode == MODE_JSON:
         return parse_json_grid(grid_str)
+    if mode == MODE_HAYSON:
+        return parse_hayson_grid(grid_str)
     if mode == MODE_CSV:
         return parse_csv_grid(grid_str)
     raise NotImplementedError('Format not implemented: %s' % mode)

@@ -27,7 +27,7 @@ from .grid import Grid
 from .grid_filter import parse_filter, parse_hs_datetime_format
 from .metadata import MetadataObject
 from .ops import *
-from .parser import parse, parse_scalar, MODE, MODE_JSON, MODE_TRIO, MODE_ZINC, MODE_CSV, \
+from .parser import parse, parse_scalar, MODE_HAYSON, MODE_JSON, MODE_TRIO, MODE_ZINC, MODE_CSV, \
     suffix_to_mode, mode_to_suffix
 from .pintutil import unit_reg
 from .providers import HaystackInterface
@@ -38,7 +38,7 @@ __all__ = ['Grid', 'dump', 'parse', 'dump_scalar', 'parse_scalar', 'parse_filter
            'MetadataObject', 'unit_reg', 'zoneinfo',
            'HaystackType', 'Entity',
            'Coordinate', 'Uri', 'Bin', 'XStr', 'Quantity', 'MARKER', 'NA', 'REMOVE', 'Ref',
-           'MODE', 'MODE_JSON', 'MODE_ZINC', 'MODE_TRIO', 'MODE_CSV', 'suffix_to_mode', 'mode_to_suffix',
+           'MODE', 'MODE_JSON', 'MODE_HAYSON', 'MODE_ZINC', 'MODE_TRIO', 'MODE_CSV', 'suffix_to_mode', 'mode_to_suffix',
            'parse_hs_datetime_format',
            'VER_2_0', 'VER_3_0', 'LATEST_VER', 'Version',
 

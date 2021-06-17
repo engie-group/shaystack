@@ -45,6 +45,18 @@ SIMPLE_EXAMPLE_JSON = {
     ],
 }
 
+SIMPLE_EXAMPLE_HAYSON = {
+    'meta': {'ver': '2.0'},
+    'cols': [
+        {'name': 'firstName'},
+        {'name': 'bday'},
+    ],
+    'rows': [
+        {'firstName': 'Jack', 'bday': {'_kind': 'Date', 'val': '1973-07-23'}},
+        {'firstName': 'Jill', 'bday': {'_kind': 'Date', 'val': '1975-11-15'}},
+    ],
+}
+
 SIMPLE_EXAMPLE_TRIO = '''firstName: Jack
 bday: 1973-07-23
 ---
@@ -106,6 +118,20 @@ METADATA_EXAMPLE_JSON = {
         {'siteName': 's:Site 2', 'val': 'n:463.028000 kW'},
     ],
 }
+
+METADATA_EXAMPLE_HAYSON = {
+    'meta': {'ver': '2.0', 'database': 'test',
+             'dis': 'Site Energy Summary'},
+    'cols': [
+        {'name': 'siteName', 'dis': 'Sites'},
+        {'name': 'val', 'dis': 'Value', 'unit': 'kW'},
+    ],
+    'rows': [
+        {'siteName': 'Site 1', 'val': {'_kind': 'Num', 'val': 356.214000, 'unit': 'kW'}},
+        {'siteName': 'Site 2', 'val': {'_kind': 'Num', 'val': 463.028000, 'unit': 'kW'}},
+    ],
+}
+
 METADATA_EXAMPLE_CSV = '''siteName,val
 "Site 1",356.214kW
 "Site 2",463.028kW

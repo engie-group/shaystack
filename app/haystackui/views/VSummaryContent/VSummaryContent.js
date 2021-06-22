@@ -243,7 +243,7 @@ export default {
       })
       if (this.apiServers.length !== 0) {
         this.$router.push({ query: { a: `["${this.apiServers.map(api => api.haystackApiHost).join('","')}"]` } }).catch(() => {})
-        this.store.dispatch('reloadAllData', { entity: this.filterApi })
+        this.$store.dispatch('reloadAllData', { entity: this.filterApi })
       }
     }
   },

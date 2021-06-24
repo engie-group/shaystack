@@ -1,5 +1,5 @@
 const template = `
-  <v-card>
+  <v-card style="height: 100%;" ref="graph-container">
     <div :id="id" class="bar-chart__chart"></div>
   </v-card>
 `
@@ -115,24 +115,25 @@ export default {
     ]
   })
 })(Highcharts)
-
+    const height = this.$refs['graph-container'].$el.clientHeight;
+    const width = this.$refs['graph-container'].$el.clientWidth;
     this.chart = Highcharts.chart(this.id, {
       title: {
         text: this.title
       },
       chart: {
         type: 'networkgraph',
-        width: '1000',
-        height: '600'
+        width: width,
+        height: height//margin: 0
       },
       plotOptions: {
         networkgraph: {
           keys: this.keys,
           layoutAlgorithm: {
-            enableSimulation: false,
-            friction: 1,
-            linkLength: 70
-          },
+            enableSimulation: true,
+            friction: -0.9,
+            linkLength: 30
+            },
           point: {
             events: {
               click: function emitEvent(event) {

@@ -238,13 +238,11 @@ const formatService = {
     const colorsLinkOutFromSource = []
     entitiesFromAllSource.map(entities => {
       entities.map( entity => {
-        const formatedEntityId = entitiesNameToEntitiesId[formatService.formatIdEntity(entity.id.val)]
+        const formatedEntityId = formatService.formatIdEntity(entity.id.val)
         Object.keys(entity).map(key => {
           if(typeof entity[key] !== 'boolean') {
             if(formatService.isRef(entity[key].val) && key !== 'id') {
-              const formatedEntityIdLinked = entitiesNameToEntitiesId[formatService.formatIdEntity(entity[key].val)] ?
-                      entitiesNameToEntitiesId[formatService.formatIdEntity(entity[key].val)] :
-                      formatService.formatIdEntity(entity[key].val)
+              const formatedEntityIdLinked = formatService.formatIdEntity(entity[key].val)
               const formatedLink = [formatedEntityId, formatedEntityIdLinked]
               if(!formatService.isEntityFromSource(entitiesFromAllSource, entity[key].val)) {
                 colorsLinkOutFromSource.push({ id: formatedEntityIdLinked, color: colors.outFromSource, marker: { radius: radiusNode.outFromSource } })
@@ -257,7 +255,8 @@ const formatService = {
         })
         colorsLinkOutFromSource.push({
             id: formatedEntityId, color: colors.fromSource[entity.id.apiSource - 1],
-            dis: entity.dis ? entity.dis.val.substring(2) : formatedEntityId, marker: { radius: radiusNode.fromSource }
+            dis: entity.dis ? entity.dis.val.substring(2) : formatedEntityId, marker: { radius: radiusNode.fromSource },
+            name: entitiesNameToEntitiesId[formatedEntityId]
             }
           )
       })

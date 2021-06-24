@@ -165,8 +165,7 @@ export default {
         this.$store.commit('SET_FILTER_API', { filterApi: newApiFilter })
         this.$router.push({ query: { a: query.a, q: newApiFilter, d: query.d, l: query.l, v: query.v } }).catch(() => {})
       } else {
-        const entityId = Object.keys(entityNameToEntityId).find(key => entityNameToEntityId[key] === pointName)
-        this.$refs[entityId][0].$el.scrollIntoView(true)
+        this.$refs[pointName][0].$el.scrollIntoView(true)
         window.scrollBy(0, -70)
         this.$router.push({ hash: entityId, query }).catch(() => {})
       }

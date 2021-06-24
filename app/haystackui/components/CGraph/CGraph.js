@@ -23,7 +23,7 @@ export default {
     },
     keys: {
       type: Array,
-      default: () => ['from', 'to']
+      default: () => ['from', 'to', 'relation']
     },
     dataEntities: {
       type: Array,
@@ -115,6 +115,7 @@ export default {
     ]
   })
 })(Highcharts)
+
     const height = this.$refs['graph-container'].$el.clientHeight;
     const width = this.$refs['graph-container'].$el.clientWidth;
     this.chart = Highcharts.chart(this.id, {
@@ -124,7 +125,7 @@ export default {
       chart: {
         type: 'networkgraph',
         width: width,
-        height: height//margin: 0
+        height: height
       },
       plotOptions: {
         networkgraph: {
@@ -132,7 +133,7 @@ export default {
           layoutAlgorithm: {
             enableSimulation: true,
             friction: -0.9,
-            linkLength: 30
+            linkLength: 70
             },
           point: {
             events: {
@@ -149,14 +150,15 @@ export default {
       tooltip : {
         enabled : true,
         formatter : function() {
-          return `<div> <span> ${this.point.dis ? this.point.dis : this.point.id} </span> </div>`
+          return `<div> <span> ${this.point.id} </span> </div>`
         }
       },
       series: [
         {
           dataLabels: {
             enabled: true,
-            linkFormat: ''
+			allowOverlap: true,
+            linkFormat: '',
           },
           id: 'lang-tree',
           data: this.dataEntities[0],

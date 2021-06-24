@@ -232,7 +232,7 @@ const formatService = {
   },
   getLinkBetweenEntities: (entitiesFromAllSource) => {
     const colors = { fromSource: API_COLORS, outFromSource: '#c1e1ec' }
-    const radiusNode = { fromSource: 10, outFromSource: 5 }
+    const radiusNode = { fromSource: 7, outFromSource: 5 }
     const entitiesLink = []
     const entitiesNameToEntitiesId = formatService.idToNameEntity(entitiesFromAllSource)
     const colorsLinkOutFromSource = []
@@ -243,7 +243,7 @@ const formatService = {
           if(typeof entity[key] !== 'boolean') {
             if(formatService.isRef(entity[key].val) && key !== 'id') {
               const formatedEntityIdLinked = formatService.formatIdEntity(entity[key].val)
-              const formatedLink = [formatedEntityId, formatedEntityIdLinked]
+              const formatedLink = [formatedEntityId, formatedEntityIdLinked, key]
               if(!formatService.isEntityFromSource(entitiesFromAllSource, entity[key].val)) {
                 colorsLinkOutFromSource.push({ id: formatedEntityIdLinked, color: colors.outFromSource, marker: { radius: radiusNode.outFromSource } })
               }
@@ -255,7 +255,9 @@ const formatService = {
         })
         colorsLinkOutFromSource.push({
             id: formatedEntityId, color: colors.fromSource[entity.id.apiSource - 1],
-            dis: entity.dis ? entity.dis.val.substring(2) : formatedEntityId, marker: { radius: radiusNode.fromSource },
+            dis: entity.dis ? entity.dis.val.substring(2) : formatedEntityId,
+            marker: { radius:
+                radiusNode.fromSource + formatService.getConnectionOccurence(formatedEntityId, entitiesLink) },
             name: entitiesNameToEntitiesId[formatedEntityId]
             }
           )
@@ -281,6 +283,11 @@ const formatService = {
       }
     })
     return entitiesReajusted
+  },
+  getConnectionOccurence(entityId, entitiesLink) {
+    return entitiesLink.find(entityLink => entityLink.includes(entityId)) ?
+      entitiesLink.find(entityLink => entityLink.includes(entityId)).length :
+      0
   },
   reajustHistoriesApiSource(histories, indexApiDeleted) {
     const historiesCopy = histories.slice()

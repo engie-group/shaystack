@@ -20,7 +20,7 @@ from typing import Dict, Optional, Tuple, List, Any, Union
 from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
     MARKER, NA, REMOVE, XStr
 from .grid import Grid
-from .jsonparser import MARKER_STR, NA_STR, REMOVE2_STR, REMOVE3_STR
+from .haysonparser import MARKER_STR, REMOVE_STR
 from .metadata import MetadataObject
 from .sortabledict import SortableDict
 from .type import Entity
@@ -104,16 +104,11 @@ def _dump_scalar(scalar: Any, version: Version = LATEST_VER) \
     if scalar is None:
         return None
     if scalar is MARKER:
-        return MARKER_STR
-    if scalar is NA:
-        if version < VER_3_0:
-            raise ValueError('Project Haystack %s '
-                             'does not support NA' % version)
-        return NA_STR
+        return _dump_marker()
     if scalar is REMOVE:
-        if version < VER_3_0:
-            return REMOVE2_STR
-        return REMOVE3_STR
+        return _dump_remove()
+    if scalar is NA:
+        return _dump_na()
     if isinstance(scalar, list):
         return _dump_list(scalar, version=version)
     if isinstance(scalar, dict):
@@ -151,11 +146,19 @@ def _dump_id(id_str: str) -> str:
     return id_str
 
 
+def _dump_na() -> Dict:
+    return {'_kind': 'NA'}
+
+
+def _dump_marker() -> Dict:
+    return {'_kind': MARKER_STR}
+
+
 def _dump_str(str_value: str) -> str:
     return str_value
 
 
-def _dump_uri(uri_value: Uri) -> str:
+def _dump_uri(uri_value: Uri) -> Dict:
     return {
         "_kind": "Uri",
         "val": uri_value
@@ -167,6 +170,10 @@ def _dump_bin(bin_value: Bin) -> str:
         "_kind": "Bin",
         "val": bin_value
     }
+
+
+def _dump_remove() -> Dict:
+    return {"_kind": REMOVE_STR}
 
 
 def _dump_xstr(xstr_value: XStr) -> str:

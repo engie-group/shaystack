@@ -163,6 +163,20 @@ NULL_EXAMPLE_JSON = {
     ],
 }
 
+
+NULL_EXAMPLE_HAYSON = {
+    'meta': {'ver': '2.0'},
+    'cols': [
+        {'name': 'str'},
+        {'name': 'null'},
+    ],
+    'rows': [
+        {'str': 'Implicit', 'null': None},  # There's no "implicit" mode
+        {'str': 'Explicit', 'null': None},
+    ],
+}
+
+
 NULL_EXAMPLE_CSV = '''str,null
 "Implicit",
 "Explicit",N
@@ -189,6 +203,18 @@ NA_EXAMPLE_JSON = json.dumps({
     ],
 })
 
+NA_EXAMPLE_HAYSON = json.dumps({
+    'meta': {'ver': '3.0'},
+    'cols': [
+        {'name': 'str'},
+        {'name': 'na'},
+    ],
+    'rows': [
+        {'str': 'NA value', 'na': {'_kind': 'NA'}},
+    ],
+})
+
+
 REMOVE_EXAMPLE_JSON_V2 = json.dumps({
     'meta': {'ver': '2.0'},
     'cols': [
@@ -200,6 +226,20 @@ REMOVE_EXAMPLE_JSON_V2 = json.dumps({
         {'str': 'v3 REMOVE value', 'remove': '-:'},
     ],
 })
+
+
+REMOVE_EXAMPLE_HAYSON = json.dumps({
+    'meta': {'ver': '3.0'},
+    'cols': [
+        {'name': 'str'},
+        {'name': 'remove'},
+    ],
+    'rows': [
+        {'str': 'v2 REMOVE value', 'remove': {'_kind': 'Remove'}},
+        {'str': 'v3R REMOVE value', 'remove': {'_kind': 'Remove'}},
+    ],
+})
+
 
 REMOVE_EXAMPLE_JSON_V3 = json.dumps({
     'meta': {'ver': '3.0'},
@@ -431,6 +471,12 @@ def test_simple_csv():
     _check_simple(grid)
 
 
+def test_simple_hayson():
+    grid = shaystack.parse(json.dumps(SIMPLE_EXAMPLE_HAYSON),
+                           mode=shaystack.MODE_HAYSON)
+    _check_simple(grid)
+
+
 def test_wc1382_unicode_str_zinc():
     # Don't use pint for this, we wish to see the actual quantity value.
 
@@ -537,6 +583,11 @@ def test_metadata_json():
     _check_metadata(grid, force_metadata_order=False)
 
 
+def test_metadata_hayson():
+    grid = shaystack.parse(json.dumps(METADATA_EXAMPLE_HAYSON), mode=shaystack.MODE_HAYSON)
+    _check_metadata(grid, force_metadata_order=False)
+
+
 def test_null_zinc():
     grid = shaystack.parse(NULL_EXAMPLE_ZINC)
     _check_null(grid)
@@ -549,6 +600,11 @@ def test_null_trio():
 
 def test_null_json():
     grid = shaystack.parse(json.dumps(NULL_EXAMPLE_JSON), mode=shaystack.MODE_JSON)
+    _check_null(grid)
+
+
+def test_null_hayson():
+    grid = shaystack.parse(json.dumps(NULL_EXAMPLE_HAYSON), mode=shaystack.MODE_HAYSON)
     _check_null(grid)
 
 
@@ -571,6 +627,11 @@ def test_na_trio():
 
 def test_na_json():
     grid = shaystack.parse(NA_EXAMPLE_JSON, mode=shaystack.MODE_JSON)
+    _check_na(grid)
+
+
+def test_na_hayson():
+    grid = shaystack.parse(NA_EXAMPLE_HAYSON, mode=shaystack.MODE_HAYSON)
     _check_na(grid)
 
 
@@ -607,6 +668,11 @@ def test_remove_v2_json():
 
 def test_remove_v3_json():
     grid = shaystack.parse(REMOVE_EXAMPLE_JSON_V3, mode=shaystack.MODE_JSON)
+    _check_remove(grid)
+
+
+def test_remove_hayson():
+    grid = shaystack.parse(REMOVE_EXAMPLE_HAYSON, mode=shaystack.MODE_HAYSON)
     _check_remove(grid)
 
 
@@ -655,6 +721,22 @@ def test_marker_in_row_json():
             {'str': 'Marker', 'marker': 'm:'},
         ],
     }), mode=shaystack.MODE_JSON)
+    assert 'marker' not in grid[0]
+    assert grid[1]['marker'] is shaystack.MARKER
+
+
+def test_marker_in_row_hayson():
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '2.0'},
+        'cols': [
+            {'name': 'str'},
+            {'name': 'marker'},
+        ],
+        'rows': [
+            {'str': 'No Marker', 'marker': None},
+            {'str': 'Marker', 'marker': {'_kind': 'Marker'}},
+        ],
+    }), mode=shaystack.MODE_HAYSON)
     assert 'marker' not in grid[0]
     assert grid[1]['marker'] is shaystack.MARKER
 
@@ -709,6 +791,21 @@ def test_bool_json():
     assert grid[0]['bool']
     assert not grid[1]['bool']
 
+
+def test_bool_hayson():
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '2.0'},
+        'cols': [
+            {'name': 'str'},
+            {'name': 'bool'},
+        ],
+        'rows': [
+            {'str': 'True', 'bool': True},
+            {'str': 'False', 'bool': False},
+        ],
+    }), mode=shaystack.MODE_JSON)
+    assert grid[0]['bool']
+    assert not grid[1]['bool']
 
 def test_bool_csv():
     grid = shaystack.parse(textwrap.dedent('''
@@ -795,6 +892,29 @@ def test_number_json():
     _check_number(grid)
 
 
+def test_number_hayson():
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '2.0'},
+        'cols': [
+            {'name': 'str'},
+            {'name': 'number'},
+        ],
+        'rows': [
+            {'str': "Integer", 'number': {'_kind': 'Num', 'val': 1}},
+            {'str': "Negative Integer", 'number': {'_kind': 'Num', 'val': -34}},
+            {'str': "With Separators", 'number': {'_kind': 'Num', 'val': 10000}},
+            {'str': "Scientific", 'number': {'_kind': 'Num', 'val': 5.4e-45}},
+            {'str': "Units mass", 'number': {'_kind': 'Num', 'val': 9.23, 'unit': 'kg'}},
+            {'str': "Units time", 'number': {'_kind': 'Num', 'val': 4, 'unit': 'min'}},
+            {'str': "Units temperature", 'number': {'_kind': 'Num', 'val': 74.2, 'unit': '°F'}},
+            {'str': "Positive Infinity", 'number': {'_kind': 'Num', 'val': 'INF'}},
+            {'str': "Negative Infinity", 'number': {'_kind': 'Num', 'val': '-INF'}},
+            {'str': "Not a Number", 'number': {'_kind': 'Num', 'val': 'NaN'}}
+        ],
+    }), mode=shaystack.MODE_HAYSON)
+    _check_number(grid)
+
+
 def test_number_csv():
     grid = shaystack.parse(textwrap.dedent('''
     str,number
@@ -873,6 +993,27 @@ def test_string_json():
     assert grid.pop(0)['strExample'] == 'string:with:colons'
 
 
+def test_string_json():
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '2.0'},
+        'cols': [
+            {'name': 'str'},
+            {'name': 'strExample'},
+        ],
+        'rows': [
+            {'str': "Empty", 'strExample': ''},
+            {'str': "Implicit", 'strExample': 'a string'},
+            {'str': "Literal", 'strExample': 'an explicit string'},
+            {'str': "With colons", 'strExample': 'string:with:colons'},
+        ],
+    }), mode=shaystack.MODE_HAYSON)
+    assert len(grid) == 4
+    assert grid.pop(0)['strExample'] == ''
+    assert grid.pop(0)['strExample'] == 'a string'
+    assert grid.pop(0)['strExample'] == 'an explicit string'
+    assert grid.pop(0)['strExample'] == 'string:with:colons'
+
+
 def test_string_csv():
     grid = shaystack.parse(json.dumps({
         'meta': {'ver': '2.0'},
@@ -922,6 +1063,20 @@ def test_uri_json():
             {'uri': 'u:http://www.vrt.com.au'},
         ],
     }), mode=shaystack.MODE_JSON)
+    assert len(grid) == 1
+    assert grid[0]['uri'] == shaystack.Uri('http://www.vrt.com.au')
+
+
+def test_uri_hayson():
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '2.0'},
+        'cols': [
+            {'name': 'uri'},
+        ],
+        'rows': [
+            {'uri': {'_kind': 'Uri', 'val': 'http://www.vrt.com.au'}},
+        ],
+    }), mode=shaystack.MODE_HAYSON)
     assert len(grid) == 1
     assert grid[0]['uri'] == shaystack.Uri('http://www.vrt.com.au')
 
@@ -976,6 +1131,23 @@ def test_ref_json():
     assert grid[1]['ref'] == shaystack.Ref('reference', 'With value')
 
 
+def test_ref_json():
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '2.0'},
+        'cols': [
+            {'name': 'str'},
+            {'name': 'ref'},
+        ],
+        'rows': [
+            {'str': 'Basic', 'ref': {'_kind': 'Ref', 'val': 'a-basic-ref'}},
+            {'str': 'With value', 'ref': {'_kind': 'Ref', 'val': 'reference With value'}},
+        ],
+    }), mode=shaystack.MODE_HAYSON)
+    assert len(grid) == 2
+    assert grid[0]['ref'] == shaystack.Ref('a-basic-ref')
+    assert grid[1]['ref'] == shaystack.Ref('reference', 'With value')
+
+
 def test_ref_csv():
     grid = shaystack.parse(textwrap.dedent('''
     str,ref
@@ -1017,6 +1189,21 @@ def test_date_json():
             {'date': 'd:2010-03-13'},
         ],
     }), mode=shaystack.MODE_JSON)
+    assert len(grid) == 1
+    assert isinstance(grid[0]['date'], datetime.date)
+    assert grid[0]['date'] == datetime.date(2010, 3, 13)
+
+
+def test_date_hayson():
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '2.0'},
+        'cols': [
+            {'name': 'date'},
+        ],
+        'rows': [
+            {'date': {'_kind': 'Date', 'val': '2010-03-13'}},
+        ],
+    }), mode=shaystack.MODE_HAYSON)
     assert len(grid) == 1
     assert isinstance(grid[0]['date'], datetime.date)
     assert grid[0]['date'] == datetime.date(2010, 3, 13)
@@ -1071,6 +1258,30 @@ def test_time_json():
             {'time': 'h:08:12:05.5'},
         ],
     }), mode=shaystack.MODE_JSON)
+    assert len(grid) == 3
+    row = grid.pop(0)
+    assert isinstance(row['time'], datetime.time)
+    assert row['time'] == datetime.time(8, 12)
+    row = grid.pop(0)
+    assert isinstance(row['time'], datetime.time)
+    assert row['time'] == datetime.time(8, 12, 5)
+    row = grid.pop(0)
+    assert isinstance(row['time'], datetime.time)
+    assert row['time'] == datetime.time(8, 12, 5, 500000)
+
+
+def test_time_hayson():
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '2.0'},
+        'cols': [
+            {'name': 'time'},
+        ],
+        'rows': [
+            {'time': {'_kind': 'Time', 'val': '08:12'}},
+            {'time': {'_kind': 'Time', 'val': '08:12:05'}},
+            {'time': {'_kind': 'Time', 'val': '08:12:05.5'}},
+        ],
+    }), mode=shaystack.MODE_HAYSON)
     assert len(grid) == 3
     row = grid.pop(0)
     assert isinstance(row['time'], datetime.time)
@@ -1147,6 +1358,24 @@ def test_datetime_json():
             {'datetime': 't:2010-01-08T05:00:00Z'},
         ],
     }), mode=shaystack.MODE_JSON)
+    _check_datetime(grid)
+
+
+def test_datetime_hayson():
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '2.0'},
+        'cols': [
+            {'name': 'datetime'},
+        ],
+        'rows': [
+            {'datetime': {'_kind': 'DateTime', 'val': '2010-11-28T07:23:02.500-08:00 Los_Angeles'}},
+            {'datetime': {'_kind': 'DateTime', 'val': '2010-11-28T23:19:29.500+08:00 Taipei'}},
+            {'datetime': {'_kind': 'DateTime', 'val': '2010-11-28T18:21:58+03:00 GMT-3'}},
+            {'datetime': {'_kind': 'DateTime', 'val': '2010-11-28T12:22:27-03:00 GMT+3'}},
+            {'datetime': {'_kind': 'DateTime', 'val': '2010-01-08T05:00:00Z UTC'}},
+            {'datetime': {'_kind': 'DateTime', 'val': '2010-01-08T05:00:00Z'}},
+        ],
+    }), mode=shaystack.MODE_HAYSON)
     _check_datetime(grid)
 
 
@@ -1374,6 +1603,28 @@ def test_list_v3_json():
     assert lst[3] == 1234.0
 
 
+def test_list_hayson():
+    # Simpler test case than the ZINC one, since the Python JSON parser
+    # will take care of the elements for us.
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '3.0'},
+        'cols': [
+            {'name': 'list'},
+        ],
+        'rows': [
+            {'list': ['my list', None, True, {'_kind': 'Num', 'val': 1234}]}
+        ]
+    }), mode=shaystack.MODE_HAYSON)
+    assert len(grid) == 1
+    lst = grid[0]['list']
+    assert isinstance(lst, list)
+    assert len(lst) == 4
+    assert lst[0] == 'my list'
+    assert_is(lst[1], None)
+    assert_is(lst[2], True)
+    assert lst[3] == 1234.0
+
+
 def test_list_v3_csv():
     # Simpler test case than the ZINC one, since the Python JSON parser
     # will take care of the elements for us.
@@ -1514,6 +1765,32 @@ def test_dict_json():
     assert grid[4]['dict'] == {'marker': MARKER, 'tag': [1.0, 2.0]}
     assert grid[5]['dict'] == {'tag': {'marker': MARKER}}
 
+def test_dict_hayson():
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '3.0'},
+        'cols': [
+            {'name': 'dict'},
+        ],
+        'rows': [
+            {'dict': {}},
+            {'dict': {'marker': {'_kind': 'Marker'}}},
+            {'dict': {'tag': 1.0}},
+            {'dict': {'tag': [1, 2]}},
+            {'dict': {'marker': {'_kind': 'Marker'}, 'tag': [1, 2]}},
+            {'dict': {'tag': {'marker': {'_kind': 'Marker'}}}},
+        ]
+    }), mode=shaystack.MODE_HAYSON)
+
+    # There should be 4 rows
+    assert len(grid) == 6
+    for row in grid:
+        assert isinstance(row['dict'], dict)
+    assert grid[0]['dict'] == {}
+    assert grid[1]['dict'] == {'marker': MARKER}
+    assert grid[2]['dict'] == {'tag': 1.0}
+    assert grid[3]['dict'] == {'tag': [1.0, 2.0]}
+    assert grid[4]['dict'] == {'marker': MARKER, 'tag': [1.0, 2.0]}
+    assert grid[5]['dict'] == {'tag': {'marker': MARKER}}
 
 def test_dict_csv():
     grid = shaystack.parse(json.dumps({
@@ -1567,6 +1844,20 @@ def test_bin_json():
     assert grid[0]['bin'] == shaystack.Bin('text/plain')
 
 
+def test_bin_hayson():
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '2.0'},
+        'cols': [
+            {'name': 'bin'},
+        ],
+        'rows': [
+            {'bin': {'_kind': 'Bin', 'val': 'text/plain'}},
+        ],
+    }), mode=shaystack.MODE_HAYSON)
+    assert len(grid) == 1
+    assert grid[0]['bin'] == shaystack.Bin('text/plain')
+
+
 def test_dict_invalide_version_zinc():
     try:
         shaystack.parse('''ver:"2.0"
@@ -1606,6 +1897,20 @@ def test_xstr_hex_json():
             {'bin': 'x:hex:deadbeef'},
         ],
     }), mode=MODE_JSON)
+    assert len(grid) == 1
+    assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
+
+
+def test_xstr_hex_hayson():
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '3.0'},
+        'cols': [
+            {'name': 'bin'},
+        ],
+        'rows': [
+            {'bin': {'_kind': 'xstr', 'val': 'hex:deadbeef'}},
+        ],
+    }), mode=shaystack.MODE_HAYSON)
     assert len(grid) == 1
     assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
 
@@ -1650,6 +1955,20 @@ def test_xstr_b64_json():
     assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
 
 
+def test_xstr_b64_json():
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '3.0'},
+        'cols': [
+            {'name': 'bin'},
+        ],
+        'rows': [
+            {'bin': {'_kind': 'xstr', 'val': 'b64:3q2+7w=='}},
+        ],
+    }), mode=shaystack.MODE_HAYSON)
+    assert len(grid) == 1
+    assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
+
+
 def test_xstr_b64_csv():
     grid = shaystack.parse(textwrap.dedent('''
     bin
@@ -1688,6 +2007,20 @@ def test_coord_json():
             {'coord': 'c:37.55,-77.45'},
         ],
     }), mode=shaystack.MODE_JSON)
+    assert len(grid) == 1
+    assert grid[0]['coord'] == shaystack.Coordinate(37.55, -77.45)
+
+
+def test_coord_hayson():
+    grid = shaystack.parse(json.dumps({
+        'meta': {'ver': '2.0'},
+        'cols': [
+            {'name': 'coord'},
+        ],
+        'rows': [
+            {'coord': {'_kind': 'Coord', 'lat': 37.55, 'lng': -77.45}},
+        ],
+    }), mode=shaystack.MODE_HAYSON)
     assert len(grid) == 1
     assert grid[0]['coord'] == shaystack.Coordinate(37.55, -77.45)
 
@@ -2185,6 +2518,25 @@ def test_grid_in_grid_json():
     assert inner[0]['comment'] == 'A innergrid'
 
 
+def test_grid_in_grid_hayson():
+    xstr = \
+        '{"meta": {"ver": "3.0"},' \
+        ' "cols": [{"name": "inner"}], ' \
+        '"rows": [' \
+        '{"type":"grid","inner": {' \
+        '"meta": {"ver": "3.0"}, ' \
+        '"cols": [{"name": "comment"}], ' \
+        '"rows": [{"comment": "A innergrid"}]}' \
+        '}]' \
+        '}'
+    grid = shaystack.parse(xstr, mode=shaystack.MODE_HAYSON)
+    assert len(grid) == 1
+    inner = grid[0]['inner']
+    assert isinstance(inner, Grid)
+    assert len(inner) == 1
+    assert inner[0]['comment'] == 'A innergrid'
+
+
 def test_grid_in_grid_csv():
     xstr = textwrap.dedent('''
     inner
@@ -2255,6 +2607,32 @@ def test_grid_in_grid_in_grid_json():
         '}]' \
         '}'
     grid = shaystack.parse(str_grid, mode=shaystack.MODE_JSON)
+    assert len(grid) == 1
+    inner = grid[0]['inner']
+    assert isinstance(inner, Grid)
+    assert len(inner) == 1
+    assert isinstance(inner[0]['innerinner'], Grid)
+    assert inner[0]['innerinner'][0]['comment'] == "A innerinnergrid"
+
+
+def test_grid_in_grid_in_grid_json():
+    str_grid = \
+        '{"meta": {"ver": "3.0"},' \
+        ' "cols": [{"name": "inner"}], ' \
+        '"rows": [' \
+        '{"inner": ' \
+        '{ "meta": {"ver": "3.0"}, ' \
+        '"cols": [{"name": "innerinner"}], ' \
+        '"rows": [' \
+        '{"innerinner": {' \
+        '"meta": {"ver": "3.0"}, ' \
+        '"cols": [{"name": "comment"}], ' \
+        '"rows": [{"comment": "A innerinnergrid"}]}' \
+        '}]' \
+        '}' \
+        '}]' \
+        '}'
+    grid = shaystack.parse(str_grid, mode=shaystack.MODE_HAYSON)
     assert len(grid) == 1
     inner = grid[0]['inner']
     assert isinstance(inner, Grid)
@@ -2343,6 +2721,13 @@ def test_scalar_simple_json():
            == "Testing"
     assert shaystack.parse_scalar('"n:50 Hz"', mode=shaystack.MODE_JSON) \
            == shaystack.Quantity(50, units='Hz')
+
+
+def test_scalar_simple_hayson():
+    #assert shaystack.parse_scalar('"Testing"', mode=shaystack.MODE_HAYSON) \
+    #       == "Testing"
+    assert shaystack.parse_scalar('50', mode=shaystack.MODE_HAYSON) \
+           == 50
 
 
 def test_scalar_simple_csv():

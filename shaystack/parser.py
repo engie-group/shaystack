@@ -16,6 +16,9 @@ from .datatypes import MODE_ZINC, MODE_JSON, MODE_CSV, MODE, MODE_TRIO, MODE_HAY
 from .grid import Grid
 from .jsonparser import parse_grid as parse_json_grid, \
     parse_scalar as parse_json_scalar
+from .haysonparser import parse_grid as parse_hayson_grid, \
+    parse_scalar as parse_hayson_scalar
+
 from .trioparser import parse_grid as parse_trio_grid, parse_scalar as parse_trio_scalar
 # Bring in version handling
 from .version import Version, LATEST_VER
@@ -123,4 +126,7 @@ def parse_scalar(scalar: Union[bytes, str], mode: MODE = MODE_ZINC,
         return parse_json_scalar(scalar, version=version)
     if mode == MODE_CSV:
         return parse_csv_scalar(scalar, version=version)
+    if mode == MODE_HAYSON:
+        return parse_hayson_scalar(scalar, version=version)
+
     raise NotImplementedError('Format not implemented: %s' % mode)

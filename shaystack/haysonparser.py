@@ -36,16 +36,24 @@ GRID_SEP = re.compile(r'\n\n+')
 
 # Type regular expressions
 MARKER_STR = 'Marker'
-NA_STR = 'na'
+NA_STR = 'NA'
 REMOVE_STR = 'Remove'
 NUMBER_STR = 'Num'
-REF_RE = 'Ref'
-DATE_RE = 'Date'
-TIME_RE = 'Time'
-DATETIME_RE = 'DateTime'
-URI_RE = 'Uri'
-BIN_RE = 'Bin'
-COORD_RE = 'Coord'
+REF = 'Ref'
+DATE = 'Date'
+DATE_RE = re.compile(r'^(\d{4})-(\d{2})-(\d{2})$', flags=re.MULTILINE)
+TIME = 'Time'
+TIME_RE = re.compile(r'^(\d{2}):(\d{2})(:?:(\d{2}(:?\.\d+)?))?$',
+                     flags=re.MULTILINE)
+DATETIME = 'DateTime'
+DATETIME_RE = re.compile(r'^(\d{4}-\d{2}-\d{2}T'
+                         r'\d{2}:\d{2}(:?:\d{2}(:?\.\d+)?)'
+                         r'(:?[zZ]|[+\-]\d+:?\d*))(:? ([A-Za-z\-+_0-9]+))?$',
+                         flags=re.MULTILINE)
+
+URI = 'Uri'
+BIN = 'Bin'
+COORD = 'Coord'
 
 
 def _parse_metadata(meta: Entity, version: Version) -> MetadataObject:
@@ -77,23 +85,12 @@ def _parse_row(row: Dict[str, Any], version: Version) -> Entity:
 
 def _parse_embedded_scalar(scalar: Union[None, List, Dict, str],
                            version: Version = LATEST_VER) -> Any:  # pylint: disable=too-many-locals
+    if isinstance(scalar, list):
+        # We support this only in version 3.0 and up.
+        return list(map(functools.partial(parse_scalar, version=version),
+                        scalar))
+
     if isinstance(scalar, dict):
-        if isinstance(scalar, list):
-            # We support this only in version 3.0 and up.
-            if version < VER_3_0:
-                raise ValueError('Lists are not supported in Haystack version %s'
-                                 % version)
-            return list(map(functools.partial(parse_scalar, version=version),
-                            scalar))
-        if isinstance(scalar, dict):
-            # We support this only in version 3.0 and up.
-            if version < VER_3_0:
-                raise ValueError('Dicts are not supported in Haystack version %s'
-                                 % version)
-            if sys.version_info[0] < 3 and {"meta", "cols", "rows"} <= scalar.viewkeys() \
-                    or {"meta", "cols", "rows"} <= scalar.keys():  # Check if grid in grid
-                return parse_grid(scalar)
-            return {k: parse_scalar(v, version=version) for (k, v) in scalar.items()}
         kind = scalar.get('_kind')
         if kind:
 
@@ -114,6 +111,8 @@ def _parse_embedded_scalar(scalar: Union[None, List, Dict, str],
                 else:
                     if scalar.get('unit'):
                         return Quantity(value, scalar.get('unit'))
+                    else:
+                        return Quantity(value)
             # Conversion to dict of float value turn them into float
             # so regex won't work... better just return them
             if isinstance(scalar, (float, int)):
@@ -121,74 +120,75 @@ def _parse_embedded_scalar(scalar: Union[None, List, Dict, str],
 
 
             # Is it a xstr?
-            if kind == 'xstr':
-                return XStr(*scalar[2:].split(':'))
+            if kind == 'XStr':
+                return XStr(scalar.get('type'), scalar.get('val'))
 
             # Is it a reference?
-            match = REF_RE.match(scalar)
-            if match:
-                matched = match.groups()
-                if matched[-1] is not None:
-                    return Ref(matched[0], matched[-1])
-                return Ref(matched[0])
+            if kind == REF:
+                return Ref(scalar.get('val'), scalar.get('dis'))
 
             # Is it a date?
-            match = DATE_RE.match(scalar)
-            if match:
+            if kind == DATE:
+                match = DATE_RE.match(scalar.get('val'))
                 (year, month, day) = match.groups()
                 return datetime.date(year=int(year), month=int(month), day=int(day))
 
             # Is it a time?
-            match = TIME_RE.match(scalar)
-            if match:
-                (hour, minute, _, second, _) = match.groups()
-                # Convert second to seconds and microseconds
-                if second is None:
-                    sec = 0
-                    usec = 0
-                elif '.' in second:
-                    (whole_sec, frac_sec) = second.split('.', 1)
-                    sec = int(whole_sec)
-                    usec = int(frac_sec[:6].ljust(6, '0'))
-                else:
-                    sec = int(second)
-                    usec = 0
-                return datetime.time(hour=int(hour), minute=int(minute),
-                                     second=sec, microsecond=usec)
+            if kind == TIME:
+                match = TIME_RE.match(scalar.get('val'))
+                if match:
+                    (hour, minute, _, second, _) = match.groups()
+                    # Convert second to seconds and microseconds
+                    if second is None:
+                        sec = 0
+                        usec = 0
+                    elif '.' in second:
+                        (whole_sec, frac_sec) = second.split('.', 1)
+                        sec = int(whole_sec)
+                        usec = int(frac_sec[:6].ljust(6, '0'))
+                    else:
+                        sec = int(second)
+                        usec = 0
+                    return datetime.time(hour=int(hour), minute=int(minute),
+                                         second=sec, microsecond=usec)
 
             # Is it a date/time?
-            match = DATETIME_RE.match(scalar)
-            if match:
-                matches = match.groups()
-                # Parse ISO8601 component
-                iso_date = iso8601.parse_date(matches[0])
-                # Parse timezone
-                tzname = matches[-1]
-                if tzname is None:
-                    return iso_date  # No timezone given
-                try:
-                    time_zone = timezone(tzname)
-                    return iso_date.astimezone(time_zone)
-                except TypeError:  # noqa: E722 pragma: no cover
-                    # Unlikely code path.
-                    return iso_date
+            if kind == DATETIME:
+                match = DATETIME_RE.match(scalar.get('val'))
+                if match:
+                    matches = match.groups()
+                    # Parse ISO8601 component
+                    iso_date = iso8601.parse_date(matches[0])
+                    # Parse timezone
+                    tzname = scalar.get('tz')
+                    if tzname is None:
+                        return iso_date  # No timezone given
+                    try:
+                        time_zone = timezone(tzname)
+                        return iso_date.astimezone(time_zone)
+                    except TypeError:  # noqa: E722 pragma: no cover
+                        # Unlikely code path.
+                        return iso_date
 
             # Is it a URI?
-            match = URI_RE.match(scalar)
-            if match:
-                return Uri(match.group(1))
+            if kind == URI:
+                return Uri(scalar.get('val'))
 
             # Is it a Bin?
-            match = BIN_RE.match(scalar)
-            if match:
-                return Bin(match.group(1))
+            if kind == BIN:
+                return Bin(scalar.get('val'))
 
             # Is it a co-ordinate?
-            match = COORD_RE.match(scalar)
-            if match:
-                (lat, lng) = match.groups()
-                return Coordinate(float(lat), float(lng))
+            if kind == COORD:
+                return Coordinate(float(scalar.get('lat')), scalar.get('lng'))
             return scalar
+        else:
+            # We support this only in version 3.0 and up.
+            if sys.version_info[0] < 3 and {"meta", "cols", "rows"} <= scalar.viewkeys() \
+                    or {"meta", "cols", "rows"} <= scalar.keys():  # Check if grid in grid
+                return parse_grid(scalar)
+            return {k: parse_scalar(v, version=version) for (k, v) in scalar.items()}
+
     return scalar
 
 def parse_scalar(scalar: Union[str, bool, float, int, list, dict], version: Version = LATEST_VER) -> Any:
@@ -204,8 +204,6 @@ def parse_scalar(scalar: Union[str, bool, float, int, list, dict], version: Vers
         return None
     if isinstance(scalar, (bool, float, int)):
         return scalar
-    if isinstance(scalar, str):
-        scalar = unescape_str(scalar)
     if isinstance(scalar, str) and \
             (len(scalar) >= 2) and \
             (scalar[0] in ('"', '[', '{')) and \

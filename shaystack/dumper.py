@@ -15,11 +15,10 @@ from .csvdumper import dump_grid as dump_csv_grid, \
     dump_scalar as dump_csv_scalar
 from .datatypes import MODE_TRIO
 from .grid import Grid
-from .jsondumper import dump_grid as dump_json_grid, \
-    dump_scalar as dump_json_scalar
 from .haysondumper import dump_grid as dump_hayson_grid, \
     dump_scalar as dump_hayson_scalar
-
+from .jsondumper import dump_grid as dump_json_grid, \
+    dump_scalar as dump_json_scalar
 from .parser import MODE_ZINC, MODE_HAYSON, MODE_JSON, MODE_CSV, MODE
 from .triodumper import dump_grid as dump_trio_grid, \
     dump_scalar as dump_trio_scalar
@@ -66,6 +65,6 @@ def dump_scalar(scalar: Any, mode: MODE = MODE_ZINC, version: Version = LATEST_V
         return dump_hayson_scalar(scalar, version=version)
     if mode == MODE_CSV:
         return dump_csv_scalar(scalar, version=version)
-    # if mode == MODE_HAYSON:
+    # if mode == MODE_HAYSON:  # PPR
     #    return dump_hayson_scalar(scalar, version=version)
     raise NotImplementedError('Format not implemented: %s' % mode)

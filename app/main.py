@@ -18,7 +18,7 @@ try:
     from flask_cors import CORS
     from app.blueprint_haystack import create_haystack_bp
 except ImportError as ex:
-    print('THIS IS THIS EXCEPTION')
+    print('THIS IS THIS EXCEPTION')  # PPR
     print('To start shift-4-haystack, use \'pip install "shaystack[flask]"\' or '
           '\'pip install "shaystack[flask,graphql]"\' and set \'HAYSTACK_PROVIDER\' variable',
           file=sys.stderr)

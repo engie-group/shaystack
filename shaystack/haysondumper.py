@@ -36,7 +36,7 @@ def dump_grid(grid: Grid) -> str:
     Returns:
         A json string
     """
-    return json.dumps(_dump_grid_to_json(grid))
+    return json.dumps(_dump_grid_to_json(grid))  # PPR: to_hayson ?
 
 
 def _dump_grid_to_json(grid: Grid) -> Dict[str, Union[List[str], Dict[str, str]]]:

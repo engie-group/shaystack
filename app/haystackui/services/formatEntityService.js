@@ -164,7 +164,13 @@ const formatEntityService = {
           )
       })
     })
-    return [entitiesLink, colorsLinkOutFromSource, entitiesNameToEntitiesId]
+    let colorsLinkOutFromSourceAdjusted = colorsLinkOutFromSource.map(colorLink => { return {
+        id: colorLink.id,
+        color: colorLink.color,
+        dis: colorLink.dis,
+        name: colorLink.name,
+        marker: { radius: radiusNode.fromSource + formatEntityService.getConnectionOccurence(colorLink.id, entitiesLink) }}})
+    return [entitiesLink, colorsLinkOutFromSourceAdjusted, entitiesNameToEntitiesId]
   },
     reajustEntitiespiSource(entities, indexApiDeleted) {
     const entitiesCopy = entities.slice()

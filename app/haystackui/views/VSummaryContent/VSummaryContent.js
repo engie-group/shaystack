@@ -117,7 +117,7 @@ export default {
         const el = this.$refs[entityId][0] ? this.$refs[entityId][0].$el : null
         if (this.elementInViewport(el)) {
           const { query } = this.$route
-          this.$router.replace({ hash: entityId, query }).catch(() => {})
+          this.$router.replace({ hash: pointName, query }).catch(() => {})
         }
       })
     },

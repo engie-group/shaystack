@@ -29,27 +29,34 @@ const template = `
 export default {
   template,
   name: 'CFilterApiBlock',
-    props: {
-       title: {
-          type: String,
-          default: ''
-       },
-       hasTooltips: {
-         type: Boolean,
-         default: false
-       },
-        tooltipText: {
-         type: String,
-         default: ''
-       },
-       isFromPlugin: {
-         type: Boolean,
-         default: false
-       }
+  props: {
+     title: {
+        type: String,
+        default: ''
      },
-    data() {
-
+     hasTooltips: {
+       type: Boolean,
+       default: false
+     },
+      tooltipText: {
+       type: String,
+       default: ''
+     },
+     isFromPlugin: {
+       type: Boolean,
+       default: false
+     }
+   },
+  data() {
+    return {
+      showExistingApi: false
+    }
+  },
+  computed: {
+    existingApiEndPointFromPlugin() {
+      return this.getExistingApiEndpoint ? this.getExistingApiEndpoint() : null
     }
   }
 }
+
 

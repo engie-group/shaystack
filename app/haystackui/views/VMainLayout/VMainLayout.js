@@ -19,30 +19,7 @@ const template = `
             <v-icon>mdi-format-list-bulleted-square</v-icon>
           </v-btn>
         </div>
-        <div class="main-layout__box">
-          <div class="main-layout__box-description">
-            <h4 class="main-layout__box-description__title">Query with filter</h4>
-            <div class="main-layout__box-description__tooltip">
-              <v-tooltip right>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-icon icon v-bind="attrs" v-on="on">info</v-icon>
-                </template>
-                <h3>Filter Example:</h3>
-                <span
-                  ><h4>site or equip</h4>
-                  find site or equipment entities<br />
-                  <h4>(not his)</h4>
-                  find entities with no histories<br />
-                  <h4>curVal > 10</h4>
-                  find all entities with a curval > 10<br />
-                  <h4>occupiedEnd >= 18:00 and geoCity == "Richmond"</h4>
-                  find all entities that close after 6 p.m. in Richmond<br />
-                  <h4>point and siteRef->geoCountry == "US"</h4>
-                  find all the point based in US
-                </span>
-              </v-tooltip>
-            </div>
-          </div>
+        <c-filter-api-block title="Query with filter" :hasTooltips=true :tooltipText=filterEntityTooltipText()>
           <v-text-field
             height="40px"
             width="80%"
@@ -55,7 +32,7 @@ const template = `
             @change="updateFilter($event)"
             hide-details
           />
-        </div>
+        </c-filter-api-block>
         <div class="main-layout__box">
           <div class="main-layout__box-description">
             <h4 class="main-layout__box-description__title">Add a target API Endpoint</h4>
@@ -252,9 +229,11 @@ const template = `
   </main>
 </div>
 `
+import CFilterApiBlock from '../../components/CFilterApiBlock/CFilterApiBlock.js'
 import { API_COLORS, dataUtils, formatService } from '../../services/index.js'
 export default {
   template,
+  components: { CFilterApiBlock },
   data() {
     return {
       comboboxInput: '',
@@ -441,6 +420,23 @@ export default {
       const dData = JSON.stringify(data, null, 2)
       const blob = new Blob([dData], { type: contentType })
       return window.URL.createObjectURL(blob)
+    },
+    filterEntityTooltipText() {
+      return  `
+        <h3>Filter Example:</h3>
+            <span>
+                <h4>site or equip</h4>
+                find site or equipment entities<br />
+                <h4>(not his)</h4>
+                find entities with no histories<br />
+                <h4>curVal > 10</h4>
+                find all entities with a curval > 10<br />
+                <h4>occupiedEnd >= 18:00 and geoCity == "Richmond"</h4>
+                find all entities that close after 6 p.m. in Richmond<br />
+                <h4>point and siteRef->geoCountry == "US"</h4>
+                find all the point based in US
+              </span>
+        `
     }
   }
 }

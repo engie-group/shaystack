@@ -1,0 +1,22 @@
+.filter-api-block__box {
+  display: flex;
+  flex-direction: column;
+  justify-items: space-between;
+  width: 80%;
+}
+
+.filter-api-block__box-description {
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 10px;
+}
+
+.filter-api-block__box-description__title {
+  color: grey;
+  padding-right: 15px;
+}
+
+.filter-api-block__box-description__tooltip {
+  margin-left: auto;
+  display: flex;
+}

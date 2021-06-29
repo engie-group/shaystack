@@ -1,10 +1,14 @@
 const template = `
   <v-card style="height: 100%;" ref="graph-container">
     <div :id="id" class="bar-chart__chart"></div>
+        <v-checkbox v-for="linkName in getUniqueLinkRefBetweenEntities"
+            v-model="checkboxSelection[linkName]"
+            :label="linkName"
+        />
   </v-card>
 `
+import { formatEntityService } from '../../services/index.js'
 
-/* eslint-disable */
 export default {
   template,
   name: 'CGraph',
@@ -29,6 +33,19 @@ export default {
       type: Array,
       default: () => []
     }
+  },
+  data() {
+    return {
+      checkboxSelection: {}
+    }
+  },
+  computed: {
+    getUniqueLinkRefBetweenEntities() {
+      return formatEntityService.getUniquesRelationsBetweenEntities(this.dataEntities[0])
+    }
+  },
+  beforeMount() {
+    this.getUniqueLinkRefBetweenEntities.map(linkName => this.checkboxSelection[linkName] = true)
   },
   mounted() {
     (function(H) {
@@ -116,7 +133,7 @@ export default {
   })
 })(Highcharts)
 
-    const height = this.$refs['graph-container'].$el.clientHeight;
+    const height = this.$refs['graph-container'].$el.clientHeight - 50;
     const width = this.$refs['graph-container'].$el.clientWidth;
     this.chart = Highcharts.chart(this.id, {
       title: {
@@ -150,6 +167,7 @@ export default {
       tooltip : {
         enabled : true,
         formatter : function() {
+        console.log(this.point)
           return `<div> <span> ${this.point.id} </span> </div>`
         }
       },
@@ -166,5 +184,6 @@ export default {
         }
       ]
     })
-  }
+  },
+ //updated()
 }

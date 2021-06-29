@@ -38,6 +38,12 @@ import CGraph from '../../components/CGraph/CGraph.js'
 export default {
   template,
   components: { CEntityRow, CGraph },
+  data () {
+    return {
+      checkbox1: true,
+      checkbox2: false,
+    }
+  },
   computed: {
     isAnyData() {
       return !(this.entities.length === 0 || (this.entities.length === 1 && this.entities[0].length === 0))
@@ -117,7 +123,7 @@ export default {
         const el = this.$refs[entityId][0] ? this.$refs[entityId][0].$el : null
         if (this.elementInViewport(el)) {
           const { query } = this.$route
-          this.$router.replace({ hash: pointName, query }).catch(() => {})
+          this.$router.replace({ hash: entityId, query }).catch(() => {})
         }
       })
     },
@@ -166,7 +172,7 @@ export default {
       } else {
         this.$refs[pointName][0].$el.scrollIntoView(true)
         window.scrollBy(0, -70)
-        this.$router.push({ hash: entityId, query }).catch(() => {})
+        this.$router.push({ hash: pointName, query }).catch(() => {})
       }
     },
     getEntityName(entity) {

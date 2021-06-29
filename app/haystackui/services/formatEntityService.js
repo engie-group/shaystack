@@ -214,6 +214,9 @@ const formatEntityService = {
       }
     })
     return historiesReajusted
+  },
+  getUniquesRelationsBetweenEntities(entitiesLink) {
+    return [... new Set(entitiesLink.map(entityLink => entityLink[2]))]
   }
 }
 

@@ -19,7 +19,7 @@ from shaystack.datatypes import Ref, Bin, Uri, Quantity, Coordinate, XStr, MARKE
 from shaystack.dumper import dump
 from shaystack.grid import Grid, VER_3_0
 from shaystack.metadata import MetadataObject
-from shaystack.parser import MODE_ZINC, parse, MODE_JSON, MODE_CSV
+from shaystack.parser import MODE_ZINC, parse, MODE_JSON, MODE_CSV, MODE_HAYSON
 # noinspection PyProtectedMember
 from shaystack.zoneinfo import _get_tz_map, timezone
 
@@ -306,6 +306,11 @@ def try_dump_parse_json():
     _try_dump_parse(ref_grid, MODE_JSON)
 
 
+def try_dump_parse_hayson():
+    ref_grid = gen_random_grid()
+    _try_dump_parse(ref_grid, MODE_HAYSON)
+
+
 def try_dump_parse_csv():
     ref_grid = gen_random_grid(metadata=False)
     _try_dump_parse(ref_grid, MODE_CSV)
@@ -342,6 +347,18 @@ def test_loopback_json():
         try:
             for _ in range(0, GENERATION_NUMBER):
                 try_dump_parse_json()
+        except:  # noqa: E722
+            print(i)
+            raise
+
+
+def test_loopback_hayson():
+    for i in range(_FIND_BUG_START, _FIND_BUG_END):
+        if _FIND_BUG_END != 1:
+            random.seed(i)
+        try:
+            for _ in range(0, GENERATION_NUMBER):
+                try_dump_parse_hayson()
         except:  # noqa: E722
             print(i)
             raise

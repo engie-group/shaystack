@@ -25,6 +25,7 @@ Compatible haystack file format
 MODE_ZINC: MODE = MODE('text/zinc')
 MODE_TRIO: MODE = MODE('text/trio')
 MODE_JSON: MODE = MODE('application/json')
+MODE_HAYSON: MODE = MODE('application/hayson')
 MODE_CSV: MODE = MODE('text/csv')
 
 

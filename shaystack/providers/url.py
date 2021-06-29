@@ -629,8 +629,11 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             raise ValueError("Empty body not supported")
         if uri.endswith(".gz"):
             uri = uri[:-3]
-
-        mode = suffix_to_mode(os.path.splitext(uri)[1])
+        if '.hayson.json' in uri:
+            suffix = '.hayson.json'
+        else:
+            suffix = os.path.splitext(uri)[1]
+        mode = suffix_to_mode(suffix)
         if not mode:
             raise ValueError(
                 "The file extension must be .(json|zinc|csv)[.gz]"

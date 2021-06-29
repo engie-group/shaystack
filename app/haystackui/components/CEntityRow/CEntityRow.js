@@ -38,8 +38,7 @@ const template = `
   </v-card>
 `
 
-import formatService from '../../services/formatService.js'
-import dataUtils from '../../services/dataUtils.js'
+import { formatEntityService, formatChartService, dateUtils } from '../../services/index.js'
 import CChart from '../CChart/CChart.js'
 import PHisDataTable from '../../presenters/PHisDataTable/PHisDataTable.js'
 
@@ -132,20 +131,20 @@ export default {
       return this.isFromExternalSource ? `${this.idEntity}-external` : this.idEntity
     },
     entityName() {
-      return formatService.formatEntityName(this.dataEntity)
+      return formatEntityService.formatEntityName(this.dataEntity)
     },
     dataChart() {
       return this.his
         .map((his, index) => {
           return { his, apiNumber: index }
         })
-        .filter(hisData => dataUtils.isNumberTypeChart(hisData.his))
+        .filter(hisData => formatChartService.isNumberTypeChart(hisData.his))
         .map(historic => {
-          return { his: historic.his ? formatService.formatCharts(historic.his) : null, apiNumber: historic.apiNumber }
+          return { his: historic.his ? formatChartService.formatCharts(historic.his) : null, apiNumber: historic.apiNumber }
         })
     },
     dataHisTable() {
-      const dataHisTable = this.his.filter(hisData => !dataUtils.isNumberTypeChart(hisData))
+      const dataHisTable = this.his.filter(hisData => !formatChartService.isNumberTypeChart(hisData))
       if (dataHisTable.length === 1 && dataHisTable[0].length === 0) return []
       return dataHisTable
     },
@@ -170,7 +169,7 @@ export default {
       this.$emit('onExternalRefClick', refId)
     },
     sortDataChart(dataChart) {
-      return dataUtils.sortChartDataByDate(dataChart)
+      return formatChartService.sortChartDataByDate(dataChart)
     },
     getNumberValue(dataEntityKey) {
       const numberStringValue = this.dataEntity[dataEntityKey].val.substring(2).split(' ')

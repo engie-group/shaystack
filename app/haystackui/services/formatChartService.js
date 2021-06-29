@@ -1,15 +1,6 @@
-const dataUtils = {
-    checkDateFormat: dateString => {
-    if (dateString === 'today') return dateString
-    if (dateString === 'yesterday') return dateString
-    const dateObject = new Date(dateString)
-    if (dateObject.toString() === 'Invalid Date') return null
-    return dateString
-  },
-  formatDate: dateString => {
-    const date = new Date(dateString.substring(2).split(' ')[0])
-    return date.getTime()
-  },
+import dateUtils from './dateUtils.js'
+
+const formatChartService = {
   formatVal: valueString => {
     if (valueString.split(' ').length > 1) {
       return Number(valueString.split(' ')[0].substring(2))
@@ -40,7 +31,15 @@ const dataUtils = {
         his: dataApi.his.sort((firstData, secondData) => secondData[0] - firstData[0])
       }
     })
+  },
+  formatCharts(historic) {
+    return historic.map(point => {
+      return [dateUtils.formatDate(point.ts),  formatChartService.formatVal(point.val)]
+    })
+  },
+  formatYAxis: histories => {
+    return histories.map(history => formatChartService.formatVal(history.val))
   }
 }
 
-export default dataUtils
+export default formatChartService

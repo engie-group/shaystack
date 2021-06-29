@@ -185,7 +185,7 @@ const template = `
 </div>
 `
 import CFilterApiBlock from '../../components/CFilterApiBlock/CFilterApiBlock.js'
-import { API_COLORS, dataUtils, formatService } from '../../services/index.js'
+import { API_COLORS, dateUtils, formatEntityService, utils } from '../../services/index.js'
 export default {
   template,
   components: { CFilterApiBlock },
@@ -195,7 +195,6 @@ export default {
       dateStartInput: this.startDateRange,
       dateEndInput: this.endDateRange,
       menu: false,
-      showExistingApi: false,
       isExtended: true
     }
   },
@@ -215,13 +214,11 @@ export default {
     },
     startDateRange() {
       const filterDateStart = this.$store.getters.dateRange.start === '' ? null : this.$store.getters.dateRange.start
-      // eslint-disable-next-line
       this.dateStartInput = filterDateStart
       return filterDateStart
     },
     endDateRange() {
       const filterEndDate = this.$store.getters.dateRange.end === '' ? null : this.$store.getters.dateRange.end
-      // eslint-disable-next-line
       this.dateEndInput = filterEndDate
       return filterEndDate
     },
@@ -274,7 +271,7 @@ export default {
     },
     async updateLimit(newLimit) {
       if (newLimit !== this.$store.getters.limit) {
-        if (formatService.isNumber(newLimit)) {
+        if (formatEntityService.isNumber(newLimit)) {
           this.$store.commit('SET_LIMIT', { limit: newLimit })
           const { a, d, q, v } = this.$route.query
           this.$router.push({ query: { q, a, d, v, l: newLimit } })
@@ -284,7 +281,7 @@ export default {
     },
     async updateVersion(newVersion) {
       if (newVersion !== this.$store.getters.version) {
-        if (dataUtils.checkDateFormat(newVersion)) {
+        if (dateUtils.checkDateFormat(newVersion)) {
           this.$store.commit('SET_VERSION', { version: newVersion })
           const { a, d, q, l } = this.$route.query
           this.$router.push({ query: { q, a, d, l, v: newVersion } })
@@ -309,10 +306,10 @@ export default {
       await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
     },
     async updateStartDateRange(newStartDate) {
-      const startDateRange = !newStartDate || newStartDate === '' ? '' : dataUtils.checkDateFormat(newStartDate)
+      const startDateRange = !newStartDate || newStartDate === '' ? '' : dateUtils.checkDateFormat(newStartDate)
       if (newStartDate !== this.startDateRange) {
         if (startDateRange || startDateRange === '') {
-          if (formatService.checkDateRangeIsCorrect(startDateRange, this.endDateRange)) {
+          if (dateUtils.checkDateRangeIsCorrect(startDateRange, this.endDateRange)) {
             this.$store.commit('SET_START_DATE_RANGE', { startDateRange })
             const { a, q, l, v } = this.$route.query
             if ((!this.endDateRange || this.endDateRange === '') && startDateRange === '') {
@@ -333,10 +330,10 @@ export default {
       }
     },
     async updateEndDateRange(newEndDate) {
-      const endDateRange = !newEndDate || newEndDate === '' ? '' : dataUtils.checkDateFormat(newEndDate)
+      const endDateRange = !newEndDate || newEndDate === '' ? '' : dateUtils.checkDateFormat(newEndDate)
       if (newEndDate !== this.endDateRange) {
         if (endDateRange || endDateRange === '') {
-          if (formatService.checkDateRangeIsCorrect(this.startDateRange, endDateRange)) {
+          if (dateUtils.checkDateRangeIsCorrect(this.startDateRange, endDateRange)) {
             this.$store.commit('SET_END_DATE_RANGE', { endDateRange })
             const { a, q, l, v } = this.$route.query
             if ((!this.startDateRange || this.startDateRange === '') && endDateRange === '')
@@ -368,8 +365,8 @@ export default {
       let data
       if (entities.length === 0) data = {}
       else {
-        data = entities.length === 1 ? entities[0] : formatService.groupAllEntitiesById(entities)
-        data = formatService.formatHaystackJson(data)
+        data = entities.length === 1 ? entities[0] : formatEntityService.groupAllEntitiesById(entities)
+        data = utils.formatHaystackJson(data)
       }
       const contentType = 'application/json'
       const dData = JSON.stringify(data, null, 2)

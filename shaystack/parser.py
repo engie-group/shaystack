@@ -28,15 +28,15 @@ from .zincparser import parse_grid as parse_zinc_grid, \
 LOG = logging.getLogger(__name__)
 
 _suffix_to_mode = {".zinc": MODE_ZINC,
-                   ".json": MODE_JSON,
                    ".hayson.json": MODE_HAYSON,
+                   ".json": MODE_JSON,
                    ".trio": MODE_TRIO,
                    ".csv": MODE_CSV
                    }
 
 _mode_to_suffix = {MODE_ZINC: ".zinc",
-                   MODE_JSON: ".json",
                    MODE_HAYSON: ".hayson.json",
+                   MODE_JSON: ".json",
                    MODE_TRIO: ".trio",
                    MODE_CSV: ".csv"
                    }

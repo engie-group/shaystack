@@ -36,10 +36,10 @@ def dump_grid(grid: Grid) -> str:
     Returns:
         A json string
     """
-    return json.dumps(_dump_grid_to_json(grid))  # PPR: to_hayson ?
+    return json.dumps(_dump_grid_to_hayson(grid))
 
 
-def _dump_grid_to_json(grid: Grid) -> Dict[str, Union[List[str], Dict[str, str]]]:
+def _dump_grid_to_hayson(grid: Grid) -> Dict[str, Union[List[str], Dict[str, str]]]:
     """
     Convert a grid to JSON object
     Args:
@@ -138,7 +138,7 @@ def _dump_scalar(scalar: Any, version: Version = LATEST_VER) \
     if isinstance(scalar, (float, int)):
         return _dump_decimal(scalar)
     if isinstance(scalar, Grid):
-        return _dump_grid_to_json(scalar)
+        return _dump_grid_to_hayson(scalar)
     raise NotImplementedError('Unhandled case: %r' % scalar)
 
 

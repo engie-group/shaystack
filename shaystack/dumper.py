@@ -65,6 +65,4 @@ def dump_scalar(scalar: Any, mode: MODE = MODE_ZINC, version: Version = LATEST_V
         return dump_hayson_scalar(scalar, version=version)
     if mode == MODE_CSV:
         return dump_csv_scalar(scalar, version=version)
-    # if mode == MODE_HAYSON:  # PPR
-    #    return dump_hayson_scalar(scalar, version=version)
     raise NotImplementedError('Format not implemented: %s' % mode)

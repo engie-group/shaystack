@@ -594,6 +594,7 @@ def test_mode_to_suffix():
     assert mode_to_suffix(suffix_to_mode(".csv")) == ".csv"
     assert mode_to_suffix(suffix_to_mode(".zinc")) == ".zinc"
     assert mode_to_suffix(suffix_to_mode(".json")) == ".json"
+    assert mode_to_suffix(suffix_to_mode(".hayson.json")) == ".hayson.json"
 
 
 def test_grid_update_slide():

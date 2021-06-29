@@ -1,7 +1,6 @@
-/* eslint-disable */
-import dataUtils from './dataUtils.js'
-import { API_COLORS } from './index.js'
-const formatService = {
+import { utils, API_COLORS } from './index.js'
+
+const formatEntityService = {
   formatIdEntity: id => {
     return id.split(' ')[0].substring(2)
   },
@@ -30,73 +29,16 @@ const formatService = {
     entityName.shift()
     return entityName.join(' ')
   },
-  formatDateRangeUrl(dateRange) {
-    if (dateRange.start === 'today' || dateRange.start === 'yesterday') {
-      if (dateRange.end === '' || !dateRange.end) return dateRange.start
-      else return `${formatService.dateConvertor(dateRange.start).toISOString()},${formatService.dateConvertor(dateRange.end, false).toISOString()}`
-    }
-    else if (dateRange.end === 'today' || dateRange.end === 'yesterday') {
-      if (dateRange.start === '') return dateRange.end
-      else return `${formatService.dateConvertor(dateRange.start).toISOString()},${formatService.dateConvertor(dateRange.end).toISOString()}`
-    }
-    else
-      return `${dateRange.start === '' ? '' : formatService.dateConvertor(dateRange.start).toISOString()},${dateRange.end === '' ? '' : formatService.dateConvertor(dateRange.end).toISOString()}`
-  },
-  dateConvertor(date, isStartDate=true) { // Same Type
-    if (date === 'today') return isStartDate ? new Date() : new Date(new Date().setDate(new Date().getDate() + 1))
-    else if (date === 'yesterday') return isStartDate ? new Date(new Date().setDate(new Date().getDate() - 1)) : new Date()
-    else if (!date) return ''
-    else return new Date(date)
-  },
-  checkDateRangeIsCorrect(dateStart, dateEnd) {
-    const dateStartObject = formatService.dateConvertor(dateStart)
-    const dateEndObject = formatService.dateConvertor(dateEnd)
-    if (dateStartObject === '' || dateEndObject === '') return true
-    else return dateStartObject < dateEndObject
-  },
   idToNameEntity: entitiesfromAllSource => {
     let mapEntityIdToEntityName = {}
     entitiesfromAllSource.map(entities => {
       entities.map(entity => {
-        const entityId = formatService.formatIdEntity(entity.id.val)
-        const entityName = formatService.formatEntityName(entity)
+        const entityId = formatEntityService.formatIdEntity(entity.id.val)
+        const entityName = formatEntityService.formatEntityName(entity)
         mapEntityIdToEntityName[entityId] = entityName
       })
     })
     return mapEntityIdToEntityName
-  },
-  formatCharts(historic) {
-    return historic.map(point => {
-      return [dataUtils.formatDate(point.ts),  dataUtils.formatVal(point.val)]
-    })
-  },
-  formatYAxis: histories => {
-    return histories.map(history => dataUtils.formatVal(history.val))
-  },
-  renameObjectKey(object, oldKey, newKey) {
-    Object.defineProperty(object, newKey, Object.getOwnPropertyDescriptor(object, oldKey))
-    delete object[oldKey]
-    return object
-  },
-  findSimilarObjectsKeyWithSameValues(object1,object2) {
-    const similarKeysWithSameValues = []
-    Object.keys(object1).map(key => {
-      if (object2.hasOwnProperty(key) && object2[key].val === object1[key].val && key !== 'id') {
-        similarKeysWithSameValues.push(key)
-      }
-      return key
-    })
-    return similarKeysWithSameValues
-  },
-  findSimilarObjectsKeyWithDifferentsValues(object1, object2) {
-    const similarKeysWithDifferentsValues = []
-    Object.keys(object1).map(key => {
-      if (object2.hasOwnProperty(key) && object2[key].val !== object1[key].val) {
-        similarKeysWithDifferentsValues.push(key)
-      }
-      return key
-    })
-    return similarKeysWithDifferentsValues
   },
   addApiSourceInformationToEntity: (entities, apiNumber) => {
     entities.map(entity => {
@@ -129,60 +71,19 @@ const formatService = {
     })
     return entitiesFromAllSource
   },
-  getKeyAlreadyDuplicated: (firstEntity, secondEntity) => {
-    let keysAlreadyDuplicated = Object.keys(firstEntity).map(key => {
-      const keySplitted = key.split('_')
-      if (keySplitted.length > 1 && Number(keySplitted[1])) {
-        const mappingDuplicateKeyToActualKey = {}
-        mappingDuplicateKeyToActualKey[keySplitted[0]] = key
-        return mappingDuplicateKeyToActualKey
-      }
-      else return null
-    }).filter(key => key)
-    Object.keys(secondEntity).map(keyFromSecondEntity => {
-      const keyFromFirstEntity = keysAlreadyDuplicated.filter(key => key[keyFromSecondEntity])
-      if (keyFromFirstEntity.length > 0) {
-        if (keyFromFirstEntity.filter(
-          key =>  firstEntity[key[keyFromSecondEntity]].val === secondEntity[keyFromSecondEntity].val
-          ).length === 0) {
-            secondEntity = formatService.renameObjectKey(
-              secondEntity,
-              keyFromSecondEntity,
-              `${keyFromSecondEntity}_${secondEntity[keyFromSecondEntity].apiSource}`
-              )
-          }
-        else {
-          delete secondEntity[keyFromSecondEntity]
-        }
-      }
-      return  keyFromSecondEntity
-    })
-    return secondEntity
-  },
-  copyArrayOfArrayWithObject: arrayOfArrayWithObject => {
-    const arrayOfArrayCopy =  []
-    arrayOfArrayWithObject.map(arrayWithObject => {
-      let arrayCopy = []
-      arrayWithObject.map(object => {
-        arrayCopy.push({ ...object })
-      })
-      arrayOfArrayCopy.push(arrayCopy)
-    })
-    return arrayOfArrayCopy
-  },
   groupAllEntitiesById: entitiesFromAllSources => {
-    let entitiesFromAllSourceCopy = formatService.copyArrayOfArrayWithObject(entitiesFromAllSources)
+    let entitiesFromAllSourceCopy = utils.copyArrayOfArrayWithObject(entitiesFromAllSources)
     let initialEntities = entitiesFromAllSourceCopy.shift()
-    return entitiesFromAllSourceCopy.reduce((acc, entities) => formatService.groupTwoEntitiesById(acc, entities), initialEntities)
+    return entitiesFromAllSourceCopy.reduce((acc, entities) => formatEntityService.groupTwoEntitiesById(acc, entities), initialEntities)
   },
   groupTwoEntitiesById: (entitiesFromFirstSource, entitiesFromSecondSource) => {
     const mergeEntities = []
     entitiesFromFirstSource.map(entityFromFirstSource => {
-      const idFromSource = formatService.formatIdEntity(entityFromFirstSource.id.val)
+      const idFromSource = formatEntityService.formatIdEntity(entityFromFirstSource.id.val)
       entitiesFromSecondSource.map(entityFromSecondSource => {  // Refactor complexity
-        const idFromSecondSource = formatService.formatIdEntity(entityFromSecondSource.id.val)
+        const idFromSecondSource = formatEntityService.formatIdEntity(entityFromSecondSource.id.val)
         if (idFromSource === idFromSecondSource) {
-          const keysWithSameValues = formatService.findSimilarObjectsKeyWithSameValues(
+          const keysWithSameValues = utils.findSimilarObjectsKeyWithSameValues(
             entityFromFirstSource,
             entityFromSecondSource
           )
@@ -206,8 +107,8 @@ const formatService = {
             else entityFromSecondSource[key] = entityFromFirstSource[key]
           })
           entityFromSecondSource['id'] = entityFromFirstSource['id']
-          entityFromSecondSource = formatService.getKeyAlreadyDuplicated(entityFromFirstSource, entityFromSecondSource)
-          const keysWithDifferentValues = formatService.findSimilarObjectsKeyWithDifferentsValues(
+          entityFromSecondSource = utils.getKeyAlreadyDuplicated(entityFromFirstSource, entityFromSecondSource)
+          const keysWithDifferentValues = utils.findSimilarObjectsKeyWithDifferentsValues(
             entityFromFirstSource,
             entityFromSecondSource
           )
@@ -216,15 +117,15 @@ const formatService = {
               entityFromSecondSource[key] = entityFromFirstSource[key]
             }
             else {
-              entityFromFirstSource = formatService.renameObjectKey(entityFromFirstSource, key, `${key}_${entityFromFirstSource[key].apiSource}`)
-              entityFromSecondSource = formatService.renameObjectKey(entityFromSecondSource, key, `${key}_${entityFromSecondSource[key].apiSource}`)
+              entityFromFirstSource = utils.renameObjectKey(entityFromFirstSource, key, `${key}_${entityFromFirstSource[key].apiSource}`)
+              entityFromSecondSource = utils.renameObjectKey(entityFromSecondSource, key, `${key}_${entityFromSecondSource[key].apiSource}`)
               delete entityFromFirstSource[key]
               delete entityFromSecondSource[key]
             }
           })
           mergeEntities.push({ ...entityFromFirstSource, ...entityFromSecondSource })
-          entitiesFromSecondSource = entitiesFromSecondSource.filter(entity => formatService.formatIdEntity(entity.id.val) !== idFromSource)
-          entitiesFromFirstSource = entitiesFromFirstSource.filter(entity => formatService.formatIdEntity(entity.id.val) !== idFromSource)
+          entitiesFromSecondSource = entitiesFromSecondSource.filter(entity => formatEntityService.formatIdEntity(entity.id.val) !== idFromSource)
+          entitiesFromFirstSource = entitiesFromFirstSource.filter(entity => formatEntityService.formatIdEntity(entity.id.val) !== idFromSource)
         }
       })
     })
@@ -234,17 +135,17 @@ const formatService = {
     const colors = { fromSource: API_COLORS, outFromSource: '#c1e1ec' }
     const radiusNode = { fromSource: 7, outFromSource: 5 }
     const entitiesLink = []
-    const entitiesNameToEntitiesId = formatService.idToNameEntity(entitiesFromAllSource)
+    const entitiesNameToEntitiesId = formatEntityService.idToNameEntity(entitiesFromAllSource)
     const colorsLinkOutFromSource = []
     entitiesFromAllSource.map(entities => {
       entities.map( entity => {
-        const formatedEntityId = formatService.formatIdEntity(entity.id.val)
+        const formatedEntityId = formatEntityService.formatIdEntity(entity.id.val)
         Object.keys(entity).map(key => {
           if(typeof entity[key] !== 'boolean') {
-            if(formatService.isRef(entity[key].val) && key !== 'id') {
-              const formatedEntityIdLinked = formatService.formatIdEntity(entity[key].val)
+            if(formatEntityService.isRef(entity[key].val) && key !== 'id') {
+              const formatedEntityIdLinked = formatEntityService.formatIdEntity(entity[key].val)
               const formatedLink = [formatedEntityId, formatedEntityIdLinked, key]
-              if(!formatService.isEntityFromSource(entitiesFromAllSource, entity[key].val)) {
+              if(!formatEntityService.isEntityFromSource(entitiesFromAllSource, entity[key].val)) {
                 colorsLinkOutFromSource.push({ id: formatedEntityIdLinked, color: colors.outFromSource, marker: { radius: radiusNode.outFromSource } })
               }
               else colorsLinkOutFromSource.push({ id: formatedEntityIdLinked, color: colors.fromSource[entity.id.apiSource - 1], marker: { radius: radiusNode.fromSource } })
@@ -257,7 +158,7 @@ const formatService = {
             id: formatedEntityId, color: colors.fromSource[entity.id.apiSource - 1],
             dis: entity.dis ? entity.dis.val.substring(2) : formatedEntityId,
             marker: { radius:
-                radiusNode.fromSource + formatService.getConnectionOccurence(formatedEntityId, entitiesLink) },
+                radiusNode.fromSource + formatEntityService.getConnectionOccurence(formatedEntityId, entitiesLink) },
             name: entitiesNameToEntitiesId[formatedEntityId]
             }
           )
@@ -307,18 +208,7 @@ const formatService = {
       }
     })
     return historiesReajusted
-  },
-  formatHaystackJson(entities) {
-    const entitiesCopy = []
-    entities.forEach(entity => {
-      const newEntity = {}
-      Object.keys(entity).map(function(key, index) {
-        newEntity[key] = entity[key].val
-      })
-      entitiesCopy.push(newEntity)
-    })
-    return entitiesCopy
   }
 }
 
-export default formatService
+export default formatEntityService

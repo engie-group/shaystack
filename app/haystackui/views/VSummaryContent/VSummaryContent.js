@@ -32,8 +32,7 @@ const template = `
     <v-alert type="warning" class="summary-content__alert-no-data">Enter an API that contains data</v-alert>
   </div>
 `
-import { API_COLORS, dataUtils } from '../../services/index.js'
-import formatService from '../../services/formatService.js'
+import { API_COLORS, dateUtils, formatEntityService } from '../../services/index.js'
 import CEntityRow from '../../components/CEntityRow/CEntityRow.js'
 import CGraph from '../../components/CGraph/CGraph.js'
 export default {
@@ -58,7 +57,7 @@ export default {
     idsWithHis() {
       return this.entitiesGroupedById
         .filter(entity => entity.his)
-        .map(entity => formatService.formatIdEntity(entity.id.val))
+        .map(entity => formatEntityService.formatIdEntity(entity.id.val))
     },
     histories() {
       return this.$store.getters.histories
@@ -95,8 +94,8 @@ export default {
         if (this.$route.query.d) {
           const splittedUrl = this.$route.query.d.split(',')
           if (splittedUrl.length > 1) {
-            const startDate = dataUtils.checkDateFormat(this.$route.query.d.split(',')[0])
-            const endDate = dataUtils.checkDateFormat(this.$route.query.d.split(',')[1])
+            const startDate = dateUtils.checkDateFormat(this.$route.query.d.split(',')[0])
+            const endDate = dateUtils.checkDateFormat(this.$route.query.d.split(',')[1])
             await this.$store.commit('SET_START_DATE_RANGE', { startDateRange: startDate })
             await this.$store.commit('SET_END_DATE_RANGE', { endDateRange: endDate || '' })
           } else {
@@ -171,17 +170,17 @@ export default {
       }
     },
     getEntityName(entity) {
-      return formatService.formatEntityName(entity)
+      return formatEntityService.formatEntityName(entity)
     },
     getEntityId(entity) {
       if (!entity.id) return 'NaN'
       return entity.id.val.substring(2).split(' ')[0]
     },
     groupByIdEntities(entities) {
-      return formatService.groupAllEntitiesById(entities)
+      return formatEntityService.groupAllEntitiesById(entities)
     },
     getHistory(idEntity, sourceNumber) {
-      const formattedId = formatService.formatIdEntity(idEntity)
+      const formattedId = formatEntityService.formatIdEntity(idEntity)
       if (!this.histories[sourceNumber][formattedId]) return null
       return this.histories[sourceNumber][formattedId]
     },
@@ -203,7 +202,7 @@ export default {
       }
     },
     getRelationGraphEntity(entities) {
-      return formatService.getLinkBetweenEntities(entities)
+      return formatEntityService.getLinkBetweenEntities(entities)
     },
     redirectOnRightHash() {
       if (this.isAnyData) {

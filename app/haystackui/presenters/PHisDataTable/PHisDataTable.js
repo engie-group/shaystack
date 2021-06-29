@@ -42,7 +42,7 @@ const template = `
   </v-card>
 `
 
-import formatService from '../../services/formatService.js'
+import { utils } from '../../services/index.js'
 
 export default {
   template,
@@ -88,7 +88,7 @@ export default {
 
   methods: {
     replaceKeyObject(object, oldKey, newKey) {
-      return formatService.renameObjectKey(object, oldKey, newKey)
+      return utils.renameObjectKey(object, oldKey, newKey)
     },
     copyText(item) {
       const id = `@${item.value.split(' ')[0].substring(2)}`

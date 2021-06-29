@@ -132,8 +132,8 @@ export default {
           keys: this.keys,
           layoutAlgorithm: {
             enableSimulation: true,
-            friction: -0.9,
-            linkLength: 70
+            friction: -0.98,
+            linkLength: 35
             },
           point: {
             events: {

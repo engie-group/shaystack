@@ -1,6 +1,6 @@
 /* eslint-disable no-shadow */
 import HaystackApiService from './services/haystackApi.service.js'
-import formatService from './services/formatService.js'
+import { formatEntityService, dateUtils } from './services/index.js'
 
 Vue.use(Vuex)
 window.env = window.env || {}
@@ -148,13 +148,13 @@ export const actions = {
     const entities = await context.getters.apiServers[apiNumber].getEntity(entity, state.limit, state.version)
     await context.dispatch('commitNewEntities', {
       // eslint-disable-next-line
-      entities: formatService.addApiSourceInformationToEntity(entities.rows, apiNumber + 1),
+      entities: formatEntityService.addApiSourceInformationToEntity(entities.rows, apiNumber + 1),
       apiNumber
     })
   },
   async fetchHistories(context, { idsEntityWithHis, apiNumber }) {
     const isHisReadAvailable = await context.getters.apiServers[apiNumber].isHisReadAvailable()
-    const dateRange = formatService.formatDateRangeUrl(state.dateRange)
+    const dateRange = dateUtils.formatDateRangeUrl(state.dateRange)
     if (isHisReadAvailable) {
       const histories = await Promise.all(
         idsEntityWithHis.map(async entity => {
@@ -192,11 +192,11 @@ export const actions = {
   async fetchAllHistories(context) {
     const { apiServers, entities } = context.getters
     const entitiesCopy = entities.slice()
-    const groupEntities = entitiesCopy.length === 1 ? entitiesCopy[0] : formatService.groupAllEntitiesById(entitiesCopy)
+    const groupEntities = entitiesCopy.length === 1 ? entitiesCopy[0] : formatEntityService.groupAllEntitiesById(entitiesCopy)
     const idsEntityWithHis = groupEntities
       .filter(entity => entity.his)
       .map(entity => {
-        return { id: formatService.formatIdEntity(entity.id.val), apiSource: entity.his.apiSource }
+        return { id: formatEntityService.formatIdEntity(entity.id.val), apiSource: entity.his.apiSource }
       })
     await Promise.all(
       // eslint-disable-next-line
@@ -210,11 +210,11 @@ export const actions = {
     await context.dispatch('fetchEntity', { entity, apiNumber })
     const { entities } = context.getters
     const entitiesCopy = entities.slice()
-    const groupEntities = entitiesCopy.length === 1 ? entitiesCopy[0] : formatService.groupAllEntitiesById(entitiesCopy)
+    const groupEntities = entitiesCopy.length === 1 ? entitiesCopy[0] : formatEntityService.groupAllEntitiesById(entitiesCopy)
     const idsEntityWithHis = groupEntities
       .filter(entity => entity.his)
       .map(entity => {
-        return { id: formatService.formatIdEntity(entity.id.val), apiSource: entity.his.apiSource }
+        return { id: formatEntityService.formatIdEntity(entity.id.val), apiSource: entity.his.apiSource }
       })
     await context.dispatch('fetchHistories', { idsEntityWithHis, apiNumber })
     context.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
@@ -241,8 +241,8 @@ export const actions = {
     newHistories.splice(indexOfApiServerToDelete, 1)
     newEntities.splice(indexOfApiServerToDelete, 1)
     if (indexOfApiServerToDelete !== apiServers.length) {
-      newHistories = formatService.reajustHistoriesApiSource(newHistories, indexOfApiServerToDelete)
-      newEntities = formatService.reajustEntitiespiSource(newEntities, indexOfApiServerToDelete)
+      newHistories = formatEntityService.reajustHistoriesApiSource(newHistories, indexOfApiServerToDelete)
+      newEntities = formatEntityService.reajustEntitiespiSource(newEntities, indexOfApiServerToDelete)
     }
     context.commit('SET_ENTITIES', { entities: newEntities })
     context.commit('SET_HISTORIES', { histories: newHistories })

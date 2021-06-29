@@ -19,30 +19,7 @@ const template = `
             <v-icon>mdi-format-list-bulleted-square</v-icon>
           </v-btn>
         </div>
-        <div class="main-layout__box">
-          <div class="main-layout__box-description">
-            <h4 class="main-layout__box-description__title">Query with filter</h4>
-            <div class="main-layout__box-description__tooltip">
-              <v-tooltip right>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-icon icon v-bind="attrs" v-on="on">info</v-icon>
-                </template>
-                <h3>Filter Example:</h3>
-                <span
-                  ><h4>site or equip</h4>
-                  find site or equipment entities<br />
-                  <h4>(not his)</h4>
-                  find entities with no histories<br />
-                  <h4>curVal > 10</h4>
-                  find all entities with a curval > 10<br />
-                  <h4>occupiedEnd >= 18:00 and geoCity == "Richmond"</h4>
-                  find all entities that close after 6 p.m. in Richmond<br />
-                  <h4>point and siteRef->geoCountry == "US"</h4>
-                  find all the point based in US
-                </span>
-              </v-tooltip>
-            </div>
-          </div>
+        <c-filter-api-block title="Query with filter" :hasTooltips=true :tooltipText=filterEntityTooltipText()>
           <v-text-field
             height="40px"
             width="80%"
@@ -55,26 +32,13 @@ const template = `
             @change="updateFilter($event)"
             hide-details
           />
-        </div>
-        <div class="main-layout__box">
-          <div class="main-layout__box-description">
-            <h4 class="main-layout__box-description__title">Add a target API Endpoint</h4>
-            <div class="main-layout__box-description__tooltip" v-if="existingApiEndPointFromPlugin">
-              <v-tooltip v-model="showExistingApi" right>
-                <template v-slot:activator="{ attrs }">
-                    <v-btn icon color="rgba(0,0,0,.87)" @click="showExistingApi = !showExistingApi" v-if="existingApiEndPointFromPlugin">
-                        <v-icon icon v-bind="attrs">info</v-icon>
-                    </v-btn>
-                  </template>
-                <h4>
-                  Api Endpoint Available:
-                </h4>
-                <span
-                  ><li v-for="apiEndpoint in existingApiEndPointFromPlugin">{{ apiEndpoint }}</li>
-                </span>
-              </v-tooltip>
-            </div>
-          </div>
+        </c-filter-api-block>
+        <c-filter-api-block
+          title="Add a target API Endpoint"
+          :hasTooltips="existingApiEndPointFromPlugin"
+          :isFromPlugin=true
+          :tooltipText=existingApiFromPluginText()
+        >
           <div class="main-layout__input-combobox">
             <v-combobox
               class="main-layout__combobox"
@@ -105,28 +69,8 @@ const template = `
               </template>
             </v-combobox>
           </div>
-        </div>
-        <div class="main-layout__box">
-          <div class="main-layout__box-description">
-            <h4 class="main-layout__box-description__title">Select your date range</h4>
-            <div class="main-layout__box-description__tooltip">
-              <v-tooltip right>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-icon icon v-bind="attrs" v-on="on">info</v-icon>
-                </template>
-                <h4>
-                  Date Example:
-                </h4>
-                <span
-                  ><li>today</li>
-                  <li>yesterday</li>
-                  <li>2020-01-01</li>
-                  <li>2020/01/01</li>
-                  <li>2020-01-01T12:00:00.00Z</li>
-                </span>
-              </v-tooltip>
-            </div>
-          </div>
+        </c-filter-api-block>
+        <c-filter-api-block title="Select your date range" :hasTooltips=true :tooltipText=dateRangeTooltipsText()>
           <v-text-field
             height="40px"
             class="main-layout__text-field main-layout__text-field__date"
@@ -151,11 +95,8 @@ const template = `
             @change="updateEndDateRange($event)"
             hide-details
           />
-        </div>
-        <div class="main-layout__box">
-          <div class="main-layout__box-description">
-            <h4 class="main-layout__box-description__title">Limit Number entities per page</h4>
-          </div>
+        </c-filter-api-block>
+        <c-filter-api-block title="Limit Number entities per page" :hasTooltips=false>
           <div class="main-layout__box__limit">
             <v-btn
               class="mx-2 main-layout__settings__buttons"
@@ -191,11 +132,8 @@ const template = `
               </v-icon>
             </v-btn>
           </div>
-        </div>
-        <div class="main-layout__box">
-          <div class="main-layout__box-description">
-            <h4 class="main-layout__box-description__title">Change version entities</h4>
-          </div>
+        </c-filter-api-block>
+        <c-filter-api-block title="Change version entities" :hasTooltips=false>
           <v-text-field
             class="main-layout__text-field"
             height="40px"
@@ -207,19 +145,13 @@ const template = `
             label="Enter a version"
             hide-details
           />
-        </div>
-        <div class="main-layout__box">
-          <div class="main-layout__box-description">
-            <h4 class="main-layout__box-description__title">Download entities as Haystack format</h4>
-          </div>
+        </c-filter-api-block>
+        <c-filter-api-block title="Download entities as Haystack format" :hasTooltips=false>
           <div class="main-layout__button">
             <v-btn icon :href="convertData()" download="ontology.json"><v-icon>file_download</v-icon></v-btn>
           </div>
-        </div>
-        <div class="main-layout__box">
-          <div class="main-layout__box-description">
-            <h4 class="main-layout__box-description__title">Clear your api tokens stored in navigator</h4>
-          </div>
+        </c-filter-api-block>
+        <c-filter-api-block title="Clear your api tokens stored in navigator" :hasTooltips=false>
           <v-btn
             color="blue-grey"
             rounded
@@ -228,7 +160,7 @@ const template = `
           >
             Clear api keys
           </v-btn>
-        </div>
+        </c-filter-api-block>
         <div class="main-layout__footer">
           <a href="https://github.com/engie-group/shaystack" class="main-layout__footer-links">
             Github Project
@@ -252,16 +184,17 @@ const template = `
   </main>
 </div>
 `
-import { API_COLORS, dataUtils, formatService } from '../../services/index.js'
+import CFilterApiBlock from '../../components/CFilterApiBlock/CFilterApiBlock.js'
+import { API_COLORS, dateUtils, formatEntityService, utils } from '../../services/index.js'
 export default {
   template,
+  components: { CFilterApiBlock },
   data() {
     return {
       comboboxInput: '',
       dateStartInput: this.startDateRange,
       dateEndInput: this.endDateRange,
       menu: false,
-      showExistingApi: false,
       isExtended: true
     }
   },
@@ -270,8 +203,8 @@ export default {
       return this.$store.getters.filterApi
     },
     existingApiEndPointFromPlugin(){
-      if (this.getExistingApiEndpoint) return this.getExistingApiEndpoint()
-      else return null
+       if (this.getExistingApiEndpoint) return this.getExistingApiEndpoint()
+       else return null
     },
     version() {
       return this.$store.getters.version
@@ -281,13 +214,11 @@ export default {
     },
     startDateRange() {
       const filterDateStart = this.$store.getters.dateRange.start === '' ? null : this.$store.getters.dateRange.start
-      // eslint-disable-next-line
       this.dateStartInput = filterDateStart
       return filterDateStart
     },
     endDateRange() {
       const filterEndDate = this.$store.getters.dateRange.end === '' ? null : this.$store.getters.dateRange.end
-      // eslint-disable-next-line
       this.dateEndInput = filterEndDate
       return filterEndDate
     },
@@ -340,7 +271,7 @@ export default {
     },
     async updateLimit(newLimit) {
       if (newLimit !== this.$store.getters.limit) {
-        if (formatService.isNumber(newLimit)) {
+        if (formatEntityService.isNumber(newLimit)) {
           this.$store.commit('SET_LIMIT', { limit: newLimit })
           const { a, d, q, v } = this.$route.query
           this.$router.push({ query: { q, a, d, v, l: newLimit } })
@@ -350,7 +281,7 @@ export default {
     },
     async updateVersion(newVersion) {
       if (newVersion !== this.$store.getters.version) {
-        if (dataUtils.checkDateFormat(newVersion)) {
+        if (dateUtils.checkDateFormat(newVersion)) {
           this.$store.commit('SET_VERSION', { version: newVersion })
           const { a, d, q, l } = this.$route.query
           this.$router.push({ query: { q, a, d, l, v: newVersion } })
@@ -375,10 +306,10 @@ export default {
       await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
     },
     async updateStartDateRange(newStartDate) {
-      const startDateRange = !newStartDate || newStartDate === '' ? '' : dataUtils.checkDateFormat(newStartDate)
+      const startDateRange = !newStartDate || newStartDate === '' ? '' : dateUtils.checkDateFormat(newStartDate)
       if (newStartDate !== this.startDateRange) {
         if (startDateRange || startDateRange === '') {
-          if (formatService.checkDateRangeIsCorrect(startDateRange, this.endDateRange)) {
+          if (dateUtils.checkDateRangeIsCorrect(startDateRange, this.endDateRange)) {
             this.$store.commit('SET_START_DATE_RANGE', { startDateRange })
             const { a, q, l, v } = this.$route.query
             if ((!this.endDateRange || this.endDateRange === '') && startDateRange === '') {
@@ -399,10 +330,10 @@ export default {
       }
     },
     async updateEndDateRange(newEndDate) {
-      const endDateRange = !newEndDate || newEndDate === '' ? '' : dataUtils.checkDateFormat(newEndDate)
+      const endDateRange = !newEndDate || newEndDate === '' ? '' : dateUtils.checkDateFormat(newEndDate)
       if (newEndDate !== this.endDateRange) {
         if (endDateRange || endDateRange === '') {
-          if (formatService.checkDateRangeIsCorrect(this.startDateRange, endDateRange)) {
+          if (dateUtils.checkDateRangeIsCorrect(this.startDateRange, endDateRange)) {
             this.$store.commit('SET_END_DATE_RANGE', { endDateRange })
             const { a, q, l, v } = this.$route.query
             if ((!this.startDateRange || this.startDateRange === '') && endDateRange === '')
@@ -434,13 +365,50 @@ export default {
       let data
       if (entities.length === 0) data = {}
       else {
-        data = entities.length === 1 ? entities[0] : formatService.groupAllEntitiesById(entities)
-        data = formatService.formatHaystackJson(data)
+        data = entities.length === 1 ? entities[0] : formatEntityService.groupAllEntitiesById(entities)
+        data = utils.formatHaystackJson(data)
       }
       const contentType = 'application/json'
       const dData = JSON.stringify(data, null, 2)
       const blob = new Blob([dData], { type: contentType })
       return window.URL.createObjectURL(blob)
-    }
+    },
+    filterEntityTooltipText() {
+      return  `
+        <h3>Filter Example:</h3>
+            <span>
+                <h4>site or equip</h4>
+                find site or equipment entities<br />
+                <h4>(not his)</h4>
+                find entities with no histories<br />
+                <h4>curVal > 10</h4>
+                find all entities with a curval > 10<br />
+                <h4>occupiedEnd >= 18:00 and geoCity == "Richmond"</h4>
+                find all entities that close after 6 p.m. in Richmond<br />
+                <h4>point and siteRef->geoCountry == "US"</h4>
+                find all the point based in US
+              </span>
+        `
+    },
+    existingApiFromPluginText() {
+      return `
+       <h4> Api Endpoint Available: </h4>
+         <span
+           ><li v-for="apiEndpoint in existingApiEndPointFromPlugin">{{ apiEndpoint }}</li>
+         </span>
+   `
+   },
+   dateRangeTooltipsText() {
+   return `
+     <h4>Date Example:</h4>
+        <span
+          ><li>today</li>
+          <li>yesterday</li>
+          <li>2020-01-01</li>
+          <li>2020/01/01</li>
+          <li>2020-01-01T12:00:00.00Z</li>
+        </span>
+        `
+     }
   }
 }

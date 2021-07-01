@@ -6,11 +6,11 @@ class HaystackApiService {
   get api() {
     const headers = this.apiKey ?
     {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/hayson',
       'KeyId': this.apiKey
     } :
     {
-      'Content-Type': 'application/json'
+      'Accept': 'application/hayson, **'
     }
     return axios.create({
       baseURL: `${this.haystackApiHost}`,

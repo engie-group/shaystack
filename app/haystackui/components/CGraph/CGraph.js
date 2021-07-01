@@ -1,10 +1,14 @@
 const template = `
   <v-card style="height: 100%;" ref="graph-container">
     <div :id="id" class="bar-chart__chart"></div>
-        <v-checkbox v-for="linkName in getUniqueLinkRefBetweenEntities"
-            v-model="checkboxSelection[linkName]"
-            :label="linkName"
-        />
+      <v-row style="z-index: 100000;">
+        <v-col cols="getUniqueLinkRefBetweenEntities.length" v-for="linkName in getUniqueLinkRefBetweenEntities">
+            <v-checkbox
+                v-model="checkboxSelection[linkName]"
+                :label="linkName"
+            />
+        </v-col>
+    </v-row>
   </v-card>
 `
 import { formatEntityService } from '../../services/index.js'

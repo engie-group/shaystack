@@ -75,6 +75,38 @@ const utils = {
       entitiesCopy.push(newEntity)
     })
     return entitiesCopy
+  },
+  formatValHayson(entityVal) {
+    let prefix = entityVal.slice(0, 2)
+    let val = entityVal.slice(2)
+    if (prefix==='s:') return val
+    if (prefix==='m:') return { _kind: 'Marker' }
+    if (prefix==='r:') {
+      let splittedRef = val.split(' ')
+      if (splittedRef.length===1) return { _kind: 'Ref', val: val}
+      else return { _kind: 'Ref', val: splittedRef[0], dis: splittedRef.slice(1).join(' ') }
+      }
+    if (prefix==='n:') {
+      let splittedNumber = val.split(' ')
+      if (splittedNumber.length===1) return Number(val)
+      else return { _kind: 'Num', val: Number(splittedNumber[0]), unit: (splittedNumber.slice(1)).join(' ') }
+    }
+    if (prefix==='c:') {
+      let splittedCoord = val.split(',')
+      return { _kind: 'Coord', lat: Number(splittedCoord[0]), lng: Number(splittedCoord[1]) }
+    }
+    console.log('ERROR', entityVal)
+  },
+  formatHaystackHayson(entities) {
+    const entitiesCopy = []
+    entities.forEach(entity => {
+      const newEntity = {}
+      Object.keys(entity).map(function(key, index) {
+        newEntity[key] = utils.formatValHayson(entity[key].val)
+      })
+      entitiesCopy.push(newEntity)
+    })
+    return entitiesCopy
   }
 }
 

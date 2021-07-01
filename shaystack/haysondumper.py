@@ -47,6 +47,7 @@ def _dump_grid_to_hayson(grid: Grid) -> Dict[str, Union[List[str], Dict[str, str
     Returns:
         A json object.
     """
+
     return {
         'meta': _dump_meta(grid.metadata, version=grid.version, for_grid=True),
         'cols': _dump_columns(grid.column, version=grid.version),
@@ -190,7 +191,7 @@ def _dump_quantity(quantity: Quantity) -> str:
     return {
         "_kind": "Num",
         "val": quantity.m,
-        "unit": quantity.symbol
+        "unit": str(quantity.symbol)
     }
 
 

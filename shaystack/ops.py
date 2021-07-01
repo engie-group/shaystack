@@ -29,7 +29,7 @@ from .empty_grid import EmptyGrid
 from .exception import HaystackException
 from .grid import Grid, VER_3_0
 from .grid_filter import parse_hs_datetime_format
-from .parser import MODE_ZINC, MODE_CSV, MODE_JSON, parse_scalar, parse, mode_to_suffix
+from .parser import MODE_ZINC, MODE_HAYSON, MODE_CSV, MODE_JSON, parse_scalar, parse, mode_to_suffix
 from .providers.haystack_interface import (
     HttpError, get_singleton_provider, parse_date_range,
 )
@@ -252,7 +252,7 @@ def _dump_response(
         A tuple with the mime type and the body
     """
     accept_type = get_best_match(
-        accept, ["*/*", MODE_CSV, MODE_TRIO, MODE_ZINC, MODE_JSON]
+        accept, ["*/*", MODE_CSV, MODE_TRIO, MODE_ZINC, MODE_JSON, MODE_HAYSON]
     )
     if accept_type:
         if accept_type in (DEFAULT_MIME_TYPE, "*/*"):
@@ -279,6 +279,11 @@ def _dump_response(
             return (
                 MODE_CSV + "; charset=utf-8",
                 dump(grid, mode=MODE_CSV),
+            )
+        if accept_type == MODE_HAYSON:
+            return (
+                MODE_HAYSON,
+                dump(grid, mode=MODE_HAYSON),
             )
     if default:
         return (

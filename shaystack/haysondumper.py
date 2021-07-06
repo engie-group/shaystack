@@ -109,6 +109,9 @@ def _dump_scalar(scalar: Any, version: Version = LATEST_VER) \
     if scalar is REMOVE:
         return _dump_remove()
     if scalar is NA:
+        if version < VER_3_0:
+            raise ValueError('Project Haystack %s '
+                             'does not support NA' % version)
         return _dump_na()
     if isinstance(scalar, list):
         return _dump_list(scalar, version=version)

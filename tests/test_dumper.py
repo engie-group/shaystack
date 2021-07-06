@@ -256,15 +256,16 @@ def test_grid_meta_json():
 
 
 def test_grid_meta_hayson():
-    grid_json = json.loads(shaystack.dump(make_grid_meta(),
+    grid_hayson = json.loads(shaystack.dump(make_grid_meta(),
                                           mode=shaystack.MODE_HAYSON))
-    assert grid_json == {
+
+    assert grid_hayson == {
         'meta': {
             'ver': '2.0',
             'aString': 'aValue',
             'aNumber': 3.141590,
             'aNull': None,
-            'aMarker': 'm:',
+            'aMarker': {'_kind': 'Marker'},
             'aQuantity': {'_kind': 'Num', 'val': 123.000000, 'unit': 'Hz'},
         },
         'cols': [
@@ -336,7 +337,7 @@ def test_col_meta_hayson():
              'aString': 'aValue',
              'aNumber': 3.141590,
              'aNull': None,
-             'aMarker': 'm:',
+             'aMarker': {'_kind': 'Marker'},
              'aQuantity': {'_kind': 'Num', 'val': 123.000000, 'unit': 'Hz'},
              },
         ],
@@ -401,37 +402,6 @@ def test_data_types_json_v2():
                 {'comment': 's:A time', 'value': 'h:07:51:43.012345'},
                 {'comment': 's:A timestamp (non-UTC)', 'value': 't:2016-01-13T07:51:42.012345+01:00 Berlin'},
                 {'comment': 's:A timestamp (UTC)', 'value': 't:2016-01-13T07:51:42.012345+00:00 UTC'}]}
-
-
-# TO FIX removeobject, marker
-def test_data_types_hayson_v2():
-    grid_hayson = json.loads(shaystack.dump(grid_full_types, mode=shaystack.MODE_HAYSON))
-    assert grid_hayson == \
-           {'meta': {'ver': '2.0'},
-            'cols': [{'name': 'comment'}, {'name': 'value'}],
-            'rows': [
-                {'comment': 'A null value', 'value': None}, {'comment': 'A marker', 'value': 'm:'},
-                {'comment': 'A "remove" object', 'value': 'x:'},
-                {'comment': 'A boolean, indicating False', 'value': False},
-                {'comment': 'A boolean, indicating True', 'value': True},
-                {'comment': 'A reference, without value', 'value': {'_kind': 'Ref', 'val': 'a-ref'}},
-                {'comment': 'A reference, with value', 'value': {'_kind': 'Ref', 'dis': 'a value', 'val': 'a-ref'}},
-                {'comment': 'A binary blob', 'value': {'_kind': 'Bin', 'val': 'text/plain'}},
-                {'comment': 'A quantity', 'value': {'_kind': 'Num', 'unit': 'miles', 'val': 500}},
-                {'comment': 'A quantity without unit', 'value': 500.000000},
-                {'comment': 'A coordinate', 'value': {'_kind': 'Coord', 'lat': -27.4725, 'lng': 153.003}},
-                {'comment': 'A URI', 'value': {'_kind': 'Uri', 'val': 'http://www.example.com#unicode:\u0109\u1000'}},
-                {'comment': 'A string',
-                 'value': 'This is a test\nLine two of test\n\tIndented with "quotes", \\backslashes\\\n'},
-                {'comment': 'A unicode string', 'value': 'This is a Unicode characters: \u0109\u1000'},
-                {'comment': 'A date', 'value': {'_kind': 'Date', 'val': '2016-01-13'}},
-                {'comment': 'A time', 'value': {'_kind': 'Time', 'val': '07:51:43.012345'}},
-                {'comment': 'A timestamp (non-UTC)', 'value': {'_kind': 'DateTime',
-                                                               'tz': 'Berlin',
-                                                               'val': '2016-01-13T07:51:42.012345+01:00'}},
-                {'comment': 'A timestamp (UTC)', 'value': {'_kind': 'DateTime',
-                                                           'tz': 'UTC',
-                                                           'val': '2016-01-13T07:51:42.012345+00:00'}}]}
 
 
 def test_data_types_csv_v2():
@@ -581,14 +551,14 @@ def test_data_types_json_v3():
                   'value': 't:2016-01-13T07:51:42.012345+00:00 UTC'}]}
 
 
-def test_data_types_json_v3():
+def test_data_types_hayson_v3():
     grid_json = json.loads(shaystack.dump(grid_full_types, mode=shaystack.MODE_HAYSON))
     assert grid_json == \
            {'meta': {'ver': '2.0'},
             'cols': [{'name': 'comment'}, {'name': 'value'}],
             'rows': [{'comment': 'A null value', 'value': None},
-                     {'comment': 'A marker', 'value': 'm:'},
-                     {'comment': 'A "remove" object', 'value': 'x:'},
+                     {'comment': 'A marker', 'value': {'_kind': 'Marker'}},
+                     {'comment': 'A "remove" object', 'value': {'_kind': 'Remove'}},
                      {'comment': 'A boolean, indicating False', 'value': False},
                      {'comment': 'A boolean, indicating True', 'value': True},
                      {'comment': 'A reference, without value',
@@ -784,7 +754,7 @@ def test_scalar_dict_json_v3():
     }
 
 
-def test_scalar_dict_json_v3():
+def test_scalar_dict_hayson_v3():
     grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['comment'] = {}
     grid.column['value'] = {}
@@ -811,7 +781,7 @@ def test_scalar_dict_json_v3():
         'cols': [{'name': 'comment'}, {'name': 'value'}],
         'meta': {'ver': '3.0'},
         'rows': [{'comment': 'An empty dict', 'value': {}},
-                 {'comment': 'A marker in a dict', 'value': {'marker': 'm:'}},
+                 {'comment': 'A marker in a dict', 'value': {'marker': {'_kind': 'Marker'}}},
                  {'comment': 'A references in a dict', 'value': {'ref': {'_kind': 'Ref', 'val': 'a-ref'},
                                                                  'ref2': {'_kind': 'Ref',
                                                                           'dis': 'a value',
@@ -1198,6 +1168,8 @@ def test_scalar_na_json_ver():
 def test_scalar_na_hayson_ver():
     # Test that versions are respected.
     try:
+        print('HEYYYYY', shaystack.dump_scalar(shaystack.NA,
+                              mode=shaystack.MODE_HAYSON, version=shaystack.VER_2_0))
         shaystack.dump_scalar(shaystack.NA,
                               mode=shaystack.MODE_HAYSON, version=shaystack.VER_2_0)
         assert False, 'Serialised a NA in Haystack v2.0'

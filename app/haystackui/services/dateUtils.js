@@ -7,7 +7,7 @@ const dateUtils = {
     return dateString
   },
   formatDate: dateString => {
-    const date = new Date(dateString.substring(2).split(' ')[0])
+    const date = new Date(dateString)
     return date.getTime()
   },
     formatDateRangeUrl(dateRange) {

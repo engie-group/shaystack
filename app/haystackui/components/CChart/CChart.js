@@ -16,14 +16,6 @@ export default {
       type: String,
       default: ''
     },
-    yLabel: {
-      type: String,
-      default: ''
-    },
-    xLabel: {
-      type: String,
-      default: ''
-    },
     data: {
       type: Array,
       default: () => []

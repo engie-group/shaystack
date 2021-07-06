@@ -57,7 +57,6 @@ export default {
     idsWithHis() {
       return this.entitiesGroupedById
         .filter(entity => entity.his)
-        .map(entity => formatEntityService.formatIdEntity(entity.id.val))
     },
     histories() {
       return this.$store.getters.histories
@@ -117,7 +116,7 @@ export default {
         const el = this.$refs[entityId][0] ? this.$refs[entityId][0].$el : null
         if (this.elementInViewport(el)) {
           const { query } = this.$route
-          this.$router.replace({ hash: pointName, query }).catch(() => {})
+          this.$router.replace({ hash: entityId, query }).catch(() => {})
         }
       })
     },
@@ -166,7 +165,7 @@ export default {
       } else {
         this.$refs[pointName][0].$el.scrollIntoView(true)
         window.scrollBy(0, -70)
-        this.$router.push({ hash: entityId, query }).catch(() => {})
+        this.$router.push({ hash: pointName, query }).catch(() => {})
       }
     },
     getEntityName(entity) {
@@ -174,15 +173,14 @@ export default {
     },
     getEntityId(entity) {
       if (!entity.id) return 'NaN'
-      return entity.id.val.substring(2).split(' ')[0]
+      return entity.id.val
     },
     groupByIdEntities(entities) {
       return formatEntityService.groupAllEntitiesById(entities)
     },
     getHistory(idEntity, sourceNumber) {
-      const formattedId = formatEntityService.formatIdEntity(idEntity)
-      if (!this.histories[sourceNumber][formattedId]) return null
-      return this.histories[sourceNumber][formattedId]
+      if (!this.histories[sourceNumber][idEntity]) return null
+      return this.histories[sourceNumber][idEntity]
     },
     getHistories(idEntity) {
       if (this.histories.length === 1) {

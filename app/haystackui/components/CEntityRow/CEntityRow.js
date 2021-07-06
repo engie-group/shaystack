@@ -101,8 +101,8 @@ export default {
         }
         return {
           tag: tagKey,
-          value: result.val,
-          row_class: [result.val === '✓' ? `${key} haystack-marker` : key, `apiSource_${apiSource}`]
+          value: result,
+          row_class: [result._kind === 'Marker' ? `${key} haystack-marker` : key, `apiSource_${apiSource}`]
         }
       })
     },
@@ -112,8 +112,8 @@ export default {
         .map(history => {
           return history.map(row => {
             return {
-              ts: row.ts.substring(2),
-              value: this.getHisTableValue(row),
+              ts: row.ts.val,
+              value: row,
               row_class: [`apiSource_${row.apiSource + 1}`]
             }
           })
@@ -128,7 +128,7 @@ export default {
       )
     },
     chartId() {
-      return this.isFromExternalSource ? `${this.idEntity}-external` : this.idEntity
+      return this.isFromExternalSource ? `${this.idEntity}-external` : `${this.idEntity}-chart`
     },
     entityName() {
       return formatEntityService.formatEntityName(this.dataEntity)
@@ -155,7 +155,7 @@ export default {
       return Object.keys(this.dataEntity)
     },
     unit() {
-      return this.dataEntity.unit ? this.dataEntity.unit.val.substring(2) : ''
+      return this.dataEntity.unit ? this.dataEntity.unit.val : ''
     },
     allEntities() {
       return this.$store.getters.entities
@@ -171,41 +171,12 @@ export default {
     sortDataChart(dataChart) {
       return formatChartService.sortChartDataByDate(dataChart)
     },
-    getNumberValue(dataEntityKey) {
-      const numberStringValue = this.dataEntity[dataEntityKey].val.substring(2).split(' ')
-      const numberValue =
-        numberStringValue.length > 1
-          ? `${Number(numberStringValue[0])} ${numberStringValue[1]}`
-          : Number(numberStringValue[0])
-      return { val: numberValue, apiSource: this.dataEntity[dataEntityKey].apiSource }
-    },
-    getUrlCoordinate(coordinate) {
-      return `http://www.google.com/maps/place/${coordinate.substring(2)}`
-    },
     getEntityValue(dataEntityKey) {
-      const value = this.dataEntity[dataEntityKey].val
+      const entityKeyObject = this.dataEntity[dataEntityKey]
       const { apiSource } = this.dataEntity[dataEntityKey]
-      if (!value) return 'NaN'
-      if (value === 'b:') return { val: value.substring(2), apiSource }
-      if (value === 'm:') return { val: '✓', apiSource }
-      if (value.substring(0, 2) === 'c:') return { val: value, apiSource }
-      if (value.substring(0, 2) === 'r:') return { val: value, apiSource }
-      if (value.substring(0, 2) === 'n:') return this.getNumberValue(dataEntityKey)
-      if (value.substring(0, 2) === 'r:') return { val: value, apiSource }
-      if (value === '') return { val: '', apiSource }
-      return { val: value.substring(2), apiSource }
-    },
-    getHisTableValue(row) {
-      const value = row.val
-      if (typeof value === 'boolean') return value
-      if (!value) return value
-      if (value === 'm:') return '✓'
-      if (value.substring(0, 2) === 'c:') return value
-      if (value.substring(0, 2) === 'r:') return value
-      if (value.substring(0, 2) === 'n:') return this.getNumberValue(value)
-      if (value.substring(0, 2) === 'r:') return value
-      if (value === '') return value
-      return value.substring(2)
+      if (!entityKeyObject.hasOwnProperty('_kind'))  return { ...entityKeyObject, apiSource }
+      const kind = this.dataEntity[dataEntityKey]._kind
+      return {...entityKeyObject, apiSource }
     }
   }
 }

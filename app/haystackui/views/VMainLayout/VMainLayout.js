@@ -365,8 +365,8 @@ export default {
       let data
       if (entities.length === 0) data = {}
       else {
-        data = entities.length === 1 ? entities[0] : formatEntityService.groupAllEntitiesById(entities)
-        data = utils.formatHaystackHayson(data)
+        //data = entities.length === 1 ? entities[0] : formatEntityService.groupAllEntitiesById(entities)
+        data = utils.formatEntitiesHayson(entities)
       }
       const contentType = 'application/json'
       const dData = JSON.stringify(data, null, 2)

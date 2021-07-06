@@ -6,11 +6,11 @@ class HaystackApiService {
   get api() {
     const headers = this.apiKey ?
     {
-      'Content-Type': 'application/json',
+      'Accept': 'application/hayson, */*',
       'KeyId': this.apiKey
     } :
     {
-      'Content-Type': 'application/json'
+      'Accept': 'application/hayson, */*'
     }
     return axios.create({
       baseURL: `${this.haystackApiHost}`,
@@ -25,8 +25,8 @@ class HaystackApiService {
       const opsResponse = await this.api.get(`/ops`)
       const formatResponse = await this.api.get(`/formats`)
       const isHaystackApiAvailable =
-        opsResponse.data.rows.find(row => row.name === 's:read') &&
-        formatResponse.data.rows.find(row => row.mime === 's:application/json' && row.receive === 'm:')
+        opsResponse.data.rows.find(row => row.name === 'read') &&
+        formatResponse.data.rows.find(row => row.mime === 'application/json' && row.receive['_kind'] === 'Marker')
       if (isHaystackApiAvailable) return 'available'
       alert('unavailable')
       return 'unavailable'
@@ -50,7 +50,7 @@ class HaystackApiService {
   async isHisReadAvailable() {
     try {
       const response = await this.api.get(`/ops`)
-      if (response.data.rows.find(row => row.name === 's:hisRead')) return true
+      if (response.data.rows.find(row => row.name === 'hisRead')) return true
       return false
     } catch {
       return false

@@ -1,14 +1,18 @@
 const template = `
   <v-card style="height: 100%;" ref="graph-container">
-    <div :id="id" class="bar-chart__chart"></div>
-      <v-row style="z-index: 100000;">
-        <v-col cols="getUniqueLinkRefBetweenEntities.length" v-for="linkName in getUniqueLinkRefBetweenEntities">
+    <div style="height: 90%;" :id="id" class="bar-chart__chart"></div>
+    <div style="height: 10%;" class="graph__filter-links">
+      <h4 style="text-align: center;"> Deactivate links between entities </h5>
+      <v-row style="margin-left: 5px;">
+        <v-col md3 cols="getUniqueLinkRefBetweenEntities.length" v-for="linkName in getUniqueLinkRefBetweenEntities" :key="linkName">
             <v-checkbox
                 v-model="checkboxSelection[linkName]"
                 :label="linkName"
+                @change="filterOnLinkRelation()"
             />
         </v-col>
-    </v-row>
+      </v-row>
+    </div>
   </v-card>
 `
 import { formatEntityService } from '../../services/index.js'
@@ -40,16 +44,79 @@ export default {
   },
   data() {
     return {
-      checkboxSelection: {}
+      checkboxSelection: {},
+
     }
   },
   computed: {
     getUniqueLinkRefBetweenEntities() {
       return formatEntityService.getUniquesRelationsBetweenEntities(this.dataEntities[0])
-    }
+    },
   },
   beforeMount() {
     this.getUniqueLinkRefBetweenEntities.map(linkName => this.checkboxSelection[linkName] = true)
+  },
+  methods: {
+    createChart(data, nodes) {
+      const height = (this.$refs['graph-container'].$el.clientHeight - 5)*(9/10);
+      const width = this.$refs['graph-container'].$el.clientWidth;
+      return Highcharts.chart(this.id, {
+        title: {
+          text: this.title
+        },
+        chart: {
+          type: 'networkgraph',
+          width: width,
+          height: height
+        },
+        plotOptions: {
+          networkgraph: {
+            keys: this.keys,
+            layoutAlgorithm: {
+              enableSimulation: true,
+              friction: -0.98,
+              linkLength: 35
+              },
+            point: {
+              events: {
+                click: function emitEvent(event) {
+                  this.$emit('pointClicked', event.point.id)
+                }.bind(this)
+              }
+            }
+          }
+        },
+        credits: {
+          enabled: false
+        },
+        tooltip : {
+          enabled : true,
+          formatter : function() {
+            return `<div> <span> ${this.point.id} </span> </div>`
+          }
+        },
+        series: [
+          {
+            dataLabels: {
+              enabled: true,
+              allowOverlap: true,
+              linkFormat: '',
+            },
+            id: 'lang-tree',
+            data,
+            nodes
+          }
+        ]
+      })
+    },
+    filterOnLinkRelation() {
+      this.chart.series[0].remove(true)
+      const linkDisabled = Object.keys(this.checkboxSelection).filter(key => this.checkboxSelection[key] === false)
+      const newData = this.dataEntities[0].filter(dataNode => !linkDisabled.includes(dataNode[2]))
+      console.log(newData.length)
+      console.log('newData', newData)
+      this.chart = this.createChart(newData, this.dataEntities[1])
+    }
   },
   mounted() {
     (function(H) {
@@ -136,58 +203,7 @@ export default {
     ]
   })
 })(Highcharts)
-
-    const height = this.$refs['graph-container'].$el.clientHeight - 50;
-    const width = this.$refs['graph-container'].$el.clientWidth;
-    this.chart = Highcharts.chart(this.id, {
-      title: {
-        text: this.title
-      },
-      chart: {
-        type: 'networkgraph',
-        width: width,
-        height: height
-      },
-      plotOptions: {
-        networkgraph: {
-          keys: this.keys,
-          layoutAlgorithm: {
-            enableSimulation: true,
-            friction: -0.98,
-            linkLength: 35
-            },
-          point: {
-            events: {
-              click: function emitEvent(event) {
-                this.$emit('pointClicked', event.point.id)
-              }.bind(this)
-            }
-          }
-        }
-      },
-      credits: {
-        enabled: false
-      },
-      tooltip : {
-        enabled : true,
-        formatter : function() {
-        console.log(this.point)
-          return `<div> <span> ${this.point.id} </span> </div>`
-        }
-      },
-      series: [
-        {
-          dataLabels: {
-            enabled: true,
-			allowOverlap: true,
-            linkFormat: '',
-          },
-          id: 'lang-tree',
-          data: this.dataEntities[0],
-          nodes: this.dataEntities[1]
-        }
-      ]
-    })
+    this.chart = this.createChart(this.dataEntities[0], this.dataEntities[1])
   },
  //updated()
 }

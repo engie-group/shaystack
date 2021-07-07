@@ -1,11 +1,11 @@
 import dateUtils from './dateUtils.js'
 
 const formatChartService = {
-  formatVal: valueString => {
-    if (valueString.split(' ').length > 1) {
-      return Number(valueString.split(' ')[0].substring(2))
+  formatVal: value => {
+    if (typeof value === 'object') {
+        return Number(value.val)
     }
-    return Number(valueString.substring(2))
+    return Number(value)
   },
   isNumberTypeChart(dataChart) {
     if (!dataChart) return false
@@ -13,9 +13,10 @@ const formatChartService = {
     const dataChartType = Array.from(
       new Set(
         dataChartCopy.map(data => {
-          if (typeof data.val === 'string') {
-            if (data.val.substring(0, 2) === 'n:') return 'n'
-            return 's'
+          if (typeof data.val === 'string') return 's'
+          if (typeof data.val === 'number') return 'n'
+          if (typeof data.val === 'object') {
+            if (data.val._kind === 'Num') return 'n'
           }
           return null
         })
@@ -34,7 +35,7 @@ const formatChartService = {
   },
   formatCharts(historic) {
     return historic.map(point => {
-      return [dateUtils.formatDate(point.ts),  formatChartService.formatVal(point.val)]
+      return [dateUtils.formatDate(point.ts.val),  formatChartService.formatVal(point.val)]
     })
   },
   formatYAxis: histories => {

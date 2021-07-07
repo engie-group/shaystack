@@ -4,10 +4,18 @@ const utils = {
     delete object[oldKey]
     return object
   },
+  isObjectsSimilar(object1, object2) {
+    return Object.keys(object1).every(
+            key => {
+                if(key != 'id' && key != 'apiSource') return object2.hasOwnProperty(key) && object2[key] === object1[key]
+                return true
+            })
+  },
   findSimilarObjectsKeyWithSameValues(object1,object2) {
     const similarKeysWithSameValues = []
+
     Object.keys(object1).map(key => {
-      if (object2.hasOwnProperty(key) && object2[key].val === object1[key].val && key !== 'id') {
+      if (object2.hasOwnProperty(key) && this.isObjectsSimilar(object1[key], object2[key])) {
         similarKeysWithSameValues.push(key)
       }
       return key
@@ -65,16 +73,19 @@ const utils = {
     })
     return arrayOfArrayCopy
   },
-  formatHaystackJson(entities) {
-    const entitiesCopy = []
-    entities.forEach(entity => {
-      const newEntity = {}
-      Object.keys(entity).map(function(key, index) {
-        newEntity[key] = entity[key].val
-      })
-      entitiesCopy.push(newEntity)
+  formatEntitiesHayson(entitiesArray) {
+    const objectWithoutKey = (object, key) => {
+    const {[key]: deletedKey, ...otherKeys} = object
+      return otherKeys
+    }
+    return entitiesArray.flat().map(entity => {
+        let newEntity  = {}
+        Object.keys(entity).forEach(key => {
+           let newValField = objectWithoutKey(entity[key], 'apiSource')
+           newEntity[key] = newValField.hasOwnProperty('_kind') ? newValField : newValField.val
+        })
+        return newEntity
     })
-    return entitiesCopy
   }
 }
 

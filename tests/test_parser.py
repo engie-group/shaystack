@@ -1131,7 +1131,7 @@ def test_ref_json():
     assert grid[1]['ref'] == shaystack.Ref('reference', 'With value')
 
 
-def test_ref_json():
+def test_ref_hayson():
     grid = shaystack.parse(json.dumps({
         'meta': {'ver': '2.0'},
         'cols': [
@@ -1140,7 +1140,7 @@ def test_ref_json():
         ],
         'rows': [
             {'str': 'Basic', 'ref': {'_kind': 'Ref', 'val': 'a-basic-ref'}},
-            {'str': 'With value', 'ref': {'_kind': 'Ref', 'val': 'reference With value'}},
+            {'str': 'With value', 'ref': {'_kind': 'Ref', 'val': 'reference', 'dis': 'With value'}},
         ],
     }), mode=shaystack.MODE_HAYSON)
     assert len(grid) == 2
@@ -1908,11 +1908,13 @@ def test_xstr_hex_hayson():
             {'name': 'bin'},
         ],
         'rows': [
-            {'bin': {'_kind': 'xstr', 'val': 'hex:deadbeef'}},
+            {'bin': {'_kind': 'xstr', 'val': 'deadbeef', 'type': 'Bin'}},
         ],
     }), mode=shaystack.MODE_HAYSON)
+    test = grid[0]['bin']
     assert len(grid) == 1
-    assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
+    assert grid[0]['bin']['val'] == 'deadbeef'
+    assert grid[0]['bin']['type'] == 'Bin'
 
 
 def test_xstr_hex_csv():
@@ -1951,22 +1953,24 @@ def test_xstr_b64_json():
             {'bin': 'x:b64:3q2+7w=='},
         ],
     }), mode=MODE_JSON)
+    test = grid[0]['bin']
     assert len(grid) == 1
     assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
 
 
-def test_xstr_b64_json():
+def test_xstr_b64_hayson():
     grid = shaystack.parse(json.dumps({
         'meta': {'ver': '3.0'},
         'cols': [
             {'name': 'bin'},
         ],
         'rows': [
-            {'bin': {'_kind': 'xstr', 'val': 'b64:3q2+7w=='}},
+            {'bin': {'_kind': 'xstr', 'val': 'b64:3q2+7w==', 'type': 'b64'}},
         ],
     }), mode=shaystack.MODE_HAYSON)
     assert len(grid) == 1
-    assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
+    assert grid[0]['bin']['val'] == 'b64:3q2+7w=='
+    assert grid[0]['bin']['type'] == 'b64'
 
 
 def test_xstr_b64_csv():
@@ -2724,10 +2728,10 @@ def test_scalar_simple_json():
 
 
 def test_scalar_simple_hayson():
-    #assert shaystack.parse_scalar('"Testing"', mode=shaystack.MODE_HAYSON) \
-    #       == "Testing"
-    assert shaystack.parse_scalar('50', mode=shaystack.MODE_HAYSON) \
-           == 50
+    assert shaystack.parse_scalar('Testing', mode=shaystack.MODE_HAYSON) \
+           == "Testing"
+    assert shaystack.parse_scalar({'_kind': 'Num', 'val': 50, 'unit': 'Hz'}, mode=shaystack.MODE_HAYSON) \
+           == shaystack.Quantity(50, units='Hz')
 
 
 def test_scalar_simple_csv():

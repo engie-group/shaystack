@@ -63,7 +63,6 @@ export default {
     idsWithHis() {
       return this.entitiesGroupedById
         .filter(entity => entity.his)
-        .map(entity => formatEntityService.formatIdEntity(entity.id.val))
     },
     histories() {
       return this.$store.getters.histories
@@ -180,15 +179,14 @@ export default {
     },
     getEntityId(entity) {
       if (!entity.id) return 'NaN'
-      return entity.id.val.substring(2).split(' ')[0]
+      return entity.id.val
     },
     groupByIdEntities(entities) {
       return formatEntityService.groupAllEntitiesById(entities)
     },
     getHistory(idEntity, sourceNumber) {
-      const formattedId = formatEntityService.formatIdEntity(idEntity)
-      if (!this.histories[sourceNumber][formattedId]) return null
-      return this.histories[sourceNumber][formattedId]
+      if (!this.histories[sourceNumber][idEntity]) return null
+      return this.histories[sourceNumber][idEntity]
     },
     getHistories(idEntity) {
       if (this.histories.length === 1) {

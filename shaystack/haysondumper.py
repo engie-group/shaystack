@@ -47,6 +47,7 @@ def _dump_grid_to_hayson(grid: Grid) -> Dict[str, Union[List[str], Dict[str, str
     Returns:
         A json object.
     """
+
     return {
         'meta': _dump_meta(grid.metadata, version=grid.version, for_grid=True),
         'cols': _dump_columns(grid.column, version=grid.version),
@@ -108,6 +109,9 @@ def _dump_scalar(scalar: Any, version: Version = LATEST_VER) \
     if scalar is REMOVE:
         return _dump_remove()
     if scalar is NA:
+        if version < VER_3_0:
+            raise ValueError('Project Haystack %s '
+                             'does not support NA' % version)
         return _dump_na()
     if isinstance(scalar, list):
         return _dump_list(scalar, version=version)
@@ -190,7 +194,7 @@ def _dump_quantity(quantity: Quantity) -> str:
     return {
         "_kind": "Num",
         "val": quantity.m,
-        "unit": quantity.symbol
+        "unit": str(quantity.symbol)
     }
 
 

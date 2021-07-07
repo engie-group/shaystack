@@ -196,7 +196,7 @@ export const actions = {
     const idsEntityWithHis = groupEntities
       .filter(entity => entity.his)
       .map(entity => {
-        return { id: formatEntityService.formatIdEntity(entity.id.val), apiSource: entity.his.apiSource }
+        return { id: entity.id.val, apiSource: entity.his.apiSource }
       })
     await Promise.all(
       // eslint-disable-next-line

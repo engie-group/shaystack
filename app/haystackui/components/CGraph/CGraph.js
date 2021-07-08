@@ -2,7 +2,7 @@ const template = `
   <v-card style="height: 100%;" ref="graph-container">
     <div style="height: 90%;" :id="id" class="bar-chart__chart"></div>
     <div style="height: 10%;" class="graph__filter-links">
-      <h4 style="text-align: center;"> Deactivate links between entities </h5>
+      <h4 style="text-align: center;"> Deactivate links between entities </h4>
       <v-row style="margin-left: 5px;">
         <v-col md3 cols="getUniqueLinkRefBetweenEntities.length" v-for="linkName in getUniqueLinkRefBetweenEntities" :key="linkName">
             <v-checkbox
@@ -110,12 +110,9 @@ export default {
       })
     },
     filterOnLinkRelation() {
-      this.chart.series[0].remove(true)
       const linkDisabled = Object.keys(this.checkboxSelection).filter(key => this.checkboxSelection[key] === false)
       const newData = this.dataEntities[0].filter(dataNode => !linkDisabled.includes(dataNode[2]))
-      console.log(newData.length)
-      console.log('newData', newData)
-      this.chart = this.createChart(newData, this.dataEntities[1])
+      this.chart.series[0].setData(newData)
     }
   },
   mounted() {

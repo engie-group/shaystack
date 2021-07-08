@@ -8,6 +8,9 @@ const state = {
   entities: [[]],
   histories: [{}],
   apiServers: [],
+  linkEntities: [],
+  activatedLinks: [],
+  isLinkNameDisplayed: false,
   limit: 40,
   version: '',
   dateRange: { start: '', end: '' },
@@ -16,6 +19,15 @@ const state = {
   isActionApi: false
 }
 export const mutations = {
+  SET_ACTIVATED_LINKS(state, { activatedLinks }) {
+    state.activatedLinks = activatedLinks
+  },
+  SET_IS_LINK_NAME_DISPLAYED(state, {isLinkNameDisplayed}) {
+    state.isLinkNameDisplayed = isLinkNameDisplayed
+  },
+  SET_LINK_ENTITIES(state, { linkEntities }) {
+    state.linkEntities = linkEntities
+  },
   SET_IS_ACTION_API(state, { isActionApi }) {
     state.isActionApi = isActionApi
   },
@@ -82,6 +94,15 @@ export const mutations = {
   }
 }
 export const getters = {
+  linkEntities(state) {
+    return state.linkEntities
+  },
+  activatedLinks(state) {
+    return state.activatedLinks
+  },
+  isLinkNameDisplayed(state) {
+    return state.isLinkNameDisplayed
+  },
   isActionApi(state) {
     return state.isActionApi
   },

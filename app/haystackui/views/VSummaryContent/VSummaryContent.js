@@ -227,7 +227,6 @@ export default {
     }
   },
   watch: {
-    // eslint-disable-next-line
     async $route(to, from) {
       if (JSON.stringify(to.query) !== JSON.stringify(from.query) && !this.isActionApi) {
         await this.reloadPageFromQueryParameters()

@@ -96,6 +96,33 @@ const template = `
             hide-details
           />
         </c-filter-api-block>
+        <c-filter-api-block title="Enable link labels">
+            <v-switch
+              v-model="isLinkNameDisplayed"
+              :label="getLinkNameDisplayedInformation" />
+        </c-filter-api-block>
+        <c-filter-api-block title="Select link types to display">
+          <v-select
+            v-model="activatedLinks"
+            :items="linkEntities"
+            multiple
+            label="Select link types"
+            hint="Select links between entities"
+            :menu-props="{ bottom: true, offsetY: true }"
+          >
+            <template v-slot:selection="{ item, index }">
+              <v-chip v-if="index === 0">
+                <span>{{ item }}</span>
+              </v-chip>
+              <span
+                v-if="index === 1"
+                class="grey--text text-caption"
+              >
+                (+{{ activatedLinks.length - 1 }} others)
+              </span>
+            </template>
+          </v-select>
+        </c-filter-api-block>
         <c-filter-api-block title="Limit Number entities per page" :hasTooltips=false>
           <div class="main-layout__box__limit">
             <v-btn
@@ -199,6 +226,28 @@ export default {
     }
   },
   computed: {
+    linkEntities() {
+      return this.$store.getters.linkEntities
+    },
+    getLinkNameDisplayedInformation() {
+      return this.$store.getters.isLinkNameDisplayed ? 'Link names displayed' : 'Link names not displayed'
+    },
+    activatedLinks: {
+      get() {
+        return this.$store.getters.activatedLinks;
+      },
+      set(activatedLinks) {
+        this.$store.commit('SET_ACTIVATED_LINKS', { activatedLinks });
+      }
+    },
+    isLinkNameDisplayed: {
+      get() {
+        return this.$store.getters.isLinkNameDisplayed;
+      },
+      set(isLinkNameDisplayed) {
+        this.$store.commit('SET_IS_LINK_NAME_DISPLAYED', { isLinkNameDisplayed });
+      }
+    },
     filterApi() {
       return this.$store.getters.filterApi
     },

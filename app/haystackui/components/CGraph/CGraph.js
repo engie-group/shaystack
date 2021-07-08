@@ -1,18 +1,6 @@
 const template = `
   <v-card style="height: 100%;" ref="graph-container">
-    <div style="height: 90%;" :id="id" class="bar-chart__chart"></div>
-    <div style="height: 10%;" class="graph__filter-links">
-      <h4 style="text-align: center;"> Deactivate links between entities </h4>
-      <v-row style="margin-left: 5px;">
-        <v-col md3 cols="getUniqueLinkRefBetweenEntities.length" v-for="linkName in getUniqueLinkRefBetweenEntities" :key="linkName">
-            <v-checkbox
-                v-model="checkboxSelection[linkName]"
-                :label="linkName"
-                @change="filterOnLinkRelation()"
-            />
-        </v-col>
-      </v-row>
-    </div>
+    <div style="height: 100%;" :id="id" class="bar-chart__chart"></div>
   </v-card>
 `
 import { formatEntityService } from '../../services/index.js'
@@ -52,9 +40,32 @@ export default {
     getUniqueLinkRefBetweenEntities() {
       return formatEntityService.getUniquesRelationsBetweenEntities(this.dataEntities[0])
     },
+    isLinkNameDisplayed() {
+      return this.$store.getters.isLinkNameDisplayed
+    },
+    activatedLinks() {
+      return this.$store.getters.activatedLinks
+    }
   },
   beforeMount() {
-    this.getUniqueLinkRefBetweenEntities.map(linkName => this.checkboxSelection[linkName] = true)
+    const linkEntities = this.getUniqueLinkRefBetweenEntities // .map(linkName => this.checkboxSelection[linkName] = true)
+    this.$store.commit('SET_LINK_ENTITIES', { linkEntities })
+    this.$store.commit('SET_ACTIVATED_LINKS', { activatedLinks: linkEntities })
+  },
+  watch: {
+    isLinkNameDisplayed(newValue) {
+      const newDataLabels = { dataLabels: {
+        enabled: true,
+        allowOverlap: true,
+        linkFormat: newValue ? '{point.relation}' : ''
+      }}
+      this.chart.series[0].update(newDataLabels)
+    },
+    activatedLinks(newActivatedLinks) {
+      const linkDisabled = this.getUniqueLinkRefBetweenEntities.filter(link => !this.activatedLinks.includes(link))
+      const newData = this.dataEntities[0].filter(dataNode => !linkDisabled.includes(dataNode[2]))
+      this.chart.series[0].setData(newData)
+    }
   },
   methods: {
     createChart(data, nodes) {
@@ -75,7 +86,7 @@ export default {
             layoutAlgorithm: {
               enableSimulation: true,
               friction: -0.98,
-              linkLength: 35
+              linkLength: 80
               },
             point: {
               events: {
@@ -100,7 +111,7 @@ export default {
             dataLabels: {
               enabled: true,
               allowOverlap: true,
-              linkFormat: '',
+              linkFormat: this.isLinkNameDisplayed ? '{point.relation}' : '',
             },
             id: 'lang-tree',
             data,

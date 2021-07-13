@@ -17,19 +17,20 @@ const template = `
               >warning</v-icon
             >
           </div>
-          <div v-else-if="isRef(item.value)">
-            <span v-if="isRefClickable(item)" class="entity-row__ref-row" @click="refClicked(getRefId(item))">{{
+          <div v-else-if="isRef(item.value)" style="display:flex;">
+            <span v-if="isRefClickable(item)" style="width:90%;" class="entity-row__ref-row" @click="refClicked(getRefId(item))">{{
               getRefName(item.value)
             }}</span>
             <span
               v-else-if="isExternalRef(item)"
               class="entity-row__external-ref-row"
+              style="width:90%;"
               @click="externalRefClicked(getRefId(item))"
               >{{ getRefName(item.value) }}</span
             >
-            <span v-else>{{ getRefName(item.value) }}</span>
+            <span style="width:90%;" v-else>{{ getRefName(item.value) }}</span>
             <v-icon v-if="isDuplicateKey(item.attribute)" class="material-icons entity-row__click-button">warning</v-icon>
-            <v-icon class="material-icons entity-row__click-button" @click="copyText(item)">content_copy</v-icon>
+            <v-icon class="material-icons entity-row__click-button" @click="copyText(item)" style="width=10%;">content_copy</v-icon>
           </div>
           <div v-else-if="isDuplicateKey(item.attribute)">
             <span>{{ item.value.val }}</span>
@@ -157,11 +158,8 @@ export default {
       const keysDuplicated = Object.keys(this.dataEntity).filter(key => key.split('_')[0] === item)
       return keysDuplicated.length > 1
     },
-    getEntityId(entity) {
-      return entity.id.val
-    },
     getRefName(item) {
-      return item.dis ? item.dis : item.value
+      return item.dis ? item.dis : item.val
     },
     hisUri(tag) {
       if (tag === 'hisURI') return false

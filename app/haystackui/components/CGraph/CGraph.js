@@ -30,12 +30,6 @@ export default {
       default: () => []
     }
   },
-  data() {
-    return {
-      checkboxSelection: {},
-
-    }
-  },
   computed: {
     getUniqueLinkRefBetweenEntities() {
       return formatEntityService.getUniquesRelationsBetweenEntities(this.dataEntities[0])
@@ -86,7 +80,7 @@ export default {
             layoutAlgorithm: {
               enableSimulation: true,
               friction: -0.98,
-              linkLength: 80
+              linkLength: 50
               },
             point: {
               events: {
@@ -120,11 +114,6 @@ export default {
         ]
       })
     },
-    filterOnLinkRelation() {
-      const linkDisabled = Object.keys(this.checkboxSelection).filter(key => this.checkboxSelection[key] === false)
-      const newData = this.dataEntities[0].filter(dataNode => !linkDisabled.includes(dataNode[2]))
-      this.chart.series[0].setData(newData)
-    }
   },
   mounted() {
     (function(H) {

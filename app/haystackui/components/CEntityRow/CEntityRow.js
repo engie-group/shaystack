@@ -175,7 +175,7 @@ export default {
       const entityKeyObject = this.dataEntity[dataEntityKey]
       const { apiSource } = this.dataEntity[dataEntityKey]
       if (!entityKeyObject.hasOwnProperty('_kind'))  return { ...entityKeyObject, apiSource }
-      const kind = this.dataEntity[dataEntityKey]._kind
+      if (dataEntityKey==='id') entityKeyObject['dis'] = this.entityName
       return {...entityKeyObject, apiSource }
     }
   }

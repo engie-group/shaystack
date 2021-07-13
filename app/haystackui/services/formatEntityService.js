@@ -23,14 +23,14 @@ const formatEntityService = {
   formatEntityName: entity => {
     const id = entity.id.val
     const entityName = entity.id.dis
-    return entityName ? entityName : id
+    return entityName ? entityName : entity.dis ? entity.dis.val : id
   },
   idToNameEntity: entitiesfromAllSource => {
     let mapEntityIdToEntityName = {}
     entitiesfromAllSource.map(entities => {
       entities.map(entity => {
         const entityId = entity.id.val
-        const entityName = entity.id.dis ? entity.id.dis : entityId
+        const entityName = entity.id.dis ? entity.id.dis : (entity.dis ? entity.dis.val : entityId)
         mapEntityIdToEntityName[entityId] = entityName
       })
     })

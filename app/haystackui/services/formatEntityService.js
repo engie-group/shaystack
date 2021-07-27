@@ -124,7 +124,7 @@ const formatEntityService = {
   getLinkBetweenEntities: (entitiesFromAllSource) => {
     const colors = { fromSource: API_COLORS, outFromSource: '#c1e1ec' }
     const radiusNode = { fromSource: 7, outFromSource: 5 }
-    const entitiesLink = []
+    let entitiesLink = []
     const entitiesNameToEntitiesId = formatEntityService.idToNameEntity(entitiesFromAllSource)
     const colorsLinkOutFromSource = []
     entitiesFromAllSource.map(entities => {
@@ -155,7 +155,16 @@ const formatEntityService = {
                     name: entity[key].dis ? entity[key].dis : entityIdLinked
                   })
                 }
-              entitiesLink.push(formatedLink)
+              if (entitiesLink.find(link => (link[0] === formatedLink[0]) && link[2] === 'siteRef') && formatedLink[2] !== 'siteRef') {
+                entitiesLink = entitiesLink.filter(link => (link[0] !== formatedLink[0]) || link[2] !== 'siteRef')
+                entitiesLink.push(formatedLink)
+                }
+              else if (entitiesLink.find(link => (link[0] === formatedLink[0]) && link[2] !== 'siteRef') && formatedLink[2] !== 'siteRef') {
+                entitiesLink.push(formatedLink)
+              }
+              else {
+                entitiesLink.push(formatedLink)
+              }
             }
           }
           return key

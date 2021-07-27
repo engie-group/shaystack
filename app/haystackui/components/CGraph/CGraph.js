@@ -78,7 +78,7 @@ export default {
           networkgraph: {
             keys: this.keys,
             layoutAlgorithm: {
-              enableSimulation: false,
+              enableSimulation: true,
               friction: -0.98,
               linkLength: 50
               },

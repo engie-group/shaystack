@@ -136,9 +136,25 @@ const formatEntityService = {
               const entityIdLinked = entity[key].val
               const formatedLink = [entityId, entityIdLinked, key]
               if(!formatEntityService.isEntityFromSource(entitiesFromAllSource, entity[key].val)) {
-                colorsLinkOutFromSource.push({ id: entityIdLinked, color: colors.outFromSource, marker: { radius: radiusNode.outFromSource } })
+                if (!colorsLinkOutFromSource.find(graphEntity => graphEntity.id === entityIdLinked))
+                  colorsLinkOutFromSource.push({
+                    id: entityIdLinked,
+                    color: colors.outFromSource,
+                    marker: { radius: radiusNode.outFromSource } ,
+                    dis: entity[key].dis ? entity[key].dis : entityIdLinked,
+                    name: entity[key].dis ? entity[key].dis : entityIdLinked
+                  })
               }
-              else colorsLinkOutFromSource.push({ id: entityIdLinked, color: colors.fromSource[entity.id.apiSource - 1], marker: { radius: radiusNode.fromSource } })
+              else {
+                if (!colorsLinkOutFromSource.find(graphEntity => graphEntity.id === entityIdLinked))
+                  colorsLinkOutFromSource.push({
+                    id: entityIdLinked,
+                    color: colors.fromSource[entity.id.apiSource - 1],
+                    marker: { radius: radiusNode.fromSource },
+                    dis: entity[key].dis ? entity[key].dis : entityIdLinked,
+                    name: entity[key].dis ? entity[key].dis : entityIdLinked
+                  })
+                }
               entitiesLink.push(formatedLink)
             }
           }
@@ -146,15 +162,16 @@ const formatEntityService = {
         })
         colorsLinkOutFromSource.push({
             id: entityId, color: colors.fromSource[entity.id.apiSource - 1],
-            dis: entity.id.dis ? entity.dis : entityId,
+            dis: entity.id.dis ? entity.id.dis : entityId,
             marker: { radius:
                 radiusNode.fromSource + formatEntityService.getConnectionOccurence(entityId, entitiesLink) },
-            name: entitiesNameToEntitiesId[entityId]
+            name: entity.id.dis ? entity.id.dis : entityId
             }
           )
       })
     })
-    let colorsLinkOutFromSourceAdjusted = colorsLinkOutFromSource.map(colorLink => { return {
+    let colorsLinkOutFromSourceAdjusted = colorsLinkOutFromSource.map(colorLink => {
+    return {
         id: colorLink.id,
         color: colorLink.color,
         dis: colorLink.dis,

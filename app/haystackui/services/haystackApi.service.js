@@ -74,7 +74,7 @@ class HaystackApiService {
           : await this.api.get(`/hisRead?id=@${id}&range=${range}`)
       const kindValues = response.data.cols.kind
       if (kindValues === 's:Number') return response.data.rows.slice(0, 40)
-      return response.data.rows.slice(0, 20)
+      return response.data.rows.slice(0, 40)
     } catch {
       return []
     }

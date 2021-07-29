@@ -1,4 +1,4 @@
-import { utils, API_COLORS } from './index.js'
+import { utils, API_COLORS, ENTITY_ICON_LIST } from './index.js'
 
 const formatEntityService = {
   formatIdEntity: id => {
@@ -121,7 +121,25 @@ const formatEntityService = {
     })
     return mergeEntities.concat(entitiesFromFirstSource.concat(entitiesFromSecondSource))
   },
+  getDicEntityIdToTags: (entitiesFromAllSource) => {
+    let dicEntityIdToTags = {}
+    entitiesFromAllSource.map(entities => {
+        entities.map(entity => {
+          const entityId = entity.id.val
+          Object.keys(entity).map(key => {
+           if (typeof entity[key] ==='object') {
+             if (entity[key]['_kind'] === 'Marker') {
+                if (dicEntityIdToTags[entityId])  dicEntityIdToTags[entityId].push(key)
+                else dicEntityIdToTags[entityId] = [key]
+                }
+              }
+            })
+          })
+     })
+    return dicEntityIdToTags
+  },
   getLinkBetweenEntities: (entitiesFromAllSource) => {
+    const entityToTagsDic = formatEntityService.getDicEntityIdToTags(entitiesFromAllSource)
     const colors = { fromSource: API_COLORS, outFromSource: '#c1e1ec' }
     const radiusNode = { fromSource: 7, outFromSource: 5 }
     let entitiesLink = []
@@ -175,17 +193,20 @@ const formatEntityService = {
             marker: { radius:
                 radiusNode.fromSource + formatEntityService.getConnectionOccurence(entityId, entitiesLink) },
             name: entity.id.dis ? entity.id.dis : entityId
-            }
-          )
+        })
       })
     })
     let colorsLinkOutFromSourceAdjusted = colorsLinkOutFromSource.map(colorLink => {
-    return {
+    let colorsLinkOutFromSourceAdjustedElement = {
         id: colorLink.id,
         color: colorLink.color,
         dis: colorLink.dis,
         name: colorLink.name,
-        marker: { radius: radiusNode.fromSource + formatEntityService.getConnectionOccurence(colorLink.id, entitiesLink) }}})
+        marker: { radius: radiusNode.fromSource + formatEntityService.getConnectionOccurence(colorLink.id, entitiesLink) }}
+        let entityTag = entityToTagsDic[colorLink.id] ? entityToTagsDic[colorLink.id][entityToTagsDic[colorLink.id].length - 1] : null
+        if(Object.keys(ENTITY_ICON_LIST).includes(entityTag)) colorsLinkOutFromSourceAdjustedElement['marker']['symbol'] = ENTITY_ICON_LIST[entityTag]
+        return colorsLinkOutFromSourceAdjustedElement
+        })
     return [entitiesLink, colorsLinkOutFromSourceAdjusted, entitiesNameToEntitiesId]
   },
     reajustEntitiespiSource(entities, indexApiDeleted) {

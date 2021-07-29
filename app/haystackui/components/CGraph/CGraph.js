@@ -78,7 +78,7 @@ export default {
           networkgraph: {
             keys: this.keys,
             layoutAlgorithm: {
-              enableSimulation: true,
+              enableSimulation: false,
               friction: -0.98,
               linkLength: 50
               },
@@ -109,8 +109,8 @@ export default {
             },
             id: 'lang-tree',
             data,
-            nodes
-          }
+            nodes,
+        }
         ]
       })
     },

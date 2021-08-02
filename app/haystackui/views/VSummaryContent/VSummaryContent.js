@@ -78,6 +78,9 @@ export default {
       const entities = this.entities.slice()
       if (entities.length === 1) return entities[0]
       return this.groupByIdEntities(entities)
+    },
+    isNavigationModeActivated() {
+      return this.$store.getters.isNavigationModeActivated
     }
   },
   methods: {
@@ -157,6 +160,10 @@ export default {
       this.$router.push({ hash: refId, query: { a: query.a, q: newApiFilter, d: query.d, l: query.l, v: query.v } }).catch(() => {})
     },
     async onGraphClick(pointName) {
+       if (!this.isNavigationModeActivated) await this.onGraphClickWithoutNavigationMode(pointName)
+       else await this.onGraphClickWithNavigationMode(pointName)
+    },
+    async onGraphClickWithoutNavigationMode(pointName) {
       const linkBetweenEntities = this.getRelationGraphEntity(this.entities)
       const colorEntities = linkBetweenEntities[1]
       const entityNameToEntityId = linkBetweenEntities[2]
@@ -173,6 +180,28 @@ export default {
         window.scrollBy(0, -70)
         this.$router.push({ hash: pointName, query }).catch(() => {})
       }
+    },
+    async onGraphClickWithNavigationMode(pointName) {
+      const linkBetweenEntities = this.getRelationGraphEntity(this.entities)
+      const colorEntities = linkBetweenEntities[1]
+      const { query } = this.$route
+      if (!this.isPointFromSource(pointName, colorEntities)) {
+        var newApiFilter = `id==@${pointName}`
+      } else {
+        const tagRefEntity = this.entityTagRef(pointName)
+        var newApiFilter = tagRefEntity !== '' ? `id==@${pointName} or ${tagRefEntity}Ref->id==@${pointName}` : `id==@${pointName}`
+      }
+      await this.$store.dispatch('reloadAllData', {
+        entity: newApiFilter
+      })
+      this.$store.commit('SET_FILTER_API', { filterApi: newApiFilter })
+      this.$router.push({ query: { a: query.a, q: newApiFilter, d: query.d, l: query.l, v: query.v } }).catch(() => {})
+    },
+    entityTagRef(entityId) {
+      const entity = this.entitiesGroupedById.find(entity => entity.id.val == entityId)
+      if (Object.keys(entity).includes('site')) return 'site'
+      else if (Object.keys(entity).includes('equip')) return 'equip'
+      else return ''
     },
     getEntityName(entity) {
       return formatEntityService.formatEntityName(entity)

@@ -10,6 +10,7 @@ const state = {
   apiServers: [],
   linkEntities: [],
   activatedLinks: [],
+  isNavigationModeActivated: false,
   isLinkNameDisplayed: false,
   limit: 40,
   version: '',
@@ -24,6 +25,9 @@ export const mutations = {
   },
   SET_IS_LINK_NAME_DISPLAYED(state, {isLinkNameDisplayed}) {
     state.isLinkNameDisplayed = isLinkNameDisplayed
+  },
+  SET_IS_NAVIGATION_MODE_ACTIVATED(state, {isNavigationModeActivated}) {
+    state.isNavigationModeActivated = isNavigationModeActivated
   },
   SET_LINK_ENTITIES(state, { linkEntities }) {
     state.linkEntities = linkEntities
@@ -96,6 +100,9 @@ export const mutations = {
 export const getters = {
   linkEntities(state) {
     return state.linkEntities
+  },
+  isNavigationModeActivated(state) {
+    return state.isNavigationModeActivated
   },
   activatedLinks(state) {
     return state.activatedLinks

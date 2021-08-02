@@ -19,20 +19,6 @@ const template = `
             <v-icon>mdi-format-list-bulleted-square</v-icon>
           </v-btn>
         </div>
-        <c-filter-api-block title="Query with filter" :hasTooltips=true :tooltipText=filterEntityTooltipText()>
-          <v-text-field
-            height="40px"
-            width="80%"
-            class="main-layout__text-field"
-            label="Filter"
-            outlined
-            :value="filterApi"
-            dense
-            background-color="white"
-            @change="updateFilter($event)"
-            hide-details
-          />
-        </c-filter-api-block>
         <c-filter-api-block
           title="Add a target API Endpoint"
           :hasTooltips="existingApiEndPointFromPlugin"
@@ -69,6 +55,25 @@ const template = `
               </template>
             </v-combobox>
           </div>
+        </c-filter-api-block>
+        <c-filter-api-block title="Query with filter" :hasTooltips=true :tooltipText=filterEntityTooltipText()>
+          <v-text-field
+            height="40px"
+            width="80%"
+            class="main-layout__text-field"
+            label="Filter"
+            outlined
+            :value="filterApi"
+            dense
+            background-color="white"
+            @change="updateFilter($event)"
+            hide-details
+          />
+        </c-filter-api-block>
+        <c-filter-api-block title="Enable Navigation Mode">
+            <v-switch
+              v-model="isNavigationModeActivated"
+              :label="getNavigationModeInformation" />
         </c-filter-api-block>
         <c-filter-api-block title="Select your date range" :hasTooltips=true :tooltipText=dateRangeTooltipsText()>
           <v-text-field
@@ -229,6 +234,9 @@ export default {
     linkEntities() {
       return this.$store.getters.linkEntities
     },
+    getNavigationModeInformation() {
+      return this.$store.getters.isNavigationModeActivated ? 'Navigation mode activated' : 'Navigation mode deactivated'
+    },
     getLinkNameDisplayedInformation() {
       return this.$store.getters.isLinkNameDisplayed ? 'Link names displayed' : 'Link names not displayed'
     },
@@ -238,6 +246,14 @@ export default {
       },
       set(activatedLinks) {
         this.$store.commit('SET_ACTIVATED_LINKS', { activatedLinks });
+      }
+    },
+    isNavigationModeActivated: {
+      get() {
+        return this.$store.getters.isNavigationModeActivated;
+      },
+      set(isNavigationModeActivated) {
+        this.$store.commit('SET_IS_NAVIGATION_MODE_ACTIVATED', { isNavigationModeActivated });
       }
     },
     isLinkNameDisplayed: {

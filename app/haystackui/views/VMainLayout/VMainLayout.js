@@ -456,10 +456,11 @@ export default {
         `
     },
     existingApiFromPluginText() {
+    if (!this.existingApiEndPointFromPlugin) return null
       return `
        <h4> Api Endpoint Available: </h4>
          <span
-           ><li v-for="apiEndpoint in existingApiEndPointFromPlugin">{{ apiEndpoint }}</li>
+           ><li> ` + this.existingApiEndPointFromPlugin.join('</li><li>  ') + `</li>
          </span>
    `
    },

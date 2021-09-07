@@ -254,6 +254,8 @@ export default {
       },
       set(isNavigationModeActivated) {
         this.$store.commit('SET_IS_NAVIGATION_MODE_ACTIVATED', { isNavigationModeActivated });
+        let limit = isNavigationModeActivated ? 250 : 40
+        this.$store.commit('SET_LIMIT', { limit })
       }
     },
     isLinkNameDisplayed: {

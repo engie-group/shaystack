@@ -1,4 +1,4 @@
-import { utils, API_COLORS, ENTITY_ICON_LIST } from './index.js'
+import { utils, API_COLORS } from './index.js'
 
 const formatEntityService = {
   formatIdEntity: id => {
@@ -138,7 +138,8 @@ const formatEntityService = {
      })
     return dicEntityIdToTags
   },
-  getLinkBetweenEntities: (entitiesFromAllSource) => {
+  getLinkBetweenEntities: (entitiesFromAllSource, entityIconList) => {
+    console.log('icon list', entityIconList)
     const entityToTagsDic = formatEntityService.getDicEntityIdToTags(entitiesFromAllSource)
     const colors = { fromSource: API_COLORS, outFromSource: '#c1e1ec' }
     const radiusNode = { fromSource: 7, outFromSource: 5 }
@@ -204,7 +205,7 @@ const formatEntityService = {
         name: colorLink.name,
         marker: { radius: radiusNode.fromSource + formatEntityService.getConnectionOccurence(colorLink.id, entitiesLink) }}
         let entityTag = entityToTagsDic[colorLink.id] ? entityToTagsDic[colorLink.id][entityToTagsDic[colorLink.id].length - 1] : null
-        if(Object.keys(ENTITY_ICON_LIST).includes(entityTag)) colorsLinkOutFromSourceAdjustedElement['marker']['symbol'] = ENTITY_ICON_LIST[entityTag]
+        if(Object.keys(entityIconList).includes(entityTag)) colorsLinkOutFromSourceAdjustedElement['marker']['symbol'] = entityIconList[entityTag]
         return colorsLinkOutFromSourceAdjustedElement
         })
     return [entitiesLink, colorsLinkOutFromSourceAdjusted, entitiesNameToEntitiesId]

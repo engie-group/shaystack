@@ -235,7 +235,8 @@ export default {
       }
     },
     getRelationGraphEntity(entities) {
-      return formatEntityService.getLinkBetweenEntities(entities)
+      let entityIconList = this.getEntitiesIcons ? this.getEntitiesIcons() : {}
+      return formatEntityService.getLinkBetweenEntities(entities, entityIconList)
     },
     redirectOnRightHash() {
       if (this.isAnyData) {

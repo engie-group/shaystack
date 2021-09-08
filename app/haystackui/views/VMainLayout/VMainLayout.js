@@ -461,7 +461,7 @@ export default {
       return `
        <h4> Api Endpoint Available: </h4>
          <span
-           ><li> ` + this.existingApiEndPointFromPlugin.join('</li><li>  ') + `</li>
+           ><li> ` + this.getExistingApiEndpoint().join('</li><li>  ') + `</li>
          </span>
    `
    },

@@ -270,8 +270,7 @@ export default {
       return this.$store.getters.filterApi
     },
     existingApiEndPointFromPlugin(){
-       if (this.getExistingApiEndpoint) return this.getExistingApiEndpoint()
-       else return null
+       return this.getExistingApiEndpoint ? true : false
     },
     version() {
       return this.$store.getters.version

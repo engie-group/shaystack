@@ -54,7 +54,7 @@ export default {
   },
   computed: {
     existingApiEndPointFromPlugin() {
-      return this.getExistingApiEndpoint ? this.getExistingApiEndpoint() : null
+      return this.getExistingApiEndpoint ? true : false
     }
   }
 }

@@ -175,12 +175,12 @@ export const actions = {
     if (newServerStatus === 'available') {
       await context.commit('SET_HAYSTACK_API', { haystackApiHost, apiKey })
     } else if (newServerStatus === 'notAuthenticated') {
-      const apiKey = prompt('You need to enter an api token', '')
-      const newApiServerWithToken = new HaystackApiService({ haystackApiHost, apiKey })
-      const newServerStatusWithToken = await newApiServerWithToken.isHaystackApi()
-      if (newServerStatusWithToken === 'available') {
-        await context.commit('SET_HAYSTACK_API', { haystackApiHost, apiKey })
-      } else alert('wrong token')
+        const apiKey = prompt('You need to enter an api token', '')
+        const newApiServerWithToken = new HaystackApiService({ haystackApiHost, apiKey })
+        const newServerStatusWithToken = await newApiServerWithToken.isHaystackApi()
+        if (newServerStatusWithToken === 'available') {
+          await context.commit('SET_HAYSTACK_API', { haystackApiHost, apiKey })
+        } else alert('wrong token')
     }
     context.commit('SET_IS_ACTION_API', { isActionApi: true })
   },
@@ -190,7 +190,6 @@ export const actions = {
   async fetchEntity(context, { entity, apiNumber }) {
     const entities = await context.getters.apiServers[apiNumber].getEntity(entity, state.limit, state.version)
     await context.dispatch('commitNewEntities', {
-      // eslint-disable-next-line
       entities: formatEntityService.addApiSourceInformationToEntity(entities.rows, apiNumber + 1),
       apiNumber
     })
@@ -198,7 +197,6 @@ export const actions = {
   async fetchAllEntity(context, { entity }) {
     const { apiServers } = context.getters
     await Promise.all(
-      // eslint-disable-next-line
       await apiServers.map(async (apiServer, index) => {
         await context.dispatch('fetchEntity', { entity, apiNumber: index })
       })

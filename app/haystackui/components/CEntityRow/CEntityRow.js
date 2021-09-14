@@ -19,7 +19,7 @@ const template = `
             v-if="displayChart & isHisLoaded"
             :id="chartId"
             :entityId="idEntity"
-            :data="hisData"
+            :data="hisChartSortedValues"
             :unit="unit"
             title="Historical values"
           />
@@ -53,10 +53,6 @@ export default {
     idEntity: {
       type: String,
       default: ''
-    },
-    his: {
-      type: Array,
-      default: () => []
     },
     dataEntity: {
       type: Object,
@@ -118,18 +114,19 @@ export default {
       if (!this.hisData) return []
       return this.dataHisTable
         .map(history => {
-          return history.map(row => {
+          return history.his.map(row => {
+            console.log('ROW', row)
             return {
               ts: row.ts.val,
               value: row,
-              row_class: [`apiSource_${row.apiSource + 1}`]
+              row_class: [`apiSource_${history.apiNumber}`]
             }
           })
         })
         .flatMap(history => history)
     },
     displayChart() {
-      return this.hisData.filter(data => (data ? data.his.length > 0 : data)).length > 0
+      return this.dataChart(this.hisData).filter(data => (data ? data.his.length > 0 : data)).length > 0
     },
     chartId() {
       return this.isFromExternalSource ? `${this.idEntity}-external` : `${this.idEntity}-chart`
@@ -138,7 +135,8 @@ export default {
       return formatEntityService.formatEntityName(this.dataEntity)
     },
     dataHisTable() {
-      const dataHisTable = this.his.filter(hisData => !formatChartService.isNumberTypeChart(hisData))
+      console.log(this.hisData)
+      const dataHisTable = this.hisData.filter(hisData => !formatChartService.isNumberTypeChart(hisData.his))
       if (dataHisTable.length === 1 && dataHisTable[0].length === 0) return []
       return dataHisTable
     },
@@ -153,12 +151,14 @@ export default {
     },
     allEntities() {
       return this.$store.getters.entities
+    },
+    hisChartSortedValues() {
+      return this.sortDataChart(this.dataChart(this.hisData))
     }
   },
   async mounted() {
     this.isHisLoaded = false
-    let apiHisData = await this.getHistory(this.idEntity)
-    this.hisData = this.dataChart(apiHisData)
+    this.hisData = await this.getHistory(this.idEntity)
     this.isHisLoaded = true
   },
   methods: {

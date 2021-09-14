@@ -115,7 +115,6 @@ export default {
       return this.dataHisTable
         .map(history => {
           return history.his.map(row => {
-            console.log('ROW', row)
             return {
               ts: row.ts.val,
               value: row,
@@ -135,7 +134,6 @@ export default {
       return formatEntityService.formatEntityName(this.dataEntity)
     },
     dataHisTable() {
-      console.log(this.hisData)
       const dataHisTable = this.hisData.filter(hisData => !formatChartService.isNumberTypeChart(hisData.his))
       if (dataHisTable.length === 1 && dataHisTable[0].length === 0) return []
       return dataHisTable

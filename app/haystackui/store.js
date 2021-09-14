@@ -6,9 +6,9 @@ Vue.use(Vuex)
 window.env = window.env || {}
 const state = {
   entities: [[]],
-  histories: [{}],
   apiServers: [],
   linkEntities: [],
+  entitiesWithHis: {},
   activatedLinks: [],
   isNavigationModeActivated: false,
   isLinkNameDisplayed: false,
@@ -46,12 +46,6 @@ export const mutations = {
     // eslint-disable-next-line
     newEntities.length < (apiNumber + 1) ? newEntities.push(entities) : (newEntities[apiNumber] = entities)
     state.entities = newEntities
-  },
-  ADD_NEW_HISTORIES(state, { idHistories, apiNumber }) {
-    const newHistories = state.histories.slice()
-    // eslint-disable-next-line
-    newHistories.length < apiNumber + 1 ? newHistories.push(idHistories) : (newHistories[apiNumber] = idHistories)
-    state.histories = newHistories
   },
   SET_IS_DATA_LOADED(state, { isDataLoaded }) {
     state.isDataLoaded = isDataLoaded
@@ -95,6 +89,27 @@ export const mutations = {
   },
   SET_VERSION(state, { version }) {
     state.version = version
+  },
+  SET_ENTITIES_WITH_HIS(state, { entitiesWithHis }) {
+    state.entitiesWithHis = entitiesWithHis
+  },
+  ADD_ENTITIES_WITH_HIS(state, {entityId, apiNumber}) {
+    if (state.entitiesWithHis.hasOwnProperty(entityId)) {
+      if (Array.isArray(apiNumber)) {
+        apiNumber.map(number => {
+          if (!state.entitiesWithHis[entityId].includes(number)) state.entitiesWithHis[entityId].push(number)
+        })
+      }
+      else {
+        if (!state.entitiesWithHis[entityId].includes(apiNumber)) state.entitiesWithHis[entityId].push(apiNumber)
+      }
+    }
+    else {
+      if (Array.isArray(apiNumber)) {
+        state.entitiesWithHis[entityId] = apiNumber
+        }
+      else state.entitiesWithHis[entityId] = [apiNumber]
+    }
   }
 }
 export const getters = {
@@ -119,9 +134,6 @@ export const getters = {
   entities(state) {
     return state.entities
   },
-  histories(state) {
-    return state.histories
-  },
   apiNumber(state) {
     return state.apiServers.length
   },
@@ -139,6 +151,9 @@ export const getters = {
   },
   version(state) {
     return state.version
+  },
+  entitiesWithHis(state) {
+    return state.entitiesWithHis
   }
 }
 export const actions = {
@@ -180,34 +195,6 @@ export const actions = {
       apiNumber
     })
   },
-  async fetchHistories(context, { idsEntityWithHis, apiNumber }) {
-    const isHisReadAvailable = await context.getters.apiServers[apiNumber].isHisReadAvailable()
-    const dateRange = dateUtils.formatDateRangeUrl(state.dateRange)
-    if (isHisReadAvailable) {
-      const histories = await Promise.all(
-        idsEntityWithHis.map(async entity => {
-          if (typeof entity.apiSource === 'object') {
-            if (entity.apiSource.find(apiSourceNumber => apiSourceNumber === apiNumber + 1)) {
-              return context.getters.apiServers[apiNumber].getHistory(entity.id, dateRange)
-            }
-            return []
-          }
-          // eslint-disable-next-line
-          if (entity.apiSource === apiNumber + 1) return context.getters.apiServers[apiNumber].getHistory(entity.id, dateRange)
-          return []
-        })
-      )
-      const idHistories = {}
-      idsEntityWithHis.forEach(
-        // eslint-disable-next-line no-return-assign
-        (key, index) =>
-          (idHistories[key.id] = histories[index].map(history => {
-            return { ...history, apiSource: apiNumber }
-          }))
-      )
-      await context.commit('ADD_NEW_HISTORIES', { idHistories, apiNumber })
-    }
-  },
   async fetchAllEntity(context, { entity }) {
     const { apiServers } = context.getters
     await Promise.all(
@@ -217,21 +204,16 @@ export const actions = {
       })
     )
   },
-  async fetchAllHistories(context) {
-    const { apiServers, entities } = context.getters
+  async fetchAllEntitiesWithHis(context) {
+    const { entities } = context.getters
     const entitiesCopy = entities.slice()
     const groupEntities = entitiesCopy.length === 1 ? entitiesCopy[0] : formatEntityService.groupAllEntitiesById(entitiesCopy)
     const idsEntityWithHis = groupEntities
       .filter(entity => entity.his)
       .map(entity => {
+        context.commit('ADD_ENTITIES_WITH_HIS', { entityId: entity.id.val, apiNumber: entity.his.apiSource})
         return { id: entity.id.val, apiSource: entity.his.apiSource }
       })
-    await Promise.all(
-      // eslint-disable-next-line
-      await apiServers.map(async (apiServer, index) => {
-        await context.dispatch('fetchHistories', { idsEntityWithHis, apiNumber: index })
-      })
-    )
   },
   async reloadDataForOneApi(context, { entity, apiNumber }) {
     context.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
@@ -242,9 +224,10 @@ export const actions = {
     const idsEntityWithHis = groupEntities
       .filter(entity => entity.his)
       .map(entity => {
+        context.commit('ADD_ENTITIES_WITH_HIS', { entityId: entity.id.val, apiNumber: apiNumber+1 })
         return { id: formatEntityService.formatIdEntity(entity.id.val), apiSource: entity.his.apiSource }
       })
-    await context.dispatch('fetchHistories', { idsEntityWithHis, apiNumber })
+
     context.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
   },
   async reloadAllData(context, { entity }) {
@@ -252,7 +235,7 @@ export const actions = {
     const { apiServers } = context.getters
     if (apiServers.length > 0) {
       await Promise.all([await context.dispatch('fetchAllEntity', { entity })]).finally(async () => {
-        await context.dispatch('fetchAllHistories')
+        await context.dispatch('fetchAllEntitiesWithHis')
       })
     }
     context.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
@@ -261,19 +244,18 @@ export const actions = {
     const { apiServers } = context.getters
     await context.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
     const newApiServers = state.apiServers.slice()
-    let newHistories = state.histories.slice()
     let newEntities = state.entities.slice()
+    let newEntitiesWithHis = Object.assign({}, state.entitiesWithHis)
     const indexOfApiServerToDelete = state.apiServers.findIndex(
       apiServer => apiServer.haystackApiHost === haystackApiHost
     )
-    newHistories.splice(indexOfApiServerToDelete, 1)
     newEntities.splice(indexOfApiServerToDelete, 1)
     if (indexOfApiServerToDelete !== apiServers.length) {
-      newHistories = formatEntityService.reajustHistoriesApiSource(newHistories, indexOfApiServerToDelete)
+      newEntitiesWithHis = formatEntityService.reajustHistoriesApiSource(newEntitiesWithHis, indexOfApiServerToDelete)
       newEntities = formatEntityService.reajustEntitiespiSource(newEntities, indexOfApiServerToDelete)
     }
     context.commit('SET_ENTITIES', { entities: newEntities })
-    context.commit('SET_HISTORIES', { histories: newHistories })
+    context.commit('SET_ENTITIES_WITH_HIS', { entitiesWithHis: newEntitiesWithHis })
     state.apiServers = newApiServers.filter(apiServer => apiServer.haystackApiHost !== haystackApiHost)
     context.commit('SET_IS_ACTION_API', { isActionApi: true })
     context.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })

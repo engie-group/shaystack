@@ -73,3 +73,10 @@
   cursor: pointer;
   color: grey;
 }
+.entity-row__spinner {
+  color: black;
+  background: white;
+  justify-content: center;
+  padding-top: 110px;
+  text-align: center;
+}

@@ -139,7 +139,6 @@ const formatEntityService = {
     return dicEntityIdToTags
   },
   getLinkBetweenEntities: (entitiesFromAllSource, entityIconList) => {
-    console.log('icon list', entityIconList)
     const entityToTagsDic = formatEntityService.getDicEntityIdToTags(entitiesFromAllSource)
     const colors = { fromSource: API_COLORS, outFromSource: '#c1e1ec' }
     const radiusNode = { fromSource: 7, outFromSource: 5 }
@@ -234,24 +233,15 @@ const formatEntityService = {
       entitiesLink.find(entityLink => entityLink.includes(entityId)).length :
       0
   },
-  reajustHistoriesApiSource(histories, indexApiDeleted) {
-    const historiesCopy = histories.slice()
-    let historiesReajusted = []
-    historiesCopy.map((apiHistories, index) => {
-      if (index < indexApiDeleted) historiesReajusted.push(apiHistories)
-      else {
-        let apiHistoriesReajusted = {}
-        Object.keys(apiHistories).map(historyId => {
-          const historyEntity = []
-          apiHistories[historyId].map(pointHistoryId => {
-            historyEntity.push({ val: pointHistoryId.val, ts: pointHistoryId.ts, apiSource: pointHistoryId.apiSource - 1 })
-          })
-          apiHistoriesReajusted[historyId] = historyEntity
-        })
-        historiesReajusted.push(apiHistoriesReajusted)
-      }
+  reajustHistoriesApiSource(entitiesWithHis, indexApiDeleted) {
+    const entitiesWithHisReajusted = {}
+    const entitiesWithHisCopy = Object.assign({}, entitiesWithHis)
+    Object.keys(entitiesWithHisCopy).map(entityId => {
+      entitiesWithHisReajusted[entityId] = entitiesWithHisCopy[entityId]
+        .filter(apiNumber => apiNumber!= indexApiDeleted+1)
+        .map(apiNumber => apiNumber > indexApiDeleted + 1 ? apiNumber -1 : apiNumber)
     })
-    return historiesReajusted
+    return entitiesWithHisReajusted
   },
   getUniquesRelationsBetweenEntities(entitiesLink) {
     return [... new Set(entitiesLink.map(entityLink => entityLink[2]))]

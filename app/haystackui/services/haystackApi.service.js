@@ -14,7 +14,7 @@ class HaystackApiService {
     }
     return axios.create({
       baseURL: `${this.haystackApiHost}`,
-      timeout: 20000,
+      timeout: 30000,
       withCredentials: false,
       headers
     })
@@ -79,7 +79,6 @@ class HaystackApiService {
       return []
     }
   }
-
 }
 
 export default HaystackApiService

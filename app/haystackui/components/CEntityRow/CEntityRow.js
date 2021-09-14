@@ -16,22 +16,25 @@ const template = `
         <div class="entity-row__chart">
           <c-chart
             data-test-history-chart
-            v-if="displayChart"
+            v-if="displayChart & isHisLoaded"
             :id="chartId"
-            :data="sortDataChart(dataChart)"
+            :entityId="idEntity"
+            :data="hisData"
             :unit="unit"
             title="Historical values"
           />
           <p-his-data-table
             :isEntityData="false"
-            v-if="displayHisTableData"
+            v-if="displayHisTableData & isHisLoaded"
             @onRefClick="onRefClick"
             @onExternalRefClick="onExternalRefClick"
             :dataHisTable="hisTableValues"
             :dataEntity="dataEntity"
             :allEntities="allEntities"
-          >
-          </p-his-data-table>
+          />
+          <div v-if="!isHisLoaded" class="entity-row__spinner">
+                <v-progress-circular :size="100" :width="10" indeterminate></v-progress-circular>
+          </div>
         </div>
       </div>
     </div>
@@ -78,10 +81,15 @@ export default {
           value: 'tag'
         },
         { text: 'Value', value: 'value', sortable: false }
-      ]
+      ],
+     isHisLoaded: false,
+     hisData: []
     }
   },
   computed: {
+    apiNumbersWithHis() {
+      return this.$store.getters.entitiesWithHis[this.idEntity]
+    },
     entityTableValues() {
       return Object.keys(this.dataEntity).map(key => {
         const result = this.getEntityValue(key)
@@ -107,7 +115,7 @@ export default {
       })
     },
     hisTableValues() {
-      if (!this.his) return []
+      if (!this.hisData) return []
       return this.dataHisTable
         .map(history => {
           return history.map(row => {
@@ -121,27 +129,13 @@ export default {
         .flatMap(history => history)
     },
     displayChart() {
-      return (
-        this.his.filter(his => (his ? his.length > 0 : his)).length > 0 &&
-        this.isDataLoaded &&
-        this.dataChart.length > 0
-      )
+      return this.hisData.filter(data => (data ? data.his.length > 0 : data)).length > 0
     },
     chartId() {
       return this.isFromExternalSource ? `${this.idEntity}-external` : `${this.idEntity}-chart`
     },
     entityName() {
       return formatEntityService.formatEntityName(this.dataEntity)
-    },
-    dataChart() {
-      return this.his
-        .map((his, index) => {
-          return { his, apiNumber: index }
-        })
-        .filter(hisData => formatChartService.isNumberTypeChart(hisData.his))
-        .map(historic => {
-          return { his: historic.his ? formatChartService.formatCharts(historic.his) : null, apiNumber: historic.apiNumber }
-        })
     },
     dataHisTable() {
       const dataHisTable = this.his.filter(hisData => !formatChartService.isNumberTypeChart(hisData))
@@ -161,6 +155,12 @@ export default {
       return this.$store.getters.entities
     }
   },
+  async mounted() {
+    this.isHisLoaded = false
+    let apiHisData = await this.getHistory(this.idEntity)
+    this.hisData = this.dataChart(apiHisData)
+    this.isHisLoaded = true
+  },
   methods: {
     onRefClick(refId) {
       this.$emit('onRefClick', refId)
@@ -177,6 +177,24 @@ export default {
       if (!entityKeyObject.hasOwnProperty('_kind'))  return { ...entityKeyObject, apiSource }
       if (dataEntityKey==='id') entityKeyObject['dis'] = this.entityName
       return {...entityKeyObject, apiSource }
+    },
+    dataChart(histories) {
+      return histories
+        .filter(hisData => formatChartService.isNumberTypeChart(hisData.his))
+        .map(historic => {
+          return { his: historic.his ? formatChartService.formatCharts(historic.his) : null, apiNumber: historic.apiNumber }
+        })
+    },
+    async getHistory(entityId) {
+      if (this.apiNumbersWithHis && this.apiNumbersWithHis.length > 0) {
+        this.isHisLoaded = false
+        let histories = await Promise.all(this.apiNumbersWithHis.map(async apiNumber => {
+          let history = await this.$store.getters.apiServers[apiNumber-1].getHistory(entityId)
+          return { his: history, apiNumber }
+        }))
+        return histories
+      }
+      return []
     }
   }
 }

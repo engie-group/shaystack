@@ -19,7 +19,6 @@ const template = `
         @onExternalRefClick="onExternalRefClick"
         :idEntity="row.id.val"
         :dataEntity="row"
-        :his="getHistories(row.id.val)"
         :isDataLoaded="isDataLoaded"
         class="summary-content__entity-row"
       />
@@ -216,17 +215,6 @@ export default {
     getHistory(idEntity, sourceNumber) {
       if (!this.histories[sourceNumber][idEntity]) return null
       return this.histories[sourceNumber][idEntity]
-    },
-    getHistories(idEntity) {
-      if (this.histories.length === 1) {
-        const entityHis = this.getHistory(idEntity, 0)
-        return entityHis ? [this.getHistory(idEntity, 0)] : []
-      }
-      // eslint-disable-next-line
-      return this.histories.map((history, index) => {
-          return this.getHistory(idEntity, index)
-        })
-        .filter(history => history)
     },
     async updateFilter(newFilter) {
       if (newFilter !== this.$store.getters.filterApi) {

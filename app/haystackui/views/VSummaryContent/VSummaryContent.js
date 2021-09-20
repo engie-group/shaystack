@@ -190,10 +190,6 @@ export default {
         const tagRefEntity = this.entityTagRef(pointName)
         var newApiFilter = tagRefEntity !== '' ? `id==@${pointName} or ${tagRefEntity}Ref->id==@${pointName}` : `id==@${pointName}`
       }
-      await this.$store.dispatch('reloadAllData', {
-        entity: newApiFilter
-      })
-      this.$store.commit('SET_FILTER_API', { filterApi: newApiFilter })
       this.$router.push({ query: { a: query.a, q: newApiFilter, d: query.d, l: query.l, v: query.v } }).catch(() => {})
     },
     entityTagRef(entityId) {

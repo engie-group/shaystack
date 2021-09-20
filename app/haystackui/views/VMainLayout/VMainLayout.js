@@ -350,7 +350,6 @@ export default {
         this.$store.commit('SET_FILTER_API', { filterApi: newFilter })
         const { a, d, l, v } = this.$route.query
         this.$router.push({ query: { q: newFilter, a, d, l, v } })
-        await this.$store.dispatch('reloadAllData', { entity: newFilter })
       }
     },
     async updateLimit(newLimit) {

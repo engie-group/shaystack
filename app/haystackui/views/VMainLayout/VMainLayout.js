@@ -57,7 +57,7 @@ const template = `
           </div>
         </c-filter-api-block>
         <c-filter-api-block title="Query with filter" :hasTooltips=true :tooltipText=filterEntityTooltipText()>
-          <v-text-field
+          <v-combobox
             height="40px"
             width="80%"
             class="main-layout__text-field"
@@ -66,9 +66,23 @@ const template = `
             :value="filterApi"
             dense
             background-color="white"
+            :items="getBasicFilter()"
             @change="updateFilter($event)"
+            append-icon=""
             hide-details
-          />
+          >
+              <template
+                v-slot:item="{
+                  item
+                }"
+              >
+                <div class="main-layout__combobox-row">
+                  <span class="pr-2 main-layout__combobox-api-text">
+                    {{ item }}
+                  </span>
+                </div>
+              </template>
+            </v-combobox>
         </c-filter-api-block>
         <c-filter-api-block title="Enable Navigation Mode">
             <v-switch
@@ -254,7 +268,7 @@ export default {
       },
       set(isNavigationModeActivated) {
         this.$store.commit('SET_IS_NAVIGATION_MODE_ACTIVATED', { isNavigationModeActivated });
-        let limit = isNavigationModeActivated ? 250 : 40
+        let limit = isNavigationModeActivated ? 130 : 40
         this.$store.commit('SET_LIMIT', { limit })
       }
     },
@@ -293,6 +307,10 @@ export default {
     }
   },
   methods: {
+    getBasicFilter() {
+      if (!this.customFilter) return []
+      else return this.customFilter()
+    },
     changeExtention() {
       this.isExtended = !this.isExtended
     },

@@ -77,11 +77,6 @@ export default {
         plotOptions: {
           networkgraph: {
             keys: this.keys,
-            layoutAlgorithm: {
-              enableSimulation: false,
-              friction: -0.98,
-              linkLength: 50
-              },
             point: {
               events: {
                 click: function emitEvent(event) {

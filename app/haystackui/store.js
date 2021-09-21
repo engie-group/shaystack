@@ -250,7 +250,7 @@ export const actions = {
     newEntities.splice(indexOfApiServerToDelete, 1)
     if (indexOfApiServerToDelete !== apiServers.length) {
       newEntitiesWithHis = formatEntityService.reajustHistoriesApiSource(newEntitiesWithHis, indexOfApiServerToDelete)
-      newEntities = formatEntityService.reajustEntitiespiSource(newEntities, indexOfApiServerToDelete)
+      newEntities = formatEntityService.reajustEntitiesApiSource(newEntities, indexOfApiServerToDelete)
     }
     context.commit('SET_ENTITIES', { entities: newEntities })
     context.commit('SET_ENTITIES_WITH_HIS', { entitiesWithHis: newEntitiesWithHis })

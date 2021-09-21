@@ -148,7 +148,8 @@ export default {
       return this.dataEntity.unit ? this.dataEntity.unit.val : ''
     },
     allEntities() {
-      return this.$store.getters.entities
+      const entities = this.$store.getters.entities.slice()
+      return entities
     },
     hisChartSortedValues() {
       return this.sortDataChart(this.dataChart(this.hisData))

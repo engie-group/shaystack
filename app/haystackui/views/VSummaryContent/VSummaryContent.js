@@ -57,7 +57,8 @@ export default {
       return this.$store.getters.isDataLoaded
     },
     entities() {
-      return this.$store.getters.entities.map(entities => entities.filter(entity => entity.id))
+      const entities = this.$store.getters.entities.slice()
+      return entities.map(entities => entities.filter(entity => entity.id))
     },
     idsWithHis() {
       return this.entitiesGroupedById
@@ -74,9 +75,8 @@ export default {
     },
     entitiesGroupedById() {
       // eslint-disable-next-line
-      const entities = this.entities.slice()
-      if (entities.length === 1) return entities[0]
-      return this.groupByIdEntities(entities)
+      if (this.entities.length === 1) return this.entities[0]
+      return this.groupByIdEntities(this.entities)
     },
     isNavigationModeActivated() {
       return this.$store.getters.isNavigationModeActivated

@@ -63,7 +63,7 @@ export default {
   },
   methods: {
     createChart(data, nodes) {
-      const height = (this.$refs['graph-container'].$el.clientHeight - 5)*(9/10);
+      const height = (this.$refs['graph-container'].$el.clientHeight - 5);
       const width = this.$refs['graph-container'].$el.clientWidth;
       return Highcharts.chart(this.id, {
         title: {

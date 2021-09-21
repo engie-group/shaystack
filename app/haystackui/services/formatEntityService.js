@@ -209,7 +209,7 @@ const formatEntityService = {
         })
     return [entitiesLink, colorsLinkOutFromSourceAdjusted, entitiesNameToEntitiesId]
   },
-    reajustEntitiespiSource(entities, indexApiDeleted) {
+    reajustEntitiesApiSource(entities, indexApiDeleted) {
     const entitiesCopy = entities.slice()
     let entitiesReajusted = []
     entitiesCopy.map((apiEntities, index) => {
@@ -219,7 +219,8 @@ const formatEntityService = {
         apiEntities.map(entity => {
           const entityReajusted = {}
           Object.keys(entity).map(key => {
-            entityReajusted[key] = { val: entity[key].val, apiSource: entity[key].apiSource - 1}
+            entityReajusted[key] = entity[key]
+            entityReajusted[key]["apiSource"] = entityReajusted[key]["apiSource"] - 1
           })
           apiEntitiesReajusted.push(entityReajusted)
         })

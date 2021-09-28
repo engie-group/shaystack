@@ -446,8 +446,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 # Remove data after the date_version
                 history = history.copy()
                 for row in history:
-                    print('TEST AVANT ERREUR')
-                    print(row)
                     if row['ts'] >= date_version:
                         history = history[0:history.index(row)]
                         break

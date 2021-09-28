@@ -4,10 +4,14 @@ SHELL=/bin/bash
 .ONESHELL:
 MAKEFLAGS += --no-print-directory
 
+ifeq ($(shell (( $(shell echo "$(MAKE_VERSION)" | sed -e 's@^[^0-9]*\([0-9]\+\).*@\1@') >= 4 )) || echo 1),1)
+$(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
+endif
+
 # You can change the password in .env
 PRJ?=shaystack
 HAYSTACK_PROVIDER?=shaystack.providers.db
-HAYSTACK_DB?=sampleEllipse/ontology.hayson.json
+HAYSTACK_DB?=sample/carytown.zinc
 REFRESH=15
 USE_OKTA?=N
 AWS_PROFILE?=default
@@ -51,7 +55,7 @@ STAGE=dev
 AWS_STAGE?=$(STAGE)
 ZAPPA_ENV=zappa_venv
 DOCKER_REPOSITORY=$(USER)
-PORT?=3011
+PORT?=3000
 INPUT_NETWORK?=localhost
 HOST_API?=localhost
 COOKIE_SECRET_KEY?=2d1a12a6-3232-4328-9365-b5b65e64a68f

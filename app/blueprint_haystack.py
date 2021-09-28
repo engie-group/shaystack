@@ -21,7 +21,6 @@ from shaystack.ops import HaystackHttpRequest, HaystackHttpResponse
 
 def create_haystack_bp() -> Blueprint:
     prefix = os.environ.get('URL_PREFIX') if os.environ.get('URL_PREFIX') else ''
-    print('PREFIX', prefix)
     haystack_blueprint = Blueprint('haystack', __name__,
                                    static_folder=safe_join(os.path.dirname(__file__), 'haystackui'),
                                    url_prefix=f'{prefix}/haystack')

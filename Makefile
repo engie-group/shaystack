@@ -4,14 +4,10 @@ SHELL=/bin/bash
 .ONESHELL:
 MAKEFLAGS += --no-print-directory
 
-ifeq ($(shell (( $(shell echo "$(MAKE_VERSION)" | sed -e 's@^[^0-9]*\([0-9]\+\).*@\1@') >= 4 )) || echo 1),1)
-$(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
-endif
-
 # You can change the password in .env
 PRJ?=shaystack
 HAYSTACK_PROVIDER?=shaystack.providers.db
-HAYSTACK_DB?=sample/carytown.zinc
+HAYSTACK_DB?=sampleEllipse/ontology.hayson.json
 REFRESH=15
 USE_OKTA?=N
 AWS_PROFILE?=default
@@ -55,12 +51,13 @@ STAGE=dev
 AWS_STAGE?=$(STAGE)
 ZAPPA_ENV=zappa_venv
 DOCKER_REPOSITORY=$(USER)
-PORT?=3000
+PORT?=3011
 INPUT_NETWORK?=localhost
 HOST_API?=localhost
 COOKIE_SECRET_KEY?=2d1a12a6-3232-4328-9365-b5b65e64a68f
 TWINE_USERNAME?=__token__
 SIGN_IDENTITY?=$(USER)
+URL_PREFIX=
 
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 
@@ -412,7 +409,7 @@ start-api: $(REQUIREMENTS)
 	echo -e "$(green)TS=$${HAYSTACK_TS}"
 	echo -e "$(green)Use http://$(HOST_API):$(PORT)/graphql or http://$(HOST_API):$(PORT)/haystack$(normal)"
 	FLASK_DEBUG=1 FLASK_ENV=$(STAGE) \
-	$(CONDA_PYTHON) -m app.main --port $(PORT) --host $(INPUT_NETWORK)
+	URL_PREFIX=$(URL_PREFIX) $(CONDA_PYTHON) -m app.main --port $(PORT) --host $(INPUT_NETWORK)
 
 # Start local API server in background
 async-start-api: $(REQUIREMENTS)

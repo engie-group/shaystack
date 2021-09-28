@@ -66,7 +66,7 @@ def init_app(app: Flask) -> Flask:
     def favicon():
         """Return the favorite icon"""
         return send_from_directory(os.path.join(app.root_path, 'static'),
-                                   'favicon.ico', mimetype='image/vnd.microsoft.icon')
+                                   'logo.ico', mimetype='image/vnd.microsoft.icon')
 
     app.logger.setLevel(_log_level)  # pylint: disable=no-member
     return app

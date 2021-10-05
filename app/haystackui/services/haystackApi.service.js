@@ -66,12 +66,12 @@ class HaystackApiService {
       return []
     }
   }
-  async getHistory(id, range = '2020-01-01,2022-12-31') {
+  async getHistory(id, range = '2017-01-01,2023-12-31', version = '2023-12-31') {
     try {
       const response =
         range === ','
-          ? await this.api.get(`/hisRead?id=@${id}`)
-          : await this.api.get(`/hisRead?id=@${id}&range=${range}`)
+          ? await this.api.get(`/hisRead?id=@${id}&version=${version}`)
+          : await this.api.get(`/hisRead?id=@${id}&range=${range}&version=${version}`)
       const kindValues = response.data.cols.kind
       if (kindValues === 's:Number') return response.data.rows.slice(0, 40)
       return response.data.rows.slice(0, 40)

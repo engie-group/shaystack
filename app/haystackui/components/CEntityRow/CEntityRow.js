@@ -83,6 +83,9 @@ export default {
     }
   },
   computed: {
+    dateRange() {
+        return this.$store.getters.dateRange
+    },
     apiNumbersWithHis() {
       return this.$store.getters.entitiesWithHis[this.idEntity]
     },
@@ -187,8 +190,9 @@ export default {
     async getHistory(entityId) {
       if (this.apiNumbersWithHis && this.apiNumbersWithHis.length > 0) {
         this.isHisLoaded = false
+        const range = this.dateRange.start + ',' + this.dateRange.end
         let histories = await Promise.all(this.apiNumbersWithHis.map(async apiNumber => {
-          let history = await this.$store.getters.apiServers[apiNumber-1].getHistory(entityId)
+          let history = await this.$store.getters.apiServers[apiNumber-1].getHistory(entityId, range)
           return { his: history, apiNumber }
         }))
         return histories

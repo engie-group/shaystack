@@ -34,7 +34,7 @@ const utils = {
   },
     getKeyAlreadyDuplicated: (firstEntity, secondEntity) => {
     let keysAlreadyDuplicated = Object.keys(firstEntity).map(key => {
-      const keySplitted = key.split('_')
+      const keySplitted = key.split('^')
       if (keySplitted.length > 1 && Number(keySplitted[1])) {
         const mappingDuplicateKeyToActualKey = {}
         mappingDuplicateKeyToActualKey[keySplitted[0]] = key

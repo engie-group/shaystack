@@ -6,7 +6,7 @@ const template = `
           <div v-if="hasTooltips">
             <v-tooltip v-model="showExistingApi" right v-if="isFromPlugin">
               <template v-slot:activator="{ attrs }">
-                 <v-btn icon color="rgba(0,0,0,.87)" @click="showExistingApi = !showExistingApi" v-if="existingApiEndPointFromPlugin">
+                 <v-btn small icon color="rgba(0,0,0,.87)" @click="showExistingApi = !showExistingApi" v-if="existingApiEndPointFromPlugin">
                    <v-icon icon v-bind="attrs">info</v-icon>
                 </v-btn>
                </template>

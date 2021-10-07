@@ -107,8 +107,8 @@ const formatEntityService = {
               entityFromSecondSource[key] = entityFromFirstSource[key]
             }
             else {
-              entityFromFirstSource = utils.renameObjectKey(entityFromFirstSource, key, `${key}_${entityFromFirstSource[key].apiSource}`)
-              entityFromSecondSource = utils.renameObjectKey(entityFromSecondSource, key, `${key}_${entityFromSecondSource[key].apiSource}`)
+              entityFromFirstSource = utils.renameObjectKey(entityFromFirstSource, key, `${key}^${entityFromFirstSource[key].apiSource}`)
+              entityFromSecondSource = utils.renameObjectKey(entityFromSecondSource, key, `${key}^${entityFromSecondSource[key].apiSource}`)
               delete entityFromFirstSource[key]
               delete entityFromSecondSource[key]
             }

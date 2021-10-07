@@ -133,9 +133,7 @@ export default {
     isRefClickable(item) {
       let isClickable = false
       if (item.attribute === 'id') return false
-      // eslint-disable-next-line
       this.allEntities.map(entities => {
-        // eslint-disable-next-line
         entities.map(entity => {
           if (entity.id.val === this.getRefId(item)) {
             isClickable = true
@@ -155,7 +153,7 @@ export default {
       return `${coordinate.lat},${coordinate.lng}`
     },
     isDuplicateKey(item) {
-      const keysDuplicated = Object.keys(this.dataEntity).filter(key => key.split('_')[0] === item)
+      const keysDuplicated = Object.keys(this.dataEntity).filter(key => key.split('^')[0] === item)
       return keysDuplicated.length > 1
     },
     getRefName(item) {

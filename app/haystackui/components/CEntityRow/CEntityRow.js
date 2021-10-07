@@ -94,7 +94,7 @@ export default {
         const result = this.getEntityValue(key)
         let apiSource = null
         let tagKey = key
-        const splittedKey = key.split('_')
+        const splittedKey = key.split('^')
         if (splittedKey.length > 1) {
           if (Number(splittedKey[1])) {
             // eslint-disable-next-line

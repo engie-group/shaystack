@@ -204,7 +204,7 @@ const formatEntityService = {
         name: colorLink.name,
         marker: { radius: radiusNode.fromSource + formatEntityService.getConnectionOccurence(colorLink.id, entitiesLink) }}
         const entityTags = entityToTagsDic[colorLink.id]
-        const entitiesTagWithIcons = entityTags.map(tag => entityIconList.find(tagIcon => tagIcon.key === tag)).filter(el => el)
+        const entitiesTagWithIcons = entityTags ? entityTags.map(tag => entityIconList.find(tagIcon => tagIcon.key === tag)).filter(el => el) : []
         if(entitiesTagWithIcons.length > 0) {
           entitiesTagWithIcons.sort(function (a, b) {
             return a.priority - b.priority

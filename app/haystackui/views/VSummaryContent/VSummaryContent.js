@@ -41,6 +41,7 @@ export default {
     return {
       checkbox1: true,
       checkbox2: false,
+      iconList: []
     }
   },
   computed: {
@@ -118,7 +119,6 @@ export default {
       await this.$store.dispatch('reloadAllData', { entity: this.filterApi })
     },
     handleScroll() {
-      // eslint-disable-next-line
       this.entitiesGroupedById.find(entity => {
         const entityId = this.getEntityId(entity)
         const el = this.$refs[entityId][0] ? this.$refs[entityId][0].$el : null
@@ -134,7 +134,6 @@ export default {
       const height = el.offsetHeight
 
       while (el.offsetParent) {
-        // eslint-disable-next-line
         el = el.offsetParent
         top += el.offsetTop
       }
@@ -219,8 +218,7 @@ export default {
       }
     },
     getRelationGraphEntity(entities) {
-      let entityIconList = this.getEntitiesIcons ? this.getEntitiesIcons() : {}
-      return formatEntityService.getLinkBetweenEntities(entities, entityIconList)
+      return formatEntityService.getLinkBetweenEntities(entities, this.iconList)
     },
     redirectOnRightHash() {
       if (this.isAnyData) {
@@ -250,6 +248,7 @@ export default {
     }
   },
   async beforeMount() {
+    if (this.getEntitiesIcons) this.iconList = await this.getEntitiesIcons()
     await this.reloadPageFromQueryParameters()
     if (this.apiServers.length === 0) {
       await this.$store.dispatch('createApiServer', {

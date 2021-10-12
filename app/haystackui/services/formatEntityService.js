@@ -203,8 +203,14 @@ const formatEntityService = {
         dis: colorLink.dis,
         name: colorLink.name,
         marker: { radius: radiusNode.fromSource + formatEntityService.getConnectionOccurence(colorLink.id, entitiesLink) }}
-        let entityTag = entityToTagsDic[colorLink.id] ? entityToTagsDic[colorLink.id][entityToTagsDic[colorLink.id].length - 1] : null
-        if(Object.keys(entityIconList).includes(entityTag)) colorsLinkOutFromSourceAdjustedElement['marker']['symbol'] = entityIconList[entityTag]
+        const entityTags = entityToTagsDic[colorLink.id]
+        const entitiesTagWithIcons = entityTags.map(tag => entityIconList.find(tagIcon => tagIcon.key === tag)).filter(el => el)
+        if(entitiesTagWithIcons.length > 0) {
+          entitiesTagWithIcons.sort(function (a, b) {
+            return a.priority - b.priority
+          })
+          colorsLinkOutFromSourceAdjustedElement['marker']['symbol'] = entityIconList.find(el => el.key === entitiesTagWithIcons[0].key).url
+        }
         return colorsLinkOutFromSourceAdjustedElement
         })
     return [entitiesLink, colorsLinkOutFromSourceAdjusted, entitiesNameToEntitiesId]

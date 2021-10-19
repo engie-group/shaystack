@@ -54,7 +54,6 @@ export const mutations = {
     const newApiServers = []
     const newEntities = []
     const newHistories = []
-    // eslint-disable-next-line
     apiServers.map(apiServer => {
       newEntities.push([])
       newHistories.push({})

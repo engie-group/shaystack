@@ -177,8 +177,8 @@ const formatEntityService = {
                 entitiesLink = entitiesLink.filter(link => (link[0] !== formatedLink[0]) || link[2] !== 'siteRef')
                 entitiesLink.push(formatedLink)
                 }
-              else if (entitiesLink.find(link => (link[0] === formatedLink[0]) && link[2] !== 'siteRef') && formatedLink[2] !== 'siteRef') {
-                entitiesLink.push(formatedLink)
+              else if (entitiesLink.find(link => (link[0] === formatedLink[0]) && link[2] !== 'siteRef')) {
+                if(formatedLink[2] !== 'siteRef') entitiesLink.push(formatedLink)
               }
               else {
                 entitiesLink.push(formatedLink)

@@ -1,41 +1,51 @@
 const template = `
-  <v-data-table
-    :headers="headers"
-    :items="dataTables"
-    :hide-default-footer="true"
-    :disable-pagination="true"
-    :custom-sort="customSort"
-    item-class="row_class"
-    :dense="true"
-  >
-    <template v-slot:[\`item.value\`]="{ item }">
-      <div v-if="isCoordinate(item.value)">
-        <a :href="getUrlCoordinate(item.value)" target="_blank">{{ item.value.substring(2) }}</a>
-        <v-icon v-if="isDuplicateKey(item.attribute)" class="material-icons entity-row__click-button">warning</v-icon>
-      </div>
-      <div v-else-if="isRef(item.value)">
-        <span v-if="isRefClickable(item)" class="entity-row__ref-row" @click="refClicked(getRefId(item))">{{
-          getRefName(item)
-        }}</span>
-        <span
-          v-else-if="isExternalRef(item)"
-          class="entity-row__external-ref-row"
-          @click="externalRefClicked(getRefId(item))"
-          >{{ getRefName(item) }}</span
-        >
-        <span v-else>{{ getRefName(item) }}</span>
-        <v-icon class="material-icons entity-row__click-button" @click="copyText(item)">content_copy</v-icon>
-      </div>
-      <div v-else-if="isDuplicateKey(item.attribute)">
-        <span>{{ item.value }}</span>
-        <v-icon v-if="hisUri(item.attribute)" class="material-icons entity-row__click-button">warning</v-icon>
-      </div>
-      <span v-else>{{ item.value }}</span>
-    </template>
-  </v-data-table>
+  <v-card>
+    <div style="margin: 5px;">
+      <v-data-table
+        :headers="headers"
+        :items="dataTables"
+        :hide-default-footer="true"
+        :disable-pagination="true"
+        :custom-sort="customSort"
+        item-class="row_class"
+        :dense="true"
+      >
+        <template v-slot:[\`item.value\`]="{ item }">
+          <div v-if="isCoordinate(item.value)">
+            <a :href="getUrlCoordinate(item.value)" target="_blank">{{ getCoordinate(item.value) }}</a>
+            <v-icon v-if="isDuplicateKey(item.attribute)" class="material-icons entity-row__click-button"
+              >warning</v-icon
+            >
+          </div>
+          <div v-else-if="isRef(item.value)" style="display:flex;">
+            <span v-if="isRefClickable(item)" style="width:90%;" class="entity-row__ref-row" @click="refClicked(getRefId(item))">{{
+              getRefName(item.value)
+            }}</span>
+            <span
+              v-else-if="isExternalRef(item)"
+              class="entity-row__external-ref-row"
+              style="width:90%;"
+              @click="externalRefClicked(getRefId(item))"
+              >{{ getRefName(item.value) }}</span
+            >
+            <span style="width:90%;" v-else>{{ getRefName(item.value) }}</span>
+            <v-icon v-if="isDuplicateKey(item.attribute)" class="material-icons entity-row__click-button">warning</v-icon>
+            <v-icon class="material-icons entity-row__click-button" @click="copyText(item)" style="width=10%;">content_copy</v-icon>
+          </div>
+          <div v-else-if="isDuplicateKey(item.attribute)">
+            <span>{{ item.value.val }}</span>
+            <v-icon v-if="hisUri(item.attribute)" class="material-icons entity-row__click-button">warning</v-icon>
+          </div>
+          <span v-else-if="isTag(item.value)"> ✓ </span>
+          <span v-else-if="isNumber(item.value)">{{ getNumberValue(item.value) }}</span>
+          <span v-else>{{ item.value.val }}</span>
+        </template>
+      </v-data-table>
+    </div>
+  </v-card>
 `
 
-import formatService from '../../services/formatService.js'
+import { utils } from '../../services/index.js'
 
 export default {
   template,
@@ -81,10 +91,10 @@ export default {
 
   methods: {
     replaceKeyObject(object, oldKey, newKey) {
-      return formatService.renameObjectKey(object, oldKey, newKey)
+      return utils.renameObjectKey(object, oldKey, newKey)
     },
     copyText(item) {
-      const id = `@${item.value.split(' ')[0].substring(2)}`
+      const id = `@${item.value.val}`
       const virtualElement = document.createElement('textarea')
       document.body.appendChild(virtualElement)
       virtualElement.value = id
@@ -106,11 +116,10 @@ export default {
       return items.slice()
     },
     getRefId(item) {
-      return item.value.split(' ')[0].substring(2)
+      return item.value.val
     },
     isRef(item) {
-      if (typeof item !== 'string') return false
-      return item.substring(0, 2) === 'r:'
+      return item._kind === 'Ref'
     },
     isExternalRef(item) {
       return item.attribute !== 'id'
@@ -124,11 +133,9 @@ export default {
     isRefClickable(item) {
       let isClickable = false
       if (item.attribute === 'id') return false
-      // eslint-disable-next-line
       this.allEntities.map(entities => {
-        // eslint-disable-next-line
         entities.map(entity => {
-          if (this.getEntityId(entity) === this.getRefId(item)) {
+          if (entity.id.val === this.getRefId(item)) {
             isClickable = true
           }
         })
@@ -136,37 +143,34 @@ export default {
       return isClickable
     },
     isCoordinate(item) {
-      if (typeof item !== 'string') return false
-      return item.substring(0, 2) === 'c:'
+      if (!item.hasOwnProperty('_kind')) return false
+      return item._kind === 'Coord'
     },
     getUrlCoordinate(coordinate) {
-      return `http://www.google.com/maps/place/${coordinate.substring(2)}`
+      return `http://www.google.com/maps/place/${this.getCoordinate(coordinate)}`
+    },
+    getCoordinate(coordinate) {
+      return `${coordinate.lat},${coordinate.lng}`
     },
     isDuplicateKey(item) {
-      const keysDuplicated = Object.keys(this.dataEntity).filter(key => key.split('_')[0] === item)
+      const keysDuplicated = Object.keys(this.dataEntity).filter(key => key.split('^')[0] === item)
       return keysDuplicated.length > 1
     },
-    getEntityId(entity) {
-      return entity.id.val.split(' ')[0].substring(2)
-    },
     getRefName(item) {
-      if (item.attribute === 'id') {
-        const entityName = item.value.substring(2).split(' ')
-        if (entityName.length === 1) {
-          if (this.dataEntity.dis) return this.dataEntity.dis.val.substring(2)
-          return `@${entityName[0]}`
-        }
-        entityName.shift()
-        return entityName.join(' ')
-      }
-      const entityName = item.value.substring(2).split(' ')
-      if (entityName.length === 1) return `@${entityName[0]}`
-      entityName.shift()
-      return entityName.join(' ')
+      return item.dis ? item.dis : item.val
     },
     hisUri(tag) {
       if (tag === 'hisURI') return false
       return true
+    },
+    isTag(item) {
+      return item._kind === 'Marker'
+    },
+    isNumber(item) {
+      return item._kind === 'Num'
+    },
+    getNumberValue(item) {
+      return item.unit ? `${item.val} ${item.unit}`: str(item.val)
     }
   }
 }

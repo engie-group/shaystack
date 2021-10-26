@@ -1,30 +1,48 @@
 class HaystackApiService {
-  constructor({ haystackApiHost }) {
+  constructor({ haystackApiHost, apiKey }) {
     this.haystackApiHost = haystackApiHost
+    this.apiKey = apiKey
   }
   get api() {
+    const headers = this.apiKey ?
+    {
+      'Accept': 'application/hayson, */*',
+      'KeyId': this.apiKey
+    } :
+    {
+      'Accept': 'application/hayson, */*'
+    }
     return axios.create({
       baseURL: `${this.haystackApiHost}`,
-      timeout: 20000,
+      timeout: 30000,
       withCredentials: false,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers
     })
   }
 
-  async isHaystackApi() {
+  async isHaystackApi(isStart = false) {
     try {
       const opsResponse = await this.api.get(`/ops`)
       const formatResponse = await this.api.get(`/formats`)
       const isHaystackApiAvailable =
-        opsResponse.data.rows.find(row => row.name === 's:read') &&
-        formatResponse.data.rows.find(row => row.mime === 's:application/json' && row.receive === 'm:')
-      if (isHaystackApiAvailable) return true
-      alert('API not available for') // TODO no alert
-      return false
-    } catch {
-      alert('Not an Haystack API') // TODO no alert
+        opsResponse.data.rows.find(row => row.name === 'read') &&
+        formatResponse.data.rows.find(row => row.mime === 'application/json' && row.receive['_kind'] === 'Marker')
+      if (isHaystackApiAvailable) return 'available'
+      alert('unavailable')
+      return 'unavailable'
+    } catch (error) {
+      const statusCodeError = error.response.status
+      if (statusCodeError === 403 || statusCodeError === 401) {
+        return 'notAuthenticated'
+      }
+      if (statusCodeError === 404) {
+        if (!isStart) alert('this is not a haystack API')
+        return 'unreachable'
+      }
+      if (statusCodeError === 500) {
+        alert('internal error')
+        return 'internError'
+      }
       return false
     }
   }
@@ -32,7 +50,7 @@ class HaystackApiService {
   async isHisReadAvailable() {
     try {
       const response = await this.api.get(`/ops`)
-      if (response.data.rows.find(row => row.name === 's:hisRead')) return true
+      if (response.data.rows.find(row => row.name === 'hisRead')) return true
       return false
     } catch {
       return false
@@ -48,18 +66,19 @@ class HaystackApiService {
       return []
     }
   }
-  async getHistory(id, range = '2020-01-01,2022-12-31') {
+  async getHistory(id, range = '2017-01-01,2023-12-31', version = '2023-12-31') {
     try {
       const response =
         range === ','
-          ? await this.api.get(`/hisRead?id=@${id}`)
-          : await this.api.get(`/hisRead?id=@${id}&range=${range}`)
-      return response.data.rows
+          ? await this.api.get(`/hisRead?id=@${id}&version=${version}`)
+          : await this.api.get(`/hisRead?id=@${id}&range=${range}&version=${version}`)
+      const kindValues = response.data.cols.kind
+      if (kindValues === 's:Number') return response.data.rows.slice(0, 40)
+      return response.data.rows.slice(0, 40)
     } catch {
       return []
     }
   }
-
 }
 
 export default HaystackApiService

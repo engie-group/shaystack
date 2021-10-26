@@ -37,7 +37,7 @@ formazin_nephelometric_unit = [] = fnu
 power_usage_effectiveness = [] = PUE
 data_center_infrastructure_efficiency = [] = DCIE
 co2e = kg * gas = co²e
-
+rotation_per_minute = degree * minute
 # -- Currency --
 afghani = [] = AFN = Af
 algerian_dinar = [] = DZD
@@ -420,7 +420,6 @@ mercury = []
 millimeters_of_mercury = milimter * mercury = mmHg
 centimeters_of_mercury = centimeter * mercury = cmHg
 inches_of_mercury = inche * mercury = inHg
-
 # -- specific entropy --
 joules_per_kilogram_degree_kelvin = joule / kilogram * kelvin = J/kg°K
 

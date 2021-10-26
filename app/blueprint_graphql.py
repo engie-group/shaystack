@@ -53,16 +53,18 @@ class Query(graphene.ObjectType):
 # noinspection PyTypeChecker
 schema = graphene.Schema(query=Query)
 
-graphql_blueprint = Blueprint('graphql',
-                              __name__,
-                              url_prefix='/graphql')
+def create_graphql_bp() -> Blueprint:
+    graphql_blueprint = Blueprint('graphql',
+                                  __name__,
+                                  url_prefix='/graphql')
 
-graphql_blueprint.add_url_rule('',
-                               view_func=GraphQLView.as_view(
-                                   'graphql',
-                                   schema=schema,
-                                   graphiql=True,
-                               ))
+    graphql_blueprint.add_url_rule('',
+                                   view_func=GraphQLView.as_view(
+                                       'graphql',
+                                       schema=schema,
+                                       graphiql=True,
+                                   ))
+    return graphql_blueprint
 
 
 def _dump_haystack_schema() -> None:

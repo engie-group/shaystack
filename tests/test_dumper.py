@@ -16,7 +16,8 @@ import pytz
 import shaystack
 from shaystack import dump_scalar, MODE_TRIO, MODE_ZINC, MODE_CSV, Entity
 from .test_parser import SIMPLE_EXAMPLE_ZINC, SIMPLE_EXAMPLE_JSON, \
-    METADATA_EXAMPLE_JSON, SIMPLE_EXAMPLE_CSV, METADATA_EXAMPLE_CSV, SIMPLE_EXAMPLE_TRIO
+    METADATA_EXAMPLE_JSON, SIMPLE_EXAMPLE_CSV, METADATA_EXAMPLE_CSV, SIMPLE_EXAMPLE_TRIO, \
+    SIMPLE_EXAMPLE_HAYSON, METADATA_EXAMPLE_HAYSON
 
 # The metadata example is a little different, as we generate the grid without
 # spaces around the commas.
@@ -149,6 +150,12 @@ def test_simple_json():
     assert grid_json == SIMPLE_EXAMPLE_JSON
 
 
+def test_simple_hayson():
+    grid = make_simple_grid()
+    grid_json = json.loads(shaystack.dump(grid, mode=shaystack.MODE_HAYSON))
+    assert grid_json == SIMPLE_EXAMPLE_HAYSON
+
+
 def test_simple_csv():
     grid = make_simple_grid()
     grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
@@ -193,6 +200,12 @@ def test_metadata_json():
     assert grid_json == METADATA_EXAMPLE_JSON
 
 
+def test_metadata_hayson():
+    grid = make_metadata_grid()
+    grid_json = json.loads(shaystack.dump(grid, mode=shaystack.MODE_HAYSON))
+    assert grid_json == METADATA_EXAMPLE_HAYSON
+
+
 def test_metadata_csv():
     grid = make_metadata_grid()
     grid_csv = shaystack.dump(grid, mode=shaystack.MODE_CSV)
@@ -234,6 +247,26 @@ def test_grid_meta_json():
             'aNull': None,
             'aMarker': 'm:',
             'aQuantity': 'n:123.000000 Hz',
+        },
+        'cols': [
+            {'name': 'empty'},
+        ],
+        'rows': [],
+    }
+
+
+def test_grid_meta_hayson():
+    grid_hayson = json.loads(shaystack.dump(make_grid_meta(),
+                                          mode=shaystack.MODE_HAYSON))
+
+    assert grid_hayson == {
+        'meta': {
+            'ver': '2.0',
+            'aString': 'aValue',
+            'aNumber': 3.141590,
+            'aNull': None,
+            'aMarker': {'_kind': 'Marker'},
+            'aQuantity': {'_kind': 'Num', 'val': 123.000000, 'unit': 'Hz'},
         },
         'cols': [
             {'name': 'empty'},
@@ -286,6 +319,26 @@ def test_col_meta_json():
              'aNull': None,
              'aMarker': 'm:',
              'aQuantity': 'n:123.000000 Hz',
+             },
+        ],
+        'rows': [],
+    }
+
+
+def test_col_meta_hayson():
+    grid_json = json.loads(shaystack.dump(make_col_meta(),
+                                          mode=shaystack.MODE_HAYSON))
+    assert grid_json == {
+        'meta': {
+            'ver': '2.0',
+        },
+        'cols': [
+            {'name': 'empty',
+             'aString': 'aValue',
+             'aNumber': 3.141590,
+             'aNull': None,
+             'aMarker': {'_kind': 'Marker'},
+             'aQuantity': {'_kind': 'Num', 'val': 123.000000, 'unit': 'Hz'},
              },
         ],
         'rows': [],
@@ -498,6 +551,49 @@ def test_data_types_json_v3():
                   'value': 't:2016-01-13T07:51:42.012345+00:00 UTC'}]}
 
 
+def test_data_types_hayson_v3():
+    grid_json = json.loads(shaystack.dump(grid_full_types, mode=shaystack.MODE_HAYSON))
+    assert grid_json == \
+           {'meta': {'ver': '2.0'},
+            'cols': [{'name': 'comment'}, {'name': 'value'}],
+            'rows': [{'comment': 'A null value', 'value': None},
+                     {'comment': 'A marker', 'value': {'_kind': 'Marker'}},
+                     {'comment': 'A "remove" object', 'value': {'_kind': 'Remove'}},
+                     {'comment': 'A boolean, indicating False', 'value': False},
+                     {'comment': 'A boolean, indicating True', 'value': True},
+                     {'comment': 'A reference, without value',
+                      'value': {'_kind': 'Ref', 'val': 'a-ref'}},
+                     {'comment': 'A reference, with value',
+                      'value': {'_kind': 'Ref', 'dis': 'a value', 'val': 'a-ref'}},
+                     {'comment': 'A binary blob',
+                      'value': {'_kind': 'Bin', 'val': 'text/plain'}},
+                     {'comment': 'A quantity',
+                      'value': {'_kind': 'Num', 'unit': 'miles', 'val': 500}},
+                     {'comment': 'A quantity without unit', 'value': 500},
+                     {'comment': 'A coordinate',
+                      'value': {'_kind': 'Coord', 'lat': -27.4725, 'lng': 153.003}},
+                     {'comment': 'A URI',
+                      'value': {'_kind': 'Uri',
+                                'val': 'http://www.example.com#unicode:ĉက'}},
+                     {'comment': 'A string',
+                      'value': 'This is a test\nLine two of test\n'
+                               '\tIndented with "quotes", \\backslashes\\\n'},
+                     {'comment': 'A unicode string',
+                      'value': 'This is a Unicode characters: ĉက'},
+                     {'comment': 'A date',
+                      'value': {'_kind': 'Date', 'val': '2016-01-13'}},
+                     {'comment': 'A time',
+                      'value': {'_kind': 'Time', 'val': '07:51:43.012345'}},
+                     {'comment': 'A timestamp (non-UTC)',
+                      'value': {'_kind': 'DateTime',
+                                'tz': 'Berlin',
+                                'val': '2016-01-13T07:51:42.012345+01:00'}},
+                     {'comment': 'A timestamp (UTC)',
+                      'value': {'_kind': 'DateTime',
+                                'tz': 'UTC',
+                                'val': '2016-01-13T07:51:42.012345+00:00'}}]}
+
+
 def test_data_types_csv_v3():
     grid_csv = shaystack.dump(grid_full_types, mode=shaystack.MODE_CSV)
     assert list(reader(grid_csv.splitlines()))
@@ -658,6 +754,45 @@ def test_scalar_dict_json_v3():
     }
 
 
+def test_scalar_dict_hayson_v3():
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
+    grid.column['comment'] = {}
+    grid.column['value'] = {}
+    grid.extend([
+        {
+            'comment': 'An empty dict',
+            'value': {},
+        },
+        {
+            'comment': 'A marker in a dict',
+            'value': {"marker": shaystack.MARKER},
+        },
+        {
+            'comment': 'A references in a dict',
+            'value': {"ref": shaystack.Ref('a-ref'), "ref2": shaystack.Ref('a-ref', 'a value')},
+        },
+        {
+            'comment': 'A quantity in a dict',
+            'value': {"quantity": shaystack.Quantity(500, 'miles')},
+        },
+    ])
+    grid_json = json.loads(shaystack.dump(grid, mode=shaystack.MODE_HAYSON))
+    assert grid_json == {
+        'cols': [{'name': 'comment'}, {'name': 'value'}],
+        'meta': {'ver': '3.0'},
+        'rows': [{'comment': 'An empty dict', 'value': {}},
+                 {'comment': 'A marker in a dict', 'value': {'marker': {'_kind': 'Marker'}}},
+                 {'comment': 'A references in a dict', 'value': {'ref': {'_kind': 'Ref', 'val': 'a-ref'},
+                                                                 'ref2': {'_kind': 'Ref',
+                                                                          'dis': 'a value',
+                                                                          'val': 'a-ref'}}},
+                 {'comment': 'A quantity in a dict', 'value':
+                     {'quantity': {'_kind': 'Num', 'unit': 'miles', 'val': 500}}
+                  }
+                 ]
+    }
+
+
 def test_scalar_dict_csv_v3():
     grid = shaystack.Grid(version=shaystack.VER_3_0)
     grid.column['comment'] = {}
@@ -713,6 +848,16 @@ def test_scalar_dict_json_ver():
         pass
 
 
+def test_scalar_dict_hayson_ver():
+    # Test that versions are respected.
+    try:
+        shaystack.dump_scalar({"a": "b"},
+                              mode=shaystack.MODE_HAYSON, version=shaystack.VER_2_0)
+        assert False, 'Serialised a list in Haystack v2.0'
+    except ValueError:
+        pass
+
+
 def test_scalar_unknown_zinc():
     try:
         shaystack.dump_scalar(shaystack.VER_2_0,
@@ -735,6 +880,15 @@ def test_scalar_unknown_json():
     try:
         shaystack.dump_scalar(shaystack.VER_2_0,
                               mode=shaystack.MODE_JSON, version=shaystack.VER_2_0)
+        assert False, 'Serialised a list in Haystack v2.0'
+    except NotImplementedError:
+        pass
+
+
+def test_scalar_unknown_hayson():
+    try:
+        shaystack.dump_scalar(shaystack.VER_2_0,
+                              mode=shaystack.MODE_HAYSON, version=shaystack.VER_2_0)
         assert False, 'Serialised a list in Haystack v2.0'
     except NotImplementedError:
         pass
@@ -767,6 +921,23 @@ def test_list_zinc_v2():
 
 
 def test_list_json_v2():
+    try:
+        grid = shaystack.Grid(version=shaystack.VER_2_0)
+        grid.column['comment'] = {}
+        grid.column['value'] = {}
+        grid.extend([
+            {
+                'comment': 'An empty list',
+                'value': [],
+            }
+        ])
+        shaystack.dump(grid, mode=shaystack.MODE_JSON)
+        assert False, 'Project Haystack 2.0 doesn\'t support lists'
+    except ValueError:
+        pass
+
+
+def test_list_hayson_v2():
     try:
         grid = shaystack.Grid(version=shaystack.VER_2_0)
         grid.column['comment'] = {}
@@ -834,6 +1005,23 @@ def test_dict_json_v2():
         pass
 
 
+def test_dict_hayson_v2():
+    try:
+        grid = shaystack.Grid(version=shaystack.VER_2_0)
+        grid.column['comment'] = {}
+        grid.column['value'] = {}
+        grid.extend([
+            {
+                'comment': 'An empty dict',
+                'value': {},
+            }
+        ])
+        shaystack.dump(grid, mode=shaystack.MODE_HAYSON)
+        assert False, 'Project Haystack 2.0 doesn\'t support dict'
+    except ValueError:
+        pass
+
+
 def test_dict_csv_v2():
     try:
         grid = shaystack.Grid(version=shaystack.VER_2_0)
@@ -872,6 +1060,14 @@ def test_scalar_ref_json():
                                  mode=shaystack.MODE_JSON) == '"r:areference a display name"'
 
 
+def test_scalar_ref_hayson():
+    # No need to be exhaustive, the underlying function is tested heavily by
+    # the grid dump tests.
+    assert shaystack.dump_scalar(shaystack.Ref('areference', 'a display name'),
+                                 mode=shaystack.MODE_HAYSON) == \
+           '{"_kind": "Ref", "val": "areference", "dis": "a display name"}'
+
+
 def test_scalar_ref_csv():
     # No need to be exhaustive, the underlying function is tested heavily by
     # the grid dump tests.
@@ -899,6 +1095,16 @@ def test_scalar_list_json_ver():
         pass
 
 
+def test_scalar_list_hayson_ver():
+    # Test that versions are respected.
+    try:
+        shaystack.dump_scalar(["a list is not allowed in v2.0"],
+                              mode=shaystack.MODE_HAYSON, version=shaystack.VER_2_0)
+        assert False, 'Serialised a list in Haystack v2.0'
+    except ValueError:
+        pass
+
+
 def test_scalar_list_na_ver_zinc():
     # Test that versions are respected.
     try:
@@ -914,6 +1120,16 @@ def test_scalar_list_na_ver_json():
     try:
         shaystack.dump_scalar(shaystack.NA,
                               mode=shaystack.MODE_JSON, version=shaystack.VER_2_0)
+        assert False, 'Serialised a NA in Haystack v2.0'
+    except ValueError:
+        pass
+
+
+def test_scalar_list_na_ver_hayson():
+    # Test that versions are respected.
+    try:
+        shaystack.dump_scalar(shaystack.NA,
+                              mode=shaystack.MODE_HAYSON, version=shaystack.VER_2_0)
         assert False, 'Serialised a NA in Haystack v2.0'
     except ValueError:
         pass
@@ -944,6 +1160,18 @@ def test_scalar_na_json_ver():
     try:
         shaystack.dump_scalar(shaystack.NA,
                               mode=shaystack.MODE_JSON, version=shaystack.VER_2_0)
+        assert False, 'Serialised a NA in Haystack v2.0'
+    except ValueError:
+        pass
+
+
+def test_scalar_na_hayson_ver():
+    # Test that versions are respected.
+    try:
+        print('HEYYYYY', shaystack.dump_scalar(shaystack.NA,
+                              mode=shaystack.MODE_HAYSON, version=shaystack.VER_2_0))
+        shaystack.dump_scalar(shaystack.NA,
+                              mode=shaystack.MODE_HAYSON, version=shaystack.VER_2_0)
         assert False, 'Serialised a NA in Haystack v2.0'
     except ValueError:
         pass
@@ -1038,6 +1266,42 @@ def test_grid_types_json():
                 ],
                 'rows': [
                     {'comment': 's:A innergrid'},
+                ],
+            }},
+        ],
+    }
+
+
+def test_grid_types_hayson():
+    innergrid = shaystack.Grid(version=shaystack.VER_3_0)
+    innergrid.column['comment'] = {}
+    innergrid.extend([
+        {
+            'comment': 'A innergrid',
+        },
+    ])
+    grid = shaystack.Grid(version=shaystack.VER_3_0)
+    grid.column['inner'] = {}
+    grid.extend(cast(List[Entity], [
+        {
+            'inner': innergrid,
+        },
+    ]))
+    grid_str = shaystack.dump(grid, mode=shaystack.MODE_HAYSON)
+    grid_json = json.loads(grid_str)
+    assert grid_json == {
+        'meta': {'ver': '3.0'},
+        'cols': [
+            {'name': 'inner'},
+        ],
+        'rows': [
+            {'inner': {
+                'meta': {'ver': '3.0'},
+                'cols': [
+                    {'name': 'comment'},
+                ],
+                'rows': [
+                    {'comment': 'A innergrid'},
                 ],
             }},
         ],

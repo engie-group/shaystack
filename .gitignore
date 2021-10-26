@@ -117,6 +117,8 @@ __pycache__/
 # C extensions
 *.so
 
+#Sample
+/sample*
 # Distribution / packaging
 .Python
 build/

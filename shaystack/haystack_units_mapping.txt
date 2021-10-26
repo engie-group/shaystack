@@ -8,7 +8,6 @@ percent_obscuration_per_foot,%obsc/ft
 percent_obscuration_per_meter,%obsc/m
 ampere_square_meter,Am²
 
-
 -- currency --
 cedi,₵
 costa_rican_colon,₡

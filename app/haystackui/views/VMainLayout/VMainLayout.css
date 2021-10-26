@@ -1,5 +1,54 @@
 .main-layout {
+  height: 100%;
   background-color: #f2f2f2;
+}
+.main-layout__extended {
+  padding: 0;
+  width: calc(100% - 20rem);
+  margin-left: 20rem;
+}
+.main-layout__not-extended {
+  padding: 0;
+  width: calc(100% - 2rem);
+  margin-left: 2rem;
+}
+.main-layout__headers {
+  display: flex;
+  height: 100% !important;
+  width: 20rem;
+  overflow-y: scroll;
+  background-color: white !important;
+}
+.main-layout__headers__not-extended {
+  display: flex;
+  height: 100% !important;
+  width: 3rem;
+}
+.main-layout__headers__not-extended__buton {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.main-layout__app-bar {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  flex-direction: column;
+}
+.main-layout__app-bar > div {
+  margin: 5px;
+}
+.main-layout__input-combobox {
+  display: flex;
+  width: 100%;
+}
+.main-layout__input {
+  display: flex;
+  width: 80%;
+}
+.main-layout__button {
+  display: flex;
 }
 .main-layout__params {
   color: grey !important;
@@ -11,56 +60,36 @@
 .v-ripple__container {
   opacity: 0 !important;
 }
+
 .main-layout__settings {
   background: white;
-  width: 200px;
-  height: 50px !important;
   display: flex;
   justify-content: space-between;
   vertical-align: middle;
 }
-.main-layout__settings__text-version {
-  margin-left: 10px;
-  margin-top: 5px;
-  margin-right: 10px;
-}
-.main-layout__settings__buttons {
-  margin-top: 10px;
-  margin-right: 6px;
-}
-.main-layout__settings__text {
-  margin-left: 10px;
-  margin-top: 10px;
-}
 .main-layout__tootltips {
-  padding-left: 5px;
+  display: flex;
 }
 .v-tooltip__content {
   background: white !important;
   color: black !important;
   border: 1px solid !important;
 }
-.main-layout__api-server-selection {
-  padding-left: 5px;
-  width: 100px;
-}
 .v-input__slot {
   min-height: 20px !important;
 }
 .main-layout__settings__text-field__limit {
-  width: 2%;
-  margin-top: 5px !important;
-  height: 10px !important;
-  display: inline-block;
+  display: flex;
+  width: 100%;
   .v-input--is-focused {
     background: white;
   }
 }
+.v-tooltip__content {
+  pointer-events: initial;
+}
 .main-layout__settings__text-field__version {
   width: 2%;
-  margin-top: 5px;
-  height: 10px !important;
-  margin-right: 10px !important;
   display: inline-block;
   .v-input--is-focused {
     background: white;
@@ -73,19 +102,23 @@
   background-color: white;
 }
 .main-layout__text-field {
-  margin-top: 23px !important;
-  padding: 0 20px !important;
-  width: 1%;
+  width: 100%;
   .v-input--is-focused {
     background: white;
   }
 }
+.main-layout__menu-list {
+  display: flex;
+  flex: auto;
+  width: 200px;
+  flex-direction: column;
+}
 .v-toolbar__content {
+  height: 100% !important;
+  width: 100%;
   background-color: white;
 }
 .main-layout__combobox {
-  margin-top: 23px !important;
-  padding: 0 20px !important;
   width: 20%;
 }
 .main-layout__combobox-image {
@@ -96,22 +129,7 @@
 .v-list-item--link {
   cursor: default !important;
 }
-.main-layout__text-field {
-  margin-top: 23px !important;
-  padding-left: 10px !important;
-  width: 15%;
-  .v-input--is-focused {
-    background: white;
-  }
-}
-.main-layout__text-field__date {
-  margin-top: 23px !important;
-  padding-left: 10px !important;
-  width: 5%;
-  .v-input--is-focused {
-    background: white;
-  }
-}
+
 .main-layout__combobox-api-text {
   padding-left: 15px;
   margin-right: 20px;
@@ -126,4 +144,50 @@
   //background: red;
   left: 5px;
   top: 9px;
+}
+.main-layout__settings__cache-button {
+  margin: auto;
+}
+.main-layout__box {
+  display: flex;
+  flex-direction: column;
+  justify-items: space-between;
+  width: 80%;
+}
+.main-layout__box-description {
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 10px;
+}
+.main-layout__box-description__title {
+  color: grey;
+  padding-right: 15px;
+}
+.main-layout__box-description__tooltip {
+  margin-left: auto;
+  display: flex;
+}
+.main-layout__box__limit {
+  display: flex;
+  flex-direction: column;
+}
+.main-layout__box__limit {
+  display: flex;
+  flex-direction: row;
+}
+.main-layout__text-field__date {
+  padding: 10px 0px !important;
+}
+.main-layout__footer {
+  display: flex;
+  margin-top: auto !important;
+  flex-direction: column;
+  width: 100%;
+  justify-content: center;
+}
+.main-layout__footer-links {
+  color: black !important;
+}
+.v-sheet.v-card {
+  border-radius: 10px !important;
 }

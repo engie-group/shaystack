@@ -1,8 +1,10 @@
 const template = `
-  <div :id="id" class="bar-chart__chart"></div>
+  <v-card style="height: 100%;" ref="graph-container">
+    <div style="height: 100%;" :id="id" class="bar-chart__chart"></div>
+  </v-card>
 `
+import { formatEntityService } from '../../services/index.js'
 
-/* eslint-disable */
 export default {
   template,
   name: 'CGraph',
@@ -21,12 +23,92 @@ export default {
     },
     keys: {
       type: Array,
-      default: () => ['from', 'to']
+      default: () => ['from', 'to', 'relation']
     },
     dataEntities: {
       type: Array,
       default: () => []
     }
+  },
+  computed: {
+    getUniqueLinkRefBetweenEntities() {
+      return formatEntityService.getUniquesRelationsBetweenEntities(this.dataEntities[0])
+    },
+    isLinkNameDisplayed() {
+      return this.$store.getters.isLinkNameDisplayed
+    },
+    activatedLinks() {
+      return this.$store.getters.activatedLinks
+    }
+  },
+  beforeMount() {
+    const linkEntities = this.getUniqueLinkRefBetweenEntities // .map(linkName => this.checkboxSelection[linkName] = true)
+    this.$store.commit('SET_LINK_ENTITIES', { linkEntities })
+    this.$store.commit('SET_ACTIVATED_LINKS', { activatedLinks: linkEntities })
+  },
+  watch: {
+    isLinkNameDisplayed(newValue) {
+      const newDataLabels = { dataLabels: {
+        enabled: true,
+        allowOverlap: true,
+        linkFormat: newValue ? '{point.relation}' : ''
+      }}
+      this.chart.series[0].update(newDataLabels)
+    },
+    activatedLinks(newActivatedLinks) {
+      const linkDisabled = this.getUniqueLinkRefBetweenEntities.filter(link => !this.activatedLinks.includes(link))
+      const newData = this.dataEntities[0].filter(dataNode => !linkDisabled.includes(dataNode[2]))
+      this.chart.series[0].setData(newData)
+    }
+  },
+  methods: {
+    createChart(data, nodes) {
+      const height = (this.$refs['graph-container'].$el.clientHeight - 5);
+      const width = this.$refs['graph-container'].$el.clientWidth;
+      return Highcharts.chart(this.id, {
+        title: {
+          text: this.title
+        },
+        chart: {
+          type: 'networkgraph',
+          width: width,
+          height: height
+        },
+        plotOptions: {
+          networkgraph: {
+            keys: this.keys,
+            point: {
+              events: {
+                click: function emitEvent(event) {
+                  this.$emit('pointClicked', event.point.id)
+                }.bind(this)
+              }
+            }
+          }
+        },
+        credits: {
+          enabled: false
+        },
+        tooltip : {
+          enabled : true,
+          formatter : function() {
+            return `<div> <span> ${this.point.id} </span> </div>`
+          }
+        },
+        series: [
+          {
+            dataLabels: {
+              enabled: true,
+              allowOverlap: true,
+              linkFormat: this.isLinkNameDisplayed ? '{point.relation}' : '',
+            },
+            id: 'lang-tree',
+            data,
+            nodes,
+        }
+        ]
+      })
+    },
   },
   mounted() {
     (function(H) {
@@ -38,6 +120,7 @@ export default {
 
     if (angle) {
       const path = ['M', left.plotX, left.plotY, right.plotX, right.plotY]
+      const lastPoint = left
       const nextLastPoint = right
       const pointRadius = 40
       const arrowLength = 5
@@ -112,53 +195,7 @@ export default {
     ]
   })
 })(Highcharts)
-
-    this.chart = Highcharts.chart(this.id, {
-      title: {
-        text: this.title
-      },
-      chart: {
-        type: 'networkgraph',
-        width: '1400',
-        height: '600'
-      },
-      plotOptions: {
-        networkgraph: {
-          keys: this.keys,
-          layoutAlgorithm: {
-            enableSimulation: false,
-            friction: 1,
-            linkLength: 70
-          },
-          point: {
-            events: {
-              click: function emitEvent(event) {
-                this.$emit('pointClicked', event.point.id)
-              }.bind(this)
-            }
-          }
-        }
-      },
-      credits: {
-        enabled: false
-      },
-      tooltip : {
-        enabled : true,
-        formatter : function() {
-          return `<div> <span> ${this.point.dis ? this.point.dis : this.point.id} </span> </div>`
-        }
-      },
-      series: [
-        {
-          dataLabels: {
-            enabled: true,
-            linkFormat: ''
-          },
-          id: 'lang-tree',
-          data: this.dataEntities[0],
-          nodes: this.dataEntities[1]
-        }
-      ]
-    })
-  }
+    this.chart = this.createChart(this.dataEntities[0], this.dataEntities[1])
+  },
+ //updated()
 }

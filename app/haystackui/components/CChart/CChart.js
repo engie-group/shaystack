@@ -1,24 +1,23 @@
 const template = `
-  <div :id="id" class="bar-chart__chart"></div>
+  <v-card>
+    <div :id="id" style="margin: 30px;" class="bar-chart__chart"></div>
+  </v-card>
 `
 import { API_COLORS } from '../../services/index.js'
+import formatChartService from '../../services/formatChartService.js'
 export default {
   template,
   name: 'CChart',
-  props: {
+    props: {
     id: {
       type: String,
       default: ''
     },
+    entityId: {
+      type: String,
+      default: ''
+    },
     title: {
-      type: String,
-      default: ''
-    },
-    yLabel: {
-      type: String,
-      default: ''
-    },
-    xLabel: {
       type: String,
       default: ''
     },
@@ -29,11 +28,11 @@ export default {
     unit: {
       type: String,
       default: ''
-    }
+    },
   },
   data() {
     return {
-      colors: API_COLORS
+      colors: API_COLORS,
     }
   },
   mounted() {
@@ -57,7 +56,8 @@ export default {
       tooltip: {
         valueSuffix: this.unit
       },
-      series: this.data.map(data => ({ data: data.his, color: this.colors[data.apiNumber] }))
+      series: this.data.map(data => ({ data: data.his, color: this.colors[data.apiNumber - 1] }))
     })
   }
 }
+

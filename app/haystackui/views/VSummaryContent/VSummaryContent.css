@@ -1,8 +1,9 @@
 .summary-content {
-  padding-top: 81px;
+  padding-top: 10px;
 }
 .summary-content__graph {
-  width: 80%;
+  width: 100%;
+  height: 50rem;
   margin: 0 auto;
   justify-content: center;
   padding-bottom: 20px;
@@ -16,4 +17,12 @@
 }
 .summary-content__entity-row {
   background-color: white;
+  margin: 0 20px;
+}
+.summary-content__alert-no-data {
+  color: #ae9668;
+  margin: 0 auto;
+}
+.summary-content__entity-row:last-child {
+  margin-bottom: 200px;
 }

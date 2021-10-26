@@ -13,22 +13,25 @@
   <link rel="stylesheet" href="./views/VMainLayout/VMainLayout.css">
   <link rel="stylesheet" href="./views/VSummaryContent/VSummaryContent.css">
   <link rel="stylesheet" href="./components/CEntityRow/CEntityRow.css">
+  <link rel="stylesheet" href="./components/CFilterApiBlock/CFilterApiBlock.css">
   <script src=https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.4.11/vuetify.min.js></script>
 
 
 
+  <script src="./index.js" type="module"></script>
 
-  <script src="./index.js" type="module">
-  </script>
 
   <meta charset="utf-8">
+  <link rel="shortcut icon" type="image/png" href="https://raw.githubusercontent.com/engie-group/shaystack/develop/docs/favicon.ico"/>
   <title>Haystack Interface</title>
 
 </head>
 <body>
   <main>
     <v-app>
-      <router-view class="router-view" />
+      <v-main style="padding: 0;">
+        <router-view class="router-view" />
+      </v-main>
     </v-app>
   </main>
 </body>

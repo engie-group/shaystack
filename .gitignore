@@ -117,6 +117,8 @@ __pycache__/
 # C extensions
 *.so
 
+#Assets
+/app/haystackui/assets*
 #Sample
 /sample*
 # Distribution / packaging

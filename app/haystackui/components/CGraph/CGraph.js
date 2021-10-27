@@ -57,8 +57,9 @@ export default {
     },
     activatedLinks(newActivatedLinks) {
       const linkDisabled = this.getUniqueLinkRefBetweenEntities.filter(link => !this.activatedLinks.includes(link))
-      const newData = this.dataEntities[0].filter(dataNode => !linkDisabled.includes(dataNode[2]))
-      this.chart.series[0].setData(newData)
+      const dataWithoutDeactivedLinks = this.dataEntities[0].filter(dataNode => !linkDisabled.includes(dataNode[2]))
+      const correctedDataWithoutDeactivedLinks = this.deactiveSiteRefLinkWhenSeveralLinks(dataWithoutDeactivedLinks)
+      this.chart.series[0].setData(correctedDataWithoutDeactivedLinks)
     }
   },
   methods: {
@@ -109,6 +110,9 @@ export default {
         ]
       })
     },
+    deactiveSiteRefLinkWhenSeveralLinks(links) {
+        return links.filter(link => !((links.filter(link2 => link[0]===link2[0]).length>1)&&(link[2]==='siteRef')))
+  }
   },
   mounted() {
     (function(H) {

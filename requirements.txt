@@ -1,10 +1,9 @@
-pyparsing
-pytz
-iso8601
+pyparsing==2.4.7
+pytz==2021.1
+iso8601==0.1.14
 six
 accept_types
-overrides
-tzlocal
-pint
-click
-#click_pathlib
+overrides==6.0.0
+tzlocal==2.1
+pint==0.17
+click==7.1.2

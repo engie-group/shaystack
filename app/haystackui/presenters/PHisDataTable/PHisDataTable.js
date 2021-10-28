@@ -108,8 +108,8 @@ export default {
         return copyItems
           .sort((item1, item2) => item1.attribute.localeCompare(item2.attribute))
           .sort((item1, item2) => {
-            if (item1.attribute === 'id') return -1
-            if (item2.attribute === 'id') return 1
+            if (item1.attribute==='id') return -1
+            if (item2.attribute==='id') return 1
             return 0
           })
       }

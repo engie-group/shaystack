@@ -8,8 +8,6 @@
 An Haystack API provider with a very simple implementation.
 It's must be used for test.
 """
-from __future__ import annotations
-
 import logging
 from datetime import datetime
 from typing import Tuple, Any, Dict, Union, Optional, List, cast

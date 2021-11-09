@@ -162,14 +162,14 @@ def _dump_str(str_value: str) -> str:
     return str_value
 
 
-def _dump_uri(uri_value: Uri) -> Dict:
+def _dump_uri(uri_value: Uri) -> Dict[str, str]:
     return {
         "_kind": "Uri",
         "val": uri_value
     }
 
 # TO CHALLENGE
-def _dump_bin(bin_value: Bin) -> str:
+def _dump_bin(bin_value: Bin) -> Dict[str, str]:
     return {
         "_kind": "Bin",
         "val": bin_value
@@ -180,7 +180,7 @@ def _dump_remove() -> Dict:
     return {"_kind": REMOVE_STR}
 
 
-def _dump_xstr(xstr_value: XStr) -> str:
+def _dump_xstr(xstr_value: XStr) -> Dict[str, str]:
     return {
         "_kind": "XStr",
         "type": xstr_value.encoding,
@@ -188,7 +188,7 @@ def _dump_xstr(xstr_value: XStr) -> str:
     }
 
 
-def _dump_quantity(quantity: Quantity) -> str:
+def _dump_quantity(quantity: Quantity) -> Dict[str, str]:
     if (quantity.units is None) or (quantity.units == ''):
         return _dump_decimal(quantity.m)
     return {
@@ -206,7 +206,7 @@ def _dump_bool(bool_value: bool) -> bool:
     return bool_value
 
 
-def _dump_coord(coordinate: Coordinate) -> str:
+def _dump_coord(coordinate: Coordinate) -> Dict[str, str]:
     return {
         "_kind": "Coord",
         "lat": coordinate.latitude,
@@ -214,7 +214,7 @@ def _dump_coord(coordinate: Coordinate) -> str:
     }
 
 
-def _dump_ref(ref: Ref) -> str:
+def _dump_ref(ref: Ref) -> Dict[str, str]:
     if ref.has_value:
         return {
             "_kind": "Ref",
@@ -227,20 +227,20 @@ def _dump_ref(ref: Ref) -> str:
     }
 
 
-def _dump_date(date: datetime.date) -> str:
+def _dump_date(date: datetime.date) -> Dict[str, str]:
     return {
         "_kind": "Date",
         "val": date.isoformat()
     }
 
-def _dump_time(time: datetime.time) -> str:
+def _dump_time(time: datetime.time) -> Dict[str, str]:
     return {
         "_kind": "Time",
         "val": time.isoformat()
     }
 
 
-def _dump_date_time(date_time: datetime.datetime) -> str:
+def _dump_date_time(date_time: datetime.datetime) -> Dict[str, str]:
     tz_name = timezone_name(date_time)
     return {
         "_kind": "DateTime",

@@ -10,7 +10,6 @@ A Flask layer to haystack interface.
 import logging
 import os
 import sys
-
 import click
 from flask import Flask, send_from_directory
 

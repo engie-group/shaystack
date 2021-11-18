@@ -20,6 +20,7 @@ With some sample provider:
 - Import ontology on SQLite or Postgres
 - and expose the data via Flask or AWS Lambda
 """
+
 from .datatypes import Quantity, Coordinate, Uri, Bin, MARKER, NA, \
     REMOVE, Ref, XStr
 from .dumper import dump, dump_scalar
@@ -33,6 +34,7 @@ from .pintutil import unit_reg
 from .providers import HaystackInterface
 from .type import HaystackType, Entity
 from .version import Version, VER_2_0, VER_3_0, LATEST_VER
+
 
 __all__ = ['Grid', 'dump', 'parse', 'dump_scalar', 'parse_scalar', 'parse_filter',
            'MetadataObject', 'unit_reg', 'zoneinfo',

@@ -4,13 +4,12 @@ SHELL=/bin/bash
 .ONESHELL:
 MAKEFLAGS += --no-print-directory
 
-# ifeq ($(shell (( $(shell echo "$(MAKE_VERSION)" | sed -e 's@^[^0-9]*\([0-9]\+\).*@\1@') >= 4 )) || echo 1),1)
-# $(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
-# endif
+ ifeq ($(shell (( $(shell echo "$(MAKE_VERSION)" | sed -e 's@^[^0-9]*\([0-9]\+\).*@\1@') >= 4 )) || echo 1),1)
+ $(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
+ endif
 
 # You can change the password in .env
 PRJ?=shaystack
-CONDA_PREFIX=/usr/local/anaconda3/envs/shaystack/envs/shaystack
 HAYSTACK_PROVIDER?=shaystack.providers.db
 HAYSTACK_DB?=sample/carytown.zinc
 REFRESH=15
@@ -106,8 +105,8 @@ define BROWSER
 	'
 endef
 
-CHECK_VENV=if [[ $(VENV) == "$(CONDA_DEFAULT_ENV)" ]] ; \
-  then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) $(CONDA_DEFAULT_ENV) before using $(cyan)make$(normal)"; exit 1 ) ; fi
+CHECK_VENV=if [[ $(VENV) != "$(CONDA_DEFAULT_ENV)" ]] ; \
+  then ( echo -e "$(green)Use: $(cyan)conda activate $(VENV)$(green) before using $(cyan)make$(normal)"; exit 1 ) ; fi
 
 ACTIVATE_VENV=source $(CONDA_BASE)/etc/profile.d/conda.sh && conda activate $(VENV) $(CONDA_ARGS)
 DEACTIVATE_VENV=source $(CONDA_BASE)/etc/profile.d/conda.sh && conda deactivate
@@ -312,7 +311,6 @@ dependencies: requirements
 remove-venv remove-$(VENV):
 	@$(DEACTIVATE_VENV)
 	conda env remove --name "$(VENV)" -y 2>/dev/null
-	echo -e "in remove env"
 	echo -e "Use: $(cyan)conda deactivate$(normal)"
 
 # Upgrade packages to last versions
@@ -344,7 +342,8 @@ clean-zappa:
 ## Clean project
 clean: async-stop clean-zappa
 	@rm -rf bin/* .eggs shaystack.egg-info .ipynb_checkpoints .mypy_cache .pytest_cache .start build nohup.out dist \
-		.make-* .pytype out.json test.db zappa_settings.json ChangeLog
+		.make-* .pytype out.json test.db zappa_settings.json ChangeLog \
+		shaystack/*.so shaystack/providers/*.so
 	mkdir dist/
 
 .PHONY: clean-all
@@ -1062,8 +1061,9 @@ dist/:
 .PHONY: bdist
 dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC) schema.graphql | dist/
 	@$(VALIDATE_VENV)
-	export PBR_VERSION=$$(git describe --tags)
-	$(CONDA_PYTHON) setup.py bdist_wheel
+	export PBR_VERSION=$${PBR_VERSION:-$$(git describe --tags) }
+	#$(CONDA_PYTHON) setup.py bdist_wheel
+	pip wheel --no-deps --use-pep517 -w dist .
 
 ## Create a binary wheel distribution
 bdist: dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl | dist/
@@ -1121,7 +1121,7 @@ keyring:
 .PHONY: push-docker-release push-release release
 
 ## Publish a distribution on pypi.org
-release: clean check-twine
+release: clean .make-validate check-twine
 	@$(VALIDATE_VENV)
 	[[ $$( find dist/ -name "*.dev*" | wc -l ) == 0 ]] || \
 		( echo -e "$(red)Add a tag version in GIT before release$(normal)" \

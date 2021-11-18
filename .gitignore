@@ -116,6 +116,7 @@ __pycache__/
 
 # C extensions
 *.so
+*.c
 
 #Assets
 /app/haystackui/assets*

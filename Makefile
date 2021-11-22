@@ -62,6 +62,11 @@ COOKIE_SECRET_KEY?=2d1a12a6-3232-4328-9365-b5b65e64a68f
 TWINE_USERNAME?=__token__
 SIGN_IDENTITY?=$(USER)
 URL_PREFIX=
+ifeq ($(OS),Windows_NT)
+    OS:= Windows
+else
+    OS:= $(shell sh -c 'uname 2>/dev/null || echo Unknown')
+endif
 
 PIP_PACKAGE:=$(CONDA_PACKAGE)/$(PRJ_PACKAGE).egg-link
 
@@ -1061,12 +1066,25 @@ dist/:
 .PHONY: bdist
 dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl: $(REQUIREMENTS) $(PYTHON_SRC) schema.graphql | dist/
 	@$(VALIDATE_VENV)
-	export PBR_VERSION=$${PBR_VERSION:-$$(git describe --tags) }
+	#export PBR_VERSION=$${PBR_VERSION:-$$(git describe --tags) }
+	export PBR_VERSION=0.0.0
 	#$(CONDA_PYTHON) setup.py bdist_wheel
-	pip wheel --no-deps --use-pep517 -w dist .
+	pip wheel --use-pep517 -w dist .
 
 ## Create a binary wheel distribution
 bdist: dist/$(subst -,_,$(PRJ_PACKAGE))-*.whl | dist/
+
+
+## Create binary distribution for the platform
+bdist-all:
+	$(VALIDATE_VENV)
+	pip install cibuildwheel
+	echo -e "$(green)Build compiled platform package$(normal)"
+	CIBW_REPAIR_WHEEL_COMMAND='' \
+	CIBW_ENVIRONMENT="PBR_VERSION=0.0.0" \
+	CIBW_SKIP="cp36-* cp37-*" \
+	python -m cibuildwheel --output-dir dist \
+		--platform $(shell echo $(OS) | tr '[:upper:]' '[:lower:]')
 
 .PHONY: sdist
 dist/$(PRJ_PACKAGE)-*.tar.gz: $(REQUIREMENTS) schema.graphql | dist/

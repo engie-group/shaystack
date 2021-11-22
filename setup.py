@@ -16,6 +16,7 @@ if 'CFLAGS' not in os.environ:
 setup(
     setup_requires=['pbr','cythonpackage[build]'],
     pbr=True,
+    # cythonpackage=True,
     cythonpackage={
         "inject_ext_modules": True,
         "inject_init": True,

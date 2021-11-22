@@ -1,5 +1,6 @@
-name: Publish Python distributions to TestPyPI
+name: Build and upload to Test PyPI
 
+# Build on every branch push, tag push, and pull request change:
 on:
   push:
     tags:
@@ -9,25 +10,90 @@ on:
       - 'README.md'
 
 jobs:
-  build-n-publish-pre-release:
-    name: Build and publish Python distributions to TestPyPI
-    runs-on: ubuntu-18.04
+
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-2019, macos-10.15]
+
     steps:
-      - uses: actions/checkout@master
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        name: Install Python
         with:
-          python-version: 3.7
+          python-version: '3.8'
+
       - name: Install pypa/build
         run: python -m pip install build wheel pbr twine --user
-      - name: Set PBR_VERSION
-        # Force the version, because pbr can not detect the version with a git clone with tags
-        run: echo "PBR_VERSION=$(git describe --tags)" >> $GITHUB_ENV
-      - name: Build a binary wheel and a source tarball
-        run: python setup.py bdist_wheel sdist
-      - name: Publish distribution to Test PyPI
+
+      - name: Build wheels X
+        uses: pypa/cibuildwheel@v2.2.2
         env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.SHAYSTACK_TEST_PYPI_API_TOKEN }}
-        run: |
-          twine upload -r testpypi dist/*
+          CIBW_SKIP: cp36-*
+          CIBW_ENVIRONMENT: PBR_VERSION=${{ github.ref_name }}
+
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
+
+  build_default:
+    name: Build distribution without compilation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.8'
+
+      - name: Install pypa/build
+        run: python -m pip install build wheel pbr twine --user
+
+      - name: Build std bdist
+        run: CYTHONPACKAGE=false python setup.py bdist_wheel
+        env:
+          PBR_VERSION: ${{ github.ref_name }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: dist/*.whl
+
+  build_sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.8'
+
+      - name: Build sdist
+        run: python setup.py sdist
+        env:
+          PBR_VERSION: ${{ github.ref_name }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: dist/*.tar.gz
+
+  upload_pypi:
+    needs: [build_wheels, build_default, build_sdist]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: artifact
+          path: dist
+
+      - uses: pypa/gh-action-pypi-publish@v1.4.2
+        with:
+          user: __token__
+          password: ${{ secrets.SHAYSTACK_TEST_PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/

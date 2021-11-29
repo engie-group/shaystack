@@ -55,7 +55,7 @@ def test_read_last_without_filter(mock_s3, mock_get_url):
         mock_get_url:
     """
     mock_s3.return_value = _get_mock_s3()
-    mock_get_url.return_value = "temp/carytown.json"
+    mock_get_url.return_value = "s3://bucket/grid.zinc"
     with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
         provider.cache_clear()
         result = provider.read(0, None, None, None, None)

@@ -32,6 +32,7 @@ import logging
 import os
 import threading
 import urllib
+import urllib.request
 from collections import OrderedDict
 from datetime import datetime, MAXYEAR, MINYEAR, timedelta
 from hashlib import md5
@@ -215,8 +216,6 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
 
         source_grid = parse(unzipped_source_data.decode("utf-8-sig"),
                             suffix_to_mode(suffix))
-        if version:
-            source_grid.metadata["date_version"] = version  # FIXME
 
         try:
             destination_data = _download_uri(parsed_destination, envs)
@@ -242,17 +241,14 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
             # Manage version
             # Rename default file to versionned file
             if not force:
-                date_old_version: datetime = (
-                    source_grid.metadata["date_version"] if "date_version" in source_grid.metadata
-                    else datetime.fromtimestamp(os.path.getmtime(parsed_destination.path)))
-                date_old_version = date_old_version.replace(tzinfo=None)
-                old_filename = Path(parsed_destination.path)
-                prefix, suffix = old_filename.name.split('.', 1)
-                old_name = f"{prefix}-{date_old_version.isoformat()}.{suffix}"
                 f = Path(parsed_destination.path)
                 if f.exists():
+                    date_old_version: datetime = datetime.fromtimestamp(os.path.getmtime(parsed_destination.path))\
+                        .replace(tzinfo=None)
+                    old_filename = Path(parsed_destination.path)
+                    prefix, suffix = old_filename.name.split('.', 1)
+                    old_name = f"{prefix}-{date_old_version.isoformat()}.{suffix}"
                     f.rename(Path(old_filename.parent, old_name))
-
             with open(parsed_destination.path, "wb") as f:
                 f.write(source_data)
             log.info("%s updated", parsed_source.geturl())
@@ -284,7 +280,7 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
     destination_grid = EmptyGrid.copy()
     source_grid = EmptyGrid.copy()
 
-    if parsed_source.scheme == 's3' and not compare_grid:
+    if not compare_grid:
         # Try to copy from s3 to s3
         if update_time_series:
             source_data = _download_uri(parsed_source, envs)
@@ -708,16 +704,16 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             name, suffix = parsed_uri.path.split(".", 1)
             unordered_all_versions = {}
             for f in glob.glob(f"{name}*.{suffix}"):
-                str_version = f[len(name):-len(suffix) - 1]
+                str_version = f[len(name) + 1:-len(suffix) - 1]
                 if not str_version:
                     # User file date
                     unordered_all_versions[datetime.fromtimestamp(os.path.getmtime(parsed_uri.path))] = f
                 else:
-                    unordered_all_versions[datetime.fromisoformat(str_version[1:])] = f
+                    unordered_all_versions[datetime.fromisoformat(str_version)] = f
             all_versions = OrderedDict()
-            for k in sorted(unordered_all_versions.keys(),reverse=True):
+            for k in sorted(unordered_all_versions.keys(), reverse=True):
                 all_versions[k] = unordered_all_versions[k]
-            self._versions[parsed_uri.geturl()] = unordered_all_versions
+            self._versions[parsed_uri.geturl()] = all_versions
 
         if self._periodic_refresh:
             partial_refresh = functools.partial(

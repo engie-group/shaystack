@@ -293,7 +293,7 @@ hs_date_str = Combine(
     '-' +
     hs_digit + hs_digit)
 hs_date = hs_date_str.copy().setParseAction(
-    lambda toks: [datetime.datetime.strptime(toks[0], '%Y-%m-%d').date()])
+    lambda toks: [datetime.datetime.strptime(toks[0], '%Y-%m-%d')])#.date()])
 
 hs_time_str = Combine(
     hs_digit + hs_digit +

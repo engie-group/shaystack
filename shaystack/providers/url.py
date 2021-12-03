@@ -531,8 +531,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             date_version,
         )
         self.create_db()
-        if not date_version:
-            date_version = datetime.now().replace(tzinfo=pytz.UTC)
         grid = self._download_grid(self._get_url(), date_version)
         if entity_id in grid:
             entity = grid[entity_id]
@@ -541,10 +539,12 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             if "hisURI" in entity:
                 base = dirname(self._get_url())
                 his_uri = base + '/' + str(entity["hisURI"])
-                history = self._download_grid(his_uri, date_version)
+                history = self._download_grid(his_uri, None, is_historic=True)
                 # assert history is sorted by date time
                 # Remove data after the date_version
                 history = history.copy()
+                if not date_version:
+                    date_version = datetime.now().replace(tzinfo=pytz.UTC)
                 for row in history:
                     if row['ts'] >= date_version:
                         history = history[0:history.index(row)]
@@ -752,16 +752,21 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             )
         return parse(body, mode)
 
-    def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
+    def _download_grid(self, uri: str, date_version: Optional[datetime], is_historic=False) -> Grid:
         parsed_uri = urlparse(uri, allow_fragments=False)
         parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
         self._refresh_versions(parsed_uri)
         for version, _ in self._versions[parsed_uri.geturl()].items():
-            if not date_version or version <= date_version:
-                # noinspection PyArgumentList,PyTypeChecker
+            if is_historic:
                 return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
                     parsed_uri.geturl(),
                     version)
+            else:
+                if not date_version or version <= date_version.replace(tzinfo=None):
+                    # noinspection PyArgumentList,PyTypeChecker
+                    return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
+                        parsed_uri.geturl(),
+                        version)
         return Grid()
 
     # pylint: disable=no-member

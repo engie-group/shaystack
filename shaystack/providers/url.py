@@ -756,7 +756,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         parsed_uri = urlparse(uri, allow_fragments=False)
         parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
         self._refresh_versions(parsed_uri)
-        for version, _ in self._versions[parsed_uri.geturl()].items():
+        for version, version_url in self._versions[parsed_uri.geturl()].items():
             if is_historic:
                 return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
                     parsed_uri.geturl(),
@@ -764,6 +764,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             else:
                 if not date_version or version <= date_version.replace(tzinfo=None):
                     # noinspection PyArgumentList,PyTypeChecker
+                    parsed_uri = urlparse(version_url, allow_fragments=False)
                     return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
                         parsed_uri.geturl(),
                         version)

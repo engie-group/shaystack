@@ -275,7 +275,10 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
         "s3",
         endpoint_url=envs.get("AWS_S3_ENDPOINT", None),
     )
-    suffix = Path(parsed_source.path).suffix
+    if '.hayson.json' in parsed_source.path:
+        suffix = '.hayson.json'
+    else:
+        suffix = Path(parsed_source.path).suffix
     use_gzip = False
     destination_grid = EmptyGrid.copy()
     source_grid = EmptyGrid.copy()

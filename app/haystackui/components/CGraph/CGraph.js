@@ -63,6 +63,12 @@ export default {
     }
   },
   methods: {
+    updateChartWithRightLinks() {
+      const linkDisabled = this.getUniqueLinkRefBetweenEntities.filter(link => !this.activatedLinks.includes(link))
+      const dataWithoutDeactivedLinks = this.dataEntities[0].filter(dataNode => !linkDisabled.includes(dataNode[2]))
+      const correctedDataWithoutDeactivedLinks = this.deactiveSiteRefLinkWhenSeveralLinks(dataWithoutDeactivedLinks)
+      this.chart.series[0].setData(correctedDataWithoutDeactivedLinks)
+    },
     createChart(data, nodes) {
       const height = (this.$refs['graph-container'].$el.clientHeight - 5);
       const width = this.$refs['graph-container'].$el.clientWidth;
@@ -200,6 +206,7 @@ export default {
   })
 })(Highcharts)
     this.chart = this.createChart(this.dataEntities[0], this.dataEntities[1])
+    this.updateChartWithRightLinks()
   },
  //updated()
 }

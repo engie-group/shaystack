@@ -1,5 +1,6 @@
 const dateUtils = {
     checkDateFormat: dateString => {
+    if (dateString === '') return dateString
     if (dateString === 'today') return dateString
     if (dateString === 'yesterday') return dateString
     const dateObject = new Date(dateString)

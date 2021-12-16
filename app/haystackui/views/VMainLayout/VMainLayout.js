@@ -364,7 +364,7 @@ export default {
     },
     async updateVersion(newVersion) {
       if (newVersion !== this.$store.getters.version) {
-        if (dateUtils.checkDateFormat(newVersion)) {
+        if (dateUtils.checkDateFormat(newVersion) || newVersion === '') {
           this.$store.commit('SET_VERSION', { version: newVersion })
           const { a, d, q, l } = this.$route.query
           this.$router.push({ query: { q, a, d, l, v: newVersion } })
@@ -389,7 +389,7 @@ export default {
       await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
     },
     async updateStartDateRange(newStartDate) {
-      const startDateRange = !newStartDate || newStartDate === '' ? '' : dateUtils.checkDateFormat(newStartDate)
+      const startDateRange = !newStartDate || dateUtils.checkDateFormat(newStartDate)
       if (newStartDate !== this.startDateRange) {
         if (startDateRange || startDateRange === '') {
           if (dateUtils.checkDateRangeIsCorrect(startDateRange, this.endDateRange)) {
@@ -413,7 +413,7 @@ export default {
       }
     },
     async updateEndDateRange(newEndDate) {
-      const endDateRange = !newEndDate || newEndDate === '' ? '' : dateUtils.checkDateFormat(newEndDate)
+      const endDateRange = !newEndDate || dateUtils.checkDateFormat(newEndDate)
       if (newEndDate !== this.endDateRange) {
         if (endDateRange || endDateRange === '') {
           if (dateUtils.checkDateRangeIsCorrect(this.startDateRange, endDateRange)) {

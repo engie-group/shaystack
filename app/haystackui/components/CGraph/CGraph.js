@@ -42,9 +42,9 @@ export default {
     }
   },
   beforeMount() {
-    const linkEntities = this.getUniqueLinkRefBetweenEntities // .map(linkName => this.checkboxSelection[linkName] = true)
+    const linkEntities = this.getUniqueLinkRefBetweenEntities
     this.$store.commit('SET_LINK_ENTITIES', { linkEntities })
-    this.$store.commit('SET_ACTIVATED_LINKS', { activatedLinks: linkEntities })
+    if (this.activatedLinks.length === 0) this.$store.commit('SET_ACTIVATED_LINKS', { activatedLinks: linkEntities })
   },
   watch: {
     isLinkNameDisplayed(newValue) {

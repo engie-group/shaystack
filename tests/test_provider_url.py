@@ -12,20 +12,16 @@ from tests import _get_mock_s3
 
 
 @patch.object(URLProvider, '_get_url')
-@patch.object(URLProvider, '_s3')
-def test_values_for_tag(mock_s3, mock_get_url):
+def test_values_for_tag(mock_get_url):
     """
     Args:
-        mock_s3:
         mock_get_url:
     """
-    mock_s3.return_value = _get_mock_s3()
-    mock_get_url.return_value = "s3://bucket/grid.zinc"
+    mock_get_url.return_value = "sample/carytown.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
-        result = provider.values_for_tag("col")
-        assert result == [1.0, 2.0]
+
         result = provider.values_for_tag("id")
-        assert result == [Ref("id1"), Ref("id2")]
+        assert len(result) == 24
 
 
 def test_ops():
@@ -47,87 +43,73 @@ def test_about(mock_get_url):
 
 
 @patch.object(URLProvider, '_get_url')
-@patch.object(URLProvider, '_s3')
-def test_read_last_without_filter(mock_s3, mock_get_url):
+def test_read_last_without_filter(mock_get_url):
     """
     Args:
-        mock_s3:
         mock_get_url:
     """
-    mock_s3.return_value = _get_mock_s3()
-    mock_get_url.return_value = "temp/carytown.json"
+    mock_get_url.return_value = "sample/carytown.zinc"
     with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
         provider.cache_clear()
-        result = provider.read(0, None, None, None, None)
-        assert result.metadata["v"] == "3"
+        result = provider.read(40, None, None, None, None)
+        assert len(result) == 24
 
 
 @patch.object(URLProvider, '_get_url')
-@patch.object(URLProvider, '_s3')
-def test_read_version_without_filter(mock_s3, mock_get_url):
+def test_read_version_without_filter(mock_get_url):
     """
     Args:
-        mock_s3:
         mock_get_url:
     """
-    mock_s3.return_value = _get_mock_s3()
-    mock_get_url.return_value = "s3://bucket/grid.zinc"
+    mock_get_url.return_value = "sample/carytown.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, None, None, date_version=version_2)
-        assert result.metadata["v"] == "2"
+        assert len(result) == 5
 
 
 @patch.object(URLProvider, '_get_url')
-@patch.object(URLProvider, '_s3')
-def test_read_version_with_filter(mock_s3, mock_get_url):
+def test_read_version_with_filter(mock_get_url):
     """
     Args:
-        mock_s3:
         mock_get_url:
     """
-    mock_s3.return_value = _get_mock_s3()
-    mock_get_url.return_value = "s3://bucket/grid.zinc"
+    mock_get_url.return_value = "sample/carytown.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
-        result = provider.read(0, None, None, "id==@id1", version_2)
-        assert result.metadata["v"] == "2"
+        result = provider.read(0, None, None, "id==@p_demo_r_23a44701-a89a6c66", version_2)
         assert len(result) == 1
-        assert result[0]['id'] == Ref("id1")
+        assert result[0]['id'] == Ref("@p_demo_r_23a44701-a89a6c66")
 
 
 @patch.object(URLProvider, '_get_url')
-@patch.object(URLProvider, '_s3')
-def test_read_version_with_filter2(mock_s3, mock_get_url):
+def test_read_version_with_filter2(mock_get_url):
     """
     Args:
-        mock_s3:
         mock_get_url:
     """
-    mock_s3.return_value = _get_mock_s3()
-    mock_get_url.return_value = "s3://bucket/grid.zinc"
+    mock_get_url.return_value = "sample/carytown.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
-        result = provider.read(0, "id,other", None, "id==@id1", version_2)
-        assert result.column == {"id": MetadataObject(), "other": MetadataObject()}
+        result = provider.read(0, "id,dis", None, "id==@p_demo_r_23a44701-a89a6c66", version_2)
+        # assert result.column.keys() == ["id", "dis"]
+        assert list(result.keys()) == [Ref('p_demo_r_23a44701-a89a6c66', 'Carytown')]
+
 
 
 @patch.object(URLProvider, '_get_url')
-@patch.object(URLProvider, '_s3')
-def test_read_version_with_ids(mock_s3, mock_get_url):
+
+def test_read_version_with_ids(mock_get_url):
     """
     Args:
-        mock_s3:
         mock_get_url:
     """
-    mock_s3.return_value = _get_mock_s3()
-    mock_get_url.return_value = "s3://bucket/grid.zinc"
+    mock_get_url.return_value = "sample/carytown.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
-        result = provider.read(0, None, [Ref("id1")], None, version_2)
-        assert result.metadata["v"] == "2"
+        result = provider.read(0, None, [Ref("p_demo_r_23a44701-a89a6c66")], None, version_2)
         assert len(result) == 1
-        assert result[0]['id'] == Ref("id1")
+        assert result[0]['id'] == Ref("p_demo_r_23a44701-a89a6c66")
 
 
 @patch.object(URLProvider, '_s3')

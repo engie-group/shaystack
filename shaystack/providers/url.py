@@ -765,12 +765,19 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                     parsed_uri.geturl(),
                     version)
             else:
-                if not date_version or version <= date_version.replace(tzinfo=None):
-                    # noinspection PyArgumentList,PyTypeChecker
+                if parsed_uri.scheme != 's3':
+
+                    # print("its in local !")
+                    if date_version:
+                        date_version = date_version.replace(tzinfo=None)
                     parsed_uri = urlparse(version_url, allow_fragments=False)
+
+                # noinspection PyArgumentList,PyTypeChecker
+                if not date_version or version <= date_version:
+
                     return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
-                        parsed_uri.geturl(),
-                        version)
+                            parsed_uri.geturl(),
+                            version)
         return Grid()
 
     # pylint: disable=no-member

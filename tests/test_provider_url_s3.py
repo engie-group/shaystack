@@ -28,24 +28,6 @@ def test_values_for_tag(mock_s3, mock_get_url):
         assert result == [Ref("id1"), Ref("id2")]
 
 
-def test_ops():
-    provider = get_provider("shaystack.providers.url", {})
-    result = provider.ops()
-    assert len(result) == 5
-
-
-@patch.object(URLProvider, '_get_url')
-def test_about(mock_get_url):
-    """
-    Args:
-        mock_get_url:
-    """
-    mock_get_url.return_value = "s3://bucket/grid.zinc"
-    with get_provider("shaystack.providers.url", {}) as provider:
-        result = provider.about("http://localhost")
-        assert result[0]['moduleName'] == 'URLProvider'
-
-
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
 def test_read_last_without_filter(mock_s3, mock_get_url):

@@ -131,7 +131,7 @@ def _parse_embedded_scalar(scalar: Union[None, List, Dict, str],
             if kind == DATE:
                 match = DATE_RE.match(scalar.get('val'))
                 (year, month, day) = match.groups()
-                return datetime.datetime(year=int(year), month=int(month), day=int(day))
+                return datetime.date(year=int(year), month=int(month), day=int(day))
 
             # Is it a time?
             if kind == TIME:

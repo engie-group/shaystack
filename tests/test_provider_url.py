@@ -1,7 +1,8 @@
+import unittest
 from datetime import datetime
 from typing import cast
 from unittest.mock import patch
-
+from collections import OrderedDict
 import pytz
 
 from shaystack import MetadataObject
@@ -98,7 +99,6 @@ def test_read_version_with_filter2(mock_get_url):
 
 
 @patch.object(URLProvider, '_get_url')
-
 def test_read_version_with_ids(mock_get_url):
     """
     Args:
@@ -112,40 +112,47 @@ def test_read_version_with_ids(mock_get_url):
         assert result[0]['id'] == Ref("p_demo_r_23a44701-a89a6c66")
 
 
-@patch.object(URLProvider, '_s3')
-def test_lru_version(mock):
+def test_unexistant_version():
     """
     Args:
-        mock:
     """
-    mock.return_value = _get_mock_s3()
     with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
         provider.cache_clear()
-        version_3 = datetime(2020, 10, 1, 0, 0, 3, 0, tzinfo=pytz.UTC)
-        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
-        version_1 = datetime(2020, 10, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)
-        version_0 = datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
-
-        last = None
-        url = "s3://bucket/grid.zinc"
-        assert provider._download_grid(url, last).metadata["v"] == "3"
-        assert provider._download_grid(url, version_3).metadata["v"] == "3"
-        assert provider._download_grid(url, version_2).metadata["v"] == "2"
-        assert provider._download_grid(url, version_1).metadata["v"] == "1"
+        version_0 = datetime(2020, 8, 1, 0, 0, 3, 0, tzinfo=pytz.UTC)
+        url = "sample/carytown.zinc"
         result = provider._download_grid(url, version_0)
         assert len(result) == 0
 
 
 @patch.object(URLProvider, '_get_url')
-@patch.object(URLProvider, '_s3')
-def test_version(mock, mock_get_url):
+def test_version(mock_get_url):
     """
     Args:
-        mock:
         mock_get_url:
     """
-    mock.return_value = _get_mock_s3()
-    mock_get_url.return_value = "s3://bucket/grid.zinc"
+    mock_get_url.return_value = "sample/carytown.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
         versions = provider.versions()
-        assert len(versions) == 3
+        assert len(versions) == 2
+
+
+class ProviderTest(unittest.TestCase):
+    @patch.object(URLProvider,"_refresh_versions")
+    def test_given_wrong_url(self, mock_refresh_version):
+        """
+        Args:
+            ProviderTest:
+            mock_refresh_version:
+        """
+        mock_refresh_version.return_value = ''
+        with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
+            provider.cache_clear()
+            provider._versions = {"wrongsheme://temp/url.zinc": \
+                OrderedDict(
+                    [(datetime(2021, 12, 8, 10, 55, 39, 50626), "wrongsheme://temp/url.zinc")]
+                )
+            }
+            url = "wrongsheme://temp/url.zinc"
+            with self.assertRaises(ValueError) as cm:
+                provider._download_grid(url, None)
+            self.assertEqual(cm.exception.args[0], "A wrong url ! (url have to be ['file','s3','']")

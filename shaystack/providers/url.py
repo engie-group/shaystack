@@ -766,7 +766,9 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                     version)
             else:
                 if parsed_uri.scheme != 's3':
-
+                    # FTP
+                    if parsed_uri.scheme not in ['', 'file']:
+                        raise ValueError("A wrong url ! (url have to be ['file','s3','']")
                     # print("its in local !")
                     if date_version:
                         date_version = date_version.replace(tzinfo=None)

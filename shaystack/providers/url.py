@@ -186,7 +186,6 @@ def read_grid_from_uri(uri: str, envs: Dict[str, str]) -> Grid:
     return grid
 
 
-# TODO: faire la meme approche pour l'import sur s3
 def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many-locals,too-many-arguments
                          parsed_destination: ParseResult,
                          customer_id: str,
@@ -194,15 +193,16 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
                          update_time_series: bool,
                          force: bool,  # Copy even if the data is identical
                          merge_ts: bool,  # Merge current TS with the new period of TS
-                         version: Optional[datetime],
                          envs: Dict[str, str]
                          ) -> None:  # pylint: disable=too-many-arguments
 
     log.debug("update %s", (parsed_source.geturl(),))
-    suffix = Path(parsed_source.path).suffix
+    if '.hayson.json' in parsed_source.path:
+        suffix = '.hayson.json'
+    else:
+        suffix = Path(parsed_source.path).suffix
     use_gzip = False
     destination_grid = EmptyGrid.copy()
-    source_grid = EmptyGrid.copy()
 
     # Copy from file to file
     source_data = _download_uri(parsed_source, envs)
@@ -232,13 +232,8 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
             destination_grid = EmptyGrid
 
         if force or not compare_grid or (destination_grid - source_grid):
-            # if not force and merge_ts:  # PPR: if TS, limit the number of AWS versions ?
-            #     destination_grid = merge_timeseries(source_grid, destination_grid)
-            #     source_data = dump(destination_grid, suffix_to_mode(suffix)).encode('UTF8')
             if use_gzip:
                 source_data = gzip.compress(source_data)
-
-            # Manage version
             # Rename default file to versionned file
             if not force:
                 f = Path(parsed_destination.path)
@@ -267,7 +262,6 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
                        update_time_series: bool,
                        force: bool,  # Copy even if the data is identical
                        merge_ts: bool,  # Merge current TS with the new period of TS
-                       version: Optional[datetime],
                        envs: Dict[str, str]
                        ) -> None:  # pylint: disable=too-many-arguments
     log.debug("update %s", (parsed_source.geturl(),))
@@ -416,7 +410,6 @@ def _import_ts(parsed_source: ParseResult,  # pylint: disable=too-many-locals,to
                         update_time_series=False,
                         force=True,
                         merge_ts=True,
-                        version=None,
                         envs=envs)
                 else:
                     _update_grid_on_file(
@@ -427,7 +420,6 @@ def _import_ts(parsed_source: ParseResult,  # pylint: disable=too-many-locals,to
                         update_time_series=False,
                         force=True,
                         merge_ts=True,
-                        version=None,
                         envs=envs)
 
     if requests:
@@ -766,14 +758,11 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                     version)
             else:
                 if parsed_uri.scheme != 's3':
-                    # FTP
                     if parsed_uri.scheme not in ['', 'file']:
                         raise ValueError("A wrong url ! (url have to be ['file','s3','']")
-                    # print("its in local !")
                     if date_version:
                         date_version = date_version.replace(tzinfo=None)
                     parsed_uri = urlparse(version_url, allow_fragments=False)
-
                 # noinspection PyArgumentList,PyTypeChecker
                 if not date_version or version <= date_version:
 
@@ -830,10 +819,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             version = datetime.now(tz=pytz.UTC)
 
         parsed_uri = urlparse(self._get_url(), allow_fragments=False)
-
-        if parsed_uri.scheme and parsed_uri.scheme in ["s3", "file"]:
-            raise ValueError("I can not import the data with a URL that is not on s3")
-
         parsed_destination, parsed_source = self._update_src_dst(source_uri)
 
         if parsed_uri.scheme == "s3":
@@ -844,7 +829,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                                update_time_series=False,
                                force=reset,
                                merge_ts=False,  # FIXME: vérifier
-                               version=version,
                                envs=self._envs
                                )
         else:
@@ -855,7 +839,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                                  update_time_series=True,
                                  force=reset,
                                  merge_ts=True,
-                                 version=version,
                                  envs=self._envs,
                                  )
 
@@ -879,7 +862,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                                update_time_series=True,
                                force=False,
                                merge_ts=True,
-                               version=version,
                                envs=self._envs
                                )
         else:
@@ -890,7 +872,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                                  update_time_series=True,
                                  force=False,
                                  merge_ts=True,
-                                 version=version,
                                  envs=self._envs,
                                  )
 

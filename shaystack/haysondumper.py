@@ -168,7 +168,6 @@ def _dump_uri(uri_value: Uri) -> Dict:
         "val": uri_value
     }
 
-
 # TO CHALLENGE
 def _dump_bin(bin_value: Bin) -> Dict:
     return {
@@ -233,7 +232,6 @@ def _dump_date(date: datetime.date) -> Dict:
         "_kind": "Date",
         "val": date.isoformat()
     }
-
 
 def _dump_time(time: datetime.time) -> Dict:
     return {

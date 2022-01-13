@@ -702,9 +702,13 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 str_version = f[len(name) + 1:-len(suffix) - 1]
                 if not str_version:
                     # User file date
-                    unordered_all_versions[datetime.fromtimestamp(os.path.getmtime(parsed_uri.path))] = f
+                    creation_date = datetime.fromtimestamp(os.path.getmtime(parsed_uri.path))
                 else:
                     unordered_all_versions[datetime.fromisoformat(str_version)] = f
+            ordered_date_from_str_versions = sorted(unordered_all_versions.keys(), reverse=True)
+            if len(ordered_date_from_str_versions) > 0 and creation_date < ordered_date_from_str_versions[0]:
+                creation_date = ordered_date_from_str_versions[0] + timedelta(days=1)
+            unordered_all_versions[creation_date] = parsed_uri.path
             all_versions = OrderedDict()
             for k in sorted(unordered_all_versions.keys(), reverse=True):
                 all_versions[k] = unordered_all_versions[k]

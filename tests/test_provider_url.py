@@ -42,14 +42,14 @@ def test_about(mock_get_url):
         result = provider.about("http://localhost")
         assert result[0]['moduleName'] == 'URLProvider'
 
-
+#THIS TEST
 @patch.object(URLProvider, '_get_url')
-def test_read_last_without_filter(mock_get_url):
+def test_read_last_without_version_without_filter(mock_get_url):
     """
     Args:
         mock_get_url:
     """
-    mock_get_url.return_value = "sample/carytown.zinc"
+    mock_get_url.return_value = "sample/carytown.hayson.json"
     with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
         provider.cache_clear()
         result = provider.read(40, None, None, None, None)
@@ -57,16 +57,29 @@ def test_read_last_without_filter(mock_get_url):
 
 
 @patch.object(URLProvider, '_get_url')
-def test_read_version_without_filter(mock_get_url):
+def test_read_with_version_2021_without_filter(mock_get_url):
     """
     Args:
         mock_get_url:
     """
-    mock_get_url.return_value = "sample/carytown.zinc"
+    mock_get_url.return_value = "sample/carytown.hayson.json"
     with get_provider("shaystack.providers.url", {}) as provider:
-        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
+        version_2 = datetime(2021, 11, 2, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, None, None, date_version=version_2)
-        assert len(result) == 5
+        assert len(result) == 3
+
+
+@patch.object(URLProvider, '_get_url')
+def test_read_with_version_2020_without_filter(mock_get_url):
+    """
+    Args:
+        mock_get_url:
+    """
+    mock_get_url.return_value = "sample/carytown.hayson.json"
+    with get_provider("shaystack.providers.url", {}) as provider:
+        version_2 = datetime(2020, 11, 10, 0, 0, 2, 0, tzinfo=pytz.UTC)
+        result = provider.read(0, None, None, None, date_version=version_2)
+        assert len(result) == 1
 
 
 @patch.object(URLProvider, '_get_url')
@@ -75,9 +88,9 @@ def test_read_version_with_filter(mock_get_url):
     Args:
         mock_get_url:
     """
-    mock_get_url.return_value = "sample/carytown.zinc"
+    mock_get_url.return_value = "sample/carytown.hayson.json"
     with get_provider("shaystack.providers.url", {}) as provider:
-        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
+        version_2 = datetime(2020, 11, 10, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, None, "id==@p_demo_r_23a44701-a89a6c66", version_2)
         assert len(result) == 1
         assert result[0]['id'] == Ref("@p_demo_r_23a44701-a89a6c66")
@@ -89,9 +102,9 @@ def test_read_version_with_filter2(mock_get_url):
     Args:
         mock_get_url:
     """
-    mock_get_url.return_value = "sample/carytown.zinc"
+    mock_get_url.return_value = "sample/carytown.hayson.json"
     with get_provider("shaystack.providers.url", {}) as provider:
-        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
+        version_2 = datetime(2021, 11, 3, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, "id,dis", None, "id==@p_demo_r_23a44701-a89a6c66", version_2)
         # assert result.column.keys() == ["id", "dis"]
         assert list(result.keys()) == [Ref('p_demo_r_23a44701-a89a6c66', 'Carytown')]
@@ -104,9 +117,9 @@ def test_read_version_with_ids(mock_get_url):
     Args:
         mock_get_url:
     """
-    mock_get_url.return_value = "sample/carytown.zinc"
+    mock_get_url.return_value = "sample/carytown.hayson.json"
     with get_provider("shaystack.providers.url", {}) as provider:
-        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
+        version_2 = datetime(2020, 11, 10, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, [Ref("p_demo_r_23a44701-a89a6c66")], None, version_2)
         assert len(result) == 1
         assert result[0]['id'] == Ref("p_demo_r_23a44701-a89a6c66")
@@ -130,10 +143,10 @@ def test_version(mock_get_url):
     Args:
         mock_get_url:
     """
-    mock_get_url.return_value = "sample/carytown.zinc"
+    mock_get_url.return_value = "sample/carytown.hayson.json"
     with get_provider("shaystack.providers.url", {}) as provider:
         versions = provider.versions()
-        assert len(versions) == 2
+        assert len(versions) == 3
 
 
 class ProviderTest(unittest.TestCase):

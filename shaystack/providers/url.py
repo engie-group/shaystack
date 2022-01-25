@@ -82,6 +82,26 @@ _POOL_SIZE = 20
 lock = Lock()
 
 
+def check_version_file(uri, parsed_uri):
+    suffixes = ''.join(Path(uri).suffixes)
+    uri_without_suffix = parsed_uri.path.replace(suffixes, '')
+    unordered_all_versions = {}
+    creation_date = None
+    for f in glob.glob(f"{uri_without_suffix}*{suffixes}"):
+        str_version = f[len(uri_without_suffix) + 1:-len(suffixes)]
+        if not str_version:
+            # User file date
+            creation_date = datetime.fromtimestamp(os.path.getmtime(uri))
+            unordered_all_versions[creation_date] = f
+        else:
+            unordered_all_versions[datetime.fromisoformat(str_version)] = f
+    ordered_date_from_str_versions = sorted(unordered_all_versions.keys(), reverse=True)
+    if len(ordered_date_from_str_versions) > 0 and creation_date and creation_date < ordered_date_from_str_versions[0]:
+        log.debug('Current file has not the latest version date')
+        raise ValueError
+    else:
+        return unordered_all_versions, ordered_date_from_str_versions
+
 def _download_uri(parsed_uri: ParseResult, envs: Dict[str, str]) -> bytes:
     """ Download data from s3 or classical url """
     if parsed_uri.scheme == "s3":
@@ -97,8 +117,23 @@ def _download_uri(parsed_uri: ParseResult, envs: Dict[str, str]) -> bytes:
     else:
         # Manage default cwd
         uri = parsed_uri.geturl()
-        if not parsed_uri.scheme:
+        #if not Path(uri).exists():
+        unordered_all_versions, ordered_date_from_str_versions = check_version_file(uri, parsed_uri)
+        if len(ordered_date_from_str_versions) > 0:
+            new_file = unordered_all_versions[ordered_date_from_str_versions[0]]
+            new_parsed_uri = urlparse(new_file, allow_fragments=False)
+            new_parsed_uri = new_parsed_uri._replace(path=_absolute_path(new_parsed_uri.path))
+            uri = new_parsed_uri.geturl()
+            if not new_parsed_uri.scheme:
+                uri = Path.cwd().joinpath(uri).as_uri().replace('%3A', ':')
+            else:
+                uri = new_parsed_uri.geturl()
+        else:
             uri = Path.cwd().joinpath(uri).as_uri()
+        # else:
+        #
+        #     if not parsed_uri.scheme:
+        #         uri = Path.cwd().joinpath(uri).as_uri()
         with urllib.request.urlopen(uri) as response:
             data = response.read()
     return data
@@ -185,7 +220,7 @@ def read_grid_from_uri(uri: str, envs: Dict[str, str]) -> Grid:
     grid = parse(data.decode("utf-8-sig"), input_mode)
     return grid
 
-
+# Attention on doit lire la derniere version (exemple: si que le fichier toto-2022-01-01 sans de toto.hayson.json)
 def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many-locals,too-many-arguments
                          parsed_destination: ParseResult,
                          customer_id: str,
@@ -197,6 +232,7 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
                          ) -> None:  # pylint: disable=too-many-arguments
 
     log.debug("update %s", (parsed_source.geturl(),))
+    # To change
     if '.hayson.json' in parsed_source.path:
         suffix = '.hayson.json'
     else:
@@ -238,6 +274,8 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
             if not force:
                 f = Path(parsed_destination.path)
                 if f.exists():
+                    # attention vérifier si le nom du fichier à déjà la date, sinon on garde la date physique
+                    # Une solution: Import d'un fichier d'une date ancienne interdit
                     date_old_version: datetime = datetime.fromtimestamp(os.path.getmtime(parsed_destination.path))\
                         .replace(tzinfo=None)
                     old_filename = Path(parsed_destination.path)
@@ -269,10 +307,13 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
         "s3",
         endpoint_url=envs.get("AWS_S3_ENDPOINT", None),
     )
-    if '.hayson.json' in parsed_source.path:
-        suffix = '.hayson.json'
-    else:
-        suffix = Path(parsed_source.path).suffix
+    # TOFIX
+    #.hayson.json.gz
+    suffix = "".join(Path(parsed_source.path).suffixes)
+    # if '.hayson.json' in parsed_source.path:
+    #     suffix = '.hayson.json'
+    # else:
+    #     suffix = Path(parsed_source.path).suffix
     use_gzip = False
     destination_grid = EmptyGrid.copy()
     source_grid = EmptyGrid.copy()
@@ -310,10 +351,11 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
             source_etag = md5_digest.hexdigest()
         if update_time_series or compare_grid or merge_ts:
             unzipped_source_data = source_data
-            if suffix == ".gz":
+            # TODO VERIFY ==gz => .endswith
+            if suffix.endswith('.gz'):
                 use_gzip = True
                 unzipped_source_data = gzip.decompress(source_data)
-                suffix = Path(parsed_source.path).suffixes[-2]
+                suffix = suffix[:-3] #Path(parsed_source.path).suffixes[-2]
 
             try:
                 source_grid = parse(unzipped_source_data.decode("utf-8-sig"),
@@ -393,14 +435,15 @@ def _import_ts(parsed_source: ParseResult,  # pylint: disable=too-many-locals,to
                 requests.append((
                     urlparse(source_time_serie),
                     urlparse(destination_time_serie),
-                    customer_id,
-                    True,
-                    False,
-                    True,  # force
-                    True,
-                    None,
+                    customer_id, # customer_id
+                    True, #compare_grid
+                    False, #update_time_series
+                    True,  #force
+                    True, #merge_ts
                     envs))
+
             else:
+                #TO DO REFACTO
                 if parsed_destination.scheme == "s3":
                     _update_grid_on_s3(
                         urlparse(source_time_serie),
@@ -534,7 +577,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             if "hisURI" in entity:
                 base = dirname(self._get_url())
                 his_uri = base + '/' + str(entity["hisURI"])
-                history = self._download_grid(his_uri, None, is_historic=True)
+                history = self._download_grid(his_uri, None)
                 # assert history is sorted by date time
                 # Remove data after the date_version
                 history = history.copy()
@@ -706,6 +749,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 else:
                     unordered_all_versions[datetime.fromisoformat(str_version)] = f
             ordered_date_from_str_versions = sorted(unordered_all_versions.keys(), reverse=True)
+            # On n'est pas censé l'accepter, péter une erreur (import file dans le bon ordre)
             if len(ordered_date_from_str_versions) > 0 and creation_date < ordered_date_from_str_versions[0]:
                 creation_date = ordered_date_from_str_versions[0] + timedelta(days=1)
             unordered_all_versions[creation_date] = parsed_uri.path
@@ -751,28 +795,22 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             )
         return parse(body, mode)
 
-    def _download_grid(self, uri: str, date_version: Optional[datetime], is_historic=False) -> Grid:
+    def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
         parsed_uri = urlparse(uri, allow_fragments=False)
         parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
         self._refresh_versions(parsed_uri)
         for version, version_url in self._versions[parsed_uri.geturl()].items():
-            if is_historic:
+            if parsed_uri.scheme != 's3':
+                if parsed_uri.scheme not in ['', 'file']:
+                    raise ValueError("A wrong url ! (url have to be ['file','s3','']")
+                if date_version:
+                    date_version = date_version.replace(tzinfo=None)
+                parsed_uri = urlparse(version_url, allow_fragments=False)
+            # noinspection PyArgumentList,PyTypeChecker
+            if not date_version or version <= date_version:
                 return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
-                    parsed_uri.geturl(),
-                    version)
-            else:
-                if parsed_uri.scheme != 's3':
-                    if parsed_uri.scheme not in ['', 'file']:
-                        raise ValueError("A wrong url ! (url have to be ['file','s3','']")
-                    if date_version:
-                        date_version = date_version.replace(tzinfo=None)
-                    parsed_uri = urlparse(version_url, allow_fragments=False)
-                # noinspection PyArgumentList,PyTypeChecker
-                if not date_version or version <= date_version:
-
-                    return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
-                            parsed_uri.geturl(),
-                            version)
+                        parsed_uri.geturl(),
+                        version)
         return Grid()
 
     # pylint: disable=no-member

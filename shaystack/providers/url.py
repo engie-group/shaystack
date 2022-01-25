@@ -220,7 +220,7 @@ def read_grid_from_uri(uri: str, envs: Dict[str, str]) -> Grid:
     grid = parse(data.decode("utf-8-sig"), input_mode)
     return grid
 
-# Attention on doit lire la derniere version (exemple: si que le fichier toto-2022-01-01 sans de toto.hayson.json)
+
 def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many-locals,too-many-arguments
                          parsed_destination: ParseResult,
                          customer_id: str,
@@ -232,11 +232,7 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
                          ) -> None:  # pylint: disable=too-many-arguments
 
     log.debug("update %s", (parsed_source.geturl(),))
-    # To change
-    if '.hayson.json' in parsed_source.path:
-        suffix = '.hayson.json'
-    else:
-        suffix = Path(parsed_source.path).suffix
+    suffix = "".join(Path(parsed_source.path).suffixes)
     use_gzip = False
     destination_grid = EmptyGrid.copy()
 
@@ -307,13 +303,7 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
         "s3",
         endpoint_url=envs.get("AWS_S3_ENDPOINT", None),
     )
-    # TOFIX
-    #.hayson.json.gz
     suffix = "".join(Path(parsed_source.path).suffixes)
-    # if '.hayson.json' in parsed_source.path:
-    #     suffix = '.hayson.json'
-    # else:
-    #     suffix = Path(parsed_source.path).suffix
     use_gzip = False
     destination_grid = EmptyGrid.copy()
     source_grid = EmptyGrid.copy()
@@ -351,11 +341,10 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
             source_etag = md5_digest.hexdigest()
         if update_time_series or compare_grid or merge_ts:
             unzipped_source_data = source_data
-            # TODO VERIFY ==gz => .endswith
             if suffix.endswith('.gz'):
                 use_gzip = True
                 unzipped_source_data = gzip.decompress(source_data)
-                suffix = suffix[:-3] #Path(parsed_source.path).suffixes[-2]
+                suffix = suffix[:-3]
 
             try:
                 source_grid = parse(unzipped_source_data.decode("utf-8-sig"),

@@ -147,7 +147,7 @@ class Provider(DBProvider):
         session = self._get_boto()
         # _CDH_PROJECT_ROLE_ARN = "arn:aws:iam::482508239569:role/cdh_ontologyathenaagatheacc_78690"
         project_role_arn = self._envs.get('CDH_PROJECT_ROLE_ARN', '')
-        print(project_role_arn)
+        # print(project_role_arn)
         sts_client = session.client("sts", region_name=region)
 
         assumed_role_object = sts_client.assume_role(
@@ -155,6 +155,8 @@ class Provider(DBProvider):
             RoleSessionName="AssumeRoleSession1",
         )
         credentials = assumed_role_object["Credentials"]
+        log.debug("Sts boto 3 client was created successfully! " + str(credentials))
+
         self._read_client = session.client('athena', region_name=region,
                                            aws_access_key_id=credentials["AccessKeyId"],
                                            aws_secret_access_key=credentials["SecretAccessKey"],

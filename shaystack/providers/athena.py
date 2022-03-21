@@ -160,6 +160,7 @@ class Provider(DBProvider):
                                            aws_secret_access_key=credentials["SecretAccessKey"],
                                            aws_session_token=credentials["SessionToken"]
                                            )
+        log.debug("Athena boto 3 client was created successfully! " + str(self._read_client.meta))
         return self._read_client
 
     # @overrides
@@ -358,7 +359,7 @@ class Provider(DBProvider):
                         'Athena query with the string "{}" failed or was cancelled due to the following error:\n{}'.format(
                             query, error))
                 time.sleep(10)
-            print('FINISHED\nQuery "{}" finished.'.format(query))
+            # print('FINISHED\nQuery "{}" finished.'.format(query))
             reader = self.get_query_results(res["QueryExecutionId"])
             return reader
 
@@ -410,6 +411,7 @@ class Provider(DBProvider):
                               f" AND time BETWEEN DATE('{dates_range[0].strftime('%Y-%m-%d')}') " \
                               f" AND DATE('{dates_range[1].strftime('%Y-%m-%d')}');"
 
+            log.debug("[ATHENA QUERY]: " + select_all)
             # Execution
             response = client.start_query_execution(
                 QueryString=select_all,

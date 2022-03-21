@@ -144,6 +144,7 @@ class Provider(DBProvider):
         # if not self._read_client:
         region = self._envs.get("AWS_REGION",
                                 self._envs.get("AWS_DEFAULT_REGION"))
+        log.info("[BOTO SESSION]: session will be created ! ")
         session = self._get_boto()
         # _CDH_PROJECT_ROLE_ARN = "arn:aws:iam::482508239569:role/cdh_ontologyathenaagatheacc_78690"
         project_role_arn = self._envs.get('CDH_PROJECT_ROLE_ARN', '')

@@ -155,14 +155,14 @@ class Provider(DBProvider):
             RoleSessionName="AssumeRoleSession1",
         )
         credentials = assumed_role_object["Credentials"]
-        log.debug("Sts boto 3 client was created successfully! " + str(credentials))
+        log.info("[STS BOTO]: client was created successfully! " + str(credentials))
 
         self._read_client = session.client('athena', region_name=region,
                                            aws_access_key_id=credentials["AccessKeyId"],
                                            aws_secret_access_key=credentials["SecretAccessKey"],
                                            aws_session_token=credentials["SessionToken"]
                                            )
-        log.debug("Athena boto 3 client was created successfully! " + str(self._read_client.meta))
+        log.debug("[ATHENA BOTO]: was created successfully! " + str(self._read_client.meta))
         return self._read_client
 
     # @overrides
@@ -352,7 +352,8 @@ class Provider(DBProvider):
                     self._get_read_client().get_query_execution(QueryExecutionId=res["QueryExecutionId"])[
                         'QueryExecution']['Status'][
                         'State']
-                print(query_status)
+                # print(query_status)
+                log.info("[QUERY STATUS]: " + query_status)
                 if query_status == 'FAILED' or query_status == 'CANCELLED':
                     error = self._get_read_client().get_query_execution(QueryExecutionId=res["QueryExecutionId"])[
                         'QueryExecution'][

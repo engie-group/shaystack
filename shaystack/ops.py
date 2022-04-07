@@ -536,6 +536,7 @@ def nav(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hayst
             nav_id = args["navId"]
         grid_response = provider.nav(nav_id=nav_id)
         assert grid_response is not None
+        grid_response = grid_response.select("!hisURL")
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)

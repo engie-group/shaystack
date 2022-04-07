@@ -186,6 +186,20 @@ class Provider(DBProvider):
         except Exception as e:
             print(e)
 
+    def get_date(self, str_date: str, date_pattern: str):
+        """
+
+        Args:
+            str_date (str): string date
+            date_pattern (str): date pattern
+        """
+        try:
+            date_val = datetime.strptime(str_date, date_pattern)
+        except ValueError:
+            raise ValueError("time data %r does not match format %r" % (str_date, date_pattern))
+
+        return date_val.strftime("%Y-%m-%d %H:%M:%S")
+
     @overrides
     def his_read(
             self,
@@ -203,6 +217,8 @@ class Provider(DBProvider):
         if not hisURI:
             raise ValueError(f" hisURI '{hisURI} not found")
         his_params = hisURI['partition_keys'].split("/")
+        hs_date_column = list(hisURI["hs_date_column"].keys())[0]
+        hs_value_column = list(hisURI["hs_value_column"].keys())
 
         if not date_version:
             date_version = datetime.max.replace(tzinfo=pytz.UTC)
@@ -219,16 +235,16 @@ class Provider(DBProvider):
         try:
             history = Grid(columns=["ts", "val"])
 
-            select_all = f'SELECT {hisURI["hs_date_column_name"]}, {", ".join(hisURI["hs_column_names"])}' \
+            select_all = f'SELECT {hs_date_column}, {", ".join(hs_value_column)}' \
                          f' FROM {hisURI["tabel_name"]}' \
                          f' WHERE {" ".join([str(item) + " AND" for item in his_params[:-1]])}' \
                          f' {his_params[-1]}'
             if dates_range:
                 select_all += f' AND year in {tuple(date_range_period.years)}' \
                               f' AND month in {tuple(date_range_period.months)}' \
-                              f' AND day in {tuple(date_range_period.days)}' \
                               f' AND time BETWEEN DATE(\'{dates_range[0].strftime("%Y-%m-%d")}\') ' \
                               f' AND DATE(\'{dates_range[1].strftime("%Y-%m-%d")}\');'
+            # f' AND day in {tuple(date_range_period.days)}' \
 
             log.debug("[ATHENA QUERY]: " + select_all)
             # Execution
@@ -247,9 +263,11 @@ class Provider(DBProvider):
             if not hs_type:
                 hs_type = "float"
             for row in reader:
-
-                date_val = row[hisURI['hs_date_column_name']]
-                hs_values = {key: row[key] for key in hisURI['hs_column_names'].keys()}
+                date_format = hisURI["hs_date_column"][hs_date_column] #"%Y-%m-%d %H:%M:%S.%f"
+                # date_val = datetime.strptime(row[hisURI['hs_date_column_name']], "%Y-%m-%d %H:%M:%S.%f").replace(tzinfo=pytz.utc)
+                date_val = self.get_date(row[hs_date_column], date_format)
+                # date_val = row[hisURI['hs_date_column']]
+                hs_values = {key: row[key] for key in hs_value_column}
 
                 if len(hs_values) == 1:
                     # str_val = str(list(val.values())[0])
@@ -258,7 +276,7 @@ class Provider(DBProvider):
                                                                           , hs_type)})  # ,unit
                 else:
                     val = dict(zip(hs_values.keys(),
-                                   [Provider._cast_timeserie_to_hs(hs_values[hs_col], hisURI['hs_column_names'][hs_col])
+                                   [Provider._cast_timeserie_to_hs(hs_values[hs_col], hisURI['hs_value_column'][hs_col])
                                     for hs_col in hs_values.keys()]))
                     history.append({"ts": datetime.fromisoformat(date_val).replace(tzinfo=pytz.UTC),
                                     "val": val})  # ,unit

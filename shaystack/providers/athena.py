@@ -219,7 +219,7 @@ class Provider(DBProvider):
         his_params = hisURI['partition_keys'].split("/")
         hs_date_column = list(hisURI["hs_date_column"].keys())[0]
         hs_value_column = list(hisURI["hs_value_column"].keys())
-
+        date_part_keys = hisURI['date_part_keys']
         if not date_version:
             date_version = datetime.max.replace(tzinfo=pytz.UTC)
 
@@ -240,9 +240,14 @@ class Provider(DBProvider):
                          f' WHERE {" ".join([str(item) + " AND" for item in his_params[:-1]])}' \
                          f' {his_params[-1]}'
             if dates_range:
-                select_all += f' AND year in {tuple(date_range_period.years)}' \
-                              f' AND month in {tuple(date_range_period.months)}' \
-                              f' AND time BETWEEN DATE(\'{dates_range[0].strftime("%Y-%m-%d")}\') ' \
+                if date_part_keys.get('year_col'):
+                    select_all += f' AND {date_part_keys.get("year_col")} in {tuple(date_range_period.years)}'
+                if date_part_keys.get('month_col'):
+                    select_all += f' AND {date_part_keys.get("month_col")} in {tuple(date_range_period.months)}'
+                if date_part_keys.get('day_col'):
+                    select_all += f' AND {date_part_keys.get("day_col")} in {tuple(date_range_period.days)}'
+
+                select_all += f' AND time BETWEEN DATE(\'{dates_range[0].strftime("%Y-%m-%d")}\') '\
                               f' AND DATE(\'{dates_range[1].strftime("%Y-%m-%d")}\');'
             # f' AND day in {tuple(date_range_period.days)}' \
 

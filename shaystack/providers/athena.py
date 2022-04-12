@@ -241,11 +241,11 @@ class Provider(DBProvider):
                          f' {his_params[-1]}'
             if dates_range:
                 if date_part_keys.get('year_col'):
-                    select_all += f' AND {date_part_keys.get("year_col")} in {tuple(date_range_period.years)}'
+                    select_all += f' AND {date_part_keys.get("year_col")} in ({", ".join(map(str,date_range_period.years))})'
                 if date_part_keys.get('month_col'):
-                    select_all += f' AND {date_part_keys.get("month_col")} in {tuple(date_range_period.months)}'
+                    select_all += f' AND {date_part_keys.get("month_col")} in ({", ".join(map(str,date_range_period.months))})'
                 if date_part_keys.get('day_col'):
-                    select_all += f' AND {date_part_keys.get("day_col")} in {tuple(date_range_period.days)}'
+                    select_all += f' AND {date_part_keys.get("day_col")} in ({", ".join(map(str,date_range_period.days))})'
 
                 select_all += f' AND time BETWEEN DATE(\'{dates_range[0].strftime("%Y-%m-%d")}\') '\
                               f' AND DATE(\'{dates_range[1].strftime("%Y-%m-%d")}\');'

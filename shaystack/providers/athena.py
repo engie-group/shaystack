@@ -236,7 +236,7 @@ class Provider(DBProvider):
             history = Grid(columns=["ts", "val"])
 
             select_all = f'SELECT {hs_date_column}, {", ".join(hs_value_column)}' \
-                         f' FROM {hisURI["tabel_name"]}' \
+                         f' FROM {hisURI["table_name"]}' \
                          f' WHERE {" ".join([str(item) + " AND" for item in his_params[:-1]])}' \
                          f' {his_params[-1]}'
             if dates_range:

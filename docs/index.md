@@ -142,7 +142,7 @@ $ pip install "shaystack[flask,graphql,lambda]"
 to read, filter, manipulate and print `Grid` objects containing haystack data.
 
 Try it online [here](https://colab.research.google.com/github/pprados/shaystack/blob/develop/haystack.ipynb), test
-the [User interface](https://skz7riv2yk.execute-api.us-east-2.amazonaws.com/dev/)
+the [User interface](https://shaystack.digital.engie.com/haystack/?iss=https%3A%2F%2Fengie.okta-emea.com) #(https://skz7riv2yk.execute-api.us-east-2.amazonaws.com/dev/)
 or run it with [docker](#docker)
 
 ## Python API

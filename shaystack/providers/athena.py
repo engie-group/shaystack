@@ -81,7 +81,7 @@ class Provider(DBProvider):
                                            aws_secret_access_key=credentials["SecretAccessKey"],
                                            aws_session_token=credentials["SessionToken"]
                                            )
-        log.debug("[ATHENA BOTO]: was created successfully! " + str(self._read_client.meta))
+        log.info("[ATHENA BOTO]: was created successfully! " + str(self._read_client.meta))
         return self._read_client
 
     # @overrides
@@ -146,6 +146,7 @@ class Provider(DBProvider):
             response = resource.Bucket(self._output_bucket_name).Object(
                 key=f'{self._output_folder_name}/{query_execution_id}.csv').get()
             lines = response['Body'].read().decode('utf-8').splitlines(True)
+            log.info("Query results CSV file contain [%s] row.", str(len(lines)))
             reader = DictReader(lines)
             return reader
         except exceptions.ClientError as e:
@@ -202,7 +203,6 @@ class Provider(DBProvider):
             date_val = datetime.strptime(str_date, date_pattern)
         except ValueError:
             raise ValueError("time data %r does not match format %r" % (str_date, date_pattern))
-
         return date_val.strftime("%Y-%m-%d %H:%M:%S")
 
     @staticmethod
@@ -291,7 +291,7 @@ class Provider(DBProvider):
             select_all = self.build_athena_query(his_uri, dates_range, date_version=None)
             log.debug("[ATHENA QUERY]: " + select_all)
 
-            # Execution
+            # Start query execution
             response = athena_client.start_query_execution(
                 QueryString=select_all,
                 QueryExecutionContext={
@@ -301,8 +301,9 @@ class Provider(DBProvider):
                     'OutputLocation': 's3://' + self._output_bucket_name + '/' + self._output_folder_name + "/",
                 }
             )
-
+            # Get query results
             reader = self.poll_query_status(response)
+            # Create timeseries history grid
             history = self.create_history_grid(reader, his_uri)
             return history
 

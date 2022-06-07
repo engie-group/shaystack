@@ -66,20 +66,20 @@ class Provider(DBProvider):
         #######################################################################
         ############ JUST FOR TESTING IT WONT BE USED IN PROD #################
         #######################################################################
-        project_role_arn = self._envs.get('CDH_PROJECT_ROLE_ARN', '')
-        sts_client = session.client("sts", region_name=region)
-        assumed_role_object = sts_client.assume_role(
-             RoleArn=project_role_arn,
-             RoleSessionName="AssumeRoleSession1")
-        credentials = assumed_role_object["Credentials"]
-        log.info("[STS BOTO]: client was created successfully! ")
+        # project_role_arn = self._envs.get('CDH_PROJECT_ROLE_ARN', '')
+        # sts_client = session.client("sts", region_name=region)
+        # assumed_role_object = sts_client.assume_role(
+        #      RoleArn=project_role_arn,
+        #      RoleSessionName="AssumeRoleSession1")
+        # credentials = assumed_role_object["Credentials"]
+        # log.info("[STS BOTO]: client was created successfully! ")
         #######################################################################
 
         self._read_client = session.client('athena',
-                                           region_name=region,
-                                           aws_access_key_id=credentials["AccessKeyId"],
-                                           aws_secret_access_key=credentials["SecretAccessKey"],
-                                           aws_session_token=credentials["SessionToken"]
+                                           region_name=region
+                                           # aws_access_key_id=credentials["AccessKeyId"],
+                                           # aws_secret_access_key=credentials["SecretAccessKey"],
+                                           # aws_session_token=credentials["SessionToken"]
                                            )
         log.info("[ATHENA BOTO]: was created successfully! " + str(self._read_client.meta))
         return self._read_client

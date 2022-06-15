@@ -4,6 +4,7 @@
 # (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+from random import randint
 
 from datetime import datetime, date, time
 from typing import Optional, Tuple, Any, Dict
@@ -183,7 +184,7 @@ class Provider(DBProvider):
                                                         f'{query_status["StateChangeReason"]}')
                     else:
                         raise Exception(error_message)
-                time.sleep(15)
+                time.sleep(randint(1, 10))
             # getting the csv file that contain query results from s3 output bucket
             reader = self.get_query_results(query_response["QueryExecutionId"])
             return reader

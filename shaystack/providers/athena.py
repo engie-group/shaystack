@@ -173,7 +173,7 @@ class Provider(DBProvider):
                 query_status = \
                     athena_client.get_query_execution(QueryExecutionId=query_response["QueryExecutionId"])[
                         'QueryExecution']['Status']
-                log.info(f'[QUERY STATUS]: {query_status["State"]}')
+                log.info(f'[QUERY {5 - max_execution} STATUS]: {query_status["State"]}')
                 if query_status['State'] == 'FAILED' or query_status['State'] == 'CANCELLED':
                     # Get error message from Athena
                     error_message = 'Athena query with executionId {} was {} '.format(

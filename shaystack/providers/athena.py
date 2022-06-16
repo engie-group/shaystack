@@ -184,7 +184,7 @@ class Provider(DBProvider):
                                                         f'{query_status["StateChangeReason"]}')
                     else:
                         raise Exception(error_message)
-                time.sleep(randint(1, 10))
+                time.sleep(randint(10, 15))
             # getting the csv file that contain query results from s3 output bucket
             reader = self.get_query_results(query_response["QueryExecutionId"])
             return reader

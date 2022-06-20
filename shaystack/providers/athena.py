@@ -156,24 +156,22 @@ class Provider(DBProvider):
             else:
                 raise
 
-    def poll_query_status(self, query_response: dict, max_execution: int = 5) -> DictReader:
+    def poll_query_status(self, query_response: dict) -> DictReader:
         """
         Get the status of the Athena request, i.e. "QUEUED", "RUNNING", "FAILED" or "CANCELLED", and get the results
         of successful requests
 
         Args:
-            max_execution(int): Maximum number of athena request execution attempts (5 by default)
             query_response (dict): all metadata that came within athena response
         """
         try:
             athena_client = self._get_read_client()
             query_status = {'State': None}
-            while max_execution > 0 and query_status['State'] in ['QUEUED', 'RUNNING', None]:
-                max_execution = max_execution - 1
+            while query_status['State'] in ['QUEUED', 'RUNNING', None]:
                 query_status = \
                     athena_client.get_query_execution(QueryExecutionId=query_response["QueryExecutionId"])[
                         'QueryExecution']['Status']
-                log.info(f'[QUERY {5 - max_execution} STATUS]: {query_status["State"]}')
+                log.info(f'[QUERY STATUS]: {query_status["State"]}')
                 if query_status['State'] == 'FAILED' or query_status['State'] == 'CANCELLED':
                     # Get error message from Athena
                     error_message = 'Athena query with executionId {} was {} '.format(
@@ -184,7 +182,7 @@ class Provider(DBProvider):
                                                         f'{query_status["StateChangeReason"]}')
                     else:
                         raise Exception(error_message)
-                time.sleep(randint(10, 15))
+                time.sleep(1)
             # getting the csv file that contain query results from s3 output bucket
             reader = self.get_query_results(query_response["QueryExecutionId"])
             return reader

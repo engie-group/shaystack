@@ -185,7 +185,7 @@ class Provider(DBProvider):
                                                         f'{query_status["StateChangeReason"]}')
                     else:
                         raise Exception(error_message)
-                time.sleep(1)
+                time.sleep(15)
             # getting the csv file that contain query results from s3 output bucket
             reader = self.get_query_results(query_response["QueryExecutionId"])
             return reader
@@ -280,7 +280,7 @@ class Provider(DBProvider):
                     ))
                     history.append({"ts": datetime.fromisoformat(date_val).replace(tzinfo=pytz.UTC),
                                     "val": val})  # ,unit
-                return history
+        return history
 
     def run_query(self, his_uri: dict, dates_range: tuple, date_version):
         """

@@ -93,46 +93,49 @@ class Provider(DBProvider):
     def _cast_timeserie_to_hs(val: str,
                               python_type: str,
                               unit: str = None) -> Any:
-        if python_type == "str":
-            return val
-        if python_type == "float":
-            return float(val)
-        if python_type == "_PintQuantity":
-            return Quantity(float(val), unit)
-        if python_type == "Quantity":
-            return Quantity(float(val), unit)
-        if python_type == "bool":
-            return val.lower() == 'true'
-        if python_type == "int":
-            return int(float(val))
-        if python_type == "_MarkerType":
-            return MARKER if val else None
-        if python_type == "_RemoveType":
-            return REMOVE if val else None
-        if python_type == "_NAType":
-            return NA if val else None
-        if python_type == "Ref":
-            return Ref(val)
-        if python_type == "datetime":
-            return datetime.fromtimestamp(int(val))
-        if python_type == "date":
-            return date.fromordinal(int(val))
-        if python_type == "time":
-            int_time = int(val)
-            hour = ((int_time // 1000000) // 60) // 60
-            minute = ((int_time // 1000000) // 60) % 60
-            split = (int_time // 1000000) % 60
-            mic = int_time % 1000000
-            return time(hour, minute, split, mic)
-        if python_type == "Coordinate":
-            split = val.split(",")
-            return Coordinate(float(split[0]), float(split[1]))
-        if python_type == "XStr":
-            split = val.split(",")
-            return XStr(*split)
-        if python_type == "NoneType":
+        if val:
+            if python_type == "str":
+                return val
+            if python_type == "float":
+                return float(val)
+            if python_type == "_PintQuantity":
+                return Quantity(float(val), unit)
+            if python_type == "Quantity":
+                return Quantity(float(val), unit)
+            if python_type == "bool":
+                return val.lower() == 'true'
+            if python_type == "int":
+                return int(float(val))
+            if python_type == "_MarkerType":
+                return MARKER if val else None
+            if python_type == "_RemoveType":
+                return REMOVE if val else None
+            if python_type == "_NAType":
+                return NA if val else None
+            if python_type == "Ref":
+                return Ref(val)
+            if python_type == "datetime":
+                return datetime.fromtimestamp(int(val))
+            if python_type == "date":
+                return date.fromordinal(int(val))
+            if python_type == "time":
+                int_time = int(val)
+                hour = ((int_time // 1000000) // 60) // 60
+                minute = ((int_time // 1000000) // 60) % 60
+                split = (int_time // 1000000) % 60
+                mic = int_time % 1000000
+                return time(hour, minute, split, mic)
+            if python_type == "Coordinate":
+                split = val.split(",")
+                return Coordinate(float(split[0]), float(split[1]))
+            if python_type == "XStr":
+                split = val.split(",")
+                return XStr(*split)
+            if python_type == "NoneType":
+                return None
+            raise ValueError(f"Unknown type {python_type}")
+        else:
             return None
-        raise ValueError(f"Unknown type {python_type}")
 
     def get_query_results(self, query_execution_id: str) -> DictReader:
         """
@@ -232,11 +235,14 @@ class Provider(DBProvider):
                      f' {hs_parts_keys[-1]}'
         if dates_range:
             if hs_date_parts_keys.get('year_col'):
-                select_all += f' AND {hs_date_parts_keys.get("year_col")} in ({", ".join(map(str, date_range_period.years))})'
+                select_all += f' AND {hs_date_parts_keys.get("year_col")} in' \
+                              f' ({", ".join(map(str, date_range_period.years))})'
             if hs_date_parts_keys.get('month_col'):
-                select_all += f' AND {hs_date_parts_keys.get("month_col")} in ({", ".join(map(str, date_range_period.months))})'
+                select_all += f' AND {hs_date_parts_keys.get("month_col")} in' \
+                              f' ({", ".join(map(str, date_range_period.months))})'
             if hs_date_parts_keys.get('day_col'):
-                select_all += f' AND {hs_date_parts_keys.get("day_col")} in ({", ".join(map(str, date_range_period.days))})'
+                select_all += f' AND {hs_date_parts_keys.get("day_col")} in' \
+                              f' ({", ".join(map(str, date_range_period.days))})'
 
             select_all += f' AND time BETWEEN DATE(\'{dates_range[0].strftime("%Y-%m-%d")}\') ' \
                           f' AND DATE(\'{dates_range[1].strftime("%Y-%m-%d")}\');'
@@ -265,14 +271,16 @@ class Provider(DBProvider):
                     history.append({
                         "ts": datetime.fromisoformat(date_val).replace(tzinfo=pytz.UTC),
                         "val": Provider._cast_timeserie_to_hs(str(list(hs_values.values())[0]), hs_type)
-                        })
+                    })
                 else:
-                    val = dict(zip(hs_values.keys(), [Provider._cast_timeserie_to_hs(hs_values[hs_col],
-                                                                                     his_uri['hs_value_column'][hs_col])
-                                                      for hs_col in hs_values.keys()]))
+                    val = dict(zip(
+                        hs_values.keys(),
+                        [Provider._cast_timeserie_to_hs(hs_values[hs_col], his_uri['hs_value_column'][hs_col])
+                         for hs_col in hs_values.keys()]
+                    ))
                     history.append({"ts": datetime.fromisoformat(date_val).replace(tzinfo=pytz.UTC),
                                     "val": val})  # ,unit
-        return history
+                return history
 
     def run_query(self, his_uri: dict, dates_range: tuple, date_version):
         """
@@ -353,4 +361,3 @@ class Provider(DBProvider):
         except ValueError as err:
             log.error("Exception while running query: %s", err)
             raise
-

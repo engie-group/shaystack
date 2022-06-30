@@ -18,9 +18,10 @@ def test_values_for_tag(mock_get_url):
     Args:
         mock_get_url:
     """
-    mock_get_url.return_value = "sample/carytown.zinc"
-    with get_provider("shaystack.providers.url", {}) as provider:
-
+    mock_get_url.return_value = "sample/carytown.hayson.json"
+    with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
+        provider.cache_clear()
+        provider._periodic_refresh = 2
         result = provider.values_for_tag("id")
         assert len(result) == 24
 
@@ -52,6 +53,7 @@ def test_read_last_without_version_without_filter(mock_get_url):
     mock_get_url.return_value = "sample/carytown.hayson.json"
     with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
         provider.cache_clear()
+        provider._periodic_refresh = 2
         result = provider.read(40, None, None, None, None)
         assert len(result) == 24
 
@@ -64,6 +66,7 @@ def test_read_with_version_2021_without_filter(mock_get_url):
     """
     mock_get_url.return_value = "sample/carytown.hayson.json"
     with get_provider("shaystack.providers.url", {}) as provider:
+
         version_2 = datetime(2021, 11, 2, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, None, None, date_version=version_2)
         assert len(result) == 3
@@ -77,9 +80,10 @@ def test_read_with_version_2020_without_filter(mock_get_url):
     """
     mock_get_url.return_value = "sample/carytown.hayson.json"
     with get_provider("shaystack.providers.url", {}) as provider:
-        version_2 = datetime(2020, 11, 10, 0, 0, 2, 0, tzinfo=pytz.UTC)
+
+        version_2 = datetime(2020, 11, 2, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, None, None, date_version=version_2)
-        assert len(result) == 1
+        assert len(result) == 2
 
 
 @patch.object(URLProvider, '_get_url')
@@ -146,7 +150,7 @@ def test_version(mock_get_url):
     mock_get_url.return_value = "sample/carytown.hayson.json"
     with get_provider("shaystack.providers.url", {}) as provider:
         versions = provider.versions()
-        assert len(versions) == 3
+        assert len(versions) == 4
 
 
 class ProviderTest(unittest.TestCase):

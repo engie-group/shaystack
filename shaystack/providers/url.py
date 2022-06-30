@@ -730,12 +730,14 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         else:
             name, suffix = parsed_uri.path.split(".", 1)
             unordered_all_versions = {}
+            creation_date = datetime.fromtimestamp(os.path.getmtime(parsed_uri.path))
             for f in glob.glob(f"{name}*.{suffix}"):
                 str_version = f[len(name) + 1:-len(suffix) - 1]
-                if not str_version:
-                    # User file date
-                    creation_date = datetime.fromtimestamp(os.path.getmtime(parsed_uri.path))
-                else:
+                # if not str_version:
+                #     # User file date
+                #     creation_date = datetime.fromtimestamp(os.path.getmtime(parsed_uri.path))
+                # else:
+                if str_version:
                     unordered_all_versions[datetime.fromisoformat(str_version)] = f
             ordered_date_from_str_versions = sorted(unordered_all_versions.keys(), reverse=True)
             # On n'est pas censé l'accepter, péter une erreur (import file dans le bon ordre)
@@ -788,19 +790,38 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         parsed_uri = urlparse(uri, allow_fragments=False)
         parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
         self._refresh_versions(parsed_uri)
-        for version, version_url in self._versions[parsed_uri.geturl()].items():
-            if parsed_uri.scheme != 's3':
-                if parsed_uri.scheme not in ['', 'file']:
-                    raise ValueError("A wrong url ! (url have to be ['file','s3','']")
-                if date_version:
-                    date_version = date_version.replace(tzinfo=None)
-                parsed_uri = urlparse(version_url, allow_fragments=False)
-            # noinspection PyArgumentList,PyTypeChecker
-            if not date_version or version <= date_version:
-                return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
-                        parsed_uri.geturl(),
-                        version)
-        return Grid()
+        if parsed_uri.scheme != 's3':
+            if parsed_uri.scheme not in ['', 'file']:
+                raise ValueError("A wrong url ! (url have to be ['file','s3','']")
+
+        list_of_versions = list(self._versions[parsed_uri.geturl()].keys())
+        if date_version:
+            date_version = date_version.replace(tzinfo=None)
+            cloz_version = min(list_of_versions, key=lambda sub: abs(sub - date_version))
+            parsed_uri = urlparse(self._versions[parsed_uri.geturl()][cloz_version], allow_fragments=False)
+        else:
+            parsed_uri = urlparse(self._versions[parsed_uri.geturl()][list_of_versions[0]],
+                                  allow_fragments=False)
+            cloz_version = list_of_versions[0]
+
+        return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
+            parsed_uri.geturl(),
+            cloz_version)
+
+
+        # for version, version_url in self._versions[parsed_uri.geturl()].items():
+        #     if parsed_uri.scheme != 's3':
+        #         if parsed_uri.scheme not in ['', 'file']:
+        #             raise ValueError("A wrong url ! (url have to be ['file','s3','']")
+        #         if date_version:
+        #             date_version = date_version.replace(tzinfo=None)
+        #         parsed_uri = urlparse(version_url, allow_fragments=False)
+        #     # noinspection PyArgumentList,PyTypeChecker
+        #     if not date_version or version <= date_version:  # .date():
+        #         return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
+        #                 parsed_uri.geturl(),
+        #                 version)
+        # return Grid(columns=["ts", "val"])
 
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -> None:

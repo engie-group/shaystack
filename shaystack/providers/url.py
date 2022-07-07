@@ -566,7 +566,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         next_time = now.replace(minute=0, second=0) + timedelta(
             minutes=(now.minute + self._periodic_refresh) // self._periodic_refresh * self._periodic_refresh
         )
-        assert next_time > now
+        assert next_time >= now
         if parsed_uri.scheme == "s3":
             assert BOTO3_AVAILABLE, "Use 'pip install boto3'"
             start_of_current_period = \

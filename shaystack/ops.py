@@ -445,7 +445,7 @@ def formats(envs: Dict[str, str], request: HaystackHttpRequest,
     return response
 
 
-def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> HaystackHttpResponse:
+def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,factory = lambda envs: get_singleton_provider(envs)) -> HaystackHttpResponse:
     """
     Implement Haystack `read`
     Args:
@@ -458,7 +458,7 @@ def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hays
     """
     headers, args = (request.headers, request.args)
     try:
-        provider = get_singleton_provider(envs)
+        provider = factory(envs)
         grid_request = _parse_body(request)
         read_ids: Optional[List[Ref]] = None
         select = read_filter = date_version = None

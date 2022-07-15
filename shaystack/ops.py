@@ -445,7 +445,8 @@ def formats(envs: Dict[str, str], request: HaystackHttpRequest,
     return response
 
 
-def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,factory = lambda envs: get_singleton_provider(envs)) -> HaystackHttpResponse:
+def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
+         factory = lambda envs: get_singleton_provider(envs)) -> HaystackHttpResponse:
     """
     Implement Haystack `read`
     Args:
@@ -788,6 +789,20 @@ def his_read(envs: Dict[str, str], request: HaystackHttpRequest,
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
     return response
+
+def his_reads(envs: Dict[str, str], request: HaystackHttpRequest,
+             stage: str) -> HaystackHttpResponse:
+    # ... parsing
+    args = request.args
+    try:
+        if args and 'ids' in args:
+
+
+    except Exception as ex:  # pylint: disable=broad-except
+        response = _manage_exception(headers, ex, stage)
+
+    grids_response = provider.his_reads(entity_id, grid_date_range, date_version)
+    # ... format result
 
 
 def his_write(envs: Dict[str, str], request: HaystackHttpRequest,

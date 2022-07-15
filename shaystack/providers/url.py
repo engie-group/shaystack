@@ -563,9 +563,10 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         """ Refresh list of versions """
         # Refresh at a rounded period, then all cloud instances refresh data at the same time.
         now = datetime.utcnow().replace(tzinfo=pytz.UTC)
-        next_time = now.replace(minute=0, second=0) + timedelta(
-            minutes=(now.minute + self._periodic_refresh) // self._periodic_refresh * self._periodic_refresh
-        )
+        minutes_delta = now.minute
+        if self._periodic_refresh != 0:
+            minutes_delta = (now.minute + self._periodic_refresh) // self._periodic_refresh * self._periodic_refresh
+        next_time = now.replace(minute=0, second=0) + timedelta(minutes=minutes_delta)
         assert next_time >= now
         if parsed_uri.scheme == "s3":
             assert BOTO3_AVAILABLE, "Use 'pip install boto3'"

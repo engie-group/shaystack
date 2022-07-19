@@ -540,7 +540,6 @@ def nav(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
             nav_id = args["navId"]
         grid_response = provider.nav(nav_id=nav_id)
         assert grid_response is not None
-        grid_response = grid_response.select("!hisURL")
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
@@ -798,21 +797,6 @@ def his_read(envs: Dict[str, str], request: HaystackHttpRequest,
     except Exception as ex:  # pylint: disable=broad-except
         response = _manage_exception(headers, ex, stage)
     return response
-
-def his_reads(envs: Dict[str, str], request: HaystackHttpRequest,
-             stage: str,
-         factory = lambda envs: get_singleton_provider(envs)) -> HaystackHttpResponse:
-    # ... parsing
-    args = request.args
-    try:
-        if args and 'ids' in args:
-
-
-    except Exception as ex:  # pylint: disable=broad-except
-        response = _manage_exception(headers, ex, stage)
-
-    grids_response = provider.his_reads(entity_id, grid_date_range, date_version)
-    # ... format result
 
 
 def his_write(envs: Dict[str, str], request: HaystackHttpRequest,

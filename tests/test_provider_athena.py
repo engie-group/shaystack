@@ -27,18 +27,9 @@ def environ():
         "AWS_REGION": "eu-west-1",
         "FLASK_DEBUG": 1,
         "HAYSTACK_UI": "yes",
-        "REFRESH": 1,
-        "CDH_PROJECT_ROLE_ARN": "arn:aws:iam::482508239569:role/cdh_ontologyathenaagatheacc_78690"
+        "REFRESH": 1
     }
     return env
-
-
-@pytest.fixture(scope="function", autouse=True)
-def aws_credentials():
-    os.environ["AWS_ACCESS_KEY_ID"] = "testing"
-    os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
-    os.environ["AWS_SECURITY_TOKEN"] = "testing"
-    os.environ["AWS_SESSION_TOKEN"] = "testing"
 
 
 @pytest.fixture(scope="function", autouse=True)

@@ -4,7 +4,6 @@
 # (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
-from random import randint
 
 from datetime import datetime, date, time
 from typing import Optional, Tuple, Any, Dict
@@ -61,31 +60,13 @@ class Provider(DBProvider):
         region = self._envs.get("AWS_REGION",
                                 self._envs.get("AWS_DEFAULT_REGION"))
         session = self._get_boto()
-
         log.info("[BOTO SESSION]: session was created successfully! ")
-        #TODO remove the CDH_PROJECT_ROLE_ARN
-        #######################################################################
-        ############ JUST FOR TESTING IT WONT BE USED IN PROD #################
-        #######################################################################
-        project_role_arn = self._envs.get('CDH_PROJECT_ROLE_ARN', '')
-        sts_client = session.client("sts", region_name=region)
-        assumed_role_object = sts_client.assume_role(
-             RoleArn=project_role_arn,
-             RoleSessionName="AssumeRoleSession1")
-        credentials = assumed_role_object["Credentials"]
-        log.info("[STS BOTO]: client was created successfully! ")
-        #######################################################################
-
         self._read_client = session.client('athena',
-                                           region_name=region,
-                                           aws_access_key_id=credentials["AccessKeyId"],
-                                           aws_secret_access_key=credentials["SecretAccessKey"],
-                                           aws_session_token=credentials["SessionToken"]
+                                           region_name=region
                                            )
         log.info("[ATHENA BOTO]: was created successfully! " + str(self._read_client.meta))
         return self._read_client
 
-    # @overrides
     def _import_ts_in_db(self, **kwargs) -> None:
         raise NotImplementedError('Feature not implemented')
 
@@ -142,6 +123,8 @@ class Provider(DBProvider):
         Download result file
         Args:
             query_execution_id (object): Str that represent the ExecutionId of athena query
+        Output:
+            CSV DictReader containing the query response
         """
         region = self._envs.get("AWS_REGION",
                                 self._envs.get("AWS_DEFAULT_REGION"))
@@ -166,6 +149,8 @@ class Provider(DBProvider):
 
         Args:
             query_response (dict): all metadata that came within athena response
+        Output:
+            CSV DictReader containing the query response
         """
         try:
             athena_client = self._get_read_client()
@@ -200,6 +185,8 @@ class Provider(DBProvider):
         Args:
             str_date (str): string date
             date_pattern (str): date pattern
+        Output:
+            STR date using Haystack date format
         """
         try:
             date_val = datetime.strptime(str_date, date_pattern)
@@ -216,6 +203,8 @@ class Provider(DBProvider):
              his_uri (dict): dict containing all the parameters needed to build the Athena query
              dates_range (tuple): (start_date, end_date) date range that represents the time period to query
              date_version (datetime): the date that represents the version of the ontology
+        Output:
+            STR Athena query (SELECT a, b from table ..)
         """
         hs_parts_keys = his_uri['partition_keys'].split("/")
         hs_date_column = list(his_uri["hs_date_column"].keys())[0]
@@ -255,6 +244,8 @@ class Provider(DBProvider):
         Args:
             reader (csv.DictReade): csv containing the query result rows
             his_uri (dict): dict containing all the parameters needed to build the Athena query
+        Output:
+            Grid filled with the data from athena query result
         """
         hs_date_column_name = list(his_uri["hs_date_column"].keys())[0]
         hs_value_column_names = list(his_uri["hs_value_column"].keys())
@@ -290,6 +281,8 @@ class Provider(DBProvider):
             table name, partition keys, ...
             dates_range (tuple): (start_date, end_date) date range that represents the time period to query
             date_version (datetime): the date that represents the version of the ontology
+        Output:
+            The grid response containing the results
         """
         athena_client = self._get_read_client()
 

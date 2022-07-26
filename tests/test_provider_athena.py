@@ -151,13 +151,13 @@ def shaystack_empty_grid():
     """Shaystack empty Grid object"""
     return Grid(columns=["ts", "val"])
 
-@pytest.disable()
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_import_ts_in_db(environ):
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
         with pytest.raises(NotImplementedError):
             assert provider._import_ts_in_db()
 
-@pytest.disable()
+@pytest.mark.skip(reason="no way of currently testing this")
 @patch('shaystack.providers.athena.Provider.get_query_results')
 def test_get_query_results_called_by_poll_query_status(mock_get_query_execution, environ, athena_client):
     query = "SELECT stuff"
@@ -175,7 +175,7 @@ def test_get_query_results_called_by_poll_query_status(mock_get_query_execution,
         provider.poll_query_status(response)
         mock_get_query_execution.assert_called_once()
 
-@pytest.disable()
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_poll_query_status_raise_exception_when_querye_failed(environ, athena_client):
     query = "SELECT stuff"
     location = "s3://bucket-name/prefix/"
@@ -191,14 +191,14 @@ def test_poll_query_status_raise_exception_when_querye_failed(environ, athena_cl
         with pytest.raises(Exception):
             assert provider.poll_query_status(response)
 
-@pytest.disable()
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_get_query_results_object_not_found(environ):
     fake_execution_id = '00000000-1111-2222-3333-444444444444'
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
         with pytest.raises(exceptions.ClientError):
             assert provider.get_query_results(fake_execution_id)
 
-@pytest.disable()
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_build_athena_prediction_query_of_entity_00(environ, entity_00):
 
     athena_query = "SELECT time, prediction, upper, lower FROM tast_table WHERE" \
@@ -211,7 +211,7 @@ def test_build_athena_prediction_query_of_entity_00(environ, entity_00):
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
         assert athena_query == provider.build_athena_query(entity_00['hisURI'], date_range, None)
 
-@pytest.disable()
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_build_athena_prediction_query_of_entity_01(environ, entity_01):
 
     athena_query = "SELECT time, value FROM tast_table WHERE " \
@@ -224,20 +224,20 @@ def test_build_athena_prediction_query_of_entity_01(environ, entity_01):
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
         assert athena_query == provider.build_athena_query(entity_01['hisURI'], date_range, None)
 
-@pytest.disable()
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_create_history_grid(environ, time_series_csv_file_1, entity_01, shaystack_grid_from_time_series_csv_file_1):
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
         reader = csv.DictReader(time_series_csv_file_1)
         history = provider.create_history_grid(reader, entity_01['hisURI'])
         assert history == shaystack_grid_from_time_series_csv_file_1
 
-@pytest.disable()
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_create_history_empty_grid(environ, shaystack_empty_grid, entity_01):
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
         history = provider.create_history_grid(None, entity_01['hisURI'])
         assert history == shaystack_empty_grid
 
-@pytest.disable()
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_put_date_format(environ):
     str_date = "2022/06/01"
     date_pattern = "%Y/%m/%d"
@@ -245,7 +245,7 @@ def test_put_date_format(environ):
         date_formated = provider.put_date_format(str_date, date_pattern)
         assert date_formated == "2022-06-01 00:00:00"
 
-@pytest.disable()
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_put_date_format_value_error_exception(environ):
     str_date = "2022/06/01"
     date_pattern = "%Y-%m-%d"

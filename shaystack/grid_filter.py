@@ -138,7 +138,7 @@ def _get_path(grid: Grid, obj: Any, paths: List[str]) -> Any:
             obj = obj[path]
             if i != len(paths) - 1 and isinstance(obj, Ref):
                 obj = grid[obj]  # Follow the reference
-        if not obj and obj != 0:
+        if obj == None:      #not obj and obj != 0:
             return NOT_FOUND
         return obj  # It's a value at this time
     except TypeError:

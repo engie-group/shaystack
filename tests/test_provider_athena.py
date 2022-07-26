@@ -15,10 +15,9 @@ from shaystack.grid import Grid
 from shaystack.providers import get_provider
 from shaystack.providers.athena import Provider as DBTSProvider
 
-
-@pytest.fixture(scope="function", autouse=True)
-def environ():
-    env = {
+@pytest.fixture(autouse=True, scope='class')
+def environ(request):
+    request.cls.env = {
         "HAYSTACK_PROVIDER": "shaystack.providers.athena",
         "HAYSTACK_DB": f"s3://s3_input_bucket_name/ontology.hayson.json",
         "HAYSTACK_TS": f"athena://shaystack?output_bucket_name=s3_output_bucket_name"
@@ -29,20 +28,16 @@ def environ():
         "HAYSTACK_UI": "yes",
         "REFRESH": 1
     }
-    return env
 
-
-@pytest.fixture(scope="function", autouse=True)
-def athena_client(environ):
+@pytest.fixture(autouse=True, scope='class')
+def athena_client(request):
     with mock_athena():
-        athena_client = boto3.client("athena", region_name=environ["AWS_REGION"])
-        yield athena_client
+        request.cls.athena_client = boto3.client("athena", region_name= "eu-west-1")
 
-
-@pytest.fixture()
-def entity_00():
+@pytest.fixture(autouse=True, scope='class')
+def entity_00(request):
     """Entity sample with composed time series (more than one value)"""
-    return {
+    request.cls.entity_00= {
                "id": {
                    "_kind": "Ref",
                    "val": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
@@ -79,11 +74,10 @@ def entity_00():
                },
            }
 
-
-@pytest.fixture()
-def entity_01():
+@pytest.fixture(autouse=True, scope='class')
+def entity_01(request):
     """Entity sample with only one Timeseries value"""
-    return {
+    request.cls.entity_01 = {
                "id": {
                    "_kind": "Ref",
                    "val": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
@@ -117,12 +111,10 @@ def entity_01():
                },
            }
 
-
-@pytest.fixture()
-def time_series_csv_file_1():
+@pytest.fixture(autouse=True, scope='class')
+def time_series_csv_file_1(request):
     """CSV file containing time series data representing the results of a successful Athena query"""
-
-    lines = ['"time","value"\n',
+    request.cls.time_series_csv_file_1 = ['"time","value"\n',
              '"2021-05-03 09:59:00.000","0.04353"\n', '"2021-05-03 14:02:00.000","0.8818"\n',
              '"2021-05-03 15:12:00.000","0.67444"\n', '"2021-05-03 16:16:00.000","0.47537"\n',
              '"2021-05-03 06:54:00.000","-0.01311"\n', '"2021-05-03 08:18:00.000","0.04903"\n',
@@ -130,125 +122,113 @@ def time_series_csv_file_1():
              '"2021-05-03 11:51:00.000","1.3186"\n', '"2021-05-03 12:31:00.000","1.17972"\n',
              '"2021-05-03 13:51:00.000","0.85427"\n', '"2021-05-03 14:17:00.000","0.92032"\n']
 
-    return lines
-
-
-@pytest.fixture()
-def shaystack_grid_from_time_series_csv_file_1(time_series_csv_file_1):
+@pytest.fixture(autouse=True, scope='class')
+def shaystack_grid_from_time_series_csv_file_1(request, time_series_csv_file_1):
     """Shaystack Grid object created from csv time series"""
-    reader = csv.DictReader(time_series_csv_file_1)
+    reader = csv.DictReader(['"time","value"\n',
+             '"2021-05-03 09:59:00.000","0.04353"\n', '"2021-05-03 14:02:00.000","0.8818"\n',
+             '"2021-05-03 15:12:00.000","0.67444"\n', '"2021-05-03 16:16:00.000","0.47537"\n',
+             '"2021-05-03 06:54:00.000","-0.01311"\n', '"2021-05-03 08:18:00.000","0.04903"\n',
+             '"2021-05-03 09:12:00.000","0.01854"\n', '"2021-05-03 10:05:00.000","-0.78323"\n',
+             '"2021-05-03 11:51:00.000","1.3186"\n', '"2021-05-03 12:31:00.000","1.17972"\n',
+             '"2021-05-03 13:51:00.000","0.85427"\n', '"2021-05-03 14:17:00.000","0.92032"\n'])
     history = Grid(columns=["ts", "val"])
     for row in reader:
         date_val = row['time']
         hs_values = {'value': row['value']}
         history.append({"ts": datetime.fromisoformat(date_val).replace(tzinfo=pytz.UTC),
                         "val": DBTSProvider._cast_timeserie_to_hs(str(list(hs_values.values())[0]), "float")})
-    return history
+    request.cls.shaystack_grid_from_time_series_csv_file_1 = history
 
-
-@pytest.fixture()
-def shaystack_empty_grid():
+@pytest.fixture(autouse=True, scope='class')
+def shaystack_empty_grid(request):
     """Shaystack empty Grid object"""
-    return Grid(columns=["ts", "val"])
+    request.cls.shaystack_empty_grid = Grid(columns=["ts", "val"])
 
-@pytest.mark.skip(reason="no way of currently testing this")
-def test_import_ts_in_db(environ):
-    with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
-        with pytest.raises(NotImplementedError):
-            assert provider._import_ts_in_db()
+class TestGoogle:
 
-@pytest.mark.skip(reason="no way of currently testing this")
-@patch('shaystack.providers.athena.Provider.get_query_results')
-def test_get_query_results_called_by_poll_query_status(mock_get_query_execution, environ, athena_client):
-    query = "SELECT stuff"
-    location = "s3://bucket-name/prefix/"
-    database = "database"
-    # Start Query
-    response = athena_client.start_query_execution(
-        QueryString=query,
-        QueryExecutionContext={"Database": database},
-        ResultConfiguration={"OutputLocation": location},
-    )
-    athena_backends['eu-west-1'].executions.get(response['QueryExecutionId']).status = "SUCCEEDED"
+    @pytest.mark.usefixtures("environ")
+    def test_import_ts_in_db(self):
+        with cast(DBTSProvider, get_provider("shaystack.providers.athena", self.env)) as provider:
+            with pytest.raises(NotImplementedError):
+                assert provider._import_ts_in_db()
 
-    with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
-        provider.poll_query_status(response)
-        mock_get_query_execution.assert_called_once()
+    @pytest.mark.usefixtures("environ")
+    def test_get_query_results_object_not_found(self):
+        fake_execution_id = '00000000-1111-2222-3333-444444444444'
+        with cast(DBTSProvider, get_provider("shaystack.providers.athena", self.env)) as provider:
+            with pytest.raises(exceptions.ClientError):
+                assert provider.get_query_results(fake_execution_id)
 
-@pytest.mark.skip(reason="no way of currently testing this")
-def test_poll_query_status_raise_exception_when_querye_failed(environ, athena_client):
-    query = "SELECT stuff"
-    location = "s3://bucket-name/prefix/"
-    database = "database"
-    # Start Query
-    response = athena_client.start_query_execution(
-        QueryString=query,
-        QueryExecutionContext={"Database": database},
-        ResultConfiguration={"OutputLocation": location},
-    )
-    athena_backends['eu-west-1'].executions.get(response['QueryExecutionId']).status = "FAILED"
-    with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
-        with pytest.raises(Exception):
-            assert provider.poll_query_status(response)
-
-@pytest.mark.skip(reason="no way of currently testing this")
-def test_get_query_results_object_not_found(environ):
-    fake_execution_id = '00000000-1111-2222-3333-444444444444'
-    with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
-        with pytest.raises(exceptions.ClientError):
-            assert provider.get_query_results(fake_execution_id)
-
-@pytest.mark.skip(reason="no way of currently testing this")
-def test_build_athena_prediction_query_of_entity_00(environ, entity_00):
-
-    athena_query = "SELECT time, prediction, upper, lower FROM tast_table WHERE" \
+    @pytest.mark.usefixtures("environ", "entity_00")
+    def test_build_athena_prediction_query_of_entity_00(self):
+        athena_query = "SELECT time, prediction, upper, lower FROM tast_table WHERE" \
                        " part_key_1='pk1' AND part_key_2='pk2' AND part_key_3='pk3' " \
                        "AND year in (2021) AND month in (5) AND day in (1, 2, 3, 4)" \
                        " AND time BETWEEN DATE('2021-05-01')  AND DATE('2021-05-04');"
 
-    date_range = (datetime(2021, 5, 1, 0, 0, tzinfo=pytz.UTC),
-                  datetime(2021, 5, 4, 23, 59, 59, 999999, tzinfo=pytz.UTC))
-    with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
-        assert athena_query == provider.build_athena_query(entity_00['hisURI'], date_range, None)
+        date_range = (datetime(2021, 5, 1, 0, 0, tzinfo=pytz.UTC),
+                      datetime(2021, 5, 4, 23, 59, 59, 999999, tzinfo=pytz.UTC))
+        with cast(DBTSProvider, get_provider("shaystack.providers.athena", self.env)) as provider:
+            assert athena_query == provider.build_athena_query(self.entity_00['hisURI'], date_range, None)
 
-@pytest.mark.skip(reason="no way of currently testing this")
-def test_build_athena_prediction_query_of_entity_01(environ, entity_01):
-
-    athena_query = "SELECT time, value FROM tast_table WHERE " \
+    @pytest.mark.usefixtures("environ", "entity_01")
+    def test_build_athena_prediction_query_of_entity_01(self):
+        athena_query = "SELECT time, value FROM tast_table WHERE " \
                        "part_key_1='pk1' AND part_key_2='pk2' " \
                        "AND year in (2021) AND month in (5) " \
                        "AND time BETWEEN DATE('2021-05-01')  AND DATE('2021-05-04');"
 
-    date_range = (datetime(2021, 5, 1, 0, 0, tzinfo=pytz.UTC),
-                  datetime(2021, 5, 4, 23, 59, 59, 999999, tzinfo=pytz.UTC))
-    with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
-        assert athena_query == provider.build_athena_query(entity_01['hisURI'], date_range, None)
+        date_range = (datetime(2021, 5, 1, 0, 0, tzinfo=pytz.UTC),
+                      datetime(2021, 5, 4, 23, 59, 59, 999999, tzinfo=pytz.UTC))
+        with cast(DBTSProvider, get_provider("shaystack.providers.athena", self.env)) as provider:
+            assert athena_query == provider.build_athena_query(self.entity_01['hisURI'], date_range, None)
 
-@pytest.mark.skip(reason="no way of currently testing this")
-def test_create_history_grid(environ, time_series_csv_file_1, entity_01, shaystack_grid_from_time_series_csv_file_1):
-    with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
-        reader = csv.DictReader(time_series_csv_file_1)
-        history = provider.create_history_grid(reader, entity_01['hisURI'])
-        assert history == shaystack_grid_from_time_series_csv_file_1
+    @pytest.mark.usefixtures("environ", "entity_01", "shaystack_grid_from_time_series_csv_file_1",
+                             "time_series_csv_file_1")
+    def test_create_history_grid(self):
+        with cast(DBTSProvider, get_provider("shaystack.providers.athena", self.env)) as provider:
+            reader = csv.DictReader(self.time_series_csv_file_1)
+            history = provider.create_history_grid(reader, self.entity_01['hisURI'])
+            assert history == self.shaystack_grid_from_time_series_csv_file_1
 
-@pytest.mark.skip(reason="no way of currently testing this")
-def test_create_history_empty_grid(environ, shaystack_empty_grid, entity_01):
-    with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
-        history = provider.create_history_grid(None, entity_01['hisURI'])
-        assert history == shaystack_empty_grid
+    @pytest.mark.usefixtures("environ", "entity_01", "shaystack_empty_grid")
+    def test_create_history_empty_grid(self):
+        with cast(DBTSProvider, get_provider("shaystack.providers.athena", self.env)) as provider:
+            history = provider.create_history_grid(None, self.entity_01['hisURI'])
+            assert history == self.shaystack_empty_grid
 
-@pytest.mark.skip(reason="no way of currently testing this")
-def test_put_date_format(environ):
-    str_date = "2022/06/01"
-    date_pattern = "%Y/%m/%d"
-    with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
-        date_formated = provider.put_date_format(str_date, date_pattern)
-        assert date_formated == "2022-06-01 00:00:00"
+    @pytest.mark.usefixtures("environ")
+    def test_put_date_format(self):
+        str_date = "2022/06/01"
+        date_pattern = "%Y/%m/%d"
+        with cast(DBTSProvider, get_provider("shaystack.providers.athena", self.env)) as provider:
+            date_formated = provider.put_date_format(str_date, date_pattern)
+            assert date_formated == "2022-06-01 00:00:00"
 
-@pytest.mark.skip(reason="no way of currently testing this")
-def test_put_date_format_value_error_exception(environ):
-    str_date = "2022/06/01"
-    date_pattern = "%Y-%m-%d"
-    with cast(DBTSProvider, get_provider("shaystack.providers.athena", environ)) as provider:
-        with pytest.raises(ValueError):
-            assert provider.put_date_format(str_date, date_pattern)
+    @pytest.mark.usefixtures("environ")
+    def test_put_date_format_value_error_exception(self):
+        str_date = "2022/06/01"
+        date_pattern = "%Y-%m-%d"
+        with cast(DBTSProvider, get_provider("shaystack.providers.athena", self.env)) as provider:
+            with pytest.raises(ValueError):
+                assert provider.put_date_format(str_date, date_pattern)
+
+
+    # @patch('shaystack.providers.athena.Provider.get_query_results')
+    # @pytest.mark.usefixtures("environ", "athena_client")
+    # def test_get_query_results_called_by_poll_query_status(self, mock_get_query_execution):
+    #     query = "SELECT stuff"
+    #     location = "s3://bucket-name/prefix/"
+    #     database = "database"
+    #     # Start Query
+    #     response = self.athena_client.start_query_execution(
+    #         QueryString=query,
+    #         QueryExecutionContext={"Database": database},
+    #         ResultConfiguration={"OutputLocation": location},
+    #     )
+    #     athena_backends['eu-west-1'].executions.get(response['QueryExecutionId']).status = "SUCCEEDED"
+    #
+    #     with cast(DBTSProvider, get_provider("shaystack.providers.athena", self.env)) as provider:
+    #         provider.poll_query_status(response)
+    #         mock_get_query_execution.assert_called_once()

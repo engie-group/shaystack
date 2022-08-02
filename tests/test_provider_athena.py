@@ -1,7 +1,5 @@
 import csv
-
 import pytz
-import pytest
 from typing import cast
 from datetime import datetime
 from unittest.mock import patch
@@ -9,6 +7,7 @@ from unittest.mock import patch
 from shaystack.grid import Grid
 from shaystack.providers import get_provider
 from shaystack.providers.athena import Provider as DBTSProvider
+from nose.tools import assert_raises
 
 ENVIRON = {
     "HAYSTACK_PROVIDER": "shaystack.providers.athena",
@@ -111,8 +110,8 @@ TS_CSV_FILE = [
 
 def test_import_ts_in_db():
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", ENVIRON)) as provider:
-        with pytest.raises(NotImplementedError):
-            assert provider._import_ts_in_db()
+        assert_raises(NotImplementedError, provider._import_ts_in_db)
+
 
 def test_build_athena_prediction_query_of_entity_00():
     athena_query = "SELECT time, prediction, upper, lower FROM tast_table WHERE" \
@@ -167,12 +166,11 @@ def test_put_date_format_value_error_exception():
     str_date = "2022/06/01"
     date_pattern = "%Y-%m-%d"
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", ENVIRON)) as provider:
-        with pytest.raises(ValueError):
-            assert provider.put_date_format(str_date, date_pattern)
+        assert_raises(ValueError, provider.put_date_format, str_date, date_pattern)
 
 @patch('shaystack.providers.athena.Provider.get_query_results')
 @patch('shaystack.providers.athena.Provider.poll_query_status')
-def test_get_query_results_called_by_poll_query_status(mock_get_query_execution, mock_poll_query_status):
+def test_get_query_results_called_by_poll_query_status(mock_get_query_results, mock_poll_query_status):
         # Athena get_query_results response
         response = {
             'QueryExecutionId': '18b45861-36ee-4fc1-8639-2b4ebf424fa4',
@@ -180,4 +178,4 @@ def test_get_query_results_called_by_poll_query_status(mock_get_query_execution,
         }
         with cast(DBTSProvider, get_provider("shaystack.providers.athena", ENVIRON)) as provider:
             provider.poll_query_status(response)
-            mock_get_query_execution.assert_called_once()
+            mock_get_query_results.assert_called_once()

@@ -1,23 +1,14 @@
-import os
 import csv
-import unittest
 
 import pytz
 import pytest
 from typing import cast
 from datetime import datetime
-
-from moto import mock_athena
 from unittest.mock import patch
-from botocore import exceptions
-from moto.athena import athena_backends
 
 from shaystack.grid import Grid
 from shaystack.providers import get_provider
 from shaystack.providers.athena import Provider as DBTSProvider
-
-AWS_ACCESS_KEY_ID = "foobar"
-AWS_SECRET_ACCESS_KEY = "foobar"
 
 ENVIRON = {
     "HAYSTACK_PROVIDER": "shaystack.providers.athena",
@@ -123,12 +114,6 @@ def test_import_ts_in_db():
         with pytest.raises(NotImplementedError):
             assert provider._import_ts_in_db()
 
-def test_get_query_results_object_not_found():
-    fake_execution_id = '00000000-1111-2222-3333-444444444444'
-    with cast(DBTSProvider, get_provider("shaystack.providers.athena", ENVIRON)) as provider:
-         with pytest.raises(exceptions.ClientError):
-             assert provider.get_query_results(fake_execution_id)
-
 def test_build_athena_prediction_query_of_entity_00():
     athena_query = "SELECT time, prediction, upper, lower FROM tast_table WHERE" \
                    " part_key_1='pk1' AND part_key_2='pk2' AND part_key_3='pk3' " \
@@ -185,4 +170,14 @@ def test_put_date_format_value_error_exception():
         with pytest.raises(ValueError):
             assert provider.put_date_format(str_date, date_pattern)
 
-
+@patch('shaystack.providers.athena.Provider.get_query_results')
+@patch('shaystack.providers.athena.Provider.poll_query_status')
+def test_get_query_results_called_by_poll_query_status(mock_get_query_execution, mock_poll_query_status):
+        # Athena get_query_results response
+        response = {
+            'QueryExecutionId': '18b45861-36ee-4fc1-8639-2b4ebf424fa4',
+            'Status': {'State': "SUCCEEDED"}
+        }
+        with cast(DBTSProvider, get_provider("shaystack.providers.athena", ENVIRON)) as provider:
+            provider.poll_query_status(response)
+            mock_get_query_execution.assert_called_once()

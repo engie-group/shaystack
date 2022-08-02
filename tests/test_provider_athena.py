@@ -16,6 +16,9 @@ from shaystack.grid import Grid
 from shaystack.providers import get_provider
 from shaystack.providers.athena import Provider as DBTSProvider
 
+AWS_ACCESS_KEY_ID = "foobar"
+AWS_SECRET_ACCESS_KEY = "foobar"
+
 ENVIRON = {
     "HAYSTACK_PROVIDER": "shaystack.providers.athena",
     "HAYSTACK_DB": f"s3://s3_input_bucket_name/ontology.hayson.json",
@@ -182,20 +185,4 @@ def test_put_date_format_value_error_exception():
         with pytest.raises(ValueError):
             assert provider.put_date_format(str_date, date_pattern)
 
-# @patch('shaystack.providers.athena.Provider.get_query_results')
-# @pytest.mark.usefixtures("environ", "athena_client")
-# def test_get_query_results_called_by_poll_query_status(self, mock_get_query_execution):
-#         query = "SELECT stuff"
-#         location = "s3://bucket-name/prefix/"
-#         database = "database"
-#         # Start Query
-#         response = self.athena_client.start_query_execution(
-#             QueryString=query,
-#             QueryExecutionContext={"Database": database},
-#             ResultConfiguration={"OutputLocation": location},
-#         )
-#         athena_backends['eu-west-1'].executions.get(response['QueryExecutionId']).status = "SUCCEEDED"
-#
-#         with cast(DBTSProvider, get_provider("shaystack.providers.athena", self.environ)) as provider:
-#             provider.poll_query_status(response)
-#             mock_get_query_execution.assert_called_once()
+

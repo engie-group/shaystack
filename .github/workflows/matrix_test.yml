@@ -1,7 +1,6 @@
 name: Test matrix with Python 3.7-3.9
 
 on:
-  push:
   pull_request:
     branches:
       - develop
@@ -18,7 +17,7 @@ jobs:
         run: |
           mkdir -p ~/.aws
           touch ~/.aws/credentials
-          echo "[default]" > ~/.aws/credentials
+          echo "[default]\naws_access_key_id = 123\naws_secret_access_key = ABC"  > ~/.aws/credentials
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2

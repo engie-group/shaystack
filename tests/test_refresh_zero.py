@@ -13,6 +13,7 @@ from shaystack.providers import get_provider
 from shaystack.providers.url import Provider as URLProvider
 from tests import _get_mock_s3, _get_mock_s3_updated_ontology
 
+
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
 def test_read_last_with_refresh_zero(mock_s3, mock_get_url):
@@ -23,7 +24,10 @@ def test_read_last_with_refresh_zero(mock_s3, mock_get_url):
     """
 
     mock_get_url.return_value = "s3://bucket/grid.zinc"
-    with cast(URLProvider, get_provider("shaystack.providers.url", {"REFRESH": 0})) as provider:
+    with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
+
+        provider.cache_clear()
+        provider._periodic_refresh = 0
 
         mock_s3.return_value = _get_mock_s3()
         result1 = provider.read(0, None, None, None, None)
@@ -35,7 +39,6 @@ def test_read_last_with_refresh_zero(mock_s3, mock_get_url):
         assert len(result2._row) == 3
         assert len(result1._row) != len(result2._row)
 
-
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
 def test_read_last_with_refresh__not_zero(mock_s3, mock_get_url):
@@ -46,7 +49,10 @@ def test_read_last_with_refresh__not_zero(mock_s3, mock_get_url):
     """
 
     mock_get_url.return_value = "s3://bucket/grid.zinc"
-    with cast(URLProvider, get_provider("shaystack.providers.url", {"REFRESH": 15})) as provider:
+    with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
+
+        provider.cache_clear()
+        provider._periodic_refresh = 15
 
         mock_s3.return_value = _get_mock_s3()
         result1 = provider.read(0, None, None, None, None)

@@ -115,24 +115,6 @@ Refer to this [link](https://docs.aws.amazon.com/athena/latest/ug/udf-iam-access
 
 
 ### Limitation
- "db_name": "data base name",
-            "table_name": "table name",
-            "partition_keys": "partition keys key1='value1'/key2='value2'/.../key(n)='value(n)",
-            "hs_type": "type of timeseries (composit: dict or simple: float or string)",
-            "hs_value_column": { 
-                "column1": "float",
-                "column2": "float",
-                ...
-                "column(n)": "float"
-            },
-            "hs_date_column": {
-                "time": "%Y-%m-%d %H:%M:%S.%f"
-            },
-            "date_part_keys": {
-                "year_col": "year",
-                "month_col": "month",
-                "day_col": "day"
-            }
 - The entities with history must have the following tags: `db_name`,`table_name`,`partition_keys`, `hs_type`,`hs_value_column`,`hs_date_column`, `date_part_keys` that will be used to build an Athena query
 - Athena is a **multi tenant service** and not indeed not a low latency data store. All users are competing for resources, and your queries will get queued when there aren't enough resources available 
 - More details [here](https://aws.amazon.com/athena/?whats-new-cards.sort-by=item.additionalFields.postDateTime&whats-new-cards.sort-order=desc)

@@ -257,7 +257,6 @@ by extending `shaystack.providers.HaystackInterface`
 |Data in a MySQL database|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=mysql://... \`<br/>` shaystack`|Remember to install pymysql python module. [More...](sql_provider.md)|
 |Data in a MongoDB|`HAYSTACK_PROVIDER=shaystack.providers.db\`<br/>`HAYSTACK_DB=mongodb+srv:://...\`<br/>` shaystack`|Remember to install pymongo python module. [More...](mongo_provider.md)|
 |Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.timestream\`<br/>`HAYSTACK_DB=...\`<br/>`HAYSTACK_TS=timestream:://...\<br /> shaystack`|[More...](timestream_provider.md)|
-|Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.timestream\`<br/>`HAYSTACK_DB=...\`<br/>`HAYSTACK_TS=timestream:://...\<br /> shaystack`|[More...](timestream_provider.md)|
 |Data in a database and Time series in AWS Athena|`HAYSTACK_PROVIDER=shaystack.providers.athena\`<br/>`HAYSTACK_DB=...\`<br/>`HAYSTACK_TS=athena:://...\<br /> shaystack`|[More...](athena_provider.md)|
 |Custom|`HAYSTACK_PROVIDER=shaystack.providers.<your module name>\`<br/>` shaystack`|Write your own subclass of `shaystack.providers.HaystackInterface|
 

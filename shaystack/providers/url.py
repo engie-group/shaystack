@@ -566,6 +566,8 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         minutes_delta = now.minute
         if self._periodic_refresh != 0:
             minutes_delta = (now.minute + self._periodic_refresh) // self._periodic_refresh * self._periodic_refresh
+        else:
+            self.cache_clear()
         next_time = now.replace(minute=0) + timedelta(minutes=minutes_delta)
         assert next_time >= now
         if parsed_uri.scheme == "s3":

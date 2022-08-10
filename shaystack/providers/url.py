@@ -565,7 +565,8 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         now = datetime.utcnow().replace(tzinfo=pytz.UTC)
         minutes_delta = now.minute
         if self._periodic_refresh != 0:
-            minutes_delta = (now.minute + self._periodic_refresh) // self._periodic_refresh * self._periodic_refresh
+            minutes_delta = (now.minute + self._periodic_refresh) // \
+                            self._periodic_refresh * self._periodic_refresh
         else:
             self.cache_clear()
         next_time = now.replace(minute=0) + timedelta(minutes=minutes_delta)

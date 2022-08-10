@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+# Grid CSV dumper
+# See the accompanying LICENSE file.
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
 import calendar
 from typing import List
 from datetime import datetime

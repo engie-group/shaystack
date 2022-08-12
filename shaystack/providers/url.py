@@ -350,7 +350,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
 
     def __init__(self, envs: Dict[str, str]):
         DBHaystackInterface.__init__(self, envs)
-        self._periodic_refresh = int(envs.get("REFRESH", "15"))
+        self._periodic_refresh = int(envs.get("REFRESH", "0"))
         self._tls_verify = envs.get("TLS_VERIFY", "true") == "true"
 
         self._s3_client = None

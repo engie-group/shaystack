@@ -421,7 +421,7 @@ _providers = {}
 
 def no_cache():
     """ Must be patched in unit test """
-    return False
+    return True
 
 
 # noinspection PyProtectedMember,PyUnresolvedReferences
@@ -441,6 +441,7 @@ def get_provider(class_str: str, envs: Dict[str, str],  # pylint: disable=protec
     Returns:
         A instance of this subclass if it exists
     """
+    use_cache = False
     if not class_str.endswith(".Provider"):
         class_str += ".Provider"
     if use_cache and class_str in _providers:

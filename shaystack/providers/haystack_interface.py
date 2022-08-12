@@ -421,12 +421,12 @@ _providers = {}
 
 def no_cache():
     """ Must be patched in unit test """
-    return True
+    return False
 
 
 # noinspection PyProtectedMember,PyUnresolvedReferences
 def get_provider(class_str: str, envs: Dict[str, str],  # pylint: disable=protected-access
-                 use_cache=True  # pylint: disable=protected-access
+                 use_cache=False  # pylint: disable=protected-access
                  ) -> HaystackInterface:
     """Return an instance of the provider.
     If the provider is an abstract class, create a sub class with all the implementation

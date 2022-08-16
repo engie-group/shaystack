@@ -5,14 +5,16 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
+import time
+from csv import DictReader
 from datetime import datetime, date, time
 from typing import Optional, Tuple, Any, Dict
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
-from botocore import exceptions
 
 import boto3
 import pytz
+from botocore import exceptions
 from overrides import overrides
 
 from .db import Provider as DBProvider
@@ -20,9 +22,6 @@ from .db import log
 from ..datatypes import Ref, MARKER, REMOVE, Coordinate, Quantity, NA, XStr
 from ..grid import Grid
 from ..period import Period
-
-from csv import DictReader
-import time
 
 
 # noinspection PyUnusedLocal
@@ -144,7 +143,8 @@ class Provider(DBProvider):
 
     def poll_query_status(self, query_response: dict) -> DictReader:
         """
-        Get the status of the Athena request, i.e. "QUEUED", "RUNNING", "FAILED" or "CANCELLED", and get the results
+        Get the status of the Athena request, i.e. "QUEUED", "RUNNING", "FAILED"
+        or "CANCELLED", and get the results
         of successful requests
 
         Args:
@@ -277,7 +277,8 @@ class Provider(DBProvider):
         """
         Process Athena query
         Args:
-            his_uri (dict): dict containing all the parameters needed to build the Athena query, e.g. database name,
+            his_uri (dict): dict containing all the parameters needed to
+            build the Athena query, e.g. database name,
             table name, partition keys, ...
             dates_range (tuple): (start_date, end_date) date range that represents the time period to query
             date_version (datetime): the date that represents the version of the ontology
@@ -298,7 +299,8 @@ class Provider(DBProvider):
                     'Database': his_uri['db_name']
                 },
                 ResultConfiguration={
-                    'OutputLocation': 's3://' + self._output_bucket_name + '/' + self._output_folder_name + "/",
+                    'OutputLocation': 's3://' + self._output_bucket_name +
+                                      '/' + self._output_folder_name + "/",
                 }
             )
             # Get query results

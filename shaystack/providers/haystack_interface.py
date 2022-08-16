@@ -421,7 +421,7 @@ _providers = {}
 
 def no_cache():
     """ Must be patched in unit test """
-    return False
+    return True
 
 
 # noinspection PyProtectedMember,PyUnresolvedReferences

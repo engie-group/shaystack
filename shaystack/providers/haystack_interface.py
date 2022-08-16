@@ -426,7 +426,7 @@ def no_cache():
 
 # noinspection PyProtectedMember,PyUnresolvedReferences
 def get_provider(class_str: str, envs: Dict[str, str],  # pylint: disable=protected-access
-                 use_cache=False  # pylint: disable=protected-access
+                 use_cache=True  # pylint: disable=protected-access
                  ) -> HaystackInterface:
     """Return an instance of the provider.
     If the provider is an abstract class, create a sub class with all the implementation
@@ -441,6 +441,7 @@ def get_provider(class_str: str, envs: Dict[str, str],  # pylint: disable=protec
     Returns:
         A instance of this subclass if it exists
     """
+    use_cache = False
     if not class_str.endswith(".Provider"):
         class_str += ".Provider"
     if use_cache and class_str in _providers:

@@ -441,7 +441,8 @@ def get_provider(class_str: str, envs: Dict[str, str],  # pylint: disable=protec
     Returns:
         A instance of this subclass if it exists
     """
-    use_cache = False
+    if int(envs.get("REFRESH", "15")) == 0:
+        use_cache = False
     if not class_str.endswith(".Provider"):
         class_str += ".Provider"
     if use_cache and class_str in _providers:
@@ -557,7 +558,7 @@ def get_singleton_provider(envs: Dict[str, str]  # pylint: disable=protected-acc
     """
     global SINGLETON_PROVIDER  # pylint: disable=global-statement
     provider = envs.get("HAYSTACK_PROVIDER", "shaystack.providers.db")
-    if not SINGLETON_PROVIDER or no_cache():
+    if not SINGLETON_PROVIDER or int(envs.get("REFRESH", "15")) == 0:  # no_cache():
         log.debug("Provider=%s", provider)
         SINGLETON_PROVIDER = get_provider(provider, envs)
     return SINGLETON_PROVIDER

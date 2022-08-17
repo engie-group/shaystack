@@ -84,6 +84,7 @@ def test_haystack_interface_get_singleton_provider_refresh_15(mock_s3, mock_get_
     assert haystack_interface.no_cache(envs) is False  # the caching is enabled
 
     with cast(haystack_interface, haystack_interface.get_singleton_provider(envs)) as provider0:
+        provider0.cache_clear()
         mock_s3.return_value = _get_mock_s3()
         grid0 = provider0.read(0, None, None, None, None)
 
@@ -103,7 +104,7 @@ def test_haystack_interface_get_singleton_provider_refresh_15(mock_s3, mock_get_
     # the provider0 is always cached inside SINGLETON_PROVIDER
     assert provider0 == haystack_interface.SINGLETON_PROVIDER
     assert provider0 == provider1 == haystack_interface.SINGLETON_PROVIDER
-    # assert len(grid0._row) == len(grid1._row) == 2
+    assert len(grid0._row) == len(grid1._row) == 2
 
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
@@ -116,6 +117,7 @@ def test_haystack_interface_get_singleton_provider_refresh_0(mock_s3, mock_get_u
     assert haystack_interface.no_cache(envs) is True  # the caching is disabled
 
     with cast(haystack_interface, haystack_interface.get_singleton_provider(envs)) as provider0:
+        provider0.cache_clear()
         mock_s3.return_value = _get_mock_s3()
         grid0 = provider0.read(0, None, None, None, None)
 

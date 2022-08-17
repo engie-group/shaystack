@@ -170,7 +170,7 @@ def test_put_date_format_value_error_exception():
 
 @patch('shaystack.providers.athena.Provider.get_query_results')
 @patch('shaystack.providers.athena.Provider.poll_query_status')
-def test_get_query_results_called_by_poll_query_status(mock_get_query_results):
+def test_get_query_results_called_by_poll_query_status(mock_get_query_results, mock_poll_query_status):
         # Athena get_query_results response
         response = {
             'QueryExecutionId': '18b45861-36ee-4fc1-8639-2b4ebf424fa4',

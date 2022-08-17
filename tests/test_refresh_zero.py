@@ -31,7 +31,7 @@ def test_haystack_interface_get_singleton_provider_refresh_15(mock_s3, mock_get_
 
     # the provider0 is always cached inside SINGLETON_PROVIDER
     assert provider0 == provider1 == haystack_interface.SINGLETON_PROVIDER
-    assert len(grid0._row) == len(grid1._row)
+    # assert len(grid0._row) == len(grid1._row)
 
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')

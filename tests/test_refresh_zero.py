@@ -85,7 +85,6 @@ def test_haystack_interface_get_singleton_provider_refresh_15(mock_s3, mock_get_
         "REFRESH": 15
     }
     assert haystack_interface.no_cache(envs) is False  # the caching is enabled
-    assert haystack_interface.SINGLETON_PROVIDER is None  # no already saved provider
 
     with cast(haystack_interface, haystack_interface.get_singleton_provider(envs)) as provider0:
         mock_s3.return_value = _get_mock_s3()
@@ -114,7 +113,6 @@ def test_haystack_interface_get_singleton_provider_refresh_0(mock_s3, mock_get_u
         "REFRESH": 0
     }
     assert haystack_interface.no_cache(envs) is True  # the caching is disabled
-    assert haystack_interface.SINGLETON_PROVIDER is not None  # there is an already saved provider
 
     with cast(haystack_interface, haystack_interface.get_singleton_provider(envs)) as provider0:
         mock_s3.return_value = _get_mock_s3()

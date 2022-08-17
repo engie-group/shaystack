@@ -59,7 +59,46 @@ def test_read_last_without_version_without_filter(mock_get_url):
 
 
 @patch.object(URLProvider, '_get_url')
-def test_read_with_version_2021_without_filter(mock_get_url):
+def test_read_with_version_lower_than_all_versions(mock_get_url):
+    """
+    Args:
+        mock_get_url:
+    """
+    mock_get_url.return_value = "sample/carytown.hayson.json"
+    with get_provider("shaystack.providers.url", {}) as provider:
+
+        version_2 = datetime(2005, 11, 2, 0, 0, 2, 0, tzinfo=pytz.UTC)
+        result = provider.read(0, None, None, None, date_version=version_2)
+        assert len(result) == 0
+
+@patch.object(URLProvider, '_get_url')
+def test_read_with_version_earlier_than_all_versions(mock_get_url):
+    """
+    Args:
+        mock_get_url:
+    """
+    mock_get_url.return_value = "sample/carytown.hayson.json"
+    with get_provider("shaystack.providers.url", {}) as provider:
+
+        version_2 = datetime(2005, 11, 2, 0, 0, 2, 0, tzinfo=pytz.UTC)
+        result = provider.read(0, None, None, None, date_version=version_2)
+        assert len(result) == 0
+
+@patch.object(URLProvider, '_get_url')
+def test_read_with_version_more_recent_than_all_versions(mock_get_url):
+    """
+    Args:
+        mock_get_url:
+    """
+    mock_get_url.return_value = "sample/carytown.hayson.json"
+    with get_provider("shaystack.providers.url", {}) as provider:
+
+        version_2 = datetime(2050, 11, 2, 0, 0, 2, 0, tzinfo=pytz.UTC)
+        result = provider.read(0, None, None, None, date_version=version_2)
+        assert len(result) == 24
+
+@patch.object(URLProvider, '_get_url')
+def test_read_with_version_without_select_and_gridfilter(mock_get_url):
     """
     Args:
         mock_get_url:
@@ -71,9 +110,8 @@ def test_read_with_version_2021_without_filter(mock_get_url):
         result = provider.read(0, None, None, None, date_version=version_2)
         assert len(result) == 3
 
-
 @patch.object(URLProvider, '_get_url')
-def test_read_with_version_2020_without_filter(mock_get_url):
+def test_read_version_with_select_and_gridfilter(mock_get_url):
     """
     Args:
         mock_get_url:
@@ -81,39 +119,16 @@ def test_read_with_version_2020_without_filter(mock_get_url):
     mock_get_url.return_value = "sample/carytown.hayson.json"
     with get_provider("shaystack.providers.url", {}) as provider:
 
-        version_2 = datetime(2020, 11, 2, 0, 0, 2, 0, tzinfo=pytz.UTC)
-        result = provider.read(0, None, None, None, date_version=version_2)
-        assert len(result) == 2
-
-
-@patch.object(URLProvider, '_get_url')
-def test_read_version_with_filter(mock_get_url):
-    """
-    Args:
-        mock_get_url:
-    """
-    mock_get_url.return_value = "sample/carytown.hayson.json"
-    with get_provider("shaystack.providers.url", {}) as provider:
-        version_2 = datetime(2020, 11, 10, 0, 0, 2, 0, tzinfo=pytz.UTC)
-        result = provider.read(0, None, None, "id==@p_demo_r_23a44701-a89a6c66", version_2)
+        version_1 = datetime(2020, 11, 10, 0, 0, 2, 0, tzinfo=pytz.UTC)
+        result = provider.read(0, None, None, "id==@p_demo_r_23a44701-a89a6c66", version_1)
         assert len(result) == 1
         assert result[0]['id'] == Ref("@p_demo_r_23a44701-a89a6c66")
 
-
-@patch.object(URLProvider, '_get_url')
-def test_read_version_with_filter2(mock_get_url):
-    """
-    Args:
-        mock_get_url:
-    """
-    mock_get_url.return_value = "sample/carytown.hayson.json"
-    with get_provider("shaystack.providers.url", {}) as provider:
         version_2 = datetime(2021, 11, 3, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, "id,dis", None, "id==@p_demo_r_23a44701-a89a6c66", version_2)
-        # assert result.column.keys() == ["id", "dis"]
+        print(list(result.column))
+        assert list(result.column) == ['id', 'dis']
         assert list(result.keys()) == [Ref('p_demo_r_23a44701-a89a6c66', 'Carytown')]
-
-
 
 @patch.object(URLProvider, '_get_url')
 def test_read_version_with_ids(mock_get_url):
@@ -128,21 +143,20 @@ def test_read_version_with_ids(mock_get_url):
         assert len(result) == 1
         assert result[0]['id'] == Ref("p_demo_r_23a44701-a89a6c66")
 
-
 def test_unexistant_version():
     """
     Args:
     """
     with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
         provider.cache_clear()
-        version_0 = datetime(2020, 8, 1, 0, 0, 3, 0, tzinfo=pytz.UTC)
-        url = "sample/carytown.zinc"
+        version_0 = datetime(2018, 8, 1, 0, 0, 3, 0, tzinfo=pytz.UTC)
+        url = "sample/carytown.hayson.json"
         result = provider._download_grid(url, version_0)
         assert len(result) == 0
 
 
 @patch.object(URLProvider, '_get_url')
-def test_version(mock_get_url):
+def test_list_versions(mock_get_url):
     """
     Args:
         mock_get_url:
@@ -150,6 +164,7 @@ def test_version(mock_get_url):
     mock_get_url.return_value = "sample/carytown.hayson.json"
     with get_provider("shaystack.providers.url", {}) as provider:
         versions = provider.versions()
+        print(versions)
         assert len(versions) == 4
 
 
@@ -162,14 +177,15 @@ class ProviderTest(unittest.TestCase):
             mock_refresh_version:
         """
         mock_refresh_version.return_value = ''
+        wrong_url = "wrongsheme://temp/url.zinc"
         with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
             provider.cache_clear()
-            provider._versions = {"wrongsheme://temp/url.zinc": \
+            provider._versions = {wrong_url: \
                 OrderedDict(
-                    [(datetime(2021, 12, 8, 10, 55, 39, 50626), "wrongsheme://temp/url.zinc")]
+                    [(datetime(2021, 12, 8, 10, 55, 39, 50626), wrong_url)]
                 )
             }
-            url = "wrongsheme://temp/url.zinc"
             with self.assertRaises(ValueError) as cm:
-                provider._download_grid(url, None)
+                provider._download_grid(wrong_url, None)
             self.assertEqual(cm.exception.args[0], "A wrong url ! (url have to be ['file','s3','']")
+

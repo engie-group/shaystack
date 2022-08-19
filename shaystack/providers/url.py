@@ -256,7 +256,6 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
             destination_grid = parse(destination_data.decode("utf-8-sig"),
                                      suffix_to_mode(suffix))
         except URLError:
-            # Ignore. Empty destination grid TODO
             destination_grid = EmptyGrid.copy()
 
         except ZincParseException:
@@ -273,14 +272,21 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
                 if f.exists():
                     # attention vérifier si le nom du fichier à déjà la date, sinon on garde la date physique
                     # Une solution: Import d'un fichier d'une date ancienne interdit
-                    # date_new_version: datetime = parsed_destination.path.split('/')[-1].split('.', 1)[0]
-                    # carytown-2019-11-01T16:30:00.hayson.json
-                    date_old_version: datetime = datetime.fromtimestamp(os.path.getmtime(parsed_destination.path))\
-                        .replace(tzinfo=None)
+
                     old_filename = Path(parsed_destination.path)
-                    prefix, suffix = old_filename.name.split('.', 1)
+                    old_filename_elements = old_filename.name.split('/')[-1].split('.', 1)[0].split('-', 1)
+                    if len(old_filename_elements) > 1:
+                        date_old_version = datetime.fromisoformat(old_filename_elements[1])
+                        prefix, suffix = old_filename.name.split('.', 1)
+                        prefix = prefix.split("-", 1)[0]
+                    else:
+                        date_old_version: datetime = \
+                            datetime.fromtimestamp(os.path.getmtime(parsed_destination.path)).replace(tzinfo=None)
+                        prefix, suffix = old_filename.name.split('.', 1)
+
                     old_name = f"{prefix}-{date_old_version.isoformat()}.{suffix}"
                     f.rename(Path(old_filename.parent, old_name))
+
             with open(parsed_destination.path, "wb") as f:
                 f.write(source_data)
             log.info("%s updated", parsed_source.geturl())
@@ -796,7 +802,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             date_version = date_version.replace(tzinfo=None)
         for version, version_url in self._versions[parsed_uri.geturl()].items():
             parsed_uri = urlparse(version_url, allow_fragments=False)
-            if not date_version or version <= date_version:  # .date():
+            if not date_version or version.date() <= date_version.date():  # .date():
                 return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
                         parsed_uri.geturl(),
                         version)

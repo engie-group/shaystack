@@ -59,7 +59,7 @@ def test_read_last_without_version_without_filter(mock_get_url):
 
 
 @patch.object(URLProvider, '_get_url')
-def test_read_with_version_lower_than_all_versions(mock_get_url):
+def test_read_with_the_exact_version_date(mock_get_url):
     """
     Args:
         mock_get_url:
@@ -67,9 +67,9 @@ def test_read_with_version_lower_than_all_versions(mock_get_url):
     mock_get_url.return_value = "sample/carytown.hayson.json"
     with get_provider("shaystack.providers.url", {}) as provider:
 
-        version_2 = datetime(2005, 11, 2, 0, 0, 2, 0, tzinfo=pytz.UTC)
-        result = provider.read(0, None, None, None, date_version=version_2)
-        assert len(result) == 0
+        version = datetime(2020, 11, 1, 16, 30, 0, 0, tzinfo=pytz.UTC)
+        result = provider.read(0, None, None, None, date_version=version)
+        assert len(result) == 1
 
 @patch.object(URLProvider, '_get_url')
 def test_read_with_version_earlier_than_all_versions(mock_get_url):

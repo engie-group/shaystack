@@ -31,6 +31,8 @@ class TestImportLocalFile(unittest.TestCase):
         return grid
 
     def test_import(self):
+        print(os.getcwd())
+        print(os.listdir(os.getcwd()))
         source_uri = f'sample/carytown.hayson.json'
         destination_uri = f'{self.imported_file_ontologies}/carytown.hayson.json'
         _update_grid_on_file(urlparse(source_uri),
@@ -48,6 +50,8 @@ class TestImportLocalFile(unittest.TestCase):
         assert source_ontology == imported_ontology
 
     def test_import_when_version_is_2021(self):
+        print(os.getcwd())
+        print(os.listdir(os.getcwd()))
         source_uri = 'sample/carytown-2021-11-01T16:30:00.hayson.json'
         destination_uri = f'{self.imported_file_ontologies}/carytown.hayson.json'
         _update_grid_on_file(urlparse(source_uri),
@@ -65,6 +69,8 @@ class TestImportLocalFile(unittest.TestCase):
         assert len(os.listdir(self.imported_file_ontologies)) == 3  # 1 ontology + 2 TS files
 
     def test_import_when_version_is_2020(self):
+        print(os.getcwd())
+        print(os.listdir(os.getcwd()))
         source_uri = 'sample/carytown-2020-11-01T16:30:00.hayson.json'
         destination_uri = f'{self.imported_file_ontologies}/carytown.hayson.json'
         _update_grid_on_file(urlparse(source_uri),

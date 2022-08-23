@@ -9,13 +9,14 @@ from nose.tools import assert_raises
 class TestImportLocalFile(unittest.TestCase):
 
     def setUp(self):
-        self.imported_file_ontologies = 'tests/imported_file_ontologies'
-        self.source_file_ontologies = 'tests/ontology_files_to_import'
+        self.imported_file_ontologies = './imported_file_ontologies'
+        self.source_file_ontologies = './ontology_files_to_import'
         self.compare_grid = True
         self.update_time_series = True
         self.force = False
         self.merge_ts = True
-        os.chdir("../")
+        # os.chdir("../")
+        print("\nHere we are: " + os.getcwd())
         if not os.path.exists(self.imported_file_ontologies):
             os.makedirs(self.imported_file_ontologies)
         if not os.path.exists(self.source_file_ontologies):

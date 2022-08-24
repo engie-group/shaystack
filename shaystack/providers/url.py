@@ -187,7 +187,7 @@ def merge_timeseries(source_grid: Grid,
         if destination_grid:
             start_destination = destination_grid[0]['ts']
             result_grid.extend(filter(lambda row: row['ts'] < start_destination, source_grid))
-            result_grid.extend(destination_grid)
+            # result_grid.extend(destination_grid)
         else:
             result_grid.extend(source_grid)
         result_grid.sort('ts')

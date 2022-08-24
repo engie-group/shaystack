@@ -1,20 +1,18 @@
 import unittest
 from datetime import datetime
 from typing import cast
-from unittest.mock import patch
 from collections import OrderedDict
 import shutil
 import json
 import pytz
 import os
 
-from shaystack import MetadataObject
 from shaystack import Ref
 from shaystack.providers import get_provider
 from shaystack.providers.url import Provider as URLProvider
-from tests import _get_mock_s3
 
-utc= pytz.UTC
+utc = pytz.UTC
+ENVIRON = {"HAYSTACK_DB": 'input_file_ontologies/carytown.hayson.json'}
 
 ONTO = {"meta": {"ver": "3.0"},
         "cols": [{"name": "col1"}, {"name": "col2"}, {"name": "dis"}, {"name": "id"}],
@@ -75,12 +73,11 @@ ts,val
 """
 
 
-class CurrentDirectory():
+class CurrentDirectory:
     def __init__(self, in_dir):
         self.in_dir = in_dir
         if not os.path.exists(self.in_dir):
             os.makedirs(self.in_dir)
-
 
     def create_files(self):
         with open(f'{self.in_dir}/carytown.hayson.json', 'w') as outfile:
@@ -107,14 +104,12 @@ class TestImportLocalFile(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.input_file_ontologies, ignore_errors=True)
 
-    @patch.object(URLProvider, '_get_url')
-    def test_values_for_tag(self, mock_get_url):
+    def test_values_for_tag(self):
         """
         Args:
             mock_get_url:
         """
-        mock_get_url.return_value = f'{self.input_file_ontologies}/carytown.hayson.json'
-        with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
+        with cast(URLProvider, get_provider("shaystack.providers.url", ENVIRON)) as provider:
             provider.cache_clear()
             provider._periodic_refresh = 2
             result = provider.values_for_tag("id")
@@ -125,93 +120,76 @@ class TestImportLocalFile(unittest.TestCase):
         result = provider.ops()
         assert len(result) == 5
 
-    @patch.object(URLProvider, '_get_url')
-    def test_about(self, mock_get_url):
+    def test_about(self,):
         """
         Args:
             mock_get_url:
         """
-        mock_get_url.return_value = f'{self.input_file_ontologies}/carytown.hayson.json'
-        with get_provider("shaystack.providers.url", {}) as provider:
+        with get_provider("shaystack.providers.url", ENVIRON) as provider:
             result = provider.about("http://localhost")
             assert result[0]['moduleName'] == 'URLProvider'
 
-    #THIS TEST
-    @patch.object(URLProvider, '_get_url')
-    def test_read_last_without_version_without_filter(self, mock_get_url):
+    def test_read_last_without_version_without_filter(self):
         """
         Args:
             mock_get_url:
         """
-        mock_get_url.return_value = f'{self.input_file_ontologies}/carytown.hayson.json'
-        with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
+        with cast(URLProvider, get_provider("shaystack.providers.url", ENVIRON)) as provider:
             provider.cache_clear()
             provider._periodic_refresh = 2
             result = provider.read(40, None, None, None, None)
             assert len(result) == 3
 
-
-    @patch.object(URLProvider, '_get_url')
-    def test_read_with_the_exact_version_date(self, mock_get_url):
+    def test_read_with_the_exact_version_date(self):
         """
         Args:
             mock_get_url:
         """
-        mock_get_url.return_value = f'{self.input_file_ontologies}/carytown.hayson.json'
-        with get_provider("shaystack.providers.url", {}) as provider:
+        with get_provider("shaystack.providers.url", ENVIRON) as provider:
             version = datetime(2020, 11, 1, 16, 30, 0, 0, tzinfo=pytz.UTC)
 
             result = provider.read(0, None, None, None, date_version=version)
             assert len(result) == 1
 
-    @patch.object(URLProvider, '_get_url')
-    def test_read_with_version_earlier_than_all_versions(self, mock_get_url):
+    def test_read_with_version_earlier_than_all_versions(self):
         """
         Args:
             mock_get_url:
         """
-        mock_get_url.return_value = f'{self.input_file_ontologies}/carytown.hayson.json'
-        with get_provider("shaystack.providers.url", {}) as provider:
+        with get_provider("shaystack.providers.url", ENVIRON) as provider:
 
             version_2 = datetime(2005, 11, 2, 0, 0, 2, 0, tzinfo=pytz.UTC)
             result = provider.read(0, None, None, None, date_version=version_2)
             assert len(result) == 0
 
-    @patch.object(URLProvider, '_get_url')
-    def test_read_with_version_more_recent_than_all_versions(self, mock_get_url):
+    def test_read_with_version_more_recent_than_all_versions(self):
         """
         Args:
             mock_get_url:
         """
-        mock_get_url.return_value = f'{self.input_file_ontologies}/carytown.hayson.json'
-        with get_provider("shaystack.providers.url", {}) as provider:
+        with get_provider("shaystack.providers.url", ENVIRON) as provider:
 
             version_2 = datetime(2050, 11, 1, 16, 30, 0, 0, tzinfo=pytz.UTC)
             result = provider.read(0, None, None, None, date_version=version_2)
             assert len(result) == 3
 
-    @patch.object(URLProvider, '_get_url')
-    def test_read_with_version_without_select_and_gridfilter(self, mock_get_url):
+    def test_read_with_version_without_select_and_gridfilter(self):
         """
         Args:
             mock_get_url:
         """
-        mock_get_url.return_value = f'{self.input_file_ontologies}/carytown.hayson.json'
-        with get_provider("shaystack.providers.url", {}) as provider:
+        with get_provider("shaystack.providers.url", ENVIRON) as provider:
 
             version_2 = datetime(2021, 11, 2, 0, 0, 2, 0, tzinfo=pytz.UTC)
             result = provider.read(0, None, None, None, date_version=version_2)
             assert len(result) == 2
 
-    @patch.object(URLProvider, '_get_url')
-    def test_read_version_with_select_and_gridfilter(self, mock_get_url):
+    def test_read_version_with_select_and_gridfilter(self):
         """
         Args:
             mock_get_url:
         """
-        mock_get_url.return_value = f'{self.input_file_ontologies}/carytown.hayson.json'
-        with get_provider("shaystack.providers.url", {}) as provider:
-
+        with get_provider("shaystack.providers.url", ENVIRON) as provider:
             version_1 = datetime(2020, 11, 10, 0, 0, 2, 0, tzinfo=pytz.UTC)
             result = provider.read(0, None, None, "id==@p_demo_r_23a44701-a89a6c66", version_1)
             assert len(result) == 1
@@ -222,14 +200,12 @@ class TestImportLocalFile(unittest.TestCase):
             assert list(result.column) == ['id', 'dis']
             assert list(result.keys()) == [Ref('p_demo_r_23a44701-a89a6c66', 'Carytown')]
 
-    @patch.object(URLProvider, '_get_url')
-    def test_read_version_with_ids(self, mock_get_url):
+    def test_read_version_with_ids(self):
         """
         Args:
             mock_get_url:
         """
-        mock_get_url.return_value = f'{self.input_file_ontologies}/carytown.hayson.json'
-        with get_provider("shaystack.providers.url", {}) as provider:
+        with get_provider("shaystack.providers.url", ENVIRON) as provider:
             version_2 = datetime(2020, 11, 10, 0, 0, 2, 0, tzinfo=pytz.UTC)
             result = provider.read(0, None, [Ref("p_demo_r_23a44701-a89a6c66")], None, version_2)
             assert len(result) == 1
@@ -246,35 +222,30 @@ class TestImportLocalFile(unittest.TestCase):
             result = provider._download_grid(url, version_0)
             assert len(result) == 0
 
-
-    @patch.object(URLProvider, '_get_url')
-    def test_list_versions(self, mock_get_url):
+    def test_list_versions(self):
         """
         Args:
             mock_get_url:
         """
-        mock_get_url.return_value = f'{self.input_file_ontologies}/carytown.hayson.json'
-        with get_provider("shaystack.providers.url", {}) as provider:
+        with get_provider("shaystack.providers.url", ENVIRON) as provider:
             versions = provider.versions()
             assert len(versions) == 3
 
-    @patch.object(URLProvider, "_refresh_versions")
-    def test_given_wrong_url(self, mock_refresh_version):
+    def test_given_wrong_url(self):
         """
         Args:
-            ProviderTest:
             mock_refresh_version:
         """
-        mock_refresh_version.return_value = ''
         wrong_url = "wrongsheme://temp/url.zinc"
-        with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
+        env = {"HAYSTACK_DB": 'wrongsheme://temp/url.zinc'}
+        with cast(URLProvider, get_provider("shaystack.providers.url", env)) as provider:
             provider.cache_clear()
-            provider._versions = {wrong_url: \
-                OrderedDict(
-                    [(datetime(2021, 12, 8, 10, 55, 39, 50626, tzinfo=pytz.UTC), wrong_url)]
-                )
+            provider._versions = {
+                wrong_url:
+                    OrderedDict([
+                        (datetime(2021, 12, 8, 10, 55, 39, 50626, tzinfo=pytz.UTC), wrong_url)
+                    ])
             }
             with self.assertRaises(ValueError) as cm:
                 provider._download_grid(wrong_url, None)
             self.assertEqual(cm.exception.args[0], "A wrong url ! (url have to be ['file','s3','']")
-

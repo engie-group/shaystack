@@ -20,20 +20,20 @@ ONTO = {"meta": {"ver": "3.0"},
 
 
 ONTO2021 = {"meta": {"ver": "3.0"},
-        "cols": [{"name": "col1"}, {"name": "col2"}, {"name": "dis"}, {"name": "id"}],
-        "rows": [
-            {"dis": "dis1", "id": {"_kind": "Ref", "val": "p_demo_r_23a44701-a89a6c66", "dis": "dis"},
-             "col1": "col 1 value", "col2": "col 2 value", "hisURI": "p_demo_r_23a44701-4ea35663.zinc"},
-            {"dis": "dis2", "id": {"_kind": "Ref", "val": "p_demo_r_255555701-a89a6c66", "dis": "dis"},
-             "col1": "col 1 value", "col2": "col 2 value", "hisURI": "p_demo_r_23a44701-bbc36976.zinc"}
+            "cols": [{"name": "col1"}, {"name": "col2"}, {"name": "dis"}, {"name": "id"}],
+            "rows": [
+                {"dis": "dis1", "id": {"_kind": "Ref", "val": "p_demo_r_23a44701-a89a6c66", "dis": "dis"},
+                 "col1": "col 1 value", "col2": "col 2 value", "hisURI": "p_demo_r_23a44701-4ea35663.zinc"},
+                {"dis": "dis2", "id": {"_kind": "Ref", "val": "p_demo_r_255555701-a89a6c66", "dis": "dis"},
+                 "col1": "col 1 value", "col2": "col 2 value", "hisURI": "p_demo_r_23a44701-bbc36976.zinc"}
         ]}
 
 ONTO2020 = {"meta": {"ver": "3.0"},
-        "cols": [{"name": "col1"}, {"name": "col2"}, {"name": "dis"}, {"name": "id"}],
-        "rows": [
-            {"dis": "dis1", "id": {"_kind": "Ref", "val": "p_demo_r_23a44701-a89a6c66", "dis": "dis"},
-             "col1": "col 1 value", "col2": "col 2 value"}
-        ]}
+            "cols": [{"name": "col1"}, {"name": "col2"}, {"name": "dis"}, {"name": "id"}],
+            "rows": [
+                {"dis": "dis1", "id": {"_kind": "Ref", "val": "p_demo_r_23a44701-a89a6c66", "dis": "dis"},
+                 "col1": "col 1 value", "col2": "col 2 value"}
+            ]}
 
 TS1 = """ver:"3.0" hisStart:2020-06-01T00:00:00+00:00 UTC hisEnd:2021-05-01T00:00:00+00:00 UTC
 ts,val
@@ -64,6 +64,7 @@ ts,val
 2020-11-01T00:00:00+00:00 UTC,16
 2020-12-01T00:00:00+00:00 UTC,13
 """
+
 
 class CurrentDirectory():
     def __init__(self, in_dir, out_dir):
@@ -126,7 +127,7 @@ class TestImportLocalFile(unittest.TestCase):
         source_ontology = self.read_ontology(source_uri)
         imported_ontology = self.read_ontology(destination_uri)
         assert 'carytown.hayson.json' in os.listdir(self.imported_file_ontologies)
-        assert len(os.listdir(self.imported_file_ontologies)) == 4 # 1 ontology + 3 TS files
+        assert len(os.listdir(self.imported_file_ontologies)) == 4  # 1 ontology + 3 TS files
         assert source_ontology == imported_ontology
         assert len(imported_ontology._row) == 3
 
@@ -145,7 +146,7 @@ class TestImportLocalFile(unittest.TestCase):
         imported_ontology = self.read_ontology(destination_uri)
         assert 'carytown.hayson.json' in os.listdir(self.imported_file_ontologies)
         assert source_ontology == imported_ontology
-        assert len(os.listdir(self.imported_file_ontologies)) ==  3  # 1 ontology + 2 TS files
+        assert len(os.listdir(self.imported_file_ontologies)) == 3  # 1 ontology + 2 TS files
         assert len(imported_ontology._row) == 2
 
     def test_import_when_version_is_2020(self):
@@ -222,7 +223,6 @@ class TestImportLocalFile(unittest.TestCase):
         assert len(os.listdir(self.imported_file_ontologies)) == 4  # 1 ontology + 3 TS files
         assert len(imported_ontology._row) == 3  # 3 entities
 
-
     def test_update_existant_ontology_with_user_dated_ontology_but_same_entities(self):
         # copy 2020 ontology version to source directory
         source_uri = f'{self.source_file_ontologies}/carytown-2020-11-01T16:30:00.hayson.json'
@@ -246,7 +246,6 @@ class TestImportLocalFile(unittest.TestCase):
         assert source_ontology == imported_ontology
         assert len(os.listdir(self.imported_file_ontologies)) == 1  # 1 ontology, no changes
         assert len(imported_ontology._row) == 1  # 1 entities
-
 
     def test_update_existant_ontology_with_user_dated_ontology_but_different_entities(self):
         # Use 2021 ontology version from source directory
@@ -300,4 +299,3 @@ class TestImportLocalFile(unittest.TestCase):
                       self.force,
                       self.merge_ts,
                       {})
-

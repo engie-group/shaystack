@@ -97,7 +97,7 @@ class CurrentDirectory:
 class TestImportLocalFile(unittest.TestCase):
 
     def setUp(self):
-        self.input_file_ontologies = 'input_file_ontologies'
+        self.input_file_ontologies = './input_file_ontologies'
         self.current_directory = CurrentDirectory(self.input_file_ontologies)
         self.current_directory.create_files()
 

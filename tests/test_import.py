@@ -93,8 +93,8 @@ class CurrentDirectory:
 class TestImportLocalFile(unittest.TestCase):
 
     def setUp(self):
-        self.imported_file_ontologies = './imported_file_ontologies'
-        self.source_file_ontologies = './ontology_files_to_import'
+        self.imported_file_ontologies = f'{os.getcwd()}/imported_file_ontologies'
+        self.source_file_ontologies = f'{os.getcwd()}/ontology_files_to_import'
         self.compare_grid = True
         self.update_time_series = True
         self.force = False

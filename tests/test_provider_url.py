@@ -11,8 +11,6 @@ from shaystack import Ref
 from shaystack.providers import get_provider
 from shaystack.providers.url import Provider as URLProvider
 
-utc = None
-ENVIRON = {"HAYSTACK_DB": 'input_file_ontologies/carytown.hayson.json'}
 
 ONTO = {"meta": {"ver": "3.0"},
         "cols": [{"name": "col1"}, {"name": "col2"}, {"name": "dis"}, {"name": "id"}],
@@ -98,6 +96,7 @@ class TestImportLocalFile(unittest.TestCase):
 
     def setUp(self):
         self.input_file_ontologies = f'{os.getcwd()}/input_file_ontologies'
+        self.environ = {"HAYSTACK_DB": f'{self.input_file_ontologies}/carytown.hayson.json'}
         self.current_directory = CurrentDirectory(self.input_file_ontologies)
         self.current_directory.create_files()
 
@@ -109,7 +108,7 @@ class TestImportLocalFile(unittest.TestCase):
         Args:
             mock_get_url:
         """
-        with cast(URLProvider, get_provider("shaystack.providers.url", ENVIRON)) as provider:
+        with cast(URLProvider, get_provider("shaystack.providers.url", self.environ)) as provider:
             provider.cache_clear()
             provider._periodic_refresh = 2
             result = provider.values_for_tag("id")
@@ -125,7 +124,7 @@ class TestImportLocalFile(unittest.TestCase):
         Args:
             mock_get_url:
         """
-        with get_provider("shaystack.providers.url", ENVIRON) as provider:
+        with get_provider("shaystack.providers.url", self.environ) as provider:
             result = provider.about("http://localhost")
             assert result[0]['moduleName'] == 'URLProvider'
 
@@ -134,7 +133,7 @@ class TestImportLocalFile(unittest.TestCase):
         Args:
             mock_get_url:
         """
-        with cast(URLProvider, get_provider("shaystack.providers.url", ENVIRON)) as provider:
+        with cast(URLProvider, get_provider("shaystack.providers.url", self.environ)) as provider:
             provider.cache_clear()
             provider._periodic_refresh = 2
             result = provider.read(40, None, None, None, None)
@@ -145,7 +144,7 @@ class TestImportLocalFile(unittest.TestCase):
         Args:
             mock_get_url:
         """
-        with get_provider("shaystack.providers.url", ENVIRON) as provider:
+        with get_provider("shaystack.providers.url", self.environ) as provider:
             version = datetime(2020, 11, 1, 16, 30, 0, 0, tzinfo=None)
 
             result = provider.read(0, None, None, None, date_version=version)
@@ -156,7 +155,7 @@ class TestImportLocalFile(unittest.TestCase):
         Args:
             mock_get_url:
         """
-        with get_provider("shaystack.providers.url", ENVIRON) as provider:
+        with get_provider("shaystack.providers.url", self.environ) as provider:
 
             version_2 = datetime(2005, 11, 2, 0, 0, 2, 0, tzinfo=None)
             result = provider.read(0, None, None, None, date_version=version_2)
@@ -167,7 +166,7 @@ class TestImportLocalFile(unittest.TestCase):
         Args:
             mock_get_url:
         """
-        with get_provider("shaystack.providers.url", ENVIRON) as provider:
+        with get_provider("shaystack.providers.url", self.environ) as provider:
 
             version_2 = datetime(2050, 11, 1, 16, 30, 0, 0, tzinfo=None)
             result = provider.read(0, None, None, None, date_version=version_2)
@@ -178,7 +177,7 @@ class TestImportLocalFile(unittest.TestCase):
         Args:
             mock_get_url:
         """
-        with get_provider("shaystack.providers.url", ENVIRON) as provider:
+        with get_provider("shaystack.providers.url", self.environ) as provider:
             version_2 = datetime(2020, 11, 1, 16, 30, 0, 0, tzinfo=None)
             result = provider.read(0, None, None, None, date_version=version_2)
             assert len(result) == 1
@@ -188,7 +187,7 @@ class TestImportLocalFile(unittest.TestCase):
         Args:
             mock_get_url:
         """
-        with get_provider("shaystack.providers.url", ENVIRON) as provider:
+        with get_provider("shaystack.providers.url", self.environ) as provider:
             version_1 = datetime(2020, 11, 10, 0, 0, 2, 0, tzinfo=None)
             result = provider.read(0, None, None, "id==@p_demo_r_23a44701-a89a6c66", version_1)
             assert len(result) == 1
@@ -204,7 +203,7 @@ class TestImportLocalFile(unittest.TestCase):
         Args:
             mock_get_url:
         """
-        with get_provider("shaystack.providers.url", ENVIRON) as provider:
+        with get_provider("shaystack.providers.url", self.environ) as provider:
             version_2 = datetime(2020, 11, 10, 0, 0, 2, 0, tzinfo=None)
             result = provider.read(0, None, [Ref("p_demo_r_23a44701-a89a6c66")], None, version_2)
             assert len(result) == 1
@@ -226,7 +225,7 @@ class TestImportLocalFile(unittest.TestCase):
         Args:
             mock_get_url:
         """
-        with get_provider("shaystack.providers.url", ENVIRON) as provider:
+        with get_provider("shaystack.providers.url", self.environ) as provider:
             versions = provider.versions()
             assert len(versions) == 3
 

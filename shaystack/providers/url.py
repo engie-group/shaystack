@@ -543,6 +543,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             date_version,
         )
         self.create_db()
+        log.debug("----> self._get_url(): %s", self._get_url())
         grid = self._download_grid(self._get_url(), date_version)
         if entity_ids:
             result = Grid(grid.version, metadata=grid.metadata, columns=grid.column)

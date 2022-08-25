@@ -799,9 +799,8 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             if parsed_uri.scheme not in ['', 'file']:
                 raise ValueError("A wrong url ! (url have to be ['file','s3','']")
         if date_version:
-            date_version = date_version.replace(tzinfo=None).replace(hour=23, minute=59)
-        for version, version_url in self._versions[parsed_uri.geturl()].items():
-            parsed_uri = urlparse(version_url, allow_fragments=False)
+            date_version = date_version.replace(tzinfo=pytz.UTC).replace(hour=23, minute=59)
+        for version, _ in self._versions[parsed_uri.geturl()].items():
             if not date_version or version <= date_version:  # .date():
                 return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
                         parsed_uri.geturl(),

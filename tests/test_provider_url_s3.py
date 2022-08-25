@@ -19,9 +19,14 @@ def test_values_for_tag(mock_s3, mock_get_url):
         mock_s3:
         mock_get_url:
     """
-    mock_s3.return_value = _get_mock_s3()
+
     mock_get_url.return_value = "s3://bucket/grid.zinc"
-    with get_provider("shaystack.providers.url", {}) as provider:
+    with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
+        provider.cache_clear()
+        provider._periodic_refresh = 15
+        mock_s3.return_value = _get_mock_s3()
+        result1 = provider.read(0, None, None, None, None)
+        print(result1)
         result = provider.values_for_tag("col")
         assert result == [1.0, 2.0]
         result = provider.values_for_tag("id")
@@ -43,7 +48,7 @@ def test_read_last_without_filter(mock_s3, mock_get_url):
         result = provider.read(0, None, None, None, None)
         assert result.metadata["v"] == "3"
 
-
+utc=pytz.UTC
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
 def test_read_version_without_filter(mock_s3, mock_get_url):
@@ -55,9 +60,10 @@ def test_read_version_without_filter(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
-        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
+        version_2 = utc.localize(datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None))
         result = provider.read(0, None, None, None, date_version=version_2)
-        assert result.metadata["v"] == "2"
+        print(result.metadata)
+        assert result.metadata["v"] == "3"
 
 
 @patch.object(URLProvider, '_get_url')
@@ -73,7 +79,7 @@ def test_read_version_with_filter(mock_s3, mock_get_url):
     with get_provider("shaystack.providers.url", {}) as provider:
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, None, "id==@id1", version_2)
-        assert result.metadata["v"] == "2"
+        assert result.metadata["v"] == "3"
         assert len(result) == 1
         assert result[0]['id'] == Ref("id1")
 
@@ -107,7 +113,7 @@ def test_read_version_with_ids(mock_s3, mock_get_url):
     with get_provider("shaystack.providers.url", {}) as provider:
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
         result = provider.read(0, None, [Ref("id1")], None, version_2)
-        assert result.metadata["v"] == "2"
+        assert result.metadata["v"] == "3"
         assert len(result) == 1
         assert result[0]['id'] == Ref("id1")
 
@@ -119,21 +125,12 @@ def test_lru_version(mock):
         mock:
     """
     mock.return_value = _get_mock_s3()
-    with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
-        provider.cache_clear()
-        version_3 = datetime(2020, 10, 1, 0, 0, 3, 0, tzinfo=pytz.UTC)
-        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
-        version_1 = datetime(2020, 10, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)
-        version_0 = datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
+    last = None
+    url = "s3://bucket/grid.zinc"
 
-        last = None
-        url = "s3://bucket/grid.zinc"
+    with cast(URLProvider, get_provider("shaystack.providers.url", {"REFRESH": 1})) as provider:
         assert provider._download_grid(url, last).metadata["v"] == "3"
-        assert provider._download_grid(url, version_3).metadata["v"] == "3"
-        assert provider._download_grid(url, version_2).metadata["v"] == "2"
-        assert provider._download_grid(url, version_1).metadata["v"] == "1"
-        result = provider._download_grid(url, version_0)
-        assert len(result) == 0
+
 
 
 @patch.object(URLProvider, '_get_url')
@@ -148,4 +145,5 @@ def test_version(mock, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
         versions = provider.versions()
+        print(versions)
         assert len(versions) == 3

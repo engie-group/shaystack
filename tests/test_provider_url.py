@@ -96,7 +96,10 @@ class TestImportLocalFile(unittest.TestCase):
 
     def setUp(self):
         self.input_file_ontologies = f'{os.getcwd()}/input_file_ontologies'
-        self.environ = {"HAYSTACK_DB": f'{self.input_file_ontologies}/carytown.hayson.json'}
+        self.environ = {
+            "HAYSTACK_PROVIDER": "shaystack.providers.url",
+            "HAYSTACK_DB": f"{self.input_file_ontologies}/carytown.hayson.json"
+        }
         self.current_directory = CurrentDirectory(self.input_file_ontologies)
         self.current_directory.create_files()
 

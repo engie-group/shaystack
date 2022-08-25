@@ -48,7 +48,6 @@ def test_read_last_without_filter(mock_s3, mock_get_url):
         result = provider.read(0, None, None, None, None)
         assert result.metadata["v"] == "3"
 
-utc=pytz.UTC
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
 def test_read_version_without_filter(mock_s3, mock_get_url):
@@ -60,7 +59,7 @@ def test_read_version_without_filter(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
-        version_2 = utc.localize(datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None))
+        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
         result = provider.read(0, None, None, None, date_version=version_2)
         print(result.metadata)
         assert result.metadata["v"] == "3"
@@ -77,7 +76,7 @@ def test_read_version_with_filter(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
-        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
+        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
         result = provider.read(0, None, None, "id==@id1", version_2)
         assert result.metadata["v"] == "3"
         assert len(result) == 1
@@ -95,7 +94,7 @@ def test_read_version_with_filter2(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
-        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
+        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
         result = provider.read(0, "id,other", None, "id==@id1", version_2)
         assert result.column == {"id": MetadataObject(), "other": MetadataObject()}
 
@@ -111,7 +110,7 @@ def test_read_version_with_ids(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
-        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=pytz.UTC)
+        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
         result = provider.read(0, None, [Ref("id1")], None, version_2)
         assert result.metadata["v"] == "3"
         assert len(result) == 1

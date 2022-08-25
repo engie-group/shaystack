@@ -739,11 +739,11 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         else:
             name, suffix = parsed_uri.path.split(".", 1)
             unordered_all_versions = {}
-            creation_date = datetime.fromtimestamp(os.path.getmtime(parsed_uri.path))
+            creation_date = datetime.fromtimestamp(os.path.getmtime(parsed_uri.path)).replace(tzinfo=pytz.UTC)
             for f in glob.glob(f"{name}*.{suffix}"):
                 str_version = f[len(name) + 1:-len(suffix) - 1]
                 if str_version:
-                    unordered_all_versions[datetime.fromisoformat(str_version)] = f
+                    unordered_all_versions[datetime.fromisoformat(str_version).replace(tzinfo=pytz.UTC)] = f
             ordered_date_from_str_versions = sorted(unordered_all_versions.keys(), reverse=True)
             # On n'est pas censé l'accepter, péter une erreur (import file dans le bon ordre)
             if len(ordered_date_from_str_versions) > 0 and creation_date < ordered_date_from_str_versions[0]:
@@ -795,16 +795,24 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         parsed_uri = urlparse(uri, allow_fragments=False)
         parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
         self._refresh_versions(parsed_uri)
+        if date_version:
+            date_version = date_version.replace(tzinfo=pytz.UTC).replace(hour=23, minute=59) ## TODO Remove 23:59 if needed
         if parsed_uri.scheme != 's3':
             if parsed_uri.scheme not in ['', 'file']:
                 raise ValueError("A wrong url ! (url have to be ['file','s3','']")
-        if date_version:
-            date_version = date_version.replace(tzinfo=pytz.UTC).replace(hour=23, minute=59)
-        for version, _ in self._versions[parsed_uri.geturl()].items():
+
+        for version, version_url in self._versions[parsed_uri.geturl()].items():
             if not date_version or version <= date_version:  # .date():
-                return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
+                if parsed_uri.scheme == 's3':
+                    return self._download_grid_effective_version(
                         parsed_uri.geturl(),
                         version)
+                else:
+                    return self._download_grid_effective_version(
+                        version_url,
+                        version)
+
+
         return Grid(columns=["ts", "val"])
 
 

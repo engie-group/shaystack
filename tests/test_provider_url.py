@@ -11,7 +11,7 @@ from shaystack import Ref
 from shaystack.providers import get_provider
 from shaystack.providers.url import Provider as URLProvider
 
-utc = pytz.UTC
+utc = None
 ENVIRON = {"HAYSTACK_DB": 'input_file_ontologies/carytown.hayson.json'}
 
 ONTO = {"meta": {"ver": "3.0"},
@@ -146,7 +146,7 @@ class TestImportLocalFile(unittest.TestCase):
             mock_get_url:
         """
         with get_provider("shaystack.providers.url", ENVIRON) as provider:
-            version = datetime(2020, 11, 1, 16, 30, 0, 0, tzinfo=pytz.UTC)
+            version = datetime(2020, 11, 1, 16, 30, 0, 0, tzinfo=None)
 
             result = provider.read(0, None, None, None, date_version=version)
             assert len(result) == 1
@@ -158,7 +158,7 @@ class TestImportLocalFile(unittest.TestCase):
         """
         with get_provider("shaystack.providers.url", ENVIRON) as provider:
 
-            version_2 = datetime(2005, 11, 2, 0, 0, 2, 0, tzinfo=pytz.UTC)
+            version_2 = datetime(2005, 11, 2, 0, 0, 2, 0, tzinfo=None)
             result = provider.read(0, None, None, None, date_version=version_2)
             assert len(result) == 0
 
@@ -169,7 +169,7 @@ class TestImportLocalFile(unittest.TestCase):
         """
         with get_provider("shaystack.providers.url", ENVIRON) as provider:
 
-            version_2 = datetime(2050, 11, 1, 16, 30, 0, 0, tzinfo=pytz.UTC)
+            version_2 = datetime(2050, 11, 1, 16, 30, 0, 0, tzinfo=None)
             result = provider.read(0, None, None, None, date_version=version_2)
             assert len(result) == 3
 
@@ -179,8 +179,7 @@ class TestImportLocalFile(unittest.TestCase):
             mock_get_url:
         """
         with get_provider("shaystack.providers.url", ENVIRON) as provider:
-
-            version_2 = datetime(2021, 11, 2, 0, 0, 2, 0, tzinfo=pytz.UTC)
+            version_2 = datetime(2020, 11, 1, 16, 30, 0, 0, tzinfo=None)
             result = provider.read(0, None, None, None, date_version=version_2)
             assert len(result) == 2
 
@@ -190,12 +189,12 @@ class TestImportLocalFile(unittest.TestCase):
             mock_get_url:
         """
         with get_provider("shaystack.providers.url", ENVIRON) as provider:
-            version_1 = datetime(2020, 11, 10, 0, 0, 2, 0, tzinfo=pytz.UTC)
+            version_1 = datetime(2020, 11, 10, 0, 0, 2, 0, tzinfo=None)
             result = provider.read(0, None, None, "id==@p_demo_r_23a44701-a89a6c66", version_1)
             assert len(result) == 1
             assert result[0]['id'] == Ref("@p_demo_r_23a44701-a89a6c66")
 
-            version_2 = datetime(2021, 11, 3, 0, 0, 2, 0, tzinfo=pytz.UTC)
+            version_2 = datetime(2021, 11, 3, 0, 0, 2, 0, tzinfo=None)
             result = provider.read(0, "id,dis", None, "id==@p_demo_r_23a44701-a89a6c66", version_2)
             assert list(result.column) == ['id', 'dis']
             assert list(result.keys()) == [Ref('p_demo_r_23a44701-a89a6c66', 'Carytown')]
@@ -206,7 +205,7 @@ class TestImportLocalFile(unittest.TestCase):
             mock_get_url:
         """
         with get_provider("shaystack.providers.url", ENVIRON) as provider:
-            version_2 = datetime(2020, 11, 10, 0, 0, 2, 0, tzinfo=pytz.UTC)
+            version_2 = datetime(2020, 11, 10, 0, 0, 2, 0, tzinfo=None)
             result = provider.read(0, None, [Ref("p_demo_r_23a44701-a89a6c66")], None, version_2)
             assert len(result) == 1
             assert result[0]['id'] == Ref("p_demo_r_23a44701-a89a6c66")
@@ -217,7 +216,7 @@ class TestImportLocalFile(unittest.TestCase):
         """
         with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
             provider.cache_clear()
-            version_0 = datetime(2018, 8, 1, 0, 0, 3, 0, tzinfo=pytz.UTC)
+            version_0 = datetime(2018, 8, 1, 0, 0, 3, 0, tzinfo=None)
             url = f'{self.input_file_ontologies}/carytown.hayson.json'
             result = provider._download_grid(url, version_0)
             assert len(result) == 0
@@ -243,7 +242,7 @@ class TestImportLocalFile(unittest.TestCase):
             provider._versions = {
                 wrong_url:
                     OrderedDict([
-                        (datetime(2021, 12, 8, 10, 55, 39, 50626, tzinfo=pytz.UTC), wrong_url)
+                        (datetime(2021, 12, 8, 10, 55, 39, 50626, tzinfo=None), wrong_url)
                     ])
             }
             with self.assertRaises(ValueError) as cm:

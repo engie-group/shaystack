@@ -26,7 +26,6 @@ def test_values_for_tag(mock_s3, mock_get_url):
         provider._periodic_refresh = 15
         mock_s3.return_value = _get_mock_s3()
         result1 = provider.read(0, None, None, None, None)
-        print(result1)
         result = provider.values_for_tag("col")
         assert result == [1.0, 2.0]
         result = provider.values_for_tag("id")
@@ -61,7 +60,6 @@ def test_read_version_without_filter(mock_s3, mock_get_url):
     with get_provider("shaystack.providers.url", {}) as provider:
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
         result = provider.read(0, None, None, None, date_version=version_2)
-        print(result.metadata)
         assert result.metadata["v"] == "3"
 
 
@@ -144,5 +142,4 @@ def test_version(mock, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
         versions = provider.versions()
-        print(versions)
         assert len(versions) == 3

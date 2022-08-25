@@ -181,7 +181,7 @@ class TestImportLocalFile(unittest.TestCase):
         with get_provider("shaystack.providers.url", ENVIRON) as provider:
             version_2 = datetime(2020, 11, 1, 16, 30, 0, 0, tzinfo=None)
             result = provider.read(0, None, None, None, date_version=version_2)
-            assert len(result) == 2
+            assert len(result) == 1
 
     def test_read_version_with_select_and_gridfilter(self):
         """

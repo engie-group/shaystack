@@ -737,6 +737,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             self._versions[parsed_uri.geturl()] = unordered_all_versions  # Lru and versions)
             self._lock.release()
         else:
+            log.debug("----> name, suffix = '%s'.split('.', 1)", parsed_uri.path)
             name, suffix = parsed_uri.path.split(".", 1)
             unordered_all_versions = {}
             creation_date = datetime.fromtimestamp(os.path.getmtime(parsed_uri.path)).replace(tzinfo=pytz.UTC)

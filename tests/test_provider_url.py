@@ -111,11 +111,13 @@ class TestImportLocalFile(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.input_file_ontologies, ignore_errors=True)
 
-    def test_values_for_tag(self):
+    @patch.object(URLProvider, '_get_url')
+    def test_values_for_tag(self, mock_get_url):
         """
         Args:
             mock_get_url:
         """
+        mock_get_url.return_value = f"{self.input_file_ontologies}/carytown.hayson.json"
         with cast(URLProvider, get_provider("shaystack.providers.url", self.environ)) as provider:
             provider._periodic_refresh = 2
             result = provider.values_for_tag("id")

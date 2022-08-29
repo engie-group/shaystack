@@ -140,7 +140,7 @@ class TestImportLocalFile(unittest.TestCase):
         Args:
             mock_get_url:
         """
-        log.debug(self.input_file_ontologies)
+        log.debug(f'{os.getcwd()}/input_file_ontologies/carytown.hayson.json')
         mock_get_url.return_value = f"{self.input_file_ontologies}/carytown.hayson.json"
         with cast(URLProvider, get_provider("shaystack.providers.url", self.environ)) as provider:
             provider._periodic_refresh = 2

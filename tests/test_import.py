@@ -99,8 +99,6 @@ class TestImportLocalFile(unittest.TestCase):
         self.update_time_series = True
         self.force = False
         self.merge_ts = True
-        # os.chdir("../")
-        # print("\nHere we are: " + os.getcwd())
         self.current_directory = CurrentDirectory(self.source_file_ontologies, self.imported_file_ontologies)
         self.current_directory.create_files()
 

@@ -7,6 +7,7 @@ import json
 import pytz
 import os
 import logging
+from unittest.mock import patch
 
 from shaystack import Ref
 from shaystack.providers import get_provider
@@ -133,12 +134,14 @@ class TestImportLocalFile(unittest.TestCase):
             result = provider.about("http://localhost")
             assert result[0]['moduleName'] == 'URLProvider'
 
-    def test_read_last_without_version_without_filter(self):
+    @patch.object(URLProvider, '_get_url')
+    def test_read_last_without_version_without_filter(self, mock_get_url):
         """
         Args:
             mock_get_url:
         """
         log.debug(os.listdir(self.input_file_ontologies))
+        mock_get_url.return_value = f"{self.input_file_ontologies}/carytown.hayson.json"
         with cast(URLProvider, get_provider("shaystack.providers.url", self.environ)) as provider:
             provider._periodic_refresh = 2
             result = provider.read(40, None, None, None, None)

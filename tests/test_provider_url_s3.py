@@ -1,9 +1,6 @@
 from datetime import datetime
 from typing import cast
 from unittest.mock import patch
-
-import pytz
-
 from shaystack import MetadataObject
 from shaystack import Ref
 from shaystack.providers import get_provider

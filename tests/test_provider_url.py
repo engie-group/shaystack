@@ -98,7 +98,7 @@ class CurrentDirectory:
 class TestImportLocalFile(unittest.TestCase):
 
     def setUp(self):
-        self.input_file_ontologies = f'{os.getcwd()}/input_ontolog_files'
+        self.input_file_ontologies = './input_ontolog_files'
         self.environ = {
             "HAYSTACK_PROVIDER": "shaystack.providers.url",
             "HAYSTACK_DB": f"{self.input_file_ontologies}/carytown.hayson.json"
@@ -141,7 +141,7 @@ class TestImportLocalFile(unittest.TestCase):
             mock_get_url:
         """
         log.debug(os.getcwd())
-        log.debug(f'{os.getcwd()}/input_file_ontologies/carytown.hayson.json')
+        log.debug(f'here: ------> /input_file_ontologies/carytown.hayson.json')
         mock_get_url.return_value = f"{self.input_file_ontologies}/carytown.hayson.json"
         with cast(URLProvider, get_provider("shaystack.providers.url", self.environ)) as provider:
             provider._periodic_refresh = 2

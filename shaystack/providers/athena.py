@@ -5,9 +5,9 @@
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
 
-import time
+import time as t
 from csv import DictReader
-from datetime import datetime, date
+from datetime import datetime, date, time
 from typing import Optional, Tuple, Any, Dict
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
@@ -170,7 +170,7 @@ class Provider(DBProvider):
                                                         f'{query_status["StateChangeReason"]}')
                     else:
                         raise Exception(error_message)
-                time.sleep(1)
+                t.sleep(1)
             # getting the csv file that contain query results from s3 output bucket
             reader = self.get_query_results(query_response["QueryExecutionId"])
             return reader

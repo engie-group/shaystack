@@ -7,7 +7,7 @@
 
 import time
 from csv import DictReader
-from datetime import datetime, date, time
+from datetime import datetime, date
 from typing import Optional, Tuple, Any, Dict
 from urllib.parse import parse_qs
 from urllib.parse import urlparse

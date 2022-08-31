@@ -114,10 +114,10 @@ def test_import_ts_in_db():
 
 
 def test_build_athena_prediction_query_of_entity_00():
-    athena_query = "SELECT time, prediction, upper, lower FROM tast_table WHERE" \
+    athena_query = "SELECT DISTINCT time, prediction, upper, lower FROM tast_table WHERE" \
                    " part_key_1='pk1' AND part_key_2='pk2' AND part_key_3='pk3' " \
                    "AND year in (2021) AND month in (5) AND day in (1, 2, 3, 4)" \
-                   " AND time BETWEEN DATE('2021-05-01')  AND DATE('2021-05-04');"
+                   " AND time BETWEEN DATE('2021-05-01')  AND DATE('2021-05-04') ORDER BY time ASC;"
 
     date_range = (datetime(2021, 5, 1, 0, 0, tzinfo=pytz.UTC),
                   datetime(2021, 5, 4, 23, 59, 59, 999999, tzinfo=pytz.UTC))
@@ -126,10 +126,10 @@ def test_build_athena_prediction_query_of_entity_00():
 
 
 def test_build_athena_prediction_query_of_entity_01():
-    athena_query = "SELECT time, value FROM tast_table WHERE " \
+    athena_query = "SELECT DISTINCT time, value FROM tast_table WHERE " \
                    "part_key_1='pk1' AND part_key_2='pk2' " \
                    "AND year in (2021) AND month in (5) " \
-                   "AND time BETWEEN DATE('2021-05-01')  AND DATE('2021-05-04');"
+                   "AND time BETWEEN DATE('2021-05-01')  AND DATE('2021-05-04') ORDER BY time ASC;"
 
     date_range = (datetime(2021, 5, 1, 0, 0, tzinfo=pytz.UTC),
                   datetime(2021, 5, 4, 23, 59, 59, 999999, tzinfo=pytz.UTC))

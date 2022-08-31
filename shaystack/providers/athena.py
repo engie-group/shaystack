@@ -218,7 +218,7 @@ class Provider(DBProvider):
             dates_range = list(dates_range)
             dates_range[1] = date_version
 
-        select_all = f'SELECT {hs_date_column}, {", ".join(hs_value_column)}' \
+        select_all = f'SELECT DISTINCT {hs_date_column}, {", ".join(hs_value_column)}' \
                      f' FROM {his_uri["table_name"]}' \
                      f' WHERE {" ".join([str(item) + " AND" for item in hs_parts_keys[:-1]])}' \
                      f' {hs_parts_keys[-1]}'
@@ -234,7 +234,7 @@ class Provider(DBProvider):
                               f' ({", ".join(map(str, date_range_period.days))})'
 
             select_all += f' AND time BETWEEN DATE(\'{dates_range[0].strftime("%Y-%m-%d")}\') ' \
-                          f' AND DATE(\'{dates_range[1].strftime("%Y-%m-%d")}\');'
+                          f' AND DATE(\'{dates_range[1].strftime("%Y-%m-%d")}\') ORDER BY time ASC;'
         return select_all
 
     def create_history_grid(self, reader: DictReader, his_uri: dict) -> Grid:

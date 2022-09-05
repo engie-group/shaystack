@@ -187,7 +187,6 @@ def merge_timeseries(source_grid: Grid,
         if destination_grid:
             start_destination = destination_grid[0]['ts']
             result_grid.extend(filter(lambda row: row['ts'] < start_destination, source_grid))
-            # result_grid.extend(destination_grid)
         else:
             result_grid.extend(source_grid)
         result_grid.sort('ts')
@@ -268,24 +267,28 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
                 source_data = gzip.compress(source_data)
             # Rename default file to versionned file
             if not force:
+                date_old_version = None
                 f = Path(parsed_destination.path)
+                old_filename_elements = f.name.split('/')[-1].split('.', 1)[0].split('-', 1)
+                if len(old_filename_elements) > 1:
+                    try:
+                        date_old_version = datetime.strptime(old_filename_elements[1], '%Y-%m-%dT%H:%M:%S')
+                    except ValueError:
+                        raise ValueError("Incorrect data format, should be YYYY-MM-DDThh:mm:dd")
+
                 if f.exists():
                     # attention vérifier si le nom du fichier à déjà la date, sinon on garde la date physique
                     # Une solution: Import d'un fichier d'une date ancienne interdit
-
-                    old_filename = Path(parsed_destination.path)
-                    old_filename_elements = old_filename.name.split('/')[-1].split('.', 1)[0].split('-', 1)
-                    if len(old_filename_elements) > 1:
-                        date_old_version = datetime.fromisoformat(old_filename_elements[1])
-                        prefix, suffix = old_filename.name.split('.', 1)
+                    if date_old_version:
+                        prefix, suffix = f.name.split('.', 1)
                         prefix = prefix.split("-", 1)[0]
                     else:
                         date_old_version: datetime = \
                             datetime.fromtimestamp(os.path.getmtime(parsed_destination.path)).replace(tzinfo=None)
-                        prefix, suffix = old_filename.name.split('.', 1)
+                        prefix, suffix = f.name.split('.', 1)
 
                     old_name = f"{prefix}-{date_old_version.isoformat()}.{suffix}"
-                    f.rename(Path(old_filename.parent, old_name))
+                    f.rename(Path(f.parent, old_name))
 
             with open(parsed_destination.path, "wb") as f:
                 f.write(source_data)
@@ -543,7 +546,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             date_version,
         )
         self.create_db()
-        log.debug("----> self._get_url(): %s", self._get_url())
         grid = self._download_grid(self._get_url(), date_version)
         if entity_ids:
             result = Grid(grid.version, metadata=grid.metadata, columns=grid.column)
@@ -738,7 +740,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             self._versions[parsed_uri.geturl()] = unordered_all_versions  # Lru and versions)
             self._lock.release()
         else:
-            log.debug("----> name, suffix = '%s'.split('.', 1)", parsed_uri.path)
             name, suffix = parsed_uri.path.split(".", 1)
             unordered_all_versions = {}
             creation_date = datetime.fromtimestamp(os.path.getmtime(parsed_uri.path)).replace(tzinfo=pytz.UTC)
@@ -797,14 +798,12 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         parsed_uri = urlparse(uri, allow_fragments=False)
         parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
         self._refresh_versions(parsed_uri)
-        if date_version:
-            date_version = date_version.replace(tzinfo=pytz.UTC).replace(hour=23, minute=59) ## TODO Remove 23:59 if needed
         if parsed_uri.scheme != 's3':
             if parsed_uri.scheme not in ['', 'file']:
                 raise ValueError("A wrong url ! (url have to be ['file','s3','']")
 
         for version, version_url in self._versions[parsed_uri.geturl()].items():
-            if not date_version or version <= date_version:  # .date():
+            if not date_version or version <= date_version.replace(tzinfo=pytz.UTC):  # .date():
                 if parsed_uri.scheme == 's3':
                     return self._download_grid_effective_version(
                         parsed_uri.geturl(),

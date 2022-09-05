@@ -493,6 +493,8 @@ def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str) -> Hays
                 select = args["select"]
             if "version" in args:
                 date_version = parse_hs_datetime_format(args["version"], default_tz)
+                if date_version.hour == 0 & date_version.minute == 0 & date_version.second == 0:
+                    date_version = date_version.replace(hour=23, minute=59, second=59)
 
         if read_filter is None:
             read_filter = ""

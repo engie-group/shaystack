@@ -269,9 +269,7 @@ def parse_hs_datetime_format(datetime_str: str, timezone: tzinfo) -> datetime:
     if datetime_str == "yesterday":
         return datetime.combine(date.today() - timedelta(days=1), datetime.min.time()) \
             .replace(tzinfo=timezone)
-    if datetime_str == "today":
-        return datetime.combine(date.today(), datetime.min.time()) \
-            .replace(tzinfo=timezone)
+
     return hs_all_date.parseString(datetime_str, parseAll=True)[0]
 
 

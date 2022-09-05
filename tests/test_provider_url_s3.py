@@ -55,8 +55,9 @@ def test_read_version_without_filter(mock_s3, mock_get_url):
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
-        version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
+        version_2 = datetime(2020, 10, 1, 0, 0, 3, 0, tzinfo=None)
         result = provider.read(0, None, None, None, date_version=version_2)
+        print(result)
         assert result.metadata["v"] == "3"
 
 
@@ -73,7 +74,7 @@ def test_read_version_with_filter(mock_s3, mock_get_url):
     with get_provider("shaystack.providers.url", {}) as provider:
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
         result = provider.read(0, None, None, "id==@id1", version_2)
-        assert result.metadata["v"] == "3"
+        assert result.metadata["v"] == "2"
         assert len(result) == 1
         assert result[0]['id'] == Ref("id1")
 
@@ -107,7 +108,7 @@ def test_read_version_with_ids(mock_s3, mock_get_url):
     with get_provider("shaystack.providers.url", {}) as provider:
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
         result = provider.read(0, None, [Ref("id1")], None, version_2)
-        assert result.metadata["v"] == "3"
+        assert result.metadata["v"] == "2"
         assert len(result) == 1
         assert result[0]['id'] == Ref("id1")
 

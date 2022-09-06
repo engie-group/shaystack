@@ -117,7 +117,6 @@ def _download_uri(parsed_uri: ParseResult, envs: Dict[str, str]) -> bytes:
     else:
         # Manage default cwd
         uri = parsed_uri.geturl()
-        #if not Path(uri).exists():
         unordered_all_versions, ordered_date_from_str_versions = check_version_file(uri, parsed_uri)
         if len(ordered_date_from_str_versions) > 0:
             new_file = unordered_all_versions[ordered_date_from_str_versions[0]]
@@ -130,10 +129,6 @@ def _download_uri(parsed_uri: ParseResult, envs: Dict[str, str]) -> bytes:
                 uri = new_parsed_uri.geturl()
         else:
             uri = Path.cwd().joinpath(uri).as_uri()
-        # else:
-        #
-        #     if not parsed_uri.scheme:
-        #         uri = Path.cwd().joinpath(uri).as_uri()
         with urllib.request.urlopen(uri) as response:
             data = response.read()
     return data

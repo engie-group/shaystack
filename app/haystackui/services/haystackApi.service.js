@@ -63,7 +63,7 @@ class HaystackApiService {
       const response = await this.api.get(`/read?filter=${entity}&limit=${limit}${versionParam}`)
       return response.data
     } catch {
-      return []
+      return { 'rows': [] }
     }
   }
   async getHistory(id, range = '2017-01-01,2023-12-31', version = '2023-12-31') {

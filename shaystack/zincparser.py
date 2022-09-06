@@ -436,7 +436,7 @@ hs_list = _GenerateMatch(
         Suppress(']')
     ).setParseAction(lambda toks: toks.asList()))
 # Tag IDs
-hs_id = Regex(r'[a-z][a-zA-Z0-9_]*').setName('id')
+hs_id = Regex(r'[a-z_][a-zA-Z0-9_]*').setName('id')
 
 # Grid building blocks
 hs_cell = _GenerateMatch(

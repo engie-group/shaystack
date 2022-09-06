@@ -28,7 +28,8 @@ const template = `
     <v-progress-circular :size="100" :width="10" indeterminate></v-progress-circular>
   </div>
   <div v-else class="summary-content">
-    <v-alert type="warning" class="summary-content__alert-no-data">Enter an API that contains data</v-alert>
+    <v-alert v-if="apiServers.length===0" type="warning" class="summary-content__alert-no-data">Enter an API that contains data</v-alert>
+    <v-alert v-else type="error" class="summary-content__alert-no-data">No results for the parameters chosen</v-alert>
   </div>
 `
 import { API_COLORS, dateUtils, formatEntityService } from '../../services/index.js'

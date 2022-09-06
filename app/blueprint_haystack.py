@@ -138,10 +138,11 @@ def create_haystack_bp() -> Blueprint:
     @haystack_blueprint.route('/', methods=['GET'], defaults={'filename': 'index.html'})
     @haystack_blueprint.route('/<path:filename>', methods=['GET'])
     def flash_web_ui(filename) -> Response:
-        if(os.environ.get('HAYSTACK_INTERFACE') and os.environ.get('HAYSTACK_INTERFACE')!='' and filename == 'plugins/customPlugin.js'):
+        if(os.environ.get('HAYSTACK_INTERFACE') and
+                os.environ.get('HAYSTACK_INTERFACE')!=''
+                and filename == 'plugins/customPlugin.js'):
             return send_from_directory(os.getcwd(), os.environ['HAYSTACK_INTERFACE'])
-        else:
-            return send_from_directory(haystack_blueprint.static_folder, filename)
+        return send_from_directory(haystack_blueprint.static_folder, filename)
     return haystack_blueprint
 
 

@@ -4,7 +4,14 @@
 # (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+"""
+Add the persistance of time-series with Athena database.
 
+Set the HAYSTACK_TS with:
+    "athena://shaystack?output_bucket_name=<S3 bucket name>&output_folder_name=<output folder>"
+- output_bucket_name [REQUIRED]: The name of the bucket in which Athena will store the query results
+- output_folder_name [REQUIRED]: The folder name in which Athena will store the query results
+"""
 import time as t
 from csv import DictReader
 from datetime import datetime, date, time
@@ -60,8 +67,24 @@ class Provider(DBProvider):
                                 self._envs.get("AWS_DEFAULT_REGION"))
         session = self._get_boto()
         log.info("[BOTO SESSION]: session was created successfully! ")
+        # TODO remove the CDH_PROJECT_ROLE_ARN
+        #######################################################################
+        ############ JUST FOR TESTING IT WONT BE USED IN PROD #################
+        #######################################################################
+        project_role_arn = self._envs.get('CDH_PROJECT_ROLE_ARN', '')
+        sts_client = session.client("sts", region_name=region)
+        assumed_role_object = sts_client.assume_role(
+            RoleArn=project_role_arn,
+            RoleSessionName="AssumeRoleSession1")
+        credentials = assumed_role_object["Credentials"]
+        log.info("[STS BOTO]: client was created successfully! ")
+        #######################################################################
+
         self._read_client = session.client('athena',
-                                           region_name=region
+                                           region_name=region,
+                                           aws_access_key_id=credentials["AccessKeyId"],
+                                           aws_secret_access_key=credentials["SecretAccessKey"],
+                                           aws_session_token=credentials["SessionToken"]
                                            )
         log.info("[ATHENA BOTO]: was created successfully! " + str(self._read_client.meta))
         return self._read_client
@@ -114,8 +137,7 @@ class Provider(DBProvider):
             if python_type == "NoneType":
                 return None
             raise ValueError(f"Unknown type {python_type}")
-        else:
-            return None
+        return None
 
     def get_query_results(self, query_execution_id: str) -> DictReader:
         """
@@ -127,6 +149,7 @@ class Provider(DBProvider):
         """
         region = self._envs.get("AWS_REGION",
                                 self._envs.get("AWS_DEFAULT_REGION"))
+        reader = None
         try:
             resource = boto3.resource('s3', region)
             response = resource.Bucket(self._output_bucket_name).Object(
@@ -134,12 +157,11 @@ class Provider(DBProvider):
             lines = response['Body'].read().decode('utf-8').splitlines(True)
             log.info("Query results CSV file contain [%s] row.", str(len(lines)))
             reader = DictReader(lines)
-            return reader
-        except exceptions.ClientError as e:
-            if e.response['Error']['Code'] == "404":
+        except exceptions.ClientError as exc:
+            if exc.response['Error']['Code'] == "404":
                 print("The object does not exist.")
-            else:
-                raise
+            raise
+        return reader
 
     def poll_query_status(self, query_response: dict) -> DictReader:
         """
@@ -159,7 +181,7 @@ class Provider(DBProvider):
                 query_status = \
                     athena_client.get_query_execution(QueryExecutionId=query_response["QueryExecutionId"])[
                         'QueryExecution']['Status']
-                log.info(f'[QUERY STATUS]: {query_status["State"]}')
+                log.info("[QUERY STATUS]: %s", query_status["State"])
                 if query_status['State'] == 'FAILED' or query_status['State'] == 'CANCELLED':
                     # Get error message from Athena
                     error_message = 'Athena query with executionId {} was {} '.format(
@@ -168,8 +190,9 @@ class Provider(DBProvider):
                     if "StateChangeReason" in query_status:
                         raise Exception(error_message + f'due to the following error:\n'
                                                         f'{query_status["StateChangeReason"]}')
-                    else:
-                        raise Exception(error_message)
+
+                    print(error_message)
+                    raise
                 t.sleep(1)
             # getting the csv file that contain query results from s3 output bucket
             reader = self.get_query_results(query_response["QueryExecutionId"])
@@ -190,9 +213,12 @@ class Provider(DBProvider):
         """
         try:
             date_val = datetime.strptime(str_date, date_pattern)
-        except ValueError:
-            raise ValueError("time data %r does not match format %r" % (str_date, date_pattern))
+        except ValueError as err:
+            log.error("%s time data %r does not match format %r", (err, str_date, date_pattern))
+            raise
         return date_val.strftime("%Y-%m-%d %H:%M:%S")
+
+
 
     @staticmethod
     def build_athena_query(his_uri: dict, dates_range: tuple, date_version: datetime) -> str:

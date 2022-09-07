@@ -104,13 +104,13 @@ def start_shaystack(host: str, port: int, app: Flask) -> int:
             port=port,
             debug=debug)
     return 0
-app = create_app()
+app_instance = create_app()
 
 @click.command()
 @click.option('-h', '--host', default='localhost')
 @click.option('-p', '--port', default=3000, type=int)
 def main(host, port):
-    return start_shaystack(host, port, app)
+    return start_shaystack(host, port, app_instance)
 
 
 if __name__ == '__main__':

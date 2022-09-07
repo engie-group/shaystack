@@ -4,6 +4,12 @@
 # (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+"""
+Generate date period based on period with a start and an end date and return
+- All years in this period
+- All months in this period
+- All days in this period
+"""
 import calendar
 from typing import List
 from datetime import datetime

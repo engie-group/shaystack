@@ -67,24 +67,8 @@ class Provider(DBProvider):
                                 self._envs.get("AWS_DEFAULT_REGION"))
         session = self._get_boto()
         log.info("[BOTO SESSION]: session was created successfully! ")
-        # TODO remove the CDH_PROJECT_ROLE_ARN
-        #######################################################################
-        ############ JUST FOR TESTING IT WONT BE USED IN PROD #################
-        #######################################################################
-        project_role_arn = self._envs.get('CDH_PROJECT_ROLE_ARN', '')
-        sts_client = session.client("sts", region_name=region)
-        assumed_role_object = sts_client.assume_role(
-            RoleArn=project_role_arn,
-            RoleSessionName="AssumeRoleSession1")
-        credentials = assumed_role_object["Credentials"]
-        log.info("[STS BOTO]: client was created successfully! ")
-        #######################################################################
-
         self._read_client = session.client('athena',
-                                           region_name=region,
-                                           aws_access_key_id=credentials["AccessKeyId"],
-                                           aws_secret_access_key=credentials["SecretAccessKey"],
-                                           aws_session_token=credentials["SessionToken"]
+                                           region_name=region
                                            )
         log.info("[ATHENA BOTO]: was created successfully! " + str(self._read_client.meta))
         return self._read_client
@@ -214,7 +198,7 @@ class Provider(DBProvider):
         try:
             date_val = datetime.strptime(str_date, date_pattern)
         except ValueError as err:
-            log.error("%s time data %r does not match format %r", (err, str_date, date_pattern))
+            log.error("%s time data %s does not match format %s", (err, str_date, date_pattern))
             raise
         return date_val.strftime("%Y-%m-%d %H:%M:%S")
 

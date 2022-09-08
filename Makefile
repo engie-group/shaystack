@@ -277,10 +277,10 @@ _check_configure:
 _configure:
 	@if [[ "$(VENV)" != "base" ]]
 	then
-		$(CONDA_EXE) create --name "$(VENV)" -c conda-forge compilers python=$(PYTHON_VERSION) -y $(CONDA_ARGS)
+		$(CONDA_EXE) create --name "$(VENV)" -c conda-forge python=$(PYTHON_VERSION) -y $(CONDA_ARGS)
 		echo -e "Use: $(cyan)conda activate $(VENV)$(normal) $(CONDA_ARGS)"
 	else
-		$(CONDA_EXE) install -c conda-forge compilers python=$(PYTHON_VERSION) -y $(CONDA_ARGS)
+		$(CONDA_EXE) install -c conda-forge python=$(PYTHON_VERSION) -y $(CONDA_ARGS)
 	fi
 
 # -------------------------------------- Standard requirements
@@ -292,7 +292,7 @@ ifeq ($(USE_OKTA),Y)
 	pip install gimme-aws-creds
 endif
 	echo -e "$(cyan)Install binary dependencies ...$(normal)"
-	conda install -y -c conda-forge conda setuptools compilers make git jq libpq curl psycopg2 md-toc
+	conda install -y -c conda-forge conda setuptools make git jq libpq curl psycopg2 md-toc
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
 	pip install supersqlite
 	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"

@@ -166,7 +166,7 @@ def test_put_date_format_value_error_exception():
     str_date = "2022/06/01"
     date_pattern = "%Y-%m-%d"
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", ENVIRON)) as provider:
-        assert_raises(ValueError, provider.put_date_format, str_date, date_pattern)
+        assert_raises(Exception, provider.put_date_format, str_date, date_pattern)
 
 @patch('shaystack.providers.athena.Provider.get_query_results')
 @patch('shaystack.providers.athena.Provider.poll_query_status')

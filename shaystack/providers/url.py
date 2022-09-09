@@ -88,7 +88,7 @@ def check_version_file(uri, parsed_uri):
     unordered_all_versions = {}
     creation_date = None
     for file_path in glob.glob(f"{uri_without_suffix}*{suffixes}"):
-        str_version = f[len(uri_without_suffix) + 1:-len(suffixes)]
+        str_version = file_path[len(uri_without_suffix) + 1:-len(suffixes)]
         if not str_version:
             # User file date
             creation_date = datetime.fromtimestamp(os.path.getmtime(uri))
@@ -745,8 +745,8 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             name, suffix = parsed_uri.path.split(".", 1)
             unordered_all_versions = {}
             creation_date = datetime.fromtimestamp(os.path.getmtime(parsed_uri.path)).replace(tzinfo=pytz.UTC)
-            for f in glob.glob(f"{name}*.{suffix}"):
-                str_version = f[len(name) + 1:-len(suffix) - 1]
+            for file_path in glob.glob(f"{name}*.{suffix}"):
+                str_version = file_path[len(name) + 1:-len(suffix) - 1]
                 if str_version:
                     unordered_all_versions[datetime.fromisoformat(str_version).replace(tzinfo=pytz.UTC)] = f
             ordered_date_from_str_versions = sorted(unordered_all_versions.keys(), reverse=True)
@@ -875,7 +875,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                                compare_grid=True,
                                update_time_series=False,
                                force=reset,
-                               merge_ts=False,  # FIXME: vérifier
+                               merge_ts=False,
                                envs=self._envs
                                )
         else:

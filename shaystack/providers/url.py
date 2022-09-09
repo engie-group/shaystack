@@ -26,10 +26,12 @@ The time series to manage history must be referenced in entity:
 """
 import base64
 import functools
+import glob
 import gzip
 import logging
 import os
 import threading
+import urllib
 import urllib.request
 from collections import OrderedDict
 from datetime import datetime, MAXYEAR, MINYEAR, timedelta
@@ -40,6 +42,7 @@ from os.path import dirname
 from pathlib import Path
 from threading import Lock
 from typing import Optional, Tuple, Any, List, cast, Dict
+from urllib.error import URLError
 from urllib.parse import urlparse, ParseResult
 
 import pytz
@@ -79,6 +82,26 @@ _POOL_SIZE = 20
 lock = Lock()
 
 
+def check_version_file(uri, parsed_uri):
+    suffixes = ''.join(Path(uri).suffixes)
+    uri_without_suffix = parsed_uri.path.replace(suffixes, '')
+    unordered_all_versions = {}
+    creation_date = None
+    for f in glob.glob(f"{uri_without_suffix}*{suffixes}"):
+        str_version = f[len(uri_without_suffix) + 1:-len(suffixes)]
+        if not str_version:
+            # User file date
+            creation_date = datetime.fromtimestamp(os.path.getmtime(uri))
+            unordered_all_versions[creation_date] = f
+        else:
+            unordered_all_versions[datetime.fromisoformat(str_version)] = f
+    ordered_date_from_str_versions = sorted(unordered_all_versions.keys(), reverse=True)
+    if len(ordered_date_from_str_versions) > 0 and creation_date and creation_date < ordered_date_from_str_versions[0]:
+        log.debug('Current file has not the latest version date')
+        raise ValueError
+    else:
+        return unordered_all_versions, ordered_date_from_str_versions
+
 def _download_uri(parsed_uri: ParseResult, envs: Dict[str, str]) -> bytes:
     """ Download data from s3 or classical url """
     if parsed_uri.scheme == "s3":
@@ -94,7 +117,17 @@ def _download_uri(parsed_uri: ParseResult, envs: Dict[str, str]) -> bytes:
     else:
         # Manage default cwd
         uri = parsed_uri.geturl()
-        if not parsed_uri.scheme:
+        unordered_all_versions, ordered_date_from_str_versions = check_version_file(uri, parsed_uri)
+        if len(ordered_date_from_str_versions) > 0:
+            new_file = unordered_all_versions[ordered_date_from_str_versions[0]]
+            new_parsed_uri = urlparse(new_file, allow_fragments=False)
+            new_parsed_uri = new_parsed_uri._replace(path=_absolute_path(new_parsed_uri.path))
+            uri = new_parsed_uri.geturl()
+            if not new_parsed_uri.scheme:
+                uri = Path.cwd().joinpath(uri).as_uri().replace('%3A', ':')
+            else:
+                uri = new_parsed_uri.geturl()
+        else:
             uri = Path.cwd().joinpath(uri).as_uri()
         with urllib.request.urlopen(uri) as response:
             data = response.read()
@@ -182,6 +215,87 @@ def read_grid_from_uri(uri: str, envs: Dict[str, str]) -> Grid:
     return grid
 
 
+def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many-locals,too-many-arguments
+                         parsed_destination: ParseResult,
+                         customer_id: str,
+                         compare_grid: bool,
+                         update_time_series: bool,
+                         force: bool,  # Copy even if the data is identical
+                         merge_ts: bool,  # Merge current TS with the new period of TS
+                         envs: Dict[str, str]
+                         ) -> None:  # pylint: disable=too-many-arguments
+
+    log.debug("update %s", (parsed_source.geturl(),))
+    suffix = "".join(Path(parsed_source.path).suffixes)
+    use_gzip = False
+    destination_grid = EmptyGrid.copy()
+
+    # Copy from file to file
+    source_data = _download_uri(parsed_source, envs)
+    source_grid = None
+    if suffix == ".gz":
+        use_gzip = True
+    if update_time_series or compare_grid or merge_ts:
+        unzipped_source_data = source_data
+        if use_gzip:
+            unzipped_source_data = gzip.decompress(source_data)
+
+        source_grid = parse(unzipped_source_data.decode("utf-8-sig"),
+                            suffix_to_mode(suffix))
+
+        try:
+            destination_data = _download_uri(parsed_destination, envs)
+            if parsed_source.path.endswith(".gz"):
+                destination_data = gzip.decompress(destination_data)
+            destination_grid = parse(destination_data.decode("utf-8-sig"),
+                                     suffix_to_mode(suffix))
+        except URLError:
+            destination_grid = EmptyGrid.copy()
+
+        except ZincParseException:
+            # Ignore. Override target
+            log.warning("Zinc parser exception with %s", (parsed_destination.geturl()))
+            destination_grid = EmptyGrid
+
+        if force or not compare_grid or (destination_grid - source_grid):
+            if use_gzip:
+                source_data = gzip.compress(source_data)
+            # Rename default file to versionned file
+            if not force:
+                date_old_version = None
+                f = Path(parsed_destination.path)
+                old_filename_elements = f.name.split('/')[-1].split('.', 1)[0].split('-', 1)
+                if len(old_filename_elements) > 1:
+                    try:
+                        date_old_version = datetime.strptime(old_filename_elements[1], '%Y-%m-%dT%H:%M:%S')
+                    except ValueError:
+                        raise ValueError("Incorrect data format, should be YYYY-MM-DDThh:mm:dd")
+
+                if f.exists():
+                    # attention vérifier si le nom du fichier à déjà la date, sinon on garde la date physique
+                    # Une solution: Import d'un fichier d'une date ancienne interdit
+                    if date_old_version:
+                        prefix, suffix = f.name.split('.', 1)
+                        prefix = prefix.split("-", 1)[0]
+                    else:
+                        date_old_version: datetime = \
+                            datetime.fromtimestamp(os.path.getmtime(parsed_destination.path)).replace(tzinfo=None)
+                        prefix, suffix = f.name.split('.', 1)
+
+                    old_name = f"{prefix}-{date_old_version.isoformat()}.{suffix}"
+                    f.rename(Path(f.parent, old_name))
+
+            with open(parsed_destination.path, "wb") as f:
+                f.write(source_data)
+            log.info("%s updated", parsed_source.geturl())
+        else:
+            log.debug("%s not modified (same grid)", parsed_source.geturl())
+    if update_time_series:
+        _import_ts(parsed_source, parsed_destination, source_grid,
+                   customer_id,
+                   force, merge_ts, envs=envs)
+
+
 def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-locals,too-many-arguments
                        parsed_destination: ParseResult,
                        customer_id: str,
@@ -196,12 +310,12 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
         "s3",
         endpoint_url=envs.get("AWS_S3_ENDPOINT", None),
     )
-    suffix = Path(parsed_source.path).suffix
+    suffix = "".join(Path(parsed_source.path).suffixes)
     use_gzip = False
     destination_grid = EmptyGrid.copy()
     source_grid = EmptyGrid.copy()
 
-    if parsed_source.scheme == 's3' and not compare_grid:
+    if not compare_grid:
         # Try to copy from s3 to s3
         if update_time_series:
             source_data = _download_uri(parsed_source, envs)
@@ -234,10 +348,10 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
             source_etag = md5_digest.hexdigest()
         if update_time_series or compare_grid or merge_ts:
             unzipped_source_data = source_data
-            if suffix == ".gz":
+            if suffix.endswith('.gz'):
                 use_gzip = True
                 unzipped_source_data = gzip.decompress(source_data)
-                suffix = Path(parsed_source.path).suffixes[-2]
+                suffix = suffix[:-3]
 
             try:
                 source_grid = parse(unzipped_source_data.decode("utf-8-sig"),
@@ -302,6 +416,8 @@ def _import_ts(parsed_source: ParseResult,  # pylint: disable=too-many-locals,to
                envs: Dict[str, str],
                use_thread: bool = True):
     # Now, it's time to upload the referenced time-series
+    if parsed_destination.scheme and parsed_destination.scheme in ["s3", "file"]:
+        raise ValueError("I can not import the data with a URL that is not on s3 or file")
     source_url = parsed_source.geturl()
     source_home = source_url[0:source_url.rfind('/') + 1]
     destination_url = parsed_destination.geturl()
@@ -315,25 +431,43 @@ def _import_ts(parsed_source: ParseResult,  # pylint: disable=too-many-locals,to
                 requests.append((
                     urlparse(source_time_serie),
                     urlparse(destination_time_serie),
-                    customer_id,
-                    True,
-                    False,
-                    force,
-                    True,
+                    customer_id, # customer_id
+                    True, #compare_grid
+                    False, #update_time_series
+                    True,  #force
+                    True, #merge_ts
                     envs))
+
             else:
-                _update_grid_on_s3(
-                    urlparse(source_time_serie),
-                    urlparse(destination_time_serie),
-                    customer_id=customer_id,
-                    compare_grid=True,
-                    update_time_series=False,
-                    force=force,
-                    merge_ts=True,
-                    envs=envs)
+                #TO DO REFACTO
+                if parsed_destination.scheme == "s3":
+                    _update_grid_on_s3(
+                        urlparse(source_time_serie),
+                        urlparse(destination_time_serie),
+                        customer_id=customer_id,
+                        compare_grid=True,
+                        update_time_series=False,
+                        force=True,
+                        merge_ts=True,
+                        envs=envs)
+                else:
+                    _update_grid_on_file(
+                        urlparse(source_time_serie),
+                        urlparse(destination_time_serie),
+                        customer_id=customer_id,
+                        compare_grid=True,
+                        update_time_series=False,
+                        force=True,
+                        merge_ts=True,
+                        envs=envs)
+
     if requests:
-        with ThreadPool(processes=_POOL_SIZE) as pool:
-            pool.starmap(_update_grid_on_s3, requests)
+        if parsed_destination.scheme == "s3":
+            with ThreadPool(processes=_POOL_SIZE) as pool:
+                pool.starmap(_update_grid_on_s3, requests)
+        else:
+            with ThreadPool(processes=_POOL_SIZE) as pool:
+                pool.starmap(_update_grid_on_file, requests)
 
 
 # noinspection PyMethodMayBeStatic
@@ -431,8 +565,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             date_version,
         )
         self.create_db()
-        if not date_version:
-            date_version = datetime.now().replace(tzinfo=pytz.UTC)
         grid = self._download_grid(self._get_url(), date_version)
         if entity_id in grid:
             entity = grid[entity_id]
@@ -441,10 +573,12 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             if "hisURI" in entity:
                 base = dirname(self._get_url())
                 his_uri = base + '/' + str(entity["hisURI"])
-                history = self._download_grid(his_uri, date_version)
+                history = self._download_grid(his_uri, None)
                 # assert history is sorted by date time
                 # Remove data after the date_version
                 history = history.copy()
+                if not date_version:
+                    date_version = datetime.now().replace(tzinfo=pytz.UTC)
                 for row in history:
                     if row['ts'] >= date_version:
                         history = history[0:history.index(row)]
@@ -589,23 +723,38 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 obj_versions = [meta["LastModified"], meta["VersionId"]]
             obj_versions = sorted(obj_versions, key=lambda x: x[0], reverse=True)
             self._lock.acquire()  # pylint: disable=consider-using-with
-            all_versions = self._versions.get(parsed_uri.geturl(), OrderedDict())
+            unordered_all_versions = self._versions.get(parsed_uri.geturl(), OrderedDict())
             concurrency = self._function_concurrency()
             for date_version, version_id in obj_versions:
-                if date_version not in all_versions:
+                if date_version not in unordered_all_versions:
                     # Purge refresh during current period. Then, all AWS instance see the
                     # same data and wait the end of the current period to refresh.
                     # Else, it's may be possible to have two different versions if an
                     # new AWS Lambda instance was created after an updated version.
                     if not first_time or concurrency <= 1 or date_version < start_of_current_period:
-                        all_versions[date_version] = version_id  # Add a slot
+                        unordered_all_versions[date_version] = version_id  # Add a slot
                     else:
                         log.warning("Ignore the version '%s' ignore until the next period.\n" +
                                     "Then, all lambda instance are synchronized.", version_id)
-            self._versions[parsed_uri.geturl()] = all_versions  # Lru and versions)
+            self._versions[parsed_uri.geturl()] = unordered_all_versions  # Lru and versions)
             self._lock.release()
         else:
-            self._versions[parsed_uri.geturl()] = {datetime(1, 1, 1, tzinfo=pytz.UTC): "direct_file"}
+            name, suffix = parsed_uri.path.split(".", 1)
+            unordered_all_versions = {}
+            creation_date = datetime.fromtimestamp(os.path.getmtime(parsed_uri.path)).replace(tzinfo=pytz.UTC)
+            for f in glob.glob(f"{name}*.{suffix}"):
+                str_version = f[len(name) + 1:-len(suffix) - 1]
+                if str_version:
+                    unordered_all_versions[datetime.fromisoformat(str_version).replace(tzinfo=pytz.UTC)] = f
+            ordered_date_from_str_versions = sorted(unordered_all_versions.keys(), reverse=True)
+            # On n'est pas censé l'accepter, péter une erreur (import file dans le bon ordre)
+            if len(ordered_date_from_str_versions) > 0 and creation_date < ordered_date_from_str_versions[0]:
+                creation_date = ordered_date_from_str_versions[0] + timedelta(days=1)
+            unordered_all_versions[creation_date] = parsed_uri.path
+            all_versions = OrderedDict()
+            for k in sorted(unordered_all_versions.keys(), reverse=True):
+                all_versions[k] = unordered_all_versions[k]
+            self._versions[parsed_uri.geturl()] = all_versions
 
         if self._periodic_refresh:
             partial_refresh = functools.partial(
@@ -648,13 +797,24 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         parsed_uri = urlparse(uri, allow_fragments=False)
         parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
         self._refresh_versions(parsed_uri)
-        for version, _ in self._versions[parsed_uri.geturl()].items():
-            if not date_version or version <= date_version:
-                # noinspection PyArgumentList,PyTypeChecker
-                return self._download_grid_effective_version(  # pylint: disable=too-many-function-args
-                    parsed_uri.geturl(),
-                    version)
-        return Grid()
+        if parsed_uri.scheme != 's3':
+            if parsed_uri.scheme not in ['', 'file']:
+                raise ValueError("A wrong url ! (url have to be ['file','s3','']")
+
+        for version, version_url in self._versions[parsed_uri.geturl()].items():
+            if not date_version or version <= date_version.replace(tzinfo=pytz.UTC):  # .date():
+                if parsed_uri.scheme == 's3':
+                    return self._download_grid_effective_version(
+                        parsed_uri.geturl(),
+                        version)
+                else:
+                    return self._download_grid_effective_version(
+                        version_url,
+                        version)
+
+
+        return Grid(columns=["ts", "val"])
+
 
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -> None:
@@ -700,22 +860,32 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 reset: Remove all the current data before import the grid.
                 version: The associated version time.
         """
+        if not version:
+            version = datetime.now(tz=pytz.UTC)
+
         parsed_uri = urlparse(self._get_url(), allow_fragments=False)
-
-        if parsed_uri.scheme != "s3":
-            raise ValueError("I can not import the data with a URL that is not on s3")
-
         parsed_destination, parsed_source = self._update_src_dst(source_uri)
 
-        _update_grid_on_s3(parsed_source,
-                           parsed_destination,
-                           customer_id=customer_id,
-                           compare_grid=True,
-                           update_time_series=False,
-                           force=reset,
-                           merge_ts=False,
-                           envs=self._envs
-                           )
+        if parsed_uri.scheme == "s3":
+            _update_grid_on_s3(parsed_source,
+                               parsed_destination,
+                               customer_id=customer_id,
+                               compare_grid=True,
+                               update_time_series=False,
+                               force=reset,
+                               merge_ts=False,  # FIXME: vérifier
+                               envs=self._envs
+                               )
+        else:
+            _update_grid_on_file(parsed_source,
+                                 parsed_destination,
+                                 customer_id=customer_id,
+                                 compare_grid=True,
+                                 update_time_series=True,
+                                 force=reset,
+                                 merge_ts=True,
+                                 envs=self._envs,
+                                 )
 
     @overrides
     def import_ts(self,
@@ -726,15 +896,29 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         parsed_destination, parsed_source = self._update_src_dst(source_uri)
         if not customer_id:
             customer_id = self.get_customer_id()
-        _update_grid_on_s3(parsed_source,
-                           parsed_destination,
-                           customer_id,
-                           compare_grid=True,
-                           update_time_series=True,
-                           force=False,
-                           merge_ts=True,
-                           envs=self._envs
-                           )
+        if parsed_destination.scheme and parsed_destination.scheme in ["s3", "file"]:
+            raise ValueError("I can not import the data with a URL that is not on s3")
+
+        if parsed_destination.scheme == "s3":
+            _update_grid_on_s3(parsed_source,
+                               parsed_destination,
+                               customer_id,
+                               compare_grid=True,
+                               update_time_series=True,
+                               force=False,
+                               merge_ts=True,
+                               envs=self._envs
+                               )
+        else:
+            _update_grid_on_file(parsed_source,
+                                 parsed_destination,
+                                 customer_id=customer_id,
+                                 compare_grid=True,
+                                 update_time_series=True,
+                                 force=False,
+                                 merge_ts=True,
+                                 envs=self._envs,
+                                 )
 
     def _update_src_dst(self, source_uri):
         destination_uri = self._get_url()

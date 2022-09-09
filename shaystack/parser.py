@@ -98,7 +98,7 @@ def parse(grid_str: str, mode: MODE = MODE_ZINC) -> Grid:
     raise NotImplementedError('Format not implemented: %s' % mode)
 
 
-def parse_scalar(scalar: Union[bytes, str], mode: MODE = MODE_ZINC,
+def parse_scalar(scalar: Union[bytes, str, dict], mode: MODE = MODE_ZINC,
                  version: Union[Version, str] = LATEST_VER) -> Any:
     # Decode version string
     """

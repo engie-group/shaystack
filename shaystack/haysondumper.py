@@ -66,7 +66,7 @@ def _dump_meta(meta: MetadataObject,
 
 
 def _dump_meta_item(item: str, version: Version = LATEST_VER) \
-        -> Tuple[str, Union[None, bool, str, List[str], Entity]]:
+        -> Tuple[str, Union[None, bool, str, float, List[str], Entity]]:
     (item_id, item_value) = item
     return (_dump_id(item_id),
             _dump_scalar(item_value, version=version))
@@ -101,7 +101,7 @@ def _dump_row(grid: Grid, row: Entity) -> Dict[str, str]:
 
 
 def _dump_scalar(scalar: Any, version: Version = LATEST_VER) \
-        -> Union[None, str, bool, List[str], Entity]:
+        -> Union[None, str, bool, float, List[str], Entity]:
     if scalar is None:
         return None
     if scalar is MARKER:
@@ -169,7 +169,7 @@ def _dump_uri(uri_value: Uri) -> Dict:
     }
 
 # TO CHALLENGE
-def _dump_bin(bin_value: Bin) -> str:
+def _dump_bin(bin_value: Bin) -> Dict:
     return {
         "_kind": "Bin",
         "val": bin_value
@@ -180,7 +180,7 @@ def _dump_remove() -> Dict:
     return {"_kind": REMOVE_STR}
 
 
-def _dump_xstr(xstr_value: XStr) -> str:
+def _dump_xstr(xstr_value: XStr) -> Dict:
     return {
         "_kind": "XStr",
         "type": xstr_value.encoding,
@@ -188,7 +188,7 @@ def _dump_xstr(xstr_value: XStr) -> str:
     }
 
 
-def _dump_quantity(quantity: Quantity) -> str:
+def _dump_quantity(quantity: Quantity) -> Union[Dict, float]:
     if (quantity.units is None) or (quantity.units == ''):
         return _dump_decimal(quantity.m)
     return {
@@ -198,7 +198,7 @@ def _dump_quantity(quantity: Quantity) -> str:
     }
 
 
-def _dump_decimal(decimal: float) -> str:
+def _dump_decimal(decimal: float) -> float:
     return decimal
 
 
@@ -206,7 +206,7 @@ def _dump_bool(bool_value: bool) -> bool:
     return bool_value
 
 
-def _dump_coord(coordinate: Coordinate) -> str:
+def _dump_coord(coordinate: Coordinate) -> Dict:
     return {
         "_kind": "Coord",
         "lat": coordinate.latitude,
@@ -214,33 +214,33 @@ def _dump_coord(coordinate: Coordinate) -> str:
     }
 
 
-def _dump_ref(ref: Ref) -> str:
+def _dump_ref(ref: Ref) -> Dict:
     if ref.has_value:
         return {
             "_kind": "Ref",
             "val": ref.name,
             "dis": ref.value
-                }
+        }
     return {
         "_kind": "Ref",
         "val": ref.name
     }
 
 
-def _dump_date(date: datetime.date) -> str:
+def _dump_date(date: datetime.date) -> Dict:
     return {
         "_kind": "Date",
         "val": date.isoformat()
     }
 
-def _dump_time(time: datetime.time) -> str:
+def _dump_time(time: datetime.time) -> Dict:
     return {
         "_kind": "Time",
         "val": time.isoformat()
     }
 
 
-def _dump_date_time(date_time: datetime.datetime) -> str:
+def _dump_date_time(date_time: datetime.datetime) -> Dict:
     tz_name = timezone_name(date_time)
     return {
         "_kind": "DateTime",

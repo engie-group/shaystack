@@ -782,6 +782,8 @@ def his_read(envs: Dict[str, str], request: HaystackHttpRequest,
                 date_range = args["range"]
             if "version" in args:
                 date_version = parse_hs_datetime_format(args["version"], default_tz)
+                if date_version.hour == 0 & date_version.minute == 0 & date_version.second == 0:
+                    date_version = date_version.replace(hour=23, minute=59, second=59)
 
         grid_date_range = parse_date_range(date_range, provider.get_tz())
         log.debug(

@@ -748,7 +748,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             for file_path in glob.glob(f"{name}*.{suffix}"):
                 str_version = file_path[len(name) + 1:-len(suffix) - 1]
                 if str_version:
-                    unordered_all_versions[datetime.fromisoformat(str_version).replace(tzinfo=pytz.UTC)] = f
+                    unordered_all_versions[datetime.fromisoformat(str_version).replace(tzinfo=pytz.UTC)] = file_path
             ordered_date_from_str_versions = sorted(unordered_all_versions.keys(), reverse=True)
             # On n'est pas censé l'accepter, péter une erreur (import file dans le bon ordre)
             if len(ordered_date_from_str_versions) > 0 and creation_date < ordered_date_from_str_versions[0]:

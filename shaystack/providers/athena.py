@@ -163,7 +163,7 @@ class Provider(DBProvider):
         try:
             response = athena_client.get_query_execution(QueryExecutionId=query_execution_id)
             query_status = response['QueryExecution']['Status']
-        except exceptions as ex:
+        except exceptions.ClientError as ex:
             log.error('Exception while getting query state: %s', ex)
         return query_status
 

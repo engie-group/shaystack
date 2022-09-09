@@ -158,14 +158,14 @@ class Provider(DBProvider):
         :type query_execution_id: str
         :return: str
         """
+        athena_client = self._get_read_client()
         response = athena_client.get_query_execution(QueryExecutionId=query_execution_id)
         query_status = None
         try:
             query_status = response['QueryExecution']['Status']
         except Exception as ex:
-            self.log.error('Exception while getting query state', ex)
-        finally:
-            return query_status
+            log.error('Exception while getting query state', ex)
+        return query_status
 
     def poll_query_status(self, query_execution_id: str) -> DictReader:
         """
@@ -174,7 +174,7 @@ class Provider(DBProvider):
         of successful requests
 
         Args:
-            query_response (dict): all metadata that came within athena response
+            query_execution_id (str): unique Id of submitted athena query
         Output:
             CSV DictReader containing the query response
         """
@@ -187,20 +187,17 @@ class Provider(DBProvider):
                 log.info('Invalid query state. Retrying again')
 
             elif query_status['State'] in self.INTERMEDIATE_STATES:
-                log.info('Query is still in an intermediate state - {state}'
-                              .format( state=query_status['State']))
-
+                log.info('Query is still in an intermediate state - %s', query_status['State'])
             elif query_status['State'] in self.FAILURE_STATES:
                 error_message = 'Athena query with executionId {} was {} '.format(
-                    query_response["QueryExecutionId"],query_status["State"])
+                    query_execution_id, query_status["State"])
                 if "StateChangeReason" in query_status:
-                    error_message = error_message + f'due to the following error:{query_status["StateChangeReason"]}'
+                    error_message = error_message + f'due to the following error:' \
+                                                    f'{query_status["StateChangeReason"]}'
                 raise Exception(error_message)
             else:
-                log.info('Query execution completed. Final state is {state}'
-                              .format(state=query_status["State"]))
+                log.info('Query execution completed. Final state is - %s', query_status['State'])
                 break
-
             t.sleep(1)
         # getting the csv file that contain query results from s3 output bucket
         reader = self.get_query_results(query_execution_id)
@@ -220,11 +217,9 @@ class Provider(DBProvider):
         try:
             date_val = datetime.strptime(str_date, date_pattern)
         except ValueError as err:
-            log.error("%s time data %s does not match format %s", (err, str_date, date_pattern))
+            log.error("%s time data %s does not match format %s", err, str_date, date_pattern)
             raise
         return date_val.strftime("%Y-%m-%d %H:%M:%S")
-
-
 
     @staticmethod
     def build_athena_query(his_uri: dict, dates_range: tuple, date_version: datetime = None) -> str:

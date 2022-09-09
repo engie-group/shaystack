@@ -159,12 +159,12 @@ class Provider(DBProvider):
         :return: str
         """
         athena_client = self._get_read_client()
-        response = athena_client.get_query_execution(QueryExecutionId=query_execution_id)
         query_status = None
         try:
+            response = athena_client.get_query_execution(QueryExecutionId=query_execution_id)
             query_status = response['QueryExecution']['Status']
-        except Exception as ex:
-            log.error('Exception while getting query state', ex)
+        except exceptions as ex:
+            log.error('Exception while getting query state: %s', ex)
         return query_status
 
     def poll_query_status(self, query_execution_id: str) -> DictReader:

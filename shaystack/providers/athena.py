@@ -156,7 +156,7 @@ class Provider(DBProvider):
 
         :param query_execution_id: Id of submitted athena query
         :type query_execution_id: str
-        :return: str
+        :return: dict E.g. {'State': 'SUCCEEDED'}
         """
         athena_client = self._get_read_client()
         query_status = None

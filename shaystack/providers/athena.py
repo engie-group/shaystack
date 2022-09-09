@@ -159,7 +159,7 @@ class Provider(DBProvider):
         :return: dict E.g. {'State': 'SUCCEEDED'}
         """
         athena_client = self._get_read_client()
-        query_status = None
+        query_status = {'State': None}
         try:
             response = athena_client.get_query_execution(QueryExecutionId=query_execution_id)
             query_status = response['QueryExecution']['Status']

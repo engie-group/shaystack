@@ -9,7 +9,7 @@ Typing wrapper for sql drivers
 """
 # Typing for DB driver
 import sys
-from typing import Tuple, Optional, List, Iterable, Iterator
+from typing import Tuple, Optional, List, Iterable, Iterator, Any
 
 # type: ignore
 if sys.version_info[0:2] == (3, 7):

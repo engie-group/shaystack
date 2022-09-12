@@ -806,16 +806,17 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 raise ValueError("A wrong url ! (url have to be ['file','s3','']")
 
         for version, version_url in self._versions[parsed_uri.geturl()].items():
-            if not date_version or version <= date_version.replace(tzinfo=pytz.UTC):
+            if not date_version or version <= date_version.replace(tzinfo=pytz.UTC):  # .date():
                 if parsed_uri.scheme == 's3':
-                    response_grid = self._download_grid_effective_version(
+                    return self._download_grid_effective_version(
                         parsed_uri.geturl(),
                         version)
                 else:
-                    response_grid = self._download_grid_effective_version(
+                    return self._download_grid_effective_version(
                         version_url,
                         version)
-        return response_grid
+
+            return Grid(columns=["ts", "val"])
 
 
     # pylint: disable=no-member

@@ -35,6 +35,7 @@ import urllib
 import urllib.request
 from collections import OrderedDict
 from datetime import datetime, MAXYEAR, MINYEAR, timedelta
+from functools import _lru_cache_wrapper
 from hashlib import md5
 from io import BytesIO
 from multiprocessing.pool import ThreadPool
@@ -796,7 +797,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             )
         return parse(body, mode)
 
-    def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
+    def _download_grid(self, uri: str, date_version: Optional[datetime]) -> _lru_cache_wrapper:
         parsed_uri = urlparse(uri, allow_fragments=False)
         parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
         self._refresh_versions(parsed_uri)
@@ -805,15 +806,15 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 raise ValueError("A wrong url ! (url have to be ['file','s3','']")
 
         for version, version_url in self._versions[parsed_uri.geturl()].items():
-            if not date_version or version <= date_version.replace(tzinfo=pytz.UTC):  # .date():
+            if not date_version or version <= date_version.replace(tzinfo=pytz.UTC):
                 if parsed_uri.scheme == 's3':
                     return self._download_grid_effective_version(
-                        parsed_uri.geturl(),
-                        version)
+                        uri=parsed_uri.geturl(),
+                        effective_version=version)
                 else:
                     return self._download_grid_effective_version(
-                        version_url,
-                        version)
+                        uri=version_url,
+                        effective_version=version)
         return Grid(columns=["ts", "val"])
 
     # pylint: disable=no-member

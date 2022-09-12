@@ -800,6 +800,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -> _lru_cache_wrapper:
         parsed_uri = urlparse(uri, allow_fragments=False)
         parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
+        response_grid = Grid(columns=["ts", "val"])
         self._refresh_versions(parsed_uri)
         if parsed_uri.scheme != 's3':
             if parsed_uri.scheme not in ['', 'file']:
@@ -808,10 +809,11 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         for version, version_url in self._versions[parsed_uri.geturl()].items():
             if not date_version or version <= date_version.replace(tzinfo=pytz.UTC):
                 if parsed_uri.scheme == 's3':
-                    return self._download_grid_effective_version(parsed_uri.geturl(), version)
+                    response_grid = self._download_grid_effective_version(parsed_uri.geturl(), version)
                 else:
-                    return self._download_grid_effective_version(version_url, version)
-        return Grid(columns=["ts", "val"])
+                    response_grid = self._download_grid_effective_version(version_url, version)
+                break
+        return response_grid
 
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -> None:

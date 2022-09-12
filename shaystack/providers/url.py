@@ -808,13 +808,9 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         for version, version_url in self._versions[parsed_uri.geturl()].items():
             if not date_version or version <= date_version.replace(tzinfo=pytz.UTC):
                 if parsed_uri.scheme == 's3':
-                    return self._download_grid_effective_version(
-                        uri=parsed_uri.geturl(),
-                        effective_version=version)
+                    return self._download_grid_effective_version(parsed_uri.geturl(), version)
                 else:
-                    return self._download_grid_effective_version(
-                        uri=version_url,
-                        effective_version=version)
+                    return self._download_grid_effective_version(version_url, version)
         return Grid(columns=["ts", "val"])
 
     # pylint: disable=no-member

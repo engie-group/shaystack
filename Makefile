@@ -792,7 +792,7 @@ lint: .make-lint
 
 .PHONY: validate
 # FIXME reactive typing .make-validate: .make-typing .make-lint .make-test .make-test-aws .make-functional-test dist
-.make-validate: .make-test .make-test-aws .make-functional-test dist
+.make-validate: .make-typing .make-lint .make-test .make-test-aws .make-functional-test dist
 	@echo -e "$(green)The project is validated$(normal)"
 	date >.make-validate
 

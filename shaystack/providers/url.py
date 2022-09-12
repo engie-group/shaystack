@@ -102,6 +102,7 @@ def check_version_file(uri, parsed_uri):
         raise ValueError
     return unordered_all_versions, ordered_date_from_str_versions
 
+
 def _download_uri(parsed_uri: ParseResult, envs: Dict[str, str]) -> bytes:
     """ Download data from s3 or classical url """
     if parsed_uri.scheme == "s3":
@@ -228,7 +229,6 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
     log.debug("update %s", (parsed_source.geturl(),))
     suffix = "".join(Path(parsed_source.path).suffixes)
     use_gzip = False
-    destination_grid = EmptyGrid.copy()
 
     # Copy from file to file
     source_data = _download_uri(parsed_source, envs)
@@ -250,6 +250,7 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
             destination_grid = parse(destination_data.decode("utf-8-sig"),
                                      suffix_to_mode(suffix))
         except URLError:
+            log.warning("URLError file not found under %s", (parsed_destination.geturl()))
             destination_grid = EmptyGrid.copy()
 
         except ZincParseException:
@@ -434,15 +435,14 @@ def _import_ts(parsed_source: ParseResult,  # pylint: disable=too-many-locals,to
                 requests.append((
                     urlparse(source_time_serie),
                     urlparse(destination_time_serie),
-                    customer_id, # customer_id
-                    True, #compare_grid
-                    False, #update_time_series
-                    True,  #force
-                    True, #merge_ts
+                    customer_id,  # customer_id
+                    True,  # compare_grid
+                    False,  # update_time_series
+                    True,   # force
+                    True,  # merge_ts
                     envs))
 
             else:
-                #TO DO REFACTO
                 if parsed_destination.scheme == "s3":
                     _update_grid_on_s3(
                         urlparse(source_time_serie),
@@ -799,7 +799,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
         parsed_uri = urlparse(uri, allow_fragments=False)
         parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
-        response_grid = Grid(columns=["ts", "val"])
         self._refresh_versions(parsed_uri)
         if parsed_uri.scheme != 's3':
             if parsed_uri.scheme not in ['', 'file']:
@@ -817,7 +816,6 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                         version)
 
             return Grid(columns=["ts", "val"])
-
 
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -> None:

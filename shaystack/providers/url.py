@@ -814,8 +814,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                     return self._download_grid_effective_version(
                         version_url,
                         version)
-
-            return Grid(columns=["ts", "val"])
+        return Grid(columns=["ts", "val"])
 
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -> None:

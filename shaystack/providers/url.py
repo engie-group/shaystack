@@ -102,6 +102,7 @@ def check_version_file(uri, parsed_uri):
     else:
         return unordered_all_versions, ordered_date_from_str_versions
 
+
 def _download_uri(parsed_uri: ParseResult, envs: Dict[str, str]) -> bytes:
     """ Download data from s3 or classical url """
     if parsed_uri.scheme == "s3":
@@ -431,15 +432,14 @@ def _import_ts(parsed_source: ParseResult,  # pylint: disable=too-many-locals,to
                 requests.append((
                     urlparse(source_time_serie),
                     urlparse(destination_time_serie),
-                    customer_id, # customer_id
-                    True, #compare_grid
-                    False, #update_time_series
-                    True,  #force
-                    True, #merge_ts
+                    customer_id,   # customer_id
+                    True,  # compare_grid
+                    False,  # update_time_series
+                    True,  # force
+                    True,  # merge_ts
                     envs))
 
             else:
-                #TO DO REFACTO
                 if parsed_destination.scheme == "s3":
                     _update_grid_on_s3(
                         urlparse(source_time_serie),
@@ -580,7 +580,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 if not date_version:
                     date_version = datetime.now().replace(tzinfo=pytz.UTC)
                 for row in history:
-                    if row['ts'] >= date_version:
+                    if row['ts'] >= date_version.replace(tzinfo=pytz.UTC):
                         history = history[0:history.index(row)]
                         break
 
@@ -811,10 +811,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                     return self._download_grid_effective_version(
                         version_url,
                         version)
-
-
         return Grid(columns=["ts", "val"])
-
 
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -> None:

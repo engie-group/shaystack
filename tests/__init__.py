@@ -2,6 +2,7 @@ from datetime import datetime
 
 import pytz
 
+import shaystack
 from shaystack.datatypes import Ref
 from shaystack.dumper import dump
 from shaystack.grid import Grid, VER_3_0
@@ -55,7 +56,18 @@ def _get_mock_s3_updated_ontology():
     sample_grid.append({"id": Ref("id1"), "col": 1, "hisURI": "hist.zinc"})
     sample_grid.append({"id": Ref("id2"), "col": 2, "hisURI": "hist.zinc"})
     sample_grid.append({"id": Ref("id3"), "col": 3, "hisURI": "hist.zinc"})
-    version_1 = datetime(2020, 10, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)
+    version_1 = datetime(2020, 7, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)
+    version_2 = datetime(2020, 12, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)
+
+
+    his_grid = shaystack.parse("""ver:"3.0" hisStart:2020-06-01T00:00:00+00:00 UTC hisEnd:2021-05-01T00:00:00+00:00 UTC
+    ts,val
+    2020-07-01T00:00:00+00:00 UTC,17
+    2020-08-01T00:00:00+00:00 UTC,16
+    2020-09-01T00:00:00+00:00 UTC,18
+    2020-10-01T00:00:00+00:00 UTC,20
+    2020-11-01T00:00:00+00:00 UTC,25
+    2020-12-01T00:00:00+00:00 UTC,30""", mode=shaystack.MODE_ZINC)
 
     class MockS3:
         __slots__ = "history", "his_count"
@@ -83,6 +95,9 @@ def _get_mock_s3_updated_ontology():
                     row["hisURI"] = f"his{self.his_count}.zinc"
                     self.his_count += 1
                 return stream.write(dump(grid, mode=MODE_ZINC).encode("utf-8"))
+
+            if path in ["his0.zinc", "his1.zinc", "his2.zinc"]:
+                return stream.write(dump(his_grid, mode=MODE_ZINC).encode("utf-8"))
             return stream.write(dump(self.history, mode=MODE_ZINC).encode("utf-8"))
 
     return MockS3()

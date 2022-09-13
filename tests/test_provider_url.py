@@ -4,13 +4,13 @@ from typing import cast
 from collections import OrderedDict
 import shutil
 import json
+import pytz
 import os
 from unittest.mock import patch
 
 from shaystack import Ref
 from shaystack.providers import get_provider
 from shaystack.providers.url import Provider as URLProvider
-
 
 ONTO = {"meta": {"ver": "3.0"},
         "cols": [{"name": "col1"}, {"name": "col2"}, {"name": "dis"}, {"name": "id"}],
@@ -23,7 +23,6 @@ ONTO = {"meta": {"ver": "3.0"},
              "col1": "col 1 value", "col2": "col 2 value", "hisURI": "p_demo_r_23a44701-3940e690.zinc"}
         ]}
 
-
 ONTO2021 = {"meta": {"ver": "3.0"},
             "cols": [{"name": "col1"}, {"name": "col2"}, {"name": "dis"}, {"name": "id"}],
             "rows": [
@@ -31,7 +30,7 @@ ONTO2021 = {"meta": {"ver": "3.0"},
                  "col1": "col 1 value", "col2": "col 2 value", "hisURI": "p_demo_r_23a44701-4ea35663.zinc"},
                 {"dis": "dis2", "id": {"_kind": "Ref", "val": "p_demo_r_255555701-a89a6c66", "dis": "dis"},
                  "col1": "col 1 value", "col2": "col 2 value", "hisURI": "p_demo_r_23a44701-bbc36976.zinc"}
-        ]}
+            ]}
 
 ONTO2020 = {"meta": {"ver": "3.0"},
             "cols": [{"name": "col1"}, {"name": "col2"}, {"name": "dis"}, {"name": "id"}],
@@ -40,7 +39,19 @@ ONTO2020 = {"meta": {"ver": "3.0"},
                  "col1": "col 1 value", "col2": "col 2 value"}
             ]}
 
-TS1 = """ver:"3.0" hisStart:2020-06-01T00:00:00+00:00 UTC hisEnd:2021-05-01T00:00:00+00:00 UTC
+TS1 = """ver:"3.0" hisStart:2020-07-01T00:00:00+00:00 UTC hisEnd:2020-12-01T00:00:00+00:00 UTC
+ts,val
+2021-07-01T00:00:00+00:00 UTC,11
+2021-08-01T00:00:00+00:00 UTC,11
+2021-09-01T00:00:00+00:00 UTC,15
+2021-10-01T00:00:00+00:00 UTC,13
+2021-11-01T00:00:00+00:00 UTC,16
+2021-12-01T00:00:00+00:00 UTC,13
+2022-01-01T00:00:00+00:00 UTC,13
+2022-02-01T00:00:00+00:00 UTC,13
+"""
+
+TS2 = """ver:"3.0" hisStart:2020-07-01T00:00:00+00:00 UTC hisEnd:2020-12-01T00:00:00+00:00 UTC
 ts,val
 2020-07-01T00:00:00+00:00 UTC,11
 2020-08-01T00:00:00+00:00 UTC,11
@@ -50,17 +61,7 @@ ts,val
 2020-12-01T00:00:00+00:00 UTC,13
 """
 
-TS2 = """ver:"3.0" hisStart:2020-06-01T00:00:00+00:00 UTC hisEnd:2021-05-01T00:00:00+00:00 UTC
-ts,val
-2020-07-01T00:00:00+00:00 UTC,11
-2020-08-01T00:00:00+00:00 UTC,11
-2020-09-01T00:00:00+00:00 UTC,15
-2020-10-01T00:00:00+00:00 UTC,13
-2020-11-01T00:00:00+00:00 UTC,16
-2020-12-01T00:00:00+00:00 UTC,13
-"""
-
-TS3 = """ver:"3.0" hisStart:2020-06-01T00:00:00+00:00 UTC hisEnd:2021-05-01T00:00:00+00:00 UTC
+TS3 = """ver:"3.0" hisStart:2020-07-01T00:00:00+00:00 UTC hisEnd:2020-12-01T00:00:00+00:00 UTC
 ts,val
 2020-07-01T00:00:00+00:00 UTC,11
 2020-08-01T00:00:00+00:00 UTC,11
@@ -103,7 +104,6 @@ class TestImportLocalFile(unittest.TestCase):
         self.current_directory = CurrentDirectory(self.input_file_ontologies)
         self.current_directory.create_files()
 
-
     def tearDown(self):
         shutil.rmtree(self.input_file_ontologies, ignore_errors=True)
 
@@ -124,7 +124,7 @@ class TestImportLocalFile(unittest.TestCase):
         result = provider.ops()
         assert len(result) == 5
 
-    def test_about(self,):
+    def test_about(self, ):
         """
         Args:
             mock_get_url:
@@ -266,3 +266,42 @@ class TestImportLocalFile(unittest.TestCase):
             with self.assertRaises(ValueError) as cm:
                 provider._download_grid(wrong_url, None)
             self.assertEqual(cm.exception.args[0], "A wrong url ! (url have to be ['file','s3','']")
+
+    @patch.object(URLProvider, '_get_url')
+    def test_his_read_with_version(self, mock_get_url):
+        """
+        Args:
+            mock_get_url:
+        """
+        mock_get_url.return_value = f"{self.input_file_ontologies}/carytown.hayson.json"
+        with get_provider("shaystack.providers.url", self.environ) as provider:
+            version_2 = datetime(2021, 11, 1, 16, 30, 0, 0, tzinfo=None)
+            result = provider.his_read(entity_id=Ref('p_demo_r_23a44701-a89a6c66'),
+                                       date_version=version_2,
+                                       date_range=(
+                                           datetime.min.replace(tzinfo=pytz.UTC),
+                                           datetime.max.replace(tzinfo=pytz.UTC)
+                                       ))
+            assert (len(result._row)) == 5  # 5 out of 8 since getting all TSs under 2021-11-01T16:30:00
+            assert result._row[4] == {'ts': datetime(2021, 11, 1, 0, 0, tzinfo=pytz.UTC), 'val': 16.0}
+
+    @patch.object(URLProvider, '_get_url')
+    def test_his_read_with_version_with_dateRange(self, mock_get_url):
+        """
+        Args:
+            mock_get_url:
+        """
+        mock_get_url.return_value = f"{self.input_file_ontologies}/carytown.hayson.json"
+        with get_provider("shaystack.providers.url", self.environ) as provider:
+            version_2 = datetime(2021, 11, 1, 16, 30, 0, 0, tzinfo=None)
+            result = provider.his_read(entity_id=Ref('p_demo_r_23a44701-a89a6c66'),
+                                       date_version=version_2,
+                                       date_range=(
+
+                                           datetime(2021, 9, 1, 16, 30, 0, 0, tzinfo=pytz.UTC),
+                                           datetime(2022, 10, 1, 16, 30, 0, 0, tzinfo=pytz.UTC)
+                                       ))
+            print(result)
+            assert (len(result._row)) == 2  # 5 out of 8 since getting all TSs < 2021-11-01T16:30:00
+            # also between 2021-09-01T16:30:00 and 2022-10-01T16:30:00
+            assert result._row[1] == {'ts': datetime(2021, 11, 1, 0, 0, tzinfo=pytz.UTC), 'val': 16.0}

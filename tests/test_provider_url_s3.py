@@ -5,7 +5,8 @@ from shaystack import MetadataObject
 from shaystack import Ref
 from shaystack.providers import get_provider
 from shaystack.providers.url import Provider as URLProvider
-from tests import _get_mock_s3
+from tests import _get_mock_s3, _get_mock_s3_updated_ontology
+import pytz
 
 
 @patch.object(URLProvider, '_get_url')
@@ -141,3 +142,47 @@ def test_version(mock, mock_get_url):
     with get_provider("shaystack.providers.url", {}) as provider:
         versions = provider.versions()
         assert len(versions) == 3
+
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
+def test_his_read_with_version_filter(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3:
+        mock_get_url:
+    """
+    mock_s3.return_value = _get_mock_s3_updated_ontology()
+    mock_get_url.return_value = "s3://bucket/grid.zinc"
+    with get_provider("shaystack.providers.url", {}) as provider:
+        version = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
+        result = provider.his_read(entity_id=Ref("id1"),
+                                   date_version=version,
+                                   date_range=(
+                                       datetime.min.replace(tzinfo=pytz.UTC),
+                                       datetime.max.replace(tzinfo=pytz.UTC)
+                                   ))
+        assert (len(result._row)) == 4  # 5 out of 6 since getting all TSs < 2020-10-01T16:30:00
+        assert result._row[3] == {'ts': datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC), 'val': 20.0}
+
+@patch.object(URLProvider, '_get_url')
+@patch.object(URLProvider, '_s3')
+def test_his_read_with_version_with_dateRangemock(mock_s3, mock_get_url):
+    """
+    Args:
+        mock_s3
+        mock_get_url
+    """
+    mock_s3.return_value = _get_mock_s3_updated_ontology()
+    mock_get_url.return_value = "s3://bucket/grid.zinc"
+    with get_provider("shaystack.providers.url", {}) as provider:
+        version = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
+        result = provider.his_read(entity_id=Ref("id1"),
+                                   date_version=version,
+                                   date_range=(
+                                       datetime(2020, 8, 1, 16, 30, 0, 0, tzinfo=pytz.UTC),
+                                       datetime(2020, 10, 1, 16, 30, 0, 0, tzinfo=pytz.UTC)
+                                       ))
+        print(result)
+        assert(len(result._row)) == 2  #  2 out of 6 since getting all TSs < 2020-08-01T00:00:02
+                                       #  also between 2020-09-01T16:30:00 and 2020-10-01T16:30:00
+        assert result._row[1] == {'ts': datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC), 'val': 20.0}

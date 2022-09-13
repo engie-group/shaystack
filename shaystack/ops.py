@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, date
 from decimal import Decimal
 from typing import Optional, Any, List, cast
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Union
 
 from accept_types import get_best_match
 from pyparsing import ParseException
@@ -447,6 +447,20 @@ def formats(envs: Dict[str, str], request: HaystackHttpRequest,
         response = _manage_exception(headers, ex, stage)
     return response
 
+def convert_version(version: Union[datetime, date]) -> str:
+    """
+    Converts the given version to str and uses 23:59:59 for the time when the version
+    is based only on the date in order to get the most recent version at that date.
+
+    :param version: either date or datetime version of ontology file in S3
+    """
+    if not isinstance(version, datetime):
+        version = datetime.combine(version, datetime.min.time()).replace(
+            hour=23, minute=59, second=59)
+    elif version.hour == 0 & version.minute == 0 & version.second == 0:
+        version = version.replace(hour=23, minute=59, second=59)
+
+    return version
 
 def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
          factory = get_singleton_provider) -> HaystackHttpResponse:
@@ -496,9 +510,7 @@ def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
                 select = args["select"]
             if "version" in args:
                 date_version = parse_hs_datetime_format(args["version"], default_tz)
-                if date_version.hour == 0 & date_version.minute == 0 & date_version.second == 0:
-                    date_version = date_version.replace(hour=23, minute=59, second=59)
-
+                date_version = convert_version(date_version)
         if read_filter is None:
             read_filter = ""
         if read_ids is None and read_filter is None:
@@ -782,8 +794,7 @@ def his_read(envs: Dict[str, str], request: HaystackHttpRequest,
                 date_range = args["range"]
             if "version" in args:
                 date_version = parse_hs_datetime_format(args["version"], default_tz)
-                if date_version.hour == 0 & date_version.minute == 0 & date_version.second == 0:
-                    date_version = date_version.replace(hour=23, minute=59, second=59)
+                date_version = convert_version(date_version)
 
         grid_date_range = parse_date_range(date_range, provider.get_tz())
         log.debug(

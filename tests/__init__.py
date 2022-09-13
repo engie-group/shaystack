@@ -56,7 +56,8 @@ def _get_mock_s3_updated_ontology():
     sample_grid.append({"id": Ref("id2"), "col": 2, "hisURI": "hist.zinc"})
     sample_grid.append({"id": Ref("id3"), "col": 3, "hisURI": "hist.zinc"})
     version_1 = datetime(2020, 7, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)
-    version_2 = datetime(2020, 12, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)
+    version_2 = datetime(2020, 10, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)
+    version_3 = datetime(2020, 12, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)
 
     his_grid = parse("""ver:"3.0" hisStart:2020-06-01T00:00:00+00:00 UTC hisEnd:2021-05-01T00:00:00+00:00 UTC
     ts,val
@@ -79,7 +80,8 @@ def _get_mock_s3_updated_ontology():
                 "Versions":
                     [
                         {"VersionId": "1", "LastModified": version_1},
-                        {"VersionId": "2", "LastModified": version_2}
+                        {"VersionId": "2", "LastModified": version_2},
+                        {"VersionId": "3", "LastModified": version_3},
                     ]
             }
 

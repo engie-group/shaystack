@@ -1,12 +1,10 @@
 from datetime import datetime
-
 import pytz
 
-import shaystack
 from shaystack.datatypes import Ref
 from shaystack.dumper import dump
 from shaystack.grid import Grid, VER_3_0
-from shaystack.parser import MODE_ZINC
+from shaystack.parser import MODE_ZINC, parse
 
 
 def _get_mock_s3():
@@ -51,6 +49,7 @@ def _get_mock_s3():
 
     return MockS3()
 
+
 def _get_mock_s3_updated_ontology():
     sample_grid = Grid(version=VER_3_0, columns=["id", "col", "hisURI"])
     sample_grid.append({"id": Ref("id1"), "col": 1, "hisURI": "hist.zinc"})
@@ -59,15 +58,14 @@ def _get_mock_s3_updated_ontology():
     version_1 = datetime(2020, 7, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)
     version_2 = datetime(2020, 12, 1, 0, 0, 1, 0, tzinfo=pytz.UTC)
 
-
-    his_grid = shaystack.parse("""ver:"3.0" hisStart:2020-06-01T00:00:00+00:00 UTC hisEnd:2021-05-01T00:00:00+00:00 UTC
+    his_grid = parse("""ver:"3.0" hisStart:2020-06-01T00:00:00+00:00 UTC hisEnd:2021-05-01T00:00:00+00:00 UTC
     ts,val
     2020-07-01T00:00:00+00:00 UTC,17
     2020-08-01T00:00:00+00:00 UTC,16
     2020-09-01T00:00:00+00:00 UTC,18
     2020-10-01T00:00:00+00:00 UTC,20
     2020-11-01T00:00:00+00:00 UTC,25
-    2020-12-01T00:00:00+00:00 UTC,30""", mode=shaystack.MODE_ZINC)
+    2020-12-01T00:00:00+00:00 UTC,30""", mode=MODE_ZINC)
 
     class MockS3:
         __slots__ = "history", "his_count"
@@ -80,7 +78,8 @@ def _get_mock_s3_updated_ontology():
             return {
                 "Versions":
                     [
-                        {"VersionId": "1", "LastModified": version_1}
+                        {"VersionId": "1", "LastModified": version_1},
+                        {"VersionId": "2", "LastModified": version_2}
                     ]
             }
 

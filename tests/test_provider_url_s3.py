@@ -5,6 +5,7 @@ from shaystack import MetadataObject
 from shaystack import Ref
 from shaystack.providers import get_provider
 from shaystack.providers.url import Provider as URLProvider
+from shaystack.providers import haystack_interface
 from tests import _get_mock_s3, _get_mock_s3_updated_ontology
 import pytz
 
@@ -58,7 +59,6 @@ def test_read_version_without_filter(mock_s3, mock_get_url):
     with get_provider("shaystack.providers.url", {}) as provider:
         version_2 = datetime(2020, 10, 1, 0, 0, 3, 0, tzinfo=None)
         result = provider.read(0, None, None, None, date_version=version_2)
-        print(result)
         assert result.metadata["v"] == "3"
 
 
@@ -153,7 +153,9 @@ def test_his_read_with_version_filter(mock_s3, mock_get_url):
     """
     mock_s3.return_value = _get_mock_s3_updated_ontology()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
-    with get_provider("shaystack.providers.url", {}) as provider:
+    with cast(URLProvider, haystack_interface.get_provider("shaystack.providers.url", {})) as provider:
+        provider.cache_clear()
+        provider._periodic_refresh = 0
         version = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
         result = provider.his_read(entity_id=Ref("id1"),
                                    date_version=version,
@@ -174,7 +176,9 @@ def test_his_read_with_version_with_dateRangemock(mock_s3, mock_get_url):
     """
     mock_s3.return_value = _get_mock_s3_updated_ontology()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
-    with get_provider("shaystack.providers.url", {}) as provider:
+    with cast(URLProvider, haystack_interface.get_provider("shaystack.providers.url", {})) as provider:
+        provider.cache_clear()
+        provider._periodic_refresh = 0
         version = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
         result = provider.his_read(entity_id=Ref("id1"),
                                    date_version=version,
@@ -182,7 +186,6 @@ def test_his_read_with_version_with_dateRangemock(mock_s3, mock_get_url):
                                        datetime(2020, 8, 1, 16, 30, 0, 0, tzinfo=pytz.UTC),
                                        datetime(2020, 10, 1, 16, 30, 0, 0, tzinfo=pytz.UTC)
                                        ))
-        print(result)
         assert(len(result._row)) == 2  #  2 out of 6 since getting all TSs < 2020-08-01T00:00:02
                                        #  also between 2020-09-01T16:30:00 and 2020-10-01T16:30:00
         assert result._row[1] == {'ts': datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC), 'val': 20.0}

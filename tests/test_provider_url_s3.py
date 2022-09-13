@@ -44,6 +44,7 @@ def test_read_last_without_filter(mock_s3, mock_get_url):
     with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
         provider.cache_clear()
         result = provider.read(0, None, None, None, None)
+        print("to be deleted" + str(provider.versions()))
         assert result.metadata["v"] == "3"
 
 @patch.object(URLProvider, '_get_url')
@@ -59,6 +60,7 @@ def test_read_version_without_filter(mock_s3, mock_get_url):
     with get_provider("shaystack.providers.url", {}) as provider:
         version_2 = datetime(2020, 10, 1, 0, 0, 3, 0, tzinfo=None)
         result = provider.read(0, None, None, None, date_version=version_2)
+        print("to be deleted" + str(provider.versions()))
         assert result.metadata["v"] == "3"
 
 
@@ -75,6 +77,7 @@ def test_read_version_with_filter(mock_s3, mock_get_url):
     with get_provider("shaystack.providers.url", {}) as provider:
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
         result = provider.read(0, None, None, "id==@id1", version_2)
+        print("to be deleted" + str(provider.versions()))
         assert result.metadata["v"] == "2"
         assert len(result) == 1
         assert result[0]['id'] == Ref("id1")
@@ -125,6 +128,7 @@ def test_lru_version(mock):
     url = "s3://bucket/grid.zinc"
 
     with cast(URLProvider, get_provider("shaystack.providers.url", {"REFRESH": 1})) as provider:
+        print("to be deleted" + str(provider.versions()))
         assert provider._download_grid(url, last).metadata["v"] == "3"
 
 
@@ -141,6 +145,7 @@ def test_version(mock, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
     with get_provider("shaystack.providers.url", {}) as provider:
         versions = provider.versions()
+        print("to be deleted" + str(provider.versions()))
         assert len(versions) == 3
 
 @patch.object(URLProvider, '_get_url')

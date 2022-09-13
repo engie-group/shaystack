@@ -20,9 +20,9 @@ def test_values_for_tag(mock_s3, mock_get_url):
     """
 
     mock_get_url.return_value = "s3://bucket/grid.zinc"
-    with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
+    with cast(URLProvider, haystack_interface.get_provider("shaystack.providers.url", {})) as provider:
         provider.cache_clear()
-        provider._periodic_refresh = 15
+        provider._periodic_refresh = 0
         mock_s3.return_value = _get_mock_s3()
         result1 = provider.read(0, None, None, None, None)
         result = provider.values_for_tag("col")
@@ -41,11 +41,14 @@ def test_read_last_without_filter(mock_s3, mock_get_url):
     """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
-    with cast(URLProvider, get_provider("shaystack.providers.url", {})) as provider:
+    with cast(URLProvider, haystack_interface.get_provider("shaystack.providers.url", {})) as provider:
+        provider.cache_clear()
+        provider._periodic_refresh = 0
         provider.cache_clear()
         result = provider.read(0, None, None, None, None)
         print("to be deleted" + str(provider.versions()))
         assert result.metadata["v"] == "3"
+
 
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
@@ -57,7 +60,9 @@ def test_read_version_without_filter(mock_s3, mock_get_url):
     """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
-    with get_provider("shaystack.providers.url", {}) as provider:
+    with cast(URLProvider, haystack_interface.get_provider("shaystack.providers.url", {})) as provider:
+        provider.cache_clear()
+        provider._periodic_refresh = 0
         version_2 = datetime(2020, 10, 1, 0, 0, 3, 0, tzinfo=None)
         result = provider.read(0, None, None, None, date_version=version_2)
         print("to be deleted" + str(provider.versions()))
@@ -74,7 +79,9 @@ def test_read_version_with_filter(mock_s3, mock_get_url):
     """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
-    with get_provider("shaystack.providers.url", {}) as provider:
+    with cast(URLProvider, haystack_interface.get_provider("shaystack.providers.url", {})) as provider:
+        provider.cache_clear()
+        provider._periodic_refresh = 0
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
         result = provider.read(0, None, None, "id==@id1", version_2)
         print("to be deleted" + str(provider.versions()))
@@ -93,7 +100,9 @@ def test_read_version_with_filter2(mock_s3, mock_get_url):
     """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
-    with get_provider("shaystack.providers.url", {}) as provider:
+    with cast(URLProvider, haystack_interface.get_provider("shaystack.providers.url", {})) as provider:
+        provider.cache_clear()
+        provider._periodic_refresh = 0
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
         result = provider.read(0, "id,other", None, "id==@id1", version_2)
         assert result.column == {"id": MetadataObject(), "other": MetadataObject()}
@@ -109,7 +118,9 @@ def test_read_version_with_ids(mock_s3, mock_get_url):
     """
     mock_s3.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
-    with get_provider("shaystack.providers.url", {}) as provider:
+    with cast(URLProvider, haystack_interface.get_provider("shaystack.providers.url", {})) as provider:
+        provider.cache_clear()
+        provider._periodic_refresh = 0
         version_2 = datetime(2020, 10, 1, 0, 0, 2, 0, tzinfo=None)
         result = provider.read(0, None, [Ref("id1")], None, version_2)
         assert result.metadata["v"] == "2"
@@ -127,10 +138,10 @@ def test_lru_version(mock):
     last = None
     url = "s3://bucket/grid.zinc"
 
-    with cast(URLProvider, get_provider("shaystack.providers.url", {"REFRESH": 1})) as provider:
-        print("to be deleted" + str(provider.versions()))
+    with cast(URLProvider, haystack_interface.get_provider("shaystack.providers.url", {})) as provider:
+        provider.cache_clear()
+        provider._periodic_refresh = 0
         assert provider._download_grid(url, last).metadata["v"] == "3"
-
 
 
 @patch.object(URLProvider, '_get_url')
@@ -143,10 +154,12 @@ def test_version(mock, mock_get_url):
     """
     mock.return_value = _get_mock_s3()
     mock_get_url.return_value = "s3://bucket/grid.zinc"
-    with get_provider("shaystack.providers.url", {}) as provider:
+    with cast(URLProvider, haystack_interface.get_provider("shaystack.providers.url", {})) as provider:
+        provider.cache_clear()
+        provider._periodic_refresh = 0
         versions = provider.versions()
-        print("to be deleted" + str(provider.versions()))
         assert len(versions) == 3
+
 
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
@@ -171,6 +184,7 @@ def test_his_read_with_version_filter(mock_s3, mock_get_url):
         assert (len(result._row)) == 4  # 5 out of 6 since getting all TSs < 2020-10-01T16:30:00
         assert result._row[3] == {'ts': datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC), 'val': 20.0}
 
+
 @patch.object(URLProvider, '_get_url')
 @patch.object(URLProvider, '_s3')
 def test_his_read_with_version_with_dateRangemock(mock_s3, mock_get_url):
@@ -190,7 +204,7 @@ def test_his_read_with_version_with_dateRangemock(mock_s3, mock_get_url):
                                    date_range=(
                                        datetime(2020, 8, 1, 16, 30, 0, 0, tzinfo=pytz.UTC),
                                        datetime(2020, 10, 1, 16, 30, 0, 0, tzinfo=pytz.UTC)
-                                       ))
-        assert(len(result._row)) == 2  #  2 out of 6 since getting all TSs < 2020-08-01T00:00:02
-                                       #  also between 2020-09-01T16:30:00 and 2020-10-01T16:30:00
+                                   ))
+        assert (len(result._row)) == 2  # 2 out of 6 since getting all TSs < 2020-08-01T00:00:02
+        #  also between 2020-09-01T16:30:00 and 2020-10-01T16:30:00
         assert result._row[1] == {'ts': datetime(2020, 10, 1, 0, 0, tzinfo=pytz.UTC), 'val': 20.0}

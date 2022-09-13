@@ -435,10 +435,10 @@ def _import_ts(parsed_source: ParseResult,  # pylint: disable=too-many-locals,to
                 requests.append((
                     urlparse(source_time_serie),
                     urlparse(destination_time_serie),
-                    customer_id,  # customer_id
+                    customer_id,   # customer_id
                     True,  # compare_grid
                     False,  # update_time_series
-                    True,   # force
+                    True,  # force
                     True,  # merge_ts
                     envs))
 
@@ -583,7 +583,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 if not date_version:
                     date_version = datetime.now().replace(tzinfo=pytz.UTC)
                 for row in history:
-                    if row['ts'] >= date_version:
+                    if row['ts'] >= date_version.replace(tzinfo=pytz.UTC):
                         history = history[0:history.index(row)]
                         break
 

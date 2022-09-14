@@ -341,7 +341,7 @@ def _manage_exception(
 
 
 def about(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
-         factory = get_singleton_provider) -> HaystackHttpResponse:
+          factory=get_singleton_provider) -> HaystackHttpResponse:
     """
     Implement Haystack about.
     Args:
@@ -370,7 +370,7 @@ def about(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
 
 
 def ops(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
-         factory = get_singleton_provider) -> HaystackHttpResponse:
+        factory=get_singleton_provider) -> HaystackHttpResponse:
     """
     Implement Haystack `ops`.
     Args:
@@ -393,8 +393,7 @@ def ops(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
 
 
 def formats(envs: Dict[str, str], request: HaystackHttpRequest,
-            stage: str,
-         factory = get_singleton_provider) -> HaystackHttpResponse:
+            stage: str, factory=get_singleton_provider) -> HaystackHttpResponse:
     """
     Implement Haystack 'formats'.
     Args:
@@ -447,7 +446,8 @@ def formats(envs: Dict[str, str], request: HaystackHttpRequest,
         response = _manage_exception(headers, ex, stage)
     return response
 
-def convert_version(version: Union[datetime, date]) -> str:
+
+def convert_version(version: Union[datetime, date]) -> datetime:
     """
     Converts the given version to str and uses 23:59:59 for the time when the version
     is based only on the date in order to get the most recent version at that date.
@@ -462,8 +462,9 @@ def convert_version(version: Union[datetime, date]) -> str:
 
     return version
 
+
 def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
-         factory = get_singleton_provider) -> HaystackHttpResponse:
+         factory=get_singleton_provider) -> HaystackHttpResponse:
     """
     Implement Haystack `read`
     Args:
@@ -532,7 +533,7 @@ def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
 
 
 def nav(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
-         factory = get_singleton_provider) -> HaystackHttpResponse:
+        factory=get_singleton_provider) -> HaystackHttpResponse:
     """
     Implement Haystack 'nav'.
     Args:
@@ -561,8 +562,7 @@ def nav(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
 
 
 def watch_sub(envs: Dict[str, str], request: HaystackHttpRequest,
-              stage: str,
-         factory = get_singleton_provider) -> HaystackHttpResponse:
+              stage: str, factory=get_singleton_provider) -> HaystackHttpResponse:
     """
     Implement Haystack 'watchSub'.
     Args:
@@ -608,8 +608,7 @@ def watch_sub(envs: Dict[str, str], request: HaystackHttpRequest,
 
 
 def watch_unsub(envs: Dict[str, str], request: HaystackHttpRequest,
-                stage: str,
-         factory = get_singleton_provider) -> HaystackHttpResponse:
+                stage: str, factory=get_singleton_provider) -> HaystackHttpResponse:
     """
     Implement Haystack 'watchUnsub'.
     Args:
@@ -653,8 +652,7 @@ def watch_unsub(envs: Dict[str, str], request: HaystackHttpRequest,
 
 
 def watch_poll(envs: Dict[str, str], request: HaystackHttpRequest,
-               stage: str,
-         factory = get_singleton_provider) -> HaystackHttpResponse:
+               stage: str, factory=get_singleton_provider) -> HaystackHttpResponse:
     """
     Implement Haystack 'watchPoll'.
     Args:
@@ -691,8 +689,7 @@ def watch_poll(envs: Dict[str, str], request: HaystackHttpRequest,
 
 
 def point_write(envs: Dict[str, str], request: HaystackHttpRequest,
-                stage: str,
-         factory = get_singleton_provider) -> HaystackHttpResponse:
+                stage: str, factory=get_singleton_provider) -> HaystackHttpResponse:
     """
     Implement Haystack 'pointWrite'.
     Args:
@@ -758,8 +755,7 @@ def point_write(envs: Dict[str, str], request: HaystackHttpRequest,
 
 
 def his_read(envs: Dict[str, str], request: HaystackHttpRequest,
-             stage: str,
-         factory = get_singleton_provider) -> HaystackHttpResponse:
+             stage: str, factory=get_singleton_provider) -> HaystackHttpResponse:
     """
     Implement Haystack 'hisRead'.
     Args:
@@ -815,8 +811,7 @@ def his_read(envs: Dict[str, str], request: HaystackHttpRequest,
 
 
 def his_write(envs: Dict[str, str], request: HaystackHttpRequest,
-              stage: str,
-         factory = get_singleton_provider) -> HaystackHttpResponse:
+              stage: str, factory=get_singleton_provider) -> HaystackHttpResponse:
     """
     Implement Haystack 'hisWrite'.
     Args:
@@ -859,8 +854,7 @@ def his_write(envs: Dict[str, str], request: HaystackHttpRequest,
 
 
 def invoke_action(envs: Dict[str, str], request: HaystackHttpRequest,
-                  stage: str,
-         factory = get_singleton_provider) -> HaystackHttpResponse:
+                  stage: str, factory=get_singleton_provider) -> HaystackHttpResponse:
     """
     Implement Haystack 'invokeAction'.
     Args:

@@ -9,7 +9,7 @@ Typing wrapper for sql drivers
 """
 # Typing for DB driver
 import sys
-from typing import Tuple, Optional, List, Iterable, Iterator, Any
+from typing import Tuple, Optional, List, Iterable, Iterator
 
 # type: ignore
 if sys.version_info[0:2] == (3, 7):
@@ -32,7 +32,7 @@ class DBCursor(Protocol):
 
     def close(self) -> None: ...
 
-    def __iter__(self) -> Iterator[Any]: ...
+    def __iter__(self) -> Iterator[List]: return [].__iter__()
 
 
 class DBConnection(Protocol):  # pylint: disable=multiple-statements,no-self-use, missing-class-docstring

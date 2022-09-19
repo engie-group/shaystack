@@ -21,7 +21,7 @@ def test_ops_with_zinc(mock) -> None:
     # apigw_event["body"] = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.ops(envs, request, "dev")
+    response = shaystack.ops(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with()

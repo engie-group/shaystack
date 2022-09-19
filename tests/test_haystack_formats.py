@@ -21,7 +21,7 @@ def test_formats_with_zinc(mock):
     # apigw_event["body"] = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.formats(envs, request, "dev")
+    response = shaystack.formats(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with()

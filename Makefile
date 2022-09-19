@@ -4,11 +4,14 @@ SHELL=/bin/bash
 .ONESHELL:
 MAKEFLAGS += --no-print-directory
 
-ifeq ($(shell (( $(shell echo "$(MAKE_VERSION)" | sed -e 's@^[^0-9]*\([0-9]\+\).*@\1@') >= 4 )) || echo 1),1)
-$(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
-endif
+#ifeq ($(shell (( $(shell echo "$(MAKE_VERSION)" | sed -e 's@^[^0-9]*\([0-9]\+\).*@\1@') >= 4 )) || echo 1),1)
+#$(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
+#endif ## TODO FIX THE MAKE VERSION
+toto:
+	ifeq ($(shell (( $(shell echo "$(MAKE_VERSION)" | sed -e 's@^[^0-9]*\([0-9]\+\).*@\1@') >= 4 )) || echo 1),1)
+	$(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
+	endif
 
-# You can change the password in .env
 PRJ?=shaystack
 HAYSTACK_PROVIDER?=shaystack.providers.db
 HAYSTACK_DB?=sample/carytown.zinc
@@ -39,7 +42,7 @@ endif
 
 
 PYTHON_SRC=$(shell find . -name '*.py')
-PYTHON_VERSION?=3.7
+PYTHON_VERSION?=3.8
 PRJ_PACKAGE:=$(PRJ)
 VENV ?= $(PRJ)
 CONDA ?=conda

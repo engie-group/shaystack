@@ -24,7 +24,7 @@ def test_about_with_zinc(mock, no_cache) -> None:
     request.headers["Accept"] = mime_type
 
     # WHEN
-    response = shaystack.about(envs, request, "dev")
+    response = shaystack.about(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with("https://localhost/dev")
@@ -50,7 +50,7 @@ def test_about_without_headers(mock, no_cache) -> None:
     request = HaystackHttpRequest()
 
     # WHEN
-    response = shaystack.about(envs, request, "dev")
+    response = shaystack.about(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with("https://localhost/dev")
@@ -76,7 +76,7 @@ def test_about_with_multivalues_headers(mock, no_cache) -> None:
     request.headers["Accept"] = "text/zinc, application/json"
 
     # WHEN
-    response = shaystack.about(envs, request, "dev")
+    response = shaystack.about(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with("https://localhost/dev")

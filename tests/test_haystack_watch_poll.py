@@ -28,7 +28,7 @@ def test_watch_poll_with_zinc(mock) -> None:
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.watch_poll(envs, request, "dev")
+    response = shaystack.watch_poll(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with("0123456789ABCDEF", True)
@@ -53,7 +53,7 @@ def test_watch_poll_with_args(mock) -> None:
     request.args["refresh"] = "true"
 
     # WHEN
-    response = shaystack.watch_poll(envs, request, "dev")
+    response = shaystack.watch_poll(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with("0123456789ABCDEF", True)

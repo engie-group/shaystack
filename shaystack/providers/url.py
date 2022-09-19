@@ -801,11 +801,10 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         parsed_uri = urlparse(uri, allow_fragments=False)
         parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
         response_grid = Grid(columns=["ts", "val"])
-        self._refresh_versions(parsed_uri)
         if parsed_uri.scheme != 's3':
             if parsed_uri.scheme not in ['', 'file']:
                 raise ValueError("A wrong url ! (url have to be ['file','s3','']")
-
+        self._refresh_versions(parsed_uri)
         for version, version_url in self._versions[parsed_uri.geturl()].items():
             if not date_version or version <= date_version.replace(tzinfo=pytz.UTC):
                 if parsed_uri.scheme == 's3':

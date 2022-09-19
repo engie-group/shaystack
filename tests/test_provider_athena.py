@@ -1,96 +1,97 @@
 import csv
-import pytz
-from typing import cast
 from datetime import datetime
+from typing import cast
 from unittest.mock import patch
+
+import pytz
+from nose.tools import assert_raises
 
 from shaystack.grid import Grid
 from shaystack.providers import get_provider
 from shaystack.providers.athena import Provider as DBTSProvider
-from nose.tools import assert_raises
 
 ENVIRON = {
     "HAYSTACK_PROVIDER": "shaystack.providers.athena",
-    "HAYSTACK_DB": f"s3://s3_input_bucket_name/ontology.hayson.json",
-    "HAYSTACK_TS": f"athena://shaystack?output_bucket_name=s3_output_bucket_name"
-                   f"&output_folder_name=athena_output_folder_name",
+    "HAYSTACK_DB": "s3://s3_input_bucket_name/ontology.hayson.json",
+    "HAYSTACK_TS": "athena://shaystack?output_bucket_name=s3_output_bucket_name"
+                   "&output_folder_name=athena_output_folder_name",
     "AWS_PROFILE": "fake_profile",
     "AWS_REGION": "eu-west-1",
     "FLASK_DEBUG": 1,
     "HAYSTACK_UI": "yes",
     "REFRESH": 1
-    }
+}
 
 ENTITY00 = {
-        "id": {
-            "_kind": "Ref",
-            "val": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+    "id": {
+        "_kind": "Ref",
+        "val": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+    },
+    "rawId": "00000000-1111-2222-3333-444444444444",
+    "sensorRef": {
+        "_kind": "Ref",
+        "val": "11111111-2222-3333-4444-555555555555"
+    },
+    "hisURI": {
+        "db_name": "test_data_base",
+        "table_name": "tast_table",
+        "partition_keys": "part_key_1='pk1'/part_key_2='pk2'/part_key_3='pk3'",
+        "hs_type": "dict",
+        "hs_value_column": {
+            "prediction": "float",
+            "upper": "float",
+            "lower": "float"
         },
-        "rawId": "00000000-1111-2222-3333-444444444444",
-        "sensorRef": {
-            "_kind": "Ref",
-            "val": "11111111-2222-3333-4444-555555555555"
+        "hs_date_column": {
+            "time": "%Y-%m-%d %H:%M:%S.%f"
         },
-        "hisURI": {
-            "db_name": "test_data_base",
-            "table_name": "tast_table",
-            "partition_keys": "part_key_1='pk1'/part_key_2='pk2'/part_key_3='pk3'",
-            "hs_type": "dict",
-            "hs_value_column": {
-                "prediction": "float",
-                "upper": "float",
-                "lower": "float"
-            },
-            "hs_date_column": {
-                "time": "%Y-%m-%d %H:%M:%S.%f"
-            },
-            "date_part_keys": {
-                "year_col": "year",
-                "month_col": "month",
-                "day_col": "day"
-            }
-        },
-        "point": {
-            "_kind": "Marker"
-        },
-        "his": {
-            "_kind": "Marker"
-        },
-    }
+        "date_part_keys": {
+            "year_col": "year",
+            "month_col": "month",
+            "day_col": "day"
+        }
+    },
+    "point": {
+        "_kind": "Marker"
+    },
+    "his": {
+        "_kind": "Marker"
+    },
+}
 
 ENTITY01 = {
-        "id": {
-            "_kind": "Ref",
-            "val": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+    "id": {
+        "_kind": "Ref",
+        "val": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+    },
+    "rawId": "00000000-1111-2222-3333-444444444444",
+    "sensorRef": {
+        "_kind": "Ref",
+        "val": "11111111-2222-3333-4444-555555555555"
+    },
+    "hisURI": {
+        "db_name": "test_data_base",
+        "table_name": "tast_table",
+        "partition_keys": "part_key_1='pk1'/part_key_2='pk2'",  # Only 2 partition keys
+        "hs_type": "float",
+        "hs_value_column": {
+            "value": "float",
         },
-        "rawId": "00000000-1111-2222-3333-444444444444",
-        "sensorRef": {
-            "_kind": "Ref",
-            "val": "11111111-2222-3333-4444-555555555555"
+        "hs_date_column": {
+            "time": "%Y-%m-%d %H:%M:%S.%f"
         },
-        "hisURI": {
-            "db_name": "test_data_base",
-            "table_name": "tast_table",
-            "partition_keys": "part_key_1='pk1'/part_key_2='pk2'",  # Only 2 partition keys
-            "hs_type": "float",
-            "hs_value_column": {
-                "value": "float",
-            },
-            "hs_date_column": {
-                "time": "%Y-%m-%d %H:%M:%S.%f"
-            },
-            "date_part_keys": {
-                "year_col": "year",
-                "month_col": "month",  # There is no 'day' partition key
-            }
-        },
-        "point": {
-            "_kind": "Marker"
-        },
-        "his": {
-            "_kind": "Marker"
-        },
-    }
+        "date_part_keys": {
+            "year_col": "year",
+            "month_col": "month",  # There is no 'day' partition key
+        }
+    },
+    "point": {
+        "_kind": "Marker"
+    },
+    "his": {
+        "_kind": "Marker"
+    },
+}
 
 TS_CSV_FILE = [
     '"time","value"\n',
@@ -107,6 +108,7 @@ TS_CSV_FILE = [
     '"2021-05-03 13:51:00.000","0.85427"\n',
     '"2021-05-03 14:17:00.000","0.92032"\n'
 ]
+
 
 def test_import_ts_in_db():
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", ENVIRON)) as provider:
@@ -134,7 +136,8 @@ def test_build_athena_prediction_query_of_entity_01():
     date_range = (datetime(2021, 5, 1, 0, 0, tzinfo=pytz.UTC),
                   datetime(2021, 5, 4, 23, 59, 59, 999999, tzinfo=pytz.UTC))
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", ENVIRON)) as provider:
-         assert athena_query == provider.build_athena_query(ENTITY01['hisURI'], date_range, None)
+        assert athena_query == provider.build_athena_query(ENTITY01['hisURI'], date_range, None)
+
 
 def test_create_history_grid():
     initial_grid = Grid(columns=["ts", "val"])
@@ -152,8 +155,9 @@ def test_create_history_grid():
 
 def test_create_history_empty_grid():
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", ENVIRON)) as provider:
-        created_grid = provider.create_history_grid(None,  ENTITY01['hisURI'])
+        created_grid = provider.create_history_grid(None, ENTITY01['hisURI'])
         assert created_grid == Grid(columns=["ts", "val"])
+
 
 def test_put_date_format():
     str_date = "2022/06/01"
@@ -162,20 +166,21 @@ def test_put_date_format():
         date_formated = provider.put_date_format(str_date, date_pattern)
         assert date_formated == "2022-06-01 00:00:00"
 
+
 def test_put_date_format_value_error_exception():
     str_date = "2022/06/01"
     date_pattern = "%Y-%m-%d"
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", ENVIRON)) as provider:
         assert_raises(Exception, provider.put_date_format, str_date, date_pattern)
 
-@patch('shaystack.providers.athena.Provider.get_query_results')
+
 @patch('shaystack.providers.athena.Provider.poll_query_status')
-def test_get_query_results_called_by_poll_query_status(mock_get_query_results, mock_poll_query_status):
-        # Athena get_query_results response
-        response = {
-            'QueryExecutionId': '18b45861-36ee-4fc1-8639-2b4ebf424fa4',
-            'Status': {'State': "SUCCEEDED"}
-        }
-        with cast(DBTSProvider, get_provider("shaystack.providers.athena", ENVIRON)) as provider:
-            provider.poll_query_status(response)
-            mock_get_query_results.assert_called_once()
+def test_get_query_results_called_by_poll_query_status(mock_get_query_results):
+    # Athena get_query_results response
+    response = {
+        'QueryExecutionId': '18b45861-36ee-4fc1-8639-2b4ebf424fa4',
+        'Status': {'State': "SUCCEEDED"}
+    }
+    with cast(DBTSProvider, get_provider("shaystack.providers.athena", ENVIRON)) as provider:
+        provider.poll_query_status(response)
+        mock_get_query_results.assert_called_once()

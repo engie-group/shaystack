@@ -1,12 +1,13 @@
+import json
+import os
+import shutil
 import unittest
+from collections import OrderedDict
 from datetime import datetime
 from typing import cast
-from collections import OrderedDict
-import shutil
-import json
-import pytz
-import os
 from unittest.mock import patch
+
+import pytz
 
 from shaystack import Ref
 from shaystack.providers import get_provider

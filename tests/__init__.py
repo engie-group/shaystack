@@ -1,4 +1,5 @@
 from datetime import datetime
+
 import pytz
 
 from shaystack.datatypes import Ref
@@ -75,7 +76,7 @@ def _get_mock_s3_updated_ontology():
             self.history = None
             self.his_count = 0
 
-        def list_object_versions(self, **args):
+        def list_object_versions(self, **args):  # pylint: disable=unused-argument
             return {
                 "Versions":
                     [
@@ -85,8 +86,8 @@ def _get_mock_s3_updated_ontology():
                     ]
             }
 
-        def download_fileobj(self, bucket, path, stream, **params):
-            if path == "grid.zinc":
+        def download_fileobj(self, bucket, path, stream, **params):  # pylint: disable=unused-argument
+            if path == "updated_grid.zinc":
                 grid = sample_grid.copy()
                 if params.get("ExtraArgs", None):
                     grid.metadata = {"v": params["ExtraArgs"]["VersionId"]}

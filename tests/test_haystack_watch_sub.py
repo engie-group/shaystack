@@ -30,7 +30,7 @@ def test_watch_sub_with_zinc(mock):
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.watch_sub(envs, request, "dev")
+    response = shaystack.watch_sub(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with("myWatch", "myid", [Ref("id1"), Ref("id2")], 1)
@@ -61,7 +61,7 @@ def test_watch_sub_with_args(mock):
     request.args["ids"] = str(ids)
 
     # WHEN
-    response = shaystack.watch_sub(envs, request, "dev")
+    response = shaystack.watch_sub(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with("myWatch", "myid", [Ref("id1"), Ref("id2")], 1)

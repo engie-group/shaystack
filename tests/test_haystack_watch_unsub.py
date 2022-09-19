@@ -27,7 +27,7 @@ def test_watch_unsub_with_zinc(mock) -> None:
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.watch_unsub(envs, request, "dev")
+    response = shaystack.watch_unsub(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with("0123456789ABCDEF", [Ref("id1"), Ref("id2")], True)
@@ -54,7 +54,7 @@ def test_watch_unsub_with_args(mock) -> None:
     request.args["ids"] = str(ids)
 
     # WHEN
-    response = shaystack.watch_unsub(envs, request, "dev")
+    response = shaystack.watch_unsub(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with("0123456789ABCDEF", {Ref("id1"), Ref("id2")}, True)

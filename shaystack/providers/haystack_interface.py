@@ -419,9 +419,9 @@ class HaystackInterface(ABC):
 _providers = {}
 
 
-def no_cache(envs: Dict[str, str]):
+def no_cache():
     """ Must be patched in unit test """
-    return int(envs.get("REFRESH", "15")) == 0
+    return False
 
 
 # noinspection PyProtectedMember,PyUnresolvedReferences
@@ -443,7 +443,7 @@ def get_provider(class_str: str, envs: Dict[str, str],  # pylint: disable=protec
     """
     if not class_str.endswith(".Provider"):
         class_str += ".Provider"
-    if not no_cache(envs) and class_str in _providers:
+    if use_cache and class_str in _providers:
         return _providers[class_str]
     module_path, class_name = class_str.rsplit(".", 1)
     module = import_module(module_path)
@@ -556,8 +556,7 @@ def get_singleton_provider(envs: Dict[str, str]  # pylint: disable=protected-acc
     """
     global SINGLETON_PROVIDER  # pylint: disable=global-statement
     provider = envs.get("HAYSTACK_PROVIDER", "shaystack.providers.db")
-    # test if there is already a created provider and of the caching is enabled
-    if not SINGLETON_PROVIDER or no_cache(envs):
+    if not SINGLETON_PROVIDER or no_cache():
         log.debug("Provider=%s", provider)
         SINGLETON_PROVIDER = get_provider(provider, envs)
     return SINGLETON_PROVIDER

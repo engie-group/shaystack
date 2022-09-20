@@ -4,14 +4,12 @@ SHELL=/bin/bash
 .ONESHELL:
 MAKEFLAGS += --no-print-directory
 
-#ifeq ($(shell (( $(shell echo "$(MAKE_VERSION)" | sed -e 's@^[^0-9]*\([0-9]\+\).*@\1@') >= 4 )) || echo 1),1)
-#$(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
-#endif ## TODO FIX THE MAKE VERSION
-toto:
-	ifeq ($(shell (( $(shell echo "$(MAKE_VERSION)" | sed -e 's@^[^0-9]*\([0-9]\+\).*@\1@') >= 4 )) || echo 1),1)
-	$(error Bad make version, please install make >= 4 ($(MAKE_VERSION)))
-	endif
+ifeq ($(shell [[ ( $(shell echo $(MAKE_VERSION) | cut -f1 -d.) -ge 4) ]] || echo 1),1)
+$(error "Unsupported Make version. The build system does not work properly\
+with GNU Make $(MAKE_VERSION),please use GNU Make 4 or above.")
+endif
 
+# You can change the password in .env
 PRJ?=shaystack
 HAYSTACK_PROVIDER?=shaystack.providers.db
 HAYSTACK_DB?=sample/carytown.zinc

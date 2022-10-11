@@ -426,7 +426,6 @@ def no_cache(envs: Dict[str, str]):
 
 # noinspection PyProtectedMember,PyUnresolvedReferences
 def get_provider(class_str: str, envs: Dict[str, str],  # pylint: disable=protected-access
-                 use_cache=True  # pylint: disable=protected-access
                  ) -> HaystackInterface:
     """Return an instance of the provider.
     If the provider is an abstract class, create a sub class with all the implementation
@@ -436,15 +435,13 @@ def get_provider(class_str: str, envs: Dict[str, str],  # pylint: disable=protec
     Args:
         class_str: The name of the module that contains the provider.
         envs: Environement variable (os.env ?)
-        use_cache: Use cached provider or create a new one
 
     Returns:
         A instance of this subclass if it exists
     """
     if not class_str.endswith(".Provider"):
         class_str += ".Provider"
-    # if not no_cache(envs) and class_str in _providers:
-    #     return _providers[class_str]
+
     module_path, class_name = class_str.rsplit(".", 1)
     module = import_module(module_path)
     # Get the abstract class name
@@ -541,26 +538,6 @@ def get_provider(class_str: str, envs: Dict[str, str],  # pylint: disable=protec
 
     _providers[class_str] = FullInterface(envs)
     return _providers[class_str]
-
-
-SINGLETON_PROVIDER = None
-
-
-# noinspection PyProtectedMember
-def get_singleton_provider(envs: Dict[str, str]  # pylint: disable=protected-access
-                           ) -> HaystackInterface:
-    """
-    Return the current provider, deduce from the `HAYSTACK_PROVIDER` variable.
-    Returns:
-        The current provider for the process.
-    """
-    global SINGLETON_PROVIDER  # pylint: disable=global-statement
-    provider = envs.get("HAYSTACK_PROVIDER", "shaystack.providers.db")
-    # test if there is already a created provider and of the caching is enabled
-    if not SINGLETON_PROVIDER or no_cache(envs):
-        log.debug("Provider=%s", provider)
-        SINGLETON_PROVIDER = get_provider(provider, envs)
-    return SINGLETON_PROVIDER
 
 
 _DATETIME_MIN_TZ = datetime.min.replace(tzinfo=pytz.utc)

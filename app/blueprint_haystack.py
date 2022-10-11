@@ -15,15 +15,13 @@ from flask import request as flash_request
 
 from shaystack import \
     about, ops, formats, read, nav, watch_sub, \
-    watch_unsub, watch_poll, point_write, his_read, his_write, invoke_action
+    watch_unsub, watch_poll, point_write, his_read, his_write, invoke_action, HaystackInterface
 from shaystack.ops import HaystackHttpRequest, HaystackHttpResponse
-from shaystack.providers import get_provider
 
 
-def create_haystack_bp() -> Blueprint:
-    provider_name = os.environ.get("HAYSTACK_PROVIDER", "shaystack.providers.db")
+def create_haystack_bp(provider: HaystackInterface) -> Blueprint:
+
     # test if there is already a created provider and of the caching is enabled
-    provider = get_provider(provider_name, os.environ)
 
     prefix = os.environ.get('URL_PREFIX') if os.environ.get('URL_PREFIX') else ''
     haystack_blueprint = Blueprint('haystack', __name__,
@@ -145,11 +143,12 @@ def create_haystack_bp() -> Blueprint:
         envs = cast(Dict[str, str], os.environ)
         return _as_response(invoke_action(envs, _as_request(flash_request),
                                           envs.get("FLASK_ENV", "prod"), provider))
+
     @haystack_blueprint.route('/', methods=['GET'], defaults={'filename': 'index.html'})
     @haystack_blueprint.route('/<path:filename>', methods=['GET'])
     def flash_web_ui(filename) -> Response:
         if(os.environ.get('HAYSTACK_INTERFACE') and
-                os.environ.get('HAYSTACK_INTERFACE')!=''
+                os.environ.get('HAYSTACK_INTERFACE') != ''
                 and filename == 'plugins/customPlugin.js'):
             return send_from_directory(os.getcwd(), os.environ['HAYSTACK_INTERFACE'])
         return send_from_directory(haystack_blueprint.static_folder, filename)

@@ -14,6 +14,8 @@ import sys
 import click
 from flask import Flask, send_from_directory
 
+from shaystack.providers import get_provider
+
 try:
     from flask_cors import CORS
     from app.blueprint_haystack import create_haystack_bp
@@ -73,9 +75,11 @@ def init_app(app: Flask) -> Flask:
 
 
 def add_blueprints(app: Flask) -> Flask:
-    app.register_blueprint(create_haystack_bp())
+    provider_name = os.environ.get("HAYSTACK_PROVIDER", "shaystack.providers.db")
+    provider = get_provider(provider_name, os.environ)
+    app.register_blueprint(create_haystack_bp(provider))
     if USE_GRAPHQL:
-        app.register_blueprint(create_graphql_bp())
+        app.register_blueprint(create_graphql_bp(provider))
     CORS(app, resources={
         r"/haystack/*": {"origins": "*"},
         r"/graphql/*": {"origins": "*"}}, )
@@ -91,6 +95,7 @@ def start_shaystack(host: str, port: int, app: Flask) -> int:
 
     Args:
 
+        app: Flask app instance
         host: Network to listen (0.0.0.0 to accept call from all network)
         port: Port to listen
 
@@ -104,7 +109,10 @@ def start_shaystack(host: str, port: int, app: Flask) -> int:
             port=port,
             debug=debug)
     return 0
+
+
 app_instance = create_app()
+
 
 @click.command()
 @click.option('-h', '--host', default='localhost')

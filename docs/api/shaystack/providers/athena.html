@@ -1,0 +1,1239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>shaystack.providers.athena API documentation</title>
+<meta name="description" content="Add the persistance of time-series with Athena database …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>shaystack.providers.athena</code></h1>
+</header>
+<section id="section-intro">
+<p>Add the persistance of time-series with Athena database.</p>
+<p>Set the HAYSTACK_TS with:
+"athena://shaystack?output_bucket_name=<S3 bucket name>&amp;output_folder_name=<output folder>"
+- output_bucket_name [REQUIRED]: The name of the bucket in which Athena will store the query results
+- output_folder_name [REQUIRED]: The folder name in which Athena will store the query results</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+# SQL + Athena provider
+# See the accompanying LICENSE file.
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
+&#34;&#34;&#34;
+Add the persistance of time-series with Athena database.
+
+Set the HAYSTACK_TS with:
+    &#34;athena://shaystack?output_bucket_name=&lt;S3 bucket name&gt;&amp;output_folder_name=&lt;output folder&gt;&#34;
+- output_bucket_name [REQUIRED]: The name of the bucket in which Athena will store the query results
+- output_folder_name [REQUIRED]: The folder name in which Athena will store the query results
+&#34;&#34;&#34;
+import time as t
+from csv import DictReader
+from datetime import datetime, date, time
+from typing import Optional, Tuple, Any, Dict
+from urllib.parse import parse_qs
+from urllib.parse import urlparse
+
+import boto3
+import pytz
+from botocore import exceptions
+from overrides import overrides
+
+from .db import Provider as DBProvider
+from .db import log
+from ..datatypes import Ref, MARKER, REMOVE, Coordinate, Quantity, NA, XStr
+from ..grid import Grid
+from ..period import Period
+
+
+# noinspection PyUnusedLocal
+class Provider(DBProvider):
+    &#34;&#34;&#34;
+    Expose an Haystack data via the Haystack Rest API and SQL+TS databases
+    &#34;&#34;&#34;
+    __slots__ = &#34;_parsed_ts&#34;, &#34;_ts_table_name&#34;, &#34;_ts_database_name&#34;, &#34;_boto&#34;, &#34;_write_client&#34;, &#34;_read_client&#34;
+    INTERMEDIATE_STATES = (&#39;QUEUED&#39;, &#39;RUNNING&#39;,)
+    FAILURE_STATES = (&#39;FAILED&#39;, &#39;CANCELLED&#39;,)
+    SUCCESS_STATES = (&#39;SUCCEEDED&#39;,)
+
+    @property
+    def name(self) -&gt; str:
+        return &#34;SQL+timeseries&#34;
+
+    def __init__(self, envs: Dict[str, str]):
+        super().__init__(envs)
+        log.info(&#34;Use %s&#34;, self._get_ts())
+        self._parsed_ts = urlparse(self._get_ts())
+        self._output_bucket_name = parse_qs(self._parsed_ts.query)[&#39;output_bucket_name&#39;][0]
+        self._output_folder_name = parse_qs(self._parsed_ts.query)[&#39;output_folder_name&#39;][0]
+        self._boto = None
+        self._write_client = None
+        self._read_client = None
+
+    def _get_boto(self):
+        if not self._boto:
+            self._boto = boto3.session.Session()
+        return self._boto
+
+    def _get_ts(self) -&gt; str:  # pylint: disable=no-self-use
+        &#34;&#34;&#34; Return the url to the file to expose. &#34;&#34;&#34;
+        return self._envs[&#34;HAYSTACK_TS&#34;]
+
+    def _get_read_client(self):
+        # if not self._read_client:
+        region = self._envs.get(&#34;AWS_REGION&#34;,
+                                self._envs.get(&#34;AWS_DEFAULT_REGION&#34;))
+        session = self._get_boto()
+        log.info(&#34;[BOTO SESSION]: session was created successfully! &#34;)
+        self._read_client = session.client(&#39;athena&#39;,
+                                           region_name=region
+                                           )
+        log.info(&#34;[ATHENA BOTO]: was created successfully! &#34; + str(self._read_client.meta))
+        return self._read_client
+
+    def _import_ts_in_db(self, **kwargs) -&gt; None:
+        raise NotImplementedError(&#39;Feature not implemented&#39;)
+
+    @staticmethod
+    def _cast_timeserie_to_hs(val: str,
+                              python_type: str,
+                              unit: str = None) -&gt; Any:
+        if val:
+            if python_type == &#34;str&#34;:
+                return val
+            if python_type == &#34;float&#34;:
+                return float(val)
+            if python_type == &#34;_PintQuantity&#34;:
+                return Quantity(float(val), unit)
+            if python_type == &#34;Quantity&#34;:
+                return Quantity(float(val), unit)
+            if python_type == &#34;bool&#34;:
+                return val.lower() == &#39;true&#39;
+            if python_type == &#34;int&#34;:
+                return int(float(val))
+            if python_type == &#34;_MarkerType&#34;:
+                return MARKER if val else None
+            if python_type == &#34;_RemoveType&#34;:
+                return REMOVE if val else None
+            if python_type == &#34;_NAType&#34;:
+                return NA if val else None
+            if python_type == &#34;Ref&#34;:
+                return Ref(val)
+            if python_type == &#34;datetime&#34;:
+                return datetime.fromtimestamp(int(val))
+            if python_type == &#34;date&#34;:
+                return date.fromordinal(int(val))
+            if python_type == &#34;time&#34;:
+                int_time = int(val)
+                hour = ((int_time // 1000000) // 60) // 60
+                minute = ((int_time // 1000000) // 60) % 60
+                split = (int_time // 1000000) % 60
+                mic = int_time % 1000000
+                return time(hour, minute, split, mic)
+            if python_type == &#34;Coordinate&#34;:
+                split = val.split(&#34;,&#34;)
+                return Coordinate(float(split[0]), float(split[1]))
+            if python_type == &#34;XStr&#34;:
+                split = val.split(&#34;,&#34;)
+                return XStr(*split)
+            if python_type == &#34;NoneType&#34;:
+                return None
+            raise ValueError(f&#34;Unknown type {python_type}&#34;)
+        return None
+
+    def get_query_results(self, query_execution_id: str) -&gt; DictReader:
+        &#34;&#34;&#34;
+        Download result file
+        Args:
+            query_execution_id (object): Str that represent the ExecutionId of athena query
+        Output:
+            CSV DictReader containing the query response
+        &#34;&#34;&#34;
+        region = self._envs.get(&#34;AWS_REGION&#34;,
+                                self._envs.get(&#34;AWS_DEFAULT_REGION&#34;))
+        reader = None
+        try:
+            resource = boto3.resource(&#39;s3&#39;, region)
+            response = resource.Bucket(self._output_bucket_name).Object(
+                key=f&#39;{self._output_folder_name}/{query_execution_id}.csv&#39;).get()
+            lines = response[&#39;Body&#39;].read().decode(&#39;utf-8&#39;).splitlines(True)
+            log.info(&#34;Query results CSV file contain [%s] row.&#34;, str(len(lines)))
+            reader = DictReader(lines)
+        except exceptions.ClientError as exc:
+            if exc.response[&#39;Error&#39;][&#39;Code&#39;] == &#34;404&#34;:
+                print(&#34;The object does not exist.&#34;)
+            raise
+        return reader
+
+    def check_query_status(self, query_execution_id: str) -&gt; dict:
+        &#34;&#34;&#34;
+        Fetch the status of submitted athena query. Returns None or one of valid query states.
+
+        :param query_execution_id: Id of submitted athena query
+        :type query_execution_id: str
+        :return: dict E.g. {&#39;State&#39;: &#39;SUCCEEDED&#39;}
+        &#34;&#34;&#34;
+        athena_client = self._get_read_client()
+        query_status = {&#39;State&#39;: None}
+        try:
+            response = athena_client.get_query_execution(QueryExecutionId=query_execution_id)
+            query_status = response[&#39;QueryExecution&#39;][&#39;Status&#39;]
+        except exceptions.ClientError as ex:
+            log.error(&#39;Exception while getting query state: %s&#39;, ex)
+        return query_status
+
+    def poll_query_status(self, query_execution_id: str) -&gt; DictReader:
+        &#34;&#34;&#34;
+        Get the status of the Athena request, i.e. &#34;QUEUED&#34;, &#34;RUNNING&#34;, &#34;FAILED&#34;
+        or &#34;CANCELLED&#34;, and get the results
+        of successful requests
+
+        Args:
+            query_execution_id (str): unique Id of submitted athena query
+        Output:
+            CSV DictReader containing the query response
+        &#34;&#34;&#34;
+        query_status = {&#39;State&#39;: None}
+        while query_status[&#39;State&#39;] in self.INTERMEDIATE_STATES or query_status[&#39;State&#39;] is None:
+
+            query_status = self.check_query_status(query_execution_id)
+
+            if query_status[&#39;State&#39;] is None:
+                log.info(&#39;Invalid query state. Retrying again&#39;)
+
+            elif query_status[&#39;State&#39;] in self.INTERMEDIATE_STATES:
+                log.info(&#39;Query is still in an intermediate state - %s&#39;, query_status[&#39;State&#39;])
+            elif query_status[&#39;State&#39;] in self.FAILURE_STATES:
+                error_message = &#39;Athena query with executionId {} was {} &#39;.format(
+                    query_execution_id, query_status[&#34;State&#34;])
+                if &#34;StateChangeReason&#34; in query_status:
+                    error_message = error_message + f&#39;due to the following error:&#39; \
+                                                    f&#39;{query_status[&#34;StateChangeReason&#34;]}&#39;
+                raise Exception(error_message)
+            else:
+                log.info(&#39;Query execution completed. Final state is - %s&#39;, query_status[&#39;State&#39;])
+                break
+            t.sleep(1)
+        # getting the csv file that contain query results from s3 output bucket
+        reader = self.get_query_results(query_execution_id)
+        return reader
+
+    @staticmethod
+    def put_date_format(str_date: str, date_pattern: str) -&gt; str:
+        &#34;&#34;&#34;
+        Set the date to the correct date format specified in the &#34;date_pattern&#34; parameter
+
+        Args:
+            str_date (str): string date
+            date_pattern (str): date pattern
+        Output:
+            STR date using Haystack date format
+        &#34;&#34;&#34;
+        try:
+            date_val = datetime.strptime(str_date, date_pattern)
+        except ValueError as err:
+            log.error(&#34;%s time data %s does not match format %s&#34;, err, str_date, date_pattern)
+            raise
+        return date_val.strftime(&#34;%Y-%m-%d %H:%M:%S&#34;)
+
+    @staticmethod
+    def build_athena_query(his_uri: dict, dates_range: tuple, date_version: datetime = None) -&gt; str:
+        &#34;&#34;&#34;
+        Build up an Athena query based on the parameters that have been included in hisURI and apply
+        filtering by a start date and an end date based on the date_range argument.
+        Args:
+             his_uri (dict): dict containing all the parameters needed to build the Athena query
+             dates_range (tuple): (start_date, end_date) date range that represents the time period to query
+             date_version (datetime): the date that represents the version of the ontology
+        Output:
+            STR Athena query (SELECT a, b from table ..)
+        &#34;&#34;&#34;
+        hs_parts_keys = his_uri[&#39;partition_keys&#39;].split(&#34;/&#34;)
+        hs_date_column = list(his_uri[&#34;hs_date_column&#34;].keys())[0]
+        hs_value_column = list(his_uri[&#34;hs_value_column&#34;].keys())
+        hs_date_parts_keys = his_uri[&#39;date_part_keys&#39;]
+        if not date_version:
+            date_version = datetime.max.replace(tzinfo=pytz.UTC)
+
+        date_range_period = Period(start=dates_range[0], end=dates_range[1])
+        if dates_range and dates_range[1] &gt; date_version:
+            dates_range = list(dates_range)
+            dates_range[1] = date_version
+
+        select_all = f&#39;SELECT DISTINCT {hs_date_column}, {&#34;, &#34;.join(hs_value_column)}&#39; \
+                     f&#39; FROM {his_uri[&#34;table_name&#34;]}&#39; \
+                     f&#39; WHERE {&#34; &#34;.join([str(item) + &#34; AND&#34; for item in hs_parts_keys[:-1]])}&#39; \
+                     f&#39; {hs_parts_keys[-1]}&#39;
+        if dates_range:
+            if hs_date_parts_keys.get(&#39;year_col&#39;):
+                select_all += f&#39; AND {hs_date_parts_keys.get(&#34;year_col&#34;)} in&#39; \
+                              f&#39; ({&#34;, &#34;.join(map(str, date_range_period.years))})&#39;
+            if hs_date_parts_keys.get(&#39;month_col&#39;):
+                select_all += f&#39; AND {hs_date_parts_keys.get(&#34;month_col&#34;)} in&#39; \
+                              f&#39; ({&#34;, &#34;.join(map(str, date_range_period.months))})&#39;
+            if hs_date_parts_keys.get(&#39;day_col&#39;):
+                select_all += f&#39; AND {hs_date_parts_keys.get(&#34;day_col&#34;)} in&#39; \
+                              f&#39; ({&#34;, &#34;.join(map(str, date_range_period.days))})&#39;
+
+            select_all += f&#39; AND time BETWEEN DATE(\&#39;{dates_range[0].strftime(&#34;%Y-%m-%d&#34;)}\&#39;) &#39; \
+                          f&#39; AND DATE(\&#39;{dates_range[1].strftime(&#34;%Y-%m-%d&#34;)}\&#39;) ORDER BY time ASC;&#39;
+        return select_all
+
+    def create_history_grid(self, reader: DictReader, his_uri: dict) -&gt; Grid:
+        &#34;&#34;&#34;
+        Create a Grid and fill it with the data from the query result rows that were stored as a csv
+        file in the s3 bucket.
+        Args:
+            reader (csv.DictReade): csv containing the query result rows
+            his_uri (dict): dict containing all the parameters needed to build the Athena query
+        Output:
+            Grid filled with the data from athena query result
+        &#34;&#34;&#34;
+        hs_date_column_name = list(his_uri[&#34;hs_date_column&#34;].keys())[0]
+        hs_value_column_names = list(his_uri[&#34;hs_value_column&#34;].keys())
+        hs_type = his_uri[&#39;hs_type&#39;]
+        history = Grid(columns=[&#34;ts&#34;, &#34;val&#34;])
+        if not hs_type:
+            hs_type = &#34;float&#34;
+        if reader:
+            for row in reader:
+                date_format = his_uri[&#34;hs_date_column&#34;][hs_date_column_name]  # &#34;%Y-%m-%d %H:%M:%S.%f&#34;
+                date_val = self.put_date_format(row[hs_date_column_name], date_format)
+                hs_values = {key: row[key] for key in hs_value_column_names}
+                if len(hs_values) == 1:
+                    history.append({
+                        &#34;ts&#34;: datetime.fromisoformat(date_val).replace(tzinfo=pytz.UTC),
+                        &#34;val&#34;: Provider._cast_timeserie_to_hs(str(list(hs_values.values())[0]), hs_type)
+                    })
+                else:
+                    val = dict(zip(
+                        hs_values.keys(),
+                        [Provider._cast_timeserie_to_hs(hs_values[hs_col], his_uri[&#39;hs_value_column&#39;][hs_col])
+                         for hs_col in hs_values.keys()]
+                    ))
+                    history.append({&#34;ts&#34;: datetime.fromisoformat(date_val).replace(tzinfo=pytz.UTC),
+                                    &#34;val&#34;: val})  # ,unit
+        return history
+
+    def run_query(self, his_uri: dict, dates_range: tuple, date_version):
+        &#34;&#34;&#34;
+        Process Athena query
+        Args:
+            his_uri (dict): dict containing all the parameters needed to
+            build the Athena query, e.g. database name,
+            table name, partition keys, ...
+            dates_range (tuple): (start_date, end_date) date range that represents the time period to query
+            date_version (datetime): the date that represents the version of the ontology
+        Output:
+            The grid response containing the results
+        &#34;&#34;&#34;
+        athena_client = self._get_read_client()
+
+        try:
+            # Create the query
+            select_all = self.build_athena_query(his_uri, dates_range, date_version)
+            log.debug(&#34;[ATHENA QUERY]: &#34; + select_all)
+
+            # Start query execution
+            response = athena_client.start_query_execution(
+                QueryString=select_all,
+                QueryExecutionContext={
+                    &#39;Database&#39;: his_uri[&#39;db_name&#39;]
+                },
+                ResultConfiguration={
+                    &#39;OutputLocation&#39;: &#39;s3://&#39; + self._output_bucket_name +
+                                      &#39;/&#39; + self._output_folder_name + &#34;/&#34;,
+                }
+            )
+            # Get query results
+            reader = self.poll_query_status(response[&#34;QueryExecutionId&#34;])
+            # Create timeseries history grid
+            history = self.create_history_grid(reader, his_uri)
+            return history
+
+        except ValueError as err:
+            log.error(&#34;Exception while running query: %s&#34;, err)
+            raise
+
+    @overrides
+    def his_read(
+            self,
+            entity_id: Ref,
+            dates_range: Optional[Tuple[datetime, datetime]] = None,
+            date_version: Optional[datetime] = None,
+    ) -&gt; Grid:
+        # To deduce the target type, read the haystack entity
+        entity = self.read(1, None, [entity_id], None, date_version)[0]
+        if not entity:
+            raise ValueError(f&#34; id &#39;{entity_id} not found&#34;)
+
+        his_uri = entity.get(&#39;hisURI&#39;, None)
+        if not his_uri:
+            raise ValueError(f&#34; hisURI &#39;{his_uri} not found&#34;)
+
+        customer_id = self.get_customer_id()
+        if not customer_id:
+            customer_id = &#39; &#39;
+
+        try:
+            history = self.run_query(his_uri, dates_range, date_version)
+
+            if history:
+                min_date = datetime.max.replace(tzinfo=pytz.UTC)
+                max_date = datetime.min.replace(tzinfo=pytz.UTC)
+
+                for time_serie in history:
+                    min_date = min(min_date, time_serie[&#34;ts&#34;])
+                    max_date = max(max_date, time_serie[&#34;ts&#34;])
+            else:
+                min_date = date_version
+                max_date = date_version
+
+            history.metadata = {
+                &#34;id&#34;: entity_id,
+                &#34;hisStart&#34;: min_date,
+                &#34;hisEnd&#34;: max_date,
+            }
+            return history
+        except ValueError as err:
+            log.error(&#34;Exception while running query: %s&#34;, err)
+            raise</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="shaystack.providers.athena.Provider"><code class="flex name class">
+<span>class <span class="ident">Provider</span></span>
+<span>(</span><span>envs: Dict[str, str])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Expose an Haystack data via the Haystack Rest API and SQL+TS databases</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Provider(DBProvider):
+    &#34;&#34;&#34;
+    Expose an Haystack data via the Haystack Rest API and SQL+TS databases
+    &#34;&#34;&#34;
+    __slots__ = &#34;_parsed_ts&#34;, &#34;_ts_table_name&#34;, &#34;_ts_database_name&#34;, &#34;_boto&#34;, &#34;_write_client&#34;, &#34;_read_client&#34;
+    INTERMEDIATE_STATES = (&#39;QUEUED&#39;, &#39;RUNNING&#39;,)
+    FAILURE_STATES = (&#39;FAILED&#39;, &#39;CANCELLED&#39;,)
+    SUCCESS_STATES = (&#39;SUCCEEDED&#39;,)
+
+    @property
+    def name(self) -&gt; str:
+        return &#34;SQL+timeseries&#34;
+
+    def __init__(self, envs: Dict[str, str]):
+        super().__init__(envs)
+        log.info(&#34;Use %s&#34;, self._get_ts())
+        self._parsed_ts = urlparse(self._get_ts())
+        self._output_bucket_name = parse_qs(self._parsed_ts.query)[&#39;output_bucket_name&#39;][0]
+        self._output_folder_name = parse_qs(self._parsed_ts.query)[&#39;output_folder_name&#39;][0]
+        self._boto = None
+        self._write_client = None
+        self._read_client = None
+
+    def _get_boto(self):
+        if not self._boto:
+            self._boto = boto3.session.Session()
+        return self._boto
+
+    def _get_ts(self) -&gt; str:  # pylint: disable=no-self-use
+        &#34;&#34;&#34; Return the url to the file to expose. &#34;&#34;&#34;
+        return self._envs[&#34;HAYSTACK_TS&#34;]
+
+    def _get_read_client(self):
+        # if not self._read_client:
+        region = self._envs.get(&#34;AWS_REGION&#34;,
+                                self._envs.get(&#34;AWS_DEFAULT_REGION&#34;))
+        session = self._get_boto()
+        log.info(&#34;[BOTO SESSION]: session was created successfully! &#34;)
+        self._read_client = session.client(&#39;athena&#39;,
+                                           region_name=region
+                                           )
+        log.info(&#34;[ATHENA BOTO]: was created successfully! &#34; + str(self._read_client.meta))
+        return self._read_client
+
+    def _import_ts_in_db(self, **kwargs) -&gt; None:
+        raise NotImplementedError(&#39;Feature not implemented&#39;)
+
+    @staticmethod
+    def _cast_timeserie_to_hs(val: str,
+                              python_type: str,
+                              unit: str = None) -&gt; Any:
+        if val:
+            if python_type == &#34;str&#34;:
+                return val
+            if python_type == &#34;float&#34;:
+                return float(val)
+            if python_type == &#34;_PintQuantity&#34;:
+                return Quantity(float(val), unit)
+            if python_type == &#34;Quantity&#34;:
+                return Quantity(float(val), unit)
+            if python_type == &#34;bool&#34;:
+                return val.lower() == &#39;true&#39;
+            if python_type == &#34;int&#34;:
+                return int(float(val))
+            if python_type == &#34;_MarkerType&#34;:
+                return MARKER if val else None
+            if python_type == &#34;_RemoveType&#34;:
+                return REMOVE if val else None
+            if python_type == &#34;_NAType&#34;:
+                return NA if val else None
+            if python_type == &#34;Ref&#34;:
+                return Ref(val)
+            if python_type == &#34;datetime&#34;:
+                return datetime.fromtimestamp(int(val))
+            if python_type == &#34;date&#34;:
+                return date.fromordinal(int(val))
+            if python_type == &#34;time&#34;:
+                int_time = int(val)
+                hour = ((int_time // 1000000) // 60) // 60
+                minute = ((int_time // 1000000) // 60) % 60
+                split = (int_time // 1000000) % 60
+                mic = int_time % 1000000
+                return time(hour, minute, split, mic)
+            if python_type == &#34;Coordinate&#34;:
+                split = val.split(&#34;,&#34;)
+                return Coordinate(float(split[0]), float(split[1]))
+            if python_type == &#34;XStr&#34;:
+                split = val.split(&#34;,&#34;)
+                return XStr(*split)
+            if python_type == &#34;NoneType&#34;:
+                return None
+            raise ValueError(f&#34;Unknown type {python_type}&#34;)
+        return None
+
+    def get_query_results(self, query_execution_id: str) -&gt; DictReader:
+        &#34;&#34;&#34;
+        Download result file
+        Args:
+            query_execution_id (object): Str that represent the ExecutionId of athena query
+        Output:
+            CSV DictReader containing the query response
+        &#34;&#34;&#34;
+        region = self._envs.get(&#34;AWS_REGION&#34;,
+                                self._envs.get(&#34;AWS_DEFAULT_REGION&#34;))
+        reader = None
+        try:
+            resource = boto3.resource(&#39;s3&#39;, region)
+            response = resource.Bucket(self._output_bucket_name).Object(
+                key=f&#39;{self._output_folder_name}/{query_execution_id}.csv&#39;).get()
+            lines = response[&#39;Body&#39;].read().decode(&#39;utf-8&#39;).splitlines(True)
+            log.info(&#34;Query results CSV file contain [%s] row.&#34;, str(len(lines)))
+            reader = DictReader(lines)
+        except exceptions.ClientError as exc:
+            if exc.response[&#39;Error&#39;][&#39;Code&#39;] == &#34;404&#34;:
+                print(&#34;The object does not exist.&#34;)
+            raise
+        return reader
+
+    def check_query_status(self, query_execution_id: str) -&gt; dict:
+        &#34;&#34;&#34;
+        Fetch the status of submitted athena query. Returns None or one of valid query states.
+
+        :param query_execution_id: Id of submitted athena query
+        :type query_execution_id: str
+        :return: dict E.g. {&#39;State&#39;: &#39;SUCCEEDED&#39;}
+        &#34;&#34;&#34;
+        athena_client = self._get_read_client()
+        query_status = {&#39;State&#39;: None}
+        try:
+            response = athena_client.get_query_execution(QueryExecutionId=query_execution_id)
+            query_status = response[&#39;QueryExecution&#39;][&#39;Status&#39;]
+        except exceptions.ClientError as ex:
+            log.error(&#39;Exception while getting query state: %s&#39;, ex)
+        return query_status
+
+    def poll_query_status(self, query_execution_id: str) -&gt; DictReader:
+        &#34;&#34;&#34;
+        Get the status of the Athena request, i.e. &#34;QUEUED&#34;, &#34;RUNNING&#34;, &#34;FAILED&#34;
+        or &#34;CANCELLED&#34;, and get the results
+        of successful requests
+
+        Args:
+            query_execution_id (str): unique Id of submitted athena query
+        Output:
+            CSV DictReader containing the query response
+        &#34;&#34;&#34;
+        query_status = {&#39;State&#39;: None}
+        while query_status[&#39;State&#39;] in self.INTERMEDIATE_STATES or query_status[&#39;State&#39;] is None:
+
+            query_status = self.check_query_status(query_execution_id)
+
+            if query_status[&#39;State&#39;] is None:
+                log.info(&#39;Invalid query state. Retrying again&#39;)
+
+            elif query_status[&#39;State&#39;] in self.INTERMEDIATE_STATES:
+                log.info(&#39;Query is still in an intermediate state - %s&#39;, query_status[&#39;State&#39;])
+            elif query_status[&#39;State&#39;] in self.FAILURE_STATES:
+                error_message = &#39;Athena query with executionId {} was {} &#39;.format(
+                    query_execution_id, query_status[&#34;State&#34;])
+                if &#34;StateChangeReason&#34; in query_status:
+                    error_message = error_message + f&#39;due to the following error:&#39; \
+                                                    f&#39;{query_status[&#34;StateChangeReason&#34;]}&#39;
+                raise Exception(error_message)
+            else:
+                log.info(&#39;Query execution completed. Final state is - %s&#39;, query_status[&#39;State&#39;])
+                break
+            t.sleep(1)
+        # getting the csv file that contain query results from s3 output bucket
+        reader = self.get_query_results(query_execution_id)
+        return reader
+
+    @staticmethod
+    def put_date_format(str_date: str, date_pattern: str) -&gt; str:
+        &#34;&#34;&#34;
+        Set the date to the correct date format specified in the &#34;date_pattern&#34; parameter
+
+        Args:
+            str_date (str): string date
+            date_pattern (str): date pattern
+        Output:
+            STR date using Haystack date format
+        &#34;&#34;&#34;
+        try:
+            date_val = datetime.strptime(str_date, date_pattern)
+        except ValueError as err:
+            log.error(&#34;%s time data %s does not match format %s&#34;, err, str_date, date_pattern)
+            raise
+        return date_val.strftime(&#34;%Y-%m-%d %H:%M:%S&#34;)
+
+    @staticmethod
+    def build_athena_query(his_uri: dict, dates_range: tuple, date_version: datetime = None) -&gt; str:
+        &#34;&#34;&#34;
+        Build up an Athena query based on the parameters that have been included in hisURI and apply
+        filtering by a start date and an end date based on the date_range argument.
+        Args:
+             his_uri (dict): dict containing all the parameters needed to build the Athena query
+             dates_range (tuple): (start_date, end_date) date range that represents the time period to query
+             date_version (datetime): the date that represents the version of the ontology
+        Output:
+            STR Athena query (SELECT a, b from table ..)
+        &#34;&#34;&#34;
+        hs_parts_keys = his_uri[&#39;partition_keys&#39;].split(&#34;/&#34;)
+        hs_date_column = list(his_uri[&#34;hs_date_column&#34;].keys())[0]
+        hs_value_column = list(his_uri[&#34;hs_value_column&#34;].keys())
+        hs_date_parts_keys = his_uri[&#39;date_part_keys&#39;]
+        if not date_version:
+            date_version = datetime.max.replace(tzinfo=pytz.UTC)
+
+        date_range_period = Period(start=dates_range[0], end=dates_range[1])
+        if dates_range and dates_range[1] &gt; date_version:
+            dates_range = list(dates_range)
+            dates_range[1] = date_version
+
+        select_all = f&#39;SELECT DISTINCT {hs_date_column}, {&#34;, &#34;.join(hs_value_column)}&#39; \
+                     f&#39; FROM {his_uri[&#34;table_name&#34;]}&#39; \
+                     f&#39; WHERE {&#34; &#34;.join([str(item) + &#34; AND&#34; for item in hs_parts_keys[:-1]])}&#39; \
+                     f&#39; {hs_parts_keys[-1]}&#39;
+        if dates_range:
+            if hs_date_parts_keys.get(&#39;year_col&#39;):
+                select_all += f&#39; AND {hs_date_parts_keys.get(&#34;year_col&#34;)} in&#39; \
+                              f&#39; ({&#34;, &#34;.join(map(str, date_range_period.years))})&#39;
+            if hs_date_parts_keys.get(&#39;month_col&#39;):
+                select_all += f&#39; AND {hs_date_parts_keys.get(&#34;month_col&#34;)} in&#39; \
+                              f&#39; ({&#34;, &#34;.join(map(str, date_range_period.months))})&#39;
+            if hs_date_parts_keys.get(&#39;day_col&#39;):
+                select_all += f&#39; AND {hs_date_parts_keys.get(&#34;day_col&#34;)} in&#39; \
+                              f&#39; ({&#34;, &#34;.join(map(str, date_range_period.days))})&#39;
+
+            select_all += f&#39; AND time BETWEEN DATE(\&#39;{dates_range[0].strftime(&#34;%Y-%m-%d&#34;)}\&#39;) &#39; \
+                          f&#39; AND DATE(\&#39;{dates_range[1].strftime(&#34;%Y-%m-%d&#34;)}\&#39;) ORDER BY time ASC;&#39;
+        return select_all
+
+    def create_history_grid(self, reader: DictReader, his_uri: dict) -&gt; Grid:
+        &#34;&#34;&#34;
+        Create a Grid and fill it with the data from the query result rows that were stored as a csv
+        file in the s3 bucket.
+        Args:
+            reader (csv.DictReade): csv containing the query result rows
+            his_uri (dict): dict containing all the parameters needed to build the Athena query
+        Output:
+            Grid filled with the data from athena query result
+        &#34;&#34;&#34;
+        hs_date_column_name = list(his_uri[&#34;hs_date_column&#34;].keys())[0]
+        hs_value_column_names = list(his_uri[&#34;hs_value_column&#34;].keys())
+        hs_type = his_uri[&#39;hs_type&#39;]
+        history = Grid(columns=[&#34;ts&#34;, &#34;val&#34;])
+        if not hs_type:
+            hs_type = &#34;float&#34;
+        if reader:
+            for row in reader:
+                date_format = his_uri[&#34;hs_date_column&#34;][hs_date_column_name]  # &#34;%Y-%m-%d %H:%M:%S.%f&#34;
+                date_val = self.put_date_format(row[hs_date_column_name], date_format)
+                hs_values = {key: row[key] for key in hs_value_column_names}
+                if len(hs_values) == 1:
+                    history.append({
+                        &#34;ts&#34;: datetime.fromisoformat(date_val).replace(tzinfo=pytz.UTC),
+                        &#34;val&#34;: Provider._cast_timeserie_to_hs(str(list(hs_values.values())[0]), hs_type)
+                    })
+                else:
+                    val = dict(zip(
+                        hs_values.keys(),
+                        [Provider._cast_timeserie_to_hs(hs_values[hs_col], his_uri[&#39;hs_value_column&#39;][hs_col])
+                         for hs_col in hs_values.keys()]
+                    ))
+                    history.append({&#34;ts&#34;: datetime.fromisoformat(date_val).replace(tzinfo=pytz.UTC),
+                                    &#34;val&#34;: val})  # ,unit
+        return history
+
+    def run_query(self, his_uri: dict, dates_range: tuple, date_version):
+        &#34;&#34;&#34;
+        Process Athena query
+        Args:
+            his_uri (dict): dict containing all the parameters needed to
+            build the Athena query, e.g. database name,
+            table name, partition keys, ...
+            dates_range (tuple): (start_date, end_date) date range that represents the time period to query
+            date_version (datetime): the date that represents the version of the ontology
+        Output:
+            The grid response containing the results
+        &#34;&#34;&#34;
+        athena_client = self._get_read_client()
+
+        try:
+            # Create the query
+            select_all = self.build_athena_query(his_uri, dates_range, date_version)
+            log.debug(&#34;[ATHENA QUERY]: &#34; + select_all)
+
+            # Start query execution
+            response = athena_client.start_query_execution(
+                QueryString=select_all,
+                QueryExecutionContext={
+                    &#39;Database&#39;: his_uri[&#39;db_name&#39;]
+                },
+                ResultConfiguration={
+                    &#39;OutputLocation&#39;: &#39;s3://&#39; + self._output_bucket_name +
+                                      &#39;/&#39; + self._output_folder_name + &#34;/&#34;,
+                }
+            )
+            # Get query results
+            reader = self.poll_query_status(response[&#34;QueryExecutionId&#34;])
+            # Create timeseries history grid
+            history = self.create_history_grid(reader, his_uri)
+            return history
+
+        except ValueError as err:
+            log.error(&#34;Exception while running query: %s&#34;, err)
+            raise
+
+    @overrides
+    def his_read(
+            self,
+            entity_id: Ref,
+            dates_range: Optional[Tuple[datetime, datetime]] = None,
+            date_version: Optional[datetime] = None,
+    ) -&gt; Grid:
+        # To deduce the target type, read the haystack entity
+        entity = self.read(1, None, [entity_id], None, date_version)[0]
+        if not entity:
+            raise ValueError(f&#34; id &#39;{entity_id} not found&#34;)
+
+        his_uri = entity.get(&#39;hisURI&#39;, None)
+        if not his_uri:
+            raise ValueError(f&#34; hisURI &#39;{his_uri} not found&#34;)
+
+        customer_id = self.get_customer_id()
+        if not customer_id:
+            customer_id = &#39; &#39;
+
+        try:
+            history = self.run_query(his_uri, dates_range, date_version)
+
+            if history:
+                min_date = datetime.max.replace(tzinfo=pytz.UTC)
+                max_date = datetime.min.replace(tzinfo=pytz.UTC)
+
+                for time_serie in history:
+                    min_date = min(min_date, time_serie[&#34;ts&#34;])
+                    max_date = max(max_date, time_serie[&#34;ts&#34;])
+            else:
+                min_date = date_version
+                max_date = date_version
+
+            history.metadata = {
+                &#34;id&#34;: entity_id,
+                &#34;hisStart&#34;: min_date,
+                &#34;hisEnd&#34;: max_date,
+            }
+            return history
+        except ValueError as err:
+            log.error(&#34;Exception while running query: %s&#34;, err)
+            raise</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="shaystack.providers.db.Provider" href="db.html#shaystack.providers.db.Provider">Provider</a></li>
+<li><a title="shaystack.providers.db_haystack_interface.DBHaystackInterface" href="db_haystack_interface.html#shaystack.providers.db_haystack_interface.DBHaystackInterface">DBHaystackInterface</a></li>
+<li><a title="shaystack.providers.haystack_interface.HaystackInterface" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface">HaystackInterface</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="shaystack.providers.athena.Provider.FAILURE_STATES"><code class="name">var <span class="ident">FAILURE_STATES</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="shaystack.providers.athena.Provider.INTERMEDIATE_STATES"><code class="name">var <span class="ident">INTERMEDIATE_STATES</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="shaystack.providers.athena.Provider.SUCCESS_STATES"><code class="name">var <span class="ident">SUCCESS_STATES</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="shaystack.providers.athena.Provider.build_athena_query"><code class="name flex">
+<span>def <span class="ident">build_athena_query</span></span>(<span>his_uri: dict, dates_range: tuple, date_version: datetime.datetime = None) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Build up an Athena query based on the parameters that have been included in hisURI and apply
+filtering by a start date and an end date based on the date_range argument.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>his_uri</code></strong> :&ensp;<code>dict</code></dt>
+<dd>dict containing all the parameters needed to build the Athena query</dd>
+<dt><strong><code>dates_range</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>(start_date, end_date) date range that represents the time period to query</dd>
+<dt><strong><code>date_version</code></strong> :&ensp;<code>datetime</code></dt>
+<dd>the date that represents the version of the ontology</dd>
+</dl>
+<h2 id="output">Output</h2>
+<p>STR Athena query (SELECT a, b from table ..)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def build_athena_query(his_uri: dict, dates_range: tuple, date_version: datetime = None) -&gt; str:
+    &#34;&#34;&#34;
+    Build up an Athena query based on the parameters that have been included in hisURI and apply
+    filtering by a start date and an end date based on the date_range argument.
+    Args:
+         his_uri (dict): dict containing all the parameters needed to build the Athena query
+         dates_range (tuple): (start_date, end_date) date range that represents the time period to query
+         date_version (datetime): the date that represents the version of the ontology
+    Output:
+        STR Athena query (SELECT a, b from table ..)
+    &#34;&#34;&#34;
+    hs_parts_keys = his_uri[&#39;partition_keys&#39;].split(&#34;/&#34;)
+    hs_date_column = list(his_uri[&#34;hs_date_column&#34;].keys())[0]
+    hs_value_column = list(his_uri[&#34;hs_value_column&#34;].keys())
+    hs_date_parts_keys = his_uri[&#39;date_part_keys&#39;]
+    if not date_version:
+        date_version = datetime.max.replace(tzinfo=pytz.UTC)
+
+    date_range_period = Period(start=dates_range[0], end=dates_range[1])
+    if dates_range and dates_range[1] &gt; date_version:
+        dates_range = list(dates_range)
+        dates_range[1] = date_version
+
+    select_all = f&#39;SELECT DISTINCT {hs_date_column}, {&#34;, &#34;.join(hs_value_column)}&#39; \
+                 f&#39; FROM {his_uri[&#34;table_name&#34;]}&#39; \
+                 f&#39; WHERE {&#34; &#34;.join([str(item) + &#34; AND&#34; for item in hs_parts_keys[:-1]])}&#39; \
+                 f&#39; {hs_parts_keys[-1]}&#39;
+    if dates_range:
+        if hs_date_parts_keys.get(&#39;year_col&#39;):
+            select_all += f&#39; AND {hs_date_parts_keys.get(&#34;year_col&#34;)} in&#39; \
+                          f&#39; ({&#34;, &#34;.join(map(str, date_range_period.years))})&#39;
+        if hs_date_parts_keys.get(&#39;month_col&#39;):
+            select_all += f&#39; AND {hs_date_parts_keys.get(&#34;month_col&#34;)} in&#39; \
+                          f&#39; ({&#34;, &#34;.join(map(str, date_range_period.months))})&#39;
+        if hs_date_parts_keys.get(&#39;day_col&#39;):
+            select_all += f&#39; AND {hs_date_parts_keys.get(&#34;day_col&#34;)} in&#39; \
+                          f&#39; ({&#34;, &#34;.join(map(str, date_range_period.days))})&#39;
+
+        select_all += f&#39; AND time BETWEEN DATE(\&#39;{dates_range[0].strftime(&#34;%Y-%m-%d&#34;)}\&#39;) &#39; \
+                      f&#39; AND DATE(\&#39;{dates_range[1].strftime(&#34;%Y-%m-%d&#34;)}\&#39;) ORDER BY time ASC;&#39;
+    return select_all</code></pre>
+</details>
+</dd>
+<dt id="shaystack.providers.athena.Provider.put_date_format"><code class="name flex">
+<span>def <span class="ident">put_date_format</span></span>(<span>str_date: str, date_pattern: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Set the date to the correct date format specified in the "date_pattern" parameter</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>str_date</code></strong> :&ensp;<code>str</code></dt>
+<dd>string date</dd>
+<dt><strong><code>date_pattern</code></strong> :&ensp;<code>str</code></dt>
+<dd>date pattern</dd>
+</dl>
+<h2 id="output">Output</h2>
+<p>STR date using Haystack date format</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def put_date_format(str_date: str, date_pattern: str) -&gt; str:
+    &#34;&#34;&#34;
+    Set the date to the correct date format specified in the &#34;date_pattern&#34; parameter
+
+    Args:
+        str_date (str): string date
+        date_pattern (str): date pattern
+    Output:
+        STR date using Haystack date format
+    &#34;&#34;&#34;
+    try:
+        date_val = datetime.strptime(str_date, date_pattern)
+    except ValueError as err:
+        log.error(&#34;%s time data %s does not match format %s&#34;, err, str_date, date_pattern)
+        raise
+    return date_val.strftime(&#34;%Y-%m-%d %H:%M:%S&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="shaystack.providers.athena.Provider.check_query_status"><code class="name flex">
+<span>def <span class="ident">check_query_status</span></span>(<span>self, query_execution_id: str) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fetch the status of submitted athena query. Returns None or one of valid query states.</p>
+<p>:param query_execution_id: Id of submitted athena query
+:type query_execution_id: str
+:return: dict E.g. {'State': 'SUCCEEDED'}</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_query_status(self, query_execution_id: str) -&gt; dict:
+    &#34;&#34;&#34;
+    Fetch the status of submitted athena query. Returns None or one of valid query states.
+
+    :param query_execution_id: Id of submitted athena query
+    :type query_execution_id: str
+    :return: dict E.g. {&#39;State&#39;: &#39;SUCCEEDED&#39;}
+    &#34;&#34;&#34;
+    athena_client = self._get_read_client()
+    query_status = {&#39;State&#39;: None}
+    try:
+        response = athena_client.get_query_execution(QueryExecutionId=query_execution_id)
+        query_status = response[&#39;QueryExecution&#39;][&#39;Status&#39;]
+    except exceptions.ClientError as ex:
+        log.error(&#39;Exception while getting query state: %s&#39;, ex)
+    return query_status</code></pre>
+</details>
+</dd>
+<dt id="shaystack.providers.athena.Provider.create_history_grid"><code class="name flex">
+<span>def <span class="ident">create_history_grid</span></span>(<span>self, reader: csv.DictReader, his_uri: dict) ‑> shaystack.grid.Grid</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a Grid and fill it with the data from the query result rows that were stored as a csv
+file in the s3 bucket.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>reader</code></strong> :&ensp;<code>csv.DictReade</code></dt>
+<dd>csv containing the query result rows</dd>
+<dt><strong><code>his_uri</code></strong> :&ensp;<code>dict</code></dt>
+<dd>dict containing all the parameters needed to build the Athena query</dd>
+</dl>
+<h2 id="output">Output</h2>
+<p>Grid filled with the data from athena query result</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_history_grid(self, reader: DictReader, his_uri: dict) -&gt; Grid:
+    &#34;&#34;&#34;
+    Create a Grid and fill it with the data from the query result rows that were stored as a csv
+    file in the s3 bucket.
+    Args:
+        reader (csv.DictReade): csv containing the query result rows
+        his_uri (dict): dict containing all the parameters needed to build the Athena query
+    Output:
+        Grid filled with the data from athena query result
+    &#34;&#34;&#34;
+    hs_date_column_name = list(his_uri[&#34;hs_date_column&#34;].keys())[0]
+    hs_value_column_names = list(his_uri[&#34;hs_value_column&#34;].keys())
+    hs_type = his_uri[&#39;hs_type&#39;]
+    history = Grid(columns=[&#34;ts&#34;, &#34;val&#34;])
+    if not hs_type:
+        hs_type = &#34;float&#34;
+    if reader:
+        for row in reader:
+            date_format = his_uri[&#34;hs_date_column&#34;][hs_date_column_name]  # &#34;%Y-%m-%d %H:%M:%S.%f&#34;
+            date_val = self.put_date_format(row[hs_date_column_name], date_format)
+            hs_values = {key: row[key] for key in hs_value_column_names}
+            if len(hs_values) == 1:
+                history.append({
+                    &#34;ts&#34;: datetime.fromisoformat(date_val).replace(tzinfo=pytz.UTC),
+                    &#34;val&#34;: Provider._cast_timeserie_to_hs(str(list(hs_values.values())[0]), hs_type)
+                })
+            else:
+                val = dict(zip(
+                    hs_values.keys(),
+                    [Provider._cast_timeserie_to_hs(hs_values[hs_col], his_uri[&#39;hs_value_column&#39;][hs_col])
+                     for hs_col in hs_values.keys()]
+                ))
+                history.append({&#34;ts&#34;: datetime.fromisoformat(date_val).replace(tzinfo=pytz.UTC),
+                                &#34;val&#34;: val})  # ,unit
+    return history</code></pre>
+</details>
+</dd>
+<dt id="shaystack.providers.athena.Provider.get_query_results"><code class="name flex">
+<span>def <span class="ident">get_query_results</span></span>(<span>self, query_execution_id: str) ‑> csv.DictReader</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Download result file</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>query_execution_id</code></strong> :&ensp;<code>object</code></dt>
+<dd>Str that represent the ExecutionId of athena query</dd>
+</dl>
+<h2 id="output">Output</h2>
+<p>CSV DictReader containing the query response</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_query_results(self, query_execution_id: str) -&gt; DictReader:
+    &#34;&#34;&#34;
+    Download result file
+    Args:
+        query_execution_id (object): Str that represent the ExecutionId of athena query
+    Output:
+        CSV DictReader containing the query response
+    &#34;&#34;&#34;
+    region = self._envs.get(&#34;AWS_REGION&#34;,
+                            self._envs.get(&#34;AWS_DEFAULT_REGION&#34;))
+    reader = None
+    try:
+        resource = boto3.resource(&#39;s3&#39;, region)
+        response = resource.Bucket(self._output_bucket_name).Object(
+            key=f&#39;{self._output_folder_name}/{query_execution_id}.csv&#39;).get()
+        lines = response[&#39;Body&#39;].read().decode(&#39;utf-8&#39;).splitlines(True)
+        log.info(&#34;Query results CSV file contain [%s] row.&#34;, str(len(lines)))
+        reader = DictReader(lines)
+    except exceptions.ClientError as exc:
+        if exc.response[&#39;Error&#39;][&#39;Code&#39;] == &#34;404&#34;:
+            print(&#34;The object does not exist.&#34;)
+        raise
+    return reader</code></pre>
+</details>
+</dd>
+<dt id="shaystack.providers.athena.Provider.poll_query_status"><code class="name flex">
+<span>def <span class="ident">poll_query_status</span></span>(<span>self, query_execution_id: str) ‑> csv.DictReader</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get the status of the Athena request, i.e. "QUEUED", "RUNNING", "FAILED"
+or "CANCELLED", and get the results
+of successful requests</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>query_execution_id</code></strong> :&ensp;<code>str</code></dt>
+<dd>unique Id of submitted athena query</dd>
+</dl>
+<h2 id="output">Output</h2>
+<p>CSV DictReader containing the query response</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def poll_query_status(self, query_execution_id: str) -&gt; DictReader:
+    &#34;&#34;&#34;
+    Get the status of the Athena request, i.e. &#34;QUEUED&#34;, &#34;RUNNING&#34;, &#34;FAILED&#34;
+    or &#34;CANCELLED&#34;, and get the results
+    of successful requests
+
+    Args:
+        query_execution_id (str): unique Id of submitted athena query
+    Output:
+        CSV DictReader containing the query response
+    &#34;&#34;&#34;
+    query_status = {&#39;State&#39;: None}
+    while query_status[&#39;State&#39;] in self.INTERMEDIATE_STATES or query_status[&#39;State&#39;] is None:
+
+        query_status = self.check_query_status(query_execution_id)
+
+        if query_status[&#39;State&#39;] is None:
+            log.info(&#39;Invalid query state. Retrying again&#39;)
+
+        elif query_status[&#39;State&#39;] in self.INTERMEDIATE_STATES:
+            log.info(&#39;Query is still in an intermediate state - %s&#39;, query_status[&#39;State&#39;])
+        elif query_status[&#39;State&#39;] in self.FAILURE_STATES:
+            error_message = &#39;Athena query with executionId {} was {} &#39;.format(
+                query_execution_id, query_status[&#34;State&#34;])
+            if &#34;StateChangeReason&#34; in query_status:
+                error_message = error_message + f&#39;due to the following error:&#39; \
+                                                f&#39;{query_status[&#34;StateChangeReason&#34;]}&#39;
+            raise Exception(error_message)
+        else:
+            log.info(&#39;Query execution completed. Final state is - %s&#39;, query_status[&#39;State&#39;])
+            break
+        t.sleep(1)
+    # getting the csv file that contain query results from s3 output bucket
+    reader = self.get_query_results(query_execution_id)
+    return reader</code></pre>
+</details>
+</dd>
+<dt id="shaystack.providers.athena.Provider.run_query"><code class="name flex">
+<span>def <span class="ident">run_query</span></span>(<span>self, his_uri: dict, dates_range: tuple, date_version)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Process Athena query</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>his_uri</code></strong> :&ensp;<code>dict</code></dt>
+<dd>dict containing all the parameters needed to</dd>
+<dt>build the Athena query, e.g. database name,</dt>
+<dt>table name, partition keys, &hellip;</dt>
+<dt><strong><code>dates_range</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>(start_date, end_date) date range that represents the time period to query</dd>
+<dt><strong><code>date_version</code></strong> :&ensp;<code>datetime</code></dt>
+<dd>the date that represents the version of the ontology</dd>
+</dl>
+<h2 id="output">Output</h2>
+<p>The grid response containing the results</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run_query(self, his_uri: dict, dates_range: tuple, date_version):
+    &#34;&#34;&#34;
+    Process Athena query
+    Args:
+        his_uri (dict): dict containing all the parameters needed to
+        build the Athena query, e.g. database name,
+        table name, partition keys, ...
+        dates_range (tuple): (start_date, end_date) date range that represents the time period to query
+        date_version (datetime): the date that represents the version of the ontology
+    Output:
+        The grid response containing the results
+    &#34;&#34;&#34;
+    athena_client = self._get_read_client()
+
+    try:
+        # Create the query
+        select_all = self.build_athena_query(his_uri, dates_range, date_version)
+        log.debug(&#34;[ATHENA QUERY]: &#34; + select_all)
+
+        # Start query execution
+        response = athena_client.start_query_execution(
+            QueryString=select_all,
+            QueryExecutionContext={
+                &#39;Database&#39;: his_uri[&#39;db_name&#39;]
+            },
+            ResultConfiguration={
+                &#39;OutputLocation&#39;: &#39;s3://&#39; + self._output_bucket_name +
+                                  &#39;/&#39; + self._output_folder_name + &#34;/&#34;,
+            }
+        )
+        # Get query results
+        reader = self.poll_query_status(response[&#34;QueryExecutionId&#34;])
+        # Create timeseries history grid
+        history = self.create_history_grid(reader, his_uri)
+        return history
+
+    except ValueError as err:
+        log.error(&#34;Exception while running query: %s&#34;, err)
+        raise</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="shaystack.providers.db.Provider" href="db.html#shaystack.providers.db.Provider">Provider</a></b></code>:
+<ul class="hlist">
+<li><code><a title="shaystack.providers.db.Provider.about" href="db.html#shaystack.providers.db.Provider.about">about</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.create_db" href="db_haystack_interface.html#shaystack.providers.db_haystack_interface.DBHaystackInterface.create_db">create_db</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.formats" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.formats">formats</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.get_customer_id" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.get_customer_id">get_customer_id</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.get_tz" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.get_tz">get_tz</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.his_read" href="db.html#shaystack.providers.db.Provider.his_read">his_read</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.his_write" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.his_write">his_write</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.import_data" href="db_haystack_interface.html#shaystack.providers.db_haystack_interface.DBHaystackInterface.import_data">import_data</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.import_ts" href="db_haystack_interface.html#shaystack.providers.db_haystack_interface.DBHaystackInterface.import_ts">import_ts</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.invoke_action" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.invoke_action">invoke_action</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.name" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.name">name</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.nav" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.nav">nav</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.ops" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.ops">ops</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.point_write_read" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.point_write_read">point_write_read</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.point_write_write" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.point_write_write">point_write_write</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.purge_db" href="db_haystack_interface.html#shaystack.providers.db_haystack_interface.DBHaystackInterface.purge_db">purge_db</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.read" href="db.html#shaystack.providers.db.Provider.read">read</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.read_grid" href="db_haystack_interface.html#shaystack.providers.db_haystack_interface.DBHaystackInterface.read_grid">read_grid</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.update_grid" href="db_haystack_interface.html#shaystack.providers.db_haystack_interface.DBHaystackInterface.update_grid">update_grid</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.values_for_tag" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.values_for_tag">values_for_tag</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.versions" href="db.html#shaystack.providers.db.Provider.versions">versions</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.watch_poll" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.watch_poll">watch_poll</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.watch_sub" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.watch_sub">watch_sub</a></code></li>
+<li><code><a title="shaystack.providers.db.Provider.watch_unsub" href="haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface.watch_unsub">watch_unsub</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="shaystack.providers" href="index.html">shaystack.providers</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="shaystack.providers.athena.Provider" href="#shaystack.providers.athena.Provider">Provider</a></code></h4>
+<ul class="two-column">
+<li><code><a title="shaystack.providers.athena.Provider.FAILURE_STATES" href="#shaystack.providers.athena.Provider.FAILURE_STATES">FAILURE_STATES</a></code></li>
+<li><code><a title="shaystack.providers.athena.Provider.INTERMEDIATE_STATES" href="#shaystack.providers.athena.Provider.INTERMEDIATE_STATES">INTERMEDIATE_STATES</a></code></li>
+<li><code><a title="shaystack.providers.athena.Provider.SUCCESS_STATES" href="#shaystack.providers.athena.Provider.SUCCESS_STATES">SUCCESS_STATES</a></code></li>
+<li><code><a title="shaystack.providers.athena.Provider.build_athena_query" href="#shaystack.providers.athena.Provider.build_athena_query">build_athena_query</a></code></li>
+<li><code><a title="shaystack.providers.athena.Provider.check_query_status" href="#shaystack.providers.athena.Provider.check_query_status">check_query_status</a></code></li>
+<li><code><a title="shaystack.providers.athena.Provider.create_history_grid" href="#shaystack.providers.athena.Provider.create_history_grid">create_history_grid</a></code></li>
+<li><code><a title="shaystack.providers.athena.Provider.get_query_results" href="#shaystack.providers.athena.Provider.get_query_results">get_query_results</a></code></li>
+<li><code><a title="shaystack.providers.athena.Provider.poll_query_status" href="#shaystack.providers.athena.Provider.poll_query_status">poll_query_status</a></code></li>
+<li><code><a title="shaystack.providers.athena.Provider.put_date_format" href="#shaystack.providers.athena.Provider.put_date_format">put_date_format</a></code></li>
+<li><code><a title="shaystack.providers.athena.Provider.run_query" href="#shaystack.providers.athena.Provider.run_query">run_query</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

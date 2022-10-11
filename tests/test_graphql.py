@@ -6,7 +6,7 @@ import pytz
 from graphene.test import Client
 from pytz import timezone
 
-from app.blueprint_graphql import schema
+from app.schema_graphql import get_schema_for_provider
 from shaystack import Grid, VER_3_0, Uri, Ref, Coordinate, MARKER
 from shaystack.providers import get_provider
 from shaystack.providers.url import Provider as URLProvider
@@ -22,7 +22,8 @@ def test_about(mock):
     """
     mock.return_value = timezone('UTC')
     envs = {'HAYSTACK_PROVIDER': "shaystack.providers.url"}
-    with get_provider("shaystack.providers.url", envs) as _:
+    with get_provider("shaystack.providers.url", envs) as provider:
+        schema = get_schema_for_provider(provider)
         client = Client(schema)
         executed = client.execute('''
         { haystack 
@@ -70,7 +71,8 @@ def test_ops():
     envs = {'HAYSTACK_PROVIDER': "shaystack.providers.url",
             'HAYSTACK_DB': ''
             }
-    with get_provider("shaystack.providers.url", envs) as _:
+    with get_provider("shaystack.providers.url", envs) as provider:
+        schema = get_schema_for_provider(provider)
         client = Client(schema)
         executed = client.execute('''
         { haystack 
@@ -121,7 +123,8 @@ def test_tag_values(mock_s3, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
     envs = {'HAYSTACK_PROVIDER': "shaystack.providers.url"}
-    with get_provider("shaystack.providers.url", envs) as _:
+    with get_provider("shaystack.providers.url", envs) as provider:
+        schema = get_schema_for_provider(provider)
         client = Client(schema)
         executed = client.execute('''
         { haystack 
@@ -148,7 +151,8 @@ def test_versions(mock_s3, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
     envs = {'HAYSTACK_PROVIDER': "shaystack.providers.url"}
-    with get_provider("shaystack.providers.url", envs) as _:
+    with get_provider("shaystack.providers.url", envs) as provider:
+        schema = get_schema_for_provider(provider)
         client = Client(schema)
         executed = client.execute('''
         { haystack 
@@ -180,7 +184,8 @@ def test_entities_with_id(mock_s3, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
     envs = {'HAYSTACK_PROVIDER': "shaystack.providers.url"}
-    with get_provider("shaystack.providers.url", envs) as _:
+    with get_provider("shaystack.providers.url", envs) as provider:
+        schema = get_schema_for_provider(provider)
         client = Client(schema)
         executed = client.execute('''
         { haystack 
@@ -219,7 +224,8 @@ def test_entities_with_filter(mock_s3, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
     envs = {'HAYSTACK_PROVIDER': "shaystack.providers.url"}
-    with get_provider("shaystack.providers.url", envs) as _:
+    with get_provider("shaystack.providers.url", envs) as provider:
+        schema = get_schema_for_provider(provider)
         client = Client(schema)
         executed = client.execute('''
         { haystack 
@@ -248,7 +254,8 @@ def test_entities_with_select(mock_s3, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
     envs = {'HAYSTACK_PROVIDER': "shaystack.providers.url"}
-    with get_provider("shaystack.providers.url", envs) as _:
+    with get_provider("shaystack.providers.url", envs) as provider:
+        schema = get_schema_for_provider(provider)
         client = Client(schema)
         executed = client.execute('''
         { haystack 
@@ -275,7 +282,8 @@ def test_entities_with_limit(mock_s3, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
     envs = {'HAYSTACK_PROVIDER': "shaystack.providers.url"}
-    with get_provider("shaystack.providers.url", envs) as _:
+    with get_provider("shaystack.providers.url", envs) as provider:
+        schema = get_schema_for_provider(provider)
         client = Client(schema)
         executed = client.execute('''
         { haystack 
@@ -313,7 +321,8 @@ def test_his_read_with_boolean(mock_s3, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
     envs = {'HAYSTACK_PROVIDER': "shaystack.providers.url"}
-    with get_provider("shaystack.providers.url", envs) as _:
+    with get_provider("shaystack.providers.url", envs) as provider:
+        schema = get_schema_for_provider(provider)
         client = Client(schema)
         executed = client.execute('''
         { 
@@ -360,8 +369,9 @@ def test_his_read_with_number(mock_s3, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
     envs = {'HAYSTACK_PROVIDER': "shaystack.providers.url"}
-    with cast(URLProvider, get_provider("shaystack.providers.url", envs)) as Provider:
-        Provider.cache_clear()
+    with get_provider("shaystack.providers.url", envs) as provider:
+        provider.cache_clear()
+        schema = get_schema_for_provider(provider)
         client = Client(schema)
         executed = client.execute('''
         { 
@@ -408,8 +418,9 @@ def test_his_read_with_uri(mock_s3, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
     envs = {'HAYSTACK_PROVIDER': "shaystack.providers.url"}
-    with cast(URLProvider, get_provider("shaystack.providers.url", envs)) as Provider:
-        Provider.cache_clear()
+    with get_provider("shaystack.providers.url", envs) as provider:
+        provider.cache_clear()
+        schema = get_schema_for_provider(provider)
         client = Client(schema)
         executed = client.execute('''
         { 
@@ -450,8 +461,9 @@ def test_his_read_with_ref(mock_s3, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
     envs = {'HAYSTACK_PROVIDER': "shaystack.providers.url"}
-    with cast(URLProvider, get_provider("shaystack.providers.url", envs)) as Provider:
-        Provider.cache_clear()
+    with get_provider("shaystack.providers.url", envs) as provider:
+        provider.cache_clear()
+        schema = get_schema_for_provider(provider)
         client = Client(schema)
         executed = client.execute('''
         { 
@@ -494,8 +506,9 @@ def test_his_read_with_datetime(mock_s3, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
     envs = {'HAYSTACK_PROVIDER': "shaystack.providers.url"}
-    with cast(URLProvider, get_provider("shaystack.providers.url", envs)) as Provider:
-        Provider.cache_clear()
+    with get_provider("shaystack.providers.url", envs) as provider:
+        provider.cache_clear()
+        schema = get_schema_for_provider(provider)
         client = Client(schema)
         executed = client.execute('''
         { 
@@ -540,8 +553,9 @@ def test_his_read_with_coordinate(mock_s3, mock_get_url):
     mock_get_url.return_value = "s3://bucket/grid.zinc"
 
     envs = {'HAYSTACK_PROVIDER': "shaystack.providers.url"}
-    with cast(URLProvider, get_provider("shaystack.providers.url", envs)) as Provider:
-        Provider.cache_clear()
+    with get_provider("shaystack.providers.url", envs) as provider:
+        provider.cache_clear()
+        schema = get_schema_for_provider(provider)
         client = Client(schema)
         executed = client.execute('''
         { 

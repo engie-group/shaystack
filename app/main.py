@@ -76,7 +76,7 @@ def init_app(app: Flask) -> Flask:
 
 def add_blueprints(app: Flask) -> Flask:
     provider_name = os.environ.get("HAYSTACK_PROVIDER", "shaystack.providers.db")
-    provider = get_provider(provider_name, os.environ)
+    provider = get_provider(provider_name, dict(os.environ))
     app.register_blueprint(create_haystack_bp(provider))
     if USE_GRAPHQL:
         app.register_blueprint(create_graphql_bp(provider))

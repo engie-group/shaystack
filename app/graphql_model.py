@@ -305,6 +305,7 @@ class ReadHaystack(graphene.ObjectType):
     """Ontology conform with Haystack project"""
 
     def __init__(self, provider: HaystackInterface):
+        super().__init__()
         self.provider = provider
 
     class Meta:  # pylint: disable=too-few-public-methods,missing-class-docstring

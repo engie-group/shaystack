@@ -12,13 +12,11 @@ You can use a similar code to integrate the haystack graphql api in a bigger env
 import logging
 import os
 import sys
-
 import click
+import graphene
 
 from shaystack import HaystackInterface
 from shaystack.providers import get_provider
-
-import graphene
 from app.graphql_model import ReadHaystack
 
 log = logging.getLogger("shaystack")
@@ -66,7 +64,7 @@ def main() -> int:
     >partial_gql.graphql
     """
     provider_name = os.environ.get("HAYSTACK_PROVIDER", "shaystack.providers.db")
-    provider = get_provider(provider_name, os.environ)
+    provider = get_provider(provider_name, dict(os.environ))
     _dump_haystack_schema(provider)
     return 0
 

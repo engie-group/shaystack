@@ -749,9 +749,9 @@ functional-database: $(REQUIREMENTS) start-pg start-mysql start-mongodb
 	@$(CONDA_PYTHON) -m nose tests/test_provider_db.py $(NOSETESTS_ARGS)
 	echo -e "$(green)Test same request with all databases OK$(normal)"
 
-
-.make-functional-test: functional-url-local functional-db-sqlite functional-db-postgres functional-db-mysql\
-		functional-url-s3 functional-db-sqlite-ts functional-mongodb functional-database
+#functional-db-sqlite and functional-db-sqlite-ts not available
+.make-functional-test: functional-url-local  functional-db-postgres functional-db-mysql\
+		functional-url-s3 functional-mongodb functional-database
 	@touch .make-functional-test
 
 ## Test graphql client with different providers
@@ -792,8 +792,7 @@ lint: .make-lint
 
 
 .PHONY: validate
-# FIXME reactive .make-lint
-.make-validate: .make-typing .make-test .make-test-aws .make-functional-test dist
+.make-validate: .make-typing .make-lint .make-test .make-test-aws .make-functional-test dist
 	@echo -e "$(green)The project is validated$(normal)"
 	date >.make-validate
 

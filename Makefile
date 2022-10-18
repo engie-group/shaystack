@@ -25,6 +25,8 @@ PGADMIN_USER?=$(USER)@domain.com
 PGADMIN_PASSWORD?=password
 MYSQL_USER?=mysql
 MYSQL_PASSWORD?=password
+MONGO_USER?=mongo
+MONGO_PASSWORD?=password
 TLS_VERIFY=False
 TERM?=dumb
 
@@ -650,9 +652,10 @@ functional-url-s3: $(REQUIREMENTS) aws-update-token
 	export HAYSTACK_PROVIDER=shaystack.providers.db
 	export HAYSTACK_DB=s3://shaystack/carytown.zinc
 	$(MAKE)	HAYSTACK_PROVIDER=$$HAYSTACK_PROVIDER HAYSTACK_DB=$$HAYSTACK_DB async-start-api
-	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test.py
+	PYTHONPATH=tests:. $(CONDA_PYTHON) tests/functional_test_s3.py
 	echo -e "$(green)Test with url serveur and s3 file OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
+#
 
 # Clean DB, Start API, and try with SQLite
 functional-db-sqlite: $(REQUIREMENTS)
@@ -689,6 +692,7 @@ functional-db-sqlite-ts: $(REQUIREMENTS)
 	# echo -e "$(green)Test with local SQLite serveur and Time Stream OK$(normal)"
 	$(MAKE) async-stop-api >/dev/null
 
+
 # Start Postgres, Clean DB, Start API and try
 functional-db-postgres: $(REQUIREMENTS) clean-pg
 	@$(VALIDATE_VENV)
@@ -698,7 +702,7 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 	$(MAKE) start-pg
 	PG_IP=$(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres)
 	export HAYSTACK_PROVIDER=shaystack.providers.db
-	export HAYSTACK_DB=postgres://postgres:password@$$PG_IP:5432/postgres
+	export HAYSTACK_DB=postgresql://postgres:password@localhost:5432/postgres#haystack
 	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in Postgres ($${HAYSTACK_DB})$(normal)"
 	$(MAKE) HAYSTACK_PROVIDER=$$HAYSTACK_PROVIDER HAYSTACK_DB=$$HAYSTACK_DB async-start-api
@@ -707,7 +711,7 @@ functional-db-postgres: $(REQUIREMENTS) clean-pg
 	$(MAKE) async-stop-api >/dev/null
 
 
-# Start Postgres, Clean DB, Start API and try
+# Start mysql, Clean DB, Start API and try
 functional-db-mysql: $(REQUIREMENTS) clean-mysql
 	@$(VALIDATE_VENV)
 	@echo -e "$(green)Test local MySQL...$(normal)"
@@ -725,8 +729,8 @@ functional-db-mysql: $(REQUIREMENTS) clean-mysql
 	$(MAKE) async-stop-api >/dev/null
 
 
-# Start Postgres, Clean DB, Start API and try
-functional-mongodb: $(REQUIREMENTS) clean-mongodb
+# Start mongodb, Clean DB, Start API and try
+functional-mongodb: $(REQUIREMENTS) #clean-mongodb
 	@$(VALIDATE_VENV)
 	@echo -e "$(green)Test local MongoDB...$(normal)"
 	$(MAKE) async-stop-api >/dev/null
@@ -734,7 +738,7 @@ functional-mongodb: $(REQUIREMENTS) clean-mongodb
 	$(MAKE) start-mongodb
 	PG_IP=$(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mongodb)
 	export HAYSTACK_PROVIDER=shaystack.providers.mongodb
-	export HAYSTACK_DB=mongodb://$$PG_IP/haystackdb#haystack
+	export HAYSTACK_DB=mongodb://localhost/haystackdb#haystack
 	$(CONDA_PYTHON) -m shaystack.providers.import_db --reset sample/carytown.zinc $${HAYSTACK_DB}
 	echo -e "$(green)Data imported in MongoDB ($${HAYSTACK_DB})$(normal)"
 	$(MAKE) HAYSTACK_PROVIDER=$$HAYSTACK_PROVIDER HAYSTACK_DB=$$HAYSTACK_DB async-start-api
@@ -895,8 +899,11 @@ start-mongodb:
 	@docker start mongodb || docker run \
 		--name mongodb \
 		--hostname mongodb \
+        -e MONGO_INITDB_ROOT_USERNAME=$(MONGO_USER) \
+	    -e MONGO_INITDB_ROOT_PASSWORD=$(MONGO_PASSWORD) \
+	    --authenticationDatabase admin \
 		-p 27017-27019:27017-27019 \
-		-d mongo
+		-d haystackdb
 	sleep 2
 	echo -e "$(yellow)MongoDB started$(normal)"
 
@@ -911,7 +918,7 @@ mongo: start-mongodb
 
 # Start shell in mongodo docker container
 mongodb-shell:
-	docker exec -it mongodb bash
+	docker exec -it mongodb mongosh
 
 ## Print Postgres db url connection
 url-mongo: start-mongodb
@@ -920,8 +927,9 @@ url-mongo: start-mongodb
 
 # Clean Mongo database
 clean-mongodb: start-mongodb
-	@docker exec -t mongodb mongo mongodb://localhost/haystackdb \
+	@docker exec -t mongodb mongosh mongodb://localhost/haystackdb \
 	--quiet --eval 'db.haystack.drop();db.haystack_ts.drop();db.haystack_meta_datas.drop();' >/dev/null
+
 
 # --------------------------- Docker
 ## Build a Docker image with the project and current Haystack parameter (see `make dump-params`)

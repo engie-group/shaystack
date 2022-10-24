@@ -4,6 +4,12 @@
 # (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+"""
+Generate date period based on period with a start and an end date and return
+- All years in this period
+- All months in this period
+- All days in this period
+"""
 import calendar
 from typing import List
 from datetime import datetime
@@ -11,6 +17,13 @@ from datetime import datetime
 
 class InvalidDateRange(ValueError):
     """Error when a date range is invalid"""
+
+
+def check_data_range(values):
+    start, end = values.get("start"), values.get("end")
+    if start and end and start >= end:
+        raise InvalidDateRange("Start date must be lower than end date")
+    return values
 
 
 class Period:
@@ -25,12 +38,6 @@ class Period:
         """
         self.start = start
         self.end = end
-
-    def check_data_range(self, values):
-        start, end = values.get("start"), values.get("end")
-        if start and end and start >= end:
-            raise InvalidDateRange("Start date must be lower than end date")
-        return values
 
     def __str__(self):
         return f"{self.start} - {self.end}"

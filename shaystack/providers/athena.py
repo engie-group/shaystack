@@ -4,7 +4,14 @@
 # (C) 2021 Engie Digital
 #
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+"""
+Add the persistance of time-series with Athena database.
 
+Set the HAYSTACK_TS with:
+    "athena://shaystack?output_bucket_name=<S3 bucket name>&output_folder_name=<output folder>"
+- output_bucket_name [REQUIRED]: The name of the bucket in which Athena will store the query results
+- output_folder_name [REQUIRED]: The folder name in which Athena will store the query results
+"""
 import time as t
 from csv import DictReader
 from datetime import datetime, date, time
@@ -30,6 +37,9 @@ class Provider(DBProvider):
     Expose an Haystack data via the Haystack Rest API and SQL+TS databases
     """
     __slots__ = "_parsed_ts", "_ts_table_name", "_ts_database_name", "_boto", "_write_client", "_read_client"
+    INTERMEDIATE_STATES = ('QUEUED', 'RUNNING',)
+    FAILURE_STATES = ('FAILED', 'CANCELLED',)
+    SUCCESS_STATES = ('SUCCEEDED',)
 
     @property
     def name(self) -> str:
@@ -114,8 +124,7 @@ class Provider(DBProvider):
             if python_type == "NoneType":
                 return None
             raise ValueError(f"Unknown type {python_type}")
-        else:
-            return None
+        return None
 
     def get_query_results(self, query_execution_id: str) -> DictReader:
         """
@@ -127,6 +136,7 @@ class Provider(DBProvider):
         """
         region = self._envs.get("AWS_REGION",
                                 self._envs.get("AWS_DEFAULT_REGION"))
+        reader = None
         try:
             resource = boto3.resource('s3', region)
             response = resource.Bucket(self._output_bucket_name).Object(
@@ -134,48 +144,64 @@ class Provider(DBProvider):
             lines = response['Body'].read().decode('utf-8').splitlines(True)
             log.info("Query results CSV file contain [%s] row.", str(len(lines)))
             reader = DictReader(lines)
-            return reader
-        except exceptions.ClientError as e:
-            if e.response['Error']['Code'] == "404":
+        except exceptions.ClientError as exc:
+            if exc.response['Error']['Code'] == "404":
                 print("The object does not exist.")
-            else:
-                raise
+            raise
+        return reader
 
-    def poll_query_status(self, query_response: dict) -> DictReader:
+    def check_query_status(self, query_execution_id: str) -> dict:
+        """
+        Fetch the status of submitted athena query. Returns None or one of valid query states.
+
+        :param query_execution_id: Id of submitted athena query
+        :type query_execution_id: str
+        :return: dict E.g. {'State': 'SUCCEEDED'}
+        """
+        athena_client = self._get_read_client()
+        query_status = {'State': None}
+        try:
+            response = athena_client.get_query_execution(QueryExecutionId=query_execution_id)
+            query_status = response['QueryExecution']['Status']
+        except exceptions.ClientError as ex:
+            log.error('Exception while getting query state: %s', ex)
+        return query_status
+
+    def poll_query_status(self, query_execution_id: str) -> DictReader:
         """
         Get the status of the Athena request, i.e. "QUEUED", "RUNNING", "FAILED"
         or "CANCELLED", and get the results
         of successful requests
 
         Args:
-            query_response (dict): all metadata that came within athena response
+            query_execution_id (str): unique Id of submitted athena query
         Output:
             CSV DictReader containing the query response
         """
-        try:
-            athena_client = self._get_read_client()
-            query_status = {'State': None}
-            while query_status['State'] in ['QUEUED', 'RUNNING', None]:
-                query_status = \
-                    athena_client.get_query_execution(QueryExecutionId=query_response["QueryExecutionId"])[
-                        'QueryExecution']['Status']
-                log.info(f'[QUERY STATUS]: {query_status["State"]}')
-                if query_status['State'] == 'FAILED' or query_status['State'] == 'CANCELLED':
-                    # Get error message from Athena
-                    error_message = 'Athena query with executionId {} was {} '.format(
-                        query_response["QueryExecutionId"],
-                        query_status["State"])
-                    if "StateChangeReason" in query_status:
-                        raise Exception(error_message + f'due to the following error:\n'
-                                                        f'{query_status["StateChangeReason"]}')
-                    else:
-                        raise Exception(error_message)
-                t.sleep(1)
-            # getting the csv file that contain query results from s3 output bucket
-            reader = self.get_query_results(query_response["QueryExecutionId"])
-            return reader
-        except Exception as e:
-            print(e)
+        query_status = {'State': None}
+        while query_status['State'] in self.INTERMEDIATE_STATES or query_status['State'] is None:
+
+            query_status = self.check_query_status(query_execution_id)
+
+            if query_status['State'] is None:
+                log.info('Invalid query state. Retrying again')
+
+            elif query_status['State'] in self.INTERMEDIATE_STATES:
+                log.info('Query is still in an intermediate state - %s', query_status['State'])
+            elif query_status['State'] in self.FAILURE_STATES:
+                error_message = 'Athena query with executionId {} was {} '.format(
+                    query_execution_id, query_status["State"])
+                if "StateChangeReason" in query_status:
+                    error_message = error_message + f'due to the following error:' \
+                                                    f'{query_status["StateChangeReason"]}'
+                raise Exception(error_message)
+            else:
+                log.info('Query execution completed. Final state is - %s', query_status['State'])
+                break
+            t.sleep(1)
+        # getting the csv file that contain query results from s3 output bucket
+        reader = self.get_query_results(query_execution_id)
+        return reader
 
     @staticmethod
     def put_date_format(str_date: str, date_pattern: str) -> str:
@@ -190,12 +216,13 @@ class Provider(DBProvider):
         """
         try:
             date_val = datetime.strptime(str_date, date_pattern)
-        except ValueError:
-            raise ValueError("time data %r does not match format %r" % (str_date, date_pattern))
+        except ValueError as err:
+            log.error("%s time data %s does not match format %s", err, str_date, date_pattern)
+            raise
         return date_val.strftime("%Y-%m-%d %H:%M:%S")
 
     @staticmethod
-    def build_athena_query(his_uri: dict, dates_range: tuple, date_version: datetime) -> str:
+    def build_athena_query(his_uri: dict, dates_range: tuple, date_version: datetime = None) -> str:
         """
         Build up an Athena query based on the parameters that have been included in hisURI and apply
         filtering by a start date and an end date based on the date_range argument.
@@ -289,7 +316,7 @@ class Provider(DBProvider):
 
         try:
             # Create the query
-            select_all = self.build_athena_query(his_uri, dates_range, date_version=None)
+            select_all = self.build_athena_query(his_uri, dates_range, date_version)
             log.debug("[ATHENA QUERY]: " + select_all)
 
             # Start query execution
@@ -304,7 +331,7 @@ class Provider(DBProvider):
                 }
             )
             # Get query results
-            reader = self.poll_query_status(response)
+            reader = self.poll_query_status(response["QueryExecutionId"])
             # Create timeseries history grid
             history = self.create_history_grid(reader, his_uri)
             return history

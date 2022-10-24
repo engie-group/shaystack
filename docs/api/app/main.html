@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>app.main API documentation</title>
+<meta name="description" content="A Flask layer to haystack interface." />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>app.main</code></h1>
+</header>
+<section id="section-intro">
+<p>A Flask layer to haystack interface.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+# Haystack API Provider module
+# See the accompanying LICENSE file.
+# (C) 2021 Engie Digital
+#
+# vim: set ts=4 sts=4 et tw=78 sw=4 si:
+&#34;&#34;&#34;
+A Flask layer to haystack interface.
+&#34;&#34;&#34;
+import logging
+import os
+import sys
+
+import click
+from flask import Flask, send_from_directory
+
+from shaystack.providers import get_provider
+
+try:
+    from flask_cors import CORS
+    from app.blueprint_haystack import create_haystack_bp
+except ImportError as ex:
+    print(&#39;To start shift-4-haystack, use \&#39;pip install &#34;shaystack[flask]&#34;\&#39; or &#39;
+          &#39;\&#39;pip install &#34;shaystack[flask,graphql]&#34;\&#39; and set \&#39;HAYSTACK_PROVIDER\&#39; variable&#39;,
+          file=sys.stderr)
+    sys.exit(-1)
+
+USE_GRAPHQL = False
+try:
+    import graphene  # pylint: disable=unused-import
+    from app.blueprint_graphql import create_graphql_bp  # pylint: disable=ungrouped-imports
+
+    USE_GRAPHQL = True
+except ImportError:
+    USE_GRAPHQL = False
+
+_log_level = os.environ.get(&#34;LOG_LEVEL&#34;, &#34;WARNING&#34;)
+logging.basicConfig(level=_log_level)
+
+
+def init_app(app: Flask) -&gt; Flask:
+    @app.route(&#39;/&#39;)
+    def index():
+        &#34;&#34;&#34;Empty page to check the deployment&#34;&#34;&#34;
+        redirect_js = &#34;&#34;&#34;
+        &lt;script&gt;
+        if (! window.location.pathname.toString().endsWith(&#34;/&#34;)) {
+          document.location.href=window.location+&#34;/&#34;; 
+        }
+        &lt;/script&gt;
+        &#34;&#34;&#34;
+        if USE_GRAPHQL:
+            return f&#34;&#34;&#34;
+                {redirect_js}
+                &lt;body&gt;
+                &lt;a href=&#34;haystack&#34;&gt;Haystack API&lt;/a&gt;&lt;br /&gt;
+                &lt;a href=&#34;graphql&#34;&gt;Haystack GraphQL API&lt;/a&gt;&lt;br /&gt;
+                &lt;/body&gt;
+                &#34;&#34;&#34;
+        return f&#34;&#34;&#34;
+            {redirect_js}
+            &lt;body&gt;
+            &lt;a href=&#34;haystack&#34;&gt;Haystack API&lt;/a&gt;&lt;br /&gt;
+            &lt;/body&gt;
+            &#34;&#34;&#34;
+
+    @app.route(&#39;/favicon.ico&#39;)
+    def favicon():
+        &#34;&#34;&#34;Return the favorite icon&#34;&#34;&#34;
+        return send_from_directory(os.path.join(app.root_path, &#39;static&#39;),
+                                   &#39;favicon.ico&#39;, mimetype=&#39;image/vnd.microsoft.icon&#39;)
+
+    app.logger.setLevel(_log_level)  # pylint: disable=no-member
+    return app
+
+
+def add_blueprints(app: Flask) -&gt; Flask:
+    provider_name = os.environ.get(&#34;HAYSTACK_PROVIDER&#34;, &#34;shaystack.providers.db&#34;)
+    provider = get_provider(provider_name, os.environ)
+    app.register_blueprint(create_haystack_bp(provider))
+    if USE_GRAPHQL:
+        app.register_blueprint(create_graphql_bp(provider))
+    CORS(app, resources={
+        r&#34;/haystack/*&#34;: {&#34;origins&#34;: &#34;*&#34;},
+        r&#34;/graphql/*&#34;: {&#34;origins&#34;: &#34;*&#34;}}, )
+    return app
+
+
+def create_app() -&gt; Flask:
+    return add_blueprints(init_app(Flask(__name__)))
+
+
+def start_shaystack(host: str, port: int, app: Flask) -&gt; int:
+    &#34;&#34;&#34;Stack a flask server. The command line must set the host and port.
+
+    Args:
+
+        app: Flask app instance
+        host: Network to listen (0.0.0.0 to accept call from all network)
+        port: Port to listen
+
+    Envs:
+
+        HAYSTACK_PROVIDER: to select a provider (shaystack.providers.db)
+        HAYSTACK_DB: the URL to select the backend with the ontology
+    &#34;&#34;&#34;
+    debug = (os.environ.get(&#34;FLASK_DEBUG&#34;, &#34;0&#34;) == &#34;1&#34;)
+    app.run(host=host,
+            port=port,
+            debug=debug)
+    return 0
+
+
+app_instance = create_app()
+
+
+@click.command()
+@click.option(&#39;-h&#39;, &#39;--host&#39;, default=&#39;localhost&#39;)
+@click.option(&#39;-p&#39;, &#39;--port&#39;, default=3000, type=int)
+def main(host, port):
+    return start_shaystack(host, port, app_instance)
+
+
+if __name__ == &#39;__main__&#39;:
+    sys.exit(main())  # pylint: disable=no-value-for-parameter,unexpected-keyword-arg</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="app.main.add_blueprints"><code class="name flex">
+<span>def <span class="ident">add_blueprints</span></span>(<span>app: flask.app.Flask) ‑> flask.app.Flask</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_blueprints(app: Flask) -&gt; Flask:
+    provider_name = os.environ.get(&#34;HAYSTACK_PROVIDER&#34;, &#34;shaystack.providers.db&#34;)
+    provider = get_provider(provider_name, os.environ)
+    app.register_blueprint(create_haystack_bp(provider))
+    if USE_GRAPHQL:
+        app.register_blueprint(create_graphql_bp(provider))
+    CORS(app, resources={
+        r&#34;/haystack/*&#34;: {&#34;origins&#34;: &#34;*&#34;},
+        r&#34;/graphql/*&#34;: {&#34;origins&#34;: &#34;*&#34;}}, )
+    return app</code></pre>
+</details>
+</dd>
+<dt id="app.main.create_app"><code class="name flex">
+<span>def <span class="ident">create_app</span></span>(<span>) ‑> flask.app.Flask</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_app() -&gt; Flask:
+    return add_blueprints(init_app(Flask(__name__)))</code></pre>
+</details>
+</dd>
+<dt id="app.main.init_app"><code class="name flex">
+<span>def <span class="ident">init_app</span></span>(<span>app: flask.app.Flask) ‑> flask.app.Flask</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def init_app(app: Flask) -&gt; Flask:
+    @app.route(&#39;/&#39;)
+    def index():
+        &#34;&#34;&#34;Empty page to check the deployment&#34;&#34;&#34;
+        redirect_js = &#34;&#34;&#34;
+        &lt;script&gt;
+        if (! window.location.pathname.toString().endsWith(&#34;/&#34;)) {
+          document.location.href=window.location+&#34;/&#34;; 
+        }
+        &lt;/script&gt;
+        &#34;&#34;&#34;
+        if USE_GRAPHQL:
+            return f&#34;&#34;&#34;
+                {redirect_js}
+                &lt;body&gt;
+                &lt;a href=&#34;haystack&#34;&gt;Haystack API&lt;/a&gt;&lt;br /&gt;
+                &lt;a href=&#34;graphql&#34;&gt;Haystack GraphQL API&lt;/a&gt;&lt;br /&gt;
+                &lt;/body&gt;
+                &#34;&#34;&#34;
+        return f&#34;&#34;&#34;
+            {redirect_js}
+            &lt;body&gt;
+            &lt;a href=&#34;haystack&#34;&gt;Haystack API&lt;/a&gt;&lt;br /&gt;
+            &lt;/body&gt;
+            &#34;&#34;&#34;
+
+    @app.route(&#39;/favicon.ico&#39;)
+    def favicon():
+        &#34;&#34;&#34;Return the favorite icon&#34;&#34;&#34;
+        return send_from_directory(os.path.join(app.root_path, &#39;static&#39;),
+                                   &#39;favicon.ico&#39;, mimetype=&#39;image/vnd.microsoft.icon&#39;)
+
+    app.logger.setLevel(_log_level)  # pylint: disable=no-member
+    return app</code></pre>
+</details>
+</dd>
+<dt id="app.main.start_shaystack"><code class="name flex">
+<span>def <span class="ident">start_shaystack</span></span>(<span>host: str, port: int, app: flask.app.Flask) ‑> int</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Stack a flask server. The command line must set the host and port.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>app</code></strong></dt>
+<dd>Flask app instance</dd>
+<dt><strong><code>host</code></strong></dt>
+<dd>Network to listen (0.0.0.0 to accept call from all network)</dd>
+<dt><strong><code>port</code></strong></dt>
+<dd>Port to listen</dd>
+</dl>
+<h2 id="envs">Envs</h2>
+<p>HAYSTACK_PROVIDER: to select a provider (shaystack.providers.db)
+HAYSTACK_DB: the URL to select the backend with the ontology</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def start_shaystack(host: str, port: int, app: Flask) -&gt; int:
+    &#34;&#34;&#34;Stack a flask server. The command line must set the host and port.
+
+    Args:
+
+        app: Flask app instance
+        host: Network to listen (0.0.0.0 to accept call from all network)
+        port: Port to listen
+
+    Envs:
+
+        HAYSTACK_PROVIDER: to select a provider (shaystack.providers.db)
+        HAYSTACK_DB: the URL to select the backend with the ontology
+    &#34;&#34;&#34;
+    debug = (os.environ.get(&#34;FLASK_DEBUG&#34;, &#34;0&#34;) == &#34;1&#34;)
+    app.run(host=host,
+            port=port,
+            debug=debug)
+    return 0</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="app" href="index.html">app</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="app.main.add_blueprints" href="#app.main.add_blueprints">add_blueprints</a></code></li>
+<li><code><a title="app.main.create_app" href="#app.main.create_app">create_app</a></code></li>
+<li><code><a title="app.main.init_app" href="#app.main.init_app">init_app</a></code></li>
+<li><code><a title="app.main.start_shaystack" href="#app.main.start_shaystack">start_shaystack</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

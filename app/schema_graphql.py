@@ -12,37 +12,40 @@ You can use a similar code to integrate the haystack graphql api in a bigger env
 import logging
 import os
 import sys
-
 import click
+import graphene
 
-from app.schema_graphql import get_schema_for_provider
 from shaystack import HaystackInterface
 from shaystack.providers import get_provider
-
-try:
-    # noinspection PyUnresolvedReferences
-    from flask import Blueprint
-    # noinspection PyUnresolvedReferences
-    from flask_graphql import GraphQLView
-except ImportError:
-    os.abort()
+from app.graphql_model import ReadHaystack
 
 log = logging.getLogger("shaystack")
 
 
 # noinspection PyTypeChecker
-def create_graphql_bp(provider: HaystackInterface) -> Blueprint:
-    schema = get_schema_for_provider(provider)
-    graphql_blueprint = Blueprint('graphql',
-                                  __name__,
-                                  url_prefix='/graphql')
-    graphql_blueprint.add_url_rule('',
-                                   view_func=GraphQLView.as_view(
-                                       'graphql',
-                                       schema=schema,
-                                       graphiql=True,
-                                   ))
-    return graphql_blueprint
+
+def get_schema_for_provider(provider: HaystackInterface) -> graphene.types.schema.Schema:
+    class Query(graphene.ObjectType):
+        """GraphQL haystack query. To integrate the haystack Graphql API with other
+        GraphQL API, see `aws appsync` .
+        """
+
+        class Meta:  # pylint: disable=missing-class-docstring
+            description = "Root for haystack api"
+
+        haystack = graphene.Field(graphene.NonNull(ReadHaystack))
+
+        # noinspection PyUnusedLocal
+        @staticmethod
+        def resolve_haystack(parent, info):
+            """
+            Args:
+                parent:
+                info:
+            """
+            return ReadHaystack(provider)
+
+    return graphene.Schema(query=Query)
 
 
 def _dump_haystack_schema(provider) -> None:
@@ -61,7 +64,7 @@ def main() -> int:
     >partial_gql.graphql
     """
     provider_name = os.environ.get("HAYSTACK_PROVIDER", "shaystack.providers.db")
-    provider = get_provider(provider_name, os.environ)
+    provider = get_provider(provider_name, dict(os.environ))
     _dump_haystack_schema(provider)
     return 0
 

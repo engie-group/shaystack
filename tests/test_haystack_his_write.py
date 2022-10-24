@@ -27,7 +27,7 @@ def test_his_write_with_zinc(mock):
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.his_write(envs, request, "dev")
+    response = shaystack.his_write(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with(None, grid, None)
@@ -54,7 +54,7 @@ def test_his_write_with_args(mock):
     request.args['ts'] = str(time_serie)
 
     # WHEN
-    response = shaystack.his_write(envs, request, "dev")
+    response = shaystack.his_write(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     result_ts = Grid(version=VER_3_0, columns=["date", "val"])

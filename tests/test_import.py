@@ -1,11 +1,13 @@
-from shaystack.providers.url import _update_grid_on_file
-from urllib.parse import urlparse
-from shaystack import parse, MODE_HAYSON
-import shutil
-import os
-import unittest
 import json
+import os
+import shutil
+import unittest
+from urllib.parse import urlparse
+
 from nose.tools import assert_raises
+
+from shaystack import parse, MODE_HAYSON
+from shaystack.providers.url import _update_grid_on_file
 
 ONTO = {"meta": {"ver": "3.0"},
         "cols": [{"name": "col1"}, {"name": "col2"}, {"name": "dis"}, {"name": "id"}],
@@ -18,7 +20,6 @@ ONTO = {"meta": {"ver": "3.0"},
              "col1": "col 1 value", "col2": "col 2 value", "hisURI": "p_demo_r_23a44701-3940e690.zinc"}
         ]}
 
-
 ONTO2021 = {"meta": {"ver": "3.0"},
             "cols": [{"name": "col1"}, {"name": "col2"}, {"name": "dis"}, {"name": "id"}],
             "rows": [
@@ -26,7 +27,7 @@ ONTO2021 = {"meta": {"ver": "3.0"},
                  "col1": "col 1 value", "col2": "col 2 value", "hisURI": "p_demo_r_23a44701-4ea35663.zinc"},
                 {"dis": "dis2", "id": {"_kind": "Ref", "val": "p_demo_r_255555701-a89a6c66", "dis": "dis"},
                  "col1": "col 1 value", "col2": "col 2 value", "hisURI": "p_demo_r_23a44701-bbc36976.zinc"}
-        ]}
+            ]}
 
 ONTO2020 = {"meta": {"ver": "3.0"},
             "cols": [{"name": "col1"}, {"name": "col2"}, {"name": "dis"}, {"name": "id"}],
@@ -89,6 +90,10 @@ class CurrentDirectory:
         with open(f'{self.in_dir}/p_demo_r_23a44701-3940e690.zinc', 'w') as outfile:
             outfile.write(TS3)
 
+def read_ontology(file_path):
+    with open(file_path) as f:
+        grid = parse(f.read(), MODE_HAYSON)
+    return grid
 
 class TestImportLocalFile(unittest.TestCase):
 
@@ -106,11 +111,6 @@ class TestImportLocalFile(unittest.TestCase):
         shutil.rmtree(self.imported_file_ontologies, ignore_errors=True)
         shutil.rmtree(self.source_file_ontologies, ignore_errors=True)
 
-    def read_ontology(self, file_path):
-        with open(file_path) as f:
-            grid = parse(f.read(), MODE_HAYSON)
-        return grid
-
     def test_import(self):
         source_uri = f'{self.source_file_ontologies}/carytown.hayson.json'
         destination_uri = f'{self.imported_file_ontologies}/carytown.hayson.json'
@@ -122,8 +122,8 @@ class TestImportLocalFile(unittest.TestCase):
                              self.force,
                              self.merge_ts,
                              {})
-        source_ontology = self.read_ontology(source_uri)
-        imported_ontology = self.read_ontology(destination_uri)
+        source_ontology = read_ontology(source_uri)
+        imported_ontology = read_ontology(destination_uri)
         assert 'carytown.hayson.json' in os.listdir(self.imported_file_ontologies)
         assert len(os.listdir(self.imported_file_ontologies)) == 4  # 1 ontology + 3 TS files
         assert source_ontology == imported_ontology
@@ -140,8 +140,8 @@ class TestImportLocalFile(unittest.TestCase):
                              self.force,
                              self.merge_ts,
                              {})
-        source_ontology = self.read_ontology(source_uri)
-        imported_ontology = self.read_ontology(destination_uri)
+        source_ontology = read_ontology(source_uri)
+        imported_ontology = read_ontology(destination_uri)
         assert 'carytown.hayson.json' in os.listdir(self.imported_file_ontologies)
         assert source_ontology == imported_ontology
         assert len(os.listdir(self.imported_file_ontologies)) == 3  # 1 ontology + 2 TS files
@@ -158,8 +158,8 @@ class TestImportLocalFile(unittest.TestCase):
                              self.force,
                              self.merge_ts,
                              {})
-        source_ontology = self.read_ontology(source_uri)
-        imported_ontology = self.read_ontology(destination_uri)
+        source_ontology = read_ontology(source_uri)
+        imported_ontology = read_ontology(destination_uri)
         assert 'carytown.hayson.json' in os.listdir(self.imported_file_ontologies)
         assert source_ontology == imported_ontology
         assert len(os.listdir(self.imported_file_ontologies)) == 1  # 1 ontology
@@ -183,8 +183,8 @@ class TestImportLocalFile(unittest.TestCase):
                              self.force,
                              self.merge_ts,
                              {})
-        source_ontology = self.read_ontology(source_uri)
-        imported_ontology = self.read_ontology(destination_uri)
+        source_ontology = read_ontology(source_uri)
+        imported_ontology = read_ontology(destination_uri)
         assert source_ontology == imported_ontology
         assert len(os.listdir(self.imported_file_ontologies)) == 5  # 2 ontology versions + 3 TS files
         assert len(imported_ontology._row) == 3  # 3 entities
@@ -215,8 +215,8 @@ class TestImportLocalFile(unittest.TestCase):
                              self.merge_ts,
                              {})
 
-        source_ontology = self.read_ontology(source_uri)
-        imported_ontology = self.read_ontology(destination_uri)
+        source_ontology = read_ontology(source_uri)
+        imported_ontology = read_ontology(destination_uri)
         assert source_ontology == imported_ontology  # no change since same ontology
         assert len(os.listdir(self.imported_file_ontologies)) == 4  # 1 ontology + 3 TS files
         assert len(imported_ontology._row) == 3  # 3 entities
@@ -239,8 +239,8 @@ class TestImportLocalFile(unittest.TestCase):
                              self.force,
                              self.merge_ts,
                              {})
-        source_ontology = self.read_ontology(source_uri)
-        imported_ontology = self.read_ontology(destination_uri)
+        source_ontology = read_ontology(source_uri)
+        imported_ontology = read_ontology(destination_uri)
         assert source_ontology == imported_ontology
         assert len(os.listdir(self.imported_file_ontologies)) == 1  # 1 ontology, no changes
         assert len(imported_ontology._row) == 1  # 1 entities
@@ -262,7 +262,7 @@ class TestImportLocalFile(unittest.TestCase):
         shutil.copyfile(f'{self.source_file_ontologies}/p_demo_r_23a44701-3940e690.zinc',
                         f'{self.imported_file_ontologies}/p_demo_r_23a44701-3940e690.zinc')
         # check the number of entities of the version 2021 before the update
-        last2021_version = self.read_ontology(destination_uri)
+        last2021_version = read_ontology(destination_uri)
         assert len(last2021_version._row) == 1  # 1 entities
 
         # update the imported ontology with the one from source directory
@@ -274,8 +274,8 @@ class TestImportLocalFile(unittest.TestCase):
                              self.force,
                              self.merge_ts,
                              {})
-        source_ontology = self.read_ontology(source_uri)
-        naw_imported2021_version = self.read_ontology(destination_uri)
+        source_ontology = read_ontology(source_uri)
+        naw_imported2021_version = read_ontology(destination_uri)
         assert source_ontology == naw_imported2021_version
         assert len(os.listdir(self.imported_file_ontologies)) == 5  # 2 ontology versions, 3 TS files
         # check the number of entities of the version 2021 after the update

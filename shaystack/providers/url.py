@@ -87,20 +87,20 @@ def check_version_file(uri, parsed_uri):
     uri_without_suffix = parsed_uri.path.replace(suffixes, '')
     unordered_all_versions = {}
     creation_date = None
-    for f in glob.glob(f"{uri_without_suffix}*{suffixes}"):
-        str_version = f[len(uri_without_suffix) + 1:-len(suffixes)]
+    for file_path in glob.glob(f"{uri_without_suffix}*{suffixes}"):
+        str_version = file_path[len(uri_without_suffix) + 1:-len(suffixes)]
         if not str_version:
             # User file date
             creation_date = datetime.fromtimestamp(os.path.getmtime(uri))
-            unordered_all_versions[creation_date] = f
+            unordered_all_versions[creation_date] = file_path
         else:
-            unordered_all_versions[datetime.fromisoformat(str_version)] = f
+            unordered_all_versions[datetime.fromisoformat(str_version)] = file_path
     ordered_date_from_str_versions = sorted(unordered_all_versions.keys(), reverse=True)
-    if len(ordered_date_from_str_versions) > 0 and creation_date and creation_date < ordered_date_from_str_versions[0]:
+    if len(ordered_date_from_str_versions) > 0 and creation_date\
+            and creation_date < ordered_date_from_str_versions[0]:
         log.debug('Current file has not the latest version date')
         raise ValueError
-    else:
-        return unordered_all_versions, ordered_date_from_str_versions
+    return unordered_all_versions, ordered_date_from_str_versions
 
 
 def _download_uri(parsed_uri: ParseResult, envs: Dict[str, str]) -> bytes:
@@ -229,7 +229,6 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
     log.debug("update %s", (parsed_source.geturl(),))
     suffix = "".join(Path(parsed_source.path).suffixes)
     use_gzip = False
-    destination_grid = EmptyGrid.copy()
 
     # Copy from file to file
     source_data = _download_uri(parsed_source, envs)
@@ -251,6 +250,7 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
             destination_grid = parse(destination_data.decode("utf-8-sig"),
                                      suffix_to_mode(suffix))
         except URLError:
+            log.warning("URLError file not found under %s", (parsed_destination.geturl()))
             destination_grid = EmptyGrid.copy()
 
         except ZincParseException:
@@ -264,30 +264,33 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
             # Rename default file to versionned file
             if not force:
                 date_old_version = None
-                f = Path(parsed_destination.path)
-                old_filename_elements = f.name.split('/')[-1].split('.', 1)[0].split('-', 1)
+                file_path = Path(parsed_destination.path)
+                old_filename_elements = file_path.name.split('/')[-1].split('.', 1)[0].split('-', 1)
                 if len(old_filename_elements) > 1:
                     try:
                         date_old_version = datetime.strptime(old_filename_elements[1], '%Y-%m-%dT%H:%M:%S')
                     except ValueError:
-                        raise ValueError("Incorrect data format, should be YYYY-MM-DDThh:mm:dd")
+                        log.error("Incorrect data format, should be YYYY-MM-DDThh:mm:dd")
+                        raise
 
-                if f.exists():
+                if file_path.exists():
                     # attention vérifier si le nom du fichier à déjà la date, sinon on garde la date physique
                     # Une solution: Import d'un fichier d'une date ancienne interdit
                     if date_old_version:
-                        prefix, suffix = f.name.split('.', 1)
+                        prefix, suffix = file_path.name.split('.', 1)
                         prefix = prefix.split("-", 1)[0]
                     else:
                         date_old_version: datetime = \
-                            datetime.fromtimestamp(os.path.getmtime(parsed_destination.path)).replace(tzinfo=None)
-                        prefix, suffix = f.name.split('.', 1)
+                            datetime.fromtimestamp(
+                                os.path.getmtime(parsed_destination.path)
+                            ).replace(tzinfo=None)
+                        prefix, suffix = file_path.name.split('.', 1)
 
                     old_name = f"{prefix}-{date_old_version.isoformat()}.{suffix}"
-                    f.rename(Path(f.parent, old_name))
+                    file_path.rename(Path(file_path.parent, old_name))
 
-            with open(parsed_destination.path, "wb") as f:
-                f.write(source_data)
+            with open(parsed_destination.path, "wb") as file:
+                file.write(source_data)
             log.info("%s updated", parsed_source.geturl())
         else:
             log.debug("%s not modified (same grid)", parsed_source.geturl())
@@ -742,10 +745,11 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             name, suffix = parsed_uri.path.split(".", 1)
             unordered_all_versions = {}
             creation_date = datetime.fromtimestamp(os.path.getmtime(parsed_uri.path)).replace(tzinfo=pytz.UTC)
-            for f in glob.glob(f"{name}*.{suffix}"):
-                str_version = f[len(name) + 1:-len(suffix) - 1]
+            for file_path in glob.glob(f"{name}*.{suffix}"):
+                str_version = file_path[len(name) + 1:-len(suffix) - 1]
                 if str_version:
-                    unordered_all_versions[datetime.fromisoformat(str_version).replace(tzinfo=pytz.UTC)] = f
+                    unordered_all_versions[datetime.fromisoformat(str_version).replace(tzinfo=pytz.UTC)]\
+                        = file_path
             ordered_date_from_str_versions = sorted(unordered_all_versions.keys(), reverse=True)
             # On n'est pas censé l'accepter, péter une erreur (import file dans le bon ordre)
             if len(ordered_date_from_str_versions) > 0 and creation_date < ordered_date_from_str_versions[0]:
@@ -796,22 +800,19 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
     def _download_grid(self, uri: str, date_version: Optional[datetime]) -> Grid:
         parsed_uri = urlparse(uri, allow_fragments=False)
         parsed_uri = parsed_uri._replace(path=_absolute_path(parsed_uri.path))
-        self._refresh_versions(parsed_uri)
+        response_grid = Grid(columns=["ts", "val"])
         if parsed_uri.scheme != 's3':
             if parsed_uri.scheme not in ['', 'file']:
                 raise ValueError("A wrong url ! (url have to be ['file','s3','']")
-
+        self._refresh_versions(parsed_uri)
         for version, version_url in self._versions[parsed_uri.geturl()].items():
-            if not date_version or version <= date_version.replace(tzinfo=pytz.UTC):  # .date():
+            if not date_version or version <= date_version.replace(tzinfo=pytz.UTC):
                 if parsed_uri.scheme == 's3':
-                    return self._download_grid_effective_version(
-                        parsed_uri.geturl(),
-                        version)
+                    response_grid = self._download_grid_effective_version(parsed_uri.geturl(), version)
                 else:
-                    return self._download_grid_effective_version(
-                        version_url,
-                        version)
-        return Grid(columns=["ts", "val"])
+                    response_grid = self._download_grid_effective_version(version_url, version)
+                break
+        return response_grid
 
     # pylint: disable=no-member
     def set_lru_size(self, size: int) -> None:
@@ -870,7 +871,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                                compare_grid=True,
                                update_time_series=False,
                                force=reset,
-                               merge_ts=False,  # FIXME: vérifier
+                               merge_ts=False,
                                envs=self._envs
                                )
         else:

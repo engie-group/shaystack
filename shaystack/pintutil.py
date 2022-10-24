@@ -21,7 +21,7 @@ def _load_haystack_alias() -> Dict[str, str]:
     Load the official haystack mapping
     """
     haystack_symbol_to_canonical = {}
-    with pkg_resources.open_text(__package__,
+    with pkg_resources.open_text(str(__package__),
                                  'haystack_units_mapping.txt',
                                  encoding='UTF-8') as file:  # type: ignore
         for line in file:

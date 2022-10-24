@@ -992,28 +992,6 @@ def test_string_json():
     assert grid.pop(0)['strExample'] == 'an explicit string'
     assert grid.pop(0)['strExample'] == 'string:with:colons'
 
-
-def test_string_json():
-    grid = shaystack.parse(json.dumps({
-        'meta': {'ver': '2.0'},
-        'cols': [
-            {'name': 'str'},
-            {'name': 'strExample'},
-        ],
-        'rows': [
-            {'str': "Empty", 'strExample': ''},
-            {'str': "Implicit", 'strExample': 'a string'},
-            {'str': "Literal", 'strExample': 'an explicit string'},
-            {'str': "With colons", 'strExample': 'string:with:colons'},
-        ],
-    }), mode=shaystack.MODE_HAYSON)
-    assert len(grid) == 4
-    assert grid.pop(0)['strExample'] == ''
-    assert grid.pop(0)['strExample'] == 'a string'
-    assert grid.pop(0)['strExample'] == 'an explicit string'
-    assert grid.pop(0)['strExample'] == 'string:with:colons'
-
-
 def test_string_csv():
     grid = shaystack.parse(json.dumps({
         'meta': {'ver': '2.0'},
@@ -1911,7 +1889,6 @@ def test_xstr_hex_hayson():
             {'bin': {'_kind': 'xstr', 'val': 'deadbeef', 'type': 'Bin'}},
         ],
     }), mode=shaystack.MODE_HAYSON)
-    test = grid[0]['bin']
     assert len(grid) == 1
     assert grid[0]['bin']['val'] == 'deadbeef'
     assert grid[0]['bin']['type'] == 'Bin'
@@ -1953,7 +1930,6 @@ def test_xstr_b64_json():
             {'bin': 'x:b64:3q2+7w=='},
         ],
     }), mode=MODE_JSON)
-    test = grid[0]['bin']
     assert len(grid) == 1
     assert grid[0]['bin'].data == b'\xde\xad\xbe\xef'
 
@@ -2617,33 +2593,6 @@ def test_grid_in_grid_in_grid_json():
     assert len(inner) == 1
     assert isinstance(inner[0]['innerinner'], Grid)
     assert inner[0]['innerinner'][0]['comment'] == "A innerinnergrid"
-
-
-def test_grid_in_grid_in_grid_json():
-    str_grid = \
-        '{"meta": {"ver": "3.0"},' \
-        ' "cols": [{"name": "inner"}], ' \
-        '"rows": [' \
-        '{"inner": ' \
-        '{ "meta": {"ver": "3.0"}, ' \
-        '"cols": [{"name": "innerinner"}], ' \
-        '"rows": [' \
-        '{"innerinner": {' \
-        '"meta": {"ver": "3.0"}, ' \
-        '"cols": [{"name": "comment"}], ' \
-        '"rows": [{"comment": "A innerinnergrid"}]}' \
-        '}]' \
-        '}' \
-        '}]' \
-        '}'
-    grid = shaystack.parse(str_grid, mode=shaystack.MODE_HAYSON)
-    assert len(grid) == 1
-    inner = grid[0]['inner']
-    assert isinstance(inner, Grid)
-    assert len(inner) == 1
-    assert isinstance(inner[0]['innerinner'], Grid)
-    assert inner[0]['innerinner'][0]['comment'] == "A innerinnergrid"
-
 
 def test_grid_in_grid_in_grid_csv():
     str_grid = textwrap.dedent('''

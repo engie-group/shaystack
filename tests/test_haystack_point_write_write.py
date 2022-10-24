@@ -28,7 +28,7 @@ def test_point_write_write_with_zinc(mock) -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.point_write(envs, request, "dev")
+    response = shaystack.point_write(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with(Ref("1234"), 1, 100, "PPR", Quantity(1, "min"), None)

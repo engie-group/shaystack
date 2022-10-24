@@ -25,7 +25,7 @@ def test_invoke_action_with_zinc(mock) -> None:
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.invoke_action(envs, request, "dev")
+    response = shaystack.invoke_action(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with(Ref("123"), "doIt", {})
@@ -52,7 +52,7 @@ def test_invoke_action_without_params_with_zinc(mock):
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.invoke_action(envs, request, "dev")
+    response = shaystack.invoke_action(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with(Ref("123"), "doIt", {})

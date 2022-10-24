@@ -1,5 +1,5 @@
 from unittest.mock import patch
-
+from shaystack.providers import ping
 import shaystack
 from shaystack import Grid, Ref
 from shaystack.ops import HaystackHttpRequest
@@ -24,7 +24,7 @@ def test_negociation_with_zinc(no_cache) -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     assert response.status_code == 200
@@ -50,7 +50,7 @@ def test_negociation_with_json(no_cache) -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     assert response.status_code == 200
@@ -70,7 +70,7 @@ def test_negociation_zinc_without_content_type() -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     assert response.status_code == 200
@@ -89,7 +89,7 @@ def test_negociation_json_without_content_type() -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     assert response.status_code == 200
@@ -108,7 +108,7 @@ def test_negociation_json_with_unknown_content_type() -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     assert response.status_code == 406
@@ -130,7 +130,7 @@ def test_negociation_without_accept() -> None:
 
     # WHEN
     try:
-        shaystack.read(envs, request, "dev")
+        shaystack.read(envs, request, "dev", ping.Provider(envs))
         assert False, "Must generate exception"
     except HttpError as ex:
         assert ex.error == 406
@@ -147,7 +147,7 @@ def test_negociation_with_invalide_accept() -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     assert response.status_code == 406
@@ -173,7 +173,7 @@ def test_negociation_with_navigator_accept() -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     assert response.status_code == 200
@@ -193,7 +193,7 @@ def test_negociation_with_complex_accept() -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     assert response.status_code == 200
@@ -212,7 +212,7 @@ def test_negociation_with_zinc_to_json() -> None:
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     assert response.status_code == 200

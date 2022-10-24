@@ -1,10 +1,10 @@
 # (C) 2020 Philippe PRADOS
 # -*- coding: utf-8 -*-
 # vim: set ts=4 sts=4 et tw=78 sw=4 si:
+# pylint: skip-file
 
 from shaystack import Grid, REMOVE, VER_2_0, VER_3_0, Ref
 from shaystack.grid_diff import grid_diff, grid_merge
-
 
 def test_diff_version():
     left = Grid(version=VER_2_0)
@@ -314,7 +314,8 @@ def test_diff_remove_record_without_id():
     assert grid_merge(left, diff) == right
 
 
-def test_diff_remove_all_records_without_id():
+def test_diff_remove_all_records_without_id():  # pylint: disable-next=invalid-sequence-index
+
     left = Grid(columns={"a": {}, "b": {}})
     left.append({"a": 1, "b": 2})
     right = Grid(columns={"a": {}, "b": {}})

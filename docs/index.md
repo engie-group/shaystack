@@ -167,13 +167,13 @@ df = panda.DataFrame(grid.filter("point and co2e"))  # Convert grid to data fram
 
 Shift-4-Haystack is agile and can be deployed in different scenarios. Choose an option for each feature.
 
-| Haystack backend                  |  Python version | Deployment              |Multi tenancy             | API                                               |
-| --------------------------------- | :--------------:| ----------------------- |------------------------- | ------------------------------------------------- |
-| local file                        |    3.7          | Internet Flask server   |Single tenancy            | Haystack HTTP API                                 |
-| url                               |    3.8          | Edge Flask server       |Multiple, shared table    | Standalone GraphQL API                            |
-| S3 bucket without version         |    3.9          | Docker Flask server     |Multiple, dedicated table | GraphQL API integrated inside another via AppSync |
-| S3 bucket with version            |                 | Internet AWS Lambda API |||
-| Sqlite database                   ||||
+| Haystack backend                  |        Python version         | Deployment              |Multi tenancy             | API                                               |
+| --------------------------------- |:-----------------------------:| ----------------------- |------------------------- | ------------------------------------------------- |
+| local file                        |              3.7              | Internet Flask server   |Single tenancy            | Haystack HTTP API                                 |
+| url                               |              3.8              | Edge Flask server       |Multiple, shared table    | Standalone GraphQL API                            |
+| S3 bucket without version         |              3.9              | Docker Flask server     |Multiple, dedicated table | GraphQL API integrated inside another via AppSync |
+| S3 bucket with version            |                               | Internet AWS Lambda API |||
+| Sqlite database                   | Not available in this release |||
 | Postgres database                 ||||
 | MySQL database                    ||||
 | Mongo database                    ||||
@@ -257,6 +257,7 @@ by extending `shaystack.providers.HaystackInterface`
 |Data in a MySQL database|`HAYSTACK_PROVIDER=shaystack.providers.db \`<br/>` HAYSTACK_DB=mysql://... \`<br/>` shaystack`|Remember to install pymysql python module. [More...](sql_provider.md)|
 |Data in a MongoDB|`HAYSTACK_PROVIDER=shaystack.providers.db\`<br/>`HAYSTACK_DB=mongodb+srv:://...\`<br/>` shaystack`|Remember to install pymongo python module. [More...](mongo_provider.md)|
 |Data in a database and Time series in AWS Time Stream|`HAYSTACK_PROVIDER=shaystack.providers.timestream\`<br/>`HAYSTACK_DB=...\`<br/>`HAYSTACK_TS=timestream:://...\<br /> shaystack`|[More...](timestream_provider.md)|
+|Data in a database and Time series in AWS Athena|`HAYSTACK_PROVIDER=shaystack.providers.athena\`<br/>`HAYSTACK_DB=...\`<br/>`HAYSTACK_TS=athena:://...\<br /> shaystack`|[More...](athena_provider.md)|
 |Custom|`HAYSTACK_PROVIDER=shaystack.providers.<your module name>\`<br/>` shaystack`|Write your own subclass of `shaystack.providers.HaystackInterface|
 
 *Note: Existing providers are not connected to IOT for simplicity. If you want to connect the haystack API with IOT, you

@@ -24,7 +24,7 @@ def test_read_with_zinc_and_filter(mock) -> None:
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with(1, None, None, 'id==@me', None)
@@ -48,7 +48,7 @@ def test_read_with_arg_and_filter(mock) -> None:
     request.args["limit"] = "1"
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with(1, None, None, 'id==@me', None)
@@ -76,7 +76,7 @@ def test_read_with_zinc_and_id(mock) -> None:
     request.body = shaystack.dump(grid, mode=mime_type)
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     ids = [Ref("me")]
@@ -100,7 +100,7 @@ def test_read_with_arg_and_id(mock) -> None:
     request.args["id"] = Ref("me").name
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     ids = [Ref("me")]
@@ -128,7 +128,7 @@ def test_read_with_zinc_and_select(mock) -> None:
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with(1, "id,site", None, 'id==@me', None)
@@ -153,7 +153,7 @@ def test_read_with_arg_and_select(mock) -> None:
     request.args["select"] = "id,site"
 
     # WHEN
-    response = shaystack.read(envs, request, "dev")
+    response = shaystack.read(envs, request, "dev", ping.Provider(envs))
 
     # THEN
     mock.assert_called_once_with(1, "id,site", None, "id==@me", None)

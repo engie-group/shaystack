@@ -61,6 +61,7 @@ confidence=
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
 disable=print-statement,
+        invalid-sequence-index,
         parameter-unpacking,
         unpacking-in-except,
         old-raise-syntax,
@@ -144,6 +145,8 @@ disable=print-statement,
         missing-class-docstring,
         protected-access,
         similarities,
+        too-few-public-methods,
+        no-self-use,
 
         too-many-lines,
         too-many-statements,

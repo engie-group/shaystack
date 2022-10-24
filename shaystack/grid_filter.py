@@ -138,7 +138,7 @@ def _get_path(grid: Grid, obj: Any, paths: List[str]) -> Any:
             obj = obj[path]
             if i != len(paths) - 1 and isinstance(obj, Ref):
                 obj = grid[obj]  # Follow the reference
-        if not obj:
+        if obj is None:      #not obj and obj != 0:
             return NOT_FOUND
         return obj  # It's a value at this time
     except TypeError:
@@ -269,9 +269,7 @@ def parse_hs_datetime_format(datetime_str: str, timezone: tzinfo) -> datetime:
     if datetime_str == "yesterday":
         return datetime.combine(date.today() - timedelta(days=1), datetime.min.time()) \
             .replace(tzinfo=timezone)
-    if datetime_str == "today":
-        return datetime.combine(date.today(), datetime.min.time()) \
-            .replace(tzinfo=timezone)
+
     return hs_all_date.parseString(datetime_str, parseAll=True)[0]
 
 

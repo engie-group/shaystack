@@ -26,9 +26,8 @@ from .datatypes import Quantity, Coordinate, Ref, Bin, Uri, \
     MARKER, NA, REMOVE, XStr
 from .grid import Grid
 from .metadata import MetadataObject
-from .tools import unescape_str
 from .type import Entity
-from .version import LATEST_VER, Version, VER_3_0
+from .version import LATEST_VER, Version
 from .zoneinfo import timezone
 
 URI_META = 'Uri'
@@ -108,11 +107,9 @@ def _parse_embedded_scalar(scalar: Union[None, List, Dict, str],
                     return -float('INF')
                 if value == 'NaN':
                     return float('nan')
-                else:
-                    if scalar.get('unit'):
-                        return Quantity(value, scalar.get('unit'))
-                    else:
-                        return Quantity(value)
+                if scalar.get('unit'):
+                    return Quantity(value, scalar.get('unit'))
+                return Quantity(value)
             # Conversion to dict of float value turn them into float
             # so regex won't work... better just return them
             if isinstance(scalar, (float, int)):
@@ -182,12 +179,11 @@ def _parse_embedded_scalar(scalar: Union[None, List, Dict, str],
             if kind == COORD:
                 return Coordinate(float(scalar.get('lat')), scalar.get('lng'))
             return scalar
-        else:
-            # We support this only in version 3.0 and up.
-            if sys.version_info[0] < 3 and {"meta", "cols", "rows"} <= scalar.viewkeys() \
-                    or {"meta", "cols", "rows"} <= scalar.keys():  # Check if grid in grid
-                return parse_grid(scalar)
-            return {k: parse_scalar(v, version=version) for (k, v) in scalar.items()}
+        # We support this only in version 3.0 and up.
+        if sys.version_info[0] < 3 and {"meta", "cols", "rows"} <= scalar.viewkeys() \
+                or {"meta", "cols", "rows"} <= scalar.keys():  # Check if grid in grid
+            return parse_grid(scalar)
+        return {k: parse_scalar(v, version=version) for (k, v) in scalar.items()}
 
     return scalar
 

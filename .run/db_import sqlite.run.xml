@@ -1,34 +1,35 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="import-db sqlite" type="PythonConfigurationType" factoryName="Python">
-        <module name="haystack-api"/>
-        <option name="INTERPRETER_OPTIONS" value=""/>
-        <option name="PARENT_ENVS" value="true"/>
-        <envs>
-            <env name="LOG_LEVEL" value="DEBUG"/>
-        </envs>
-        <option name="SDK_HOME" value=""/>
-        <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$"/>
-        <option name="IS_MODULE_SDK" value="true"/>
-        <option name="ADD_CONTENT_ROOTS" value="true"/>
-        <option name="ADD_SOURCE_ROOTS" value="true"/>
-        <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py"/>
-        <EXTENSION ID="net.ashald.envfile">
-            <option name="IS_ENABLED" value="false"/>
-            <option name="IS_SUBST" value="false"/>
-            <option name="IS_PATH_MACRO_SUPPORTED" value="false"/>
-            <option name="IS_IGNORE_MISSING_FILES" value="false"/>
-            <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false"/>
-            <ENTRIES>
-                <ENTRY IS_ENABLED="true" PARSER="runconfig"/>
-            </ENTRIES>
-        </EXTENSION>
-        <option name="SCRIPT_NAME" value="shaystack.providers.import_db"/>
-        <option name="PARAMETERS" value="--reset sample/carytown.json sqlite3://localhost/test.db#haystack"/>
-        <option name="SHOW_COMMAND_LINE" value="true"/>
-        <option name="EMULATE_TERMINAL" value="false"/>
-        <option name="MODULE_MODE" value="true"/>
-        <option name="REDIRECT_INPUT" value="false"/>
-        <option name="INPUT_FILE" value=""/>
-        <method v="2"/>
-    </configuration>
+  <configuration default="false" name="import-db sqlite" type="PythonConfigurationType" factoryName="Python">
+    <module name="shaystack" />
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="PARENT_ENVS" value="true" />
+    <envs>
+      <env name="PYTHONUNBUFFERED" value="1" />
+      <env name="LOG_LEVEL" value="DEBUG" />
+    </envs>
+    <option name="SDK_HOME" value="" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <option name="IS_MODULE_SDK" value="true" />
+    <option name="ADD_CONTENT_ROOTS" value="true" />
+    <option name="ADD_SOURCE_ROOTS" value="true" />
+    <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+    <EXTENSION ID="net.ashald.envfile">
+      <option name="IS_ENABLED" value="false" />
+      <option name="IS_SUBST" value="false" />
+      <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
+      <option name="IS_IGNORE_MISSING_FILES" value="false" />
+      <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
+      <ENTRIES>
+        <ENTRY IS_ENABLED="true" PARSER="runconfig" />
+      </ENTRIES>
+    </EXTENSION>
+    <option name="SCRIPT_NAME" value="shaystack.providers.import_db" />
+    <option name="PARAMETERS" value="--reset sample/carytown.json sqlite3://localhost/test.db#haystack" />
+    <option name="SHOW_COMMAND_LINE" value="true" />
+    <option name="EMULATE_TERMINAL" value="false" />
+    <option name="MODULE_MODE" value="true" />
+    <option name="REDIRECT_INPUT" value="false" />
+    <option name="INPUT_FILE" value="" />
+    <method v="2" />
+  </configuration>
 </component>

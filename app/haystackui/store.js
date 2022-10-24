@@ -187,9 +187,10 @@ export const actions = {
     await context.commit('ADD_NEW_ENTITIES', { entities, apiNumber })
   },
   async fetchEntity(context, { entity, apiNumber }) {
-    const entities = await context.getters.apiServers[apiNumber].getEntity(entity, state.limit, state.version)
+    let entities = await context.getters.apiServers[apiNumber].getEntity(entity, state.limit, state.version)
+    entities = entities['rows'].length ? formatEntityService.addApiSourceInformationToEntity(entities.rows, apiNumber + 1) : []
     await context.dispatch('commitNewEntities', {
-      entities: formatEntityService.addApiSourceInformationToEntity(entities.rows, apiNumber + 1),
+      entities,
       apiNumber
     })
   },

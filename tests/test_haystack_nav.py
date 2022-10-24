@@ -24,10 +24,10 @@ def test_nav_with_zinc(mock):
     request.body = shaystack.dump(grid, mode=shaystack.MODE_ZINC)
 
     # WHEN
-    response = shaystack.nav(envs, request, "dev")
+    response = shaystack.nav(envs, request, "dev", ping.Provider(envs))
 
     # THEN
-    mock.assert_called_once_with("01235456789ABCDEF")
+    mock.assert_called_once_with(nav_id='01235456789ABCDEF')
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith(mime_type)
     assert shaystack.parse(response.body, shaystack.MODE_ZINC) is not None

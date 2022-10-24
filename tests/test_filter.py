@@ -341,3 +341,11 @@ def test_xstr():
     grid.append({'id': Ref('id1'), 'data': XStr("hex", 'deadbeef')})
 
     assert len(grid.filter('data == hex("deadbeef")')) == 1
+
+
+def test_filter_with_null_value():
+    grid = Grid(columns={'id': {}, 'site': {}})
+    grid.append({'id': Ref('id1'), 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 0})
+    grid.append({'id': Ref('id2'), 'hvac': MARKER, 'geoPostalCode': "23220", 'curVal': 75})
+
+    assert len(grid.filter('curVal==0')) == 1

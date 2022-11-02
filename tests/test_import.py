@@ -285,7 +285,7 @@ class TestImportLocalFile(unittest.TestCase):
         source_uri = f'{self.source_file_ontologies}/carytown.hayson.json'
         destination_uri = f'{self.imported_file_ontologies}/test2.hayson.json'
         os.rename(f'{self.source_file_ontologies}/carytown-2021-11-01T16:30:00.hayson.json',
-                  f'{self.source_file_ontologies}/carytown-2022-11-01T16:30:00.hayson.json')
+                  f'{self.source_file_ontologies}/carytown-2050-11-01T16:30:00.hayson.json')
 
         assert_raises(ValueError,
                       _update_grid_on_file,

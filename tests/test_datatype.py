@@ -14,7 +14,7 @@ import random
 from copy import copy, deepcopy
 from typing import Dict, Any
 
-from nose.tools import eq_
+import pytest
 
 import shaystack
 from shaystack.datatypes import XStr, Uri, Bin, MARKER, NA, REMOVE, Quantity
@@ -133,41 +133,43 @@ def test_ref_std_method():
     assert str(shaystack.Ref(name='a.ref', value='display text')) == '@a.ref \'display text\''
 
 
-def test_qty_unary_ops():
+
+def _check_qty_op(_fn, *vals):
+    print(_fn)
+    print(*vals)
+    for val in vals:
+        quantity = shaystack.Quantity(val)
+        assert _fn(quantity) == _fn(quantity.m)
+
+
+@pytest.mark.parametrize("a_lambda", [int, complex, float, lambda v: -v, lambda v: +v, abs])
+def test_qty_unary_ops_for_floats(a_lambda):
     # How to run the test: check the result
     # applied to the Quantity object matches what
     # would be returned for the same operation applied
     # to the raw value.
-    def _check_qty_op(_fn, *vals):
-        for val in vals:
-            quantity = shaystack.Quantity(val)
-            assert _fn(quantity) == a_lambda(quantity.m)
-
     # Try this both without, and with, pint enabled
     # These work for floats
-    for a_lambda in (
-            int,
-            complex,
-            float,
-            lambda v: -v,
-            lambda v: +v,
-            abs):
-        yield _check_qty_op, a_lambda, 123.45, -123.45
+    _check_qty_op(a_lambda, 123.45, -123.45)
 
+@pytest.mark.parametrize("a_lambda", [lambda v: oct(int(v)),
+                                      lambda v: hex(int(v)),
+                                      lambda v: v.__index__(),
+                                      int,
+                                      complex,
+                                      float,
+                                      lambda v: -v,
+                                      lambda v: +v,
+                                      abs,
+                                      lambda v: ~int(v), ])
+def test_qty_unary_ops_for_integers(a_lambda):
+    # How to run the test: check the result
+    # applied to the Quantity object matches what
+    # would be returned for the same operation applied
+    # to the raw value.
+    # Try this both without, and with, pint enabled
     # These work for integers
-    for a_lambda in (
-            lambda v: oct(int(v)),
-            lambda v: hex(int(v)),
-            lambda v: v.__index__(),
-            int,
-            complex,
-            float,
-            lambda v: -v,
-            lambda v: +v,
-            abs,
-            lambda v: ~int(v),
-    ):
-        yield _check_qty_op, a_lambda, 123, -123
+    _check_qty_op(a_lambda, 123, -123)
 
 
 def test_qty_hash():
@@ -270,8 +272,8 @@ def test_coord_default_method():
     coord = shaystack.Coordinate(latitude=33.77, longitude=-77.45)
     ref_str = '33.770000° lat -77.450000° long'
 
-    eq_(repr(coord), 'Coordinate(33.77, -77.45)')
-    eq_(str(coord), ref_str)
+    assert repr(coord) == 'Coordinate(33.77, -77.45)'
+    assert str(coord) == ref_str
 
 
 def test_xstr_hex():

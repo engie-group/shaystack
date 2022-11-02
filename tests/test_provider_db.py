@@ -16,7 +16,7 @@ from typing import cast
 
 import psycopg2
 import pytz
-from nose import SkipTest
+import pytest
 from pymongo.errors import ServerSelectionTimeoutError
 from pymysql import OperationalError
 
@@ -43,13 +43,13 @@ def _wrapper(function, provider, db, idx):
         function(provider, db)
     except ServerSelectionTimeoutError as ex:
         _db_providers[idx][2] = False
-        raise SkipTest("Mongo db not started") from ex
+        pytest.skip("Mongo db not started")
     except psycopg2.OperationalError as ex:
         _db_providers[idx][2] = False
-        raise SkipTest("Postgres db not started") from ex
+        pytest.skip("Postgres db not started")
     except OperationalError as ex:
         _db_providers[idx][2] = False
-        raise SkipTest("MySQL db not started") from ex
+        pytest.skip("MySQL db not started")
     except AssertionError as ex:
         traceback.print_exc()
         raise ex
@@ -62,7 +62,7 @@ def _wrapper(function, provider, db, idx):
 def _for_each_provider(function):
     for idx, (provider, db, status) in enumerate(_db_providers):
         if status:
-            yield _wrapper, function, provider, db, idx
+            _wrapper(function, provider, db, idx)
 
 
 def _get_grids():
@@ -124,7 +124,7 @@ def _test_update_grid_in_db(provider_name: str, db: str):
 
 
 def test_update_grid_in_db():
-    yield from _for_each_provider(_test_update_grid_in_db)
+    _for_each_provider(_test_update_grid_in_db)
 
 
 def _test_ops(provider_name: str, db: str):
@@ -135,7 +135,7 @@ def _test_ops(provider_name: str, db: str):
 
 
 def test_ops():
-    yield from _for_each_provider(_test_ops)
+    _for_each_provider(_test_ops)
 
 
 def _test_read_last_without_filter(provider_name: str, db: str):
@@ -154,7 +154,7 @@ def _test_read_last_without_filter(provider_name: str, db: str):
 
 
 def test_read_last_without_filter():
-    yield from _for_each_provider(_test_read_last_without_filter)
+    _for_each_provider(_test_read_last_without_filter)
 
 
 def _test_read_version_without_filter(provider_name: str, db: str):
@@ -174,7 +174,7 @@ def _test_read_version_without_filter(provider_name: str, db: str):
 
 
 def test_read_version_without_filter():
-    yield from _for_each_provider(_test_read_version_without_filter)
+    _for_each_provider(_test_read_version_without_filter)
 
 
 def _test_read_version_with_filter(provider_name: str, db: str):
@@ -193,7 +193,7 @@ def _test_read_version_with_filter(provider_name: str, db: str):
 
 
 def test_read_version_with_filter():
-    yield from _for_each_provider(_test_read_version_with_filter)
+    _for_each_provider(_test_read_version_with_filter)
 
 
 def _test_read_with_marker_equal(provider_name: str, db: str):
@@ -210,7 +210,7 @@ def _test_read_with_marker_equal(provider_name: str, db: str):
 
 
 def test_read_with_marker_equal():
-    yield from _for_each_provider(_test_read_with_marker_equal)
+    _for_each_provider(_test_read_with_marker_equal)
 
 
 def _test_read_with_hour_greater(provider_name: str, db: str):
@@ -227,7 +227,7 @@ def _test_read_with_hour_greater(provider_name: str, db: str):
 
 
 def test_read_with_hour_greater():
-    yield from _for_each_provider(_test_read_with_hour_greater)
+    _for_each_provider(_test_read_with_hour_greater)
 
 
 def _test_read_with_date_greater(provider_name: str, db: str):
@@ -244,7 +244,7 @@ def _test_read_with_date_greater(provider_name: str, db: str):
 
 
 def test_read_with_date_greater():
-    yield from _for_each_provider(_test_read_with_date_greater)
+    _for_each_provider(_test_read_with_date_greater)
 
 
 def _test_read_with_datetime_greater(provider_name: str, db: str):
@@ -261,7 +261,7 @@ def _test_read_with_datetime_greater(provider_name: str, db: str):
 
 
 def test_read_with_datetime_greater():
-    yield from _for_each_provider(_test_read_with_datetime_greater)
+    _for_each_provider(_test_read_with_datetime_greater)
 
 
 def _test_read_with_str_greater(provider_name: str, db: str):
@@ -278,7 +278,7 @@ def _test_read_with_str_greater(provider_name: str, db: str):
 
 
 def test_read_with_str_greater():
-    yield from _for_each_provider(_test_read_with_str_greater)
+    _for_each_provider(_test_read_with_str_greater)
 
 
 def _test_read_version_with_filter_and_select(provider_name: str, db: str):
@@ -296,7 +296,7 @@ def _test_read_version_with_filter_and_select(provider_name: str, db: str):
 
 
 def test_read_version_with_filter_and_select():
-    yield from _for_each_provider(_test_read_version_with_filter_and_select)
+    _for_each_provider(_test_read_version_with_filter_and_select)
 
 
 def _test_read_version_with_ids(provider_name: str, db: str):
@@ -315,7 +315,7 @@ def _test_read_version_with_ids(provider_name: str, db: str):
 
 
 def test_read_version_with_ids():
-    yield from _for_each_provider(_test_read_version_with_ids)
+    _for_each_provider(_test_read_version_with_ids)
 
 
 def _test_version(provider_name: str, db: str):
@@ -328,7 +328,7 @@ def _test_version(provider_name: str, db: str):
 
 
 def test_version():
-    yield from _for_each_provider(_test_version)
+    _for_each_provider(_test_version)
 
 
 def _test_values_for_tag_id(provider_name: str, db: str):
@@ -341,7 +341,7 @@ def _test_values_for_tag_id(provider_name: str, db: str):
 
 
 def test_values_for_tag_id():
-    yield from _for_each_provider(_test_values_for_tag_id)
+    _for_each_provider(_test_values_for_tag_id)
 
 
 def _test_values_for_tag_col(provider_name: str, db: str):
@@ -354,7 +354,7 @@ def _test_values_for_tag_col(provider_name: str, db: str):
 
 
 def test_values_for_tag_col():
-    yield from _for_each_provider(_test_values_for_tag_col)
+    _for_each_provider(_test_values_for_tag_col)
 
 
 def _test_values_for_tag_dis(provider_name: str, db: str):
@@ -366,4 +366,4 @@ def _test_values_for_tag_dis(provider_name: str, db: str):
 
 
 def test_values_for_tag_dis():
-    yield from _for_each_provider(_test_values_for_tag_dis)
+    _for_each_provider(_test_values_for_tag_dis)

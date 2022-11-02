@@ -16,7 +16,7 @@ import datetime
 import logging
 import numbers
 import re
-from collections import MutableSequence, Sequence  # pylint: disable=no-name-in-module
+from collections.abc import MutableSequence, Sequence  # pylint: disable=no-name-in-module
 from typing import Union, Iterable, Any, Optional, KeysView, Tuple, List, cast, Dict
 
 import pytz

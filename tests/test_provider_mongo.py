@@ -2,7 +2,7 @@ import datetime
 from typing import cast
 
 import pytz
-from nose import SkipTest
+import pytest
 from pymongo.errors import ServerSelectionTimeoutError
 
 from shaystack import Ref, Grid
@@ -18,7 +18,7 @@ FAKE_NOW = datetime.datetime(2020, 10, 1, 0, 0, 0, 0, tzinfo=pytz.UTC)
 
 
 def skip(msg: str) -> None:
-    raise SkipTest(msg)
+    pytest.skip(msg)
 
 
 def test_create_db():
@@ -32,7 +32,8 @@ def test_create_db():
             assert "haystack_ts" in provider.get_db().list_collection_names()
             assert "haystack_meta_datas" in provider.get_db().list_collection_names()
     except ServerSelectionTimeoutError as ex:
-        raise SkipTest("Mongo db not started") from ex
+        pytest.skip(f"Mongo db not started: {ex}")
+
 
 
 def test_update_grid():
@@ -52,8 +53,7 @@ def test_update_grid():
             assert in_table[0] == grid[0]
             assert in_table[1] == grid[1]
     except ServerSelectionTimeoutError as ex:
-        raise SkipTest("Mongo db not started") from ex
-
+        pytest.skip(f"Mongo db not started: {ex}")
 
 def test_about():
     with get_provider("shaystack.providers.mongodb",

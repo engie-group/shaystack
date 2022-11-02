@@ -608,8 +608,9 @@ aws-docker-deploy: aws-update-token ~/.docker/config.json
 # -------------------------------------- Tests
 .PHONY: unit-test
 .make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile | .env
+#	echo -e "$(cyan)PYTHON_SRC: $(CONDA_PYTHON)"
 	@$(VALIDATE_VENV)
-	$(CONDA_PYTHON) -m nose -s tests -a '!aws' --where=tests $(NOSETESTS_ARGS)
+	pytest tests
 	date >.make-unit-test
 
 ## Run unit test
@@ -621,10 +622,11 @@ unit-test: .make-unit-test
 ## Run all tests (unit and functional)
 test: .make-test
 
+
 .make-test-aws: aws-update-token
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Running AWS tests...$(normal)"
-	$(CONDA_PYTHON) -m nose -s tests -a 'aws' --where=tests $(NOSETESTS_ARGS)
+	pytest -s  tests
 	echo -e "$(green)AWS tests done$(normal)"
 	date >.make-test-aws
 
@@ -750,7 +752,7 @@ functional-mongodb: $(REQUIREMENTS) #clean-mongodb
 functional-database: $(REQUIREMENTS) start-pg start-mysql start-mongodb
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Test same request with all databases...$(normal)"
-	@$(CONDA_PYTHON) -m nose tests/test_provider_db.py $(NOSETESTS_ARGS)
+	pytest tests/test_provider_db.py
 	echo -e "$(green)Test same request with all databases OK$(normal)"
 
 #functional-db-sqlite and functional-db-sqlite-ts not available
@@ -762,19 +764,33 @@ functional-database: $(REQUIREMENTS) start-pg start-mysql start-mongodb
 functional-test: .make-functional-test
 
 # -------------------------------------- Typing
-pytype.cfg: $(CONDA_PREFIX)/bin/pytype
+#pytype.cfg: $(CONDA_PREFIX)/bin/pytype
+#	@$(VALIDATE_VENV)
+#	[[ ! -f pytype.cfg ]] && pytype --generate-config pytype.cfg || true
+#	touch pytype.cfg
+#
+#.PHONY: typing
+#.make-typing: $(REQUIREMENTS) $(CONDA_PREFIX)/bin/pytype pytype.cfg $(PYTHON_SRC)
+#	@$(VALIDATE_VENV)
+#	echo -e "$(cyan)Check typing...$(normal)"
+#	MYPYPATH=stubs pytype --config=pytype.cfg -V $(PYTHON_VERSION) shaystack app tests
+#	touch .make-typing
+#
+### Check python typing
+#typing: .make-typing
+
+mypy.cfg: $(CONDA_PREFIX)/bin/mypy
 	@$(VALIDATE_VENV)
-	[[ ! -f pytype.cfg ]] && pytype --generate-config pytype.cfg || true
-	touch pytype.cfg
+	[[ ! -f mypy.cfg ]] && mypy --generate-config mypy.cfg || true
+	touch mypy.cfg
 
 .PHONY: typing
-.make-typing: $(REQUIREMENTS) $(CONDA_PREFIX)/bin/pytype pytype.cfg $(PYTHON_SRC)
+.make-typing: $(REQUIREMENTS) $(CONDA_PREFIX)/bin/mypy mypy.cfg $(PYTHON_SRC)
 	@$(VALIDATE_VENV)
-	echo -e "$(cyan)Check typing...$(normal)"
-	MYPYPATH=stubs pytype --config=pytype.cfg -V $(PYTHON_VERSION) shaystack app tests
+	echo -e "$(cyan)Check mypy...$(normal)"
+	MYPYPATH=stubs mypy --config-file=mypy.cfg shaystack app
 	touch .make-typing
 
-## Check python typing
 typing: .make-typing
 
 # -------------------------------------- Lint

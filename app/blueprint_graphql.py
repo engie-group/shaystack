@@ -23,7 +23,9 @@ try:
     # noinspection PyUnresolvedReferences
     from flask import Blueprint
     # noinspection PyUnresolvedReferences
-    from flask_graphql import GraphQLView
+    # from flask_graphql import GraphQLView
+    from graphql_server.flask import GraphQLView
+
 except ImportError:
     os.abort()
 
@@ -48,10 +50,10 @@ def create_graphql_bp(provider: HaystackInterface) -> Blueprint:
 def _dump_haystack_schema(provider) -> None:
     """Print haystack schema to insert in another global schema."""
     # Print only haystack schema
-    from graphql.utils import schema_printer  # pylint: disable=import-outside-toplevel
+    from graphql.utilities import print_schema
     schema = get_schema_for_provider(provider)
 
-    print(schema_printer.print_schema(schema))
+    print(print_schema(schema.graphql_schema))
 
 
 @click.command()

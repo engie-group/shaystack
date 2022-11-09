@@ -24,7 +24,7 @@ log = logging.getLogger("shaystack")
 
 # noinspection PyTypeChecker
 
-def get_schema_for_provider(provider: HaystackInterface) -> graphene.types.schema.Schema:
+def get_schema_for_provider(provider: HaystackInterface):
     class Query(graphene.ObjectType):
         """GraphQL haystack query. To integrate the haystack Graphql API with other
         GraphQL API, see `aws appsync` .
@@ -51,10 +51,11 @@ def get_schema_for_provider(provider: HaystackInterface) -> graphene.types.schem
 def _dump_haystack_schema(provider) -> None:
     """Print haystack schema to insert in another global schema."""
     # Print only haystack schema
-    from graphql.utils import schema_printer  # pylint: disable=import-outside-toplevel
+    from graphql.utilities import print_schema
+
     schema = get_schema_for_provider(provider)
 
-    print(schema_printer.print_schema(schema))
+    print(print_schema(schema.graphql_schema))
 
 
 @click.command()

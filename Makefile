@@ -42,7 +42,7 @@ endif
 
 
 PYTHON_SRC=$(shell find . -name '*.py')
-PYTHON_VERSION?=3.8
+PYTHON_VERSION?=3.10
 PRJ_PACKAGE:=$(PRJ)
 VENV ?= $(PRJ)
 CONDA ?=conda
@@ -633,6 +633,16 @@ test: .make-test
 ## Run only tests with connection with AWS
 test-aws: .make-test-aws
 
+setup-env: $(REQUIREMENTS) $(PYTHON_SRC) | .pylintrc .pylintrc-test
+	@$(VALIDATE_VENV)
+
+amine: $(REQUIREMENTS)
+	@$(VALIDATE_VENV)
+	@echo -e "$(green)Test URL local...$(normal)"
+	@$(MAKE) async-stop-api >/dev/null
+	export HAYSTACK_PROVIDER=shaystack.providers.db
+	export HAYSTACK_DB=sample/carytown.zinc
+	$(MAKE) HAYSTACK_PROVIDER=$$HAYSTACK_PROVIDER HAYSTACK_DB=$$HAYSTACK_DB async-start-api
 
 # Test local deployment with URL provider
 functional-url-local: $(REQUIREMENTS)
@@ -810,9 +820,9 @@ typing: .make-typing
 ## Lint the code
 lint: .make-lint
 
-
+#.make-typing
 .PHONY: validate
-.make-validate: .make-typing .make-lint .make-test .make-test-aws .make-functional-test dist
+.make-validate:  .make-lint .make-test .make-test-aws .make-functional-test dist
 	@echo -e "$(green)The project is validated$(normal)"
 	date >.make-validate
 

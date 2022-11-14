@@ -15,7 +15,7 @@ import sys
 
 import click
 
-from app.schema_graphql import get_schema_for_provider
+from app.schema_graphql import get_schema_for_provider  # type: ignore
 from shaystack import HaystackInterface
 from shaystack.providers import get_provider
 
@@ -23,9 +23,7 @@ try:
     # noinspection PyUnresolvedReferences
     from flask import Blueprint
     # noinspection PyUnresolvedReferences
-    # from flask_graphql import GraphQLView
     from graphql_server.flask import GraphQLView
-
 except ImportError:
     os.abort()
 
@@ -41,7 +39,7 @@ def create_graphql_bp(provider: HaystackInterface) -> Blueprint:
     graphql_blueprint.add_url_rule('',
                                    view_func=GraphQLView.as_view(
                                        'graphql',
-                                       schema=schema,
+                                       schema=schema.graphql_schema,
                                        graphiql=True,
                                    ))
     return graphql_blueprint

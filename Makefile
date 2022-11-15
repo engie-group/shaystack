@@ -608,7 +608,6 @@ aws-docker-deploy: aws-update-token ~/.docker/config.json
 # -------------------------------------- Tests
 .PHONY: unit-test
 .make-unit-test: $(REQUIREMENTS) $(PYTHON_SRC) Makefile | .env
-#	echo -e "$(cyan)PYTHON_SRC: $(CONDA_PYTHON)"
 	@$(VALIDATE_VENV)
 	pytest tests
 	date >.make-unit-test
@@ -622,7 +621,6 @@ unit-test: .make-unit-test
 ## Run all tests (unit and functional)
 test: .make-test
 
-
 .make-test-aws: aws-update-token
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Running AWS tests...$(normal)"
@@ -633,16 +631,6 @@ test: .make-test
 ## Run only tests with connection with AWS
 test-aws: .make-test-aws
 
-setup-env: $(REQUIREMENTS) $(PYTHON_SRC) | .pylintrc .pylintrc-test
-	@$(VALIDATE_VENV)
-
-amine: $(REQUIREMENTS)
-	@$(VALIDATE_VENV)
-	@echo -e "$(green)Test URL local...$(normal)"
-	@$(MAKE) async-stop-api >/dev/null
-	export HAYSTACK_PROVIDER=shaystack.providers.db
-	export HAYSTACK_DB=sample/carytown.zinc
-	$(MAKE) HAYSTACK_PROVIDER=$$HAYSTACK_PROVIDER HAYSTACK_DB=$$HAYSTACK_DB async-start-api
 
 # Test local deployment with URL provider
 functional-url-local: $(REQUIREMENTS)
@@ -774,21 +762,6 @@ functional-database: $(REQUIREMENTS) start-pg start-mysql start-mongodb
 functional-test: .make-functional-test
 
 # -------------------------------------- Typing
-#pytype.cfg: $(CONDA_PREFIX)/bin/pytype
-#	@$(VALIDATE_VENV)
-#	[[ ! -f pytype.cfg ]] && pytype --generate-config pytype.cfg || true
-#	touch pytype.cfg
-#
-#.PHONY: typing
-#.make-typing: $(REQUIREMENTS) $(CONDA_PREFIX)/bin/pytype pytype.cfg $(PYTHON_SRC)
-#	@$(VALIDATE_VENV)
-#	echo -e "$(cyan)Check typing...$(normal)"
-#	MYPYPATH=stubs pytype --config=pytype.cfg -V $(PYTHON_VERSION) shaystack app tests
-#	touch .make-typing
-#
-### Check python typing
-#typing: .make-typing
-
 mypy.cfg: $(CONDA_PREFIX)/bin/mypy
 	@$(VALIDATE_VENV)
 	[[ ! -f mypy.cfg ]] && mypy --generate-config mypy.cfg || true
@@ -801,6 +774,7 @@ mypy.cfg: $(CONDA_PREFIX)/bin/mypy
 	MYPYPATH=stubs mypy --config-file=mypy.cfg shaystack app
 	touch .make-typing
 
+## Check python typing
 typing: .make-typing
 
 # -------------------------------------- Lint

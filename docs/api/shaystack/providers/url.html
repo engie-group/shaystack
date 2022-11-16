@@ -1702,7 +1702,7 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
 </details>
 </dd>
 <dt id="shaystack.providers.url.Provider.his_read"><code class="name flex">
-<span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Tuple[datetime.datetime, datetime.datetime], date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Tuple[datetime.datetime, datetime.datetime], date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement Haystack 'hisRead'</p></div>
@@ -1774,7 +1774,7 @@ def his_read(
 </details>
 </dd>
 <dt id="shaystack.providers.url.Provider.import_data"><code class="name flex">
-<span>def <span class="ident">import_data</span></span>(<span>self, source_uri: str, customer_id: str = '', reset: bool = False, version: Union[datetime.datetime, NoneType] = None) ‑> NoneType</span>
+<span>def <span class="ident">import_data</span></span>(<span>self, source_uri: str, customer_id: str = '', reset: bool = False, version: Optional[datetime.datetime] = None) ‑> NoneType</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Import source grid file on destination, only if something was changed.
@@ -1837,7 +1837,7 @@ def import_data(self,  # pylint: disable=too-many-arguments
 </details>
 </dd>
 <dt id="shaystack.providers.url.Provider.read"><code class="name flex">
-<span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Union[str, NoneType], entity_ids: Union[List[shaystack.datatypes.Ref], NoneType] = None, grid_filter: Union[str, NoneType] = None, date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Optional[str], entity_ids: Optional[List[shaystack.datatypes.Ref]] = None, grid_filter: Optional[str] = None, date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement Haystack 'read'</p></div>

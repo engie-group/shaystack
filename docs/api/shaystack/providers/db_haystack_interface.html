@@ -241,7 +241,7 @@ def create_db(self) -&gt; None:
 </details>
 </dd>
 <dt id="shaystack.providers.db_haystack_interface.DBHaystackInterface.import_data"><code class="name flex">
-<span>def <span class="ident">import_data</span></span>(<span>self, source_uri: str, customer_id: str = '', reset: bool = False, version: Union[datetime.datetime, NoneType] = None) ‑> NoneType</span>
+<span>def <span class="ident">import_data</span></span>(<span>self, source_uri: str, customer_id: str = '', reset: bool = False, version: Optional[datetime.datetime] = None) ‑> NoneType</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Import source URI to destination URI.</p>
@@ -278,7 +278,7 @@ def import_data(self,
 </details>
 </dd>
 <dt id="shaystack.providers.db_haystack_interface.DBHaystackInterface.import_ts"><code class="name flex">
-<span>def <span class="ident">import_ts</span></span>(<span>self, source_uri: str, customer_id: str = '', version: Union[datetime.datetime, NoneType] = None)</span>
+<span>def <span class="ident">import_ts</span></span>(<span>self, source_uri: str, customer_id: str = '', version: Optional[datetime.datetime] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Import only TS.</p>
@@ -326,7 +326,7 @@ def purge_db(self) -&gt; None:
 </details>
 </dd>
 <dt id="shaystack.providers.db_haystack_interface.DBHaystackInterface.read_grid"><code class="name flex">
-<span>def <span class="ident">read_grid</span></span>(<span>self, customer_id: str = '', version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">read_grid</span></span>(<span>self, customer_id: str = '', version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Read all haystack data for a specific customer, from the database and return a Grid.</p>
@@ -358,7 +358,7 @@ def read_grid(self,
 </details>
 </dd>
 <dt id="shaystack.providers.db_haystack_interface.DBHaystackInterface.update_grid"><code class="name flex">
-<span>def <span class="ident">update_grid</span></span>(<span>self, diff_grid: shaystack.grid.Grid, version: Union[datetime.datetime, NoneType], customer_id: Union[str, NoneType], now: Union[datetime.datetime, NoneType] = None) ‑> NoneType</span>
+<span>def <span class="ident">update_grid</span></span>(<span>self, diff_grid: shaystack.grid.Grid, version: Optional[datetime.datetime], customer_id: Optional[str], now: Optional[datetime.datetime] = None) ‑> NoneType</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Import the diff_grid inside the database.</p>

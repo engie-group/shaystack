@@ -50,10 +50,8 @@ from shaystack import HaystackInterface
 from shaystack.providers import get_provider
 
 try:
-    # noinspection PyUnresolvedReferences
     from flask import Blueprint
-    # noinspection PyUnresolvedReferences
-    from flask_graphql import GraphQLView
+    from graphql_server.flask import GraphQLView
 except ImportError:
     os.abort()
 
@@ -69,7 +67,7 @@ def create_graphql_bp(provider: HaystackInterface) -&gt; Blueprint:
     graphql_blueprint.add_url_rule(&#39;&#39;,
                                    view_func=GraphQLView.as_view(
                                        &#39;graphql&#39;,
-                                       schema=schema,
+                                       schema=schema.graphql_schema,
                                        graphiql=True,
                                    ))
     return graphql_blueprint
@@ -78,10 +76,10 @@ def create_graphql_bp(provider: HaystackInterface) -&gt; Blueprint:
 def _dump_haystack_schema(provider) -&gt; None:
     &#34;&#34;&#34;Print haystack schema to insert in another global schema.&#34;&#34;&#34;
     # Print only haystack schema
-    from graphql.utils import schema_printer  # pylint: disable=import-outside-toplevel
+    from graphql.utilities import print_schema
     schema = get_schema_for_provider(provider)
 
-    print(schema_printer.print_schema(schema))
+    print(print_schema(schema.graphql_schema))
 
 
 @click.command()
@@ -124,7 +122,7 @@ if __name__ == &#39;__main__&#39;:
     graphql_blueprint.add_url_rule(&#39;&#39;,
                                    view_func=GraphQLView.as_view(
                                        &#39;graphql&#39;,
-                                       schema=schema,
+                                       schema=schema.graphql_schema,
                                        graphiql=True,
                                    ))
     return graphql_blueprint</code></pre>

@@ -381,7 +381,7 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
 </details>
 </dd>
 <dt id="shaystack.providers.db.Provider.his_read"><code class="name flex">
-<span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Union[Tuple[datetime.datetime, datetime.datetime], NoneType] = None, date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Optional[Tuple[datetime.datetime, datetime.datetime]] = None, date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement Haystack 'hisRead'</p></div>
@@ -401,7 +401,7 @@ def his_read(
 </details>
 </dd>
 <dt id="shaystack.providers.db.Provider.read"><code class="name flex">
-<span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Union[str, NoneType], entity_ids: Union[List[shaystack.datatypes.Ref], NoneType] = None, grid_filter: Union[str, NoneType] = None, date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Optional[str], entity_ids: Optional[List[shaystack.datatypes.Ref]] = None, grid_filter: Optional[str] = None, date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement Haystack 'read'</p></div>

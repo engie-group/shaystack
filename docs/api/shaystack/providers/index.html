@@ -165,8 +165,7 @@ and detect the implemented and abstract methods.</p>
     &#34;&#34;&#34;
     if not class_str.endswith(&#34;.Provider&#34;):
         class_str += &#34;.Provider&#34;
-    # if not no_cache(envs) and class_str in _providers:
-    #     return _providers[class_str]
+
     module_path, class_name = class_str.rsplit(&#34;.&#34;, 1)
     module = import_module(module_path)
     # Get the abstract class name
@@ -753,7 +752,7 @@ def about(self, home: str) -&gt; Grid:
 </details>
 </dd>
 <dt id="shaystack.providers.HaystackInterface.formats"><code class="name flex">
-<span>def <span class="ident">formats</span></span>(<span>self) ‑> Union[shaystack.grid.Grid, NoneType]</span>
+<span>def <span class="ident">formats</span></span>(<span>self) ‑> Optional[shaystack.grid.Grid]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'formats' ops.</p>
@@ -808,7 +807,7 @@ May be, extract the customer id from the current <code>Principal</code>.</p></di
 </details>
 </dd>
 <dt id="shaystack.providers.HaystackInterface.his_read"><code class="name flex">
-<span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Tuple[datetime.datetime, datetime.datetime], date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Tuple[datetime.datetime, datetime.datetime], date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'hisRead' ops.</p>
@@ -850,7 +849,7 @@ def his_read(
 </details>
 </dd>
 <dt id="shaystack.providers.HaystackInterface.his_write"><code class="name flex">
-<span>def <span class="ident">his_write</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, time_series: shaystack.grid.Grid, date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">his_write</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, time_series: shaystack.grid.Grid, date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'hisWrite' ops.</p>
@@ -890,7 +889,7 @@ def his_write(
 </details>
 </dd>
 <dt id="shaystack.providers.HaystackInterface.invoke_action"><code class="name flex">
-<span>def <span class="ident">invoke_action</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, action: str, params: Dict[str, Any], date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">invoke_action</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, action: str, params: Dict[str, Any], date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'invokeAction' ops.</p>
@@ -1034,7 +1033,7 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
 </details>
 </dd>
 <dt id="shaystack.providers.HaystackInterface.point_write_read"><code class="name flex">
-<span>def <span class="ident">point_write_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, date_version: Union[datetime.datetime, NoneType]) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">point_write_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, date_version: Optional[datetime.datetime]) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'pointWrite' ops.</p>
@@ -1068,7 +1067,7 @@ def point_write_read(
 </details>
 </dd>
 <dt id="shaystack.providers.HaystackInterface.point_write_write"><code class="name flex">
-<span>def <span class="ident">point_write_write</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, level: int, val: Union[Any, NoneType], duration: shaystack.datatypes.Quantity, who: Union[str, NoneType], date_version: Union[datetime.datetime, NoneType] = None) ‑> NoneType</span>
+<span>def <span class="ident">point_write_write</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, level: int, val: Optional[Any], duration: shaystack.datatypes.Quantity, who: Optional[str], date_version: Optional[datetime.datetime] = None) ‑> NoneType</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'pointWrite' ops.</p>
@@ -1120,7 +1119,7 @@ def point_write_write(
 </details>
 </dd>
 <dt id="shaystack.providers.HaystackInterface.read"><code class="name flex">
-<span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Union[str, NoneType], entity_ids: Union[List[shaystack.datatypes.Ref], NoneType], grid_filter: Union[str, NoneType], date_version: Union[datetime.datetime, NoneType]) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Optional[str], entity_ids: Optional[List[shaystack.datatypes.Ref]], grid_filter: Optional[str], date_version: Optional[datetime.datetime]) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'read' ops.</p>
@@ -1169,7 +1168,7 @@ def read(
 </details>
 </dd>
 <dt id="shaystack.providers.HaystackInterface.values_for_tag"><code class="name flex">
-<span>def <span class="ident">values_for_tag</span></span>(<span>self, tag: str, date_version: Union[datetime.datetime, NoneType] = None) ‑> List[Any]</span>
+<span>def <span class="ident">values_for_tag</span></span>(<span>self, tag: str, date_version: Optional[datetime.datetime] = None) ‑> List[Any]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Get all values for a given tag.</p>
@@ -1255,7 +1254,7 @@ def watch_poll(
 </details>
 </dd>
 <dt id="shaystack.providers.HaystackInterface.watch_sub"><code class="name flex">
-<span>def <span class="ident">watch_sub</span></span>(<span>self, watch_dis: str, watch_id: Union[str, NoneType], ids: List[shaystack.datatypes.Ref], lease: Union[int, NoneType]) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">watch_sub</span></span>(<span>self, watch_dis: str, watch_id: Optional[str], ids: List[shaystack.datatypes.Ref], lease: Optional[int]) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'watchSub' ops.</p>

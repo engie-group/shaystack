@@ -180,19 +180,6 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="shaystack.MODE"><code class="name flex">
-<span>def <span class="ident">MODE</span></span>(<span>x)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def new_type(x):
-    return x</code></pre>
-</details>
-</dd>
 <dt id="shaystack.about"><code class="name flex">
 <span>def <span class="ident">about</span></span>(<span>envs: Dict[str, str], request: shaystack.ops.HaystackHttpRequest, stage: str, provider: <a title="shaystack.providers.haystack_interface.HaystackInterface" href="providers/haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface">HaystackInterface</a>) ‑> shaystack.ops.HaystackHttpResponse</span>
 </code></dt>
@@ -248,7 +235,7 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
 </details>
 </dd>
 <dt id="shaystack.dump"><code class="name flex">
-<span>def <span class="ident">dump</span></span>(<span>grid: shaystack.grid.Grid, mode: Mode = 'text/zinc') ‑> str</span>
+<span>def <span class="ident">dump</span></span>(<span>grid: shaystack.grid.Grid, mode: shaystack.datatypes.Mode = 'text/zinc') ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Dump a single grid in the specified over-the-wire format.</p>
@@ -284,7 +271,7 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
 </details>
 </dd>
 <dt id="shaystack.dump_scalar"><code class="name flex">
-<span>def <span class="ident">dump_scalar</span></span>(<span>scalar: Any, mode: Mode = 'text/zinc', version: shaystack.version.Version = &lt;shaystack.version.Version object&gt;) ‑> Union[str, NoneType]</span>
+<span>def <span class="ident">dump_scalar</span></span>(<span>scalar: Any, mode: shaystack.datatypes.Mode = 'text/zinc', version: shaystack.version.Version = &lt;shaystack.version.Version object&gt;) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Dump a scalar value in the specified over-the-wire format and version.</p>
@@ -598,7 +585,7 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
 </details>
 </dd>
 <dt id="shaystack.mode_to_suffix"><code class="name flex">
-<span>def <span class="ident">mode_to_suffix</span></span>(<span>mode: Mode) ‑> Union[str, NoneType]</span>
+<span>def <span class="ident">mode_to_suffix</span></span>(<span>mode: shaystack.datatypes.Mode) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Convert haystack mode to file suffix</p>
@@ -676,7 +663,7 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
 </details>
 </dd>
 <dt id="shaystack.parse"><code class="name flex">
-<span>def <span class="ident">parse</span></span>(<span>grid_str: str, mode: Mode = 'text/zinc') ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">parse</span></span>(<span>grid_str: str, mode: shaystack.datatypes.Mode = 'text/zinc') ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Parse a grid.</p>
@@ -799,7 +786,7 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
 </details>
 </dd>
 <dt id="shaystack.parse_scalar"><code class="name flex">
-<span>def <span class="ident">parse_scalar</span></span>(<span>scalar: Union[bytes, str, dict], mode: Mode = 'text/zinc', version: Union[shaystack.version.Version, str] = &lt;shaystack.version.Version object&gt;) ‑> Any</span>
+<span>def <span class="ident">parse_scalar</span></span>(<span>scalar: Union[bytes, str, dict], mode: shaystack.datatypes.Mode = 'text/zinc', version: Union[shaystack.version.Version, str] = &lt;shaystack.version.Version object&gt;) ‑> Any</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Parse a scalar value</p>
@@ -1032,7 +1019,7 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
 </details>
 </dd>
 <dt id="shaystack.suffix_to_mode"><code class="name flex">
-<span>def <span class="ident">suffix_to_mode</span></span>(<span>ext: str) ‑> Union[Mode, NoneType]</span>
+<span>def <span class="ident">suffix_to_mode</span></span>(<span>ext: str) ‑> Optional[shaystack.datatypes.Mode]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Convert a file suffix to Haystack mode</p>
@@ -2192,7 +2179,7 @@ and rows</p>
 </details>
 </dd>
 <dt id="shaystack.Grid.get"><code class="name flex">
-<span>def <span class="ident">get</span></span>(<span>self, index: shaystack.datatypes.Ref, default: Union[Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, List[Any], Dict[str, Any], NoneType]], NoneType] = None) ‑> Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, List[Any], Dict[str, Any], NoneType]]</span>
+<span>def <span class="ident">get</span></span>(<span>self, index: shaystack.datatypes.Ref, default: Optional[Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, List[Any], Dict[str, Any], NoneType]]] = None) ‑> Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, List[Any], Dict[str, Any], NoneType]]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Return an entity with the corresponding id.</p>
@@ -2315,7 +2302,7 @@ and rows</p>
 </details>
 </dd>
 <dt id="shaystack.Grid.pop"><code class="name flex">
-<span>def <span class="ident">pop</span></span>(<span>self, *index: Union[int, shaystack.datatypes.Ref]) ‑> Union[Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, List[Any], Dict[str, Any], NoneType]], NoneType]</span>
+<span>def <span class="ident">pop</span></span>(<span>self, *index: Union[int, shaystack.datatypes.Ref]) ‑> Optional[Dict[str, Union[str, int, float, bool, datetime.date, datetime.time, datetime.datetime, shaystack.datatypes.Ref, shaystack.datatypes.Quantity, shaystack.datatypes.Coordinate, shaystack.datatypes.Uri, shaystack.datatypes.Bin, shaystack.datatypes.XStr, shaystack.datatypes._MarkerType, shaystack.datatypes._NAType, shaystack.datatypes._RemoveType, List[Any], Dict[str, Any], NoneType]]]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Delete the row at index or with specified Ref id. If multiple
@@ -2408,7 +2395,7 @@ Returns
 </details>
 </dd>
 <dt id="shaystack.Grid.select"><code class="name flex">
-<span>def <span class="ident">select</span></span>(<span>self, select: Union[str, NoneType]) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">select</span></span>(<span>self, select: Optional[str]) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Select only some tags in the grid.</p>
@@ -2974,7 +2961,7 @@ def about(self, home: str) -&gt; Grid:
 </details>
 </dd>
 <dt id="shaystack.HaystackInterface.formats"><code class="name flex">
-<span>def <span class="ident">formats</span></span>(<span>self) ‑> Union[shaystack.grid.Grid, NoneType]</span>
+<span>def <span class="ident">formats</span></span>(<span>self) ‑> Optional[shaystack.grid.Grid]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'formats' ops.</p>
@@ -3029,7 +3016,7 @@ May be, extract the customer id from the current <code>Principal</code>.</p></di
 </details>
 </dd>
 <dt id="shaystack.HaystackInterface.his_read"><code class="name flex">
-<span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Tuple[datetime.datetime, datetime.datetime], date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Tuple[datetime.datetime, datetime.datetime], date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'hisRead' ops.</p>
@@ -3071,7 +3058,7 @@ def his_read(
 </details>
 </dd>
 <dt id="shaystack.HaystackInterface.his_write"><code class="name flex">
-<span>def <span class="ident">his_write</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, time_series: shaystack.grid.Grid, date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">his_write</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, time_series: shaystack.grid.Grid, date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'hisWrite' ops.</p>
@@ -3111,7 +3098,7 @@ def his_write(
 </details>
 </dd>
 <dt id="shaystack.HaystackInterface.invoke_action"><code class="name flex">
-<span>def <span class="ident">invoke_action</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, action: str, params: Dict[str, Any], date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">invoke_action</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, action: str, params: Dict[str, Any], date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'invokeAction' ops.</p>
@@ -3255,7 +3242,7 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
 </details>
 </dd>
 <dt id="shaystack.HaystackInterface.point_write_read"><code class="name flex">
-<span>def <span class="ident">point_write_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, date_version: Union[datetime.datetime, NoneType]) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">point_write_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, date_version: Optional[datetime.datetime]) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'pointWrite' ops.</p>
@@ -3289,7 +3276,7 @@ def point_write_read(
 </details>
 </dd>
 <dt id="shaystack.HaystackInterface.point_write_write"><code class="name flex">
-<span>def <span class="ident">point_write_write</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, level: int, val: Union[Any, NoneType], duration: shaystack.datatypes.Quantity, who: Union[str, NoneType], date_version: Union[datetime.datetime, NoneType] = None) ‑> NoneType</span>
+<span>def <span class="ident">point_write_write</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, level: int, val: Optional[Any], duration: shaystack.datatypes.Quantity, who: Optional[str], date_version: Optional[datetime.datetime] = None) ‑> NoneType</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'pointWrite' ops.</p>
@@ -3341,7 +3328,7 @@ def point_write_write(
 </details>
 </dd>
 <dt id="shaystack.HaystackInterface.read"><code class="name flex">
-<span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Union[str, NoneType], entity_ids: Union[List[shaystack.datatypes.Ref], NoneType], grid_filter: Union[str, NoneType], date_version: Union[datetime.datetime, NoneType]) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Optional[str], entity_ids: Optional[List[shaystack.datatypes.Ref]], grid_filter: Optional[str], date_version: Optional[datetime.datetime]) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'read' ops.</p>
@@ -3390,7 +3377,7 @@ def read(
 </details>
 </dd>
 <dt id="shaystack.HaystackInterface.values_for_tag"><code class="name flex">
-<span>def <span class="ident">values_for_tag</span></span>(<span>self, tag: str, date_version: Union[datetime.datetime, NoneType] = None) ‑> List[Any]</span>
+<span>def <span class="ident">values_for_tag</span></span>(<span>self, tag: str, date_version: Optional[datetime.datetime] = None) ‑> List[Any]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Get all values for a given tag.</p>
@@ -3476,7 +3463,7 @@ def watch_poll(
 </details>
 </dd>
 <dt id="shaystack.HaystackInterface.watch_sub"><code class="name flex">
-<span>def <span class="ident">watch_sub</span></span>(<span>self, watch_dis: str, watch_id: Union[str, NoneType], ids: List[shaystack.datatypes.Ref], lease: Union[int, NoneType]) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">watch_sub</span></span>(<span>self, watch_dis: str, watch_id: Optional[str], ids: List[shaystack.datatypes.Ref], lease: Optional[int]) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'watchSub' ops.</p>
@@ -3562,7 +3549,7 @@ def watch_unsub(
 </dd>
 <dt id="shaystack.MetadataObject"><code class="flex name class">
 <span>class <span class="ident">MetadataObject</span></span>
-<span>(</span><span>initial: Union[NoneType, List[Tuple[str, Any]], Dict[str, Any]] = None, validate_fn: Union[Callable[[Any], bool], NoneType] = None)</span>
+<span>(</span><span>initial: Union[NoneType, List[Tuple[str, Any]], Dict[str, Any]] = None, validate_fn: Optional[Callable[[Any], bool]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>An object that contains some metadata fields.</p>
@@ -3769,7 +3756,7 @@ symbol: The original symbol</p></div>
 </dd>
 <dt id="shaystack.Ref"><code class="flex name class">
 <span>class <span class="ident">Ref</span></span>
-<span>(</span><span>name: str, value: Union[str, NoneType] = None)</span>
+<span>(</span><span>name: str, value: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A reference to an object in Project Haystack.</p>
@@ -4257,7 +4244,6 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="shaystack.MODE" href="#shaystack.MODE">MODE</a></code></li>
 <li><code><a title="shaystack.about" href="#shaystack.about">about</a></code></li>
 <li><code><a title="shaystack.dump" href="#shaystack.dump">dump</a></code></li>
 <li><code><a title="shaystack.dump_scalar" href="#shaystack.dump_scalar">dump_scalar</a></code></li>

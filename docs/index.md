@@ -167,17 +167,17 @@ df = panda.DataFrame(grid.filter("point and co2e"))  # Convert grid to data fram
 
 Shift-4-Haystack is agile and can be deployed in different scenarios. Choose an option for each feature.
 
-| Haystack backend                  |        Python version         | Deployment              |Multi tenancy             | API                                               |
-| --------------------------------- |:-----------------------------:| ----------------------- |------------------------- | ------------------------------------------------- |
-| local file                        |              3.7              | Internet Flask server   |Single tenancy            | Haystack HTTP API                                 |
-| url                               |              3.8              | Edge Flask server       |Multiple, shared table    | Standalone GraphQL API                            |
-| S3 bucket without version         |              3.9              | Docker Flask server     |Multiple, dedicated table | GraphQL API integrated inside another via AppSync |
-| S3 bucket with version            |                               | Internet AWS Lambda API |||
-| Sqlite database                   | Not available in this release |||
-| Postgres database                 ||||
-| MySQL database                    ||||
-| Mongo database                    ||||
-| haystack backend + AWS Timestream ||||
+| Haystack backend                                | Python version | Deployment              |Multi tenancy             | API                                               |
+|-------------------------------------------------|:--------------:| ----------------------- |------------------------- | ------------------------------------------------- |
+| local file                                      |      3.7       | Internet Flask server   |Single tenancy            | Haystack HTTP API                                 |
+| url                                             |      3.8       | Edge Flask server       |Multiple, shared table    | Standalone GraphQL API                            |
+| S3 bucket without version                       |      3.9       | Docker Flask server     |Multiple, dedicated table | GraphQL API integrated inside another via AppSync |
+| S3 bucket with version                          |      3.10      | Internet AWS Lambda API |||
+| Sqlite database (Not available in this release) ||||
+| Postgres database                               ||||
+| MySQL database                                  ||||
+| Mongo database                                  ||||
+| haystack backend + AWS Timestream               ||||
 
 | Serverless  | Technologies                             |
 | ----------- | ---------------------------------------- |

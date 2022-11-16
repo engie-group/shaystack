@@ -6,6 +6,11 @@ on:
     branches:
       - develop
       - release/**
+
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest

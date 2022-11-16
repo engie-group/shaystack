@@ -794,9 +794,9 @@ typing: .make-typing
 ## Lint the code
 lint: .make-lint
 
-#.make-typing
+
 .PHONY: validate
-.make-validate: .make-lint .make-test .make-test-aws .make-functional-test dist
+.make-validate: .make-typing .make-lint .make-test .make-test-aws .make-functional-test dist
 	@echo -e "$(green)The project is validated$(normal)"
 	date >.make-validate
 

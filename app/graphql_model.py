@@ -16,9 +16,6 @@ from typing import Optional, List, Any, Union, Type
 import graphene
 import pytz
 from graphql.type import GraphQLResolveInfo as ResolveInfo
-
-# from graphql.language.ast import StringValue, IntValue, FloatValue, BooleanValue, EnumValue
-# from graphql.type import ResolveInfo
 from graphql.language import StringValueNode, IntValueNode, FloatValueNode, BooleanValueNode, EnumValueNode
 
 import shaystack

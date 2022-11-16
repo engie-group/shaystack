@@ -15,14 +15,12 @@ import sys
 
 import click
 
-from app.schema_graphql import get_schema_for_provider  # type: ignore
+from app.schema_graphql import get_schema_for_provider
 from shaystack import HaystackInterface
 from shaystack.providers import get_provider
 
 try:
-    # noinspection PyUnresolvedReferences
     from flask import Blueprint
-    # noinspection PyUnresolvedReferences
     from graphql_server.flask import GraphQLView
 except ImportError:
     os.abort()

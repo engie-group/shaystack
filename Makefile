@@ -771,7 +771,7 @@ mypy.cfg: $(CONDA_PREFIX)/bin/mypy
 .make-typing: $(REQUIREMENTS) $(CONDA_PREFIX)/bin/mypy mypy.cfg $(PYTHON_SRC)
 	@$(VALIDATE_VENV)
 	echo -e "$(cyan)Check mypy...$(normal)"
-	MYPYPATH=stubs mypy --config-file=mypy.cfg shaystack app
+	MYPYPATH=stubs mypy --config-file=mypy.cfg shaystack app tests
 	touch .make-typing
 
 ## Check python typing

@@ -15,7 +15,7 @@ import sys
 
 import click
 
-from app.schema_graphql import get_schema_for_provider
+from schema_graphql import get_schema_for_provider
 from shaystack import HaystackInterface
 from shaystack.providers import get_provider
 
@@ -59,7 +59,7 @@ def main() -> int:
     >partial_gql.graphql
     """
     provider_name = os.environ.get("HAYSTACK_PROVIDER", "shaystack.providers.db")
-    provider = get_provider(provider_name, os.environ)
+    provider = get_provider(provider_name, dict(os.environ))
     _dump_haystack_schema(provider)
     return 0
 

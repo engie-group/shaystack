@@ -436,9 +436,7 @@ class ReadHaystack(graphene.ObjectType):
             parent.provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version),
             info
         )
-            for entity_id in ids]
-        # return [parent.provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version)
-        #         for entity_id in ids]
+            for entity_id in ids]  # type: ignore
 
     # noinspection PyUnusedLocal
     @staticmethod
@@ -457,7 +455,6 @@ class ReadHaystack(graphene.ObjectType):
     @staticmethod
     def _conv_value(entity: Entity,
                     info: ResolveInfo) -> HSTS:
-        # selection = info.field_asts[0].selection_set.selections
         selection = info.field_nodes[0].selection_set.selections
         cast_value = HSTS()
         value = entity["val"]

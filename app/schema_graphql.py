@@ -17,14 +17,14 @@ import graphene
 
 from shaystack import HaystackInterface
 from shaystack.providers import get_provider
-from app.graphql_model import ReadHaystack
+from graphql_model import ReadHaystack
 
 log = logging.getLogger("shaystack")
 
 
 # noinspection PyTypeChecker
 
-def get_schema_for_provider(provider: HaystackInterface):
+def get_schema_for_provider(provider: HaystackInterface) -> graphene.types.schema.Schema:
     class Query(graphene.ObjectType):
         """GraphQL haystack query. To integrate the haystack Graphql API with other
         GraphQL API, see `aws appsync` .

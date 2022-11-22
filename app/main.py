@@ -18,7 +18,7 @@ from shaystack.providers import get_provider
 
 try:
     from flask_cors import CORS
-    from app.blueprint_haystack import create_haystack_bp
+    from blueprint_haystack import create_haystack_bp
 except ImportError as ex:
     print('To start shift-4-haystack, use \'pip install "shaystack[flask]"\' or '
           '\'pip install "shaystack[flask,graphql]"\' and set \'HAYSTACK_PROVIDER\' variable',
@@ -28,7 +28,7 @@ except ImportError as ex:
 USE_GRAPHQL = False
 try:
     import graphene  # pylint: disable=unused-import
-    from app.blueprint_graphql import create_graphql_bp  # pylint: disable=ungrouped-imports
+    from blueprint_graphql import create_graphql_bp  # pylint: disable=ungrouped-imports
 
     USE_GRAPHQL = True
 except ImportError:

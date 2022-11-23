@@ -22,10 +22,11 @@ class _ImmuableGrid(Grid):
     def __add__(self, other: 'Grid') -> 'Grid':
         raise NotImplementedError("Read only grid")
 
-    def __setitem__(self, index: Union[int, Ref, slice], value: Union[Entity, List[Entity]]) -> 'Grid':
+    def __setitem__(self, index: Union[int, Ref, slice],  # type: ignore
+                    value: Union[Entity, List[Entity]]) -> 'Grid':
         raise NotImplementedError("Read only grid")
 
-    def __delitem__(self, key: Union[int, Ref]) -> Optional[Entity]:
+    def __delitem__(self, key: Union[int, Ref]) -> Optional[Entity]:  # type: ignore
         raise NotImplementedError("Read only grid")
 
     def clear(self):
@@ -34,7 +35,7 @@ class _ImmuableGrid(Grid):
     def pop(self, *index: Union[int, Ref]) -> Optional[Entity]:
         raise NotImplementedError("Read only grid")
 
-    def insert(self, index: int, value: Entity) -> 'Grid':
+    def insert(self, index: int, value: Entity) -> 'Grid':  # type: ignore
         raise NotImplementedError("Read only grid")
 
     def reindex(self) -> 'Grid':
@@ -46,7 +47,7 @@ class _ImmuableGrid(Grid):
     def extends_columns(self) -> 'Grid':
         raise NotImplementedError("Read only grid")
 
-    def extend(self, values: Iterable[Entity]) -> 'Grid':
+    def extend(self, values: Iterable[Entity]) -> 'Grid':  # type: ignore
         raise NotImplementedError("Read only grid")
 
     def sort(self, tag: str) -> 'Grid':

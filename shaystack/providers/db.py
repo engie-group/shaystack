@@ -87,7 +87,7 @@ class Provider(DBHaystackInterface):
     @property
     def name(self) -> str:
         # noinspection PyCallingNonCallable
-        return self._delegate.name()
+        return self._delegate.name()  # type: ignore
 
     @overrides
     def values_for_tag(self, tag: str,
@@ -119,14 +119,14 @@ class Provider(DBHaystackInterface):
         return self._delegate.read(limit, select, entity_ids, grid_filter, date_version)
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Optional[Tuple[datetime, datetime]] = None,
             date_version: Optional[datetime] = None,
     ) -> Grid:
         """ Implement Haystack 'hisRead' """
-        return self._delegate.his_read(entity_id, dates_range, date_version)
+        return self._delegate.his_read(entity_id, dates_range, date_version)  # type: ignore
 
     @overrides
     def create_db(self) -> None:

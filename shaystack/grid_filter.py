@@ -24,9 +24,9 @@ from .zincparser import hs_scalar_3_0, hs_id, hs_all_date, hs_date, \
 
 # Necessary for generated code
 _ = XStr
-_ = MARKER
-_ = NA
-_ = REMOVE
+_ = MARKER  # type: ignore
+_ = NA  # type: ignore
+_ = REMOVE  # type: ignore
 
 
 def _merge_and_or(key: str, toks: List[FilterBinary]) -> FilterBinary:
@@ -207,7 +207,7 @@ class _FnWrapper:
 def _filter_to_python(grid_filter: str) -> Tuple[str, str]:
     global _ID_FUNCTION  # pylint: disable=global-statement
     def_filter = _generate_filter_in_python(
-        parse_filter(grid_filter).head, [])  # pylint: disable=protected-access
+        parse_filter(grid_filter).head, [])   # type: ignore
     func_name = "_gen_hsfilter_" + str(_ID_FUNCTION)
     function_template = "def %s(_grid, _entity):\n  return " % func_name + "".join(def_filter)
     _ID_FUNCTION += 1

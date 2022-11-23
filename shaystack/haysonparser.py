@@ -58,7 +58,7 @@ COORD = 'Coord'
 def _parse_metadata(meta: Entity, version: Version) -> MetadataObject:
     metadata = MetadataObject()
     for name, value in meta.items():
-        metadata[name] = _parse_embedded_scalar(value, version=version)
+        metadata[name] = _parse_embedded_scalar(value, version=version)  # type: ignore
     return metadata
 
 
@@ -67,10 +67,10 @@ def _parse_cols(grid: Grid, parsed: List[Entity], version: Version) -> None:
         name = col.pop('name')
         meta = {}
         for key, value in col.items():
-            value = _parse_embedded_scalar(value, version=version)
+            value = _parse_embedded_scalar(value, version=version)  # type: ignore
             if value is not None:
                 meta[key] = value
-        grid.column[name] = meta
+        grid.column[name] = meta  # type: ignore
 
 
 def _parse_row(row: Dict[str, Any], version: Version) -> Entity:
@@ -118,21 +118,21 @@ def _parse_embedded_scalar(scalar: Union[None, List, Dict, str],
 
             # Is it a xstr?
             if kind == 'XStr':
-                return XStr(scalar.get('type'), scalar.get('val'))
+                return XStr(scalar.get('type'), scalar.get('val'))  # type: ignore
 
             # Is it a reference?
             if kind == REF:
-                return Ref(scalar.get('val'), scalar.get('dis'))
+                return Ref(scalar.get('val'), scalar.get('dis'))  # type: ignore
 
             # Is it a date?
             if kind == DATE:
-                match = DATE_RE.match(scalar.get('val'))
-                (year, month, day) = match.groups()
+                match = DATE_RE.match(scalar.get('val'))  # type: ignore
+                (year, month, day) = match.groups()  # type: ignore
                 return datetime.date(year=int(year), month=int(month), day=int(day))
 
             # Is it a time?
             if kind == TIME:
-                match = TIME_RE.match(scalar.get('val'))
+                match = TIME_RE.match(scalar.get('val'))  # type: ignore
                 if match:
                     (hour, minute, _, second, _) = match.groups()
                     # Convert second to seconds and microseconds
@@ -151,7 +151,7 @@ def _parse_embedded_scalar(scalar: Union[None, List, Dict, str],
 
             # Is it a date/time?
             if kind == DATETIME:
-                match = DATETIME_RE.match(scalar.get('val'))
+                match = DATETIME_RE.match(scalar.get('val'))  # type: ignore
                 if match:
                     matches = match.groups()
                     # Parse ISO8601 component
@@ -177,7 +177,7 @@ def _parse_embedded_scalar(scalar: Union[None, List, Dict, str],
 
             # Is it a co-ordinate?
             if kind == COORD:
-                return Coordinate(float(scalar.get('lat')), scalar.get('lng'))
+                return Coordinate(float(scalar.get('lat')), scalar.get('lng'))  # type: ignore
             return scalar
         # We support this only in version 3.0 and up.
         if sys.version_info[0] < 3 and {"meta", "cols", "rows"} <= scalar.viewkeys() \
@@ -206,7 +206,7 @@ def parse_scalar(scalar: Union[str, bool, float, int, list, dict], version: Vers
             (scalar[-1] in ('"', ']', '}')):
         scalar = json.loads(scalar)
 
-    return _parse_embedded_scalar(scalar, version=version)
+    return _parse_embedded_scalar(scalar, version=version)  # type: ignore
 
 
 def parse_grid(grid_str: Union[str, Dict[str, Any]]) -> Grid:

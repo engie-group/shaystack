@@ -155,12 +155,12 @@ def create_haystack_bp(provider: HaystackInterface) -> Blueprint:
     return haystack_blueprint
 
 
-def _as_request(request: flash_request) -> HaystackHttpRequest:
+def _as_request(request: flash_request) -> HaystackHttpRequest:  # type: ignore
     """The interface must be similar to AWS Lambda events
     """
     haystack_request = HaystackHttpRequest()
-    haystack_request.body = request.data
-    haystack_request.headers = flash_request.headers
+    haystack_request.body = request.data  # type: ignore
+    haystack_request.headers = flash_request.headers  # type: ignore
     haystack_request.args = flash_request.args
     return haystack_request
 
@@ -168,6 +168,6 @@ def _as_request(request: flash_request) -> HaystackHttpRequest:
 def _as_response(response: HaystackHttpResponse) -> Response:
     rep = Response()
     rep.status_code = response.status_code
-    rep.headers = response.headers
+    rep.headers = response.headers  # type: ignore
     rep.data = response.body
     return rep

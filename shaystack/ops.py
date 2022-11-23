@@ -107,14 +107,14 @@ class _AcceptableEncoding:
         """
         Return true if encoding_type match the pattern
         """
-        return self.pattern.match(encoding_type) is not None
+        return self.pattern.match(encoding_type) is not None  # type: ignore
 
     def __str__(self) -> str:
         display = self.encoding_type
         if self.weight != Decimal(1):
-            display += "; q=%0.2f" % self.weight
+            display += "; q=%0.2f" % self.weight  # type: ignore
 
-        return display
+        return display  # type: ignore
 
     def __repr__(self) -> str:
         return "<AcceptableType {0}>".format(self)
@@ -489,15 +489,15 @@ def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
                 read_ids = [row["id"] for row in grid_request]
             else:
                 if "filter" in grid_request.column:
-                    read_filter = grid_request[0].get("filter", "")
+                    read_filter = grid_request[0].get("filter", "")  # type: ignore
                 else:
                     read_filter = ""
                 if "limit" in grid_request.column:
-                    limit = int(grid_request[0].get("limit", 0))
+                    limit = int(grid_request[0].get("limit", 0))  # type: ignore
             if "select" in grid_request.column:
-                select = grid_request[0].get("select", "*")
+                select = grid_request[0].get("select", "*")  # type: ignore
             date_version = (
-                grid_request[0].get("version", None) if grid_request else None
+                grid_request[0].get("version", None) if grid_request else None  # type: ignore
             )
         # Priority of query string
         if args:
@@ -525,7 +525,7 @@ def read(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
             limit,
             date_version,
         )
-        grid_response = provider.read(limit, select, read_ids, read_filter, date_version)
+        grid_response = provider.read(limit, select, read_ids, read_filter, date_version)  # type: ignore
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
@@ -551,10 +551,10 @@ def nav(envs: Dict[str, str], request: HaystackHttpRequest, stage: str,
         grid_request = _parse_body(request)
         nav_id = None
         if grid_request and "navId" in grid_request.column:
-            nav_id = grid_request[0]["navId"]
+            nav_id = grid_request[0]["navId"]  # type: ignore
         if args and "navId" in args:
             nav_id = args["navId"]
-        grid_response = provider.nav(nav_id=nav_id)
+        grid_response = provider.nav(nav_id=nav_id)  # type: ignore
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
@@ -636,15 +636,15 @@ def watch_unsub(envs: Dict[str, str], request: HaystackHttpRequest,
 
         if args:
             if "watchId" in args:
-                watch_id = args["watchId"]
+                watch_id = args["watchId"]  # type: ignore
             if "close" in args:
                 close = bool(args["close"])
             if "ids" in args:  # Use list of str
-                ids = {Ref(x[1:]) for x in literal_eval(args["ids"])}
+                ids = {Ref(x[1:]) for x in literal_eval(args["ids"])}  # type: ignore
 
         if not watch_id:
             raise ValueError("'watchId' must be set")
-        provider.watch_unsub(watch_id, ids, close)
+        provider.watch_unsub(watch_id, ids, close)  # type: ignore
         grid_response = EmptyGrid
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
@@ -681,7 +681,7 @@ def watch_poll(envs: Dict[str, str], request: HaystackHttpRequest,
             if "refresh" in args:
                 refresh = True
 
-        grid_response = provider.watch_poll(watch_id, refresh)
+        grid_response = provider.watch_poll(watch_id, refresh)  # type: ignore
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
@@ -711,13 +711,13 @@ def point_write(envs: Dict[str, str], request: HaystackHttpRequest,
         entity_id = None
         default_tz = provider.get_tz()
         if grid_request:
-            entity_id = grid_request[0]["id"]
-            date_version = grid_request[0].get("version", None)
+            entity_id = grid_request[0]["id"]  # type: ignore
+            date_version = grid_request[0].get("version", None)  # type: ignore
             if "level" in grid_request[0]:
-                level = int(grid_request[0]["level"])
-            val = grid_request[0].get("val")
-            who = grid_request[0].get("who")
-            duration = grid_request[0].get("duration")  # Must be quantity
+                level = int(grid_request[0]["level"])  # type: ignore
+            val = grid_request[0].get("val")  # type: ignore
+            who = grid_request[0].get("who")  # type: ignore
+            duration = grid_request[0].get("duration")  # type: ignore # Must be quantity
 
         if "id" in args:
             entity_id = Ref(args["id"][1:])
@@ -739,11 +739,11 @@ def point_write(envs: Dict[str, str], request: HaystackHttpRequest,
             raise ValueError("'id' must be set")
         if val is not None:
             provider.point_write_write(
-                entity_id, level, val, who, duration, date_version
+                entity_id, level, val, who, duration, date_version  # type: ignore
             )
             grid_response = EmptyGrid
         else:
-            grid_response = provider.point_write_read(entity_id, date_version)
+            grid_response = provider.point_write_read(entity_id, date_version)  # type: ignore
             assert grid_response is not None
             assert "level" in grid_response.column
             assert "levelDis" in grid_response.column
@@ -776,11 +776,11 @@ def his_read(envs: Dict[str, str], request: HaystackHttpRequest,
         default_tz = provider.get_tz()
         if grid_request:
             if "id" in grid_request.column:
-                entity_id = grid_request[0].get("id", "")
+                entity_id = grid_request[0].get("id", "")  # type: ignore
             if "range" in grid_request.column:
-                date_range = grid_request[0].get("range", "")
+                date_range = grid_request[0].get("range", "")  # type: ignore
             date_version = (
-                grid_request[0].get("version", None) if grid_request else None
+                grid_request[0].get("version", None) if grid_request else None  # type: ignore
             )
 
         # Priority of query string
@@ -793,7 +793,7 @@ def his_read(envs: Dict[str, str], request: HaystackHttpRequest,
                 date_version = parse_hs_datetime_format(args["version"], default_tz)
                 date_version = convert_version(date_version)
 
-        grid_date_range = parse_date_range(date_range, provider.get_tz())
+        grid_date_range = parse_date_range(date_range, provider.get_tz())  # type: ignore
         log.debug(
             "id=%s range=%s, date_version=%s", entity_id, grid_date_range, date_version
         )
@@ -801,9 +801,9 @@ def his_read(envs: Dict[str, str], request: HaystackHttpRequest,
             if isinstance(date_version, date):
                 date_version = datetime.combine(date_version, datetime.max.time()) \
                     .replace(tzinfo=provider.get_tz())
-            if grid_date_range[1] > date_version:
-                grid_date_range = (grid_date_range[0], date_version)
-        grid_response = provider.his_read(entity_id, grid_date_range, date_version)
+            if grid_date_range[1] > date_version:  # type: ignore
+                grid_date_range = (grid_date_range[0], date_version)  # type: ignore
+        grid_response = provider.his_read(entity_id, grid_date_range, date_version)  # type: ignore
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
@@ -846,7 +846,7 @@ def his_write(envs: Dict[str, str], request: HaystackHttpRequest,
                 )
         if "version" in args:
             date_version = parse_hs_datetime_format(args["version"], default_tz)
-        grid_response = provider.his_write(entity_id, time_serie_grid, date_version)
+        grid_response = provider.his_write(entity_id, time_serie_grid, date_version)  # type: ignore
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except
@@ -879,7 +879,7 @@ def invoke_action(envs: Dict[str, str], request: HaystackHttpRequest,
             if "action" in args:
                 action = args["action"]
         params = grid_request[0] if grid_request else {}
-        grid_response = provider.invoke_action(entity_id, action, params)
+        grid_response = provider.invoke_action(entity_id, action, params)  # type: ignore
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, "OK")
     except Exception as ex:  # pylint: disable=broad-except

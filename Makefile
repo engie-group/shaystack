@@ -288,6 +288,7 @@ _configure:
 
 # -------------------------------------- Standard requirements
 # Rule to update the current venv, with the dependencies describe in `setup.py`
+# supersqlite is not available for actual version of shaystack
 $(PIP_PACKAGE): $(CONDA_PYTHON) setup.* requirements.txt | .git # Install pip dependencies
 	@$(VALIDATE_VENV)
 	echo -e "$(cyan)Install build dependencies ... (may take minutes)$(normal)"
@@ -297,7 +298,6 @@ endif
 	echo -e "$(cyan)Install binary dependencies ...$(normal)"
 	conda install -y -c conda-forge conda setuptools make git jq libpq curl psycopg2 md-toc
 	echo -e "$(cyan)Install project dependencies ...$(normal)"
-	pip install supersqlite
 	echo -e "$(cyan)pip install -e .[dev,flask,graphql,lambda]$(normal)"
 	pip install -e '.[dev,flask,graphql,lambda]'
 	echo -e "$(cyan)pip install -e .$(normal)"
@@ -771,7 +771,7 @@ mypy.cfg: $(CONDA_PREFIX)/bin/mypy
 .make-typing: $(REQUIREMENTS) $(CONDA_PREFIX)/bin/mypy mypy.cfg $(PYTHON_SRC)
 	@$(VALIDATE_VENV)
 	echo -e "$(cyan)Check mypy...$(normal)"
-	MYPYPATH=stubs mypy --config-file=mypy.cfg shaystack app tests
+	MYPYPATH=stubs mypy --config-file=mypy.cfg -p shaystack -p app -p tests
 	touch .make-typing
 
 ## Check python typing

@@ -95,7 +95,7 @@ def _join_stages(node: Union[FilterNode, HaystackType],
                     },
                     {"$set": {f"{full_path}_entity_": {"$arrayElemAt": [f"${full_path}_entity_.entity", 0]}}},
                 ])
-    return aggrations_stages
+    return aggrations_stages  # type: ignore
 
 
 def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any], str]:
@@ -122,7 +122,7 @@ def _conv_filter(node: Union[FilterNode, HaystackType]) -> Union[Dict[str, Any],
                 ]}
             return {_simple_ops[node.operator]: [
                 f"${_conv_filter(node.left)}",
-                _conv_filter(node.right)[1:-1],
+                _conv_filter(node.right)[1:-1],  # type: ignore
             ]}
         if node.operator in _logical_ops:
             return {_logical_ops[node.operator]: [
@@ -325,4 +325,4 @@ def _mongo_filter(grid_filter: Optional[str],
             {"$limit": limit}
         )
     # pprint.PrettyPrinter(indent=2).pprint(stages)
-    return stages
+    return stages  # type: ignore

@@ -17,7 +17,7 @@ class Provider(HaystackInterface):
         raise NotImplementedError()
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],

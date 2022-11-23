@@ -87,7 +87,7 @@ class Provider(HaystackInterface):
         return grid.extends_columns()
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
@@ -174,7 +174,7 @@ class Provider(HaystackInterface):
         return grid.extends_columns()
 
     @overrides
-    def point_write_read(
+    def point_write_read(  # type: ignore
             self, entity_id: Ref, date_version: Optional[datetime]
     ) -> Grid:  # pylint: disable=no-self-use
         """Return EmptyGrid."""

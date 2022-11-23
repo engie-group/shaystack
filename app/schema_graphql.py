@@ -17,7 +17,7 @@ import graphene
 
 from shaystack import HaystackInterface
 from shaystack.providers import get_provider
-from graphql_model import ReadHaystack
+from .graphql_model import ReadHaystack  # type: ignore
 
 log = logging.getLogger("shaystack")
 

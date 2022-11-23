@@ -5,7 +5,7 @@ import pytz
 from graphene.test import Client
 from pytz import timezone
 
-from schema_graphql import get_schema_for_provider
+from app.schema_graphql import get_schema_for_provider
 from shaystack import Grid, VER_3_0, Uri, Ref, Coordinate, MARKER
 from shaystack.providers import get_provider
 from shaystack.providers.url import Provider as URLProvider

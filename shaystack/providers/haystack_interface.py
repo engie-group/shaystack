@@ -192,11 +192,11 @@ class HaystackInterface(ABC):
         }
         # Remove abstract method
         # noinspection PyUnresolvedReferences
-        for abstract_method in self.__class__.__base__.__abstractmethods__:
+        for abstract_method in self.__class__.__base__.__abstractmethods__:  # type: ignore
             all_haystack_ops.pop(abstract_method, None)
         if (
-                "point_write_read" in self.__class__.__base__.__abstractmethods__
-                or "point_write_write" in self.__class__.__base__.__abstractmethods__
+                "point_write_read" in self.__class__.__base__.__abstractmethods__  # type: ignore
+                or "point_write_write" in self.__class__.__base__.__abstractmethods__  # type: ignore
         ):
             all_haystack_ops.pop("point_write", None)
         all_haystack_ops = {_to_camel(k): v for k, v in all_haystack_ops.items()}
@@ -451,7 +451,7 @@ def get_provider(class_str: str, envs: Dict[str, str],  # pylint: disable=protec
     # Then, it's possible to generate the Ops operator dynamically
     # pylint: disable=missing-function-docstring,useless-super-delegation
     # noinspection PyShadowingNames
-    class FullInterface(provider_class):  # pylint: disable=missing-class-docstring
+    class FullInterface(provider_class):   # type: ignore # pylint: disable=missing-class-docstring
         def __init__(self, envs: Dict[str, str]):
             provider_class.__init__(self, envs)
 
@@ -562,7 +562,7 @@ def parse_date_range(date_range: str, timezone: tzinfo) -> Tuple[datetime, datet
         split_date = [parse_hs_datetime_format(x, timezone) if x else None for x in str_date]
         if len(str_date) > 1:
             if str_date[1] in ("today", "yesterday"):
-                split_date[1] += timedelta(days=1)
+                split_date[1] += timedelta(days=1)  # type: ignore
 
             # Convert to same type
             if isinstance(split_date[0], datetime) or isinstance(split_date[1], datetime):
@@ -570,11 +570,11 @@ def parse_date_range(date_range: str, timezone: tzinfo) -> Tuple[datetime, datet
                 if not split_date[0]:
                     split_date[0] = _DATETIME_MIN_TZ
                 if not isinstance(split_date[0], datetime):
-                    split_date[0] = datetime.combine(split_date[0], datetime.min.time())
+                    split_date[0] = datetime.combine(split_date[0], datetime.min.time())  # type: ignore
                 if not split_date[1]:
                     split_date[1] = _DATETIME_MAX_TZ
                 if not isinstance(split_date[1], datetime):
-                    split_date[1] = datetime.combine(split_date[1], datetime.min.time())
+                    split_date[1] = datetime.combine(split_date[1], datetime.min.time())  # type: ignore
 
             # Add missing tzinfo
             if isinstance(split_date[0], datetime) and not split_date[0].tzinfo:

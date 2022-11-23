@@ -37,7 +37,7 @@ _DEFAULT_MAG_TTL = 400
 def _create_database(client: BaseClient,
                      database: str) -> None:
     try:
-        client.create_database(DatabaseName=database)
+        client.create_database(DatabaseName=database)  # type: ignore
         log.info("Database [%s] created successfully.", database)
     except client.exceptions.ConflictException:
         # Database exists. Skipping database creation
@@ -50,7 +50,7 @@ def _create_table(client: BaseClient,
                   mem_ttl: int,
                   mag_ttl: int) -> None:
     try:
-        client.create_table(DatabaseName=database,
+        client.create_table(DatabaseName=database,  # type: ignore
                             TableName=table_name,
                             RetentionProperties={
                                 'MemoryStoreRetentionPeriodInHours': mem_ttl,
@@ -68,7 +68,7 @@ def _update_table(client: BaseClient,
                   table_name: str,
                   mem_ttl: int,
                   mag_ttl: int) -> None:
-    client.update_table(DatabaseName=database,
+    client.update_table(DatabaseName=database,  # type: ignore
                         TableName=table_name,
                         RetentionProperties={
                             'MemoryStoreRetentionPeriodInHours': mem_ttl,
@@ -81,7 +81,7 @@ def _delete_table(client: BaseClient,
                   database: str,
                   table_name: str) -> None:
     try:
-        client.delete_table(DatabaseName=database, TableName=table_name)
+        client.delete_table(DatabaseName=database, TableName=table_name)  # type: ignore
     except client.exceptions.ResourceNotFoundException:
         pass  # Ignore
 
@@ -150,7 +150,7 @@ class Provider(DBProvider):
         try:
             if not time_series:
                 return  # Empty
-            value = time_series[0]["val"]  # Suppose all values share the same type
+            value = time_series[0]["val"]   # type: ignore # Suppose all values share the same type
             cast_fn, target_type = Provider._hs_to_timestream_type(value)
             if not customer_id:  # Empty string ?
                 customer_id = ' '
@@ -183,7 +183,7 @@ class Provider(DBProvider):
             for rejected_record in err.response["RejectedRecords"]:
                 log.error(' [%s:%s]: %s',
                           str(rejected_record["RecordIndex"]),
-                          time_series[rejected_record["RecordIndex"]]["ts"],
+                          time_series[rejected_record["RecordIndex"]]["ts"],  # type: ignore
                           rejected_record["Reason"]
                           )
             raise
@@ -197,41 +197,42 @@ class Provider(DBProvider):
             target_type = "DOUBLE"
         elif isinstance(value, Quantity):
             target_type = "DOUBLE"
-            cast_fn = lambda x: str(x.m)
+            cast_fn = lambda x: str(x.m)  # type: ignore
         elif isinstance(value, bool):
             target_type = "BOOLEAN"
         elif isinstance(value, int):
             target_type = "DOUBLE"
         elif value is MARKER:
             target_type = "BOOLEAN"
-            cast_fn = lambda x: str(x is MARKER)
+            cast_fn = lambda x: str(x is MARKER)  # type: ignore
         elif value is REMOVE:
             target_type = "BOOLEAN"
-            cast_fn = lambda x: str(x is REMOVE)
+            cast_fn = lambda x: str(x is REMOVE)  # type: ignore
         elif value is NA:
             target_type = 'BOOLEAN'
-            cast_fn = lambda x: str(x is NA)
+            cast_fn = lambda x: str(x is NA)  # type: ignore
         elif isinstance(value, Ref):
             target_type = "VARCHAR"
-            cast_fn = lambda x: x.name
+            cast_fn = lambda x: x.name  # type: ignore
         elif isinstance(value, datetime):
             target_type = "BIGINT"
-            cast_fn = lambda x: str(int(round(x.timestamp())))
+            cast_fn = lambda x: str(int(round(x.timestamp())))  # type: ignore
         elif isinstance(value, date):
             target_type = "BIGINT"
-            cast_fn = lambda x: str(x.toordinal())
+            cast_fn = lambda x: str(x.toordinal())  # type: ignore
         elif isinstance(value, time):
             target_type = "BIGINT"
-            cast_fn = lambda x: str(((x.hour * 60 + x.minute) * 60 + x.second) * 1000000 + x.microsecond)
+            cast_fn = lambda x: str(((x.hour * 60 + x.minute) * 60 + x.second)  # type: ignore
+                                    * 1000000 + x.microsecond)
         elif isinstance(value, Coordinate):
             target_type = "VARCHAR"
-            cast_fn = lambda x: str(x.latitude) + "," + str(x.longitude)
+            cast_fn = lambda x: str(x.latitude) + "," + str(x.longitude)  # type: ignore
         elif isinstance(value, XStr):
             target_type = "VARCHAR"
-            cast_fn = lambda x: value.encoding + "," + value.data_to_string()
+            cast_fn = lambda x: value.encoding + "," + value.data_to_string()  # type: ignore
         elif value is None:
             target_type = "BOOLEAN"
-            cast_fn = lambda x: str(False)
+            cast_fn = lambda x: str(False)  # type: ignore
         else:
             raise ValueError("Unknwon type")
         return cast_fn, target_type
@@ -272,11 +273,11 @@ class Provider(DBProvider):
             mic = int_time % 1000000
             return time(hour, minute, split, mic)
         if python_type == "Coordinate":
-            split = val.split(",")
-            return Coordinate(float(split[0]), float(split[1]))
+            split = val.split(",")  # type: ignore
+            return Coordinate(float(split[0]), float(split[1]))  # type: ignore
         if python_type == "XStr":
-            split = val.split(",")
-            return XStr(*split)
+            split = val.split(",")  # type: ignore
+            return XStr(*split)  # type: ignore
         if python_type == "NoneType":
             return None
         raise ValueError(f"Unknown type {python_type}")
@@ -303,7 +304,7 @@ class Provider(DBProvider):
         return Provider._kind_type[kind.lower()]
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Optional[Tuple[datetime, datetime]] = None,
@@ -318,11 +319,11 @@ class Provider(DBProvider):
         if not date_version:
             date_version = datetime.max.replace(tzinfo=pytz.UTC)
         if dates_range and dates_range[1] > date_version:
-            dates_range = list(dates_range)
-            dates_range[1] = date_version
+            dates_range = list(dates_range)  # type: ignore
+            dates_range[1] = date_version  # type: ignore
 
-        kind = entity.get("kind", "Number")
-        timestream_type = Provider._kind_to_timestream_type(kind)
+        kind = entity.get("kind", "Number")  # type: ignore
+        timestream_type = Provider._kind_to_timestream_type(kind)  # type: ignore
         customer_id = self.get_customer_id()
         if not customer_id:
             customer_id = ' '
@@ -341,7 +342,7 @@ class Provider(DBProvider):
                 for row in page['Rows']:
                     datas = row['Data']
                     # noinspection PyUnresolvedReferences
-                    scalar_value = dateutil.parser.isoparse(datas[0]['ScalarValue'])
+                    scalar_value = dateutil.parser.isoparse(datas[0]['ScalarValue'])  # type: ignore
                     if not scalar_value.tzname():
                         scalar_value = scalar_value.replace(tzinfo=pytz.UTC)
                     hs_type = datas[1]['ScalarValue']
@@ -363,7 +364,7 @@ class Provider(DBProvider):
                 min_date = date_version
                 max_date = date_version
 
-            history.metadata = {
+            history.metadata = {  # type: ignore
                 "id": entity_id,
                 "hisStart": min_date,
                 "hisEnd": max_date,
@@ -376,15 +377,15 @@ class Provider(DBProvider):
     def create_ts(self) -> None:
         """ Create the time serie database and schema. """
         client = self._get_write_client()
-        _create_database(client, self._ts_database_name)
+        _create_database(client, self._ts_database_name)  # type: ignore
         pqs = parse_qs(self._parsed_ts.query)
         mem_ttl = int(pqs["mem_ttl"][0]) if "mem_ttl" in pqs else _DEFAULT_MEM_TTL
         mag_ttl = int(pqs["mag_ttl"][0]) if "mag_ttl" in pqs else _DEFAULT_MAG_TTL
-        _create_table(client, self._ts_database_name, self._ts_table_name, mem_ttl, mag_ttl)
+        _create_table(client, self._ts_database_name, self._ts_table_name, mem_ttl, mag_ttl)  # type: ignore
 
     def purge_ts(self) -> None:
         """ Purge the timeserie database. """
-        _delete_table(self._get_write_client(), self._ts_database_name, self._ts_table_name)
+        _delete_table(self._get_write_client(), self._ts_database_name, self._ts_table_name)  # type: ignore
 
     @overrides
     def create_db(self) -> None:

@@ -621,7 +621,12 @@ unit-test: .make-unit-test
 ## Run all tests (unit and functional)
 test: .make-test .make-functional-test
 
+## Run all tests (unit and functional)
+test: .make-test
 
+
+## Run only tests with connection with AWS
+test-aws: .make-test-aws
 # Test local deployment with URL provider
 functional-url-local: $(REQUIREMENTS) aws-update-token
 	@$(VALIDATE_VENV)
@@ -744,7 +749,7 @@ functional-database: $(REQUIREMENTS) start-pg start-mysql start-mongodb
 	echo -e "$(green)Test same request with all databases OK$(normal)"
 
 #functional-db-sqlite and functional-db-sqlite-ts not available
-.make-functional-test: functional-url-local  functional-db-postgres functional-db-mysql\
+.make-functional-test: aws-update-token functional-url-local  functional-db-postgres functional-db-mysql\
 		functional-url-s3 functional-mongodb functional-database
 	@touch .make-functional-test
 

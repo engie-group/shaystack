@@ -748,8 +748,8 @@ functional-database: $(REQUIREMENTS) start-pg start-mysql start-mongodb
 	pytest tests/test_provider_db.py
 	echo -e "$(green)Test same request with all databases OK$(normal)"
 
-#functional-db-sqlite and functional-db-sqlite-ts not available
-.make-functional-test: aws-update-token functional-url-local  functional-db-postgres functional-db-mysql\
+#functional-db-sqlite and functional-db-sqlite-ts not available functional-url-local
+.make-functional-test: aws-update-token functional-db-postgres functional-db-mysql\
 		functional-url-s3 functional-mongodb functional-database
 	@touch .make-functional-test
 

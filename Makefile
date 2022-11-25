@@ -633,7 +633,7 @@ test-aws: .make-test-aws
 
 
 # Test local deployment with URL provider
-functional-url-local: $(REQUIREMENTS) test-aws
+functional-url-local: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	@echo -e "$(green)Test URL local...$(normal)"
 	@$(MAKE) async-stop-api >/dev/null
@@ -796,7 +796,7 @@ lint: .make-lint
 
 
 .PHONY: validate
-.make-validate: .make-typing .make-lint .make-test .make-functional-test dist
+.make-validate: .make-typing .make-lint .make-test dist
 	@echo -e "$(green)The project is validated$(normal)"
 	date >.make-validate
 

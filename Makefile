@@ -619,19 +619,21 @@ unit-test: .make-unit-test
 	@date >.make-test
 
 ## Run all tests (unit and functional)
-test: .make-test .make-functional-test
+test: .make-test
 
 .make-test-aws: aws-update-token
 	@$(VALIDATE_VENV)
 	echo -e "$(green)Running AWS tests...$(normal)"
-	$(CONDA_PYTHON) -m nose -s tests -a 'aws' --where=tests $(NOSETESTS_ARGS)
+	pytest -s  tests
 	echo -e "$(green)AWS tests done$(normal)"
 	date >.make-test-aws
 
 ## Run only tests with connection with AWS
 test-aws: .make-test-aws
+
+
 # Test local deployment with URL provider
-functional-url-local: $(REQUIREMENTS) aws-update-token
+functional-url-local: $(REQUIREMENTS)
 	@$(VALIDATE_VENV)
 	@echo -e "$(green)Test URL local...$(normal)"
 	@$(MAKE) async-stop-api >/dev/null

@@ -633,7 +633,7 @@ test-aws: .make-test-aws
 
 
 # Test local deployment with URL provider
-functional-url-local: $(REQUIREMENTS)
+functional-url-local: $(REQUIREMENTS) aws-update-token
 	@$(VALIDATE_VENV)
 	@echo -e "$(green)Test URL local...$(normal)"
 	@$(MAKE) async-stop-api >/dev/null

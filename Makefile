@@ -621,9 +621,12 @@ unit-test: .make-unit-test
 ## Run all tests (unit and functional)
 test: .make-test .make-functional-test
 
-## Run all tests (unit and functional)
-test: .make-test
-
+.make-test-aws: aws-update-token
+	@$(VALIDATE_VENV)
+	echo -e "$(green)Running AWS tests...$(normal)"
+	$(CONDA_PYTHON) -m nose -s tests -a 'aws' --where=tests $(NOSETESTS_ARGS)
+	echo -e "$(green)AWS tests done$(normal)"
+	date >.make-test-aws
 
 ## Run only tests with connection with AWS
 test-aws: .make-test-aws
@@ -791,7 +794,7 @@ lint: .make-lint
 
 
 .PHONY: validate
-.make-validate: .make-typing .make-lint .make-test .make-functional-test dist
+.make-validate: .make-typing .make-lint .make-test .make-test-aws .make-functional-test dist
 	@echo -e "$(green)The project is validated$(normal)"
 	date >.make-validate
 

@@ -10,8 +10,9 @@ A flask blueprint to manage Haystack API
 import os
 from typing import Dict, cast
 
-from flask import Blueprint, Response, send_from_directory, safe_join
+from flask import Blueprint, Response, send_from_directory
 from flask import request as flash_request
+from werkzeug.utils import safe_join  # type: ignore
 
 from shaystack import \
     about, ops, formats, read, nav, watch_sub, \

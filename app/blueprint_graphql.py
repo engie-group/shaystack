@@ -17,7 +17,7 @@ import click
 
 from shaystack import HaystackInterface
 from shaystack.providers import get_provider
-from .schema_graphql import get_schema_for_provider
+from app.schema_graphql import get_schema_for_provider
 
 try:
     from flask import Blueprint

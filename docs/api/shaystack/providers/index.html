@@ -175,7 +175,7 @@ and detect the implemented and abstract methods.</p>
     # Then, it&#39;s possible to generate the Ops operator dynamically
     # pylint: disable=missing-function-docstring,useless-super-delegation
     # noinspection PyShadowingNames
-    class FullInterface(provider_class):  # pylint: disable=missing-class-docstring
+    class FullInterface(provider_class):   # type: ignore # pylint: disable=missing-class-docstring
         def __init__(self, envs: Dict[str, str]):
             provider_class.__init__(self, envs)
 
@@ -433,11 +433,11 @@ the 'ops' code detect that, and can calculate the set of implemented operations.
         }
         # Remove abstract method
         # noinspection PyUnresolvedReferences
-        for abstract_method in self.__class__.__base__.__abstractmethods__:
+        for abstract_method in self.__class__.__base__.__abstractmethods__:  # type: ignore
             all_haystack_ops.pop(abstract_method, None)
         if (
-                &#34;point_write_read&#34; in self.__class__.__base__.__abstractmethods__
-                or &#34;point_write_write&#34; in self.__class__.__base__.__abstractmethods__
+                &#34;point_write_read&#34; in self.__class__.__base__.__abstractmethods__  # type: ignore
+                or &#34;point_write_write&#34; in self.__class__.__base__.__abstractmethods__  # type: ignore
         ):
             all_haystack_ops.pop(&#34;point_write&#34;, None)
         all_haystack_ops = {_to_camel(k): v for k, v in all_haystack_ops.items()}
@@ -1014,11 +1014,11 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
     }
     # Remove abstract method
     # noinspection PyUnresolvedReferences
-    for abstract_method in self.__class__.__base__.__abstractmethods__:
+    for abstract_method in self.__class__.__base__.__abstractmethods__:  # type: ignore
         all_haystack_ops.pop(abstract_method, None)
     if (
-            &#34;point_write_read&#34; in self.__class__.__base__.__abstractmethods__
-            or &#34;point_write_write&#34; in self.__class__.__base__.__abstractmethods__
+            &#34;point_write_read&#34; in self.__class__.__base__.__abstractmethods__  # type: ignore
+            or &#34;point_write_write&#34; in self.__class__.__base__.__abstractmethods__  # type: ignore
     ):
         all_haystack_ops.pop(&#34;point_write&#34;, None)
     all_haystack_ops = {_to_camel(k): v for k, v in all_haystack_ops.items()}

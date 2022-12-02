@@ -109,8 +109,8 @@ class Provider(DBHaystackInterface):
 
         password = self._parsed_db.password
         if _BOTO3_AVAILABLE and self._parsed_db.username and \
-                password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):
-            password = get_secret_manager_secret(password[1:-1], self._envs)
+                password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):  # type: ignore
+            password = get_secret_manager_secret(password[1:-1], self._envs)  # type: ignore
             parts = list(self._parsed_db)
             user, _, host = re.split(&#39;[:|@]&#39;, parts[1])
             parts[1] = f&#34;{user}:{password}@{host}&#34;
@@ -186,7 +186,7 @@ class Provider(DBHaystackInterface):
 
         if entity_ids is None:
             cursor = self.get_collection().aggregate(
-                mongo_filter(grid_filter, date_version, limit, self.get_customer_id())
+                mongo_filter(grid_filter, date_version, limit, self.get_customer_id())  # type: ignore
             )
 
             grid = self._init_grid_from_db(date_version)
@@ -232,7 +232,7 @@ class Provider(DBHaystackInterface):
         return grid.select(select)
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Optional[Tuple[datetime, datetime]] = None,
@@ -249,9 +249,9 @@ class Provider(DBHaystackInterface):
         history = Grid(columns=[&#34;ts&#34;, &#34;val&#34;])
         if not date_version:
             date_version = datetime.max.replace(tzinfo=pytz.UTC)
-        if dates_range[1] &gt; date_version:
-            dates_range = list(dates_range)
-            dates_range[1] = date_version
+        if dates_range[1] &gt; date_version:  # type: ignore
+            dates_range = list(dates_range)  # type: ignore
+            dates_range[1] = date_version  # type: ignore
 
         ts_collection = self._get_ts_collection()
 
@@ -261,8 +261,8 @@ class Provider(DBHaystackInterface):
                 &#34;id&#34;: entity_id.name,
                 &#34;ts&#34;:
                     {
-                        &#34;$gte&#34;: dates_range[0],
-                        &#34;$lt&#34;: dates_range[1]
+                        &#34;$gte&#34;: dates_range[0],  # type: ignore
+                        &#34;$lt&#34;: dates_range[1]  # type: ignore
                     }
             }).sort(&#34;ts&#34;)
         for row in cursor:
@@ -284,7 +284,7 @@ class Provider(DBHaystackInterface):
             min_date = date_version
             max_date = date_version
 
-        history.metadata = {
+        history.metadata = {  # type: ignore
             &#34;id&#34;: entity_id,
             &#34;hisStart&#34;: min_date,
             &#34;hisEnd&#34;: max_date,
@@ -304,13 +304,13 @@ class Provider(DBHaystackInterface):
         &#34;&#34;&#34;
         connect = self.get_db()
         if self._table_name not in connect.list_collection_names():
-            collection = connect.create_collection(self._table_name)
+            collection = connect.create_collection(self._table_name)  # type: ignore
             collection.create_index(
                 [(&#34;customer_id&#34;, ASCENDING),
                  (&#34;start_datetime&#34;, ASCENDING),
                  (&#34;end_datetime&#34;, ASCENDING),
                  ])
-        metadata_name = self._table_name + &#34;_meta_datas&#34;
+        metadata_name = self._table_name + &#34;_meta_datas&#34;  # type: ignore
         if metadata_name not in connect.list_collection_names():
             collection = connect.create_collection(metadata_name)
             collection.create_index(
@@ -319,7 +319,7 @@ class Provider(DBHaystackInterface):
                     (&#34;start_datetime&#34;, ASCENDING),
                     (&#34;end_datetime&#34;, ASCENDING),
                 ])
-        ts_name = self._table_name + &#34;_ts&#34;
+        ts_name = self._table_name + &#34;_ts&#34;  # type: ignore
         if ts_name not in connect.list_collection_names():
             collection = connect.create_collection(ts_name)
             collection.create_index(
@@ -337,10 +337,10 @@ class Provider(DBHaystackInterface):
         connect = self.get_db()
         if self._table_name in connect.list_collection_names():
             connect[self._table_name].drop()
-        metadata_name = self._table_name + &#34;_meta_datas&#34;
+        metadata_name = self._table_name + &#34;_meta_datas&#34;  # type: ignore
         if metadata_name in connect.list_collection_names():
             connect[metadata_name].drop()
-        ts_name = self._table_name + &#34;_ts&#34;
+        ts_name = self._table_name + &#34;_ts&#34;  # type: ignore
         if ts_name in connect.list_collection_names():
             connect[ts_name].drop()
 
@@ -487,7 +487,7 @@ class Provider(DBHaystackInterface):
                     &#34;customer_id&#34;: customer_id,
                     &#34;start_datetime&#34;: now,
                     &#34;end_datetime&#34;: _END_OF_WORLD,
-                    &#34;entity&#34;: _conv_entity_to_row(new_grid[updated_entity[&#34;id&#34;]])
+                    &#34;entity&#34;: _conv_entity_to_row(new_grid[updated_entity[&#34;id&#34;]])  # type: ignore
                 }
                 for updated_entity in diff_grid
                 if updated_entity[&#34;id&#34;] in new_grid
@@ -556,9 +556,9 @@ class Provider(DBHaystackInterface):
         begin_datetime = time_series.metadata.get(&#34;hisStart&#34;)
         end_datetime = time_series.metadata.get(&#34;hisStart&#34;)
         if time_series and not begin_datetime:
-            begin_datetime = time_series[0][&#39;ts&#39;]
+            begin_datetime = time_series[0][&#39;ts&#39;]  # type: ignore
         if time_series and not end_datetime:
-            end_datetime = time_series[-1][&#39;ts&#39;]
+            end_datetime = time_series[-1][&#39;ts&#39;]  # type: ignore
         if not begin_datetime:
             begin_datetime = datetime.min
         if not end_datetime:
@@ -599,25 +599,25 @@ class Provider(DBHaystackInterface):
             if database_name:
                 database_name = database_name[1:]
             self._parsed_db.geturl()
-            self._client = self._connect = MongoClient(
+            self._client = self._connect = MongoClient(  # type: ignore
                 self._get_db(),
             )
-            connect = self._client[database_name]
+            connect = self._client[database_name]  # type: ignore
             self._connect = connect
             self.create_db()
-        return self._connect
+        return self._connect  # type: ignore
 
     def get_collection(self) -&gt; Collection:
         mongodb = self.get_db()
-        return mongodb[self._table_name]
+        return mongodb[self._table_name]  # type: ignore
 
     def _get_meta_collection(self) -&gt; Collection:
         mongodb = self.get_db()
-        return mongodb[self._table_name + &#34;_meta_datas&#34;]
+        return mongodb[self._table_name + &#34;_meta_datas&#34;]  # type: ignore
 
     def _get_ts_collection(self) -&gt; Collection:
         mongodb = self.get_db()
-        return mongodb[self._table_name + &#34;_ts&#34;]</code></pre>
+        return mongodb[self._table_name + &#34;_ts&#34;]  # type: ignore</code></pre>
 </details>
 </section>
 <section>
@@ -665,8 +665,8 @@ class Provider(DBHaystackInterface):
 
         password = self._parsed_db.password
         if _BOTO3_AVAILABLE and self._parsed_db.username and \
-                password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):
-            password = get_secret_manager_secret(password[1:-1], self._envs)
+                password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):  # type: ignore
+            password = get_secret_manager_secret(password[1:-1], self._envs)  # type: ignore
             parts = list(self._parsed_db)
             user, _, host = re.split(&#39;[:|@]&#39;, parts[1])
             parts[1] = f&#34;{user}:{password}@{host}&#34;
@@ -742,7 +742,7 @@ class Provider(DBHaystackInterface):
 
         if entity_ids is None:
             cursor = self.get_collection().aggregate(
-                mongo_filter(grid_filter, date_version, limit, self.get_customer_id())
+                mongo_filter(grid_filter, date_version, limit, self.get_customer_id())  # type: ignore
             )
 
             grid = self._init_grid_from_db(date_version)
@@ -788,7 +788,7 @@ class Provider(DBHaystackInterface):
         return grid.select(select)
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Optional[Tuple[datetime, datetime]] = None,
@@ -805,9 +805,9 @@ class Provider(DBHaystackInterface):
         history = Grid(columns=[&#34;ts&#34;, &#34;val&#34;])
         if not date_version:
             date_version = datetime.max.replace(tzinfo=pytz.UTC)
-        if dates_range[1] &gt; date_version:
-            dates_range = list(dates_range)
-            dates_range[1] = date_version
+        if dates_range[1] &gt; date_version:  # type: ignore
+            dates_range = list(dates_range)  # type: ignore
+            dates_range[1] = date_version  # type: ignore
 
         ts_collection = self._get_ts_collection()
 
@@ -817,8 +817,8 @@ class Provider(DBHaystackInterface):
                 &#34;id&#34;: entity_id.name,
                 &#34;ts&#34;:
                     {
-                        &#34;$gte&#34;: dates_range[0],
-                        &#34;$lt&#34;: dates_range[1]
+                        &#34;$gte&#34;: dates_range[0],  # type: ignore
+                        &#34;$lt&#34;: dates_range[1]  # type: ignore
                     }
             }).sort(&#34;ts&#34;)
         for row in cursor:
@@ -840,7 +840,7 @@ class Provider(DBHaystackInterface):
             min_date = date_version
             max_date = date_version
 
-        history.metadata = {
+        history.metadata = {  # type: ignore
             &#34;id&#34;: entity_id,
             &#34;hisStart&#34;: min_date,
             &#34;hisEnd&#34;: max_date,
@@ -860,13 +860,13 @@ class Provider(DBHaystackInterface):
         &#34;&#34;&#34;
         connect = self.get_db()
         if self._table_name not in connect.list_collection_names():
-            collection = connect.create_collection(self._table_name)
+            collection = connect.create_collection(self._table_name)  # type: ignore
             collection.create_index(
                 [(&#34;customer_id&#34;, ASCENDING),
                  (&#34;start_datetime&#34;, ASCENDING),
                  (&#34;end_datetime&#34;, ASCENDING),
                  ])
-        metadata_name = self._table_name + &#34;_meta_datas&#34;
+        metadata_name = self._table_name + &#34;_meta_datas&#34;  # type: ignore
         if metadata_name not in connect.list_collection_names():
             collection = connect.create_collection(metadata_name)
             collection.create_index(
@@ -875,7 +875,7 @@ class Provider(DBHaystackInterface):
                     (&#34;start_datetime&#34;, ASCENDING),
                     (&#34;end_datetime&#34;, ASCENDING),
                 ])
-        ts_name = self._table_name + &#34;_ts&#34;
+        ts_name = self._table_name + &#34;_ts&#34;  # type: ignore
         if ts_name not in connect.list_collection_names():
             collection = connect.create_collection(ts_name)
             collection.create_index(
@@ -893,10 +893,10 @@ class Provider(DBHaystackInterface):
         connect = self.get_db()
         if self._table_name in connect.list_collection_names():
             connect[self._table_name].drop()
-        metadata_name = self._table_name + &#34;_meta_datas&#34;
+        metadata_name = self._table_name + &#34;_meta_datas&#34;  # type: ignore
         if metadata_name in connect.list_collection_names():
             connect[metadata_name].drop()
-        ts_name = self._table_name + &#34;_ts&#34;
+        ts_name = self._table_name + &#34;_ts&#34;  # type: ignore
         if ts_name in connect.list_collection_names():
             connect[ts_name].drop()
 
@@ -1043,7 +1043,7 @@ class Provider(DBHaystackInterface):
                     &#34;customer_id&#34;: customer_id,
                     &#34;start_datetime&#34;: now,
                     &#34;end_datetime&#34;: _END_OF_WORLD,
-                    &#34;entity&#34;: _conv_entity_to_row(new_grid[updated_entity[&#34;id&#34;]])
+                    &#34;entity&#34;: _conv_entity_to_row(new_grid[updated_entity[&#34;id&#34;]])  # type: ignore
                 }
                 for updated_entity in diff_grid
                 if updated_entity[&#34;id&#34;] in new_grid
@@ -1112,9 +1112,9 @@ class Provider(DBHaystackInterface):
         begin_datetime = time_series.metadata.get(&#34;hisStart&#34;)
         end_datetime = time_series.metadata.get(&#34;hisStart&#34;)
         if time_series and not begin_datetime:
-            begin_datetime = time_series[0][&#39;ts&#39;]
+            begin_datetime = time_series[0][&#39;ts&#39;]  # type: ignore
         if time_series and not end_datetime:
-            end_datetime = time_series[-1][&#39;ts&#39;]
+            end_datetime = time_series[-1][&#39;ts&#39;]  # type: ignore
         if not begin_datetime:
             begin_datetime = datetime.min
         if not end_datetime:
@@ -1155,25 +1155,25 @@ class Provider(DBHaystackInterface):
             if database_name:
                 database_name = database_name[1:]
             self._parsed_db.geturl()
-            self._client = self._connect = MongoClient(
+            self._client = self._connect = MongoClient(  # type: ignore
                 self._get_db(),
             )
-            connect = self._client[database_name]
+            connect = self._client[database_name]  # type: ignore
             self._connect = connect
             self.create_db()
-        return self._connect
+        return self._connect  # type: ignore
 
     def get_collection(self) -&gt; Collection:
         mongodb = self.get_db()
-        return mongodb[self._table_name]
+        return mongodb[self._table_name]  # type: ignore
 
     def _get_meta_collection(self) -&gt; Collection:
         mongodb = self.get_db()
-        return mongodb[self._table_name + &#34;_meta_datas&#34;]
+        return mongodb[self._table_name + &#34;_meta_datas&#34;]  # type: ignore
 
     def _get_ts_collection(self) -&gt; Collection:
         mongodb = self.get_db()
-        return mongodb[self._table_name + &#34;_ts&#34;]</code></pre>
+        return mongodb[self._table_name + &#34;_ts&#34;]  # type: ignore</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1218,7 +1218,7 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
 </summary>
 <pre><code class="python">def get_collection(self) -&gt; Collection:
     mongodb = self.get_db()
-    return mongodb[self._table_name]</code></pre>
+    return mongodb[self._table_name]  # type: ignore</code></pre>
 </details>
 </dd>
 <dt id="shaystack.providers.mongodb.Provider.get_db"><code class="name flex">
@@ -1236,13 +1236,13 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
         if database_name:
             database_name = database_name[1:]
         self._parsed_db.geturl()
-        self._client = self._connect = MongoClient(
+        self._client = self._connect = MongoClient(  # type: ignore
             self._get_db(),
         )
-        connect = self._client[database_name]
+        connect = self._client[database_name]  # type: ignore
         self._connect = connect
         self.create_db()
-    return self._connect</code></pre>
+    return self._connect  # type: ignore</code></pre>
 </details>
 </dd>
 <dt id="shaystack.providers.mongodb.Provider.his_read"><code class="name flex">
@@ -1255,7 +1255,7 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@overrides
-def his_read(
+def his_read(  # type: ignore
         self,
         entity_id: Ref,
         dates_range: Optional[Tuple[datetime, datetime]] = None,
@@ -1272,9 +1272,9 @@ def his_read(
     history = Grid(columns=[&#34;ts&#34;, &#34;val&#34;])
     if not date_version:
         date_version = datetime.max.replace(tzinfo=pytz.UTC)
-    if dates_range[1] &gt; date_version:
-        dates_range = list(dates_range)
-        dates_range[1] = date_version
+    if dates_range[1] &gt; date_version:  # type: ignore
+        dates_range = list(dates_range)  # type: ignore
+        dates_range[1] = date_version  # type: ignore
 
     ts_collection = self._get_ts_collection()
 
@@ -1284,8 +1284,8 @@ def his_read(
             &#34;id&#34;: entity_id.name,
             &#34;ts&#34;:
                 {
-                    &#34;$gte&#34;: dates_range[0],
-                    &#34;$lt&#34;: dates_range[1]
+                    &#34;$gte&#34;: dates_range[0],  # type: ignore
+                    &#34;$lt&#34;: dates_range[1]  # type: ignore
                 }
         }).sort(&#34;ts&#34;)
     for row in cursor:
@@ -1307,7 +1307,7 @@ def his_read(
         min_date = date_version
         max_date = date_version
 
-    history.metadata = {
+    history.metadata = {  # type: ignore
         &#34;id&#34;: entity_id,
         &#34;hisStart&#34;: min_date,
         &#34;hisEnd&#34;: max_date,
@@ -1380,10 +1380,10 @@ def purge_db(self) -&gt; None:
     connect = self.get_db()
     if self._table_name in connect.list_collection_names():
         connect[self._table_name].drop()
-    metadata_name = self._table_name + &#34;_meta_datas&#34;
+    metadata_name = self._table_name + &#34;_meta_datas&#34;  # type: ignore
     if metadata_name in connect.list_collection_names():
         connect[metadata_name].drop()
-    ts_name = self._table_name + &#34;_ts&#34;
+    ts_name = self._table_name + &#34;_ts&#34;  # type: ignore
     if ts_name in connect.list_collection_names():
         connect[ts_name].drop()</code></pre>
 </details>
@@ -1420,7 +1420,7 @@ def read(
 
     if entity_ids is None:
         cursor = self.get_collection().aggregate(
-            mongo_filter(grid_filter, date_version, limit, self.get_customer_id())
+            mongo_filter(grid_filter, date_version, limit, self.get_customer_id())  # type: ignore
         )
 
         grid = self._init_grid_from_db(date_version)

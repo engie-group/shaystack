@@ -93,14 +93,14 @@ def _dump_meta(meta: MetadataObject,
     _meta = dict(map(_dump, list(meta.items())))
     if for_grid:
         _meta[&#39;ver&#39;] = str(version)
-    return _meta
+    return _meta  # type: ignore
 
 
 def _dump_meta_item(item: str, version: Version = LATEST_VER) \
         -&gt; Tuple[str, Union[None, bool, str, float, List[str], Entity]]:
-    (item_id, item_value) = item
-    return (_dump_id(item_id),
-            _dump_scalar(item_value, version=version))
+    (item_id, item_value) = item  # type: ignore
+    return (_dump_id(item_id),  # type: ignore
+            _dump_scalar(item_value, version=version))  # type: ignore
 
 
 def _dump_columns(cols: SortableDict, version: Version = LATEST_VER) -&gt; List[str]:
@@ -108,7 +108,7 @@ def _dump_columns(cols: SortableDict, version: Version = LATEST_VER) -&gt; List[
     _cols = list(zip(*list(cols.items())))
     if not _cols:
         raise ValueError(&#34;Empty columns is not valide. Use `grid.extends_columns()`&#34;)
-    return list(map(_dump, *_cols))
+    return list(map(_dump, *_cols))  # type: ignore
 
 
 def _dump_column(col: str, col_meta: MetadataObject, version: Version = LATEST_VER) -&gt; Dict[str, str]:
@@ -121,12 +121,12 @@ def _dump_column(col: str, col_meta: MetadataObject, version: Version = LATEST_V
 
 
 def _dump_rows(grid: Grid) -&gt; List[str]:
-    return list(map(functools.partial(_dump_row, grid), grid))
+    return list(map(functools.partial(_dump_row, grid), grid))  # type: ignore
 
 
 def _dump_row(grid: Grid, row: Entity) -&gt; Dict[str, str]:
     return {
-        c: _dump_scalar(row.get(c), version=grid.version)
+        c: _dump_scalar(row.get(c), version=grid.version)  # type: ignore
         for c in list(grid.column.keys()) if c in row
     }
 
@@ -147,7 +147,7 @@ def _dump_scalar(scalar: Any, version: Version = LATEST_VER) \
     if isinstance(scalar, list):
         return _dump_list(scalar, version=version)
     if isinstance(scalar, dict):
-        return _dump_dict(scalar, version=version)
+        return _dump_dict(scalar, version=version)  # type: ignore
     if isinstance(scalar, bool):
         return _dump_bool(scalar)
     if isinstance(scalar, Ref):
@@ -173,7 +173,7 @@ def _dump_scalar(scalar: Any, version: Version = LATEST_VER) \
     if isinstance(scalar, (float, int)):
         return _dump_decimal(scalar)
     if isinstance(scalar, Grid):
-        return _dump_grid_to_hayson(scalar)
+        return _dump_grid_to_hayson(scalar)  # type: ignore
     raise NotImplementedError(&#39;Unhandled case: %r&#39; % scalar)
 
 
@@ -284,14 +284,14 @@ def _dump_list(lst: List[Any], version: Version = LATEST_VER) -&gt; List[str]:
     if version &lt; VER_3_0:
         raise ValueError(&#39;Project Haystack %s &#39;
                          &#39;does not support lists&#39; % version)
-    return list(map(functools.partial(_dump_scalar, version=version), lst))
+    return list(map(functools.partial(_dump_scalar, version=version), lst))  # type: ignore
 
 
 def _dump_dict(dic: Dict[str, Any], version: Version = LATEST_VER) -&gt; Dict[str, str]:
     if version &lt; VER_3_0:
         raise ValueError(&#39;Project Haystack %s &#39;
                          &#39;does not support dict&#39; % version)
-    return {k: _dump_scalar(v, version=version) for (k, v) in dic.items()}
+    return {k: _dump_scalar(v, version=version) for (k, v) in dic.items()}  # type: ignore
 
 
 def dump_scalar(scalar: Any, version: Version = LATEST_VER) -&gt; str:

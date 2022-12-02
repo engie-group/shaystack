@@ -83,7 +83,7 @@ class HSScalar(graphene.Scalar):
         Args:
             hs_scalar: Any value
         &#34;&#34;&#34;
-        return json.loads(shaystack.dump_scalar(hs_scalar,
+        return json.loads(shaystack.dump_scalar(hs_scalar,  # type: ignore
                                                 shaystack.MODE_JSON,
                                                 version=shaystack.VER_3_0))
 
@@ -141,7 +141,7 @@ class HSDateTime(graphene.String):
         return HSDateTime.parse_value(node.value)
 
     @staticmethod
-    def parse_value(value: Union[datetime, date, str]) -&gt; datetime:
+    def parse_value(value: Union[datetime, date, str]) -&gt; datetime:  # type: ignore
         # Call to convert graphql variable to python object
         &#34;&#34;&#34;
         Args:
@@ -181,7 +181,7 @@ class HSDate(graphene.String):
         return HSDate.parse_value(node.value)
 
     @staticmethod
-    def parse_value(value: Union[date, str]) -&gt; date:
+    def parse_value(value: Union[date, str]) -&gt; date:  # type: ignore
         &#34;&#34;&#34;
         Convert a date to haystack json.
         Args:
@@ -219,7 +219,7 @@ class HSTime(graphene.String):
         return HSTime.parse_value(node.value)
 
     @staticmethod
-    def parse_value(value: Union[time, str]) -&gt; time:
+    def parse_value(value: Union[time, str]) -&gt; time:  # type: ignore
         &#34;&#34;&#34;
         Args:
             value:
@@ -403,9 +403,9 @@ class ReadHaystack(graphene.ObjectType):
         log.debug(&#34;resolve_about(parent,info)&#34;)
         provider = parent.provider
         grid = provider.about(&#34;http://localhost&#34;)
-        result = ReadHaystack._conv_entity(HSAbout, grid[0])
-        result.serverTime = grid[0][&#34;serverTime&#34;]  # pylint: disable=invalid-name
-        result.bootTime = grid[0][&#34;serverBootTime&#34;]  # pylint: disable=invalid-name, attribute-defined-outside-init
+        result = ReadHaystack._conv_entity(HSAbout, grid[0])  # type: ignore
+        result.serverTime = grid[0][&#34;serverTime&#34;]   # type: ignore # pylint: disable=invalid-name
+        result.bootTime = grid[0][&#34;serverBootTime&#34;]   # type: ignore #pylint: disable=invalid-name, attribute-defined-outside-init
         return result
 
     # noinspection PyUnusedLocal
@@ -423,7 +423,7 @@ class ReadHaystack(graphene.ObjectType):
                            tag: str,
                            version: Optional[HSDateTime] = None):
         log.debug(&#34;resolve_values(parent,info,%s)&#34;, tag)
-        return parent.provider.values_for_tag(tag, version)
+        return parent.provider.values_for_tag(tag, version)  # type: ignore
 
     # noinspection PyUnusedLocal
     @staticmethod
@@ -447,8 +447,8 @@ class ReadHaystack(graphene.ObjectType):
             &#34;select=%s, filter=%s, &#34;
             &#34;limit=%s, version=%s)&#34;, ids, select, filter, limit, version)
         if ids:
-            ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]
-        grid = parent.provider.read(limit, select, ids, filter, version)
+            ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]  # type: ignore
+        grid = parent.provider.read(limit, select, ids, filter, version)  # type: ignore
         return grid.purge()
 
     # noinspection PyUnusedLocal
@@ -462,14 +462,13 @@ class ReadHaystack(graphene.ObjectType):
             version = HSDateTime.parse_value(version)
         log.debug(&#34;resolve_histories(parent,info,ids=%s, range=%s, version=%s)&#34;,
                   ids, dates_range, version)
-        grid_date_range = parse_date_range(dates_range, parent.provider.get_tz())
+        grid_date_range = parse_date_range(dates_range, parent.provider.get_tz())  # type: ignore
         return [ReadHaystack._conv_history(
-            parent.provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version),
+            parent.provider.his_read(Ref(ReadHaystack._filter_id(entity_id)),
+                                     grid_date_range, version),  # type: ignore
             info
         )
-            for entity_id in ids]
-        # return [parent.provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version)
-        #         for entity_id in ids]
+            for entity_id in ids]  # type: ignore
 
     # noinspection PyUnusedLocal
     @staticmethod
@@ -482,47 +481,46 @@ class ReadHaystack(graphene.ObjectType):
         log.debug(&#34;resolve_point_write(parent,info, entity_id=%s, version=%s)&#34;,
                   entity_id, version)
         ref = Ref(ReadHaystack._filter_id(entity_id))
-        grid = parent.provider.point_write_read(ref, version)
+        grid = parent.provider.point_write_read(ref, version)  # type: ignore
         return ReadHaystack._conv_list_to_object_type(HSPointWrite, grid)
 
     @staticmethod
     def _conv_value(entity: Entity,
                     info: ResolveInfo) -&gt; HSTS:
-        # selection = info.field_asts[0].selection_set.selections
-        selection = info.field_nodes[0].selection_set.selections
+        selection = info.field_nodes[0].selection_set.selections  # type: ignore
         cast_value = HSTS()
         value = entity[&#34;val&#34;]
-        cast_value.ts = entity[&#34;ts&#34;]  # pylint: disable=invalid-name
-        cast_value.val = value
+        cast_value.ts = entity[&#34;ts&#34;]  # type: ignore # pylint: disable=invalid-name
+        cast_value.val = value  # type: ignore
         for sel in selection:
-            name = sel.name.value
+            name = sel.name.value  # type: ignore
             if name in [&#39;ts&#39;, &#39;val&#39;]:
                 continue
 
             if name == &#39;int&#39; and isinstance(value, (int, float)):
-                cast_value.int = int(value)
+                cast_value.int = int(value)  # type: ignore
             elif name == &#39;float&#39; and isinstance(value, float):
-                cast_value.float = value
+                cast_value.float = value  # type: ignore
             elif name == &#39;str&#39;:
-                cast_value.str = str(value)
+                cast_value.str = str(value)  # type: ignore
             elif name == &#39;bool&#39;:
-                cast_value.bool = bool(value)
+                cast_value.bool = bool(value)  # type: ignore
             elif name == &#39;uri&#39; and isinstance(value, Uri):
-                cast_value.uri = str(value)
+                cast_value.uri = str(value)  # type: ignore
             elif name == &#39;ref&#39; and isinstance(value, Ref):
-                cast_value.ref = &#39;@&#39; + value.name
+                cast_value.ref = &#39;@&#39; + value.name  # type: ignore
             elif name == &#39;date&#39; and isinstance(value, date):
-                cast_value.date = value
+                cast_value.date = value  # type: ignore
             elif name == &#39;date&#39; and isinstance(value, datetime):
-                cast_value.date = value.date()
+                cast_value.date = value.date()  # type: ignore
             elif name == &#39;time&#39; and isinstance(value, time):
-                cast_value.time = value
+                cast_value.time = value  # type: ignore
             elif name == &#39;time&#39; and isinstance(value, datetime):
-                cast_value.time = value.time()
+                cast_value.time = value.time()  # type: ignore
             elif name == &#39;datetime&#39; and isinstance(value, datetime):
-                cast_value.datetime = value
+                cast_value.datetime = value  # type: ignore
             elif name == &#39;coord&#39; and isinstance(value, Coordinate):
-                cast_value.coord = HSCoordinate(value.latitude, value.longitude)
+                cast_value.coord = HSCoordinate(value.latitude, value.longitude)  # type: ignore
         return cast_value
 
     @staticmethod
@@ -721,7 +719,7 @@ class ReadHaystack(graphene.ObjectType):
         return HSDate.parse_value(node.value)
 
     @staticmethod
-    def parse_value(value: Union[date, str]) -&gt; date:
+    def parse_value(value: Union[date, str]) -&gt; date:  # type: ignore
         &#34;&#34;&#34;
         Convert a date to haystack json.
         Args:
@@ -782,7 +780,7 @@ def parse_literal(node: StringValueNode) -&gt; date:  # pylint: disable=argument
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def parse_value(value: Union[date, str]) -&gt; date:
+def parse_value(value: Union[date, str]) -&gt; date:  # type: ignore
     &#34;&#34;&#34;
     Convert a date to haystack json.
     Args:
@@ -860,7 +858,7 @@ def serialize(a_date: date) -&gt; str:
         return HSDateTime.parse_value(node.value)
 
     @staticmethod
-    def parse_value(value: Union[datetime, date, str]) -&gt; datetime:
+    def parse_value(value: Union[datetime, date, str]) -&gt; datetime:  # type: ignore
         # Call to convert graphql variable to python object
         &#34;&#34;&#34;
         Args:
@@ -921,7 +919,7 @@ def parse_literal(node: StringValueNode) -&gt; datetime:  # pylint: disable=argu
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def parse_value(value: Union[datetime, date, str]) -&gt; datetime:
+def parse_value(value: Union[datetime, date, str]) -&gt; datetime:  # type: ignore
     # Call to convert graphql variable to python object
     &#34;&#34;&#34;
     Args:
@@ -1068,7 +1066,7 @@ def serialize(date_time: datetime) -&gt; str:
         Args:
             hs_scalar: Any value
         &#34;&#34;&#34;
-        return json.loads(shaystack.dump_scalar(hs_scalar,
+        return json.loads(shaystack.dump_scalar(hs_scalar,  # type: ignore
                                                 shaystack.MODE_JSON,
                                                 version=shaystack.VER_3_0))
 
@@ -1178,7 +1176,7 @@ def serialize(hs_scalar: Any) -&gt; Any:
     Args:
         hs_scalar: Any value
     &#34;&#34;&#34;
-    return json.loads(shaystack.dump_scalar(hs_scalar,
+    return json.loads(shaystack.dump_scalar(hs_scalar,  # type: ignore
                                             shaystack.MODE_JSON,
                                             version=shaystack.VER_3_0))</code></pre>
 </details>
@@ -1309,7 +1307,7 @@ def serialize(hs_scalar: Any) -&gt; Any:
         return HSTime.parse_value(node.value)
 
     @staticmethod
-    def parse_value(value: Union[time, str]) -&gt; time:
+    def parse_value(value: Union[time, str]) -&gt; time:  # type: ignore
         &#34;&#34;&#34;
         Args:
             value:
@@ -1365,7 +1363,7 @@ def parse_literal(node: StringValueNode) -&gt; time:  # pylint: disable=argument
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def parse_value(value: Union[time, str]) -&gt; time:
+def parse_value(value: Union[time, str]) -&gt; time:  # type: ignore
     &#34;&#34;&#34;
     Args:
         value:
@@ -1616,9 +1614,9 @@ def serialize(a_uri: Uri) -&gt; str:
         log.debug(&#34;resolve_about(parent,info)&#34;)
         provider = parent.provider
         grid = provider.about(&#34;http://localhost&#34;)
-        result = ReadHaystack._conv_entity(HSAbout, grid[0])
-        result.serverTime = grid[0][&#34;serverTime&#34;]  # pylint: disable=invalid-name
-        result.bootTime = grid[0][&#34;serverBootTime&#34;]  # pylint: disable=invalid-name, attribute-defined-outside-init
+        result = ReadHaystack._conv_entity(HSAbout, grid[0])  # type: ignore
+        result.serverTime = grid[0][&#34;serverTime&#34;]   # type: ignore # pylint: disable=invalid-name
+        result.bootTime = grid[0][&#34;serverBootTime&#34;]   # type: ignore #pylint: disable=invalid-name, attribute-defined-outside-init
         return result
 
     # noinspection PyUnusedLocal
@@ -1636,7 +1634,7 @@ def serialize(a_uri: Uri) -&gt; str:
                            tag: str,
                            version: Optional[HSDateTime] = None):
         log.debug(&#34;resolve_values(parent,info,%s)&#34;, tag)
-        return parent.provider.values_for_tag(tag, version)
+        return parent.provider.values_for_tag(tag, version)  # type: ignore
 
     # noinspection PyUnusedLocal
     @staticmethod
@@ -1660,8 +1658,8 @@ def serialize(a_uri: Uri) -&gt; str:
             &#34;select=%s, filter=%s, &#34;
             &#34;limit=%s, version=%s)&#34;, ids, select, filter, limit, version)
         if ids:
-            ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]
-        grid = parent.provider.read(limit, select, ids, filter, version)
+            ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]  # type: ignore
+        grid = parent.provider.read(limit, select, ids, filter, version)  # type: ignore
         return grid.purge()
 
     # noinspection PyUnusedLocal
@@ -1675,14 +1673,13 @@ def serialize(a_uri: Uri) -&gt; str:
             version = HSDateTime.parse_value(version)
         log.debug(&#34;resolve_histories(parent,info,ids=%s, range=%s, version=%s)&#34;,
                   ids, dates_range, version)
-        grid_date_range = parse_date_range(dates_range, parent.provider.get_tz())
+        grid_date_range = parse_date_range(dates_range, parent.provider.get_tz())  # type: ignore
         return [ReadHaystack._conv_history(
-            parent.provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version),
+            parent.provider.his_read(Ref(ReadHaystack._filter_id(entity_id)),
+                                     grid_date_range, version),  # type: ignore
             info
         )
-            for entity_id in ids]
-        # return [parent.provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version)
-        #         for entity_id in ids]
+            for entity_id in ids]  # type: ignore
 
     # noinspection PyUnusedLocal
     @staticmethod
@@ -1695,47 +1692,46 @@ def serialize(a_uri: Uri) -&gt; str:
         log.debug(&#34;resolve_point_write(parent,info, entity_id=%s, version=%s)&#34;,
                   entity_id, version)
         ref = Ref(ReadHaystack._filter_id(entity_id))
-        grid = parent.provider.point_write_read(ref, version)
+        grid = parent.provider.point_write_read(ref, version)  # type: ignore
         return ReadHaystack._conv_list_to_object_type(HSPointWrite, grid)
 
     @staticmethod
     def _conv_value(entity: Entity,
                     info: ResolveInfo) -&gt; HSTS:
-        # selection = info.field_asts[0].selection_set.selections
-        selection = info.field_nodes[0].selection_set.selections
+        selection = info.field_nodes[0].selection_set.selections  # type: ignore
         cast_value = HSTS()
         value = entity[&#34;val&#34;]
-        cast_value.ts = entity[&#34;ts&#34;]  # pylint: disable=invalid-name
-        cast_value.val = value
+        cast_value.ts = entity[&#34;ts&#34;]  # type: ignore # pylint: disable=invalid-name
+        cast_value.val = value  # type: ignore
         for sel in selection:
-            name = sel.name.value
+            name = sel.name.value  # type: ignore
             if name in [&#39;ts&#39;, &#39;val&#39;]:
                 continue
 
             if name == &#39;int&#39; and isinstance(value, (int, float)):
-                cast_value.int = int(value)
+                cast_value.int = int(value)  # type: ignore
             elif name == &#39;float&#39; and isinstance(value, float):
-                cast_value.float = value
+                cast_value.float = value  # type: ignore
             elif name == &#39;str&#39;:
-                cast_value.str = str(value)
+                cast_value.str = str(value)  # type: ignore
             elif name == &#39;bool&#39;:
-                cast_value.bool = bool(value)
+                cast_value.bool = bool(value)  # type: ignore
             elif name == &#39;uri&#39; and isinstance(value, Uri):
-                cast_value.uri = str(value)
+                cast_value.uri = str(value)  # type: ignore
             elif name == &#39;ref&#39; and isinstance(value, Ref):
-                cast_value.ref = &#39;@&#39; + value.name
+                cast_value.ref = &#39;@&#39; + value.name  # type: ignore
             elif name == &#39;date&#39; and isinstance(value, date):
-                cast_value.date = value
+                cast_value.date = value  # type: ignore
             elif name == &#39;date&#39; and isinstance(value, datetime):
-                cast_value.date = value.date()
+                cast_value.date = value.date()  # type: ignore
             elif name == &#39;time&#39; and isinstance(value, time):
-                cast_value.time = value
+                cast_value.time = value  # type: ignore
             elif name == &#39;time&#39; and isinstance(value, datetime):
-                cast_value.time = value.time()
+                cast_value.time = value.time()  # type: ignore
             elif name == &#39;datetime&#39; and isinstance(value, datetime):
-                cast_value.datetime = value
+                cast_value.datetime = value  # type: ignore
             elif name == &#39;coord&#39; and isinstance(value, Coordinate):
-                cast_value.coord = HSCoordinate(value.latitude, value.longitude)
+                cast_value.coord = HSCoordinate(value.latitude, value.longitude)  # type: ignore
         return cast_value
 
     @staticmethod
@@ -1821,9 +1817,9 @@ def resolve_about(parent: &#39;ReadHaystack&#39;,
     log.debug(&#34;resolve_about(parent,info)&#34;)
     provider = parent.provider
     grid = provider.about(&#34;http://localhost&#34;)
-    result = ReadHaystack._conv_entity(HSAbout, grid[0])
-    result.serverTime = grid[0][&#34;serverTime&#34;]  # pylint: disable=invalid-name
-    result.bootTime = grid[0][&#34;serverBootTime&#34;]  # pylint: disable=invalid-name, attribute-defined-outside-init
+    result = ReadHaystack._conv_entity(HSAbout, grid[0])  # type: ignore
+    result.serverTime = grid[0][&#34;serverTime&#34;]   # type: ignore # pylint: disable=invalid-name
+    result.bootTime = grid[0][&#34;serverBootTime&#34;]   # type: ignore #pylint: disable=invalid-name, attribute-defined-outside-init
     return result</code></pre>
 </details>
 </dd>
@@ -1849,8 +1845,8 @@ def resolve_entities(parent: &#39;ReadHaystack&#39;,
         &#34;select=%s, filter=%s, &#34;
         &#34;limit=%s, version=%s)&#34;, ids, select, filter, limit, version)
     if ids:
-        ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]
-    grid = parent.provider.read(limit, select, ids, filter, version)
+        ids = [Ref(ReadHaystack._filter_id(entity_id)) for entity_id in ids]  # type: ignore
+    grid = parent.provider.read(limit, select, ids, filter, version)  # type: ignore
     return grid.purge()</code></pre>
 </details>
 </dd>
@@ -1873,14 +1869,13 @@ def resolve_histories(parent: &#39;ReadHaystack&#39;,
         version = HSDateTime.parse_value(version)
     log.debug(&#34;resolve_histories(parent,info,ids=%s, range=%s, version=%s)&#34;,
               ids, dates_range, version)
-    grid_date_range = parse_date_range(dates_range, parent.provider.get_tz())
+    grid_date_range = parse_date_range(dates_range, parent.provider.get_tz())  # type: ignore
     return [ReadHaystack._conv_history(
-        parent.provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version),
+        parent.provider.his_read(Ref(ReadHaystack._filter_id(entity_id)),
+                                 grid_date_range, version),  # type: ignore
         info
     )
-        for entity_id in ids]
-    # return [parent.provider.his_read(Ref(ReadHaystack._filter_id(entity_id)), grid_date_range, version)
-    #         for entity_id in ids]</code></pre>
+        for entity_id in ids]  # type: ignore</code></pre>
 </details>
 </dd>
 <dt id="app.graphql_model.ReadHaystack.resolve_ops"><code class="name flex">
@@ -1919,7 +1914,7 @@ def resolve_point_write(parent: &#39;ReadHaystack&#39;,
     log.debug(&#34;resolve_point_write(parent,info, entity_id=%s, version=%s)&#34;,
               entity_id, version)
     ref = Ref(ReadHaystack._filter_id(entity_id))
-    grid = parent.provider.point_write_read(ref, version)
+    grid = parent.provider.point_write_read(ref, version)  # type: ignore
     return ReadHaystack._conv_list_to_object_type(HSPointWrite, grid)</code></pre>
 </details>
 </dd>
@@ -1938,7 +1933,7 @@ def resolve_tag_values(parent: &#39;ReadHaystack&#39;,
                        tag: str,
                        version: Optional[HSDateTime] = None):
     log.debug(&#34;resolve_values(parent,info,%s)&#34;, tag)
-    return parent.provider.values_for_tag(tag, version)</code></pre>
+    return parent.provider.values_for_tag(tag, version)  # type: ignore</code></pre>
 </details>
 </dd>
 <dt id="app.graphql_model.ReadHaystack.resolve_versions"><code class="name flex">

@@ -45,9 +45,9 @@ import sys
 
 import click
 
-from app.schema_graphql import get_schema_for_provider
 from shaystack import HaystackInterface
 from shaystack.providers import get_provider
+from app.schema_graphql import get_schema_for_provider
 
 try:
     from flask import Blueprint
@@ -89,7 +89,7 @@ def main() -&gt; int:
     &gt;partial_gql.graphql
     &#34;&#34;&#34;
     provider_name = os.environ.get(&#34;HAYSTACK_PROVIDER&#34;, &#34;shaystack.providers.db&#34;)
-    provider = get_provider(provider_name, os.environ)
+    provider = get_provider(provider_name, dict(os.environ))
     _dump_haystack_schema(provider)
     return 0
 

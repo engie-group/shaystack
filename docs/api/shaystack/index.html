@@ -429,11 +429,11 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
         default_tz = provider.get_tz()
         if grid_request:
             if &#34;id&#34; in grid_request.column:
-                entity_id = grid_request[0].get(&#34;id&#34;, &#34;&#34;)
+                entity_id = grid_request[0].get(&#34;id&#34;, &#34;&#34;)  # type: ignore
             if &#34;range&#34; in grid_request.column:
-                date_range = grid_request[0].get(&#34;range&#34;, &#34;&#34;)
+                date_range = grid_request[0].get(&#34;range&#34;, &#34;&#34;)  # type: ignore
             date_version = (
-                grid_request[0].get(&#34;version&#34;, None) if grid_request else None
+                grid_request[0].get(&#34;version&#34;, None) if grid_request else None  # type: ignore
             )
 
         # Priority of query string
@@ -446,7 +446,7 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
                 date_version = parse_hs_datetime_format(args[&#34;version&#34;], default_tz)
                 date_version = convert_version(date_version)
 
-        grid_date_range = parse_date_range(date_range, provider.get_tz())
+        grid_date_range = parse_date_range(date_range, provider.get_tz())  # type: ignore
         log.debug(
             &#34;id=%s range=%s, date_version=%s&#34;, entity_id, grid_date_range, date_version
         )
@@ -454,9 +454,9 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
             if isinstance(date_version, date):
                 date_version = datetime.combine(date_version, datetime.max.time()) \
                     .replace(tzinfo=provider.get_tz())
-            if grid_date_range[1] &gt; date_version:
-                grid_date_range = (grid_date_range[0], date_version)
-        grid_response = provider.his_read(entity_id, grid_date_range, date_version)
+            if grid_date_range[1] &gt; date_version:  # type: ignore
+                grid_date_range = (grid_date_range[0], date_version)  # type: ignore
+        grid_response = provider.his_read(entity_id, grid_date_range, date_version)  # type: ignore
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, &#34;OK&#34;)
     except Exception as ex:  # pylint: disable=broad-except
@@ -521,7 +521,7 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
                 )
         if &#34;version&#34; in args:
             date_version = parse_hs_datetime_format(args[&#34;version&#34;], default_tz)
-        grid_response = provider.his_write(entity_id, time_serie_grid, date_version)
+        grid_response = provider.his_write(entity_id, time_serie_grid, date_version)  # type: ignore
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, &#34;OK&#34;)
     except Exception as ex:  # pylint: disable=broad-except
@@ -576,7 +576,7 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
             if &#34;action&#34; in args:
                 action = args[&#34;action&#34;]
         params = grid_request[0] if grid_request else {}
-        grid_response = provider.invoke_action(entity_id, action, params)
+        grid_response = provider.invoke_action(entity_id, action, params)  # type: ignore
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, &#34;OK&#34;)
     except Exception as ex:  # pylint: disable=broad-except
@@ -651,10 +651,10 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
         grid_request = _parse_body(request)
         nav_id = None
         if grid_request and &#34;navId&#34; in grid_request.column:
-            nav_id = grid_request[0][&#34;navId&#34;]
+            nav_id = grid_request[0][&#34;navId&#34;]  # type: ignore
         if args and &#34;navId&#34; in args:
             nav_id = args[&#34;navId&#34;]
-        grid_response = provider.nav(nav_id=nav_id)
+        grid_response = provider.nav(nav_id=nav_id)  # type: ignore
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, &#34;OK&#34;)
     except Exception as ex:  # pylint: disable=broad-except
@@ -826,13 +826,13 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
         scalar = scalar.decode(encoding=charset)
 
     if mode == MODE_ZINC:
-        return parse_zinc_scalar(scalar, version=version)
+        return parse_zinc_scalar(scalar, version=version)  # type: ignore
     if mode == MODE_TRIO:
-        return parse_trio_scalar(scalar, version=version)
+        return parse_trio_scalar(scalar, version=version)  # type: ignore
     if mode == MODE_JSON:
         return parse_json_scalar(scalar, version=version)
     if mode == MODE_CSV:
-        return parse_csv_scalar(scalar, version=version)
+        return parse_csv_scalar(scalar, version=version)  # type: ignore
     if mode == MODE_HAYSON:
         return parse_hayson_scalar(scalar, version=version)
 
@@ -883,13 +883,13 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
         entity_id = None
         default_tz = provider.get_tz()
         if grid_request:
-            entity_id = grid_request[0][&#34;id&#34;]
-            date_version = grid_request[0].get(&#34;version&#34;, None)
+            entity_id = grid_request[0][&#34;id&#34;]  # type: ignore
+            date_version = grid_request[0].get(&#34;version&#34;, None)  # type: ignore
             if &#34;level&#34; in grid_request[0]:
-                level = int(grid_request[0][&#34;level&#34;])
-            val = grid_request[0].get(&#34;val&#34;)
-            who = grid_request[0].get(&#34;who&#34;)
-            duration = grid_request[0].get(&#34;duration&#34;)  # Must be quantity
+                level = int(grid_request[0][&#34;level&#34;])  # type: ignore
+            val = grid_request[0].get(&#34;val&#34;)  # type: ignore
+            who = grid_request[0].get(&#34;who&#34;)  # type: ignore
+            duration = grid_request[0].get(&#34;duration&#34;)  # type: ignore # Must be quantity
 
         if &#34;id&#34; in args:
             entity_id = Ref(args[&#34;id&#34;][1:])
@@ -911,11 +911,11 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
             raise ValueError(&#34;&#39;id&#39; must be set&#34;)
         if val is not None:
             provider.point_write_write(
-                entity_id, level, val, who, duration, date_version
+                entity_id, level, val, who, duration, date_version  # type: ignore
             )
             grid_response = EmptyGrid
         else:
-            grid_response = provider.point_write_read(entity_id, date_version)
+            grid_response = provider.point_write_read(entity_id, date_version)  # type: ignore
             assert grid_response is not None
             assert &#34;level&#34; in grid_response.column
             assert &#34;levelDis&#34; in grid_response.column
@@ -974,15 +974,15 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
                 read_ids = [row[&#34;id&#34;] for row in grid_request]
             else:
                 if &#34;filter&#34; in grid_request.column:
-                    read_filter = grid_request[0].get(&#34;filter&#34;, &#34;&#34;)
+                    read_filter = grid_request[0].get(&#34;filter&#34;, &#34;&#34;)  # type: ignore
                 else:
                     read_filter = &#34;&#34;
                 if &#34;limit&#34; in grid_request.column:
-                    limit = int(grid_request[0].get(&#34;limit&#34;, 0))
+                    limit = int(grid_request[0].get(&#34;limit&#34;, 0))  # type: ignore
             if &#34;select&#34; in grid_request.column:
-                select = grid_request[0].get(&#34;select&#34;, &#34;*&#34;)
+                select = grid_request[0].get(&#34;select&#34;, &#34;*&#34;)  # type: ignore
             date_version = (
-                grid_request[0].get(&#34;version&#34;, None) if grid_request else None
+                grid_request[0].get(&#34;version&#34;, None) if grid_request else None  # type: ignore
             )
         # Priority of query string
         if args:
@@ -1010,7 +1010,7 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
             limit,
             date_version,
         )
-        grid_response = provider.read(limit, select, read_ids, read_filter, date_version)
+        grid_response = provider.read(limit, select, read_ids, read_filter, date_version)  # type: ignore
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, &#34;OK&#34;)
     except Exception as ex:  # pylint: disable=broad-except
@@ -1096,7 +1096,7 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
             if &#34;refresh&#34; in args:
                 refresh = True
 
-        grid_response = provider.watch_poll(watch_id, refresh)
+        grid_response = provider.watch_poll(watch_id, refresh)  # type: ignore
         assert grid_response is not None
         response = _format_response(headers, grid_response, 200, &#34;OK&#34;)
     except Exception as ex:  # pylint: disable=broad-except
@@ -1222,15 +1222,15 @@ and produce a <code><a title="shaystack.Grid" href="#shaystack.Grid">Grid</a></c
 
         if args:
             if &#34;watchId&#34; in args:
-                watch_id = args[&#34;watchId&#34;]
+                watch_id = args[&#34;watchId&#34;]  # type: ignore
             if &#34;close&#34; in args:
                 close = bool(args[&#34;close&#34;])
             if &#34;ids&#34; in args:  # Use list of str
-                ids = {Ref(x[1:]) for x in literal_eval(args[&#34;ids&#34;])}
+                ids = {Ref(x[1:]) for x in literal_eval(args[&#34;ids&#34;])}  # type: ignore
 
         if not watch_id:
             raise ValueError(&#34;&#39;watchId&#39; must be set&#34;)
-        provider.watch_unsub(watch_id, ids, close)
+        provider.watch_unsub(watch_id, ids, close)  # type: ignore
         grid_response = EmptyGrid
         response = _format_response(headers, grid_response, 200, &#34;OK&#34;)
     except Exception as ex:  # pylint: disable=broad-except
@@ -1263,7 +1263,7 @@ types.</p></div>
         return &#39;%s(%s)&#39; % (self.__class__.__name__,
                            super().__repr__())
 
-    def __eq__(self, other: &#39;Bin&#39;) -&gt; bool:
+    def __eq__(self, other: &#39;Bin&#39;) -&gt; bool:  # type: ignore
         assert isinstance(other, Bin)
         return super().__eq__(other)</code></pre>
 </details>
@@ -1311,13 +1311,13 @@ types.</p></div>
             round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
         ))
 
-    def __eq__(self, other: &#39;Coordinate&#39;) -&gt; bool:
+    def __eq__(self, other: &#39;Coordinate&#39;) -&gt; bool:  # type: ignore
         if not isinstance(other, Coordinate):
             return False
         return (self.latitude == other.latitude) and \
                (self.longitude == other.longitude)
 
-    def __ne__(self, other: &#39;Coordinate&#39;) -&gt; bool:
+    def __ne__(self, other: &#39;Coordinate&#39;) -&gt; bool:  # type: ignore
         if not isinstance(other, Coordinate):
             return True
         return not self == other
@@ -1408,7 +1408,7 @@ followed by zero or more rows.</p>
                                 None] = None):
         version_given = version is not None
         if version_given:
-            version = Version(version)
+            version = Version(version)  # type: ignore
         else:
             version = VER_3_0
         self._version = version
@@ -1435,7 +1435,7 @@ followed by zero or more rows.</p>
             elif isinstance(columns, Sequence) and columns and not isinstance(columns[0], tuple):
                 columns = list(zip(columns, [{}] * len(columns)))
 
-            for col_id, col_meta in columns:
+            for col_id, col_meta in columns:  # type: ignore
                 # Convert sorted lists and dicts back to a list of items.
                 if isinstance(col_meta, (dict, SortableDict)):
                     col_meta = list(col_meta.items())
@@ -1458,7 +1458,7 @@ followed by zero or more rows.</p>
         &#34;&#34;&#34;
         if isinstance(version_1, numbers.Number) and isinstance(version_2, numbers.Number):
             # noinspection PyUnresolvedReferences
-            return abs(version_1 - version_2) &lt; 0.000001
+            return abs(version_1 - version_2) &lt; 0.000001  # type: ignore
         # pylint: disable=C0123
         if type(version_1) != type(version_2) and \
                 not (isinstance(version_1, str) and isinstance(version_2, str)):
@@ -1486,7 +1486,7 @@ followed by zero or more rows.</p>
             return True
         return version_1 == version_2
 
-    def __eq__(self, other: &#39;Grid&#39;) -&gt; bool:
+    def __eq__(self, other: &#39;Grid&#39;) -&gt; bool:  # type: ignore
         &#34;&#34;&#34;
         Campare two grid with tolerance.
         Args:
@@ -1521,7 +1521,7 @@ followed by zero or more rows.</p>
             # Search record in other with same values
             find = False
             if &#39;id&#39; in left:
-                if left[&#39;id&#39;] in other and self._approx_check(left, other[left[&#39;id&#39;]]):
+                if left[&#39;id&#39;] in other and self._approx_check(left, other[left[&#39;id&#39;]]):  # type: ignore
                     find = True
             else:
                 for right in other._row:
@@ -1612,7 +1612,7 @@ followed by zero or more rows.</p>
             class_name, &#39;\n&#39;.join(parts)
         )
 
-    def __getitem__(self, key: Union[int, Ref, slice]) -&gt; Union[Entity, &#39;Grid&#39;]:
+    def __getitem__(self, key: Union[int, Ref, slice]) -&gt; Union[Entity, &#39;Grid&#39;]:  # type: ignore
         &#34;&#34;&#34;Retrieve the row at index. :param key: index, Haystack reference or
         slice
 
@@ -1632,9 +1632,9 @@ followed by zero or more rows.</p>
         assert isinstance(key, Ref), &#34;The &#39;key&#39; must be a Ref or int&#34;
         if not self._index:
             self.reindex()
-        return cast(Entity, self._index[key])
+        return cast(Entity, self._index[key])  # type: ignore
 
-    def __contains__(self, key: Union[int, Ref]) -&gt; bool:
+    def __contains__(self, key: Union[int, Ref]) -&gt; bool:  # type: ignore
         &#34;&#34;&#34;Return an entity with the corresponding id.
 
         Args:
@@ -1647,13 +1647,14 @@ followed by zero or more rows.</p>
             return 0 &lt;= key &lt; len(self._row)
         if not self._index:
             self.reindex()
-        return key in self._index
+        return key in self._index  # type: ignore
 
     def __len__(self) -&gt; int:
         &#34;&#34;&#34;Return the number of rows in the grid.&#34;&#34;&#34;
         return len(self._row)
 
-    def __setitem__(self, index: Union[int, Ref, slice], value: Union[Entity, List[Entity]]) -&gt; &#39;Grid&#39;:
+    def __setitem__(self, index: Union[int, Ref, slice],  # type: ignore
+                    value: Union[Entity, List[Entity]]) -&gt; &#39;Grid&#39;:
         &#34;&#34;&#34;Replace the row at index.
 
         Args:
@@ -1669,10 +1670,10 @@ followed by zero or more rows.</p>
             if not isinstance(value, dict):
                 raise TypeError(&#39;value must be a dict&#39;)
             if &#34;id&#34; in self._row[index]:
-                self._index.pop(self._row[index][&#39;id&#39;], None)
+                self._index.pop(self._row[index][&#39;id&#39;], None)  # type: ignore
             self._row[index] = value
             if &#34;id&#34; in value:
-                self._index[value[&#34;id&#34;]] = value
+                self._index[value[&#34;id&#34;]] = value  # type: ignore
         elif isinstance(index, slice):
             if isinstance(value, dict):
                 raise TypeError(&#39;value must be iterable, not a dict&#39;)
@@ -1686,15 +1687,15 @@ followed by zero or more rows.</p>
                 raise TypeError(&#39;value must be a dict&#39;)
             if not self._index:
                 self.reindex()
-            idx = list.index(self._row, self._index[index])
+            idx = list.index(self._row, self._index[index])  # type: ignore
             if &#34;id&#34; in self._row[idx]:
-                self._index.pop(self._row[idx][&#39;id&#39;], None)
+                self._index.pop(self._row[idx][&#39;id&#39;], None)  # type: ignore
             self._row[idx] = value
             if &#34;id&#34; in value:
-                self._index[value[&#34;id&#34;]] = value
+                self._index[value[&#34;id&#34;]] = value  # type: ignore
         return self
 
-    def __delitem__(self, key: Union[int, Ref]) -&gt; Optional[Entity]:
+    def __delitem__(self, key: Union[int, Ref]) -&gt; Optional[Entity]:  # type: ignore
         &#34;&#34;&#34;Delete the row at index.
 
         Args:
@@ -1730,7 +1731,7 @@ followed by zero or more rows.</p>
         &#34;&#34;&#34;
         if not self._index:
             self.reindex()
-        return cast(Entity, self._index.get(index, default))
+        return cast(Entity, self._index.get(index, default))  # type: ignore
 
     def keys(self) -&gt; KeysView[Ref]:
         &#34;&#34;&#34; Return the list of ids of entities with `id`
@@ -1740,7 +1741,7 @@ followed by zero or more rows.</p>
         &#34;&#34;&#34;
         if not self._index:
             self.reindex()
-        return self._index.keys()
+        return self._index.keys()  # type: ignore
 
     def pop(self, *index: Union[int, Ref]) -&gt; Optional[Entity]:
         &#34;&#34;&#34;Delete the row at index or with specified Ref id. If multiple
@@ -1757,20 +1758,20 @@ followed by zero or more rows.</p>
                     ret_value = None
                 else:
                     if &#34;id&#34; in self._row[key] and self._index:
-                        del self._index[self._row[key][&#39;id&#39;]]
+                        del self._index[self._row[key][&#39;id&#39;]]  # type: ignore
                     ret_value = self._row[key]
                     del self._row[key]
             else:
                 if not self._index:
                     self.reindex()
-                if key not in self._index:
+                if key not in self._index:  # type: ignore
                     ret_value = None
                 else:
-                    self._row.remove(self._index[key])
-                    ret_value = self._index.pop(key)
+                    self._row.remove(self._index[key])  # type: ignore
+                    ret_value = self._index.pop(key)  # type: ignore
         return cast(Optional[Entity], ret_value)
 
-    def insert(self, index: int, value: Entity) -&gt; &#39;Grid&#39;:
+    def insert(self, index: int, value: Entity) -&gt; &#39;Grid&#39;:  # type: ignore
         &#34;&#34;&#34;Insert a new entity before the index position.
 
         Args:
@@ -1787,7 +1788,7 @@ followed by zero or more rows.</p>
         if &#34;id&#34; in value:
             if not self._index:
                 self.reindex()
-            self._index[value[&#34;id&#34;]] = value
+            self._index[value[&#34;id&#34;]] = value  # type: ignore
         return self
 
     def reindex(self) -&gt; &#39;Grid&#39;:
@@ -1816,7 +1817,7 @@ followed by zero or more rows.</p>
                     using_columns.add(col_name)
                 if len(using_columns) == len(columns_keys):  # All columns was found
                     return self
-        self.column = {k: self.column[k] for k in using_columns}
+        self.column = {k: self.column[k] for k in using_columns}  # type: ignore
         return self
 
     def extends_columns(self) -&gt; &#39;Grid&#39;:
@@ -1834,7 +1835,7 @@ followed by zero or more rows.</p>
         self.column = new_cols
         return self
 
-    def extend(self, values: Iterable[Entity]) -&gt; &#39;Grid&#39;:
+    def extend(self, values: Iterable[Entity]) -&gt; &#39;Grid&#39;:  # type: ignore
         &#34;&#34;&#34;
         Add a list of entities inside the grid
 
@@ -1846,7 +1847,7 @@ followed by zero or more rows.</p>
         super().extend(values)
         for item in self._row:
             if &#34;id&#34; in item:
-                self._index[item[&#34;id&#34;]] = item
+                self._index[item[&#34;id&#34;]] = item  # type: ignore
         return self
 
     def sort(self, tag: str) -&gt; &#39;Grid&#39;:
@@ -1857,7 +1858,7 @@ followed by zero or more rows.</p>
         Returns:
             `self`
         &#34;&#34;&#34;
-        self._row = sorted(self._row, key=lambda row: row[tag])
+        self._row = sorted(self._row, key=lambda row: row[tag])  # type: ignore
         return self
 
     def copy(self) -&gt; &#39;Grid&#39;:
@@ -1892,7 +1893,7 @@ followed by zero or more rows.</p>
             if limit == 0:
                 return self
             result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
-            result.extend(self.__getitem__(slice(0, limit)))
+            result.extend(self.__getitem__(slice(0, limit)))  # type: ignore
             return result
 
         result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
@@ -2081,7 +2082,7 @@ def version(self) -&gt; Version:  # pragma: no cover
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def extend(self, values: Iterable[Entity]) -&gt; &#39;Grid&#39;:
+<pre><code class="python">def extend(self, values: Iterable[Entity]) -&gt; &#39;Grid&#39;:  # type: ignore
     &#34;&#34;&#34;
     Add a list of entities inside the grid
 
@@ -2093,7 +2094,7 @@ def version(self) -&gt; Version:  # pragma: no cover
     super().extend(values)
     for item in self._row:
         if &#34;id&#34; in item:
-            self._index[item[&#34;id&#34;]] = item
+            self._index[item[&#34;id&#34;]] = item  # type: ignore
     return self</code></pre>
 </details>
 </dd>
@@ -2165,7 +2166,7 @@ and rows</p>
         if limit == 0:
             return self
         result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
-        result.extend(self.__getitem__(slice(0, limit)))
+        result.extend(self.__getitem__(slice(0, limit)))  # type: ignore
         return result
 
     result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
@@ -2208,7 +2209,7 @@ and rows</p>
     &#34;&#34;&#34;
     if not self._index:
         self.reindex()
-    return cast(Entity, self._index.get(index, default))</code></pre>
+    return cast(Entity, self._index.get(index, default))  # type: ignore</code></pre>
 </details>
 </dd>
 <dt id="shaystack.Grid.insert"><code class="name flex">
@@ -2229,7 +2230,7 @@ and rows</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def insert(self, index: int, value: Entity) -&gt; &#39;Grid&#39;:
+<pre><code class="python">def insert(self, index: int, value: Entity) -&gt; &#39;Grid&#39;:  # type: ignore
     &#34;&#34;&#34;Insert a new entity before the index position.
 
     Args:
@@ -2246,7 +2247,7 @@ and rows</p>
     if &#34;id&#34; in value:
         if not self._index:
             self.reindex()
-        self._index[value[&#34;id&#34;]] = value
+        self._index[value[&#34;id&#34;]] = value  # type: ignore
     return self</code></pre>
 </details>
 </dd>
@@ -2269,7 +2270,7 @@ and rows</p>
     &#34;&#34;&#34;
     if not self._index:
         self.reindex()
-    return self._index.keys()</code></pre>
+    return self._index.keys()  # type: ignore</code></pre>
 </details>
 </dd>
 <dt id="shaystack.Grid.pack_columns"><code class="name flex">
@@ -2297,7 +2298,7 @@ and rows</p>
                 using_columns.add(col_name)
             if len(using_columns) == len(columns_keys):  # All columns was found
                 return self
-    self.column = {k: self.column[k] for k in using_columns}
+    self.column = {k: self.column[k] for k in using_columns}  # type: ignore
     return self</code></pre>
 </details>
 </dd>
@@ -2332,17 +2333,17 @@ the first deleted item.</p>
                 ret_value = None
             else:
                 if &#34;id&#34; in self._row[key] and self._index:
-                    del self._index[self._row[key][&#39;id&#39;]]
+                    del self._index[self._row[key][&#39;id&#39;]]  # type: ignore
                 ret_value = self._row[key]
                 del self._row[key]
         else:
             if not self._index:
                 self.reindex()
-            if key not in self._index:
+            if key not in self._index:  # type: ignore
                 ret_value = None
             else:
-                self._row.remove(self._index[key])
-                ret_value = self._index.pop(key)
+                self._row.remove(self._index[key])  # type: ignore
+                ret_value = self._index.pop(key)  # type: ignore
     return cast(Optional[Entity], ret_value)</code></pre>
 </details>
 </dd>
@@ -2472,7 +2473,7 @@ Returns
     Returns:
         `self`
     &#34;&#34;&#34;
-    self._row = sorted(self._row, key=lambda row: row[tag])
+    self._row = sorted(self._row, key=lambda row: row[tag])  # type: ignore
     return self</code></pre>
 </details>
 </dd>
@@ -2642,11 +2643,11 @@ the 'ops' code detect that, and can calculate the set of implemented operations.
         }
         # Remove abstract method
         # noinspection PyUnresolvedReferences
-        for abstract_method in self.__class__.__base__.__abstractmethods__:
+        for abstract_method in self.__class__.__base__.__abstractmethods__:  # type: ignore
             all_haystack_ops.pop(abstract_method, None)
         if (
-                &#34;point_write_read&#34; in self.__class__.__base__.__abstractmethods__
-                or &#34;point_write_write&#34; in self.__class__.__base__.__abstractmethods__
+                &#34;point_write_read&#34; in self.__class__.__base__.__abstractmethods__  # type: ignore
+                or &#34;point_write_write&#34; in self.__class__.__base__.__abstractmethods__  # type: ignore
         ):
             all_haystack_ops.pop(&#34;point_write&#34;, None)
         all_haystack_ops = {_to_camel(k): v for k, v in all_haystack_ops.items()}
@@ -3223,11 +3224,11 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
     }
     # Remove abstract method
     # noinspection PyUnresolvedReferences
-    for abstract_method in self.__class__.__base__.__abstractmethods__:
+    for abstract_method in self.__class__.__base__.__abstractmethods__:  # type: ignore
         all_haystack_ops.pop(abstract_method, None)
     if (
-            &#34;point_write_read&#34; in self.__class__.__base__.__abstractmethods__
-            or &#34;point_write_write&#34; in self.__class__.__base__.__abstractmethods__
+            &#34;point_write_read&#34; in self.__class__.__base__.__abstractmethods__  # type: ignore
+            or &#34;point_write_write&#34; in self.__class__.__base__.__abstractmethods__  # type: ignore
     ):
         all_haystack_ops.pop(&#34;point_write&#34;, None)
     all_haystack_ops = {_to_camel(k): v for k, v in all_haystack_ops.items()}
@@ -3803,12 +3804,12 @@ symbol: The original symbol</p></div>
             )
         return &#39;@%s&#39; % self.name
 
-    def __eq__(self, other: &#39;Ref&#39;) -&gt; bool:
+    def __eq__(self, other: &#39;Ref&#39;) -&gt; bool:  # type: ignore
         if not isinstance(other, Ref):
             return False
         return self.name == other.name
 
-    def __ne__(self, other: &#39;Ref&#39;):
+    def __ne__(self, other: &#39;Ref&#39;):  # type: ignore
         if not isinstance(other, Ref):
             return True
         return not self == other
@@ -3872,7 +3873,7 @@ types.</p></div>
         return &#39;%s(%s)&#39; % (self.__class__.__name__,
                            super().__repr__())
 
-    def __eq__(self, other: &#39;Uri&#39;) -&gt; bool:
+    def __eq__(self, other: &#39;Uri&#39;) -&gt; bool:  # type: ignore
         if not isinstance(other, Uri):
             return False
         return super().__eq__(other)</code></pre>
@@ -3907,8 +3908,8 @@ types.</p></div>
     def __init__(self, ver_str: Union[str, &#39;Version&#39;]):
         if isinstance(ver_str, Version):
             # Clone constructor
-            self.version_nums = ver_str.version_nums
-            self.version_extra = ver_str.version_extra
+            self.version_nums = ver_str.version_nums  # type: ignore
+            self.version_extra = ver_str.version_extra  # type: ignore
         else:
             match = _VERSION_RE.match(ver_str)
             if match is None:
@@ -4153,9 +4154,9 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
         if encoding == &#34;hex&#34;:
             self.data = bytearray.fromhex(data)
         elif encoding == &#34;b64&#34;:
-            self.data = base64.b64decode(data)
+            self.data = base64.b64decode(data)  # type: ignore
         else:
-            self.data = data.encode(&#39;ascii&#39;)  # Not decoded
+            self.data = data.encode(&#39;ascii&#39;)  # type: ignore # Not decoded
 
     def data_to_string(self) -&gt; str:
         &#34;&#34;&#34;
@@ -4172,12 +4173,12 @@ def nearest(cls, ver: Union[str, &#39;Version&#39;]) -&gt; &#39;Version&#39;:
     def __repr__(self) -&gt; str:
         return &#39;XStr(&#34;%s&#34;,&#34;%s&#34;)&#39; % (self.encoding, self.data_to_string())
 
-    def __eq__(self, other: &#39;XStr&#39;) -&gt; bool:
+    def __eq__(self, other: &#39;XStr&#39;) -&gt; bool:  # type: ignore
         if not isinstance(other, XStr):
             return False
         return self.data == other.data  # Check only binary data
 
-    def __ne__(self, other: &#39;XStr&#39;) -&gt; bool:
+    def __ne__(self, other: &#39;XStr&#39;) -&gt; bool:  # type: ignore
         if not isinstance(other, XStr):
             return True
         return not self.data == other.data  # Check only binary data</code></pre>

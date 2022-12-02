@@ -131,7 +131,7 @@ class Provider(DBHaystackInterface):
     @property
     def name(self) -&gt; str:
         # noinspection PyCallingNonCallable
-        return self._delegate.name()
+        return self._delegate.name()  # type: ignore
 
     @overrides
     def values_for_tag(self, tag: str,
@@ -163,14 +163,14 @@ class Provider(DBHaystackInterface):
         return self._delegate.read(limit, select, entity_ids, grid_filter, date_version)
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Optional[Tuple[datetime, datetime]] = None,
             date_version: Optional[datetime] = None,
     ) -&gt; Grid:
         &#34;&#34;&#34; Implement Haystack &#39;hisRead&#39; &#34;&#34;&#34;
-        return self._delegate.his_read(entity_id, dates_range, date_version)
+        return self._delegate.his_read(entity_id, dates_range, date_version)  # type: ignore
 
     @overrides
     def create_db(self) -&gt; None:
@@ -265,7 +265,7 @@ class Provider(DBHaystackInterface):
     @property
     def name(self) -&gt; str:
         # noinspection PyCallingNonCallable
-        return self._delegate.name()
+        return self._delegate.name()  # type: ignore
 
     @overrides
     def values_for_tag(self, tag: str,
@@ -297,14 +297,14 @@ class Provider(DBHaystackInterface):
         return self._delegate.read(limit, select, entity_ids, grid_filter, date_version)
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Optional[Tuple[datetime, datetime]] = None,
             date_version: Optional[datetime] = None,
     ) -&gt; Grid:
         &#34;&#34;&#34; Implement Haystack &#39;hisRead&#39; &#34;&#34;&#34;
-        return self._delegate.his_read(entity_id, dates_range, date_version)
+        return self._delegate.his_read(entity_id, dates_range, date_version)  # type: ignore
 
     @overrides
     def create_db(self) -&gt; None:
@@ -390,14 +390,14 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@overrides
-def his_read(
+def his_read(  # type: ignore
         self,
         entity_id: Ref,
         dates_range: Optional[Tuple[datetime, datetime]] = None,
         date_version: Optional[datetime] = None,
 ) -&gt; Grid:
     &#34;&#34;&#34; Implement Haystack &#39;hisRead&#39; &#34;&#34;&#34;
-    return self._delegate.his_read(entity_id, dates_range, date_version)</code></pre>
+    return self._delegate.his_read(entity_id, dates_range, date_version)  # type: ignore</code></pre>
 </details>
 </dd>
 <dt id="shaystack.providers.db.Provider.read"><code class="name flex">

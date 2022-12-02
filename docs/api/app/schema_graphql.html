@@ -47,14 +47,14 @@ import graphene
 
 from shaystack import HaystackInterface
 from shaystack.providers import get_provider
-from app.graphql_model import ReadHaystack
+from app.graphql_model import ReadHaystack  # type: ignore
 
 log = logging.getLogger(&#34;shaystack&#34;)
 
 
 # noinspection PyTypeChecker
 
-def get_schema_for_provider(provider: HaystackInterface):
+def get_schema_for_provider(provider: HaystackInterface) -&gt; graphene.types.schema.Schema:
     class Query(graphene.ObjectType):
         &#34;&#34;&#34;GraphQL haystack query. To integrate the haystack Graphql API with other
         GraphQL API, see `aws appsync` .
@@ -112,7 +112,7 @@ if __name__ == &#39;__main__&#39;:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="app.schema_graphql.get_schema_for_provider"><code class="name flex">
-<span>def <span class="ident">get_schema_for_provider</span></span>(<span>provider: <a title="shaystack.providers.haystack_interface.HaystackInterface" href="../shaystack/providers/haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface">HaystackInterface</a>)</span>
+<span>def <span class="ident">get_schema_for_provider</span></span>(<span>provider: <a title="shaystack.providers.haystack_interface.HaystackInterface" href="../shaystack/providers/haystack_interface.html#shaystack.providers.haystack_interface.HaystackInterface">HaystackInterface</a>) ‑> graphene.types.schema.Schema</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -120,7 +120,7 @@ if __name__ == &#39;__main__&#39;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_schema_for_provider(provider: HaystackInterface):
+<pre><code class="python">def get_schema_for_provider(provider: HaystackInterface) -&gt; graphene.types.schema.Schema:
     class Query(graphene.ObjectType):
         &#34;&#34;&#34;GraphQL haystack query. To integrate the haystack Graphql API with other
         GraphQL API, see `aws appsync` .

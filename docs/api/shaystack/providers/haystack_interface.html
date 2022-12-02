@@ -221,11 +221,11 @@ class HaystackInterface(ABC):
         }
         # Remove abstract method
         # noinspection PyUnresolvedReferences
-        for abstract_method in self.__class__.__base__.__abstractmethods__:
+        for abstract_method in self.__class__.__base__.__abstractmethods__:  # type: ignore
             all_haystack_ops.pop(abstract_method, None)
         if (
-                &#34;point_write_read&#34; in self.__class__.__base__.__abstractmethods__
-                or &#34;point_write_write&#34; in self.__class__.__base__.__abstractmethods__
+                &#34;point_write_read&#34; in self.__class__.__base__.__abstractmethods__  # type: ignore
+                or &#34;point_write_write&#34; in self.__class__.__base__.__abstractmethods__  # type: ignore
         ):
             all_haystack_ops.pop(&#34;point_write&#34;, None)
         all_haystack_ops = {_to_camel(k): v for k, v in all_haystack_ops.items()}
@@ -470,8 +470,7 @@ def get_provider(class_str: str, envs: Dict[str, str],  # pylint: disable=protec
     &#34;&#34;&#34;
     if not class_str.endswith(&#34;.Provider&#34;):
         class_str += &#34;.Provider&#34;
-    # if not no_cache(envs) and class_str in _providers:
-    #     return _providers[class_str]
+
     module_path, class_name = class_str.rsplit(&#34;.&#34;, 1)
     module = import_module(module_path)
     # Get the abstract class name
@@ -481,7 +480,7 @@ def get_provider(class_str: str, envs: Dict[str, str],  # pylint: disable=protec
     # Then, it&#39;s possible to generate the Ops operator dynamically
     # pylint: disable=missing-function-docstring,useless-super-delegation
     # noinspection PyShadowingNames
-    class FullInterface(provider_class):  # pylint: disable=missing-class-docstring
+    class FullInterface(provider_class):   # type: ignore # pylint: disable=missing-class-docstring
         def __init__(self, envs: Dict[str, str]):
             provider_class.__init__(self, envs)
 
@@ -592,7 +591,7 @@ def parse_date_range(date_range: str, timezone: tzinfo) -&gt; Tuple[datetime, da
         split_date = [parse_hs_datetime_format(x, timezone) if x else None for x in str_date]
         if len(str_date) &gt; 1:
             if str_date[1] in (&#34;today&#34;, &#34;yesterday&#34;):
-                split_date[1] += timedelta(days=1)
+                split_date[1] += timedelta(days=1)  # type: ignore
 
             # Convert to same type
             if isinstance(split_date[0], datetime) or isinstance(split_date[1], datetime):
@@ -600,11 +599,11 @@ def parse_date_range(date_range: str, timezone: tzinfo) -&gt; Tuple[datetime, da
                 if not split_date[0]:
                     split_date[0] = _DATETIME_MIN_TZ
                 if not isinstance(split_date[0], datetime):
-                    split_date[0] = datetime.combine(split_date[0], datetime.min.time())
+                    split_date[0] = datetime.combine(split_date[0], datetime.min.time())  # type: ignore
                 if not split_date[1]:
                     split_date[1] = _DATETIME_MAX_TZ
                 if not isinstance(split_date[1], datetime):
-                    split_date[1] = datetime.combine(split_date[1], datetime.min.time())
+                    split_date[1] = datetime.combine(split_date[1], datetime.min.time())  # type: ignore
 
             # Add missing tzinfo
             if isinstance(split_date[0], datetime) and not split_date[0].tzinfo:
@@ -700,8 +699,7 @@ and detect the implemented and abstract methods.</p>
     &#34;&#34;&#34;
     if not class_str.endswith(&#34;.Provider&#34;):
         class_str += &#34;.Provider&#34;
-    # if not no_cache(envs) and class_str in _providers:
-    #     return _providers[class_str]
+
     module_path, class_name = class_str.rsplit(&#34;.&#34;, 1)
     module = import_module(module_path)
     # Get the abstract class name
@@ -711,7 +709,7 @@ and detect the implemented and abstract methods.</p>
     # Then, it&#39;s possible to generate the Ops operator dynamically
     # pylint: disable=missing-function-docstring,useless-super-delegation
     # noinspection PyShadowingNames
-    class FullInterface(provider_class):  # pylint: disable=missing-class-docstring
+    class FullInterface(provider_class):   # type: ignore # pylint: disable=missing-class-docstring
         def __init__(self, envs: Dict[str, str]):
             provider_class.__init__(self, envs)
 
@@ -850,7 +848,7 @@ and detect the implemented and abstract methods.</p>
         split_date = [parse_hs_datetime_format(x, timezone) if x else None for x in str_date]
         if len(str_date) &gt; 1:
             if str_date[1] in (&#34;today&#34;, &#34;yesterday&#34;):
-                split_date[1] += timedelta(days=1)
+                split_date[1] += timedelta(days=1)  # type: ignore
 
             # Convert to same type
             if isinstance(split_date[0], datetime) or isinstance(split_date[1], datetime):
@@ -858,11 +856,11 @@ and detect the implemented and abstract methods.</p>
                 if not split_date[0]:
                     split_date[0] = _DATETIME_MIN_TZ
                 if not isinstance(split_date[0], datetime):
-                    split_date[0] = datetime.combine(split_date[0], datetime.min.time())
+                    split_date[0] = datetime.combine(split_date[0], datetime.min.time())  # type: ignore
                 if not split_date[1]:
                     split_date[1] = _DATETIME_MAX_TZ
                 if not isinstance(split_date[1], datetime):
-                    split_date[1] = datetime.combine(split_date[1], datetime.min.time())
+                    split_date[1] = datetime.combine(split_date[1], datetime.min.time())  # type: ignore
 
             # Add missing tzinfo
             if isinstance(split_date[0], datetime) and not split_date[0].tzinfo:
@@ -1083,11 +1081,11 @@ the 'ops' code detect that, and can calculate the set of implemented operations.
         }
         # Remove abstract method
         # noinspection PyUnresolvedReferences
-        for abstract_method in self.__class__.__base__.__abstractmethods__:
+        for abstract_method in self.__class__.__base__.__abstractmethods__:  # type: ignore
             all_haystack_ops.pop(abstract_method, None)
         if (
-                &#34;point_write_read&#34; in self.__class__.__base__.__abstractmethods__
-                or &#34;point_write_write&#34; in self.__class__.__base__.__abstractmethods__
+                &#34;point_write_read&#34; in self.__class__.__base__.__abstractmethods__  # type: ignore
+                or &#34;point_write_write&#34; in self.__class__.__base__.__abstractmethods__  # type: ignore
         ):
             all_haystack_ops.pop(&#34;point_write&#34;, None)
         all_haystack_ops = {_to_camel(k): v for k, v in all_haystack_ops.items()}
@@ -1402,7 +1400,7 @@ def about(self, home: str) -&gt; Grid:
 </details>
 </dd>
 <dt id="shaystack.providers.haystack_interface.HaystackInterface.formats"><code class="name flex">
-<span>def <span class="ident">formats</span></span>(<span>self) ‑> Union[shaystack.grid.Grid, NoneType]</span>
+<span>def <span class="ident">formats</span></span>(<span>self) ‑> Optional[shaystack.grid.Grid]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'formats' ops.</p>
@@ -1457,7 +1455,7 @@ May be, extract the customer id from the current <code>Principal</code>.</p></di
 </details>
 </dd>
 <dt id="shaystack.providers.haystack_interface.HaystackInterface.his_read"><code class="name flex">
-<span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Tuple[datetime.datetime, datetime.datetime], date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Tuple[datetime.datetime, datetime.datetime], date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'hisRead' ops.</p>
@@ -1499,7 +1497,7 @@ def his_read(
 </details>
 </dd>
 <dt id="shaystack.providers.haystack_interface.HaystackInterface.his_write"><code class="name flex">
-<span>def <span class="ident">his_write</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, time_series: shaystack.grid.Grid, date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">his_write</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, time_series: shaystack.grid.Grid, date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'hisWrite' ops.</p>
@@ -1539,7 +1537,7 @@ def his_write(
 </details>
 </dd>
 <dt id="shaystack.providers.haystack_interface.HaystackInterface.invoke_action"><code class="name flex">
-<span>def <span class="ident">invoke_action</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, action: str, params: Dict[str, Any], date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">invoke_action</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, action: str, params: Dict[str, Any], date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'invokeAction' ops.</p>
@@ -1664,11 +1662,11 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
     }
     # Remove abstract method
     # noinspection PyUnresolvedReferences
-    for abstract_method in self.__class__.__base__.__abstractmethods__:
+    for abstract_method in self.__class__.__base__.__abstractmethods__:  # type: ignore
         all_haystack_ops.pop(abstract_method, None)
     if (
-            &#34;point_write_read&#34; in self.__class__.__base__.__abstractmethods__
-            or &#34;point_write_write&#34; in self.__class__.__base__.__abstractmethods__
+            &#34;point_write_read&#34; in self.__class__.__base__.__abstractmethods__  # type: ignore
+            or &#34;point_write_write&#34; in self.__class__.__base__.__abstractmethods__  # type: ignore
     ):
         all_haystack_ops.pop(&#34;point_write&#34;, None)
     all_haystack_ops = {_to_camel(k): v for k, v in all_haystack_ops.items()}
@@ -1683,7 +1681,7 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
 </details>
 </dd>
 <dt id="shaystack.providers.haystack_interface.HaystackInterface.point_write_read"><code class="name flex">
-<span>def <span class="ident">point_write_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, date_version: Union[datetime.datetime, NoneType]) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">point_write_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, date_version: Optional[datetime.datetime]) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'pointWrite' ops.</p>
@@ -1717,7 +1715,7 @@ def point_write_read(
 </details>
 </dd>
 <dt id="shaystack.providers.haystack_interface.HaystackInterface.point_write_write"><code class="name flex">
-<span>def <span class="ident">point_write_write</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, level: int, val: Union[Any, NoneType], duration: shaystack.datatypes.Quantity, who: Union[str, NoneType], date_version: Union[datetime.datetime, NoneType] = None) ‑> NoneType</span>
+<span>def <span class="ident">point_write_write</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, level: int, val: Optional[Any], duration: shaystack.datatypes.Quantity, who: Optional[str], date_version: Optional[datetime.datetime] = None) ‑> NoneType</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'pointWrite' ops.</p>
@@ -1769,7 +1767,7 @@ def point_write_write(
 </details>
 </dd>
 <dt id="shaystack.providers.haystack_interface.HaystackInterface.read"><code class="name flex">
-<span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Union[str, NoneType], entity_ids: Union[List[shaystack.datatypes.Ref], NoneType], grid_filter: Union[str, NoneType], date_version: Union[datetime.datetime, NoneType]) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Optional[str], entity_ids: Optional[List[shaystack.datatypes.Ref]], grid_filter: Optional[str], date_version: Optional[datetime.datetime]) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'read' ops.</p>
@@ -1818,7 +1816,7 @@ def read(
 </details>
 </dd>
 <dt id="shaystack.providers.haystack_interface.HaystackInterface.values_for_tag"><code class="name flex">
-<span>def <span class="ident">values_for_tag</span></span>(<span>self, tag: str, date_version: Union[datetime.datetime, NoneType] = None) ‑> List[Any]</span>
+<span>def <span class="ident">values_for_tag</span></span>(<span>self, tag: str, date_version: Optional[datetime.datetime] = None) ‑> List[Any]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Get all values for a given tag.</p>
@@ -1904,7 +1902,7 @@ def watch_poll(
 </details>
 </dd>
 <dt id="shaystack.providers.haystack_interface.HaystackInterface.watch_sub"><code class="name flex">
-<span>def <span class="ident">watch_sub</span></span>(<span>self, watch_dis: str, watch_id: Union[str, NoneType], ids: List[shaystack.datatypes.Ref], lease: Union[int, NoneType]) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">watch_sub</span></span>(<span>self, watch_dis: str, watch_id: Optional[str], ids: List[shaystack.datatypes.Ref], lease: Optional[int]) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement the Haystack 'watchSub' ops.</p>
@@ -1998,7 +1996,8 @@ def watch_unsub(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class HttpError(Exception):
+<pre><code class="python">@dataclass
+class HttpError(Exception):
     &#34;&#34;&#34;
     Exception to propagate a specific HTTP error
     &#34;&#34;&#34;

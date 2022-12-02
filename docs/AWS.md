@@ -23,7 +23,8 @@ $ pip install 'shaystack[lambda]'
 
 To export the haystacks files in a bucket, you must create one. If you add the _Version_ feature, it's possible to
 update the files, and use the API to read an older version. The extended parameter `Version` in each request may be used
-to ask some data, visible at a specific date.
+to ask some data, visible at a specific date which can be a complete timestamp `'yyyy'-'MM'-'dd'T'HH':'mm':'ss'` or simply
+`'yyyy'-'MM'-'dd'` and in this case the time will be **00:00:00**.
 
 You can use `shaystack_import_db` to import a Haystack file in s3 bucket, only if the file is modified
 (to respect the notion of _Version_ with this provider).

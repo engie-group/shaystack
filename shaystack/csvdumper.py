@@ -26,7 +26,7 @@ from .zincparser import parse_scalar as zinc_parse_scalar, ZincParseException
 
 
 def _str_csv_escape(str_value: str) -> AnyStr:
-    return str_value.replace('"', '""')
+    return str_value.replace('"', '""')  # type: ignore
 
 
 def _uri_sub(match: Match) -> AnyStr:
@@ -34,9 +34,9 @@ def _uri_sub(match: Match) -> AnyStr:
     order = ord(char)
     if order >= 0x80:
         # Unicode
-        return '\\u%04x' % order
+        return '\\u%04x' % order  # type: ignore
     if char in '\\`':
-        return '\\%s' % char
+        return '\\%s' % char  # type: ignore
     return char
 
 
@@ -196,4 +196,4 @@ def dump_grid(grid: Grid) -> AnyStr:
     csv_result: List[str] = []
     _dump_columns(csv_result, grid.column)
     _dump_rows(csv_result, grid)
-    return ''.join(csv_result)
+    return ''.join(csv_result)  # type: ignore

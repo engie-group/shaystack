@@ -16,7 +16,7 @@ import datetime
 import logging
 import numbers
 import re
-from collections import MutableSequence, Sequence  # pylint: disable=no-name-in-module
+from collections.abc import MutableSequence, Sequence  # pylint: disable=no-name-in-module
 from typing import Union, Iterable, Any, Optional, KeysView, Tuple, List, cast, Dict
 
 import pytz
@@ -67,7 +67,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                                 None] = None):
         version_given = version is not None
         if version_given:
-            version = Version(version)
+            version = Version(version)  # type: ignore
         else:
             version = VER_3_0
         self._version = version
@@ -94,7 +94,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             elif isinstance(columns, Sequence) and columns and not isinstance(columns[0], tuple):
                 columns = list(zip(columns, [{}] * len(columns)))
 
-            for col_id, col_meta in columns:
+            for col_id, col_meta in columns:  # type: ignore
                 # Convert sorted lists and dicts back to a list of items.
                 if isinstance(col_meta, (dict, SortableDict)):
                     col_meta = list(col_meta.items())
@@ -117,7 +117,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """
         if isinstance(version_1, numbers.Number) and isinstance(version_2, numbers.Number):
             # noinspection PyUnresolvedReferences
-            return abs(version_1 - version_2) < 0.000001
+            return abs(version_1 - version_2) < 0.000001  # type: ignore
         # pylint: disable=C0123
         if type(version_1) != type(version_2) and \
                 not (isinstance(version_1, str) and isinstance(version_2, str)):
@@ -145,7 +145,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             return True
         return version_1 == version_2
 
-    def __eq__(self, other: 'Grid') -> bool:
+    def __eq__(self, other: 'Grid') -> bool:  # type: ignore
         """
         Campare two grid with tolerance.
         Args:
@@ -180,7 +180,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             # Search record in other with same values
             find = False
             if 'id' in left:
-                if left['id'] in other and self._approx_check(left, other[left['id']]):
+                if left['id'] in other and self._approx_check(left, other[left['id']]):  # type: ignore
                     find = True
             else:
                 for right in other._row:
@@ -271,7 +271,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             class_name, '\n'.join(parts)
         )
 
-    def __getitem__(self, key: Union[int, Ref, slice]) -> Union[Entity, 'Grid']:
+    def __getitem__(self, key: Union[int, Ref, slice]) -> Union[Entity, 'Grid']:  # type: ignore
         """Retrieve the row at index. :param key: index, Haystack reference or
         slice
 
@@ -291,9 +291,9 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         assert isinstance(key, Ref), "The 'key' must be a Ref or int"
         if not self._index:
             self.reindex()
-        return cast(Entity, self._index[key])
+        return cast(Entity, self._index[key])  # type: ignore
 
-    def __contains__(self, key: Union[int, Ref]) -> bool:
+    def __contains__(self, key: Union[int, Ref]) -> bool:  # type: ignore
         """Return an entity with the corresponding id.
 
         Args:
@@ -306,13 +306,14 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             return 0 <= key < len(self._row)
         if not self._index:
             self.reindex()
-        return key in self._index
+        return key in self._index  # type: ignore
 
     def __len__(self) -> int:
         """Return the number of rows in the grid."""
         return len(self._row)
 
-    def __setitem__(self, index: Union[int, Ref, slice], value: Union[Entity, List[Entity]]) -> 'Grid':
+    def __setitem__(self, index: Union[int, Ref, slice],  # type: ignore
+                    value: Union[Entity, List[Entity]]) -> 'Grid':
         """Replace the row at index.
 
         Args:
@@ -328,10 +329,10 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             if not isinstance(value, dict):
                 raise TypeError('value must be a dict')
             if "id" in self._row[index]:
-                self._index.pop(self._row[index]['id'], None)
+                self._index.pop(self._row[index]['id'], None)  # type: ignore
             self._row[index] = value
             if "id" in value:
-                self._index[value["id"]] = value
+                self._index[value["id"]] = value  # type: ignore
         elif isinstance(index, slice):
             if isinstance(value, dict):
                 raise TypeError('value must be iterable, not a dict')
@@ -345,15 +346,15 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                 raise TypeError('value must be a dict')
             if not self._index:
                 self.reindex()
-            idx = list.index(self._row, self._index[index])
+            idx = list.index(self._row, self._index[index])  # type: ignore
             if "id" in self._row[idx]:
-                self._index.pop(self._row[idx]['id'], None)
+                self._index.pop(self._row[idx]['id'], None)  # type: ignore
             self._row[idx] = value
             if "id" in value:
-                self._index[value["id"]] = value
+                self._index[value["id"]] = value  # type: ignore
         return self
 
-    def __delitem__(self, key: Union[int, Ref]) -> Optional[Entity]:
+    def __delitem__(self, key: Union[int, Ref]) -> Optional[Entity]:  # type: ignore
         """Delete the row at index.
 
         Args:
@@ -389,7 +390,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """
         if not self._index:
             self.reindex()
-        return cast(Entity, self._index.get(index, default))
+        return cast(Entity, self._index.get(index, default))  # type: ignore
 
     def keys(self) -> KeysView[Ref]:
         """ Return the list of ids of entities with `id`
@@ -399,7 +400,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         """
         if not self._index:
             self.reindex()
-        return self._index.keys()
+        return self._index.keys()  # type: ignore
 
     def pop(self, *index: Union[int, Ref]) -> Optional[Entity]:
         """Delete the row at index or with specified Ref id. If multiple
@@ -416,20 +417,20 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                     ret_value = None
                 else:
                     if "id" in self._row[key] and self._index:
-                        del self._index[self._row[key]['id']]
+                        del self._index[self._row[key]['id']]  # type: ignore
                     ret_value = self._row[key]
                     del self._row[key]
             else:
                 if not self._index:
                     self.reindex()
-                if key not in self._index:
+                if key not in self._index:  # type: ignore
                     ret_value = None
                 else:
-                    self._row.remove(self._index[key])
-                    ret_value = self._index.pop(key)
+                    self._row.remove(self._index[key])  # type: ignore
+                    ret_value = self._index.pop(key)  # type: ignore
         return cast(Optional[Entity], ret_value)
 
-    def insert(self, index: int, value: Entity) -> 'Grid':
+    def insert(self, index: int, value: Entity) -> 'Grid':  # type: ignore
         """Insert a new entity before the index position.
 
         Args:
@@ -446,7 +447,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         if "id" in value:
             if not self._index:
                 self.reindex()
-            self._index[value["id"]] = value
+            self._index[value["id"]] = value  # type: ignore
         return self
 
     def reindex(self) -> 'Grid':
@@ -475,7 +476,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
                     using_columns.add(col_name)
                 if len(using_columns) == len(columns_keys):  # All columns was found
                     return self
-        self.column = {k: self.column[k] for k in using_columns}
+        self.column = {k: self.column[k] for k in using_columns}  # type: ignore
         return self
 
     def extends_columns(self) -> 'Grid':
@@ -493,7 +494,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         self.column = new_cols
         return self
 
-    def extend(self, values: Iterable[Entity]) -> 'Grid':
+    def extend(self, values: Iterable[Entity]) -> 'Grid':  # type: ignore
         """
         Add a list of entities inside the grid
 
@@ -505,7 +506,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         super().extend(values)
         for item in self._row:
             if "id" in item:
-                self._index[item["id"]] = item
+                self._index[item["id"]] = item  # type: ignore
         return self
 
     def sort(self, tag: str) -> 'Grid':
@@ -516,7 +517,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
         Returns:
             `self`
         """
-        self._row = sorted(self._row, key=lambda row: row[tag])
+        self._row = sorted(self._row, key=lambda row: row[tag])  # type: ignore
         return self
 
     def copy(self) -> 'Grid':
@@ -551,7 +552,7 @@ class Grid(MutableSequence):  # pytlint: disable=too-many-ancestors
             if limit == 0:
                 return self
             result = Grid(version=self.version, metadata=self.metadata, columns=self.column)
-            result.extend(self.__getitem__(slice(0, limit)))
+            result.extend(self.__getitem__(slice(0, limit)))  # type: ignore
             return result
 
         result = Grid(version=self.version, metadata=self.metadata, columns=self.column)

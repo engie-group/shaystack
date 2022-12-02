@@ -15,15 +15,13 @@ import sys
 
 import click
 
-from app.schema_graphql import get_schema_for_provider
 from shaystack import HaystackInterface
 from shaystack.providers import get_provider
+from app.schema_graphql import get_schema_for_provider
 
 try:
-    # noinspection PyUnresolvedReferences
     from flask import Blueprint
-    # noinspection PyUnresolvedReferences
-    from flask_graphql import GraphQLView
+    from graphql_server.flask import GraphQLView
 except ImportError:
     os.abort()
 
@@ -39,7 +37,7 @@ def create_graphql_bp(provider: HaystackInterface) -> Blueprint:
     graphql_blueprint.add_url_rule('',
                                    view_func=GraphQLView.as_view(
                                        'graphql',
-                                       schema=schema,
+                                       schema=schema.graphql_schema,
                                        graphiql=True,
                                    ))
     return graphql_blueprint
@@ -48,10 +46,10 @@ def create_graphql_bp(provider: HaystackInterface) -> Blueprint:
 def _dump_haystack_schema(provider) -> None:
     """Print haystack schema to insert in another global schema."""
     # Print only haystack schema
-    from graphql.utils import schema_printer  # pylint: disable=import-outside-toplevel
+    from graphql.utilities import print_schema
     schema = get_schema_for_provider(provider)
 
-    print(schema_printer.print_schema(schema))
+    print(print_schema(schema.graphql_schema))
 
 
 @click.command()
@@ -61,7 +59,7 @@ def main() -> int:
     >partial_gql.graphql
     """
     provider_name = os.environ.get("HAYSTACK_PROVIDER", "shaystack.providers.db")
-    provider = get_provider(provider_name, os.environ)
+    provider = get_provider(provider_name, dict(os.environ))
     _dump_haystack_schema(provider)
     return 0
 

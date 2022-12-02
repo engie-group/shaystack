@@ -16,7 +16,6 @@ import textwrap
 import warnings
 
 import pytz
-from nose.tools import assert_is
 
 import shaystack
 from shaystack import MARKER, Grid, MODE_JSON, XStr, MODE_CSV, MODE_TRIO, Quantity, Coordinate, MODE_ZINC
@@ -351,7 +350,7 @@ def _check_na(grid):
         grid:
     """
     assert len(grid) == 1
-    assert_is(grid[0]['na'], shaystack.NA)
+    assert grid[0]['na'] is shaystack.NA
 
 
 def _check_remove(grid):
@@ -360,8 +359,8 @@ def _check_remove(grid):
         grid:
     """
     assert len(grid) == 2
-    assert_is(grid[0]['remove'], shaystack.REMOVE)
-    assert_is(grid[1]['remove'], shaystack.REMOVE)
+    assert grid[0]['remove'] is shaystack.REMOVE
+    assert grid[1]['remove'] is shaystack.REMOVE
 
 
 def _check_number(grid):
@@ -694,7 +693,7 @@ def test_marker_in_row_zinc():
     ''')[1:])
     assert len(grid) == 2
     assert 'marker' not in grid[0]
-    assert_is(grid[1]['marker'], shaystack.MARKER)
+    assert grid[1]['marker'] is shaystack.MARKER
 
 
 def test_marker_in_row_trio():
@@ -706,7 +705,7 @@ def test_marker_in_row_trio():
     ''')[1:], MODE_TRIO)
     assert len(grid) == 2
     assert 'marker' not in grid[0]
-    assert_is(grid[1]['marker'], shaystack.MARKER)
+    assert grid[1]['marker'] is shaystack.MARKER
 
 
 def test_marker_in_row_json():
@@ -1576,8 +1575,8 @@ def test_list_v3_json():
     assert isinstance(lst, list)
     assert len(lst) == 4
     assert lst[0] == 'my list'
-    assert_is(lst[1], None)
-    assert_is(lst[2], True)
+    assert lst[1] is None
+    assert lst[2] is True
     assert lst[3] == 1234.0
 
 
@@ -1598,8 +1597,8 @@ def test_list_hayson():
     assert isinstance(lst, list)
     assert len(lst) == 4
     assert lst[0] == 'my list'
-    assert_is(lst[1], None)
-    assert_is(lst[2], True)
+    assert lst[1] is None
+    assert lst[2] is True
     assert lst[3] == 1234.0
 
 
@@ -2034,9 +2033,9 @@ def test_grid_meta_zinc():
                                  'aTimestamp', 'aPlace']
     assert meta['aString'] == 'aValue'
     assert meta['aNumber'] == 3.14159
-    assert_is(meta['aNull'], None)
-    assert_is(meta['aMarker'], shaystack.MARKER)
-    assert_is(meta['anotherMarker'], shaystack.MARKER)
+    assert meta['aNull'] is None
+    assert meta['aMarker'] is shaystack.MARKER
+    assert meta['anotherMarker'] is shaystack.MARKER
     assert isinstance(meta['aQuantity'], shaystack.Quantity)
     assert meta['aQuantity'].m == 123
     assert meta['aQuantity'].units == 'hertz'
@@ -2074,9 +2073,9 @@ def test_col_meta_zinc():
                                  'aTimestamp', 'aPlace']
     assert meta['aString'] == 'aValue'
     assert meta['aNumber'] == 3.14159
-    assert_is(meta['aNull'], None)
-    assert_is(meta['aMarker'], shaystack.MARKER)
-    assert_is(meta['anotherMarker'], shaystack.MARKER)
+    assert meta['aNull'] is None
+    assert meta['aMarker'] is shaystack.MARKER
+    assert meta['anotherMarker'] is shaystack.MARKER
     assert isinstance(meta['aQuantity'], shaystack.Quantity)
     assert meta['aQuantity'].m == 123
     assert meta['aQuantity'].units == 'hertz'
@@ -2128,7 +2127,7 @@ def test_nodehaystack_02_zinc():
     ''')[1:])
     assert len(grid) == 1
     assert list(grid.metadata.keys()) == ['tag', 'foo']
-    assert_is(grid.metadata['tag'], shaystack.MARKER)
+    assert grid.metadata['tag'] is shaystack.MARKER
     assert grid.metadata['foo'] == 'bar'
     assert list(grid.column.keys()) == ['xyz']
     assert grid[0]['xyz'] == 'val'
@@ -2199,8 +2198,8 @@ def test_nodehaystack_05_zinc():
     assert row['c'] == shaystack.Quantity(4, 's')
     assert row['d'] == shaystack.Quantity(-2.5, 'min')
     row = grid.pop(0)
-    assert_is(row['a'], shaystack.MARKER)
-    assert_is(row['b'], shaystack.REMOVE)
+    assert row['a'] is shaystack.MARKER
+    assert row['b'] is shaystack.REMOVE
     assert row['c'] == XStr('hex', '010203')
     assert row['d'] == XStr('hex', '010203')
     row = grid.pop(0)
@@ -2306,9 +2305,9 @@ def test_nodehaystack_09_zinc():
         datetime.datetime(2010, 2, 3, 4, 5, 6))
     assert grid.metadata['c'] == pytz.timezone('Europe/London').localize(
         datetime.datetime(2009, 12, 3, 4, 5, 6))
-    assert_is(grid.metadata['foo'], shaystack.MARKER)
-    assert_is(grid.metadata['bar'], shaystack.MARKER)
-    assert_is(grid.metadata['baz'], shaystack.MARKER)
+    assert grid.metadata['foo'] is shaystack.MARKER
+    assert grid.metadata['bar'] is shaystack.MARKER
+    assert grid.metadata['baz'] is shaystack.MARKER
     assert list(grid.column.keys()) == ['a']
     assert grid.pop(0)['a'] == 3.814697265625E-6
     assert grid.pop(0)['a'] == pytz.utc.localize(
@@ -2334,7 +2333,7 @@ def test_nodehaystack_10_zinc():
     assert len(grid) == 3
     assert list(grid.metadata.keys()) == ['bg', 'mark']
     assert grid.metadata['bg'] == shaystack.Bin('image/jpeg')
-    assert_is(grid.metadata['mark'], shaystack.MARKER)
+    assert grid.metadata['mark'] is shaystack.MARKER
     assert list(grid.column.keys()) == ['file1', 'file2']
     assert list(grid.column['file1'].keys()) == ['dis', 'icon']
     assert grid.column['file1']['dis'] == 'F1'

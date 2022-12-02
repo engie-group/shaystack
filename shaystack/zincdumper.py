@@ -113,7 +113,7 @@ def _dump_coord(coordinate: Coordinate) -> str:
 
 def _dump_ref(ref: Ref) -> str:
     if ref.has_value:
-        return '@%s %s' % (ref.name, _dump_str(ref.value))
+        return '@%s %s' % (ref.name, _dump_str(ref.value))  # type: ignore
     return '@%s' % ref.name
 
 

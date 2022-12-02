@@ -61,7 +61,7 @@ STR_ESC_RE = re.compile(r'\\([bfnrt"\\$]|u[0-9a-fA-F]{4})')
 def _parse_metadata(meta: Entity, version: Version) -> MetadataObject:
     metadata = MetadataObject()
     for name, value in meta.items():
-        metadata[name] = _parse_embedded_scalar(value, version=version)
+        metadata[name] = _parse_embedded_scalar(value, version=version)  # type: ignore
     return metadata
 
 
@@ -70,10 +70,10 @@ def _parse_cols(grid: Grid, parsed: List[Entity], version: Version) -> None:
         name = col.pop('name')
         meta = {}
         for key, value in col.items():
-            value = _parse_embedded_scalar(value, version=version)
+            value = _parse_embedded_scalar(value, version=version)  # type: ignore
             if value is not None:
                 meta[key] = value
-        grid.column[name] = meta
+        grid.column[name] = meta  # type: ignore
 
 
 def _parse_row(row: Dict[str, Any], version: Version) -> Entity:
@@ -235,7 +235,7 @@ def parse_scalar(scalar: Union[str, bool, float, int, list, dict], version: Vers
             (scalar[-1] in ('"', ']', '}')):
         scalar = json.loads(scalar)
 
-    return _parse_embedded_scalar(scalar, version=version)
+    return _parse_embedded_scalar(scalar, version=version)  # type: ignore
 
 
 def parse_grid(grid_str: Union[str, Dict[str, Any]]) -> Grid:

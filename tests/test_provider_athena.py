@@ -4,7 +4,8 @@ from typing import cast
 from unittest.mock import patch
 
 import pytz
-from nose.tools import assert_raises
+import pytest
+
 
 from shaystack.grid import Grid
 from shaystack.providers import get_provider
@@ -112,7 +113,8 @@ TS_CSV_FILE = [
 
 def test_import_ts_in_db():
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", ENVIRON)) as provider:
-        assert_raises(NotImplementedError, provider._import_ts_in_db)
+        with pytest.raises(NotImplementedError):
+            provider._import_ts_in_db()
 
 
 def test_build_athena_prediction_query_of_entity_00():
@@ -171,7 +173,8 @@ def test_put_date_format_value_error_exception():
     str_date = "2022/06/01"
     date_pattern = "%Y-%m-%d"
     with cast(DBTSProvider, get_provider("shaystack.providers.athena", ENVIRON)) as provider:
-        assert_raises(Exception, provider.put_date_format, str_date, date_pattern)
+        with pytest.raises(Exception):
+            provider.put_date_format(str_date, date_pattern)
 
 
 @patch('shaystack.providers.athena.Provider.poll_query_status')

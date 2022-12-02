@@ -56,9 +56,6 @@ def client_graphql():
                     }
                 }
             }))
-    # print(json.loads(json_resp))
-    # print("----------------------------------")
-    # print(expected)
     assert json.loads(json_resp) == expected
 
 if __name__ == '__main__':

@@ -4,7 +4,7 @@ import shutil
 import unittest
 from urllib.parse import urlparse
 
-from nose.tools import assert_raises
+import pytest
 
 from shaystack import parse, MODE_HAYSON
 from shaystack.providers.url import _update_grid_on_file
@@ -287,13 +287,14 @@ class TestImportLocalFile(unittest.TestCase):
         os.rename(f'{self.source_file_ontologies}/carytown-2021-11-01T16:30:00.hayson.json',
                   f'{self.source_file_ontologies}/carytown-2050-11-01T16:30:00.hayson.json')
 
-        assert_raises(ValueError,
-                      _update_grid_on_file,
-                      urlparse(source_uri),
-                      urlparse(destination_uri),
-                      '',
-                      self.compare_grid,
-                      self.update_time_series,
-                      self.force,
-                      self.merge_ts,
-                      {})
+        with pytest.raises(ValueError):
+            _update_grid_on_file(
+                urlparse(source_uri),
+                urlparse(destination_uri),
+                '',
+                self.compare_grid,
+                self.update_time_series,
+                self.force,
+                self.merge_ts,
+                {}
+            )

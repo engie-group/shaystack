@@ -118,7 +118,7 @@ class Provider(HaystackInterface):
         return grid.extends_columns()
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
@@ -205,7 +205,7 @@ class Provider(HaystackInterface):
         return grid.extends_columns()
 
     @overrides
-    def point_write_read(
+    def point_write_read(  # type: ignore
             self, entity_id: Ref, date_version: Optional[datetime]
     ) -&gt; Grid:  # pylint: disable=no-self-use
         &#34;&#34;&#34;Return EmptyGrid.&#34;&#34;&#34;
@@ -320,7 +320,7 @@ class Provider(HaystackInterface):
         return grid.extends_columns()
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
@@ -407,7 +407,7 @@ class Provider(HaystackInterface):
         return grid.extends_columns()
 
     @overrides
-    def point_write_read(
+    def point_write_read(  # type: ignore
             self, entity_id: Ref, date_version: Optional[datetime]
     ) -&gt; Grid:  # pylint: disable=no-self-use
         &#34;&#34;&#34;Return EmptyGrid.&#34;&#34;&#34;
@@ -462,7 +462,7 @@ class Provider(HaystackInterface):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@overrides
-def his_read(
+def his_read(  # type: ignore
         self,
         entity_id: Ref,
         dates_range: Union[Union[datetime, str], Tuple[datetime, datetime]],
@@ -561,7 +561,7 @@ def nav(self, nav_id: str) -&gt; Any:  # pylint: disable=no-self-use
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@overrides
-def point_write_read(
+def point_write_read(  # type: ignore
         self, entity_id: Ref, date_version: Optional[datetime]
 ) -&gt; Grid:  # pylint: disable=no-self-use
     &#34;&#34;&#34;Return EmptyGrid.&#34;&#34;&#34;

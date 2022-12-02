@@ -17,7 +17,7 @@ import graphene
 
 from shaystack import HaystackInterface
 from shaystack.providers import get_provider
-from app.graphql_model import ReadHaystack
+from app.graphql_model import ReadHaystack  # type: ignore
 
 log = logging.getLogger("shaystack")
 
@@ -51,10 +51,11 @@ def get_schema_for_provider(provider: HaystackInterface) -> graphene.types.schem
 def _dump_haystack_schema(provider) -> None:
     """Print haystack schema to insert in another global schema."""
     # Print only haystack schema
-    from graphql.utils import schema_printer  # pylint: disable=import-outside-toplevel
+    from graphql.utilities import print_schema
+
     schema = get_schema_for_provider(provider)
 
-    print(schema_printer.print_schema(schema))
+    print(print_schema(schema.graphql_schema))
 
 
 @click.command()

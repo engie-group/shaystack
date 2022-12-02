@@ -39,7 +39,7 @@ GENERATION_NUMBER, GENERATION_COLUMN, GENERATION_ROW, PERCENT_GEN_ID, PERCENT_RE
 
 
 def gen_random_const() -> Union[bool, _MarkerType, _RemoveType, _NAType]:
-    return random.choice([True, False, MARKER, REMOVE, NA])
+    return random.choice([True, False, MARKER, REMOVE, NA])  # type: ignore
 
 
 def gen_random_ref() -> Ref:
@@ -69,7 +69,7 @@ def gen_random_bin() -> Bin:
 def gen_random_xstr() -> XStr:
     # Generate a randomized binary
     b_array = bytearray(random.getrandbits(8) for _ in range(5))
-    return XStr(*random.choice([
+    return XStr(*random.choice([  # type: ignore
         ('hex', binascii.hexlify(b_array).decode('ascii')),
         ('b64', binascii.b2a_base64(b_array)[:-1] if sys.version_info[0] <= 2
         else binascii.b2a_base64(b_array).decode("ascii")  # noqa: E128
@@ -169,8 +169,8 @@ RANDOM_TYPES = [
 
 def gen_random_scalar() -> HaystackType:
     if random.randint(0, 100) < PERCENT_RECURSIVE:
-        return random.choice(RANDOM_RECURSIVE_TYPES)()
-    return random.choice(RANDOM_TYPES)()
+        return random.choice(RANDOM_RECURSIVE_TYPES)()  # type: ignore
+    return random.choice(RANDOM_TYPES)()  # type: ignore
 
 
 def gen_random_name(existing: Optional[Dict] = None) -> str:
@@ -213,7 +213,7 @@ def gen_random_grid(metadata: bool = True, minrow: int = 0, empty_col: bool = Tr
         if "id" not in grid.column and random.randint(0, 100) < PERCENT_GEN_ID:
             col_name = "id"
         else:
-            col_name = gen_random_name(existing=grid.column)
+            col_name = gen_random_name(existing=grid.column)  # type: ignore
         if metadata and random.choice([True, False]):
             grid.column[col_name] = gen_random_meta()
         else:
@@ -232,7 +232,7 @@ def gen_random_grid(metadata: bool = True, minrow: int = 0, empty_col: bool = Tr
                             break
                 else:
                     if not empty_col or random.choice([True, False]):
-                        row[col] = gen_random_scalar()
+                        row[col] = gen_random_scalar()  # type: ignore
             if not minrow or len(row):
                 break
         grid.append(row)

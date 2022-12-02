@@ -119,13 +119,13 @@ def parse_scalar(scalar: Union[bytes, str, dict], mode: MODE = MODE_ZINC,
         scalar = scalar.decode(encoding=charset)
 
     if mode == MODE_ZINC:
-        return parse_zinc_scalar(scalar, version=version)
+        return parse_zinc_scalar(scalar, version=version)  # type: ignore
     if mode == MODE_TRIO:
-        return parse_trio_scalar(scalar, version=version)
+        return parse_trio_scalar(scalar, version=version)  # type: ignore
     if mode == MODE_JSON:
         return parse_json_scalar(scalar, version=version)
     if mode == MODE_CSV:
-        return parse_csv_scalar(scalar, version=version)
+        return parse_csv_scalar(scalar, version=version)  # type: ignore
     if mode == MODE_HAYSON:
         return parse_hayson_scalar(scalar, version=version)
 

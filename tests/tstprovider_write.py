@@ -9,7 +9,7 @@ from shaystack.providers import HaystackInterface
 
 class Provider(HaystackInterface):
     @overrides
-    def point_write_read(self,
+    def point_write_read(self,  # type: ignore
                          entity_id: Ref,
                          date_version: Optional[datetime]) -> Grid:
         raise NotImplementedError()

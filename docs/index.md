@@ -92,7 +92,7 @@ to serve Haystack data you host.
     - Local or remote Mongo database
     - Can be extends with optional AWS Time Stream use for Time Series
     - Other custom data location can be handled by extending `shaystack.providers.HaystackInterface`
-
+- In the most recent version, Shaystack supports python versions **3.7**, **3.8**, **3.9** and **3.10**.
 # History
 
 This project is a fork of [hszinc](https://github.com/widesky/hszinc)

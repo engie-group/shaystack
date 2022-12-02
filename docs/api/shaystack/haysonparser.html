@@ -91,7 +91,7 @@ COORD = &#39;Coord&#39;
 def _parse_metadata(meta: Entity, version: Version) -&gt; MetadataObject:
     metadata = MetadataObject()
     for name, value in meta.items():
-        metadata[name] = _parse_embedded_scalar(value, version=version)
+        metadata[name] = _parse_embedded_scalar(value, version=version)  # type: ignore
     return metadata
 
 
@@ -100,10 +100,10 @@ def _parse_cols(grid: Grid, parsed: List[Entity], version: Version) -&gt; None:
         name = col.pop(&#39;name&#39;)
         meta = {}
         for key, value in col.items():
-            value = _parse_embedded_scalar(value, version=version)
+            value = _parse_embedded_scalar(value, version=version)  # type: ignore
             if value is not None:
                 meta[key] = value
-        grid.column[name] = meta
+        grid.column[name] = meta  # type: ignore
 
 
 def _parse_row(row: Dict[str, Any], version: Version) -&gt; Entity:
@@ -151,21 +151,21 @@ def _parse_embedded_scalar(scalar: Union[None, List, Dict, str],
 
             # Is it a xstr?
             if kind == &#39;XStr&#39;:
-                return XStr(scalar.get(&#39;type&#39;), scalar.get(&#39;val&#39;))
+                return XStr(scalar.get(&#39;type&#39;), scalar.get(&#39;val&#39;))  # type: ignore
 
             # Is it a reference?
             if kind == REF:
-                return Ref(scalar.get(&#39;val&#39;), scalar.get(&#39;dis&#39;))
+                return Ref(scalar.get(&#39;val&#39;), scalar.get(&#39;dis&#39;))  # type: ignore
 
             # Is it a date?
             if kind == DATE:
-                match = DATE_RE.match(scalar.get(&#39;val&#39;))
-                (year, month, day) = match.groups()
+                match = DATE_RE.match(scalar.get(&#39;val&#39;))  # type: ignore
+                (year, month, day) = match.groups()  # type: ignore
                 return datetime.date(year=int(year), month=int(month), day=int(day))
 
             # Is it a time?
             if kind == TIME:
-                match = TIME_RE.match(scalar.get(&#39;val&#39;))
+                match = TIME_RE.match(scalar.get(&#39;val&#39;))  # type: ignore
                 if match:
                     (hour, minute, _, second, _) = match.groups()
                     # Convert second to seconds and microseconds
@@ -184,7 +184,7 @@ def _parse_embedded_scalar(scalar: Union[None, List, Dict, str],
 
             # Is it a date/time?
             if kind == DATETIME:
-                match = DATETIME_RE.match(scalar.get(&#39;val&#39;))
+                match = DATETIME_RE.match(scalar.get(&#39;val&#39;))  # type: ignore
                 if match:
                     matches = match.groups()
                     # Parse ISO8601 component
@@ -210,7 +210,7 @@ def _parse_embedded_scalar(scalar: Union[None, List, Dict, str],
 
             # Is it a co-ordinate?
             if kind == COORD:
-                return Coordinate(float(scalar.get(&#39;lat&#39;)), scalar.get(&#39;lng&#39;))
+                return Coordinate(float(scalar.get(&#39;lat&#39;)), scalar.get(&#39;lng&#39;))  # type: ignore
             return scalar
         # We support this only in version 3.0 and up.
         if sys.version_info[0] &lt; 3 and {&#34;meta&#34;, &#34;cols&#34;, &#34;rows&#34;} &lt;= scalar.viewkeys() \
@@ -239,7 +239,7 @@ def parse_scalar(scalar: Union[str, bool, float, int, list, dict], version: Vers
             (scalar[-1] in (&#39;&#34;&#39;, &#39;]&#39;, &#39;}&#39;)):
         scalar = json.loads(scalar)
 
-    return _parse_embedded_scalar(scalar, version=version)
+    return _parse_embedded_scalar(scalar, version=version)  # type: ignore
 
 
 def parse_grid(grid_str: Union[str, Dict[str, Any]]) -&gt; Grid:
@@ -366,7 +366,7 @@ def parse_grid(grid_str: Union[str, Dict[str, Any]]) -&gt; Grid:
             (scalar[-1] in (&#39;&#34;&#39;, &#39;]&#39;, &#39;}&#39;)):
         scalar = json.loads(scalar)
 
-    return _parse_embedded_scalar(scalar, version=version)</code></pre>
+    return _parse_embedded_scalar(scalar, version=version)  # type: ignore</code></pre>
 </details>
 </dd>
 </dl>

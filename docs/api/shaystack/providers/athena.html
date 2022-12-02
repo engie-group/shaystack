@@ -48,7 +48,7 @@ Set the HAYSTACK_TS with:
 import time as t
 from csv import DictReader
 from datetime import datetime, date, time
-from typing import Optional, Tuple, Any, Dict
+from typing import Optional, Tuple, Any, Dict, Union
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
 
@@ -115,7 +115,7 @@ class Provider(DBProvider):
     @staticmethod
     def _cast_timeserie_to_hs(val: str,
                               python_type: str,
-                              unit: str = None) -&gt; Any:
+                              unit: Union[str, None] = None) -&gt; Any:
         if val:
             if python_type == &#34;str&#34;:
                 return val
@@ -149,11 +149,11 @@ class Provider(DBProvider):
                 mic = int_time % 1000000
                 return time(hour, minute, split, mic)
             if python_type == &#34;Coordinate&#34;:
-                split = val.split(&#34;,&#34;)
-                return Coordinate(float(split[0]), float(split[1]))
+                split = val.split(&#34;,&#34;)  # type: ignore
+                return Coordinate(float(split[0]), float(split[1]))  # type: ignore
             if python_type == &#34;XStr&#34;:
-                split = val.split(&#34;,&#34;)
-                return XStr(*split)
+                split = val.split(&#34;,&#34;)  # type: ignore
+                return XStr(*split)  # type: ignore
             if python_type == &#34;NoneType&#34;:
                 return None
             raise ValueError(f&#34;Unknown type {python_type}&#34;)
@@ -255,7 +255,9 @@ class Provider(DBProvider):
         return date_val.strftime(&#34;%Y-%m-%d %H:%M:%S&#34;)
 
     @staticmethod
-    def build_athena_query(his_uri: dict, dates_range: tuple, date_version: datetime = None) -&gt; str:
+    def build_athena_query(his_uri: dict,
+                           dates_range: tuple,
+                           date_version: Union[datetime, None] = None) -&gt; str:
         &#34;&#34;&#34;
         Build up an Athena query based on the parameters that have been included in hisURI and apply
         filtering by a start date and an end date based on the date_range argument.
@@ -275,8 +277,8 @@ class Provider(DBProvider):
 
         date_range_period = Period(start=dates_range[0], end=dates_range[1])
         if dates_range and dates_range[1] &gt; date_version:
-            dates_range = list(dates_range)
-            dates_range[1] = date_version
+            dates_range = list(dates_range)  # type: ignore
+            dates_range[1] = date_version  # type: ignore
 
         select_all = f&#39;SELECT DISTINCT {hs_date_column}, {&#34;, &#34;.join(hs_value_column)}&#39; \
                      f&#39; FROM {his_uri[&#34;table_name&#34;]}&#39; \
@@ -374,7 +376,7 @@ class Provider(DBProvider):
             raise
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Optional[Tuple[datetime, datetime]] = None,
@@ -385,7 +387,7 @@ class Provider(DBProvider):
         if not entity:
             raise ValueError(f&#34; id &#39;{entity_id} not found&#34;)
 
-        his_uri = entity.get(&#39;hisURI&#39;, None)
+        his_uri = entity.get(&#39;hisURI&#39;, None)  # type: ignore
         if not his_uri:
             raise ValueError(f&#34; hisURI &#39;{his_uri} not found&#34;)
 
@@ -394,7 +396,7 @@ class Provider(DBProvider):
             customer_id = &#39; &#39;
 
         try:
-            history = self.run_query(his_uri, dates_range, date_version)
+            history = self.run_query(his_uri, dates_range, date_version)  # type: ignore
 
             if history:
                 min_date = datetime.max.replace(tzinfo=pytz.UTC)
@@ -404,8 +406,8 @@ class Provider(DBProvider):
                     min_date = min(min_date, time_serie[&#34;ts&#34;])
                     max_date = max(max_date, time_serie[&#34;ts&#34;])
             else:
-                min_date = date_version
-                max_date = date_version
+                min_date = date_version  # type: ignore
+                max_date = date_version  # type: ignore
 
             history.metadata = {
                 &#34;id&#34;: entity_id,
@@ -487,7 +489,7 @@ class Provider(DBProvider):
     @staticmethod
     def _cast_timeserie_to_hs(val: str,
                               python_type: str,
-                              unit: str = None) -&gt; Any:
+                              unit: Union[str, None] = None) -&gt; Any:
         if val:
             if python_type == &#34;str&#34;:
                 return val
@@ -521,11 +523,11 @@ class Provider(DBProvider):
                 mic = int_time % 1000000
                 return time(hour, minute, split, mic)
             if python_type == &#34;Coordinate&#34;:
-                split = val.split(&#34;,&#34;)
-                return Coordinate(float(split[0]), float(split[1]))
+                split = val.split(&#34;,&#34;)  # type: ignore
+                return Coordinate(float(split[0]), float(split[1]))  # type: ignore
             if python_type == &#34;XStr&#34;:
-                split = val.split(&#34;,&#34;)
-                return XStr(*split)
+                split = val.split(&#34;,&#34;)  # type: ignore
+                return XStr(*split)  # type: ignore
             if python_type == &#34;NoneType&#34;:
                 return None
             raise ValueError(f&#34;Unknown type {python_type}&#34;)
@@ -627,7 +629,9 @@ class Provider(DBProvider):
         return date_val.strftime(&#34;%Y-%m-%d %H:%M:%S&#34;)
 
     @staticmethod
-    def build_athena_query(his_uri: dict, dates_range: tuple, date_version: datetime = None) -&gt; str:
+    def build_athena_query(his_uri: dict,
+                           dates_range: tuple,
+                           date_version: Union[datetime, None] = None) -&gt; str:
         &#34;&#34;&#34;
         Build up an Athena query based on the parameters that have been included in hisURI and apply
         filtering by a start date and an end date based on the date_range argument.
@@ -647,8 +651,8 @@ class Provider(DBProvider):
 
         date_range_period = Period(start=dates_range[0], end=dates_range[1])
         if dates_range and dates_range[1] &gt; date_version:
-            dates_range = list(dates_range)
-            dates_range[1] = date_version
+            dates_range = list(dates_range)  # type: ignore
+            dates_range[1] = date_version  # type: ignore
 
         select_all = f&#39;SELECT DISTINCT {hs_date_column}, {&#34;, &#34;.join(hs_value_column)}&#39; \
                      f&#39; FROM {his_uri[&#34;table_name&#34;]}&#39; \
@@ -746,7 +750,7 @@ class Provider(DBProvider):
             raise
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Optional[Tuple[datetime, datetime]] = None,
@@ -757,7 +761,7 @@ class Provider(DBProvider):
         if not entity:
             raise ValueError(f&#34; id &#39;{entity_id} not found&#34;)
 
-        his_uri = entity.get(&#39;hisURI&#39;, None)
+        his_uri = entity.get(&#39;hisURI&#39;, None)  # type: ignore
         if not his_uri:
             raise ValueError(f&#34; hisURI &#39;{his_uri} not found&#34;)
 
@@ -766,7 +770,7 @@ class Provider(DBProvider):
             customer_id = &#39; &#39;
 
         try:
-            history = self.run_query(his_uri, dates_range, date_version)
+            history = self.run_query(his_uri, dates_range, date_version)  # type: ignore
 
             if history:
                 min_date = datetime.max.replace(tzinfo=pytz.UTC)
@@ -776,8 +780,8 @@ class Provider(DBProvider):
                     min_date = min(min_date, time_serie[&#34;ts&#34;])
                     max_date = max(max_date, time_serie[&#34;ts&#34;])
             else:
-                min_date = date_version
-                max_date = date_version
+                min_date = date_version  # type: ignore
+                max_date = date_version  # type: ignore
 
             history.metadata = {
                 &#34;id&#34;: entity_id,
@@ -814,7 +818,7 @@ class Provider(DBProvider):
 <h3>Static methods</h3>
 <dl>
 <dt id="shaystack.providers.athena.Provider.build_athena_query"><code class="name flex">
-<span>def <span class="ident">build_athena_query</span></span>(<span>his_uri: dict, dates_range: tuple, date_version: datetime.datetime = None) ‑> str</span>
+<span>def <span class="ident">build_athena_query</span></span>(<span>his_uri: dict, dates_range: tuple, date_version: Optional[datetime.datetime] = None) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Build up an Athena query based on the parameters that have been included in hisURI and apply
@@ -835,7 +839,9 @@ filtering by a start date and an end date based on the date_range argument.</p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def build_athena_query(his_uri: dict, dates_range: tuple, date_version: datetime = None) -&gt; str:
+def build_athena_query(his_uri: dict,
+                       dates_range: tuple,
+                       date_version: Union[datetime, None] = None) -&gt; str:
     &#34;&#34;&#34;
     Build up an Athena query based on the parameters that have been included in hisURI and apply
     filtering by a start date and an end date based on the date_range argument.
@@ -855,8 +861,8 @@ def build_athena_query(his_uri: dict, dates_range: tuple, date_version: datetime
 
     date_range_period = Period(start=dates_range[0], end=dates_range[1])
     if dates_range and dates_range[1] &gt; date_version:
-        dates_range = list(dates_range)
-        dates_range[1] = date_version
+        dates_range = list(dates_range)  # type: ignore
+        dates_range[1] = date_version  # type: ignore
 
     select_all = f&#39;SELECT DISTINCT {hs_date_column}, {&#34;, &#34;.join(hs_value_column)}&#39; \
                  f&#39; FROM {his_uri[&#34;table_name&#34;]}&#39; \

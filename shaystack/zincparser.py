@@ -167,9 +167,9 @@ class ZincParseException(ValueError):
                     for (num, line_str)
                     in enumerate(grid_str.split('\n'), 1)
                 ]
-                formatted_lines.insert(line,
+                formatted_lines.insert(line,  # type: ignore
                                        ('    | ' + line_fmt + ' |')
-                                       % (((col - 2) * ' ') + '.^.')
+                                       % (((col - 2) * ' ') + '.^.')  # type: ignore
                                        )
 
                 # Border it for readability
@@ -220,7 +220,7 @@ class _GenerateMatch:
             generator_fn:
         """
         self._generator_fn = generator_fn
-        self._known_grammars = {}
+        self._known_grammars = {}  # type: ignore
 
     def __getitem__(self, ver: Version) -> Any:
         try:

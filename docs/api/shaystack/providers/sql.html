@@ -281,7 +281,7 @@ class Provider(DBHaystackInterface):
             cursor.close()
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Optional[Tuple[datetime, datetime]] = None,
@@ -302,13 +302,14 @@ class Provider(DBHaystackInterface):
         try:
             if not date_version:
                 date_version = datetime.max.replace(tzinfo=pytz.UTC)
-            if dates_range[1] &gt; date_version:
-                dates_range = list(dates_range)
-                dates_range[1] = date_version
+            if dates_range[1] &gt; date_version:  # type: ignore
+                dates_range = list(dates_range)  # type: ignore
+                dates_range[1] = date_version  # type: ignore
 
             cursor.execute(self._sql[&#34;SELECT_TS&#34;], (customer_id, entity_id.name,
-                                                    dates_range[0],
-                                                    dates_range[1] + timedelta(microseconds=-1)))
+                                                    dates_range[0],  # type: ignore
+                                                    dates_range[1] +  # type: ignore
+                                                    timedelta(microseconds=-1)))
             for row in cursor:
                 history.append(
                     {
@@ -327,7 +328,7 @@ class Provider(DBHaystackInterface):
                 min_date = date_version
                 max_date = date_version
 
-            history.metadata = {
+            history.metadata = {  # type: ignore
                 &#34;id&#34;: entity_id,
                 &#34;hisStart&#34;: min_date,
                 &#34;hisEnd&#34;: max_date,
@@ -353,8 +354,8 @@ class Provider(DBHaystackInterface):
                 port = 0
             password = self._parsed_db.password
             if _BOTO3_AVAILABLE and self._parsed_db.username and \
-                    password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):
-                password = get_secret_manager_secret(password[1:-1], self._envs)
+                    password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):  # type: ignore
+                password = get_secret_manager_secret(password[1:-1], self._envs)  # type: ignore
             params = {
                 &#34;host&#34;: self._parsed_db.hostname,
                 &#34;port&#34;: port,
@@ -368,7 +369,7 @@ class Provider(DBHaystackInterface):
             }
             _, keys = self._default_driver[self._dialect]
             filtered = {key: val for key, val in params.items() if key in keys}
-            self._connect = _LocalConnect(self.database, **filtered)
+            self._connect = _LocalConnect(self.database, **filtered)  # type: ignore
             self.create_db()
         if not self._connect:
             raise ValueError(&#34;Impossible to use the database url&#34;)
@@ -562,7 +563,7 @@ class Provider(DBHaystackInterface):
                                        sql_id,
                                        customer_id,
                                        now,
-                                       json.dumps(_dump_row(new_grid, new_grid[row[&#34;id&#34;]]))
+                                       json.dumps(_dump_row(new_grid, new_grid[row[&#34;id&#34;]]))  # type: ignore
                                    )
                                    )
                     log.debug(&#34;Update record %s in DB&#34;, row[&#39;id&#39;].name)
@@ -648,9 +649,9 @@ class Provider(DBHaystackInterface):
         begin_datetime = time_series.metadata.get(&#34;hisStart&#34;)
         end_datetime = time_series.metadata.get(&#34;hisStart&#34;)
         if time_series and not begin_datetime:
-            begin_datetime = time_series[0][&#39;ts&#39;]
+            begin_datetime = time_series[0][&#39;ts&#39;]  # type: ignore
         if time_series and not end_datetime:
-            end_datetime = time_series[-1][&#39;ts&#39;]
+            end_datetime = time_series[-1][&#39;ts&#39;]  # type: ignore
         if not begin_datetime:
             begin_datetime = datetime.min
         if not end_datetime:
@@ -833,7 +834,7 @@ class Provider(DBHaystackInterface):
             cursor.close()
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Optional[Tuple[datetime, datetime]] = None,
@@ -854,13 +855,14 @@ class Provider(DBHaystackInterface):
         try:
             if not date_version:
                 date_version = datetime.max.replace(tzinfo=pytz.UTC)
-            if dates_range[1] &gt; date_version:
-                dates_range = list(dates_range)
-                dates_range[1] = date_version
+            if dates_range[1] &gt; date_version:  # type: ignore
+                dates_range = list(dates_range)  # type: ignore
+                dates_range[1] = date_version  # type: ignore
 
             cursor.execute(self._sql[&#34;SELECT_TS&#34;], (customer_id, entity_id.name,
-                                                    dates_range[0],
-                                                    dates_range[1] + timedelta(microseconds=-1)))
+                                                    dates_range[0],  # type: ignore
+                                                    dates_range[1] +  # type: ignore
+                                                    timedelta(microseconds=-1)))
             for row in cursor:
                 history.append(
                     {
@@ -879,7 +881,7 @@ class Provider(DBHaystackInterface):
                 min_date = date_version
                 max_date = date_version
 
-            history.metadata = {
+            history.metadata = {  # type: ignore
                 &#34;id&#34;: entity_id,
                 &#34;hisStart&#34;: min_date,
                 &#34;hisEnd&#34;: max_date,
@@ -905,8 +907,8 @@ class Provider(DBHaystackInterface):
                 port = 0
             password = self._parsed_db.password
             if _BOTO3_AVAILABLE and self._parsed_db.username and \
-                    password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):
-                password = get_secret_manager_secret(password[1:-1], self._envs)
+                    password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):  # type: ignore
+                password = get_secret_manager_secret(password[1:-1], self._envs)  # type: ignore
             params = {
                 &#34;host&#34;: self._parsed_db.hostname,
                 &#34;port&#34;: port,
@@ -920,7 +922,7 @@ class Provider(DBHaystackInterface):
             }
             _, keys = self._default_driver[self._dialect]
             filtered = {key: val for key, val in params.items() if key in keys}
-            self._connect = _LocalConnect(self.database, **filtered)
+            self._connect = _LocalConnect(self.database, **filtered)  # type: ignore
             self.create_db()
         if not self._connect:
             raise ValueError(&#34;Impossible to use the database url&#34;)
@@ -1114,7 +1116,7 @@ class Provider(DBHaystackInterface):
                                        sql_id,
                                        customer_id,
                                        now,
-                                       json.dumps(_dump_row(new_grid, new_grid[row[&#34;id&#34;]]))
+                                       json.dumps(_dump_row(new_grid, new_grid[row[&#34;id&#34;]]))  # type: ignore
                                    )
                                    )
                     log.debug(&#34;Update record %s in DB&#34;, row[&#39;id&#39;].name)
@@ -1200,9 +1202,9 @@ class Provider(DBHaystackInterface):
         begin_datetime = time_series.metadata.get(&#34;hisStart&#34;)
         end_datetime = time_series.metadata.get(&#34;hisStart&#34;)
         if time_series and not begin_datetime:
-            begin_datetime = time_series[0][&#39;ts&#39;]
+            begin_datetime = time_series[0][&#39;ts&#39;]  # type: ignore
         if time_series and not end_datetime:
-            end_datetime = time_series[-1][&#39;ts&#39;]
+            end_datetime = time_series[-1][&#39;ts&#39;]  # type: ignore
         if not begin_datetime:
             begin_datetime = datetime.min
         if not end_datetime:
@@ -1289,8 +1291,8 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
             port = 0
         password = self._parsed_db.password
         if _BOTO3_AVAILABLE and self._parsed_db.username and \
-                password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):
-            password = get_secret_manager_secret(password[1:-1], self._envs)
+                password.startswith(&#34;&lt;&#34;) and password.endswith(&#34;&gt;&#34;):  # type: ignore
+            password = get_secret_manager_secret(password[1:-1], self._envs)  # type: ignore
         params = {
             &#34;host&#34;: self._parsed_db.hostname,
             &#34;port&#34;: port,
@@ -1304,7 +1306,7 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
         }
         _, keys = self._default_driver[self._dialect]
         filtered = {key: val for key, val in params.items() if key in keys}
-        self._connect = _LocalConnect(self.database, **filtered)
+        self._connect = _LocalConnect(self.database, **filtered)  # type: ignore
         self.create_db()
     if not self._connect:
         raise ValueError(&#34;Impossible to use the database url&#34;)
@@ -1312,7 +1314,7 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
 </details>
 </dd>
 <dt id="shaystack.providers.sql.Provider.his_read"><code class="name flex">
-<span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Union[Tuple[datetime.datetime, datetime.datetime], NoneType] = None, date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">his_read</span></span>(<span>self, entity_id: shaystack.datatypes.Ref, dates_range: Optional[Tuple[datetime.datetime, datetime.datetime]] = None, date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement Haystack 'hisRead'</p></div>
@@ -1321,7 +1323,7 @@ def about(self, home: str) -&gt; Grid:  # pylint: disable=no-self-use
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@overrides
-def his_read(
+def his_read(  # type: ignore
         self,
         entity_id: Ref,
         dates_range: Optional[Tuple[datetime, datetime]] = None,
@@ -1342,13 +1344,14 @@ def his_read(
     try:
         if not date_version:
             date_version = datetime.max.replace(tzinfo=pytz.UTC)
-        if dates_range[1] &gt; date_version:
-            dates_range = list(dates_range)
-            dates_range[1] = date_version
+        if dates_range[1] &gt; date_version:  # type: ignore
+            dates_range = list(dates_range)  # type: ignore
+            dates_range[1] = date_version  # type: ignore
 
         cursor.execute(self._sql[&#34;SELECT_TS&#34;], (customer_id, entity_id.name,
-                                                dates_range[0],
-                                                dates_range[1] + timedelta(microseconds=-1)))
+                                                dates_range[0],  # type: ignore
+                                                dates_range[1] +  # type: ignore
+                                                timedelta(microseconds=-1)))
         for row in cursor:
             history.append(
                 {
@@ -1367,7 +1370,7 @@ def his_read(
             min_date = date_version
             max_date = date_version
 
-        history.metadata = {
+        history.metadata = {  # type: ignore
             &#34;id&#34;: entity_id,
             &#34;hisStart&#34;: min_date,
             &#34;hisEnd&#34;: max_date,
@@ -1379,7 +1382,7 @@ def his_read(
 </details>
 </dd>
 <dt id="shaystack.providers.sql.Provider.import_data"><code class="name flex">
-<span>def <span class="ident">import_data</span></span>(<span>self, source_uri: str, customer_id: str = '', reset: bool = False, version: Union[datetime.datetime, NoneType] = None) ‑> NoneType</span>
+<span>def <span class="ident">import_data</span></span>(<span>self, source_uri: str, customer_id: str = '', reset: bool = False, version: Optional[datetime.datetime] = None) ‑> NoneType</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Import source URI to database.</p>
@@ -1459,7 +1462,7 @@ def purge_db(self) -&gt; None:
 </details>
 </dd>
 <dt id="shaystack.providers.sql.Provider.read"><code class="name flex">
-<span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Union[str, NoneType], entity_ids: Union[List[shaystack.datatypes.Ref], NoneType] = None, grid_filter: Union[str, NoneType] = None, date_version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">read</span></span>(<span>self, limit: int, select: Optional[str], entity_ids: Optional[List[shaystack.datatypes.Ref]] = None, grid_filter: Optional[str] = None, date_version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implement Haystack 'read'</p></div>
@@ -1523,7 +1526,7 @@ def read(
 </details>
 </dd>
 <dt id="shaystack.providers.sql.Provider.read_grid"><code class="name flex">
-<span>def <span class="ident">read_grid</span></span>(<span>self, customer_id: str = '', version: Union[datetime.datetime, NoneType] = None) ‑> shaystack.grid.Grid</span>
+<span>def <span class="ident">read_grid</span></span>(<span>self, customer_id: str = '', version: Optional[datetime.datetime] = None) ‑> shaystack.grid.Grid</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Read all haystack data for a specific custimer, from the database and return a Grid.</p>

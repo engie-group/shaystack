@@ -69,7 +69,7 @@ try:
 
     BOTO3_AVAILABLE = True
 except ImportError:
-    BaseClient = Any
+    BaseClient = Any  # type: ignore
 
 Timestamp = datetime
 
@@ -139,7 +139,7 @@ def _absolute_path(path: str) -> str:
     if not path.startswith("/"):
         return path
     path_splitted = path.split('/')
-    result = []
+    result = []  # type: ignore
     for part in path_splitted:
         if part == '..':
             result.pop()
@@ -181,8 +181,8 @@ def merge_timeseries(source_grid: Grid,
         source_grid.sort('ts')
         result_grid = destination_grid.copy()
         if destination_grid:
-            start_destination = destination_grid[0]['ts']
-            result_grid.extend(filter(lambda row: row['ts'] < start_destination, source_grid))
+            start_destination = destination_grid[0]['ts']  # type: ignore
+            result_grid.extend(filter(lambda row: row['ts'] < start_destination, source_grid))  # type: ignore
         else:
             result_grid.extend(source_grid)
         result_grid.sort('ts')
@@ -212,7 +212,7 @@ def read_grid_from_uri(uri: str, envs: Dict[str, str]) -> Grid:
         suffix = Path(parsed_uri.path).suffixes[-2]
 
     input_mode = suffix_to_mode(suffix)
-    grid = parse(data.decode("utf-8-sig"), input_mode)
+    grid = parse(data.decode("utf-8-sig"), input_mode)  # type: ignore
     return grid
 
 
@@ -241,14 +241,14 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
             unzipped_source_data = gzip.decompress(source_data)
 
         source_grid = parse(unzipped_source_data.decode("utf-8-sig"),
-                            suffix_to_mode(suffix))
+                            suffix_to_mode(suffix))  # type: ignore
 
         try:
             destination_data = _download_uri(parsed_destination, envs)
             if parsed_source.path.endswith(".gz"):
                 destination_data = gzip.decompress(destination_data)
             destination_grid = parse(destination_data.decode("utf-8-sig"),
-                                     suffix_to_mode(suffix))
+                                     suffix_to_mode(suffix))  # type: ignore
         except URLError:
             log.warning("URLError file not found under %s", (parsed_destination.geturl()))
             destination_grid = EmptyGrid.copy()
@@ -280,13 +280,12 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
                         prefix, suffix = file_path.name.split('.', 1)
                         prefix = prefix.split("-", 1)[0]
                     else:
-                        date_old_version: datetime = \
-                            datetime.fromtimestamp(
+                        date_old_version: datetime = datetime.fromtimestamp(  # type: ignore
                                 os.path.getmtime(parsed_destination.path)
                             ).replace(tzinfo=None)
                         prefix, suffix = file_path.name.split('.', 1)
 
-                    old_name = f"{prefix}-{date_old_version.isoformat()}.{suffix}"
+                    old_name = f"{prefix}-{date_old_version.isoformat()}.{suffix}"  # type: ignore
                     file_path.rename(Path(file_path.parent, old_name))
 
             with open(parsed_destination.path, "wb") as file:
@@ -295,7 +294,7 @@ def _update_grid_on_file(parsed_source: ParseResult,  # pylint: disable=too-many
         else:
             log.debug("%s not modified (same grid)", parsed_source.geturl())
     if update_time_series:
-        _import_ts(parsed_source, parsed_destination, source_grid,
+        _import_ts(parsed_source, parsed_destination, source_grid,  # type: ignore
                    customer_id,
                    force, merge_ts, envs=envs)
 
@@ -347,7 +346,7 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
         md5_digest = md5(source_data)
         b64_digest = base64.b64encode(md5_digest.digest()).decode("UTF8")
         source_etag = ''
-        source_grid = None
+        source_grid = None  # type: ignore
         if not force:
             source_etag = md5_digest.hexdigest()
         if update_time_series or compare_grid or merge_ts:
@@ -359,7 +358,7 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
 
             try:
                 source_grid = parse(unzipped_source_data.decode("utf-8-sig"),
-                                    suffix_to_mode(suffix))
+                                    suffix_to_mode(suffix))  # type: ignore
                 path = parsed_destination.path[1:]
                 destination_data = s3_client.get_object(Bucket=parsed_destination.hostname,
                                                         Key=path,
@@ -367,7 +366,7 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
                 if parsed_source.path.endswith(".gz"):
                     destination_data = gzip.decompress(destination_data)
                 destination_grid = parse(destination_data.decode("utf-8-sig"),
-                                         suffix_to_mode(suffix))
+                                         suffix_to_mode(suffix))  # type: ignore
 
             except ClientError as ex:
                 if ex.response['Error']['Code'] == 'NoSuchKey':
@@ -390,7 +389,7 @@ def _update_grid_on_s3(parsed_source: ParseResult,  # pylint: disable=too-many-l
         if force or not compare_grid or (destination_grid - source_grid):
             if not force and merge_ts:  # PPR: if TS, limit the number of AWS versions ?
                 destination_grid = merge_timeseries(source_grid, destination_grid)
-                source_data = dump(destination_grid, suffix_to_mode(suffix)).encode('UTF8')
+                source_data = dump(destination_grid, suffix_to_mode(suffix)).encode('UTF8')  # type: ignore
                 if use_gzip:
                     source_data = gzip.compress(source_data)
                 md5_digest = md5(source_data)
@@ -493,8 +492,8 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
         self._s3_client = None
         self._lambda_client = None
         self._lock = Lock()
-        self._versions = {}  # Dict of OrderedDict with date_version:version_id
-        self._lru = []
+        self._versions = {}   # type: ignore  # Dict of OrderedDict with date_version:version_id
+        self._lru = []  # type: ignore
         self._timer = None
         self._concurrency = None
         log.info("Use %s", self._get_url())
@@ -550,11 +549,11 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             for ref in entity_ids:
                 result.append(grid[ref])
         else:
-            result = grid.filter(grid_filter, limit if limit else 0)
+            result = grid.filter(grid_filter, limit if limit else 0)  # type: ignore
         return result.select(select)
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Tuple[datetime, datetime],
@@ -575,7 +574,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             # 1. use a file in the dir(HAYSTACK_DB)+entity['hisURI']
             if "hisURI" in entity:
                 base = dirname(self._get_url())
-                his_uri = base + '/' + str(entity["hisURI"])
+                his_uri = base + '/' + str(entity["hisURI"])  # type: ignore
                 history = self._download_grid(his_uri, None)
                 # assert history is sorted by date time
                 # Remove data after the date_version
@@ -584,7 +583,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                     date_version = datetime.now().replace(tzinfo=pytz.UTC)
                 for row in history:
                     if row['ts'] >= date_version.replace(tzinfo=pytz.UTC):
-                        history = history[0:history.index(row)]
+                        history = history[0:history.index(row)]  # type: ignore
                         break
 
                 # Remove data not in the range
@@ -603,7 +602,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                     min_date = date_version
                     max_date = date_version
 
-                history.metadata = {
+                history.metadata = {  # type: ignore
                     "id": entity_id,
                     "hisStart": min_date,
                     "hisEnd": max_date,
@@ -611,7 +610,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 return history
             # 2. use the inner time series in tag 'history' with the type 'Grid'
             if "history" in entity:
-                return entity["history"]
+                return entity["history"]  # type: ignore
             raise HaystackException(f"{entity_id} has no history")
         raise HaystackException(f"id '{entity_id}' not found")
 
@@ -634,7 +633,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                                                endpoint_url=self._envs.get("AWS_S3_ENDPOINT", None),
                                                verify=self._tls_verify,  # See https://tinyurl.com/y5tap6ys
                                                )
-        return self._lambda_client
+        return self._lambda_client  # type: ignore
 
     def _function_concurrency(self) -> int:  # pylint: disable=no-self-use
         return 1000
@@ -656,7 +655,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                 endpoint_url=self._envs.get("AWS_S3_ENDPOINT", None),
                 verify=self._tls_verify,  # See https://tinyurl.com/y5tap6ys
             )
-        return self._s3_client
+        return self._s3_client  # type: ignore
 
     def _download_uri(self, parsed_uri: ParseResult, effective_version: datetime) -> bytes:
         """Download bytes from URI.
@@ -682,7 +681,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             assert version_id, "Version not found"
 
             stream = BytesIO()
-            s3_client.download_fileobj(
+            s3_client.download_fileobj(  # type: ignore
                 parsed_uri.netloc, parsed_uri.path[1:], stream, ExtraArgs=extra_args
             )
             data = stream.getvalue()
@@ -713,7 +712,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             start_of_current_period = \
                 (next_time - timedelta(minutes=self._periodic_refresh)).replace(tzinfo=pytz.UTC)
             s3_client = self._s3()
-            s3_obj_version = s3_client.list_object_versions(
+            s3_obj_version = s3_client.list_object_versions(  # type: ignore
                 Bucket=parsed_uri.netloc, Prefix=parsed_uri.path[1:]
             )
             if "Versions" in s3_obj_version:
@@ -722,7 +721,7 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
                     for v in s3_obj_version["Versions"]
                 ]
             else:
-                meta = s3_client.get_object(Bucket=parsed_uri.netloc, Key=parsed_uri.path[1:])
+                meta = s3_client.get_object(Bucket=parsed_uri.netloc, Key=parsed_uri.path[1:])  # type: ignore
                 obj_versions = [meta["LastModified"], meta["VersionId"]]
             obj_versions = sorted(obj_versions, key=lambda x: x[0], reverse=True)
             self._lock.acquire()  # pylint: disable=consider-using-with
@@ -764,9 +763,9 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             partial_refresh = functools.partial(
                 self._periodic_refresh_versions, parsed_uri, False
             )
-            self._timer = threading.Timer((next_time - now).seconds, partial_refresh)
-            self._timer.daemon = True
-            self._timer.start()
+            self._timer = threading.Timer((next_time - now).seconds, partial_refresh)  # type: ignore
+            self._timer.daemon = True  # type: ignore
+            self._timer.start()  # type: ignore
 
     def _refresh_versions(self, parsed_uri: ParseResult) -> None:
         if not self._periodic_refresh or parsed_uri.geturl() not in self._versions:
@@ -948,14 +947,14 @@ class Provider(DBHaystackInterface):  # pylint: disable=too-many-instance-attrib
             use_gzip = True
             suffix = Path(parsed_target.path).suffixes[-2]
 
-        target_data = dump(new_grid, suffix_to_mode(suffix)).encode('UTF8')
+        target_data = dump(new_grid, suffix_to_mode(suffix)).encode('UTF8')  # type: ignore
         if use_gzip:
             target_data = gzip.compress(target_data)
         md5_digest = md5(target_data)
         b64_digest = base64.b64encode(md5_digest.digest()).decode("UTF8")
         # WARNING: the local version may not be update.
         # Waiting the next `REFRESH` period
-        s3_client.put_object(Body=target_data,
+        s3_client.put_object(Body=target_data,  # type: ignore
                              Bucket=parsed_target.hostname,
                              Key=parsed_target.path[1:],
                              ContentMD5=b64_digest

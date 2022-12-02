@@ -245,7 +245,7 @@ class Provider(DBHaystackInterface):
             cursor.close()
 
     @overrides
-    def his_read(
+    def his_read(  # type: ignore
             self,
             entity_id: Ref,
             dates_range: Optional[Tuple[datetime, datetime]] = None,
@@ -266,13 +266,14 @@ class Provider(DBHaystackInterface):
         try:
             if not date_version:
                 date_version = datetime.max.replace(tzinfo=pytz.UTC)
-            if dates_range[1] > date_version:
-                dates_range = list(dates_range)
-                dates_range[1] = date_version
+            if dates_range[1] > date_version:  # type: ignore
+                dates_range = list(dates_range)  # type: ignore
+                dates_range[1] = date_version  # type: ignore
 
             cursor.execute(self._sql["SELECT_TS"], (customer_id, entity_id.name,
-                                                    dates_range[0],
-                                                    dates_range[1] + timedelta(microseconds=-1)))
+                                                    dates_range[0],  # type: ignore
+                                                    dates_range[1] +  # type: ignore
+                                                    timedelta(microseconds=-1)))
             for row in cursor:
                 history.append(
                     {
@@ -291,7 +292,7 @@ class Provider(DBHaystackInterface):
                 min_date = date_version
                 max_date = date_version
 
-            history.metadata = {
+            history.metadata = {  # type: ignore
                 "id": entity_id,
                 "hisStart": min_date,
                 "hisEnd": max_date,
@@ -317,8 +318,8 @@ class Provider(DBHaystackInterface):
                 port = 0
             password = self._parsed_db.password
             if _BOTO3_AVAILABLE and self._parsed_db.username and \
-                    password.startswith("<") and password.endswith(">"):
-                password = get_secret_manager_secret(password[1:-1], self._envs)
+                    password.startswith("<") and password.endswith(">"):  # type: ignore
+                password = get_secret_manager_secret(password[1:-1], self._envs)  # type: ignore
             params = {
                 "host": self._parsed_db.hostname,
                 "port": port,
@@ -332,7 +333,7 @@ class Provider(DBHaystackInterface):
             }
             _, keys = self._default_driver[self._dialect]
             filtered = {key: val for key, val in params.items() if key in keys}
-            self._connect = _LocalConnect(self.database, **filtered)
+            self._connect = _LocalConnect(self.database, **filtered)  # type: ignore
             self.create_db()
         if not self._connect:
             raise ValueError("Impossible to use the database url")
@@ -526,7 +527,7 @@ class Provider(DBHaystackInterface):
                                        sql_id,
                                        customer_id,
                                        now,
-                                       json.dumps(_dump_row(new_grid, new_grid[row["id"]]))
+                                       json.dumps(_dump_row(new_grid, new_grid[row["id"]]))  # type: ignore
                                    )
                                    )
                     log.debug("Update record %s in DB", row['id'].name)
@@ -612,9 +613,9 @@ class Provider(DBHaystackInterface):
         begin_datetime = time_series.metadata.get("hisStart")
         end_datetime = time_series.metadata.get("hisStart")
         if time_series and not begin_datetime:
-            begin_datetime = time_series[0]['ts']
+            begin_datetime = time_series[0]['ts']  # type: ignore
         if time_series and not end_datetime:
-            end_datetime = time_series[-1]['ts']
+            end_datetime = time_series[-1]['ts']  # type: ignore
         if not begin_datetime:
             begin_datetime = datetime.min
         if not end_datetime:

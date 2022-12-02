@@ -44,8 +44,8 @@ class Version:
     def __init__(self, ver_str: Union[str, 'Version']):
         if isinstance(ver_str, Version):
             # Clone constructor
-            self.version_nums = ver_str.version_nums
-            self.version_extra = ver_str.version_extra
+            self.version_nums = ver_str.version_nums  # type: ignore
+            self.version_extra = ver_str.version_extra  # type: ignore
         else:
             match = _VERSION_RE.match(ver_str)
             if match is None:

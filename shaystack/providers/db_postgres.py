@@ -26,7 +26,7 @@ log = logging.getLogger("db.Provider")
 
 def _sqlescape(a_str: str) -> str:
     return a_str.translate(
-        str.maketrans({
+        str.maketrans({  # type: ignore
             "\0": "\\0",
             "\r": "\\r",
             "\x08": "\\b",
@@ -169,8 +169,8 @@ def _optimize_filter_for_sql(node: FilterNode) -> Union[_Root, FilterNode]:
                     isinstance(right, _IsMerge) and right.is_merge() or \
                     isinstance(left, (_Union, _Intersect)) \
                     or isinstance(right, (_Union, _Intersect)):
-                return _Intersect(left, right)
-            return _And(left, right)
+                return _Intersect(left, right)  # type: ignore
+            return _And(left, right)  # type: ignore
         if node.operator == "or":
             merged = _merge_has_operators(left, right, _OrHasTags)
             if merged:
@@ -179,8 +179,8 @@ def _optimize_filter_for_sql(node: FilterNode) -> Union[_Root, FilterNode]:
                     isinstance(right, _IsMerge) and right.is_merge() or \
                     isinstance(left, (_Union, _Intersect)) or \
                     isinstance(right, (_Union, _Intersect)):  # pylint: disable=too-many-boolean-expressions
-                return _Union(left, right)
-            return _Or(left, right)
+                return _Union(left, right)  # type: ignore
+            return _Or(left, right)  # type: ignore
         assert isinstance(left, _Path)
         operator = node.operator
         if operator == "==":
@@ -188,9 +188,9 @@ def _optimize_filter_for_sql(node: FilterNode) -> Union[_Root, FilterNode]:
         return _Compare(operator, left, right)
     if isinstance(node, FilterUnary):
         if node.operator == "has":
-            return _Has(_Path(node.right.paths))
+            return _Has(_Path(node.right.paths))  # type: ignore
         if node.operator == "not":
-            return _NotHas(_Path(node.right.paths))
+            return _NotHas(_Path(node.right.paths))  # type: ignore
         assert 0, "Invalid operator"
     return node  # Value
 
@@ -235,10 +235,10 @@ def _select_version(version: datetime, num_table: int) -> str:
 def _generate_path(table_name: str,
                    customer_id: str,
                    version: datetime,
-                   select: List[Union[str, List[Any]]],
-                   where: List[Union[str, List[Any]]],
+                   select: Union[List[str], List[Any]],
+                   where: Union[List[str], List[Any]],
                    node: _Path,
-                   num_table: int) -> Tuple[int, List[Union[str, List[Any]]], List[Union[str, List[Any]]]]:
+                   num_table: int) -> Tuple[int, Union[List[str], List[Any]], Union[List[str], List[Any]]]:
     if len(node.paths) == 1:
         return num_table, select, where
     first = True
@@ -261,11 +261,11 @@ def _generate_path(table_name: str,
 def _generate_filter_in_sql(table_name: str,
                             customer_id: str,
                             version: datetime,
-                            select: List[Union[str, List[Any]]],
-                            where: List[Union[str, List[Any]]],
+                            select: Union[List[str], List[Any]],
+                            where: Union[List[str], List[Any]],
                             node: _Root,
                             num_table: int
-                            ) -> Tuple[int, List[Union[str, List[Any]]], List[Union[str, List[Any]]]]:
+                            ) -> Tuple[int, Union[List[str], List[Any]], Union[List[str], List[Any]]]:
     # Use RootBlock nodes
     if isinstance(node, _Has):
         num_table, select, where = \
@@ -333,7 +333,7 @@ def _generate_filter_in_sql(table_name: str,
                                              num_table)
         generated_sql.append(sql)
         generated_sql.append(")\n")
-        select = generated_sql
+        select = generated_sql  # type: ignore
         where = []
     elif isinstance(node, _Union):
         generated_sql = list()
@@ -351,7 +351,7 @@ def _generate_filter_in_sql(table_name: str,
                                              num_table)
         generated_sql.append(sql)
         generated_sql.append(")\n")
-        select = generated_sql
+        select = generated_sql  # type: ignore
         where = []
     elif isinstance(node, _Compare):
         value = node.value
@@ -450,7 +450,7 @@ def _sql_filter(table_name: str,
         customer_id,
         version,
         limit,
-        _optimize_filter_for_sql(parse_filter(grid_filter).head),  # pylint: disable=protected-access
+        _optimize_filter_for_sql(parse_filter(grid_filter).head),  # type: ignore # pylint: disable=protected-access
         num_table=1)
     sql_request = f'-- {grid_filter}{sql}'
     return sql_request

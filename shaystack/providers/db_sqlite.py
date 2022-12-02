@@ -27,7 +27,7 @@ log = logging.getLogger("db.Provider")
 
 def _sqlescape(a_str: str) -> str:
     return a_str.translate(
-        str.maketrans({
+        str.maketrans({  # type: ignore
             "\0": "\\0",
             "\r": "\\r",
             "\x08": "\\b",
@@ -143,7 +143,7 @@ def _generate_filter_in_sql(table_name: str,
                                                      node.right,
                                                      num_table)
                 generated_sql.append(sql)
-                select = generated_sql
+                select = generated_sql  # type: ignore
                 where = []
             else:
                 where.append('(')
@@ -297,7 +297,7 @@ def _generate_sql_block(table_name: str,
 
     num_table, select, where = _generate_filter_in_sql(
         table_name, customer_id, version,
-        select,
+        select,  # type: ignore
         [],
         FilterBinary("and", _FilterDate(version, num_table, customer_id), node),
         num_table
@@ -323,7 +323,7 @@ def _sql_filter(table_name: str,
         customer_id,
         version,
         limit,
-        parse_filter(grid_filter).head,
+        parse_filter(grid_filter).head,  # type: ignore
         num_table=1)
     sql_request = f'-- {grid_filter}{sql}'
     return sql_request
@@ -345,7 +345,7 @@ def _exec_sql_filter(params: Dict[str, Any],
         grid_filter,
         version,
         limit,
-        customer_id)
+        customer_id)  # type: ignore
     cursor.execute(sql_request)
     return cursor
 

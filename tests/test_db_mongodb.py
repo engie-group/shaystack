@@ -27,7 +27,7 @@ def _check_mongodb(hs_filter: str,  # pylint: disable=unused-argument,unused-var
         envs = {'HAYSTACK_DB': os.environ['HAYSTACK_DB']}
         provider = cast(MongoProvider, get_provider("shaystack.providers.mongodb", envs))
         collection = provider.get_collection()
-        result = list(collection.aggregate(mongo_request))  # pylint: disable=unused-variable
+        result = list(collection.aggregate(mongo_request))   # type: ignore # pylint: disable=unused-variable
         # print(f"# {hs_filter}")
         # pprint.PrettyPrinter(indent=2).pprint(result)
 

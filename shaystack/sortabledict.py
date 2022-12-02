@@ -31,8 +31,8 @@ class SortableDict(col.MutableMapping):
             initial: Initial values
             validate_fn: A validated function
         """
-        self._values = {}
-        self._order = []
+        self._values = {}  # type: ignore
+        self._order = []  # type: ignore
         self._validate_fn = validate_fn
         super().__init__()
 

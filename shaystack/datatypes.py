@@ -18,7 +18,7 @@ from typing import Optional, NewType
 
 from .pintutil import unit_reg, _to_pint_unit
 
-MODE = NewType('Mode', str)
+MODE = NewType('Mode', str)  # type: ignore
 """
 Compatible haystack file format
 """
@@ -71,13 +71,13 @@ class Coordinate:
             round(self.latitude, ndigits=6), round(self.longitude, ndigits=6)
         ))
 
-    def __eq__(self, other: 'Coordinate') -> bool:
+    def __eq__(self, other: 'Coordinate') -> bool:  # type: ignore
         if not isinstance(other, Coordinate):
             return False
         return (self.latitude == other.latitude) and \
                (self.longitude == other.longitude)
 
-    def __ne__(self, other: 'Coordinate') -> bool:
+    def __ne__(self, other: 'Coordinate') -> bool:  # type: ignore
         if not isinstance(other, Coordinate):
             return True
         return not self == other
@@ -95,7 +95,7 @@ class Uri(str):
         return '%s(%s)' % (self.__class__.__name__,
                            super().__repr__())
 
-    def __eq__(self, other: 'Uri') -> bool:
+    def __eq__(self, other: 'Uri') -> bool:  # type: ignore
         if not isinstance(other, Uri):
             return False
         return super().__eq__(other)
@@ -110,7 +110,7 @@ class Bin(str):
         return '%s(%s)' % (self.__class__.__name__,
                            super().__repr__())
 
-    def __eq__(self, other: 'Bin') -> bool:
+    def __eq__(self, other: 'Bin') -> bool:  # type: ignore
         assert isinstance(other, Bin)
         return super().__eq__(other)
 
@@ -129,9 +129,9 @@ class XStr:
         if encoding == "hex":
             self.data = bytearray.fromhex(data)
         elif encoding == "b64":
-            self.data = base64.b64decode(data)
+            self.data = base64.b64decode(data)  # type: ignore
         else:
-            self.data = data.encode('ascii')  # Not decoded
+            self.data = data.encode('ascii')  # type: ignore # Not decoded
 
     def data_to_string(self) -> str:
         """
@@ -148,12 +148,12 @@ class XStr:
     def __repr__(self) -> str:
         return 'XStr("%s","%s")' % (self.encoding, self.data_to_string())
 
-    def __eq__(self, other: 'XStr') -> bool:
+    def __eq__(self, other: 'XStr') -> bool:  # type: ignore
         if not isinstance(other, XStr):
             return False
         return self.data == other.data  # Check only binary data
 
-    def __ne__(self, other: 'XStr') -> bool:
+    def __ne__(self, other: 'XStr') -> bool:  # type: ignore
         if not isinstance(other, XStr):
             return True
         return not self.data == other.data  # Check only binary data
@@ -233,12 +233,12 @@ class Ref:
             )
         return '@%s' % self.name
 
-    def __eq__(self, other: 'Ref') -> bool:
+    def __eq__(self, other: 'Ref') -> bool:  # type: ignore
         if not isinstance(other, Ref):
             return False
         return self.name == other.name
 
-    def __ne__(self, other: 'Ref'):
+    def __ne__(self, other: 'Ref'):  # type: ignore
         if not isinstance(other, Ref):
             return True
         return not self == other

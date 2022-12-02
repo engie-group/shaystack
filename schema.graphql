@@ -1,73 +1,191 @@
-schema {
-  query: Query
+"""Root for haystack api"""
+type Query {
+  haystack: Haystack!
 }
 
-scalar AWSDate
+"""Ontology conform with Haystack project"""
+type Haystack {
+  """Versions of api"""
+  about: HSAbout!
 
-scalar AWSDateTime
+  """List of operation implemented"""
+  ops: [HSOps!]!
 
-scalar AWSJSON
+  """All values for a specific tag"""
+  tagValues(
+    """Tag name"""
+    tag: String!
 
-scalar AWSTime
+    """Date of the version or nothing for the last version"""
+    version: AWSDateTime = null
+  ): [String!]!
 
-scalar AWSURL
+  """All versions of data"""
+  versions: [AWSDateTime!]!
 
+  """Selected entities of ontology"""
+  entities(
+    """List of ids to return (if set, ignore filter and limit)"""
+    ids: [ID] = null
+
+    """List of tags to return"""
+    select: String = "*"
+
+    """Maximum number of items to return"""
+    limit: Int = 0
+
+    """
+    Filter or item (see https://project-haystack.org/doc/docHaystack/Filters
+    """
+    filter: String = ""
+
+    """Date of the version or nothing for the last version"""
+    version: AWSDateTime = null
+  ): [AWSJSON!]
+
+  """Selected time series"""
+  histories(
+    """List of ids to return"""
+    ids: [ID] = null
+
+    """
+    today, yesterday, {date}, {date},{date}, {datetime}, {datetime},{datetime}
+    """
+    datesRange: String = null
+
+    """Date of the version or nothing for the last version"""
+    version: AWSDateTime = null
+  ): [[HSTS!]!]
+
+  """Point write values"""
+  pointWrite(
+    """Id to read (accept @xxx, r:xxx or xxx)"""
+    id: ID!
+
+    """Date of the version or nothing for the last version"""
+    version: AWSDateTime = null
+  ): [HSPointWrite!]
+}
+
+"""Result of 'about' haystack operation"""
 type HSAbout {
+  """Haystack version implemented"""
   haystackVersion: String!
+
+  """Server time zone"""
   tz: String!
+
+  """Server name"""
   serverName: String!
+
+  """Server current time"""
   serverTime: AWSDateTime!
+
+  """Server boot time"""
   serverBootTime: AWSDateTime!
+
+  """Server Product name"""
   productName: String!
+
+  """Server URL"""
   productUri: AWSURL!
+
+  """Product version"""
   productVersion: String!
+
+  """Module name"""
   moduleName: String!
+
+  """Module version"""
   moduleVersion: String!
 }
 
-type HSCoordinate {
-  latitude: Float!
-  longitude: Float!
-}
+"""Haystack compatible date format."""
+scalar AWSDateTime
 
+"""Haystack URI for GraphQL"""
+scalar AWSURL
+
+"""Result of 'ops' haystack operation"""
 type HSOps {
+  """
+  Name of operation (see https://project-haystack.org/doc/docHaystack/Ops)
+  """
   name: String
+
+  """Summary of operation"""
   summary: String
 }
 
-type HSPointWrite {
-  level: Int
-  levelDis: String
-  val: AWSJSON
-  who: String
-}
+"""Haystack Scalar"""
+scalar AWSJSON
 
+"""Result of 'hisRead' haystack operation"""
 type HSTS {
+  """Date time of event"""
   ts: AWSDateTime
+
+  """Haystack JSON format of value"""
   val: AWSJSON
+
+  """Integer version of the value"""
   int: Int
+
+  """Float version of the value"""
   float: Float
+
+  """Float version of the value"""
   str: String
+
+  """Boolean version of the value"""
   bool: Boolean
+
+  """URI version of the value"""
   uri: String
+
+  """Reference version of the value"""
   ref: String
+
+  """Date version of the value"""
   date: AWSDate
+
+  """Time version of the value"""
   time: AWSTime
+
+  """Date time version of the value"""
   datetime: AWSDateTime
+
+  """Geographic Coordinate"""
   coord: HSCoordinate
 }
 
-type Haystack {
-  about: HSAbout!
-  ops: [HSOps!]!
-  tagValues(tag: String!, version: AWSDateTime): [String!]!
-  versions: [AWSDateTime!]!
-  entities(ids: [ID], select: String = "*", limit: Int = 0, filter: String = "", version: AWSDateTime): [AWSJSON!]
-  histories(ids: [ID], datesRange: String, version: AWSDateTime): [[HSTS!]!]
-  pointWrite(id: ID!, version: AWSDateTime): [HSPointWrite!]
+"""Haystack date for GraphQL"""
+scalar AWSDate
+
+"""Haystack time for GraphQL"""
+scalar AWSTime
+
+"""Haystack coordinate for GraphQL"""
+type HSCoordinate {
+  """Latitude"""
+  latitude: Float!
+
+  """Longitude"""
+  longitude: Float!
 }
 
-type Query {
-  haystack: Haystack!
+"""Result of 'pointWrite' haystack operation"""
+type HSPointWrite {
+  """Current level"""
+  level: Int
+
+  """Description of level"""
+  levelDis: String
+
+  """Value"""
+  val: AWSJSON
+
+  """Who has updated the value"""
+  who: String
 }
 

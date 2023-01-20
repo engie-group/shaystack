@@ -12,8 +12,7 @@ import os
 from typing import Dict
 
 from pint import UnitRegistry
-from pint.converters import ScaleConverter
-from pint.definitions import UnitDefinition
+
 
 
 def _load_haystack_alias() -> Dict[str, str]:
@@ -63,7 +62,6 @@ def _load_pint_units() -> UnitRegistry:
     unit_ureg = UnitRegistry(on_redefinition='ignore')
     unit_ureg.load_definitions(os.path.join(os.path.dirname(__file__),
                                             'haystack_units.pint'))
-    unit_ureg.define(UnitDefinition('%', 'percent', (), ScaleConverter(1 / 100.0)))
     return unit_ureg
 
 

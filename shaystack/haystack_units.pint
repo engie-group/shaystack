@@ -9,7 +9,7 @@
 @alias water = H₂O = wc
 
 # -- dimensionless --
-# percent = [] = percent = %
+percent = [] = percent = %
 million = 1 ** 6
 billion = 1 ** 9
 pixel = 1 = px

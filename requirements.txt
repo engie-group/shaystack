@@ -5,5 +5,5 @@ six~=1.16.0
 accept_types
 overrides==6.0.0
 tzlocal==2.1
-pint==0.17
+pint==0.20.1
 click>=8.0

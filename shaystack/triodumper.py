@@ -41,7 +41,7 @@ def _dump_str(str_value: str) -> str:
         if str_value.endswith("\n  "):
             str_value = str_value[:-3]
         return str_value
-    if str_value not in ["T", "F", "NA", "R", "N", "M"] \
+    if str_value in ["T", "F", "NA", "R", "N", "M"] \
             and _REGULAR_STR.match(str_value):
         return str_value
     return '"%s"' % str_value
